@@ -612,11 +612,15 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	return pg
 }
 
+func hasSliceValidations(model *spec.Schema) (hasSliceValidations bool) {
+	hasSliceValidations = model.MaxItems != nil || model.MinItems != nil || model.UniqueItems || len(model.Enum) > 0
+	return
+}
+
 func hasValidations(model *spec.Schema, isRequired bool) (hasValidation bool) {
 	// NOTE: needsValidation has gone deprecated and is replaced by top-level's shallowValidationLookup()
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
 	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
-	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
 	hasEnum := len(model.Enum) > 0
 
 	// since this was added to deal with discriminator, we'll fix this when testing discriminated types
@@ -632,7 +636,7 @@ func hasValidations(model *spec.Schema, isRequired bool) (hasValidation bool) {
 		}
 	}
 
-	hasValidation = hasNumberValidation || hasStringValidation || hasSliceValidations || hasEnum || simpleObject || hasAllOfValidation || isRequired
+	hasValidation = hasNumberValidation || hasStringValidation || hasSliceValidations(model) || hasEnum || simpleObject || hasAllOfValidation || isRequired
 
 	return
 }
@@ -658,7 +662,6 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		// when readOnly or default is specified, this disables Required (Swagger-specific)
 		isRequired = false
 	}
-	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems
 	hasValidation := hasValidations(&model, isRequired)
 
 	return sharedValidations{
@@ -676,7 +679,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		MultipleOf:          model.MultipleOf,
 		Enum:                model.Enum,
 		HasValidations:      hasValidation,
-		HasSliceValidations: hasSliceValidations,
+		HasSliceValidations: hasSliceValidations(&model),
 	}
 }
 
@@ -693,10 +696,7 @@ func mergeValidation(other *schemaGenContext) bool {
 			return true
 		}
 	}
-	if other.GenSchema.HasValidations {
-		return true
-	}
-	return false
+	return other.GenSchema.HasValidations
 }
 
 func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired bool) {
@@ -917,9 +917,9 @@ func (sg *schemaGenContext) buildAllOf() error {
 		log.Println(string(b))
 	}
 	for i, sch := range sg.Schema.AllOf {
-		tpe, err := sg.TypeResolver.ResolveSchema(&sch, sch.Ref.String() == "", false)
-		if err != nil {
-			return err
+		tpe, ert := sg.TypeResolver.ResolveSchema(&sch, sch.Ref.String() == "", false)
+		if ert != nil {
+			return ert
 		}
 
 		// check for multiple arrays in allOf branches.
@@ -1103,6 +1103,14 @@ func (mt *mapStack) Build() error {
 		mt.Context.MergeResult(cp, false)
 		mt.Context.GenSchema.AdditionalProperties = &cp.GenSchema
 
+		// lift validations
+		if (csch.Ref.String() != "" || cp.GenSchema.IsAliased) && !(cp.GenSchema.IsInterface || cp.GenSchema.IsStream) {
+			// - we stopped on a ref, or anything else that require we call its Validate() method
+			// - if the alias / ref is on an interface (or stream) type: no validation
+			mt.Context.GenSchema.HasValidations = true
+			mt.Context.GenSchema.AdditionalProperties.HasValidations = true
+		}
+
 		if Debug {
 			log.Printf("early mapstack exit, nullable: %t for %s", cp.GenSchema.IsNullable, cp.GenSchema.Name)
 		}
@@ -1247,9 +1255,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if !sg.GenSchema.IsMap && (sg.GenSchema.IsAdditionalProperties && sg.Named) {
 		// we have a complex object with an AdditionalProperties schema
 
-		tpe, err := sg.TypeResolver.ResolveSchema(addp.Schema, addp.Schema.Ref.String() == "", false)
-		if err != nil {
-			return err
+		tpe, ert := sg.TypeResolver.ResolveSchema(addp.Schema, addp.Schema.Ref.String() == "", false)
+		if ert != nil {
+			return ert
 		}
 
 		if tpe.IsComplexObject && tpe.IsAnonymous {
@@ -1449,11 +1457,12 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.IsBaseType = elProp.GenSchema.IsBaseType
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
-	sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
 
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
 	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
+	} else {
+		sg.GenSchema.GoType = "[]" + elProp.GenSchema.GoType
 	}
 
 	sg.GenSchema.IsArray = true
@@ -1462,6 +1471,7 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.GenSchema.IsExported = !sg.GenSchema.ElemType.HasDiscriminator
 
 	schemaCopy := elProp.GenSchema
+
 	schemaCopy.Required = false
 
 	// validations of items
@@ -1470,14 +1480,22 @@ func (sg *schemaGenContext) buildArray() error {
 	// include format validation, excluding binary
 	hv = hv || (schemaCopy.IsCustomFormatter && !schemaCopy.IsStream) || (schemaCopy.IsArray && schemaCopy.ElemType.IsCustomFormatter && !schemaCopy.ElemType.IsStream)
 
-	schemaCopy.HasValidations = schemaCopy.HasValidations || elProp.GenSchema.IsNullable || hv || elProp.GenSchema.IsBaseType
+	// base types of polymorphic types must be validated
+	// NOTE: IsNullable is not useful to figure out a validation: we use Refed and IsAliased below instead
+	if hv || elProp.GenSchema.IsBaseType {
+		schemaCopy.HasValidations = true
+	}
 
-	if elProp.GenSchema.IsAliased && !(elProp.GenSchema.IsInterface || elProp.GenSchema.IsStream) {
+	if (elProp.Schema.Ref.String() != "" || elProp.GenSchema.IsAliased) && !(elProp.GenSchema.IsInterface || elProp.GenSchema.IsStream) {
 		schemaCopy.HasValidations = true
 	}
 
 	// lift validations
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || schemaCopy.HasValidations
+	sg.GenSchema.HasSliceValidations = hasSliceValidations(&sg.Schema)
+
+	// prevents bubbling custom formatter flag
+	sg.GenSchema.IsCustomFormatter = false
 
 	sg.GenSchema.Items = &schemaCopy
 	if sg.Named {
@@ -1712,9 +1730,11 @@ func (sg *schemaGenContext) buildAliased() error {
 	if sg.GenSchema.IsInterface {
 		sg.GenSchema.IsAliased = sg.GenSchema.GoType != iface
 	}
+
 	if sg.GenSchema.IsMap {
 		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "map[")
 	}
+
 	if sg.GenSchema.IsArray {
 		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "[]")
 	}
@@ -1731,6 +1751,56 @@ func goName(sch *spec.Schema, orig string) string {
 		return name
 	}
 	return orig
+}
+
+func (sg *schemaGenContext) checkNeedsDeref(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
+	derefType := strings.TrimPrefix(elem.GoType, "*")
+	if outer.IsAliased && !strings.HasSuffix(outer.AliasedType, "*"+derefType) {
+		// override nullability of map of primitive elements: render element of aliased or anonymous map as a pointer
+		outer.AliasedType = strings.TrimSuffix(outer.AliasedType, derefType) + "*" + derefType
+	} else if sch != nil {
+		if sch.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType) {
+			sch.GoType = strings.TrimSuffix(sch.GoType, derefType) + "*" + derefType
+		}
+	} else if outer.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType) {
+		outer.GoType = strings.TrimSuffix(outer.GoType, derefType) + "*" + derefType
+	}
+}
+
+// buildMapOfNullable equalizes the nullablity status for aliased and anonymous maps of simple things,
+// with the nullability of its innermost element.
+//
+// NOTE: at the moment, we decide to align the type of the outer element (map) to the type of the inner element
+// The opposite could be done and result in non nullable primitive elements. If we do so, the validation
+// code needs to be adapted by removing IsZero() and Required() calls.
+func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
+	outer := &sg.GenSchema
+	if outer == nil {
+		return
+	}
+	if sch == nil {
+		sch = outer
+	}
+	if sch.IsMap && (outer.IsAliased || outer.IsAnonymous) {
+		elem := sch.AdditionalProperties
+		for elem != nil {
+			if elem.IsPrimitive && elem.IsNullable {
+				sg.checkNeedsDeref(outer, nil, elem)
+			} else if elem.IsArray {
+				// override nullability of array of primitive elements: render element of aliased or anonyous map as a pointer
+				it := elem.Items
+				for it != nil {
+					if it.IsPrimitive && it.IsNullable {
+						sg.checkNeedsDeref(outer, sch, it)
+					} else if it.IsMap {
+						sg.buildMapOfNullable(it)
+					}
+					it = it.Items
+				}
+			}
+			elem = elem.AdditionalProperties
+		}
+	}
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
@@ -1878,6 +1948,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if err := sg.buildAliased(); err != nil {
 		return err
 	}
+
+	sg.buildMapOfNullable(nil)
 
 	if Debug {
 		log.Printf("finished gen schema for %q\n", sg.Name)

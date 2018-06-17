@@ -32,3 +32,11 @@ func logDebug(frmt string, args ...interface{}) {
 		log.Printf("%s:%d: %s", filepath.Base(file), pos, fmt.Sprintf(frmt, args...))
 	}
 }
+
+// debuglog is used to debug the typeResolver (types.go)
+func debugLog(format string, args ...interface{}) {
+	if Debug {
+		_, file, pos, _ := runtime.Caller(2)
+		log.Printf("%s:%d: "+format, append([]interface{}{filepath.Base(file), pos}, args...)...)
+	}
+}

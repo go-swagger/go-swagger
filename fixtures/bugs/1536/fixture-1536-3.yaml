@@ -1,0 +1,308 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body with maps"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    modelInterface:
+      type: object
+      additionalProperties: true
+    modelObject:
+      type: object
+      properties:
+        aProp:
+          type: string
+          format: hostname
+    modelArray:
+      type: array
+      items:
+        type: object
+        properties:
+          aNum: 
+            type: integer
+            maximum: 10
+    modelArrayWithMax:
+      type: array
+      maxItems: 10
+      items:
+        type: object
+  paths: 
+    /getArray: 
+      get: 
+        operationId: getArray
+        parameters:
+          - name: arrayOfObject
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/modelObject'
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayNested: 
+      get: 
+        operationId: getArrayNested
+        parameters:
+          - name: arrayOfarray
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/modelObject'
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayNestedSimple: 
+      get: 
+        operationId: getArrayNestedSimple
+        parameters:
+          - name: arrayOfarraySimple
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+                  maxLength: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapInterface: 
+      get: 
+        operationId: getMapInterface
+        parameters:
+          - name: mapOfInterface
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelInterface'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapObject: 
+      get: 
+        operationId: getMapObject
+        parameters:
+          - name: mapOfObject
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelObject'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapArray:
+      get: 
+        operationId: getMapArray
+        parameters:
+          - name: mapOfArray
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelArray'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapAnonArray:
+      get: 
+        operationId: getMapAnonArray
+        parameters:
+          - name: mapOfAnonArray
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: integer
+                  minimum: 10
+        responses: 
+          200: 
+            description: "OK"
+    /getMapAnonArrayWithNullable:
+      get: 
+        operationId: getMapAnonArrayWithNullable
+        parameters:
+          - name: mapOfAnonArrayWithNullable
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: integer
+                  minimum: 0
+        responses: 
+          200: 
+            description: "OK"
+    /getMapAnonArrayWithXNullable:
+      get: 
+        operationId: getMapAnonArrayWithXNullable
+        parameters:
+          - name: mapOfAnonArrayWithXNullable
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: integer
+                  x-nullable: true
+        responses: 
+          200: 
+            description: "OK"
+    /getMapArrayWithMax:
+      get: 
+        operationId: getMapArrayWithMax
+        parameters:
+          - name: mapOfArrayWithMax
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelArrayWithMax'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfAnonArray:
+      get: 
+        operationId: getMapOfAnonArray
+        parameters:
+          - name: mapOfAnonArray
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                maxItems: 10
+                items:
+                  type: integer
+                  maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfMap:
+      get: 
+        operationId: getMapOfMap
+        parameters:
+          - name: mapOfMap
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  $ref: '#/definitions/modelArrayWithMax'
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfPrimitive:
+      get: 
+        operationId: getMapOfPrimitive
+        parameters:
+          - name: mapOfPrimitive
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: integer
+                maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfFormat:
+      get: 
+        operationId: getMapOfFormat
+        parameters:
+          - name: mapOfFormat
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+                format: uuid
+        responses: 
+          200: 
+            description: "OK"
+    /getMapOfAnonMap:
+      get: 
+        operationId: getMapOfAnonMap
+        parameters:
+          - name: mapOfAnonMap
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: integer
+                    maximum: 100
+
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayOfMap:
+      get: 
+        operationId: getArrayOfMap
+        parameters:
+          - name: arrayOfMap
+            in: body
+            required: true
+            schema:
+              type: array
+              maxItems: 50
+              items:
+                type: object
+                additionalProperties:
+                  type: array
+                  maxItems: 10
+                  items:
+                    type: integer
+                    format: int32
+                    maximum: 100
+        responses: 
+          200: 
+            description: "OK"
+    /getArrayOfInterface:
+      get: 
+        operationId: getArrayOfInterface
+        parameters:
+          - name: arrayOfInterface
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+        responses: 
+          200: 
+            description: "OK"

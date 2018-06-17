@@ -22,7 +22,7 @@ import (
 // This allows to run tests unitarily (e.g. go test -run xxx ).
 func TestMain(m *testing.M) {
 	templates.LoadDefaults()
-	m.Run()
+	os.Exit(m.Run())
 }
 
 func testGenOpts() (g GenOpts) {

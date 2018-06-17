@@ -847,7 +847,6 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Path:             fmt.Sprintf("%q", param.Name),
 		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
 		IndexVar:         "i",
-		BodyParam:        nil,
 		Default:          param.Default,
 		HasDefault:       param.Default != nil,
 		Description:      trimBOM(param.Description),
@@ -862,141 +861,11 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	hasChildValidations := false
 
 	if param.In == "body" {
-		// Process parameters declared in body (i.e. have a Schema)
-		var named bool
-		rslv := resolver
-		sch := param.Schema
-		if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
-			if err != nil {
-				return GenParameter{}, err
-			}
-			sch = ss
-			named = true
-			rslv = resolver.NewWithModelName(b.Operation.ID + "ParamsBody")
-		}
-
-		sc := schemaGenContext{
-			Path:             res.Path,
-			Name:             b.Operation.ID + "ParamsBody",
-			Receiver:         res.ReceiverName,
-			ValueExpr:        res.ReceiverName,
-			IndexVar:         res.IndexVar,
-			Schema:           *sch,
-			Required:         param.Required,
-			TypeResolver:     rslv,
-			Named:            named,
-			IncludeModel:     true,
-			IncludeValidator: b.IncludeValidator,
-			ExtraSchemas:     make(map[string]GenSchema),
-		}
-		if err := sc.makeGenSchema(); err != nil {
+		res.Required = param.Required
+		if err := b.MakeBodyParameter(&res, resolver, param.Schema); err != nil {
 			return GenParameter{}, err
 		}
-		// TODO: lift nested extra schemas
-
-		schema := sc.GenSchema
-		if named {
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
-			}
-			b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
-		}
-		if schema.IsAnonymous {
-			// A generated name for anonymous parameter in body
-			schema.Name = swag.ToGoName(b.Operation.ID + " Body")
-			nm := schema.Name
-			schema.GoType = nm
-			schema.IsAnonymous = false
-			if len(schema.Properties) > 0 {
-				if b.ExtraSchemas == nil {
-					b.ExtraSchemas = make(map[string]GenSchema)
-				}
-				b.ExtraSchemas[nm] = schema
-			}
-			prevSchema := schema
-			schema = GenSchema{}
-			schema.IsAnonymous = false
-			schema.GoType = nm
-			schema.SwaggerType = nm
-			if len(prevSchema.Properties) == 0 {
-				schema.GoType = iface
-			}
-			schema.IsComplexObject = true
-			schema.IsInterface = len(schema.Properties) == 0
-		}
-		res.Schema = &schema
-
-		// clone the .Items schema structure as a .GenItems structure
-		// for compatibility with simple param templates
-		it := res.Schema.Items
-		items := new(GenItems)
-		if it != nil {
-			var prev *GenItems
-			next := items
-			next.Name = res.Name + " " + res.Schema.IndexVar
-			next.IndexVar = res.Schema.IndexVar + "i"
-			next.ValueExpression = swag.ToVarName(res.Name + "I")
-			next.Path = "fmt.Sprintf(\"%s.%v\", " + res.Path + ", " + res.IndexVar + ")"
-			next.Location = "body"
-			for it != nil {
-				next.resolvedType = it.resolvedType
-				next.sharedValidations = it.sharedValidations
-				next.Formatter = stringFormatters[it.SwaggerFormat]
-				next.Converter = stringConverters[res.GoType]
-				next.Parent = prev
-				_, next.IsCustomFormatter = customFormatters[it.GoType]
-				next.IsCustomFormatter = next.IsCustomFormatter && !it.IsStream
-
-				// special instruction to avoid using CollectionFormat for body params
-				next.SkipParse = true
-
-				if prev != nil {
-					next.Name = prev.Name + prev.IndexVar
-					next.IndexVar = prev.IndexVar + "i"
-					next.ValueExpression = swag.ToVarName(prev.ValueExpression + "I")
-					next.Path = "fmt.Sprintf(\"%s.%v\", " + prev.Path + ", " + prev.IndexVar + ")"
-					prev.Child = next
-				}
-
-				// found a complex or aliased thing
-				// hide details from the aliased type and stop recursing
-				if next.IsAliased || next.IsComplexObject {
-					next.IsArray = false
-					next.IsCustomFormatter = false
-					if !(next.IsInterface || next.IsStream) {
-						next.HasValidations = true
-					}
-					next.IsComplexObject = true
-					next.IsAliased = true
-					break
-				}
-				prev = next
-				next = new(GenItems)
-				it = it.Items
-			}
-			// propagate HasValidations
-			var propag func(child *GenItems) bool
-			propag = func(child *GenItems) bool {
-				if child == nil {
-					return false
-				}
-				child.HasValidations = child.HasValidations || propag(child.Child)
-				return child.HasValidations
-			}
-			items.HasValidations = propag(items)
-			schema.HasValidations = schema.HasValidations || items.HasValidations
-		}
-
-		// templates assume at least one .Child != nil
-		res.Child = items
 		hasChildValidations = res.Child.HasValidations
-
-		res.resolvedType = schema.resolvedType
-
-		// simple and schema views share the same validations
-		res.sharedValidations = schema.sharedValidations
-		res.ZeroValue = schema.Zero()
 	} else {
 		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
@@ -1032,10 +901,10 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	}
 
 	// Summarize validation requirements for code generator
-	hasNumberValidation := param.Maximum != nil || param.Minimum != nil || param.MultipleOf != nil
-	hasStringValidation := param.MaxLength != nil || param.MinLength != nil || param.Pattern != ""
-	hasSliceValidations := param.MaxItems != nil || param.MinItems != nil || param.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(param.Enum) > 0 || hasChildValidations
+	hasNumberValidation := res.Maximum != nil || res.Minimum != nil || res.MultipleOf != nil
+	hasStringValidation := res.MaxLength != nil || res.MinLength != nil || res.Pattern != ""
+	hasSliceValidations := res.MaxItems != nil || res.MinItems != nil || res.UniqueItems || len(res.Enum) > 0
+	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || hasChildValidations
 
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
@@ -1044,15 +913,208 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	res.HasValidations = hasValidations || (res.IsCustomFormatter && !res.IsStream)
 	res.HasSliceValidations = hasSliceValidations
 
+	// Select codegen strategy for body param validation
 	b.setBodyParamValidation(&res)
 
 	return res, nil
 }
 
+// MakeBodyParameter constructs a body parameter schema
+func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeResolver, sch *spec.Schema) error {
+	var named bool
+	rslv := resolver
+
+	if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
+		ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
+		if err != nil {
+			return err
+		}
+		sch = ss
+		named = true
+		rslv = resolver.NewWithModelName(b.Operation.ID + "ParamsBody")
+	}
+
+	sc := schemaGenContext{
+		Path:             res.Path,
+		Name:             b.Operation.ID + "ParamsBody",
+		Receiver:         res.ReceiverName,
+		ValueExpr:        res.ReceiverName,
+		IndexVar:         res.IndexVar,
+		Schema:           *sch,
+		Required:         false, // Required in body is managed independently from validations
+		TypeResolver:     rslv,
+		Named:            named,
+		IncludeModel:     true,
+		IncludeValidator: b.IncludeValidator,
+		ExtraSchemas:     make(map[string]GenSchema),
+	}
+	if err := sc.makeGenSchema(); err != nil {
+		return err
+	}
+	// TODO: lift nested extra schemas
+
+	schema := sc.GenSchema
+	if named {
+		if b.ExtraSchemas == nil {
+			b.ExtraSchemas = make(map[string]GenSchema)
+		}
+		b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
+	}
+	if schema.IsAnonymous {
+		// a generated name for anonymous parameter in body
+		nm := swag.ToGoName(b.Operation.ID + " Body")
+
+		hasProperties := len(schema.Properties) > 0
+		isInterface := schema.IsInterface
+		hasValidations := schema.HasValidations
+
+		// for complex anonymous objects, produce an extra schema
+		if hasProperties {
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
+			schema.Name = nm
+			schema.GoType = nm
+			schema.IsAnonymous = false
+			b.ExtraSchemas[nm] = schema
+
+			// constructs new schema to refer to the newly created type
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.IsComplexObject = true
+			schema.SwaggerType = nm
+			schema.HasValidations = hasValidations
+			schema.GoType = nm
+		} else if isInterface {
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.IsComplexObject = false
+			schema.IsInterface = true
+			schema.HasValidations = false
+			schema.GoType = iface
+		}
+	}
+
+	res.Schema = &schema
+	res.Schema.Required = res.Required
+
+	// build Child items for nested slices and maps
+	var items *GenItems
+	res.KeyVar = "k"
+	res.Schema.KeyVar = "k"
+	if schema.IsMap && !schema.IsInterface {
+		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.AdditionalProperties)
+	} else if schema.IsArray {
+		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.Items)
+	} else {
+		items = new(GenItems)
+	}
+
+	// templates assume at least one .Child != nil
+	res.Child = items
+	schema.HasValidations = schema.HasValidations || items.HasValidations
+
+	res.resolvedType = schema.resolvedType
+
+	// simple and schema views share the same validations
+	res.sharedValidations = schema.sharedValidations
+	res.ZeroValue = schema.Zero()
+	return nil
+}
+
+// MakeBodyParameterItemsAndMaps clones the .Items schema structure (resp. .AdditionalProperties) as a .GenItems structure
+// for compatibility with simple param templates.
+//
+// Constructed children assume simple structures: any complex object is assumed to be resolved by a model or extra schema definition
+func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *GenSchema) *GenItems {
+	items := new(GenItems)
+	if it != nil {
+		var prev *GenItems
+		next := items
+		if res.Schema.IsArray {
+			next.Path = "fmt.Sprintf(\"%s.%v\", " + res.Path + ", " + res.IndexVar + ")"
+		} else if res.Schema.IsMap {
+			next.Path = "fmt.Sprintf(\"%s.%v\", " + res.Path + ", " + res.KeyVar + ")"
+		}
+		next.Name = res.Name + " " + res.Schema.IndexVar
+		next.IndexVar = res.Schema.IndexVar + "i"
+		next.KeyVar = res.Schema.KeyVar + "k"
+		next.ValueExpression = swag.ToVarName(res.Name + "I")
+		next.Location = "body"
+		for it != nil {
+			next.resolvedType = it.resolvedType
+			next.sharedValidations = it.sharedValidations
+			next.Formatter = stringFormatters[it.SwaggerFormat]
+			next.Converter = stringConverters[res.GoType]
+			next.Parent = prev
+			_, next.IsCustomFormatter = customFormatters[it.GoType]
+			next.IsCustomFormatter = next.IsCustomFormatter && !it.IsStream
+
+			// special instruction to avoid using CollectionFormat for body params
+			next.SkipParse = true
+
+			if prev != nil {
+				if prev.IsArray {
+					next.Path = "fmt.Sprintf(\"%s.%v\", " + prev.Path + ", " + prev.IndexVar + ")"
+				} else if prev.IsMap {
+					next.Path = "fmt.Sprintf(\"%s.%v\", " + prev.Path + ", " + prev.KeyVar + ")"
+				}
+				next.Name = prev.Name + prev.IndexVar
+				next.IndexVar = prev.IndexVar + "i"
+				next.KeyVar = prev.KeyVar + "k"
+				next.ValueExpression = swag.ToVarName(prev.ValueExpression + "I")
+				prev.Child = next
+			}
+
+			// found a complex or aliased thing
+			// hide details from the aliased type and stop recursing
+			if next.IsAliased || next.IsComplexObject {
+				next.IsArray = false
+				next.IsMap = false
+				next.IsCustomFormatter = false
+				next.IsComplexObject = true
+				next.IsAliased = true
+				break
+			}
+			if next.IsInterface || next.IsStream {
+				next.HasValidations = false
+			}
+			prev = next
+			next = new(GenItems)
+
+			if it.Items != nil {
+				it = it.Items
+			} else if it.AdditionalProperties != nil {
+				it = it.AdditionalProperties
+			} else {
+				it = nil
+			}
+		}
+		// propagate HasValidations
+		var propag func(child *GenItems) bool
+		propag = func(child *GenItems) bool {
+			if child == nil {
+				return false
+			}
+			child.HasValidations = child.HasValidations || propag(child.Child)
+			return child.HasValidations
+		}
+		items.HasValidations = propag(items)
+	}
+	return items
+}
+
 func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
-	// determine validation strategy for body param
+	// Determine validation strategy for body param.
+	//
+	// Here are the distinct strategies:
+	// - the body parameter is a model object => delegates
+	// - the body parameter is an array of model objects => carry on slice validations, then iterate and delegate
+	// - the body parameter is a map of model objects => iterate and delegate
+	// - the body parameter is an array of simple objects (including maps)
+	// - the body parameter is a map of simple objects (including arrays)
 	if p.IsBodyParam() {
-		var hasSimpleBodyParams, hasSimpleBodyItems, hasModelBodyParams, hasModelBodyItems bool
+		var hasSimpleBodyParams, hasSimpleBodyItems, hasSimpleBodyMap, hasModelBodyParams, hasModelBodyItems, hasModelBodyMap bool
 		s := p.Schema
 		if s != nil {
 			doNot := s.IsInterface || s.IsStream
@@ -1066,9 +1128,14 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 
 			if s.IsArray && s.Items != nil {
 				it := s.Items
-				doNot := it.IsInterface || it.IsStream
+				doNot = it.IsInterface || it.IsStream
 				hasSimpleBodyItems = !it.IsComplexObject && !(it.IsAliased || doNot)
 				hasModelBodyItems = (it.IsComplexObject || it.IsAliased) && !doNot
+			}
+			if s.IsMap && s.AdditionalProperties != nil {
+				it := s.AdditionalProperties
+				hasSimpleBodyMap = !it.IsComplexObject && !(it.IsAliased || doNot)
+				hasModelBodyMap = !hasSimpleBodyMap && !doNot
 			}
 		}
 		// set validation strategy for body param
@@ -1076,6 +1143,8 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 		p.HasSimpleBodyItems = hasSimpleBodyItems
 		p.HasModelBodyParams = hasModelBodyParams
 		p.HasModelBodyItems = hasModelBodyItems
+		p.HasModelBodyMap = hasModelBodyMap
+		p.HasSimpleBodyMap = hasSimpleBodyMap
 	}
 
 }

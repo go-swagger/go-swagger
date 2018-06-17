@@ -35,6 +35,20 @@
         responses: 
           200: 
             description: "OK"
+    /getRecordsNonRequired: 
+      get: 
+        operationId: getRecordsNonRequired
+        parameters:
+          - name: recordsNonRequired
+            in: body
+            required: false
+            schema:
+              type: array
+              items:
+                type: object
+        responses: 
+          200: 
+            description: "OK"
     /getRecordsMax: 
       get: 
         operationId: getRecordsMax
