@@ -19,7 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
+	slashpath "path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -33,11 +33,18 @@ import (
 
 // FlattenOpts configuration for flattening a swagger specification.
 type FlattenOpts struct {
-	// If Expand is true, we skip flattening the spec and expand it instead
-	Expand   bool
-	Spec     *Spec
+	Spec           *Spec    // The analyzed spec to work with
+	flattenContext *context // Internal context to track flattening activity
+
 	BasePath string
 
+	// Flattening options
+	Expand       bool // If Expand is true, we skip flattening the spec and expand it instead
+	Minimal      bool
+	Verbose      bool
+	RemoveUnused bool
+
+	/* Extra keys */
 	_ struct{} // require keys
 }
 
@@ -51,28 +58,100 @@ func (f *FlattenOpts) Swagger() *swspec.Swagger {
 	return f.Spec.spec
 }
 
-// Flatten an analyzed spec.
+// newRef stores information about refs created during the flattening process
+type newRef struct {
+	key      string
+	newName  string
+	path     string
+	isOAIGen bool
+	resolved bool
+	schema   *swspec.Schema
+	parents  []string
+}
+
+// context stores intermediary results from flatten
+type context struct {
+	newRefs map[string]*newRef
+}
+
+func newContext() *context {
+	return &context{
+		newRefs: make(map[string]*newRef),
+	}
+}
+
+// Flatten an analyzed spec and produce a self-contained spec bundle.
 //
-// To flatten a spec means:
+// There is a minimal and a full flattening mode.
 //
-// Expand the parameters, responses, path items, parameter items and header items.
-// Import external (http, file) references so they become internal to the document.
-// Move every inline schema to be a definition with an auto-generated name in a depth-first fashion.
-// Rewritten schemas get a vendor extension x-go-gen-location so we know in which package they need to be rendered.
+// Minimally flattening a spec means:
+//  - Expanding parameters, responses, path items, parameter items and header items (references to schemas are left unscathed)
+//  - Importing external (http, file) references so they become internal to the document
+//  - Moving every JSON pointer to a $ref to a named definition (i.e. the reworked spec does not contain pointers like "$ref": "#/definitions/myObject/allOfs/1")
+//
+// A minimally flattened spec thus guarantees the following properties:
+//  - all $refs point to a local definition (i.e. '#/definitions/...')
+//  - definitions are unique
+//
+// NOTE: arbitrary JSON pointers (other than $refs to top level definitions) are rewritten as definitions if they
+// represent a complex schema or express commonality in the spec.
+// Otherwise, they are simply expanded.
+//
+// Minimal flattening is necessary and sufficient for codegen rendering using go-swagger.
+//
+// Fully flattening a spec means:
+//  - Moving every complex inline schema to be a definition with an auto-generated name in a depth-first fashion.
+//
+// By complex, we mean every JSON object with some properties.
+// Arrays, when they do not define a tuple,
+// or empty objects with or without additionalProperties, are not considered complex and remain inline.
+//
+// NOTE: rewritten schemas get a vendor extension x-go-gen-location so we know from which part of the spec definitions have been created.
+//
+// Available flattening options:
+//  - Minimal: stops flattening after minimal $ref processing, leaving schema constructs untouched
+//  - Expand: expand all $ref's in the document (inoperant if Minimal set to true)
+//  - Verbose: croaks about name conflicts detected
+//  - RemoveUnused: removes unused parameters, responses and definitions after expansion/flattening
+//
+// NOTE: expansion removes all $ref save circular $ref, which remain in place
+//
+// TODO: additional options
+//  - ProgagateNameExtensions: ensure that created entries properly follow naming rules when their parent have set a x-go-name extension
+//  - LiftAllOfs:
+//     - limit the flattening of allOf members when simple objects
+//     - merge allOf with validation only
+//     - merge allOf with extensions only
+//     - ...
+//
 func Flatten(opts FlattenOpts) error {
 	// Make sure opts.BasePath is an absolute path
 	if !filepath.IsAbs(opts.BasePath) {
 		cwd, _ := os.Getwd()
 		opts.BasePath = filepath.Join(cwd, opts.BasePath)
 	}
-	// recursively expand responses, parameters, path items and items
-	err := swspec.ExpandSpec(opts.Swagger(), &swspec.ExpandOptions{
-		RelativeBase: opts.BasePath,
-		SkipSchemas:  !opts.Expand,
-	})
-	if err != nil {
+
+	opts.flattenContext = newContext()
+
+	// recursively expand responses, parameters, path items and items in simple schemas
+	// TODO: we should not expand discriminated types
+	if err := swspec.ExpandSpec(opts.Swagger(), opts.ExpandOpts(!opts.Expand)); err != nil {
 		return err
 	}
+
+	// strip current file from $ref's, so we can recognize them as proper definitions
+	// In particular, this works around for issue go-openapi/spec#76: leading absolute file in $ref is stripped
+	if err := normalizeRef(&opts); err != nil {
+		return err
+	}
+
+	if opts.RemoveUnused {
+		// optionally removes shared parameters and responses already expanded (now unused)
+		// default parameters (i.e. under paths) remain.
+		opts.Swagger().Parameters = nil
+		opts.Swagger().Responses = nil
+	}
+
 	opts.Spec.reload() // re-analyze
 
 	// at this point there are no other references left but schemas
@@ -81,28 +160,88 @@ func Flatten(opts FlattenOpts) error {
 	}
 	opts.Spec.reload() // re-analyze
 
-	// rewrite the inline schemas (schemas that aren't simple types or arrays of simple types)
-	if err := nameInlinedSchemas(&opts); err != nil {
+	if !opts.Minimal && !opts.Expand {
+		// full flattening: rewrite inline schemas (schemas that aren't simple types or arrays or maps)
+		if err := nameInlinedSchemas(&opts); err != nil {
+			return err
+		}
+
+		opts.Spec.reload() // re-analyze
+	}
+
+	// rewrite JSON pointers other than $ref to named definitions
+	// and attempts to resolve conflicting names
+	if err := stripPointersAndOAIGen(&opts); err != nil {
 		return err
 	}
-	opts.Spec.reload() // re-analyze
 
-	// TODO: simplify known schema patterns to flat objects with properties?
+	if opts.RemoveUnused {
+		// remove unused definitions
+		expected := make(map[string]struct{})
+		for k := range opts.Swagger().Definitions {
+			expected[slashpath.Join(definitionsPath, jsonpointer.Escape(k))] = struct{}{}
+		}
+		for _, k := range opts.Spec.AllDefinitionReferences() {
+			if _, ok := expected[k]; ok {
+				delete(expected, k)
+			}
+		}
+		for k := range expected {
+			debugLog("removing unused definition %s", slashpath.Base(k))
+			if opts.Verbose {
+				log.Printf("info: removing unused definition: %s", slashpath.Base(k))
+			}
+			delete(opts.Swagger().Definitions, slashpath.Base(k))
+		}
+		opts.Spec.reload() // re-analyze
+	}
+
+	// TODO: simplify known schema patterns to flat objects with properties
+	// examples:
+	//  - lift simple allOf object,
+	//  - empty allOf with validation only or extensions only
+	//  - rework allOf arrays
+	//  - rework allOf additionalProperties
+
+	if opts.Verbose {
+		// issue notifications
+		croak(&opts)
+	}
 	return nil
 }
 
+// isAnalyzedAsComplex determines if an analyzed schema is eligible to flattening (i.e. it is "complex").
+//
+// Complex means the schema is any of:
+//  - a simple type (primitive)
+//  - an array of something (items are possibly complex ; if this is the case, items will generate a definition)
+//  - a map of something (additionalProperties are possibly complex ; if this is the case, additionalProperties will generate a definition)
+func isAnalyzedAsComplex(asch *AnalyzedSchema) bool {
+	if !asch.IsSimpleSchema && !asch.IsArray && !asch.IsMap {
+		return true
+	}
+	return false
+}
+
+// nameInlinedSchemas replaces every complex inline construct by a named definition.
 func nameInlinedSchemas(opts *FlattenOpts) error {
-	namer := &inlineSchemaNamer{Spec: opts.Swagger(), Operations: opRefsByRef(gatherOperations(opts.Spec, nil))}
+	debugLog("nameInlinedSchemas")
+	namer := &inlineSchemaNamer{
+		Spec:           opts.Swagger(),
+		Operations:     opRefsByRef(gatherOperations(opts.Spec, nil)),
+		flattenContext: opts.flattenContext,
+		opts:           opts,
+	}
 	depthFirst := sortDepthFirst(opts.Spec.allSchemas)
 	for _, key := range depthFirst {
 		sch := opts.Spec.allSchemas[key]
 		if sch.Schema != nil && sch.Schema.Ref.String() == "" && !sch.TopLevel { // inline schema
 			asch, err := Schema(SchemaOpts{Schema: sch.Schema, Root: opts.Swagger(), BasePath: opts.BasePath})
 			if err != nil {
-				return fmt.Errorf("schema analysis [%s]: %v", sch.Ref.String(), err)
+				return fmt.Errorf("schema analysis [%s]: %v", key, err)
 			}
 
-			if !asch.IsSimpleSchema && !asch.IsArray { // complex schemas get moved
+			if isAnalyzedAsComplex(asch) { // move complex schemas to definitions
 				if err := namer.Name(key, sch.Schema, asch); err != nil {
 					return err
 				}
@@ -112,7 +251,7 @@ func nameInlinedSchemas(opts *FlattenOpts) error {
 	return nil
 }
 
-var depthGroupOrder = []string{"sharedOpParam", "opParam", "codeResponse", "defaultResponse", "definition"}
+var depthGroupOrder = []string{"sharedParam", "sharedResponse", "sharedOpParam", "opParam", "codeResponse", "defaultResponse", "definition"}
 
 func sortDepthFirst(data map[string]SchemaRef) (sorted []string) {
 	// group by category (shared params, op param, statuscode response, default response, definitions)
@@ -137,6 +276,12 @@ func sortDepthFirst(data map[string]SchemaRef) (sorted []string) {
 		if split.IsDefinition() {
 			pk = "definition"
 		}
+		if split.IsSharedParam() {
+			pk = "sharedParam"
+		}
+		if split.IsSharedResponse() {
+			pk = "sharedResponse"
+		}
 		grouped[pk] = append(grouped[pk], key{len(split), k})
 	}
 
@@ -147,7 +292,6 @@ func sortDepthFirst(data map[string]SchemaRef) (sorted []string) {
 			sorted = append(sorted, v.Key)
 		}
 	}
-
 	return
 }
 
@@ -164,8 +308,10 @@ func (k keys) Less(i, j int) bool {
 }
 
 type inlineSchemaNamer struct {
-	Spec       *swspec.Swagger
-	Operations map[string]opRef
+	Spec           *swspec.Swagger
+	Operations     map[string]opRef
+	flattenContext *context
+	opts           *FlattenOpts
 }
 
 func opRefsByRef(oprefs map[string]opRef) map[string]opRef {
@@ -177,15 +323,13 @@ func opRefsByRef(oprefs map[string]opRef) map[string]opRef {
 }
 
 func (isn *inlineSchemaNamer) Name(key string, schema *swspec.Schema, aschema *AnalyzedSchema) error {
-	if swspec.Debug {
-		log.Printf("naming inlined schema at %s", key)
-	}
+	debugLog("naming inlined schema at %s", key)
 
 	parts := keyParts(key)
 	for _, name := range namesFromKey(parts, aschema, isn.Operations) {
 		if name != "" {
 			// create unique name
-			newName := uniqifyName(isn.Spec.Definitions, swag.ToJSONName(name))
+			newName, isOAIGen := uniqifyName(isn.Spec.Definitions, swag.ToJSONName(name))
 
 			// clone schema
 			sch, err := cloneSchema(schema)
@@ -194,19 +338,57 @@ func (isn *inlineSchemaNamer) Name(key string, schema *swspec.Schema, aschema *A
 			}
 
 			// replace values on schema
-			if err := rewriteSchemaToRef(isn.Spec, key, swspec.MustCreateRef("#/definitions/"+newName)); err != nil {
+			if err := rewriteSchemaToRef(isn.Spec, key, swspec.MustCreateRef(slashpath.Join(definitionsPath, newName))); err != nil {
 				return fmt.Errorf("name inlined schema: %v", err)
 			}
 
+			// rewrite any dependent $ref pointing to this place,
+			// when not already pointing to a top-level definition.
+			// NOTE: this is important if such referers use arbitrary JSON pointers.
+			an := New(isn.Spec)
+			for k, v := range an.references.allRefs {
+				r, _, erd := deepestRef(isn.opts, v)
+				if erd != nil {
+					return erd
+				}
+				if (r.String() == key || r.String() == slashpath.Join(definitionsPath, newName)) && slashpath.Dir(v.String()) != definitionsPath {
+					debugLog("found a $ref to a rewritten schema: %s points to %s", k, v.String())
+					// rewrite $ref to the new target
+					if err := updateRef(isn.Spec, k, swspec.MustCreateRef(slashpath.Join(definitionsPath, newName))); err != nil {
+						return err
+					}
+				}
+			}
+
+			// NOTE: this extension is currently not used by go-swagger (provided for information only)
 			sch.AddExtension("x-go-gen-location", genLocation(parts))
-			// fmt.Printf("{\n  %q,\n  \"\",\n  spec.MustCreateRef(%q),\n  \"\",\n},\n", key, "#/definitions/"+newName)
 			// save cloned schema to definitions
 			saveSchema(isn.Spec, newName, sch)
+
+			// keep track of created refs
+			if isn.flattenContext != nil {
+				debugLog("track created ref: key=%s, newName=%s, isOAIGen=%t", key, newName, isOAIGen)
+				resolved := false
+				if _, ok := isn.flattenContext.newRefs[key]; ok {
+					resolved = isn.flattenContext.newRefs[key].resolved
+				}
+				isn.flattenContext.newRefs[key] = &newRef{
+					key:      key,
+					newName:  newName,
+					path:     slashpath.Join(definitionsPath, newName),
+					isOAIGen: isOAIGen,
+					resolved: resolved,
+					schema:   sch,
+				}
+			}
 		}
 	}
 	return nil
 }
 
+// genLocation indicates from which section of the specification (models or operations) a definition has been created.
+// This is reflected in the output spec with a "x-go-gen-location" extension. At the moment, this is is provided
+// for information only.
 func genLocation(parts splitKey) string {
 	if parts.IsOperation() {
 		return "operations"
@@ -217,12 +399,14 @@ func genLocation(parts splitKey) string {
 	return ""
 }
 
-func uniqifyName(definitions swspec.Definitions, name string) string {
+func uniqifyName(definitions swspec.Definitions, name string) (string, bool) {
+	isOAIGen := false
 	if name == "" {
 		name = "oaiGen"
+		isOAIGen = true
 	}
 	if len(definitions) == 0 {
-		return name
+		return name, isOAIGen
 	}
 
 	unq := true
@@ -234,10 +418,11 @@ func uniqifyName(definitions swspec.Definitions, name string) string {
 	}
 
 	if unq {
-		return name
+		return name, isOAIGen
 	}
 
 	name += "OAIGen"
+	isOAIGen = true
 	var idx int
 	unique := name
 	_, known := definitions[unique]
@@ -246,7 +431,7 @@ func uniqifyName(definitions swspec.Definitions, name string) string {
 		unique = fmt.Sprintf("%s%d", name, idx)
 		_, known = definitions[unique]
 	}
-	return unique
+	return unique, isOAIGen
 }
 
 func namesFromKey(parts splitKey, aschema *AnalyzedSchema, operations map[string]opRef) []string {
@@ -304,10 +489,11 @@ func namesFromKey(parts splitKey, aschema *AnalyzedSchema, operations map[string
 }
 
 const (
-	pths        = "paths"
-	responses   = "responses"
-	parameters  = "parameters"
-	definitions = "definitions"
+	paths           = "paths"
+	responses       = "responses"
+	parameters      = "parameters"
+	definitions     = "definitions"
+	definitionsPath = "#/definitions"
 )
 
 var ignoredKeys map[string]struct{}
@@ -371,23 +557,31 @@ func (s splitKey) BuildName(segments []string, startIndex int, aschema *Analyzed
 }
 
 func (s splitKey) IsOperation() bool {
-	return len(s) > 1 && s[0] == pths
+	return len(s) > 1 && s[0] == paths
 }
 
 func (s splitKey) IsSharedOperationParam() bool {
-	return len(s) > 2 && s[0] == pths && s[2] == parameters
+	return len(s) > 2 && s[0] == paths && s[2] == parameters
+}
+
+func (s splitKey) IsSharedParam() bool {
+	return len(s) > 1 && s[0] == parameters
 }
 
 func (s splitKey) IsOperationParam() bool {
-	return len(s) > 3 && s[0] == pths && s[3] == parameters
+	return len(s) > 3 && s[0] == paths && s[3] == parameters
 }
 
 func (s splitKey) IsOperationResponse() bool {
-	return len(s) > 3 && s[0] == pths && s[3] == responses
+	return len(s) > 3 && s[0] == paths && s[3] == responses
+}
+
+func (s splitKey) IsSharedResponse() bool {
+	return len(s) > 1 && s[0] == responses
 }
 
 func (s splitKey) IsDefaultResponse() bool {
-	return len(s) > 4 && s[0] == pths && s[3] == responses && s[4] == "default"
+	return len(s) > 4 && s[0] == paths && s[3] == responses && s[4] == "default"
 }
 
 func (s splitKey) IsStatusCodeResponse() bool {
@@ -395,7 +589,7 @@ func (s splitKey) IsStatusCodeResponse() bool {
 		_, err := strconv.Atoi(s[4])
 		return err == nil
 	}
-	return len(s) > 4 && s[0] == pths && s[3] == responses && isInt()
+	return len(s) > 4 && s[0] == paths && s[3] == responses && isInt()
 }
 
 func (s splitKey) ResponseName() string {
@@ -431,14 +625,14 @@ func (s splitKey) PathItemRef() swspec.Ref {
 	if _, validMethod := validMethods[strings.ToUpper(method)]; !validMethod && !strings.HasPrefix(method, "x-") {
 		return swspec.Ref{}
 	}
-	return swspec.MustCreateRef("#" + path.Join("/", pths, jsonpointer.Escape(pth), strings.ToUpper(method)))
+	return swspec.MustCreateRef("#" + slashpath.Join("/", paths, jsonpointer.Escape(pth), strings.ToUpper(method)))
 }
 
 func (s splitKey) PathRef() swspec.Ref {
 	if !s.IsOperation() {
 		return swspec.Ref{}
 	}
-	return swspec.MustCreateRef("#" + path.Join("/", pths, jsonpointer.Escape(s[1])))
+	return swspec.MustCreateRef("#" + slashpath.Join("/", paths, jsonpointer.Escape(s[1])))
 }
 
 func keyParts(key string) splitKey {
@@ -452,16 +646,8 @@ func keyParts(key string) splitKey {
 }
 
 func rewriteSchemaToRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
-	if swspec.Debug {
-		log.Printf("rewriting schema to ref for %s with %s", key, ref.String())
-	}
-	pth := key[1:]
-	ptr, err := jsonpointer.New(pth)
-	if err != nil {
-		return err
-	}
-
-	value, _, err := ptr.Get(spec)
+	debugLog("rewriting schema to ref for %s with %s", key, ref.String())
+	_, value, err := getPointerFromKey(spec, key)
 	if err != nil {
 		return err
 	}
@@ -469,16 +655,19 @@ func rewriteSchemaToRef(spec *swspec.Swagger, key string, ref swspec.Ref) error 
 	switch refable := value.(type) {
 	case *swspec.Schema:
 		return rewriteParentRef(spec, key, ref)
-	case *swspec.SchemaOrBool:
-		if refable.Schema != nil {
-			refable.Schema = &swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
-		}
+
+	case swspec.Schema:
+		return rewriteParentRef(spec, key, ref)
+
 	case *swspec.SchemaOrArray:
 		if refable.Schema != nil {
 			refable.Schema = &swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
 		}
-	case swspec.Schema:
-		return rewriteParentRef(spec, key, ref)
+
+	case *swspec.SchemaOrBool:
+		if refable.Schema != nil {
+			refable.Schema = &swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
+		}
 	default:
 		return fmt.Errorf("no schema with ref found at %s for %T", key, value)
 	}
@@ -487,24 +676,12 @@ func rewriteSchemaToRef(spec *swspec.Swagger, key string, ref swspec.Ref) error 
 }
 
 func rewriteParentRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
-	pth := key[1:]
-	parent, entry := path.Dir(pth), path.Base(pth)
-	if swspec.Debug {
-		log.Println("getting schema holder at:", parent)
-	}
-
-	pptr, err := jsonpointer.New(parent)
+	parent, entry, pvalue, err := getParentFromKey(spec, key)
 	if err != nil {
 		return err
 	}
-	pvalue, _, err := pptr.Get(spec)
-	if err != nil {
-		return fmt.Errorf("can't get parent for %s: %v", parent, err)
-	}
-	if swspec.Debug {
-		log.Printf("rewriting holder for %T", pvalue)
-	}
 
+	debugLog("rewriting holder for %T", pvalue)
 	switch container := pvalue.(type) {
 	case swspec.Response:
 		if err := rewriteParentRef(spec, "#"+parent, ref); err != nil {
@@ -517,7 +694,7 @@ func rewriteParentRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
 	case *swspec.Responses:
 		statusCode, err := strconv.Atoi(entry)
 		if err != nil {
-			return fmt.Errorf("%s not a number: %v", pth, err)
+			return fmt.Errorf("%s not a number: %v", key[1:], err)
 		}
 		resp := container.StatusCodeResponses[statusCode]
 		resp.Schema = &swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
@@ -541,7 +718,7 @@ func rewriteParentRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
 	case []swspec.Parameter:
 		idx, err := strconv.Atoi(entry)
 		if err != nil {
-			return fmt.Errorf("%s not a number: %v", pth, err)
+			return fmt.Errorf("%s not a number: %v", key[1:], err)
 		}
 		param := container[idx]
 		param.Schema = &swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
@@ -556,16 +733,20 @@ func rewriteParentRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
 	case []swspec.Schema:
 		idx, err := strconv.Atoi(entry)
 		if err != nil {
-			return fmt.Errorf("%s not a number: %v", pth, err)
+			return fmt.Errorf("%s not a number: %v", key[1:], err)
 		}
 		container[idx] = swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
 
 	case *swspec.SchemaOrArray:
+		// NOTE: this is necessarily an array - otherwise, the parent would be *Schema
 		idx, err := strconv.Atoi(entry)
 		if err != nil {
-			return fmt.Errorf("%s not a number: %v", pth, err)
+			return fmt.Errorf("%s not a number: %v", key[1:], err)
 		}
 		container.Schemas[idx] = swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
+
+	// NOTE: can't have case *swspec.SchemaOrBool = parent in this case is *Schema
+
 	default:
 		return fmt.Errorf("unhandled parent schema rewrite %s (%T)", key, pvalue)
 	}
@@ -582,40 +763,53 @@ func cloneSchema(schema *swspec.Schema) (*swspec.Schema, error) {
 
 func importExternalReferences(opts *FlattenOpts) error {
 	groupedRefs := reverseIndexForSchemaRefs(opts)
+	sortedRefStr := make([]string, 0, len(groupedRefs))
 
-	for refStr, entry := range groupedRefs {
+	// sort $ref resolution to ensure deterministic name conflict resolution
+	for refStr := range groupedRefs {
+		sortedRefStr = append(sortedRefStr, refStr)
+	}
+	sort.Strings(sortedRefStr)
+
+	for _, refStr := range sortedRefStr {
+		entry := groupedRefs[refStr]
 		if !entry.Ref.HasFragmentOnly {
-			if swspec.Debug {
-				log.Printf("importing external schema for [%s] from %s", strings.Join(entry.Keys, ", "), refStr)
-			}
+			debugLog("importing external schema for [%s] from %s", strings.Join(entry.Keys, ", "), refStr)
 			// resolve to actual schema
 			sch := new(swspec.Schema)
 			sch.Ref = entry.Ref
-			expandOpts := swspec.ExpandOptions{
-				RelativeBase: opts.BasePath,
-				SkipSchemas:  false,
-			}
-			err := swspec.ExpandSchemaWithBasePath(sch, nil, &expandOpts)
-			if err != nil {
+			if err := swspec.ExpandSchemaWithBasePath(sch, nil, opts.ExpandOpts(false)); err != nil {
 				return err
 			}
 			if sch == nil {
 				return fmt.Errorf("no schema found at %s for [%s]", refStr, strings.Join(entry.Keys, ", "))
 			}
-			if swspec.Debug {
-				log.Printf("importing external schema for [%s] from %s", strings.Join(entry.Keys, ", "), refStr)
-			}
+			debugLog("importing external schema for [%s] from %s", strings.Join(entry.Keys, ", "), refStr)
 
-			// generate a unique name
-			newName := uniqifyName(opts.Swagger().Definitions, nameFromRef(entry.Ref))
-			if swspec.Debug {
-				log.Printf("new name for [%s]: %s", strings.Join(entry.Keys, ", "), newName)
-			}
+			// generate a unique name - isOAIGen means that a naming conflict was resolved by changing the name
+			newName, isOAIGen := uniqifyName(opts.Swagger().Definitions, nameFromRef(entry.Ref))
+			debugLog("new name for [%s]: %s - with name conflict:%t", strings.Join(entry.Keys, ", "), newName, isOAIGen)
 
 			// rewrite the external refs to local ones
 			for _, key := range entry.Keys {
-				if err := updateRef(opts.Swagger(), key, swspec.MustCreateRef("#"+path.Join("/definitions", newName))); err != nil {
+				if err := updateRef(opts.Swagger(), key, swspec.MustCreateRef(slashpath.Join(definitionsPath, newName))); err != nil {
 					return err
+				}
+
+				// keep track of created refs
+				if opts.flattenContext != nil {
+					resolved := false
+					if _, ok := opts.flattenContext.newRefs[key]; ok {
+						resolved = opts.flattenContext.newRefs[key].resolved
+					}
+					opts.flattenContext.newRefs[key] = &newRef{
+						key:      key,
+						newName:  newName,
+						path:     slashpath.Join(definitionsPath, newName),
+						isOAIGen: isOAIGen,
+						resolved: resolved,
+						schema:   sch,
+					}
 				}
 			}
 
@@ -650,12 +844,12 @@ func reverseIndexForSchemaRefs(opts *FlattenOpts) map[string]refRevIdx {
 func nameFromRef(ref swspec.Ref) string {
 	u := ref.GetURL()
 	if u.Fragment != "" {
-		return swag.ToJSONName(path.Base(u.Fragment))
+		return swag.ToJSONName(slashpath.Base(u.Fragment))
 	}
 	if u.Path != "" {
-		bn := path.Base(u.Path)
+		bn := slashpath.Base(u.Path)
 		if bn != "" && bn != "/" {
-			ext := path.Ext(bn)
+			ext := slashpath.Ext(bn)
 			if ext != "" {
 				return swag.ToJSONName(bn[:len(bn)-len(ext)])
 			}
@@ -675,17 +869,43 @@ func saveSchema(spec *swspec.Swagger, name string, schema *swspec.Schema) {
 	spec.Definitions[name] = *schema
 }
 
-func updateRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
-	if swspec.Debug {
-		log.Printf("updating ref for %s with %s", key, ref.String())
-	}
+// getPointerFromKey retrieves the content of the JSON pointer "key"
+func getPointerFromKey(spec *swspec.Swagger, key string) (string, interface{}, error) {
 	pth := key[1:]
 	ptr, err := jsonpointer.New(pth)
 	if err != nil {
-		return err
+		return "", nil, err
 	}
 
 	value, _, err := ptr.Get(spec)
+	if err != nil {
+		return "", nil, err
+	}
+	return pth, value, nil
+}
+
+// getParentFromKey retrieves the container of the JSON pointer "key"
+func getParentFromKey(spec *swspec.Swagger, key string) (string, string, interface{}, error) {
+	pth := key[1:]
+
+	parent, entry := slashpath.Dir(pth), slashpath.Base(pth)
+	debugLog("getting schema holder at: %s, with entry: %s", parent, entry)
+
+	pptr, err := jsonpointer.New(parent)
+	if err != nil {
+		return "", "", nil, err
+	}
+	pvalue, _, err := pptr.Get(spec)
+	if err != nil {
+		return "", "", nil, fmt.Errorf("can't get parent for %s: %v", parent, err)
+	}
+	return parent, entry, pvalue, nil
+}
+
+// updateRef replaces a ref by another one
+func updateRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
+	debugLog("updating ref for %s with %s", key, ref.String())
+	pth, value, err := getPointerFromKey(spec, key)
 	if err != nil {
 		return err
 	}
@@ -693,29 +913,20 @@ func updateRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
 	switch refable := value.(type) {
 	case *swspec.Schema:
 		refable.Ref = ref
-	case *swspec.SchemaOrBool:
-		if refable.Schema != nil {
-			refable.Schema.Ref = ref
-		}
 	case *swspec.SchemaOrArray:
 		if refable.Schema != nil {
 			refable.Schema.Ref = ref
 		}
-	case swspec.Schema:
-		parent, entry := path.Dir(pth), path.Base(pth)
-		if swspec.Debug {
-			log.Println("getting schema holder at:", parent)
+	case *swspec.SchemaOrBool:
+		if refable.Schema != nil {
+			refable.Schema.Ref = ref
 		}
-
-		pptr, err := jsonpointer.New(parent)
-		if err != nil {
+	case swspec.Schema:
+		debugLog("rewriting holder for %T", refable)
+		_, entry, pvalue, erp := getParentFromKey(spec, key)
+		if erp != nil {
 			return err
 		}
-		pvalue, _, err := pptr.Get(spec)
-		if err != nil {
-			return fmt.Errorf("can't get parent for %s: %v", parent, err)
-		}
-
 		switch container := pvalue.(type) {
 		case swspec.Definitions:
 			container[entry] = swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
@@ -731,14 +942,74 @@ func updateRef(spec *swspec.Swagger, key string, ref swspec.Ref) error {
 			container[idx] = swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
 
 		case *swspec.SchemaOrArray:
+			// NOTE: this is necessarily an array - otherwise, the parent would be *Schema
 			idx, err := strconv.Atoi(entry)
 			if err != nil {
 				return fmt.Errorf("%s not a number: %v", pth, err)
 			}
 			container.Schemas[idx] = swspec.Schema{SchemaProps: swspec.SchemaProps{Ref: ref}}
 
+		// NOTE: can't have case *swspec.SchemaOrBool = parent in this case is *Schema
+
+		default:
+			return fmt.Errorf("unhandled container type at %s: %T", key, value)
 		}
 
+	default:
+		return fmt.Errorf("no schema with ref found at %s for %T", key, value)
+	}
+
+	return nil
+}
+
+// updateRefWithSchema replaces a ref with a schema (i.e. re-inline schema)
+func updateRefWithSchema(spec *swspec.Swagger, key string, sch *swspec.Schema) error {
+	debugLog("updating ref for %s with schema", key)
+	pth, value, err := getPointerFromKey(spec, key)
+	if err != nil {
+		return err
+	}
+
+	switch refable := value.(type) {
+	case *swspec.Schema:
+		*refable = *sch
+	case swspec.Schema:
+		_, entry, pvalue, erp := getParentFromKey(spec, key)
+		if erp != nil {
+			return err
+		}
+		switch container := pvalue.(type) {
+		case swspec.Definitions:
+			container[entry] = *sch
+
+		case map[string]swspec.Schema:
+			container[entry] = *sch
+
+		case []swspec.Schema:
+			idx, err := strconv.Atoi(entry)
+			if err != nil {
+				return fmt.Errorf("%s not a number: %v", pth, err)
+			}
+			container[idx] = *sch
+
+		case *swspec.SchemaOrArray:
+			// NOTE: this is necessarily an array - otherwise, the parent would be *Schema
+			idx, err := strconv.Atoi(entry)
+			if err != nil {
+				return fmt.Errorf("%s not a number: %v", pth, err)
+			}
+			container.Schemas[idx] = *sch
+
+		// NOTE: can't have case *swspec.SchemaOrBool = parent in this case is *Schema
+
+		default:
+			return fmt.Errorf("unhandled type for parent of [%s]: %T", key, value)
+		}
+	case *swspec.SchemaOrArray:
+		*refable.Schema = *sch
+	// NOTE: can't have case *swspec.SchemaOrBool = parent in this case is *Schema
+	case *swspec.SchemaOrBool:
+		*refable.Schema = *sch
 	default:
 		return fmt.Errorf("no schema with ref found at %s for %T", key, value)
 	}
@@ -782,7 +1053,7 @@ func gatherOperations(specDoc *Spec, operationIDs []string) map[string]opRef {
 				Path:   pth,
 				ID:     vv.ID,
 				Op:     &vv,
-				Ref:    swspec.MustCreateRef("#" + path.Join("/paths", jsonpointer.Escape(pth), method)),
+				Ref:    swspec.MustCreateRef("#" + slashpath.Join("/paths", jsonpointer.Escape(pth), method)),
 			})
 		}
 	}
@@ -806,6 +1077,316 @@ func gatherOperations(specDoc *Spec, operationIDs []string) map[string]opRef {
 			operations[nm] = opr
 		}
 	}
-
 	return operations
+}
+
+// stripPointersAndOAIGen removes anonymous JSON pointers from spec and chain with name conflicts handler.
+// This loops until the spec has no such pointer and all name conflicts have been reduced as much as possible.
+func stripPointersAndOAIGen(opts *FlattenOpts) error {
+	// name all JSON pointers to anonymous documents
+	if err := namePointers(opts); err != nil {
+		return err
+	}
+
+	// remove unnecessary OAIGen ref (created when flattening external refs creates name conflicts)
+	hasIntroducedPointerOrInline, ers := stripOAIGen(opts)
+	if ers != nil {
+		return ers
+	}
+
+	// iterate as pointer or OAIGen resolution may introduce inline schemas or pointers
+	for hasIntroducedPointerOrInline {
+		if !opts.Minimal {
+			if err := nameInlinedSchemas(opts); err != nil {
+				return err
+			}
+		}
+
+		if err := namePointers(opts); err != nil {
+			return err
+		}
+
+		// restrip
+		if hasIntroducedPointerOrInline, ers = stripOAIGen(opts); ers != nil {
+			return ers
+		}
+	}
+	return nil
+}
+
+// stripOAIGen strips the spec from unnecessary OAIGen constructs, initially created to dedupe flattened definitions.
+// A dedupe is deemed unnecessary whenever:
+//  - the only conflict is with its (single) parent: OAIGen is merged into its parent
+//  - there is a conflict with multiple parents: merge OAIGen in first parent, the rewrite other parents to point to the first parent
+//
+// This function returns a true bool whenever it re-inlined a complex schema, so the caller may chose to iterate flattening again.
+//
+// NOTE: the OAIGen definition cannot be itself a $ref.
+func stripOAIGen(opts *FlattenOpts) (bool, error) {
+	debugLog("stripOAIGen")
+	replacedWithComplex := false
+	for k, v := range opts.Spec.references.allRefs {
+		// figure out referers of OAIGen definitions
+		for _, r := range opts.flattenContext.newRefs {
+			if r.isOAIGen && !r.resolved && r.path == v.String() { // bail on already resolved entries (avoid looping)
+				r.parents = append(r.parents, k)
+			}
+		}
+	}
+
+	for _, r := range opts.flattenContext.newRefs {
+		if r.isOAIGen && len(r.parents) >= 1 && r.schema.Ref.String() == "" {
+			pr := r.parents
+			sort.Strings(pr)
+			// rewrite first parent schema in lexicographical order
+			debugLog("rewrite first parent %s with schema", pr[0])
+			if err := updateRefWithSchema(opts.Swagger(), pr[0], r.schema); err != nil {
+				return false, err
+			}
+			// rewrite other parents to point to first parent
+			if len(pr) > 1 {
+				for _, p := range pr[1:] {
+					replacingRef := swspec.MustCreateRef(pr[0])
+					// Set complex when replacing ref is an anonymous jsonpointer: further processing may be required
+					replacedWithComplex = replacedWithComplex || slashpath.Dir(replacingRef.String()) != definitionsPath
+					debugLog("rewrite parent with ref: %s", replacingRef.String())
+					// NOTE: it is possible at this stage to introduce json pointers (to non-definitions places). Those are stripped later on.
+					if err := updateRef(opts.Swagger(), p, replacingRef); err != nil {
+						return false, err
+					}
+				}
+			}
+			// remove OAIGen definition
+			debugLog("removing definition %s", slashpath.Base(r.path))
+			delete(opts.Swagger().Definitions, slashpath.Base(r.path))
+			// mark naming conflict as resolved
+			opts.flattenContext.newRefs[r.key].isOAIGen = false
+			opts.flattenContext.newRefs[r.key].resolved = true
+
+			// determine if the previous substitution did inline a complex schema
+			if r.schema != nil && r.schema.Ref.String() == "" { // inline schema
+				asch, err := Schema(SchemaOpts{Schema: r.schema, Root: opts.Swagger(), BasePath: opts.BasePath})
+				if err != nil {
+					return false, err
+				}
+				debugLog("re-inline schema: parent: %s, %t", pr[0], isAnalyzedAsComplex(asch))
+				replacedWithComplex = replacedWithComplex || !(slashpath.Dir(pr[0]) == definitionsPath) && isAnalyzedAsComplex(asch)
+			}
+		}
+	}
+	opts.Spec.reload() // re-analyze
+	return replacedWithComplex, nil
+}
+
+// croaks logs notifications and warnings about valid, but possibly unwanted constructs resulting from flattening a spec
+func croak(opts *FlattenOpts) {
+	reported := make(map[string]bool, len(opts.flattenContext.newRefs))
+	for _, v := range opts.Spec.references.allRefs {
+		// warns about duplicate handling
+		for _, r := range opts.flattenContext.newRefs {
+			if r.isOAIGen && r.path == v.String() {
+				reported[r.newName] = true
+			}
+		}
+	}
+	for k := range reported {
+		log.Printf("warning: duplicate flattened definition name resolved as %s", k)
+	}
+}
+
+// namePointers replaces all JSON pointers to anonymous documents by a $ref to a new named definitions.
+//
+// This is carried on depth-first. Pointers to $refs which are top level definitions are replaced by the $ref itself.
+// Pointers to simple types are expanded, unless they express commonality (i.e. several such $ref are used).
+func namePointers(opts *FlattenOpts) error {
+	debugLog("name pointers")
+	refsToReplace := make(map[string]SchemaRef, len(opts.Spec.references.schemas))
+	//for k, ref := range opts.Spec.references.schemas {
+	for k, ref := range opts.Spec.references.allRefs {
+		if slashpath.Dir(ref.String()) == definitionsPath {
+			// this a ref to a top-level definition: ok
+			continue
+		}
+		replacingRef, sch, erd := deepestRef(opts, ref)
+		if erd != nil {
+			return erd
+		}
+		debugLog("planning pointer to replace at %s: %s, resolved to: %s", k, ref.String(), replacingRef.String())
+		refsToReplace[k] = SchemaRef{
+			Name:     k,            // caller
+			Ref:      replacingRef, // callee
+			Schema:   sch,
+			TopLevel: slashpath.Dir(replacingRef.String()) == definitionsPath,
+		}
+	}
+	depthFirst := sortDepthFirst(refsToReplace)
+	namer := &inlineSchemaNamer{
+		Spec:           opts.Swagger(),
+		Operations:     opRefsByRef(gatherOperations(opts.Spec, nil)),
+		flattenContext: opts.flattenContext,
+		opts:           opts,
+	}
+
+	for _, key := range depthFirst {
+		v := refsToReplace[key]
+		// update current replacement, which may have been updated by previous changes of deeper elements
+		replacingRef, sch, erd := deepestRef(opts, v.Ref)
+		if erd != nil {
+			return erd
+		}
+		v.Ref = replacingRef
+		v.Schema = sch
+		v.TopLevel = slashpath.Dir(replacingRef.String()) == definitionsPath
+		debugLog("replacing pointer at %s: resolved to: %s", key, v.Ref.String())
+
+		if v.TopLevel {
+			debugLog("replace pointer %s by canonical definition: %s", key, v.Ref.String())
+			// if the schema is a $ref to a top level definition, just rewrite the pointer to this $ref
+			if err := updateRef(opts.Swagger(), key, v.Ref); err != nil {
+				return err
+			}
+		} else {
+			// this is a JSON pointer to an anonymous document (internal or external):
+			// create a definition for this schema when:
+			// - it is a complex schema
+			// - or it is pointed by more than one $ref (i.e. expresses commonality)
+			// otherwise, expand the pointer (single reference to a simple type)
+			//
+			// The named definition for this follows the target's key, not the caller's
+			debugLog("namePointers at %s for %s", key, v.Ref.String())
+
+			// qualify the expanded schema
+			asch, ers := Schema(SchemaOpts{Schema: v.Schema, Root: opts.Swagger(), BasePath: opts.BasePath})
+			if ers != nil {
+				return fmt.Errorf("schema analysis [%s]: %v", key, ers)
+			}
+			callers := make([]string, 0, 64)
+
+			debugLog("looking for callers")
+			an := New(opts.Swagger())
+			for k, w := range an.references.allRefs {
+				r, _, erd := deepestRef(opts, w)
+				if erd != nil {
+					return erd
+				}
+				if r.String() == v.Ref.String() {
+					callers = append(callers, k)
+				}
+			}
+			debugLog("callers for %s: %d", v.Ref.String(), len(callers))
+			if len(callers) == 0 {
+				// has already been updated and resolved
+				continue
+			}
+
+			debugLog("number of callers for %s: %d", v.Ref.String(), len(callers))
+			if !asch.IsSimpleSchema || len(callers) > 1 {
+				debugLog("replace JSON pointer at [%s] by definition: %s", key, v.Ref.String())
+				if err := namer.Name(v.Ref.String(), v.Schema, asch); err != nil {
+					return err
+				}
+				for _, caller := range callers {
+					if caller != key {
+						// move $ref for next to resolve
+						debugLog("identified caller of %s at [%s]", v.Ref.String(), caller)
+						c := refsToReplace[caller]
+						c.Ref = v.Ref
+						refsToReplace[caller] = c
+					}
+				}
+			} else {
+				debugLog("expand JSON pointer")
+				if err := updateRefWithSchema(opts.Swagger(), key, v.Schema); err != nil {
+					return err
+				}
+				// NOTE: there is no other caller to update
+			}
+		}
+	}
+	opts.Spec.reload() // re-analyze
+	return nil
+}
+
+// deepestRef finds the first definition ref, from a cascade of nested refs which are not definitions.
+//  - if no definition is found, returns the deepest ref.
+//  - pointers to external files are expanded
+//
+// NOTE: all external $ref's are assumed to be already expanded at this stage.
+func deepestRef(opts *FlattenOpts, ref swspec.Ref) (swspec.Ref, *swspec.Schema, error) {
+	debugLog("deepestRef for %s", ref.String())
+	if !ref.HasFragmentOnly {
+		// does nothing on external $refs
+		return ref, nil, nil
+	}
+	currentRef := ref
+	visited := make(map[string]bool, 64)
+DOWNREF:
+	for currentRef.String() != "" {
+		if slashpath.Dir(currentRef.String()) == definitionsPath {
+			// this is a top-level definition: stop here and return this ref
+			return currentRef, nil, nil
+		}
+		if _, beenThere := visited[currentRef.String()]; beenThere {
+			return swspec.Ref{}, nil, fmt.Errorf("Cannot resolve cyclic chain of pointers under %s", currentRef.String())
+		}
+		visited[currentRef.String()] = true
+		value, _, err := currentRef.GetPointer().Get(opts.Swagger())
+		if err != nil {
+			return swspec.Ref{}, nil, err
+		}
+		switch refable := value.(type) {
+		case *swspec.Schema:
+			if refable.Ref.String() == "" {
+				break DOWNREF
+			}
+			currentRef = refable.Ref
+
+		case swspec.Schema:
+			if refable.Ref.String() == "" {
+				break DOWNREF
+			}
+			currentRef = refable.Ref
+
+		case *swspec.SchemaOrArray:
+			if refable.Schema == nil || refable.Schema != nil && refable.Schema.Ref.String() == "" {
+				break DOWNREF
+			}
+			currentRef = refable.Schema.Ref
+
+		case *swspec.SchemaOrBool:
+			if refable.Schema == nil || refable.Schema != nil && refable.Schema.Ref.String() == "" {
+				break DOWNREF
+			}
+			currentRef = refable.Schema.Ref
+
+		default:
+			return swspec.Ref{}, nil, fmt.Errorf("unhandled type to resolve JSON pointer: %T", value)
+		}
+	}
+	// assess what schema we're ending with
+	sch, erv := swspec.ResolveRefWithBase(opts.Swagger(), &currentRef, opts.ExpandOpts(false))
+	if erv != nil {
+		return swspec.Ref{}, nil, erv
+	}
+	if sch == nil {
+		return swspec.Ref{}, nil, fmt.Errorf("no schema found at %s", currentRef.String())
+	}
+	return currentRef, sch, nil
+}
+
+// normalizeRef strips the current file from any $ref. This works around  issue go-openapi/spec#76: leading absolute file in $ref is stripped
+func normalizeRef(opts *FlattenOpts) error {
+	debugLog("normalizeRef")
+	opts.Spec.reload() // re-analyze
+	for k, w := range opts.Spec.references.allRefs {
+		if strings.HasPrefix(w.String(), opts.BasePath+definitionsPath) { // may be a mix of / and \, depending on OS
+			// strip base path from definition
+			debugLog("stripping absolute path for: %s", w.String())
+			if err := updateRef(opts.Swagger(), k, swspec.MustCreateRef(slashpath.Join(definitionsPath, slashpath.Base(w.String())))); err != nil {
+				return err
+			}
+		}
+	}
+	opts.Spec.reload() // re-analyze
+	return nil
 }

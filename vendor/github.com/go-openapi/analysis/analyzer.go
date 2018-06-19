@@ -44,6 +44,8 @@ func (r *referenceAnalysis) addItemsRef(key string, items *spec.Items, location 
 	r.items["#"+key] = items.Ref
 	r.addRef(key, items.Ref)
 	if location == "header" {
+		// NOTE: in swagger 2.0, headers and parameters (but not body param schemas) are simple schemas
+		// and $ref are not supported here. However it is possible to analyze this.
 		r.headerItems["#"+key] = items.Ref
 	} else {
 		r.parameterItems["#"+key] = items.Ref
@@ -137,8 +139,8 @@ func New(doc *spec.Swagger) *Spec {
 	return a
 }
 
-// Spec takes a swagger spec object and turns it into a registry
-// with a bunch of utility methods to act on the information in the spec
+// Spec is an analyzed specification object. It takes a swagger spec object and turns it into a registry
+// with a bunch of utility methods to act on the information in the spec.
 type Spec struct {
 	spec        *spec.Swagger
 	consumes    map[string]struct{}
@@ -233,6 +235,7 @@ func (s *Spec) initialize() {
 
 func (s *Spec) analyzeOperations(path string, pi *spec.PathItem) {
 	// TODO: resolve refs here?
+	// Currently, operations declared via pathItem $ref are known only after expansion
 	op := pi
 	if pi.Ref.String() != "" {
 		key := slashpath.Join("/paths", jsonpointer.Escape(path))
@@ -371,6 +374,8 @@ func (s *Spec) analyzeSchema(name string, schema spec.Schema, prefix string) {
 		s.analyzeSchema(k, v, slashpath.Join(refURI, "properties"))
 	}
 	for k, v := range schema.PatternProperties {
+		// NOTE: swagger 2.0 does not support PatternProperties.
+		// However it is possible to analyze this in a schema
 		s.analyzeSchema(k, v, slashpath.Join(refURI, "patternProperties"))
 	}
 	for i, v := range schema.AllOf {
@@ -380,18 +385,26 @@ func (s *Spec) analyzeSchema(name string, schema spec.Schema, prefix string) {
 		s.allOfs["#"+refURI] = schRef
 	}
 	for i, v := range schema.AnyOf {
+		// NOTE: swagger 2.0 does not support anyOf constructs.
+		// However it is possible to analyze this in a schema
 		s.analyzeSchema(strconv.Itoa(i), v, slashpath.Join(refURI, "anyOf"))
 	}
 	for i, v := range schema.OneOf {
+		// NOTE: swagger 2.0 does not support oneOf constructs.
+		// However it is possible to analyze this in a schema
 		s.analyzeSchema(strconv.Itoa(i), v, slashpath.Join(refURI, "oneOf"))
 	}
 	if schema.Not != nil {
+		// NOTE: swagger 2.0 does not support "not" constructs.
+		// However it is possible to analyze this in a schema
 		s.analyzeSchema("not", *schema.Not, refURI)
 	}
 	if schema.AdditionalProperties != nil && schema.AdditionalProperties.Schema != nil {
 		s.analyzeSchema("additionalProperties", *schema.AdditionalProperties.Schema, refURI)
 	}
 	if schema.AdditionalItems != nil && schema.AdditionalItems.Schema != nil {
+		// NOTE: swagger 2.0 does not support AdditionalItems.
+		// However it is possible to analyze this in a schema
 		s.analyzeSchema("additionalItems", *schema.AdditionalItems.Schema, refURI)
 	}
 	if schema.Items != nil {
@@ -520,6 +533,7 @@ func mapKeyFromParam(param *spec.Parameter) string {
 }
 
 func fieldNameFromParam(param *spec.Parameter) string {
+	// TODO: this should be x-go-name
 	if nm, ok := param.Extensions.GetString("go-name"); ok {
 		return nm
 	}
@@ -529,9 +543,12 @@ func fieldNameFromParam(param *spec.Parameter) string {
 // ErrorOnParamFunc is a callback function to be invoked
 // whenever an error is encountered while resolving references
 // on parameters.
+//
 // This function takes as input the spec.Parameter which triggered the
 // error and the error itself.
+//
 // If the callback function returns false, the calling function should bail.
+//
 // If it returns true, the calling function should continue evaluating parameters.
 // A nil ErrorOnParamFunc must be evaluated as equivalent to panic().
 type ErrorOnParamFunc func(spec.Parameter, error) bool
@@ -569,6 +586,7 @@ func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Para
 }
 
 // ParametersFor the specified operation id.
+//
 // Assumes parameters properly resolve references if any and that
 // such references actually resolve to a parameter object.
 // Otherwise, panics.
@@ -577,10 +595,12 @@ func (s *Spec) ParametersFor(operationID string) []spec.Parameter {
 }
 
 // SafeParametersFor the specified operation id.
+//
 // Does not assume parameters properly resolve references or that
 // such references actually resolve to a parameter object.
+//
 // Upon error, invoke a ErrorOnParamFunc callback with the erroneous
-// parameter. If the callback is set to nil, panics upon errors.
+// parameters. If the callback is set to nil, panics upon errors.
 func (s *Spec) SafeParametersFor(operationID string, callmeOnError ErrorOnParamFunc) []spec.Parameter {
 	gatherParams := func(pi *spec.PathItem, op *spec.Operation) []spec.Parameter {
 		bag := make(map[string]spec.Parameter)
@@ -621,6 +641,7 @@ func (s *Spec) SafeParametersFor(operationID string, callmeOnError ErrorOnParamF
 
 // ParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
 // apply for the method and path.
+//
 // Assumes parameters properly resolve references if any and that
 // such references actually resolve to a parameter object.
 // Otherwise, panics.
@@ -629,11 +650,13 @@ func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
 }
 
 // SafeParamsFor the specified method and path. Aggregates them with the defaults etc, so it's all the params that
-// apply for the method and path
+// apply for the method and path.
+//
 // Does not assume parameters properly resolve references or that
 // such references actually resolve to a parameter object.
+//
 // Upon error, invoke a ErrorOnParamFunc callback with the erroneous
-// parameter. If the callback is set to nil, panics upon errors.
+// parameters. If the callback is set to nil, panics upon errors.
 func (s *Spec) SafeParamsFor(method, path string, callmeOnError ErrorOnParamFunc) map[string]spec.Parameter {
 	res := make(map[string]spec.Parameter)
 	if pi, ok := s.spec.Paths.Paths[path]; ok {
@@ -793,7 +816,9 @@ func (s *Spec) AllPathItemReferences() (result []string) {
 	return
 }
 
-// AllItemsReferences returns the references for all the items
+// AllItemsReferences returns the references for all the items in simple schemas (parameters or headers).
+//
+// NOTE: since Swagger 2.0 forbids $ref in simple params, this should always yield an empty slice for a valid Swagger 2.0 spec.
 func (s *Spec) AllItemsReferences() (result []string) {
 	for _, v := range s.references.items {
 		result = append(result, v.String())
@@ -801,7 +826,7 @@ func (s *Spec) AllItemsReferences() (result []string) {
 	return
 }
 
-// AllReferences returns all the references found in the document
+// AllReferences returns all the references found in the document, with possible duplicates
 func (s *Spec) AllReferences() (result []string) {
 	for _, v := range s.references.allRefs {
 		result = append(result, v.String())

@@ -90,7 +90,7 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		`		if swag.IsZero(m.ExposedPorts[k]) {`,
+		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
@@ -121,7 +121,7 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		`		if swag.IsZero(m.Volumes[k]) {`,
+		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 	},
 		// not expected
@@ -580,7 +580,7 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		`		if swag.IsZero(m.ExposedPorts[k]) {`,
+		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
@@ -608,7 +608,7 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		`		if swag.IsZero(m.Volumes[k]) {`,
+		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.HostConfig) {`,
@@ -749,15 +749,19 @@ func initFixture1479Part() {
 	// load expectations for model: networking_config.go
 	flattenRun.AddExpectations("networking_config.go", []string{
 		`type NetworkingConfig struct {`,
-		"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
+		// maps are now simple types
+		//"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
+		"	EndpointsConfig map[string]*EndpointSettings `json:\"EndpointsConfig,omitempty\"`",
 		`func (m *NetworkingConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateEndpointsConfig(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NetworkingConfig) validateEndpointsConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.EndpointsConfig) {`,
-		`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
-		`			return ve.ValidateName("EndpointsConfig"`,
+		//`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
+		`       for k := range m.EndpointsConfig {`,
+		`	if err := validate.Required("EndpointsConfig"+"."+k, "body", m.EndpointsConfig[k]); err != nil {`,
+		`       	if val, ok := m.EndpointsConfig[k]; ok {`,
+		`          		if err := val.Validate(formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -765,56 +769,7 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
-	expandRun.AddExpectations("networking_config.go", []string{
-		`type NetworkingConfig struct {`,
-		"	EndpointsConfig map[string]NetworkingConfigEndpointsConfigAnon `json:\"EndpointsConfig,omitempty\"`",
-		`func (m *NetworkingConfig) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateEndpointsConfig(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-		`func (m *NetworkingConfig) validateEndpointsConfig(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.EndpointsConfig) {`,
-		`	for k := range m.EndpointsConfig {`,
-		`		if swag.IsZero(m.EndpointsConfig[k]) {`,
-		`		if val, ok := m.EndpointsConfig[k]; ok {`,
-		// NOTE: fixed incorrect IsNullable status for map
-		//`			if val != nil {`,
-		`				if err := val.Validate(formats); err != nil {`,
-		`type NetworkingConfigEndpointsConfigAnon struct {`,
-		"	Aliases []string `json:\"Aliases\"`",
-		"	DriverOpts map[string]string `json:\"DriverOpts,omitempty\"`",
-		"	EndpointID string `json:\"EndpointID,omitempty\"`",
-		"	Gateway string `json:\"Gateway,omitempty\"`",
-		"	GlobalIPV6Address string `json:\"GlobalIPv6Address,omitempty\"`",
-		"	GlobalIPV6PrefixLen int64 `json:\"GlobalIPv6PrefixLen,omitempty\"`",
-		"	IPAMConfig *NetworkingConfigEndpointsConfigAnonIPAMConfig `json:\"IPAMConfig,omitempty\"`",
-		"	IPAddress string `json:\"IPAddress,omitempty\"`",
-		"	IPPrefixLen int64 `json:\"IPPrefixLen,omitempty\"`",
-		"	IPV6Gateway string `json:\"IPv6Gateway,omitempty\"`",
-		"	Links []string `json:\"Links\"`",
-		"	MacAddress string `json:\"MacAddress,omitempty\"`",
-		"	NetworkID string `json:\"NetworkID,omitempty\"`",
-		`func (m *NetworkingConfigEndpointsConfigAnon) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateIPAMConfig(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-		`func (m *NetworkingConfigEndpointsConfigAnon) validateIPAMConfig(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.IPAMConfig) {`,
-		`	if m.IPAMConfig != nil {`,
-		`		if err := m.IPAMConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
-		`				return ve.ValidateName("IPAMConfig"`,
-		`type NetworkingConfigEndpointsConfigAnonIPAMConfig struct {`,
-		"	IPV4Address string `json:\"IPv4Address,omitempty\"`",
-		"	IPV6Address string `json:\"IPv6Address,omitempty\"`",
-		"	LinkLocalIps []string `json:\"LinkLocalIPs\"`",
-		`func (m *NetworkingConfigEndpointsConfigAnonIPAMConfig) Validate(formats strfmt.Registry) error {`,
-		`		return errors.CompositeValidationError(res...`,
-	}, []string{
-		// not expected
-		`			if val != nil {`,
-	},
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types: this definition disappears
 
 	// load expectations for model: endpoint_settings.go
 	flattenRun.AddExpectations("endpoint_settings.go", []string{
@@ -885,23 +840,8 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
-	//expandRun.AddExpectations("networking_config.go", flattenRun.ExpectedFor("NetworkingConfig").ExpectedLines, todo, noLines, noLines)
 	// load expectations for model: networking_config_endpoints_config.go
-	flattenRun.AddExpectations("networking_config_endpoints_config.go", []string{
-		`type NetworkingConfigEndpointsConfig map[string]*EndpointSettings`,
-		`func (m NetworkingConfigEndpointsConfig) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NetworkingConfigEndpointsConfig(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
-
+	// NOTE(fredbi): maps are now simple types - this definition disappears
 }
 func initFixtureSimpleAllOf() {
 	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
@@ -2325,8 +2265,8 @@ func initFixtureItching() {
 	flattenRun.AddExpectations("empty_object_with_additional_alias.go", []string{
 		`type EmptyObjectWithAdditionalAlias map[string]AliasedThing`,
 		`func (m EmptyObjectWithAdditionalAlias) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalAlias(m)); err != nil {`,
 		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -2407,7 +2347,8 @@ func initFixtureItching() {
 		`type EmptyObjectWithAdditionalNonNullablePrimitive map[string]strfmt.Date`,
 		`func (m EmptyObjectWithAdditionalNonNullablePrimitive) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		// fix undue IsZero call
+		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -2598,7 +2539,8 @@ func initFixtureItching() {
 	flattenRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+		// fixed undue Required on this aliased type
+		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2616,7 +2558,8 @@ func initFixtureItching() {
 	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+		// fixed undue Required on this aliased type
+		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2773,7 +2716,6 @@ func initFixtureItching() {
 		`	if err := validate.Enum(path, location, value, enumsWithAdditionalPropsValueEnum); err != nil {`,
 		`func (m EnumsWithAdditionalProps) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
 		`		if err := m.validateEnumsWithAdditionalPropsValueEnum(k, "body", m[k]); err != nil {`,
 		`	if err := m.validateEnumsWithAdditionalPropsEnum("", "body", m); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -2790,7 +2732,6 @@ func initFixtureItching() {
 	flattenRun.AddExpectations("empty_object_with_additional_nested_slice.go", []string{
 		`type EmptyObjectWithAdditionalNestedSlice map[string][][][]EmptyObjectWithAdditionalNestedSliceAdditionalPropertiesItemsItemsItems`,
 		`func (m EmptyObjectWithAdditionalNestedSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalNestedSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2810,7 +2751,6 @@ func initFixtureItching() {
 	expandRun.AddExpectations("empty_object_with_additional_nested_slice.go", []string{
 		`type EmptyObjectWithAdditionalNestedSlice map[string][][][]EmptyObjectWithAdditionalNestedSliceItems0`,
 		`func (m EmptyObjectWithAdditionalNestedSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalNestedSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2901,7 +2841,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalObjectWithFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithFormatedThing {`,
-		`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
+		// removed undue IZero call
+		//`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithFormatedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithFormatedThing) validateBlob(formats strfmt.Registry) error {`,
@@ -2939,7 +2880,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayOfRefedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
-		`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
+		// removed undue IsZero call
+		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := m.AdditionalArrayOfRefedThing[k][i].Validate(formats); err != nil {`,
@@ -2963,7 +2905,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayOfRefedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
-		`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
+		// removed undue IsZero() call
+		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalArrayOfRefedThing[k][i].String(), formats); err != nil {`,
@@ -3038,7 +2981,8 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	if err := m.validateStatus(formats); err != nil {`,
 		`	for k := range m.AdditionalThings {`,
-		`		if swag.IsZero(m.AdditionalThings[k]) {`,
+		// removed undue IsZero call
+		//`		if swag.IsZero(m.AdditionalThings[k]) {`,
 		`		if err := m.validateAdditionalThingsValueEnum(k, "body", m.AdditionalThings[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var additionalThingsTypeOriginPropEnum []interface{`,
@@ -3168,8 +3112,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
-		// do we need Required when element is nullable?
-		`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
+		// removed undue IsSzero call
+		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3200,7 +3144,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
-		`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
+		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3302,7 +3246,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
-		`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
+		// removed undue IsZero call
+		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if val, ok := m.AdditionalObjectWithAliasedThing[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -3323,7 +3268,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
-		`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
+		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithAliasedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
@@ -3552,7 +3497,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalNullableArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalNullableArrayThing {`,
-		`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
+		//`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalNullableArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalNullableArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "isbn", m.AdditionalNullableArrayThing[k][i].String(), formats); err != nil {`,
@@ -3576,7 +3521,7 @@ func initFixtureAdditionalProps() {
 		"	AdditionalSliceOfPrimitives map[string][]strfmt.Date `json:\"-\"`",
 		`func (m *AdditionalSliceOfPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AdditionalSliceOfPrimitives {`,
-		`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
+		//`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfPrimitives[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfPrimitives[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfPrimitives[k][i].String(), formats); err != nil {`,
@@ -3598,7 +3543,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayThing {`,
-		`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
+		//`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "uuid", m.AdditionalArrayThing[k][i].String(), formats); err != nil {`,
@@ -3631,7 +3576,7 @@ func initFixtureAdditionalProps() {
 	flattenRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3649,7 +3594,7 @@ func initFixtureAdditionalProps() {
 	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3859,7 +3804,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayOfInterface) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfInterface {`,
-		`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
+		// remove undue IsZero call
+		//`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfInterface[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfInterface) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -3879,7 +3825,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalFormatedThing map[string]strfmt.Date`,
 		`func (m AdditionalFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3981,7 +3927,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
-		`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
+		// removed undue IsZero call
+		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4006,7 +3953,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
-		`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
+		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4297,7 +4244,8 @@ func initFixtureTuple() {
 		`func (m *ClassicsClassicsItemsTuple0P2) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsClassicsItemsTuple0P2 {`,
-		`		if swag.IsZero(m.ClassicsClassicsItemsTuple0P2[k]) {`,
+		// removed undue IsZero() call
+		//`		if swag.IsZero(m.ClassicsClassicsItemsTuple0P2[k]) {`,
 		`		if err := m.validateClassicsClassicsItemsTuple0P2ValueEnum("P2"+"."+k, "body", m.ClassicsClassicsItemsTuple0P2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsClassicsItemsTuple0P2TypeOriginPropEnum []interface{`,
@@ -4479,7 +4427,8 @@ func initFixtureTuple() {
 		`func (m *ClassicsItemsAdditionalItemsItems2) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsItemsAdditionalItemsItems2 {`,
-		`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
+		// removed undue IsZero()
+		//`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
 		`		if err := m.validateClassicsItemsAdditionalItemsItems2ValueEnum(k, "body", m.ClassicsItemsAdditionalItemsItems2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []interface{`,
@@ -5716,7 +5665,7 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		`		if swag.IsZero(m.Opts[k]) {`,
+		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.MinimumInt("opts"+"."+k, "body", int64(m.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("opts"+"."+k, "body", int64(m.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
@@ -5874,11 +5823,11 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		`		if swag.IsZero(m.Meta[k]) {`,
+		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		`			if swag.IsZero(m.Meta[k][kk]) {`,
+		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 3, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 6, false); err != nil {`,
 		`				if err := validate.MultipleOf("meta"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta[k][kk][kkk]), 1); err != nil {`,
@@ -5945,12 +5894,18 @@ func initTodolistSchemavalidation() {
 
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
-		`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
+		// maps are now simple types
+		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
+		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
+		//`		if swag.IsZero(m[k]) {`,
+		`		for kk := range m[k] {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
+		`			for kkk := range m[k][kk] {`,
+		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
+		`				if val, ok := m[k][kk][kkk]; ok {`,
+		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -5963,11 +5918,11 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		`			if swag.IsZero(m[k][kk]) {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		`				if swag.IsZero(m[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -6015,20 +5970,7 @@ func initTodolistSchemavalidation() {
 		noLines)
 
 	// load expectations for model: nested_map_complex_validations_meta_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta_additional_properties_additional_properties.go", []string{
-		`type NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: tag.go
 	flattenRun.AddExpectations("tag.go", []string{
@@ -6220,11 +6162,11 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		`		if swag.IsZero(m.ExtOpts[k]) {`,
+		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
+		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -6240,7 +6182,7 @@ func initTodolistSchemavalidation() {
 		`type NamedMap map[string]int64`,
 		`func (m NamedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.MinimumInt(k, "body", int64(m[k]), 3, false); err != nil {`,
 		`		if err := validate.MaximumInt(k, "body", int64(m[k]), 6, false); err != nil {`,
 		`		if err := validate.MultipleOf(k, "body", float64(m[k]), 1); err != nil {`,
@@ -6305,15 +6247,20 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: map_complex_validations.go
 	flattenRun.AddExpectations("map_complex_validations.go", []string{
 		`type MapComplexValidations struct {`,
-		"	Meta MapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		// maps are now simple types
+		//"	Meta MapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		"Meta map[string]MapComplexValidationsMetaAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *MapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		`	if err := m.Meta.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
-		`			return ve.ValidateName("meta"`,
+		//`	if err := m.Meta.Validate(formats); err != nil {`,
+		//`		if ve, ok := err.(*errors.Validation); ok {`,
+		//`			return ve.ValidateName("meta"`,
+		`            		for k := range m.Meta {`,
+		`            			if val, ok := m.Meta[k]; ok {`,
+		`            				if err := val.Validate(formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -6330,7 +6277,7 @@ func initTodolistSchemavalidation() {
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		`		if swag.IsZero(m.Meta[k]) {`,
+		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		if val, ok := m.Meta[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`type MapComplexValidationsMetaAnon struct {`,
@@ -6477,20 +6424,7 @@ func initTodolistSchemavalidation() {
 		noLines)
 
 	// load expectations for model: nested_map_complex_validations_meta_additional_properties.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta_additional_properties.go", []string{
-		`type NestedMapComplexValidationsMetaAdditionalProperties map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMetaAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are simple types and this definition is no more generated
 
 	// load expectations for model: all_of_validations_meta_all_of6_coords_all_of1.go
 	flattenRun.AddExpectations("all_of_validations_meta_all_of6_coords_all_of1.go", []string{
@@ -6800,20 +6734,7 @@ func initTodolistSchemavalidation() {
 		noLines)
 
 	// load expectations for model: map_complex_validations_meta.go
-	flattenRun.AddExpectations("map_complex_validations_meta.go", []string{
-		`type MapComplexValidationsMeta map[string]MapComplexValidationsMetaAdditionalProperties`,
-		`func (m MapComplexValidationsMeta) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", MapComplexValidationsMeta(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are simple types and this definition is no more generated
 
 	// load expectations for model: array_additional_validations_args.go
 	flattenRun.AddExpectations("array_additional_validations_args.go", []string{
@@ -6900,7 +6821,7 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		`		if swag.IsZero(m.Opts[k]) {`,
+		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.Minimum("opts"+"."+k, "body", float64(m.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.Maximum("opts"+"."+k, "body", float64(m.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
@@ -7045,15 +6966,23 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: nested_map_complex_validations.go
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
-		"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		// maps are now simple types
+		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		`	if err := m.Meta.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
-		`			return ve.ValidateName("meta"`,
+		//`	if err := m.Meta.Validate(formats); err != nil {`,
+		`            		for k := range m.Meta {`,
+		//`            			if swag.IsZero(m.Meta[k]) { // not required`,
+		`            			for kk := range m.Meta[k] {`,
+		//`            				if swag.IsZero(m.Meta[k][kk]) { // not required`,
+		`            				for kkk := range m.Meta[k][kk] {`,
+		`	            				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
+		`            					if val, ok := m.Meta[k][kk][kkk]; ok {`,
+		`            						if err := val.Validate(formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7070,11 +6999,11 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		`		if swag.IsZero(m.Meta[k]) {`,
+		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		`			if swag.IsZero(m.Meta[k][kk]) {`,
+		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if val, ok := m.Meta[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`type NestedMapComplexValidationsMetaAnon struct {`,
@@ -7141,36 +7070,10 @@ func initTodolistSchemavalidation() {
 		noLines)
 
 	// load expectations for model: named_nested_map_complex_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("named_nested_map_complex_additional_properties_additional_properties.go", []string{
-		`type NamedNestedMapComplexAdditionalPropertiesAdditionalProperties map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
-		`func (m NamedNestedMapComplexAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NamedNestedMapComplexAdditionalPropertiesAdditionalProperties(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: named_nested_map_complex_additional_properties.go
-	flattenRun.AddExpectations("named_nested_map_complex_additional_properties.go", []string{
-		`type NamedNestedMapComplexAdditionalProperties map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalProperties`,
-		`func (m NamedNestedMapComplexAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: named_nested_array.go
 	flattenRun.AddExpectations("named_nested_array.go", []string{
@@ -7287,18 +7190,18 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOf) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		`		if swag.IsZero(m.Opts[k]) {`,
+		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.Minimum("opts"+"."+k, "body", float64(m.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.Maximum("opts"+"."+k, "body", float64(m.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
 		`func (m *NamedAllOf) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		`		if swag.IsZero(m.ExtOpts[k]) {`,
+		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
+		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -7321,8 +7224,8 @@ func initTodolistSchemavalidation() {
 	flattenRun.AddExpectations("named_map_complex.go", []string{
 		`type NamedMapComplex map[string]NamedMapComplexAdditionalProperties`,
 		`func (m NamedMapComplex) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NamedMapComplex(m)); err != nil {`,
 		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -7337,7 +7240,7 @@ func initTodolistSchemavalidation() {
 		`type NamedMapComplex map[string]NamedMapComplexAnon`,
 		`func (m NamedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -7366,20 +7269,7 @@ func initTodolistSchemavalidation() {
 		noLines)
 
 	// load expectations for model: nested_map_complex_validations_meta.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta.go", []string{
-		`type NestedMapComplexValidationsMeta map[string]NestedMapComplexValidationsMetaAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMeta) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: array_additional_validations.go
 	flattenRun.AddExpectations("array_additional_validations.go", []string{
@@ -7509,7 +7399,7 @@ func initTodolistSchemavalidation() {
 		`func (m *MapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		`		if swag.IsZero(m.Meta[k]) {`,
+		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		if err := validate.MinimumInt("meta"+"."+k, "body", int64(m.Meta[k]), 3, false); err != nil {`,
 		`		if err := validate.MaximumInt("meta"+"."+k, "body", int64(m.Meta[k]), 6, false); err != nil {`,
 		`		if err := validate.MultipleOf("meta"+"."+k, "body", float64(m.Meta[k]), 1); err != nil {`,
@@ -7551,11 +7441,11 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		`		if swag.IsZero(m.ExtOpts[k]) {`,
+		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
+		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -7634,16 +7524,16 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MaxLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Meta.Assoc[i][ii][iii]), 50); err != nil {`,
 		"				if err := validate.Pattern(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Meta.Assoc[i][ii][iii]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	for k := range m.Meta.Opts {`,
-		`		if swag.IsZero(m.Meta.Opts[k]) {`,
+		//`		if swag.IsZero(m.Meta.Opts[k]) {`,
 		`		if err := validate.MinimumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("meta"+"."+"opts"+"."+k, "body", float64(m.Meta.Opts[k]), 1.5); err != nil {`,
 		`	for k := range m.Meta.ExtOpts {`,
-		`		if swag.IsZero(m.Meta.ExtOpts[k]) {`,
+		//`		if swag.IsZero(m.Meta.ExtOpts[k]) {`,
 		`		for kk := range m.Meta.ExtOpts[k] {`,
-		`			if swag.IsZero(m.Meta.ExtOpts[k][kk]) {`,
+		//`			if swag.IsZero(m.Meta.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.Meta.ExtOpts[k][kk] {`,
-		`				if swag.IsZero(m.Meta.ExtOpts[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.Meta.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -7826,11 +7716,11 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMap map[string]map[string]map[string]int64`,
 		`func (m NamedNestedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		`			if swag.IsZero(m[k][kk]) {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		`				if swag.IsZero(m[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt(k+"."+kk+"."+kkk, "body", int64(m[k][kk][kkk]), 3, false); err != nil {`,
 		`				if err := validate.MaximumInt(k+"."+kk+"."+kkk, "body", int64(m[k][kk][kkk]), 6, false); err != nil {`,
 		`				if err := validate.MultipleOf(k+"."+kk+"."+kkk, "body", float64(m[k][kk][kkk]), 1); err != nil {`,
@@ -7904,11 +7794,11 @@ func initFixtureNestedMaps() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		`		if swag.IsZero(m.Meta[k]) {`,
+		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		`			if swag.IsZero(m.Meta[k][kk]) {`,
+		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 3, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 6, false); err != nil {`,
 		`				if err := validate.MultipleOf("meta"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta[k][kk][kkk]), 1); err != nil {`,
@@ -7923,12 +7813,17 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
-		`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
+		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
+		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
+		//`		if swag.IsZero(m[k]) {`,
+		`		for kk := range m[k] {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
+		`			for kkk := range m[k][kk] {`,
+		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
+		`				if val, ok := m[k][kk][kkk]; ok {`,
+		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -7941,11 +7836,11 @@ func initFixtureNestedMaps() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		`			if swag.IsZero(m[k][kk]) {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		`				if swag.IsZero(m[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -7974,36 +7869,10 @@ func initFixtureNestedMaps() {
 		noLines)
 
 	// load expectations for model: nested_map_complex_validations_meta_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta_additional_properties_additional_properties.go", []string{
-		`type NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: nested_map_no_validations_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("nested_map_no_validations_additional_properties_additional_properties.go", []string{
-		`type NestedMapNoValidationsAdditionalPropertiesAdditionalProperties map[string]NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapNoValidationsAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NestedMapNoValidationsAdditionalPropertiesAdditionalProperties(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: test_nested_interface.go
 	flattenRun.AddExpectations("test_nested_interface.go", []string{
@@ -8047,30 +7916,17 @@ func initFixtureNestedMaps() {
 		noLines)
 
 	// load expectations for model: nested_map_no_validations_additional_properties.go
-	flattenRun.AddExpectations("nested_map_no_validations_additional_properties.go", []string{
-		`type NestedMapNoValidationsAdditionalProperties map[string]NestedMapNoValidationsAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapNoValidationsAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are simple types and this definition is no more generated
 
 	expandRun.AddExpectations("nested_map_no_validations.go", []string{
 		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAnon`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		`			if swag.IsZero(m[k][kk]) {`,
+		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		`				if swag.IsZero(m[k][kk][kkk]) {`,
+		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -8087,43 +7943,24 @@ func initFixtureNestedMaps() {
 		noLines)
 
 	// load expectations for model: nested_map_complex_validations_meta_additional_properties.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta_additional_properties.go", []string{
-		`type NestedMapComplexValidationsMetaAdditionalProperties map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMetaAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are simple types and this definition is no more generated
 
 	// load expectations for model: nested_map_no_validations_additional_properties_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("nested_map_no_validations_additional_properties_additional_properties_additional_properties.go", []string{
-		`type NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties struct {`,
-		"	Age int64 `json:\"age,omitempty\"`",
-		"	Name string `json:\"name,omitempty\"`",
-		// empty validation
-		"func (m *NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE: maps are now simple types - this definition is no more generated
 
 	// load expectations for model: nested_map_no_validations.go
 	flattenRun.AddExpectations("nested_map_no_validations.go", []string{
-		`type NestedMapNoValidations map[string]NestedMapNoValidationsAdditionalProperties`,
+		//`type NestedMapNoValidations map[string]NestedMapNoValidationsAdditionalProperties`,
+		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
+		//`		if swag.IsZero(m[k]) {`,
+		`       	for kk := range m[k] {`,
+		//`        		if swag.IsZero(m[k][kk]) { // not required`,
+		`            		for kkk := range m[k][kk] {`,
+		`            			if val, ok := m[k][kk][kkk]; ok {`,
+		`            			if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
+		`            				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -8161,15 +7998,22 @@ func initFixtureNestedMaps() {
 	// load expectations for model: nested_map_complex_validations.go
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
-		"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		// maps are now simple types
+		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
+		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		`	if err := m.Meta.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
-		`			return ve.ValidateName("meta"`,
+		`          		for k := range m.Meta {`,
+		//`          			if swag.IsZero(m.Meta[k]) { // not required`,
+		`          			for kk := range m.Meta[k] {`,
+		//`          				if swag.IsZero(m.Meta[k][kk]) { // not required`,
+		`          				for kkk := range m.Meta[k][kk] {`,
+		`          				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
+		`          					if val, ok := m.Meta[k][kk][kkk]; ok {`,
+		`          						if err := val.Validate(formats); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -8178,53 +8022,13 @@ func initFixtureNestedMaps() {
 		noLines)
 
 	// load expectations for model: named_nested_map_complex_additional_properties_additional_properties.go
-	flattenRun.AddExpectations("named_nested_map_complex_additional_properties_additional_properties.go", []string{
-		`type NamedNestedMapComplexAdditionalPropertiesAdditionalProperties map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
-		`func (m NamedNestedMapComplexAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("", "body", NamedNestedMapComplexAdditionalPropertiesAdditionalProperties(m)); err != nil {`,
-		`	for k := range m {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: named_nested_map_complex_additional_properties.go
-	flattenRun.AddExpectations("named_nested_map_complex_additional_properties.go", []string{
-		`type NamedNestedMapComplexAdditionalProperties map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalProperties`,
-		`func (m NamedNestedMapComplexAdditionalProperties) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 
 	// load expectations for model: nested_map_complex_validations_meta.go
-	flattenRun.AddExpectations("nested_map_complex_validations_meta.go", []string{
-		`type NestedMapComplexValidationsMeta map[string]NestedMapComplexValidationsMetaAdditionalProperties`,
-		`func (m NestedMapComplexValidationsMeta) Validate(formats strfmt.Registry) error {`,
-		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
-		`		if val, ok := m[k]; ok {`,
-		`			if err := val.Validate(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-	},
-		// not expected
-		todo,
-		// output in log
-		noLines,
-		noLines)
-
+	// NOTE(fredbi): maps are now simple types - this definition is no more generated
 }
 
 func initFixture844Variations() {
@@ -8387,7 +8191,7 @@ func initFixture844Variations() {
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	for k := range m.P2 {`,
-		`		if swag.IsZero(m.P2[k]) {`,
+		//`		if swag.IsZero(m.P2[k]) {`,
 		`		if err := validate.FormatOf("2"+"."+k, "body", "date", m.P2[k].String(), formats); err != nil {`,
 		`func (m *TupleVariation) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("3", "body", m.P3); err != nil {`,
@@ -8458,7 +8262,7 @@ func initFixture844Variations() {
 		`type NonInterface map[string]strfmt.Date`,
 		`func (m NonInterface) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -8520,7 +8324,7 @@ func initFixture844Variations() {
 		"	AO1 map[string]strfmt.Date `json:\"-\"`",
 		`func (m *Variation1) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AO1 {`,
-		`		if swag.IsZero(m.AO1[k]) {`,
+		//`		if swag.IsZero(m.AO1[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AO1[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type Variation1AllOf0 interface{}`,
@@ -9303,11 +9107,11 @@ func initFixture15365() {
 		`	for k := range m {`,
 		// do we need Required when element is nullable?
 		// nullable not required:
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		`			if swag.IsZero(m[k]) {`,
+		//`			if swag.IsZero(m[k][i]) {`,
 		`			if err := validate.MinimumInt(k+"."+strconv.Itoa(i), "body", int64(*m[k][i]), 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9322,7 +9126,7 @@ func initFixture15365() {
 		`type ModelMapOfRef map[string]ModelArrayWithMax`,
 		`func (m ModelMapOfRef) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
+		//`		if swag.IsZero(m[k]) {`,
 		`		if err := m[k].Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName(k`,
@@ -9492,7 +9296,6 @@ func initFixture1548() {
 		`type Base64Map map[string]strfmt.Base64`,
 		`func (m Base64Map) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.MaxLength(k, "body", string(m[k]), 100); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},

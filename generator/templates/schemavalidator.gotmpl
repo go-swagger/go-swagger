@@ -107,19 +107,18 @@
 {{ end }}
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
   {{ if .HasAdditionalProperties }}
-    {{ if and .IsMap .AdditionalProperties.Required }}
-    if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not .IsAnonymous }}){{ end }}); err != nil {
-      return err
-    }
-    {{ end }}
     {{- if  .AdditionalProperties.HasValidations }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
       {{ with .AdditionalProperties }}
-        {{ if not .Required }}
+        {{- if and (not .Required) .IsNullable }}{{/* skip when nul type is accepted */}}
       if swag.IsZero({{ .ValueExpression }}) { // not required
         continue
       }
-        {{ end }}
+        {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
+      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+        return err
+      }
+        {{- end }}
         {{- if .IsPrimitive }}
           {{- if .IsAliased }}
             {{- if not .IsAnonymous }}

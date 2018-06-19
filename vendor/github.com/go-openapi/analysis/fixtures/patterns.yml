@@ -122,3 +122,9 @@ definitions:
       message:
         type: string
         readOnly: true
+  withPatternProperties:
+    type: object
+    additionalProperties: true
+    patternProperties:
+      '^prop[0-9]+$':
+        type: string

@@ -185,9 +185,21 @@ func TestVersionHandling(t *testing.T) {
 		}
 		pkgpath := "./" + name[:len(name)-2]
 
+		if testing.Verbose() {
+			t.Logf("importing %s", name)
+		}
+
 		// test that export data can be imported
 		_, err := Import(make(map[string]*types.Package), pkgpath, dir)
 		if err != nil {
+			// ok to fail if it fails with a newer version error for select files
+			if strings.Contains(err.Error(), "newer version") {
+				switch name {
+				case "test_go1.11_999b.a", "test_go1.11_999i.a":
+					continue
+				}
+				// fall through
+			}
 			t.Errorf("import %q failed: %v", pkgpath, err)
 			continue
 		}
@@ -238,55 +250,6 @@ func TestImportStdLib(t *testing.T) {
 	}
 	nimports := testDir(t, "", time.Now().Add(dt)) // installed packages
 	t.Logf("tested %d imports", nimports)
-}
-
-var importedObjectTests = []struct {
-	name string
-	want string
-}{
-	{"math.Pi", "const Pi untyped float"},
-	{"io.Reader", "type Reader interface{Read(p []byte) (n int, err error)}"},
-	// Go 1.7 and 1.8 don't know about embedded interfaces. Leave this
-	// test out for now - the code is tested in the std library anyway.
-	// TODO(gri) enable again once we're off 1.7 and 1.8.
-	// {"io.ReadWriter", "type ReadWriter interface{Reader; Writer}"},
-	{"math.Sin", "func Sin(x float64) float64"},
-	// TODO(gri) add more tests
-}
-
-func TestImportedTypes(t *testing.T) {
-	skipSpecialPlatforms(t)
-
-	// This package only handles gc export data.
-	if runtime.Compiler != "gc" {
-		t.Skipf("gc-built packages not available (compiler = %s)", runtime.Compiler)
-	}
-
-	for _, test := range importedObjectTests {
-		s := strings.Split(test.name, ".")
-		if len(s) != 2 {
-			t.Fatal("inconsistent test data")
-		}
-		importPath := s[0]
-		objName := s[1]
-
-		pkg, err := Import(make(map[string]*types.Package), importPath, ".")
-		if err != nil {
-			t.Error(err)
-			continue
-		}
-
-		obj := pkg.Scope().Lookup(objName)
-		if obj == nil {
-			t.Errorf("%s: object not found", test.name)
-			continue
-		}
-
-		got := types.ObjectString(obj, types.RelativeTo(pkg))
-		if got != test.want {
-			t.Errorf("%s: got %q; want %q", test.name, got, test.want)
-		}
-	}
 }
 
 func TestIssue5815(t *testing.T) {

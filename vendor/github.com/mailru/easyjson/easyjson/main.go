@@ -27,6 +27,7 @@ var stubs = flag.Bool("stubs", false, "only generate stubs for marshaler/unmarsh
 var noformat = flag.Bool("noformat", false, "do not run 'gofmt -w' on output file")
 var specifiedName = flag.String("output_filename", "", "specify the filename of the output")
 var processPkg = flag.Bool("pkg", false, "process the whole package instead of just the given file")
+var disallowUnknownFields = flag.Bool("disallow_unknown_fields", false, "return error if any unknown field in json appeared")
 
 func generate(fname string) (err error) {
 	fInfo, err := os.Stat(fname)
@@ -60,18 +61,19 @@ func generate(fname string) (err error) {
 	}
 
 	g := bootstrap.Generator{
-		BuildTags:       trimmedBuildTags,
-		PkgPath:         p.PkgPath,
-		PkgName:         p.PkgName,
-		Types:           p.StructNames,
-		SnakeCase:       *snakeCase,
-		LowerCamelCase:  *lowerCamelCase,
-		NoStdMarshalers: *noStdMarshalers,
-		OmitEmpty:       *omitEmpty,
-		LeaveTemps:      *leaveTemps,
-		OutName:         outName,
-		StubsOnly:       *stubs,
-		NoFormat:        *noformat,
+		BuildTags:             trimmedBuildTags,
+		PkgPath:               p.PkgPath,
+		PkgName:               p.PkgName,
+		Types:                 p.StructNames,
+		SnakeCase:             *snakeCase,
+		LowerCamelCase:        *lowerCamelCase,
+		NoStdMarshalers:       *noStdMarshalers,
+		DisallowUnknownFields: *disallowUnknownFields,
+		OmitEmpty:             *omitEmpty,
+		LeaveTemps:            *leaveTemps,
+		OutName:               outName,
+		StubsOnly:             *stubs,
+		NoFormat:              *noformat,
 	}
 
 	if err := g.Run(); err != nil {

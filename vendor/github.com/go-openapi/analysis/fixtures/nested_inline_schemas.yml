@@ -96,6 +96,7 @@ paths:
                             format: date-time
       responses:
         default:
+          description: ok
           schema:
             type: object
             properties:
@@ -129,9 +130,11 @@ paths:
                               type: string
                               format: date-time
         404:
+          description: ok
           schema:
             $ref: "errors.yml#/error"
         200:
+          description: ok
           schema:
             type: object
             properties:

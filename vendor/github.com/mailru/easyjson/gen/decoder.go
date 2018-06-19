@@ -114,7 +114,7 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 		tmpVar := g.uniqueVarName()
 		elem := t.Elem()
 
-		if elem.Kind() == reflect.Uint8 {
+		if elem.Kind() == reflect.Uint8 && elem.Name() == "uint8" {
 			fmt.Fprintln(g.out, ws+"if in.IsNull() {")
 			fmt.Fprintln(g.out, ws+"  in.Skip()")
 			fmt.Fprintln(g.out, ws+"  "+out+" = nil")
@@ -161,7 +161,7 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 		iterVar := g.uniqueVarName()
 		elem := t.Elem()
 
-		if elem.Kind() == reflect.Uint8 {
+		if elem.Kind() == reflect.Uint8 && elem.Name() == "uint8" {
 			fmt.Fprintln(g.out, ws+"if in.IsNull() {")
 			fmt.Fprintln(g.out, ws+"  in.Skip()")
 			fmt.Fprintln(g.out, ws+"} else {")
@@ -461,7 +461,15 @@ func (g *Generator) genStructDecoder(t reflect.Type) error {
 	}
 
 	fmt.Fprintln(g.out, "    default:")
-	fmt.Fprintln(g.out, "      in.SkipRecursive()")
+	if g.disallowUnknownFields {
+		fmt.Fprintln(g.out, `      in.AddError(&jlexer.LexerError{
+          Offset: in.GetPos(),
+          Reason: "unknown field",
+          Data: key,
+      })`)
+	} else {
+		fmt.Fprintln(g.out, "      in.SkipRecursive()")
+	}
 	fmt.Fprintln(g.out, "    }")
 	fmt.Fprintln(g.out, "    in.WantComma()")
 	fmt.Fprintln(g.out, "  }")

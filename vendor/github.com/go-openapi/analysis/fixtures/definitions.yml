@@ -80,6 +80,11 @@ definitions:
     anyOf:
       - type: object
       - type: string
+  withOneOf:
+    type: object
+    oneOf:
+      - $ref: "#/definitions/tag"
+      - $ref: "#/definitions/withAdditionalProps"
   withAllOf:
     allOf:
       - type: object

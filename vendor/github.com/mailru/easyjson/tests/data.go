@@ -784,3 +784,19 @@ var intArrayStructValueString = `{` +
 	`"pointer":[1,2],` +
 	`"value":[1,2]` +
 	`}`
+
+type MyUInt8 uint8
+
+//easyjson:json
+type MyUInt8Slice []MyUInt8
+
+var myUInt8SliceValue = MyUInt8Slice{1, 2, 3, 4, 5}
+
+var myUInt8SliceString = `[1,2,3,4,5]`
+
+//easyjson:json
+type MyUInt8Array [2]MyUInt8
+
+var myUInt8ArrayValue = MyUInt8Array{1, 2}
+
+var myUInt8ArrayString = `[1,2]`
