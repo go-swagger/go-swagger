@@ -46,6 +46,10 @@ func (s *Support) getOpts() (*generator.GenOpts, error) {
 	}, nil
 }
 
+func (s *Support) getShared() *shared {
+	return &s.shared
+}
+
 func (s *Support) generate(opts *generator.GenOpts) error {
 	return generator.GenerateSupport(s.Name, nil, nil, opts)
 }
@@ -57,8 +61,8 @@ func (s *Support) log(rp string) {
 For this generation to compile you need to have some packages in your vendor or GOPATH:
 
   * github.com/go-openapi/runtime
-  * github.com/asaskevich/govalidator		
-  * github.com/jessevdk/go-flags		
+  * github.com/asaskevich/govalidator
+  * github.com/jessevdk/go-flags
   * golang.org/x/net/context/ctxhttp
 
 You can get these now with: go get -u -f %s/...

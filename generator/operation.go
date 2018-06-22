@@ -42,6 +42,8 @@ func (s responses) Len() int           { return len(s) }
 func (s responses) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s responses) Less(i, j int) bool { return s[i].Code < s[j].Code }
 
+// sortedResponses produces a sorted list of responses.
+// TODO: this is redundant with the definition given in struct.go
 func sortedResponses(input map[int]spec.Response) responses {
 	var res responses
 	for k, v := range input {
@@ -277,6 +279,8 @@ type codeGenOpBuilder struct {
 	GenOpts             *GenOpts
 }
 
+// renameTimeout renames the variable in use by client template to avoid conflicting
+// with param names.
 func renameTimeout(seenIds map[string][]string, current string) string {
 	var next string
 	switch strings.ToLower(current) {
@@ -305,9 +309,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
 	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
-	// Flattened means that all complex constructs are present as
-	// definitions and models produced accordingly in ModelsPackage.
-	// When this is not the case, extra schemas are produced in the operations package.
+	// Fully flattened means that all complex constructs are present as
+	// definitions and models produced accordingly in ModelsPackage,
+	// wherease minimal flatten simply ensures that there are no weird $ref's in the spec.
+	//
+	// When some complex anonymous constructs are specified, extra schemas are produced in the operations package.
 	//
 	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
 	// we take it from here the spec possibly already transformed by the GenDefinitions stage.
@@ -556,16 +562,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		log.Printf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 	}
 
-	if resp.Ref.String() != "" {
-		resp2, err := spec.ResolveResponse(b.Doc.Spec(), resp.Ref)
-		if err != nil {
-			return GenResponse{}, err
-		}
-		if resp2 == nil {
-			return GenResponse{}, fmt.Errorf("could not resolve response ref: %s", resp.Ref.String())
-		}
-		resp = *resp2
-	}
+	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	res := GenResponse{
 		Package:        b.APIPackage,
@@ -582,6 +579,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Extensions:     resp.Extensions,
 	}
 
+	// prepare response headers
 	for hName, header := range resp.Headers {
 		hdr, err := b.MakeHeader(receiver, hName, header)
 		if err != nil {
@@ -592,105 +590,11 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
-		var schema GenSchema
-		var named bool
-		rslv := resolver
-		sch := resp.Schema
-		if resp.Schema.Ref.String() != "" && !resp.Schema.Ref.HasFragmentOnly {
-			// This section attempts to resolve external $ref (e.g. which are not only a fragment)
-			// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
-			// We should guard the generator against complex $ref, such as external, or pointing to anonymous places.
-			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, nil)
-			if err != nil {
-				return GenResponse{}, err
-			}
-			sch = ss
-			named = true
-			rslv = resolver.NewWithModelName(name + "Body")
+		// resolve schema model
+		schema, ers := b.buildOperationSchema(fmt.Sprintf("%q", name), name+"Body", swag.ToGoName(name+"Body"), receiver, "i", resp.Schema, resolver)
+		if ers != nil {
+			return GenResponse{}, ers
 		}
-
-		sc := schemaGenContext{
-			Path:             fmt.Sprintf("%q", name),
-			Name:             name + "Body",
-			Receiver:         receiver,
-			ValueExpr:        receiver,
-			IndexVar:         "i",
-			Schema:           *sch,
-			Required:         !named,
-			TypeResolver:     rslv,
-			Named:            named,
-			ExtraSchemas:     make(map[string]GenSchema),
-			IncludeModel:     true,
-			IncludeValidator: true,
-		}
-		br, bs := b.saveResolveContext(rslv, sch)
-		if err := sc.makeGenSchema(); err != nil {
-			return GenResponse{}, err
-		}
-
-		if !strings.HasPrefix(sch.Ref.String(), "#/definitions") && len(sc.ExtraSchemas) > 0 {
-			// when some ExtraSchemas are produced from something else than a definition,
-			// this indicates we are not running in fully flatten mode and we need to render
-			// ExtraSchemas in the operation's package.
-			// We need to rebuild the schema with a new type resolver to reflect this change in the
-			// models package.
-			//
-			// In the following, we want to produce extra schemas in the current package (operations),
-			// while being able to reuse already resolved definitions in the models package.
-
-			// restore resolving state before previous call to makeGenSchema()
-			rslv = br
-			sc.Schema = *bs
-
-			pg := sc.shallowClone()
-			pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
-			pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
-			rslv = pg.TypeResolver
-
-			if err := pg.makeGenSchema(); err != nil {
-				return GenResponse{}, err
-			}
-			// lift nested extra schemas (inlined types)
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
-			}
-			for _, v := range pg.ExtraSchemas {
-				vv := v
-				vv.GoType = vv.Name
-				vv.IsAnonymous = false
-				if !v.IsStream {
-					b.ExtraSchemas[vv.Name] = vv
-				}
-			}
-			schema = pg.GenSchema
-		} else {
-			schema = sc.GenSchema
-		}
-
-		if named {
-			// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
-			}
-			if !schema.IsStream {
-				b.ExtraSchemas[schema.Name] = schema
-			}
-		}
-		if schema.IsAnonymous {
-			schema.Name = swag.ToGoName(sc.Name)
-			nm := schema.Name
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
-			}
-			if !schema.IsStream {
-				b.ExtraSchemas[schema.Name] = schema
-			}
-			schema = GenSchema{}
-			schema.IsAnonymous = false
-			schema.GoType = rslv.goTypeName(nm)
-			schema.SwaggerType = nm
-		}
-
 		res.Schema = &schema
 	}
 	return res, nil
@@ -814,17 +718,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 	}
 
-	if param.Ref.String() != "" {
-		// Resolve $ref before all
-		param2, err := spec.ResolveParameter(b.Doc.Spec(), param.Ref)
-		if err != nil {
-			return GenParameter{}, err
-		}
-		if param2 == nil {
-			return GenParameter{}, fmt.Errorf("could not resolve parameter ref: %s", param.Ref.String())
-		}
-		param = *param2
-	}
+	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	var child *GenItems
 	id := swag.ToGoName(param.Name)
@@ -889,124 +783,13 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 // MakeBodyParameter constructs a body parameter schema
 func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeResolver, sch *spec.Schema) error {
-	var schema GenSchema
-	var named bool
-	rslv := resolver
-
-	if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
-		// This section attempts to resolve external $ref (e.g. which are not only a fragment)
-		// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
-		// We should guard the generator against complex $ref, such as external, or pointing to anonymous places.
-		ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
-		if err != nil {
-			return err
-		}
-		sch = ss
-		// this is a named schema (i.e. with an external $ref)
-		named = true
-		rslv = resolver.NewWithModelName(b.Operation.ID + "ParamsBody")
-	}
-
 	// resolve schema model
-	sc := schemaGenContext{
-		Path:             res.Path,
-		Name:             b.Operation.ID + "ParamsBody",
-		Receiver:         res.ReceiverName,
-		ValueExpr:        res.ReceiverName,
-		IndexVar:         res.IndexVar,
-		Schema:           *sch,
-		Required:         false, // Required in body is managed independently from validations
-		TypeResolver:     rslv,
-		Named:            named,
-		IncludeModel:     true,
-		IncludeValidator: true,
-		ExtraSchemas:     make(map[string]GenSchema),
+	schema, ers := b.buildOperationSchema(res.Path, b.Operation.ID+"ParamsBody", swag.ToGoName(b.Operation.ID+" Body"), res.ReceiverName, res.IndexVar, sch, resolver)
+	if ers != nil {
+		return ers
 	}
-	br, bs := b.saveResolveContext(rslv, sch)
-	if err := sc.makeGenSchema(); err != nil {
-		return err
-	}
-
-	if !strings.HasPrefix(sch.Ref.String(), "#/definitions") && len(sc.ExtraSchemas) > 0 {
-		// when some ExtraSchemas are produced from something else than a definition,
-		// this indicates we are not running in fully flattened mode and we need to render
-		// some ExtraSchemas in the operation's package.
-		// We need to rebuild the schema with a new type resolver to reflect this change in the
-		// models package.
-
-		// restore resolving state before previous call to makeGenSchema()
-		rslv = br
-		sc.Schema = *bs
-
-		pg := sc.shallowClone()
-		pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
-		pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
-
-		if err := pg.makeGenSchema(); err != nil {
-			return err
-		}
-		// lift nested extra schemas (inlined types)
-		if b.ExtraSchemas == nil {
-			b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
-		}
-		for _, v := range pg.ExtraSchemas {
-			vv := v
-			vv.GoType = vv.Name
-			vv.IsAnonymous = false
-			if !v.IsStream {
-				b.ExtraSchemas[vv.Name] = vv
-			}
-		}
-		schema = pg.GenSchema
-	} else {
-		schema = sc.GenSchema
-	}
-
-	if named {
-		// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
-		if b.ExtraSchemas == nil {
-			b.ExtraSchemas = make(map[string]GenSchema)
-		}
-		b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
-	}
-
-	if schema.IsAnonymous {
-		// a generated name for anonymous parameter in body
-		nm := swag.ToGoName(b.Operation.ID + " Body")
-
-		hasProperties := len(schema.Properties) > 0
-		isInterface := schema.IsInterface
-		hasValidations := schema.HasValidations
-
-		// for complex anonymous objects, produce an extra schema
-		if hasProperties {
-			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
-			}
-			schema.Name = nm
-			schema.GoType = nm
-			schema.IsAnonymous = false
-			b.ExtraSchemas[nm] = schema
-
-			// constructs new schema to refer to the newly created type
-			schema = GenSchema{}
-			schema.IsAnonymous = false
-			schema.IsComplexObject = true
-			schema.SwaggerType = nm
-			schema.HasValidations = hasValidations
-			schema.GoType = nm
-		} else if isInterface {
-			schema = GenSchema{}
-			schema.IsAnonymous = false
-			schema.IsComplexObject = false
-			schema.IsInterface = true
-			schema.HasValidations = false
-			schema.GoType = iface
-		}
-	}
-
 	res.Schema = &schema
-	res.Schema.Required = res.Required
+	res.Schema.Required = res.Required // Required in body is managed independently from validations
 
 	// build Child items for nested slices and maps
 	var items *GenItems
@@ -1228,4 +1011,122 @@ func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *sp
 	rslv := newTypeResolver(resolver.ModelsPackage, b.Doc.Pristine())
 
 	return rslv, b.cloneSchema(schema)
+}
+
+// liftExtraSchemas constructs the schema for an anonymous construct with some ExtraSchemas.
+//
+// When some ExtraSchemas are produced from something else than a definition,
+// this indicates we are not running in fully flattened mode and we need to render
+// these ExtraSchemas in the operation's package.
+// We need to rebuild the schema with a new type resolver to reflect this change in the
+// models package.
+func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec.Schema, sc *schemaGenContext) (schema *GenSchema, err error) {
+
+	// restore resolving state before previous call to makeGenSchema()
+	rslv := br
+	sc.Schema = *bs
+
+	pg := sc.shallowClone()
+	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
+	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
+
+	if err = pg.makeGenSchema(); err != nil {
+		return
+	}
+	// lift nested extra schemas (inlined types)
+	if b.ExtraSchemas == nil {
+		b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
+	}
+	for _, v := range pg.ExtraSchemas {
+		vv := v
+		if !v.IsStream {
+			b.ExtraSchemas[vv.Name] = vv
+		}
+	}
+	schema = &pg.GenSchema
+	return
+}
+
+// buildOperationSchema constructs a schema for an operation (for body params or responses).
+// It determines if the schema is readily available from the models package,
+// or if a schema has to be generated in the operations package (i.e. is anonymous).
+// Whenever an anonymous schema needs somes extra schemas, we also determine if these extras are
+// available from models or must be generated alongside the schema in the operations package.
+//
+// Duplicate extra schemas are pruned later on, when operations grouping in packages (e.g. from tags) takes place.
+func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schemaName, receiverName, indexVar string, sch *spec.Schema, resolver *typeResolver) (GenSchema, error) {
+	var schema GenSchema
+
+	if sch == nil {
+		sch = &spec.Schema{}
+	}
+	rslv := resolver
+	sc := schemaGenContext{
+		Path:             schemaPath,
+		Name:             containerName,
+		Receiver:         receiverName,
+		ValueExpr:        receiverName,
+		IndexVar:         indexVar,
+		Schema:           *sch,
+		Required:         false,
+		TypeResolver:     rslv,
+		Named:            false,
+		IncludeModel:     true,
+		IncludeValidator: true,
+		ExtraSchemas:     make(map[string]GenSchema),
+	}
+
+	br, bs := b.saveResolveContext(rslv, sch)
+
+	if err := sc.makeGenSchema(); err != nil {
+		return GenSchema{}, err
+	}
+
+	if sch.Ref.String() == "" && len(sc.ExtraSchemas) > 0 {
+		newSchema, err := b.liftExtraSchemas(resolver, br, bs, &sc)
+		if err != nil {
+			return GenSchema{}, err
+		}
+		if newSchema != nil {
+			schema = *newSchema
+		}
+	} else {
+		schema = sc.GenSchema
+	}
+
+	if schema.IsAnonymous {
+		// a generated name for anonymous schema
+		// TODO: support x-go-name
+		hasProperties := len(schema.Properties) > 0
+		isAllOf := len(schema.AllOf) > 0
+		isInterface := schema.IsInterface
+		hasValidations := schema.HasValidations
+
+		// for complex anonymous objects, produce an extra schema
+		if hasProperties || isAllOf {
+			if b.ExtraSchemas == nil {
+				b.ExtraSchemas = make(map[string]GenSchema)
+			}
+			schema.Name = schemaName
+			schema.GoType = schemaName
+			schema.IsAnonymous = false
+			b.ExtraSchemas[schemaName] = schema
+
+			// constructs new schema to refer to the newly created type
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.IsComplexObject = true
+			schema.SwaggerType = schemaName
+			schema.HasValidations = hasValidations
+			schema.GoType = schemaName
+		} else if isInterface {
+			schema = GenSchema{}
+			schema.IsAnonymous = false
+			schema.IsComplexObject = false
+			schema.IsInterface = true
+			schema.HasValidations = false
+			schema.GoType = iface
+		}
+	}
+	return schema, nil
 }

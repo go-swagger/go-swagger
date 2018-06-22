@@ -19,7 +19,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/go-openapi/loads"
@@ -71,6 +73,11 @@ func (r *modelTestRun) ExpectedFor(definition string) *modelExpectations {
 	return nil
 }
 
+func (r *modelTestRun) WithMinimalFlatten(minimal bool) *modelTestRun {
+	r.FixtureOpts.FlattenOpts.Minimal = minimal
+	return r
+}
+
 // modelFixture is a test structure to launch configurable test runs on a given spec
 type modelFixture struct {
 	SpecFile    string
@@ -79,17 +86,20 @@ type modelFixture struct {
 }
 
 // Add adds a new run to the provided model fixture
-func (f *modelFixture) AddRun(skipFlattenSpec bool) *modelTestRun {
+func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts := &GenOpts{}
 	opts.IncludeValidator = true
 	opts.IncludeModel = true
-	// sets gen options (e.g. flatten vs expand) - flatten is the default setting
 	opts.ValidateSpec = false
-	opts.FlattenSpec = !skipFlattenSpec
 	opts.Spec = f.SpecFile
 	if err := opts.EnsureDefaults(); err != nil {
 		panic(err)
 	}
+
+	// sets gen options (e.g. flatten vs expand) - full flatten is the default setting for this test (NOT the default CLI option!)
+	opts.FlattenOpts.Expand = expandSpec
+	opts.FlattenOpts.Minimal = false
+
 	defs := make(map[string]*modelExpectations, 150)
 	run := &modelTestRun{
 		FixtureOpts: opts,
@@ -132,7 +142,8 @@ func newModelFixture(specFile string, description string) *modelFixture {
 // all tested specs: init at the end of this source file
 // you may append to those with different initXXX() funcs below.
 var (
-	testedModels []*modelFixture
+	modelTestMutex = &sync.Mutex{}
+	testedModels   []*modelFixture
 
 	// convenient vars for (not) matching some lines
 	noLines     []string
@@ -142,7 +153,7 @@ var (
 )
 
 func init() {
-	testedModels = make([]*modelFixture, 0, 20)
+	testedModels = make([]*modelFixture, 0, 50)
 	noLines = []string{}
 	todo = []string{`TODO`}
 	validatable = append(todo, `Validate(`)
@@ -179,15 +190,17 @@ func initModelFixtures() {
 
 	// format "byte" validation
 	initFixture1548()
+
+	initFixtureDeepMaps()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
 
 func initTxxx() {
-	// testing xxx.yaml with expand (--skip-flatten)
+	// testing xxx.yaml with expand (--with-expand)
 	f := newModelFixture("xxx.yaml", "A test blg")
 
-	// makes a run with skipFlattenSpec=false
+	// makes a run with expandSpec=false (full flattening)
 	thisRun := f.AddRun(false)
 
 	// loads expectations for model abc
@@ -218,21 +231,21 @@ func TestModelGenerateDefinition(t *testing.T) {
 	assert := assert.New(t)
 	gendir, erd := ioutil.TempDir(".", "model-test")
 	defer func() {
-		os.RemoveAll(gendir)
+		_ = os.RemoveAll(gendir)
 	}()
 	if assert.NoError(erd) {
 		opts := &GenOpts{}
 		opts.IncludeValidator = true
 		opts.IncludeModel = true
-		// sets gen options (e.g. flatten vs expand) - flatten is the default setting
 		opts.ValidateSpec = false
-		opts.FlattenSpec = true
 		opts.Spec = fixtureSpec
 		opts.ModelPackage = "models"
 		opts.Target = gendir
 		if err := opts.EnsureDefaults(); err != nil {
 			panic(err)
 		}
+		// sets gen options (e.g. flatten vs expand) - flatten is the default setting
+		opts.FlattenOpts.Minimal = false
 
 		err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
 		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
@@ -269,147 +282,148 @@ func TestMoreModelValidations(t *testing.T) {
 	continueOnErrors := false
 	initModelFixtures()
 
-	assert := assert.New(t)
+	dassert := assert.New(t)
 
+	t.Logf("INFO: model specs tested: %d", len(testedModels))
 	for _, fixture := range testedModels {
 		if fixture.SpecFile == "" {
 			continue
 		}
 		fixtureSpec := fixture.SpecFile
-		specDoc, err := loads.Spec(fixtureSpec)
-		if !assert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-			t.FailNow()
-			return
-		}
-		for _, fixtureRun := range fixture.Runs {
-			// NOTE: could run in parallel, if no package level common structures, such as a cache etc..
-			opts := fixtureRun.FixtureOpts
-			t.Logf("codegen for  %s (%s) - run with FlattenSpec=%t", fixtureSpec, fixture.Description, opts.FlattenSpec)
-
-			// this is the expanded or flattened spec
-			newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
-			if !assert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
+		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
+		t.Run(runTitle, func(t *testing.T) {
+			t.Parallel()
+			specDoc, err := loads.Spec(fixtureSpec)
+			if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
 				t.FailNow()
 				return
 			}
-			definitions := newSpecDoc.Spec().Definitions
-			for k, fixtureExpectations := range fixtureRun.Definitions {
-				// pick definition to test
-				var schema *spec.Schema
-				var definitionName string
-				for def, s := range definitions {
-					// please do not inject in fixtures with case conflicts on defs...
-					// this one is just easier to retrieve model back from file names when capturing
-					// the generated code.
-					if strings.EqualFold(def, k) {
-						schema = &s
-						definitionName = def
-						break
-					}
-				}
-				if !assert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
+			for _, fixtureRun := range fixture.Runs {
+				opts := fixtureRun.FixtureOpts
+				//t.Logf("codegen for  %s (%s) - run with Expand=%t, MinimalFlatten=%t", fixtureSpec, fixture.Description, opts.FlattenOpts.Expand, opts.FlattenOpts.Minimal)
+
+				// workaround race condition with underlying pkg
+				modelTestMutex.Lock()
+				// this is the expanded or flattened spec
+				log.SetOutput(ioutil.Discard)
+				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
+				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
+					modelTestMutex.Unlock()
 					t.FailNow()
 					return
 				}
-
-				// prepare assertions on log output (e.g. generation warnings)
-				var logCapture bytes.Buffer
-				if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
-					log.SetOutput(&logCapture)
-				} else {
-					log.SetOutput(ioutil.Discard)
-				}
-
-				// generate the schema for this definition
-				genModel, er1 := makeGenDefinition(definitionName, "models", *schema, newSpecDoc, opts)
-
-				if fixtureExpectations.ExpectFailure && !assert.Errorf(er1, "Expected an error during generation of definition %q from spec fixture %s", k, fixtureSpec) {
-					// expected an error here, and it has not happened
-					if continueOnErrors {
-						t.Fail()
-						continue
-					} else {
-						t.FailNow()
-						return
-					}
-				}
-				if !assert.NoErrorf(er1, "could not generate model definition %q from spec fixture %s: %v", k, fixtureSpec, er1) {
-					// expected smooth generation
-					if continueOnErrors {
-						t.Fail()
-						continue
-					} else {
-						t.FailNow()
-						return
-					}
-				}
-				if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
-					// assert logged output
-					res := logCapture.String()
-					for line, logLine := range fixtureExpectations.ExpectedLogs {
-						if !assertInCode(t, strings.TrimSpace(logLine), res) {
-							t.Logf("Log expected did not match for definition %q in fixture %s at (fixture) log line %d", k, fixtureSpec, line)
+				log.SetOutput(os.Stdout)
+				modelTestMutex.Unlock()
+				definitions := newSpecDoc.Spec().Definitions
+				for k, fixtureExpectations := range fixtureRun.Definitions {
+					// pick definition to test
+					var schema *spec.Schema
+					var definitionName string
+					for def, s := range definitions {
+						// please do not inject fixtures with case conflicts on defs...
+						// this one is just easier to retrieve model back from file names when capturing
+						// the generated code.
+						if strings.EqualFold(def, k) {
+							schema = &s
+							definitionName = def
+							break
 						}
 					}
-					for line, logLine := range fixtureExpectations.NotExpectedLogs {
-						if !assertNotInCode(t, strings.TrimSpace(logLine), res) {
-							t.Logf("Log unexpectedly matched for definition %q in fixture %s at (fixture) log line %d", k, fixtureSpec, line)
-						}
-					}
-					if t.Failed() && !continueOnErrors {
+					if !dassert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
 						t.FailNow()
 						return
 					}
-					log.SetOutput(ioutil.Discard)
-				}
-
-				// execute the model template with this schema
-				buf := bytes.NewBuffer(nil)
-				er2 := templates.MustGet("model").Execute(buf, genModel)
-				if !assert.NoErrorf(er2, "could not render model template for definition %q in spec fixture %s: %v", k, fixtureSpec, er2) {
-					if continueOnErrors {
-						t.Fail()
-						continue
-					} else {
-						t.FailNow()
-						return
-					}
-				}
-				outputName := fixtureExpectations.GeneratedFile
-				if outputName == "" {
-					outputName = swag.ToFileName(k) + ".go"
-				}
-
-				// run goimport, gofmt on the generated code
-				formatted, er3 := opts.LanguageOpts.FormatContent(outputName, buf.Bytes())
-				if !assert.NoErrorf(er3, "could not render model template for definition %q in spec fixture %s: %v", k, fixtureSpec, er2) {
-					t.Fail()
-					if continueOnErrors {
-						t.Fail()
-						continue
-					} else {
-						t.FailNow()
-						return
-					}
-				}
-
-				// asserts generated code (see fixture file)
-				res := string(formatted)
-				for line, codeLine := range fixtureExpectations.ExpectedLines {
-					if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-						t.Logf("Code expected did not match for definition %q in fixture %s at (fixture) line %d", k, fixtureSpec, line)
-					}
-				}
-				for line, codeLine := range fixtureExpectations.NotExpectedLines {
-					if !assertNotInCode(t, strings.TrimSpace(codeLine), res) {
-						t.Logf("code unexpectedly matched for definition %q in fixture %s at (fixture) line %d", k, fixtureSpec, line)
-					}
-				}
-				if t.Failed() && !continueOnErrors {
-					t.FailNow()
-					return
+					checkDefinitionCodegen(t, definitionName, fixtureSpec, schema, newSpecDoc, opts, fixtureExpectations, continueOnErrors)
 				}
 			}
+		})
+	}
+}
+
+func checkContinue(t *testing.T, continueOnErrors bool) {
+	if continueOnErrors {
+		t.Fail()
+	} else {
+		t.FailNow()
+	}
+}
+
+func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations, continueOnErrors bool) {
+	// prepare assertions on log output (e.g. generation warnings)
+	var logCapture bytes.Buffer
+	dassert := assert.New(t)
+	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+		log.SetOutput(&logCapture)
+	} else {
+		log.SetOutput(ioutil.Discard)
+	}
+
+	// generate the schema for this definition
+	genModel, er1 := makeGenDefinition(definitionName, "models", *schema, specDoc, opts)
+
+	if fixtureExpectations.ExpectFailure && !dassert.Errorf(er1, "Expected an error during generation of definition %q from spec fixture %s", definitionName, fixtureSpec) {
+		// expected an error here, and it has not happened
+		checkContinue(t, continueOnErrors)
+		return
+	}
+	if !dassert.NoErrorf(er1, "could not generate model definition %q from spec fixture %s: %v", definitionName, fixtureSpec, er1) {
+		// expected smooth generation
+		checkContinue(t, continueOnErrors)
+		return
+	}
+	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+		// assert logged output
+		res := logCapture.String()
+		for line, logLine := range fixtureExpectations.ExpectedLogs {
+			if !assertInCode(t, strings.TrimSpace(logLine), res) {
+				t.Logf("log expected did not match for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
+			}
 		}
+		for line, logLine := range fixtureExpectations.NotExpectedLogs {
+			if !assertNotInCode(t, strings.TrimSpace(logLine), res) {
+				t.Logf("log unexpectedly matched for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
+			}
+		}
+		if t.Failed() && !continueOnErrors {
+			t.FailNow()
+			return
+		}
+		log.SetOutput(ioutil.Discard)
+	}
+
+	// execute the model template with this schema
+	buf := bytes.NewBuffer(nil)
+	er2 := templates.MustGet("model").Execute(buf, genModel)
+	if !dassert.NoErrorf(er2, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, er2) {
+		checkContinue(t, continueOnErrors)
+		return
+	}
+	outputName := fixtureExpectations.GeneratedFile
+	if outputName == "" {
+		outputName = swag.ToFileName(definitionName) + ".go"
+	}
+
+	// run goimport, gofmt on the generated code
+	formatted, er3 := opts.LanguageOpts.FormatContent(outputName, buf.Bytes())
+	if !dassert.NoErrorf(er3, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, er2) {
+		checkContinue(t, continueOnErrors)
+		return
+	}
+
+	// asserts generated code (see fixture file)
+	res := string(formatted)
+	for line, codeLine := range fixtureExpectations.ExpectedLines {
+		if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+			t.Logf("code expected did not match for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
+		}
+	}
+	for line, codeLine := range fixtureExpectations.NotExpectedLines {
+		if !assertNotInCode(t, strings.TrimSpace(codeLine), res) {
+			t.Logf("code unexpectedly matched for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
+		}
+	}
+	if t.Failed() && !continueOnErrors {
+		t.FailNow()
+		return
 	}
 }

@@ -10,6 +10,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Commands requires at least one arg
+func TestCmd_Validate_MissingArgs(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	v := ValidateSpec{}
+	result := v.Execute([]string{})
+	assert.Error(t, result)
+
+	result = v.Execute([]string{"nowhere.json"})
+	assert.Error(t, result)
+}
+
 // Test proper validation: items in object error
 func TestCmd_Validate_Issue1238(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
@@ -51,9 +63,7 @@ func TestCmd_Validate_Issue342_ForbiddenProperty(t *testing.T) {
 	assert.Error(t, result)
 }
 
-/*
-TODO: fixture 342-2 (a variant of invalid specification), cannot be tested because it calls log.Fatal()
-
+//fixture 342-2 (a variant of invalid specification) (cannot unmarshal)
 // Test proper validation: reference to shared top level parameter, but with incorrect
 // yaml syntax: use map key instead of array item.
 // NOTE: this error message is not clear enough. The role of this test
@@ -63,17 +73,18 @@ func TestCmd_Validate_Issue342_CannotUnmarshal(t *testing.T) {
 	v := ValidateSpec{}
 	base := filepath.FromSlash("../../../")
 	specDoc := filepath.Join(base, "fixtures", "bugs", "342", "fixture-342-2.yaml")
-	assert.NotPanics(t, func() {
-		v.Execute([]string{specDoc})
-	})
-	// TODO: uncomment the following test when validation no more results in a log.Fatal() call
-	//result := v.Execute([]string{specDoc})
-	//if assert.Error(t, result, "This spec should not pass validation") {
-	//	//assert.Contains(t, result.Error(), "is invalid against swagger specification 2.0")
-	//	assert.Contains(t, result.Error(), "json: cannot unmarshal object into Go struct field SwaggerProps.paths of type []spec.Parameter")
-	//}
+	if !assert.NotPanics(t, func() {
+		_ = v.Execute([]string{specDoc})
+	}) {
+		t.FailNow()
+		return
+	}
+	result := v.Execute([]string{specDoc})
+	if assert.Error(t, result, "This spec should not pass validation") {
+		// assert.Contains(t, result.Error(), "is invalid against swagger specification 2.0")
+		assert.Contains(t, result.Error(), "json: cannot unmarshal object into Go struct field SwaggerProps.paths of type []spec.Parameter")
+	}
 }
-*/
 
 // This one is a correct version of issue#342 and it validates
 func TestCmd_Validate_Issue342_Correct(t *testing.T) {

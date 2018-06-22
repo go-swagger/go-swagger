@@ -15,7 +15,6 @@
 package generate
 
 import (
-	"io/ioutil"
 	"log"
 	"strings"
 
@@ -41,23 +40,9 @@ type Server struct {
 	FlagStrategy      string   `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag"`
 	CompatibilityMode string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation    bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
-	SkipFlattening    bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 }
 
 func (s *Server) getOpts() (*generator.GenOpts, error) {
-	var copyrightstr string
-	copyrightfile := string(s.CopyrightFile)
-	if copyrightfile != "" {
-		//Read the Copyright from file path in opts
-		bytebuffer, err := ioutil.ReadFile(copyrightfile)
-		if err != nil {
-			return nil, err
-		}
-		copyrightstr = string(bytebuffer)
-	} else {
-		copyrightstr = ""
-	}
-
 	return &generator.GenOpts{
 		Spec:              string(s.Spec),
 		Target:            string(s.Target),
@@ -76,7 +61,6 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		IncludeMain:       !s.ExcludeMain,
 		IncludeSupport:    !s.SkipSupport,
 		ValidateSpec:      !s.SkipValidation,
-		FlattenSpec:       !s.SkipFlattening,
 		ExcludeSpec:       s.ExcludeSpec,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
@@ -88,8 +72,11 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		FlagStrategy:      s.FlagStrategy,
 		CompatibilityMode: s.CompatibilityMode,
 		ExistingModels:    s.ExistingModels,
-		Copyright:         copyrightstr,
 	}, nil
+}
+
+func (s *Server) getShared() *shared {
+	return &s.shared
 }
 
 func (s *Server) generate(opts *generator.GenOpts) error {
@@ -97,9 +84,11 @@ func (s *Server) generate(opts *generator.GenOpts) error {
 }
 
 func (s *Server) log(rp string) {
-	flagsPackage := "github.com/jessevdk/go-flags"
+	var flagsPackage string
 	if strings.HasPrefix(s.FlagStrategy, "pflag") {
 		flagsPackage = "github.com/spf13/pflag"
+	} else {
+		flagsPackage = "github.com/jessevdk/go-flags"
 	}
 
 	log.Printf(`Generation completed!

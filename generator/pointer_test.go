@@ -81,31 +81,31 @@ func isNotNullableExt() spec.Extensions {
 }
 
 var boolPointerVals = []builtinVal{
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: nullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: nullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: nullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: notNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: isNotNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
-	builtinVal{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: nullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: nullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: nullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: false, ReadOnly: false, Extensions: isNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: false, Extensions: isNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: false, ReadOnly: false, Extensions: isNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: nil, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: true, Default: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: notNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: notNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: notNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: notNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: notNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: false, Extensions: isNotNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: false, ReadOnly: false, Extensions: isNotNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: nil, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
+	{Type: "boolean", Format: "", Expected: "bool", Nullable: false, Default: true, Required: true, ReadOnly: true, Extensions: isNotNullableExt()},
 }
 
 func generateNumberPointerVals(t, v string) (result []builtinVal) {
@@ -130,253 +130,253 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 	}
 	return []builtinVal{
 		// plain vanilla
-		builtinVal{Type: t, Format: v, Expected: vv},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: isNullableExt()}, // 2
+		{Type: t, Format: v, Expected: vv},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Extensions: isNullableExt()}, // 2
 
 		// plain vanilla readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
 
 		// required
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
 
 		// required, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
 		// minimum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 23
+		{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 23
 
 		// minimum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 31
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 31
 
 		// required, minimum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 35
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 35
 
 		// required, minimum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 
 		// maximum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 46
+		{Type: t, Format: v, Expected: vv, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 46
 
 		// maximum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 54
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 54
 
 		// required, maximum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 58
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 58
 
 		// required, maximum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
 
 		// minimum and maximum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 72
+		{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 72
 
 		// minimum and maximum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 83
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 83
 
 		// required, minimum and maximum validation
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 89
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 89
 
 		// required, minimum and maximum validation, readonly and defaults
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		builtinVal{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 99
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 99
 	}
 }
 
 var stringPointerVals = []builtinVal{
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: isNullableExt()}, // 2
+	{Type: "string", Format: "", Expected: "string", Nullable: false},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Extensions: isNullableExt()}, // 2
 
 	// plain vanilla readonly and defaults
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
 
 	// required
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
 
 	// required, readonly and defaults
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
 	// minLength validation
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, MinLength: swag.Int64(2)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(0)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 23
+	{Type: "string", Format: "", Expected: "string", Nullable: false, MinLength: swag.Int64(2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 23
 
 	// minLength validation, readonly and defaults
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(2)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(0)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, MinLength: swag.Int64(2)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true, MinLength: swag.Int64(2)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 31
+	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, MinLength: swag.Int64(2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true, MinLength: swag.Int64(2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 31
 
 	// required, minLength validation
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(0)},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 35
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 35
 
 	// required, minLength validation, readonly and defaults
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 }
 
 var strfmtValues = []builtinVal{
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: isNullableExt()}, // 2
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Extensions: isNullableExt()}, // 2
 
 	// plain vanilla readonly and defaults
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, ReadOnly: true},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, ReadOnly: true},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 9
 
 	// required
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Extensions: isNullableExt()}, // 12
 
 	// required, readonly and defaults
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, ReadOnly: true},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, ReadOnly: true},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "password", Expected: "strfmt.Password", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: isNullableExt()}, // 22
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Extensions: isNullableExt()}, // 22
 
 	// plain vanilla readonly and defaults
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 29
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 29
 
 	// required
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: isNullableExt()}, // 32
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Extensions: isNullableExt()}, // 32
 
 	// required, readonly and defaults
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: isNullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	builtinVal{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 39
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 39
 }
 
 func testPointToAdditionalPropertiesElements(t testing.TB, tr typeResolver, aliased bool) bool {

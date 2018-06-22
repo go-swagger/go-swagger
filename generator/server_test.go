@@ -154,6 +154,8 @@ func TestServer_MultipartForm(t *testing.T) {
 }
 
 func TestServer_InvalidSpec(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/825/swagger.yml"
 	opts.ValidateSpec = true
@@ -265,7 +267,7 @@ func badParseCall() {
 
 	var badParse = `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 
-	templates.AddFile("badparse", badParse)
+	_ = templates.AddFile("badparse", badParse)
 	gen, _ := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	app, _ := gen.makeCodegenApp()
 	log.SetOutput(ioutil.Discard)
@@ -289,9 +291,9 @@ func TestServer_OperationGroups(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
-		os.RemoveAll(filepath.Join(".", "restapi"))
-		os.RemoveAll(filepath.Join(".", "search"))
-		os.RemoveAll(filepath.Join(".", "tasks"))
+		_ = os.RemoveAll(filepath.Join(".", "restapi"))
+		_ = os.RemoveAll(filepath.Join(".", "search"))
+		_ = os.RemoveAll(filepath.Join(".", "tasks"))
 	}()
 
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
@@ -319,7 +321,7 @@ func TestServer_OperationGroups(t *testing.T) {
 {{ range .Operations }}
 	// OperationName={{.Name}}
 {{end}}`
-		templates.AddFile("opGroupTest", opGroupTpl)
+		_ = templates.AddFile("opGroupTest", opGroupTpl)
 		err = gen.Generate()
 		assert.NoError(t, err)
 		//buf := bytes.NewBuffer(nil)

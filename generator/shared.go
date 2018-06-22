@@ -378,22 +378,21 @@ type SectionOpts struct {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	IncludeModel       bool
-	IncludeValidator   bool
-	IncludeHandler     bool
-	IncludeParameters  bool
-	IncludeResponses   bool
-	IncludeURLBuilder  bool
-	IncludeMain        bool
-	IncludeSupport     bool
-	ExcludeSpec        bool
-	DumpData           bool
-	WithContext        bool
-	ValidateSpec       bool
-	FlattenSpec        bool
-	FlattenDefinitions bool
-	IsClient           bool
-	defaultsEnsured    bool
+	IncludeModel      bool
+	IncludeValidator  bool
+	IncludeHandler    bool
+	IncludeParameters bool
+	IncludeResponses  bool
+	IncludeURLBuilder bool
+	IncludeMain       bool
+	IncludeSupport    bool
+	ExcludeSpec       bool
+	DumpData          bool
+	WithContext       bool
+	ValidateSpec      bool
+	FlattenOpts       *analysis.FlattenOpts
+	IsClient          bool
+	defaultsEnsured   bool
 
 	Spec              string
 	APIPackage        string
@@ -482,6 +481,13 @@ func (g *GenOpts) EnsureDefaults() error {
 	DefaultSectionOpts(g)
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = GoLangOpts()
+	}
+	// set defaults for flattening options
+	g.FlattenOpts = &analysis.FlattenOpts{
+		Minimal:      true,
+		Verbose:      true,
+		RemoveUnused: false,
+		Expand:       false,
 	}
 	g.defaultsEnsured = true
 	return nil
@@ -916,6 +922,7 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 
 	// Validate if needed
 	if opts.ValidateSpec {
+		log.Printf("validating spec %v", opts.Spec)
 		if erv := validateSpec(opts.Spec, specDoc); erv != nil {
 			return specDoc, erv
 		}
@@ -933,27 +940,44 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 		absBasePath = filepath.Join(cwd, absBasePath)
 	}
 
-	/********************************************************************************************/
-	/* Either flatten or expand should be called here before moving on the code generation part */
-	/********************************************************************************************/
-	if opts.FlattenSpec {
-		flattenOpts := analysis.FlattenOpts{
-			Expand: false,
-			// BasePath must be absolute. This is guaranteed because opts.Spec is absolute
-			BasePath: absBasePath,
-			Spec:     analysis.New(specDoc.Spec()),
-		}
-		err = analysis.Flatten(flattenOpts)
+	// Some preprocessing is required before codegen
+	//
+	// This ensures at least that $ref's in the spec document are canonical,
+	// i.e all $ref are local to this file and point to some uniquely named definition.
+	//
+	// Default option is to ensure minimal flattening of $ref, bundling remote $refs and relocating arbitrary JSON
+	// pointers as definitions.
+	// This preprocessing may introduce duplicate names (e.g. remote $ref with same name). In this case, a definition
+	// suffixed with "OAIGen" is produced.
+	//
+	// Full flattening option farther transforms the spec by moving every complex object (e.g. with some properties)
+	// as a standalone definition.
+	//
+	// Eventually, an "expand spec" option is available. It is essentially useful for testing purposes.
+	//
+	// NOTE(fredbi): spec expansion may produce some unsupported constructs and is not yet protected against the following cases:
+	//  - polymorphic types generation may fail with expansion (expand destructs the reuse intent of the $ref in allOf)
+	//  - name duplicates may occur and result in compilation failures
+	// The right place to fix these shortcomings is go-openapi/analysis.
+
+	opts.FlattenOpts.BasePath = absBasePath // BasePath must be absolute. This is guaranteed because opts.Spec is absolute
+	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+
+	var preprocessingOption string
+	if opts.FlattenOpts.Expand {
+		preprocessingOption = "expand"
+	} else if opts.FlattenOpts.Minimal {
+		preprocessingOption = "minimal flattening"
 	} else {
-		err = spec.ExpandSpec(specDoc.Spec(), &spec.ExpandOptions{
-			RelativeBase: absBasePath,
-			SkipSchemas:  false,
-		})
+		preprocessingOption = "full flattening"
 	}
-	if err != nil {
+	log.Printf("preprocessing spec with option:  %s", preprocessingOption)
+
+	if err = analysis.Flatten(*opts.FlattenOpts); err != nil {
 		return nil, err
 	}
 
+	// yields the preprocessed spec document
 	return specDoc, nil
 }
 

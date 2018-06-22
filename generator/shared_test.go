@@ -198,7 +198,7 @@ func TestShared_GarbledTemplate(t *testing.T) {
 
 	garbled := "func x {{;;; garbled"
 
-	templates.AddFile("garbled", garbled)
+	_ = templates.AddFile("garbled", garbled)
 	opts := GenOpts{}
 	tplOpts := TemplateOpts{
 		Name:       "Garbled",
@@ -229,7 +229,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	// Not a failure: no value data
 	execfailure1 := "func x {{ .NotInData }}"
 
-	templates.AddFile("execfailure1", execfailure1)
+	_ = templates.AddFile("execfailure1", execfailure1)
 	opts := new(GenOpts)
 	tplOpts := TemplateOpts{
 		Name:       "execFailure1",
@@ -246,7 +246,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 	execfailure2 := "func {{ .MyFaultyMethod }}"
 
-	templates.AddFile("execfailure2", execfailure2)
+	_ = templates.AddFile("execfailure2", execfailure2)
 	opts = new(GenOpts)
 	tplOpts2 := TemplateOpts{
 		Name:       "execFailure2",
@@ -269,8 +269,8 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 
 	defer func() {
-		os.Remove("test_badformat.gol")
-		os.Remove("test_badformat2.gol")
+		_ = os.Remove("test_badformat.gol")
+		_ = os.Remove("test_badformat2.gol")
 		log.SetOutput(os.Stdout)
 		Debug = false
 	}()
@@ -279,7 +279,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	badFormat := "func x {;;; garbled"
 
 	Debug = true
-	templates.AddFile("badformat", badFormat)
+	_ = templates.AddFile("badformat", badFormat)
 
 	opts := GenOpts{}
 	opts.LanguageOpts = GoLangOpts()
@@ -303,7 +303,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(tplOpts.FileName)
 	assert.True(t, !os.IsNotExist(exists), "The template file has not been generated as expected")
-	os.Remove(tplOpts.FileName)
+	_ = os.Remove(tplOpts.FileName)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "source formatting on generated source")
@@ -325,7 +325,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	// The unformatted file has been dumped without format checks
 	_, exists2 := os.Stat(tplOpts2.FileName)
 	assert.True(t, !os.IsNotExist(exists2), "The template file has not been generated as expected")
-	os.Remove(tplOpts2.FileName)
+	_ = os.Remove(tplOpts2.FileName)
 
 	assert.Nil(t, err2)
 
@@ -337,7 +337,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 
 	defer func() {
-		os.RemoveAll("TestGenDir")
+		_ = os.RemoveAll("TestGenDir")
 		log.SetOutput(os.Stdout)
 		Debug = false
 	}()
@@ -346,7 +346,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	content := "func x {}"
 
 	Debug = true
-	templates.AddFile("gendir", content)
+	_ = templates.AddFile("gendir", content)
 
 	opts := GenOpts{}
 	opts.LanguageOpts = GoLangOpts()
@@ -370,7 +370,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(filepath.Join(tplOpts.Target, tplOpts.FileName))
 	assert.True(t, !os.IsNotExist(exists), "The template file has not been generated as expected")
-	os.RemoveAll(tplOpts.Target)
+	_ = os.RemoveAll(tplOpts.Target)
 
 	assert.Nil(t, err)
 }

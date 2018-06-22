@@ -9333,5 +9333,90 @@ func initFixture1548() {
 		// output in log
 		noLines,
 		noLines)
+}
 
+func initFixtureDeepMaps() {
+	// testing fixture-deepMaps.yaml with minimal flatten
+
+	f := newModelFixture("../fixtures/enhancements/1572/fixture-deepMaps.yaml", "issue 1572 - deep maps")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// load expectations for model: model_object_vanilla.go
+	thisRun.AddExpectations("model_object_vanilla.go", []string{
+		`type ModelObjectVanilla struct {`,
+		"	Prop0 *ModelSanity `json:\"prop0,omitempty\"`",
+		"	Prop1 *ModelSanity `json:\"prop1\"`",
+		"	Prop2 []*ModelSanity `json:\"prop2\"`",
+		"	Prop3 *ModelSanity `json:\"prop3,omitempty\"`",
+		"	Prop4 map[string]ModelSanity `json:\"prop4,omitempty\"`",
+		"	Prop5 int64 `json:\"prop5,omitempty\"`",
+		"	ModelObjectVanilla map[string]map[string]map[string]ModelSanity `json:\"-\"`",
+		`func (m *ModelObjectVanilla) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp0(formats); err != nil {`,
+		`	if err := m.validateProp1(formats); err != nil {`,
+		`	if err := m.validateProp2(formats); err != nil {`,
+		`	if err := m.validateProp3(formats); err != nil {`,
+		`	if err := m.validateProp4(formats); err != nil {`,
+		`	for k := range m.ModelObjectVanilla {`,
+		`		for kk := range m.ModelObjectVanilla[k] {`,
+		`			for kkk := range m.ModelObjectVanilla[k][kk] {`,
+		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m.ModelObjectVanilla[k][kk][kkk]); err != nil {`,
+		`				if val, ok := m.ModelObjectVanilla[k][kk][kkk]; ok {`,
+		`					if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *ModelObjectVanilla) validateProp0(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop0) {`,
+		`	if m.Prop0 != nil {`,
+		`		if err := m.Prop0.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("prop0"`,
+		`func (m *ModelObjectVanilla) validateProp1(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("prop1", "body", m.Prop1); err != nil {`,
+		`	if m.Prop1 != nil {`,
+		`		if err := m.Prop1.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("prop1"`,
+		`func (m *ModelObjectVanilla) validateProp2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop2) {`,
+		`	for i := 0; i < len(m.Prop2); i++ {`,
+		`		if swag.IsZero(m.Prop2[i]) {`,
+		`		if m.Prop2[i] != nil {`,
+		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName("prop2" + "." + strconv.Itoa(i)`,
+		`func (m *ModelObjectVanilla) validateProp3(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop3) {`,
+		`	if m.Prop3 != nil {`,
+		`		if err := m.Prop3.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("prop3"`,
+		`func (m *ModelObjectVanilla) validateProp4(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop4) {`,
+		`	for k := range m.Prop4 {`,
+		`		if err := validate.Required("prop4"+"."+k, "body", m.Prop4[k]); err != nil {`,
+		`		if val, ok := m.Prop4[k]; ok {`,
+		`			if err := val.Validate(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: model_sanity.go
+	thisRun.AddExpectations("model_sanity.go", []string{
+		`type ModelSanity struct {`,
+		"	PropA string `json:\"propA,omitempty\"`",
+		"	PropB *string `json:\"propB\"`",
+		`func (m *ModelSanity) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validatePropB(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *ModelSanity) validatePropB(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("propB", "body", m.PropB); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
 }
