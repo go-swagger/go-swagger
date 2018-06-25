@@ -219,9 +219,13 @@ if err := validate.Enum(
     {{ template "validationPrimitive" . }}
   {{- end }}
   {{- if and .IsCustomFormatter (not .IsStream) }}
+    {{- if ne .SwaggerFormat "byte" }}
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }
+    {{- else }}
+  // Format "byte" (base64 string) is already validated when parsed
+    {{- end }}
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
     {{ template "sliceparamvalidator" . }}

@@ -4003,3 +4003,78 @@ func TestGenParameter_Issue15362_SkipFlatten(t *testing.T) {
 
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), true, false)
 }
+
+func TestGenParameter_Issue1548_base64(t *testing.T) {
+	// testing fixture-1548.yaml with flatten
+	// My App API
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters in operation my_method_parameters.go
+		"MyMethod": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewMyMethodParams() MyMethodParams {`,
+				`	return MyMethodParams{`,
+				`type MyMethodParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	ByteInQuery strfmt.Base64`,
+				`	Data strfmt.Base64`,
+				`func (o *MyMethodParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	qs := runtime.Values(r.URL.Query()`,
+				`	qByteInQuery, qhkByteInQuery, _ := qs.GetOK("byteInQuery"`,
+				`	if err := o.bindByteInQuery(qByteInQuery, qhkByteInQuery, route.Formats); err != nil {`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body strfmt.Base64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
+				`		} else {`,
+				`			o.Data = body`,
+				`			if err := o.validateDataBody(route.Formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *MyMethodParams) bindByteInQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {`,
+				`	if !hasKey {`,
+				`		return errors.Required("byteInQuery", "query"`,
+				`	var raw string`,
+				`	if len(rawData) > 0 {`,
+				`		raw = rawData[len(rawData)-1]`,
+				`	if err := validate.RequiredString("byteInQuery", "query", raw); err != nil {`,
+				`	value, err := formats.Parse("byte", raw`,
+				`	if err != nil {`,
+				`		return errors.InvalidType("byteInQuery", "query", "strfmt.Base64", raw`,
+				`	o.ByteInQuery = *(value.(*strfmt.Base64)`,
+				`	if err := o.validateByteInQuery(formats); err != nil {`,
+				`func (o *MyMethodParams) validateByteInQuery(formats strfmt.Registry) error {`,
+				`	if err := validate.MaxLength("byteInQuery", "query", o.ByteInQuery.String(), 100); err != nil {`,
+				`func (o *MyMethodParams) validateDataBody(formats strfmt.Registry) error {`,
+			},
+		},
+
+		// load expectations for parameters in operation my_model_method_parameters.go
+		"MyModelMethod": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewMyModelMethodParams() MyModelMethodParams {`,
+				`	return MyModelMethodParams{`,
+				`type MyModelMethodParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	Data *models.Base64Model`,
+				`func (o *MyModelMethodParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body models.Base64Model`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
+				`		} else {`,
+				`			if err := body.Validate(route.Formats); err != nil {`,
+				`			if len(res) == 0 {`,
+				`				o.Data = &body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+	}
+
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1548", "fixture-1548.yaml"), true, false)
+}

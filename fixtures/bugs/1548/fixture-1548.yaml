@@ -1,0 +1,89 @@
+swagger: '2.0'
+
+info:
+  title: My App API
+  description: My App API
+  version: 1.0.0
+  contact:
+    name: Artemy Shepelev
+    email: ffelian@gmail.com
+
+schemes:
+  - http
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+definitions:
+  base64Model:
+    type: object
+    properties:
+      prop1:
+        type: string
+        format: byte
+  base64Alias:
+    type: string
+    format: byte
+  base64Array:
+    type: array
+    items:
+      type: string
+      format: byte
+  base64Map:
+    type: object
+    additionalProperties:
+      type: string
+      format: byte
+      maxLength: 100
+paths:
+  /in:
+    post:
+      summary: My method
+      operationId: MyMethod
+      parameters:
+      - name: data
+        in: body
+        schema:
+          type: string
+          format: byte
+      - name: byteInQuery
+        in: query
+        type: string
+        format: byte
+        required: true
+        maxLength: 100
+      responses:
+        default:
+          description: Ok
+          schema:
+            type: string
+            format: byte
+  /model:
+    post:
+      summary: My model method
+      operationId: MyModelMethod
+      parameters:
+      - name: data
+        in: body
+        schema:
+          $ref: '#/definitions/base64Model'
+      responses:
+        200:
+          description: Ok
+          schema:
+            $ref: '#/definitions/base64Alias'
+        203:
+          description: Ok
+          schema:
+            $ref: '#/definitions/base64Array'
+        204:
+          description: Ok
+          schema:
+            $ref: '#/definitions/base64Map'
+        default:
+          description: Ok
+          schema:
+            $ref: '#/definitions/base64Model'
