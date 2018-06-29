@@ -122,7 +122,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			IncludeHandler:       opts.IncludeHandler,
 			IncludeParameters:    opts.IncludeParameters,
 			IncludeResponses:     opts.IncludeResponses,
-			IncludeValidator:     opts.IncludeValidator,
+			IncludeValidator:     true, // we no more support the CLI option to disable validation
 			DumpData:             opts.DumpData,
 			DefaultScheme:        defaultScheme,
 			DefaultProduces:      defaultProduces,
@@ -303,9 +303,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	if Debug {
 		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	}
-	// @eleanorrigby : letting the comment be. Commented in response to issue#890
-	// Post-flattening of spec we no longer need to reset defs for spec or use original spec in any case.
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc /*.ResetDefinitions()*/)
+	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
+	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
+	// Flattened means that all complex constructs are present as
+	// definitions and models produced accordingly in ModelsPackage.
+	// When this is not the case, extra schemas are produced in the operations package.
+	//
+	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
+	// we take it from here the spec possibly already transformed by the GenDefinitions stage.
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc)
 	receiver := "o"
 
 	operation := b.Operation
@@ -420,14 +426,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		b.Principal = iface
 	}
 
-	var extra GenSchemaList
-	for _, sch := range b.ExtraSchemas {
-		if !sch.IsStream {
-			extra = append(extra, sch)
-		}
-	}
-	sort.Sort(extra)
-
 	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
 	if ess, ok := operation.Extensions.GetStringSlice(xSchemes); ok {
@@ -509,7 +507,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		DefaultResponse:      defaultResponse,
 		SuccessResponse:      successResponse,
 		SuccessResponses:     successResponses,
-		ExtraSchemas:         extra,
+		ExtraSchemas:         gatherExtraSchemas(b.ExtraSchemas),
 		Schemes:              schemeOrDefault(schemes, b.DefaultScheme),
 		ProducesMediaTypes:   produces,
 		ConsumesMediaTypes:   consumes,
@@ -594,10 +592,14 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	sort.Sort(res.Headers)
 
 	if resp.Schema != nil {
+		var schema GenSchema
 		var named bool
 		rslv := resolver
 		sch := resp.Schema
 		if resp.Schema.Ref.String() != "" && !resp.Schema.Ref.HasFragmentOnly {
+			// This section attempts to resolve external $ref (e.g. which are not only a fragment)
+			// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
+			// We should guard the generator against complex $ref, such as external, or pointing to anonymous places.
 			ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &resp.Schema.Ref, nil)
 			if err != nil {
 				return GenResponse{}, err
@@ -621,21 +623,52 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			IncludeModel:     true,
 			IncludeValidator: true,
 		}
+		br, bs := b.saveResolveContext(rslv, sch)
 		if err := sc.makeGenSchema(); err != nil {
 			return GenResponse{}, err
 		}
 
-		for k, v := range sc.ExtraSchemas {
+		if !strings.HasPrefix(sch.Ref.String(), "#/definitions") && len(sc.ExtraSchemas) > 0 {
+			// when some ExtraSchemas are produced from something else than a definition,
+			// this indicates we are not running in fully flatten mode and we need to render
+			// ExtraSchemas in the operation's package.
+			// We need to rebuild the schema with a new type resolver to reflect this change in the
+			// models package.
+			//
+			// In the following, we want to produce extra schemas in the current package (operations),
+			// while being able to reuse already resolved definitions in the models package.
+
+			// restore resolving state before previous call to makeGenSchema()
+			rslv = br
+			sc.Schema = *bs
+
+			pg := sc.shallowClone()
+			pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
+			pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
+			rslv = pg.TypeResolver
+
+			if err := pg.makeGenSchema(); err != nil {
+				return GenResponse{}, err
+			}
+			// lift nested extra schemas (inlined types)
 			if b.ExtraSchemas == nil {
-				b.ExtraSchemas = make(map[string]GenSchema)
+				b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
 			}
-			if !v.IsStream {
-				b.ExtraSchemas[k] = v
+			for _, v := range pg.ExtraSchemas {
+				vv := v
+				vv.GoType = vv.Name
+				vv.IsAnonymous = false
+				if !v.IsStream {
+					b.ExtraSchemas[vv.Name] = vv
+				}
 			}
+			schema = pg.GenSchema
+		} else {
+			schema = sc.GenSchema
 		}
 
-		schema := sc.GenSchema
 		if named {
+			// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
 			if b.ExtraSchemas == nil {
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
@@ -644,7 +677,6 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			}
 		}
 		if schema.IsAnonymous {
-
 			schema.Name = swag.ToGoName(sc.Name)
 			nm := schema.Name
 			if b.ExtraSchemas == nil {
@@ -655,7 +687,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 			}
 			schema = GenSchema{}
 			schema.IsAnonymous = false
-			schema.GoType = resolver.goTypeName(nm)
+			schema.GoType = rslv.goTypeName(nm)
 			schema.SwaggerType = nm
 		}
 
@@ -665,56 +697,42 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 }
 
 func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (GenHeader, error) {
-	hasNumberValidation := hdr.Maximum != nil || hdr.Minimum != nil || hdr.MultipleOf != nil
-	hasStringValidation := hdr.MaxLength != nil || hdr.MinLength != nil || hdr.Pattern != ""
-	hasSliceValidations := hdr.MaxItems != nil || hdr.MinItems != nil || hdr.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(hdr.Enum) > 0
-
 	tpe := typeForHeader(hdr) //simpleResolvedType(hdr.Type, hdr.Format, hdr.Items)
 
 	id := swag.ToGoName(name)
 	res := GenHeader{
-		sharedValidations: sharedValidations{
-			Required:            true, // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
-			Maximum:             hdr.Maximum,
-			ExclusiveMaximum:    hdr.ExclusiveMaximum,
-			Minimum:             hdr.Minimum,
-			ExclusiveMinimum:    hdr.ExclusiveMinimum,
-			MaxLength:           hdr.MaxLength,
-			MinLength:           hdr.MinLength,
-			Pattern:             hdr.Pattern,
-			MaxItems:            hdr.MaxItems,
-			MinItems:            hdr.MinItems,
-			UniqueItems:         hdr.UniqueItems,
-			MultipleOf:          hdr.MultipleOf,
-			Enum:                hdr.Enum,
-			HasValidations:      hasValidations,
-			HasSliceValidations: hasSliceValidations,
-		},
-		resolvedType:     tpe,
-		Package:          b.APIPackage,
-		ReceiverName:     receiver,
-		ID:               id,
-		Name:             name,
-		Path:             fmt.Sprintf("%q", name),
-		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
-		Description:      trimBOM(hdr.Description),
-		Default:          hdr.Default,
-		HasDefault:       hdr.Default != nil,
-		Converter:        stringConverters[tpe.GoType],
-		Formatter:        stringFormatters[tpe.GoType],
-		ZeroValue:        tpe.Zero(),
-		CollectionFormat: hdr.CollectionFormat,
-		IndexVar:         "i",
+		sharedValidations: sharedValidationsFromSimple(hdr.CommonValidations, true), // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
+		resolvedType:      tpe,
+		Package:           b.APIPackage,
+		ReceiverName:      receiver,
+		ID:                id,
+		Name:              name,
+		Path:              fmt.Sprintf("%q", name),
+		ValueExpression:   fmt.Sprintf("%s.%s", receiver, id),
+		Description:       trimBOM(hdr.Description),
+		Default:           hdr.Default,
+		HasDefault:        hdr.Default != nil,
+		Converter:         stringConverters[tpe.GoType],
+		Formatter:         stringFormatters[tpe.GoType],
+		ZeroValue:         tpe.Zero(),
+		CollectionFormat:  hdr.CollectionFormat,
+		IndexVar:          "i",
 	}
+	res.HasValidations, res.HasSliceValidations = b.HasValidations(hdr.CommonValidations, res.resolvedType)
 
+	hasChildValidations := false
 	if hdr.Items != nil {
 		pi, err := b.MakeHeaderItem(receiver, name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", \"header\", "+res.IndexVar+")", res.Name+"I", hdr.Items, nil)
 		if err != nil {
 			return GenHeader{}, err
 		}
 		res.Child = &pi
+		hasChildValidations = pi.HasValidations
 	}
+	// we feed the GenHeader structure the same way as we do for
+	// GenParameter, even though there is currently no actual validation
+	// for response headers.
+	res.HasValidations = res.HasValidations || hasChildValidations
 
 	return res, nil
 }
@@ -722,20 +740,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, valueExpression string, items, parent *spec.Items) (GenItems, error) {
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
-	res.sharedValidations = sharedValidations{
-		Maximum:          items.Maximum,
-		ExclusiveMaximum: items.ExclusiveMaximum,
-		Minimum:          items.Minimum,
-		ExclusiveMinimum: items.ExclusiveMinimum,
-		MaxLength:        items.MaxLength,
-		MinLength:        items.MinLength,
-		Pattern:          items.Pattern,
-		MaxItems:         items.MaxItems,
-		MinItems:         items.MinItems,
-		UniqueItems:      items.UniqueItems,
-		MultipleOf:       items.MultipleOf,
-		Enum:             items.Enum,
-	}
+	res.sharedValidations = sharedValidationsFromSimple(items.CommonValidations, false)
 	res.Name = paramName
 	res.Path = path
 	res.Location = "header"
@@ -744,12 +749,7 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
-	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
-	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
-	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0
-	res.HasValidations = hasValidations
-	res.HasSliceValidations = hasSliceValidations
+	res.HasValidations, res.HasSliceValidations = b.HasValidations(items.CommonValidations, res.resolvedType)
 
 	if items.Items != nil {
 		// Recursively follows nested arrays
@@ -767,24 +767,21 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	return res, nil
 }
 
+// HasValidations resolves the validation status for simple schema objects
+func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolvedType) (hasValidations bool, hasSliceValidations bool) {
+	// TODO: exclude format byte (istrfmt.Base64) from validation (issue#1548)
+	hasNumberValidation := sh.Maximum != nil || sh.Minimum != nil || sh.MultipleOf != nil
+	hasStringValidation := sh.MaxLength != nil || sh.MinLength != nil || sh.Pattern != ""
+	hasSliceValidations = sh.MaxItems != nil || sh.MinItems != nil || sh.UniqueItems || len(sh.Enum) > 0
+	hasValidations = (hasNumberValidation || hasStringValidation || hasSliceValidations || rt.IsCustomFormatter) && !rt.IsStream && !rt.IsInterface
+	return
+}
+
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 	debugLog("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
-	res.sharedValidations = sharedValidations{
-		Maximum:          items.Maximum,
-		ExclusiveMaximum: items.ExclusiveMaximum,
-		Minimum:          items.Minimum,
-		ExclusiveMinimum: items.ExclusiveMinimum,
-		MaxLength:        items.MaxLength,
-		MinLength:        items.MinLength,
-		Pattern:          items.Pattern,
-		MaxItems:         items.MaxItems,
-		MinItems:         items.MinItems,
-		UniqueItems:      items.UniqueItems,
-		MultipleOf:       items.MultipleOf,
-		Enum:             items.Enum,
-	}
+	res.sharedValidations = sharedValidationsFromSimple(items.CommonValidations, false)
 	res.Name = paramName
 	res.Path = path
 	res.Location = location
@@ -793,13 +790,8 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
 	res.IndexVar = indexVar
-	hasNumberValidation := items.Maximum != nil || items.Minimum != nil || items.MultipleOf != nil
-	hasStringValidation := items.MaxLength != nil || items.MinLength != nil || items.Pattern != ""
-	hasSliceValidations := items.MaxItems != nil || items.MinItems != nil || items.UniqueItems
 
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || len(items.Enum) > 0 || res.IsCustomFormatter
-	res.HasValidations = hasValidations
-	res.HasSliceValidations = hasSliceValidations
+	res.HasValidations, res.HasSliceValidations = b.HasValidations(items.CommonValidations, res.resolvedType)
 
 	if items.Items != nil {
 		// Recursively follows nested arrays
@@ -858,35 +850,20 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Extensions:       param.Extensions,
 	}
 
-	hasChildValidations := false
-
 	if param.In == "body" {
+		// Process parameters declared in body (i.e. have a Schema)
 		res.Required = param.Required
 		if err := b.MakeBodyParameter(&res, resolver, param.Schema); err != nil {
 			return GenParameter{}, err
 		}
-		hasChildValidations = res.Child.HasValidations
 	} else {
 		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
 		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
-		res.sharedValidations = sharedValidations{
-			Required:         param.Required,
-			Maximum:          param.Maximum,
-			ExclusiveMaximum: param.ExclusiveMaximum,
-			Minimum:          param.Minimum,
-			ExclusiveMinimum: param.ExclusiveMinimum,
-			MaxLength:        param.MaxLength,
-			MinLength:        param.MinLength,
-			Pattern:          param.Pattern,
-			MaxItems:         param.MaxItems,
-			MinItems:         param.MinItems,
-			UniqueItems:      param.UniqueItems,
-			MultipleOf:       param.MultipleOf,
-			Enum:             param.Enum,
-		}
+		res.sharedValidations = sharedValidationsFromSimple(param.CommonValidations, param.Required)
 
 		res.ZeroValue = res.resolvedType.Zero()
 
+		hasChildValidations := false
 		if param.Items != nil {
 			// Follow Items definition for array parameters
 			pi, err := b.MakeParameterItem(receiver, param.Name+" "+res.IndexVar, res.IndexVar+"i", "fmt.Sprintf(\"%s.%v\", "+res.Path+", "+res.IndexVar+")", res.Name+"I", param.In, resolver, param.Items, nil)
@@ -898,22 +875,13 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			hasChildValidations = pi.HasValidations
 		}
 		res.IsNullable = !param.Required && !param.AllowEmptyValue
+		res.HasValidations, res.HasSliceValidations = b.HasValidations(param.CommonValidations, res.resolvedType)
+		res.HasValidations = res.HasValidations || hasChildValidations
 	}
 
-	// Summarize validation requirements for code generator
-	hasNumberValidation := res.Maximum != nil || res.Minimum != nil || res.MultipleOf != nil
-	hasStringValidation := res.MaxLength != nil || res.MinLength != nil || res.Pattern != ""
-	hasSliceValidations := res.MaxItems != nil || res.MinItems != nil || res.UniqueItems || len(res.Enum) > 0
-	hasValidations := hasNumberValidation || hasStringValidation || hasSliceValidations || hasChildValidations
-
+	// Select codegen strategy for body param validation
 	res.Converter = stringConverters[res.GoType]
 	res.Formatter = stringFormatters[res.GoType]
-
-	// Custom format requires a validation too (but not when binary)
-	res.HasValidations = hasValidations || (res.IsCustomFormatter && !res.IsStream)
-	res.HasSliceValidations = hasSliceValidations
-
-	// Select codegen strategy for body param validation
 	b.setBodyParamValidation(&res)
 
 	return res, nil
@@ -921,19 +889,25 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 // MakeBodyParameter constructs a body parameter schema
 func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeResolver, sch *spec.Schema) error {
+	var schema GenSchema
 	var named bool
 	rslv := resolver
 
 	if sch.Ref.String() != "" && !sch.Ref.HasFragmentOnly {
+		// This section attempts to resolve external $ref (e.g. which are not only a fragment)
+		// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
+		// We should guard the generator against complex $ref, such as external, or pointing to anonymous places.
 		ss, err := spec.ResolveRefWithBase(b.Doc.Spec(), &sch.Ref, nil)
 		if err != nil {
 			return err
 		}
 		sch = ss
+		// this is a named schema (i.e. with an external $ref)
 		named = true
 		rslv = resolver.NewWithModelName(b.Operation.ID + "ParamsBody")
 	}
 
+	// resolve schema model
 	sc := schemaGenContext{
 		Path:             res.Path,
 		Name:             b.Operation.ID + "ParamsBody",
@@ -945,21 +919,57 @@ func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeRe
 		TypeResolver:     rslv,
 		Named:            named,
 		IncludeModel:     true,
-		IncludeValidator: b.IncludeValidator,
+		IncludeValidator: true,
 		ExtraSchemas:     make(map[string]GenSchema),
 	}
+	br, bs := b.saveResolveContext(rslv, sch)
 	if err := sc.makeGenSchema(); err != nil {
 		return err
 	}
-	// TODO: lift nested extra schemas
 
-	schema := sc.GenSchema
+	if !strings.HasPrefix(sch.Ref.String(), "#/definitions") && len(sc.ExtraSchemas) > 0 {
+		// when some ExtraSchemas are produced from something else than a definition,
+		// this indicates we are not running in fully flattened mode and we need to render
+		// some ExtraSchemas in the operation's package.
+		// We need to rebuild the schema with a new type resolver to reflect this change in the
+		// models package.
+
+		// restore resolving state before previous call to makeGenSchema()
+		rslv = br
+		sc.Schema = *bs
+
+		pg := sc.shallowClone()
+		pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
+		pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
+
+		if err := pg.makeGenSchema(); err != nil {
+			return err
+		}
+		// lift nested extra schemas (inlined types)
+		if b.ExtraSchemas == nil {
+			b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
+		}
+		for _, v := range pg.ExtraSchemas {
+			vv := v
+			vv.GoType = vv.Name
+			vv.IsAnonymous = false
+			if !v.IsStream {
+				b.ExtraSchemas[vv.Name] = vv
+			}
+		}
+		schema = pg.GenSchema
+	} else {
+		schema = sc.GenSchema
+	}
+
 	if named {
+		// TODO: this is currently unused as always resolved beforehand by flattening/expanding the spec.
 		if b.ExtraSchemas == nil {
 			b.ExtraSchemas = make(map[string]GenSchema)
 		}
 		b.ExtraSchemas[b.Operation.ID+"ParamsBody"] = schema
 	}
+
 	if schema.IsAnonymous {
 		// a generated name for anonymous parameter in body
 		nm := swag.ToGoName(b.Operation.ID + " Body")
@@ -1100,6 +1110,29 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 			return child.HasValidations
 		}
 		items.HasValidations = propag(items)
+
+		// resolve nullability conflicts when declaring body as a map of array of an anonymous complex object
+		// (e.g. refer to an extra schema type, which is nullable, but not rendered as a pointer in arrays or maps)
+		// Rule: outer type rules (with IsMapNullOverride), inner types are fixed
+		var fixNullable func(child *GenItems) string
+		fixNullable = func(child *GenItems) string {
+			if !child.IsArray && !child.IsMap {
+				if child.IsComplexObject {
+					log.Printf("FRED DEBUG GoType: %s", child.GoType)
+					return child.GoType
+				}
+				return ""
+			}
+			if innerType := fixNullable(child.Child); innerType != "" {
+				if child.IsMapNullOverride && child.IsArray {
+					child.GoType = "[]" + innerType
+					log.Printf("FRED DEBUG(in) GoType: %s", child.GoType)
+					return child.GoType
+				}
+			}
+			return ""
+		}
+		fixNullable(items)
 	}
 	return items
 }
@@ -1180,4 +1213,21 @@ func (b *codeGenOpBuilder) makeSecurityRequirements(receiver string) []GenSecuri
 		securityRequirements = append(securityRequirements, jointReq)
 	}
 	return securityRequirements
+}
+
+// cloneSchema returns a deep copy of a schema
+func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
+	savedSchema := &spec.Schema{}
+	schemaRep, _ := json.Marshal(schema)
+	_ = json.Unmarshal(schemaRep, savedSchema)
+	return savedSchema
+}
+
+// saveResolveContext keeps a copy of known definitions and schema to properly roll back on a makeGenSchema() call
+// This uses a deep clone the spec document to construct a type resolver which knows about definitions when the making of this operation started,
+// and only these definitions. We are not interested in the "original spec", but in the already transformed spec.
+func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *spec.Schema) (*typeResolver, *spec.Schema) {
+	rslv := newTypeResolver(resolver.ModelsPackage, b.Doc.Pristine())
+
+	return rslv, b.cloneSchema(schema)
 }

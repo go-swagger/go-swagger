@@ -1185,16 +1185,24 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	}
 }
 
-func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fixture string) {
+func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fixture string, skipFlatten bool, withExpand bool) {
 	fixtureSpec := path.Base(fixture)
 	tassert := assert.New(t)
 	for fixtureIndex, fixtureContents := range fixtureConfig {
-		gen, err := opBuilderWithFlatten(fixtureIndex, fixture)
+		var gen codeGenOpBuilder
+		var err error
+		if skipFlatten && !withExpand {
+			gen, err = opBuilder(fixtureIndex, fixture)
+		} else if !skipFlatten {
+			gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
+		} else {
+			gen, err = opBuilderWithExpand(fixtureIndex, fixture)
+		}
 		if tassert.NoError(err) {
 			op, err := gen.MakeOperation()
 			if tassert.NoError(err) {
 				opts := opts()
-				opts.FlattenSpec = true
+				//opts.FlattenSpec = true
 				for fixtureTemplate, expectedCode := range fixtureContents {
 					buf := bytes.NewBuffer(nil)
 					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
@@ -1216,6 +1224,7 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 		}
 	}
 }
+
 func TestGenParameter_Issue909(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {
@@ -1224,8 +1233,8 @@ func TestGenParameter_Issue909(t *testing.T) {
 
 	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
-		"1": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"1": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`strfmt "github.com/go-openapi/strfmt"`,
 				`NotAnOption1 *strfmt.DateTime`,
@@ -1241,8 +1250,8 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`if err := validate.FormatOf("notAnOption2", "query", "uuid", o.NotAnOption2.String(), formats); err != nil {`,
 			},
 		},
-		"2": map[string][]string{
-			"serverParameter": []string{
+		"2": {
+			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
 				`IsAnOption2 []strfmt.UUID`,
@@ -1268,8 +1277,8 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`o.NotAnOption1 = notAnOption1IR`,
 			},
 		},
-		"3": map[string][]string{
-			"serverParameter": []string{
+		"3": {
+			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
 				`strfmt "github.com/go-openapi/strfmt"`,
@@ -1346,8 +1355,8 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`o.NotAnOption1 = notAnOption1IR`,
 			},
 		},
-		"4": map[string][]string{
-			"serverParameter": []string{
+		"4": {
+			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
 				`strfmt "github.com/go-openapi/strfmt"`,
@@ -1410,8 +1419,8 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`o.NotAnOption1 = notAnOption1IR`,
 			},
 		},
-		"5": map[string][]string{
-			"serverResponses": []string{
+		"5": {
+			"serverResponses": {
 				// expected code lines
 				`"github.com/go-openapi/strfmt"`,
 				"XIsAnOptionalHeader0 strfmt.DateTime `json:\"x-isAnOptionalHeader0\"`",
@@ -1504,8 +1513,8 @@ func TestGenParameter_Issue1237(t *testing.T) {
 
 	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
-		"1": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"1": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`var body models.Sg`,
 				`if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
@@ -1554,8 +1563,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 
 	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
-		"1": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"1": { // fixture index
+			"serverParameter": { // executed template
 				`func (o *PatchSomeResourceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	var res []error`,
 				`	o.HTTPRequest = r`,
@@ -1573,8 +1582,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`		return errors.CompositeValidationError(res...)`,
 			},
 		},
-		"2": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"2": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func (o *PostBodybuilder20Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	var res []error`,
@@ -1603,8 +1612,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`	o.MyObject = myObjectIR`,
 			},
 		},
-		"3": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"3": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func (o *PostBodybuilder26Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	var res []error`,
@@ -1631,8 +1640,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`	if err := validate.FormatOf("myObject", "body", "date", o.MyObject.String(), formats); err != nil {`,
 			},
 		},
-		"4": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"4": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func (o *PostBodybuilder27Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	var res []error`,
@@ -1670,8 +1679,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`	o.MyObject = myObjectIR`,
 			},
 		},
-		"5": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"5": { // fixture index
+			"serverParameter": { // executed template
 				`func (o *Bodybuilder23Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	var res []error`,
 				`	o.HTTPRequest = r`,
@@ -1777,8 +1786,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 	fixtureConfig := map[string]map[string][]string{
 
 		// load expectations for parameters in operation get_interface_parameters.go
-		"getInterface": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getInterface": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetInterfaceParams() GetInterfaceParams {`,
 				`	return GetInterfaceParams{`,
@@ -1799,8 +1808,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_slice_parameters.go
-		"getMapSlice": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapSlice": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapSliceParams() GetMapSliceParams {`,
 				`	return GetMapSliceParams{`,
@@ -1821,8 +1830,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_with_validations_parameters.go
-		"getNestedWithValidations": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedWithValidations": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedWithValidationsParams() GetNestedWithValidationsParams {`,
 				`	return GetNestedWithValidationsParams{`,
@@ -1868,8 +1877,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_another_interface_parameters.go
-		"getAnotherInterface": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getAnotherInterface": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetAnotherInterfaceParams() GetAnotherInterfaceParams {`,
 				`	return GetAnotherInterfaceParams{`,
@@ -1890,8 +1899,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_required_parameters.go
-		"getNestedRequired": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedRequired": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedRequiredParams() GetNestedRequiredParams {`,
 				`	return GetNestedRequiredParams{`,
@@ -1938,8 +1947,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_records_max_parameters.go
-		"getRecordsMax": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getRecordsMax": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetRecordsMaxParams() GetRecordsMaxParams {`,
 				`	return GetRecordsMaxParams{`,
@@ -1969,8 +1978,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_records_parameters.go
-		"getRecords": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getRecords": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetRecordsParams() GetRecordsParams {`,
 				`	return GetRecordsParams{`,
@@ -1996,8 +2005,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 			},
 		},
 		// load expectations for parameters in operation get_records_non_required_parameters.go
-		"getRecordsNonRequired": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getRecordsNonRequired": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetRecordsNonRequiredParams() GetRecordsNonRequiredParams {`,
 				`	return GetRecordsNonRequiredParams{`,
@@ -2017,8 +2026,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 			},
 		},
 		// load expectations for parameters in operation get_map_parameters.go
-		"getMap": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMap": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapParams() GetMapParams {`,
 				`	return GetMapParams{`,
@@ -2039,8 +2048,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_slice_map_parameters.go
-		"getSliceMap": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getSliceMap": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetSliceMapParams() GetSliceMapParams {`,
 				`	return GetSliceMapParams{`,
@@ -2061,8 +2070,8 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_parameters.go
-		"getNested": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNested": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedParams() GetNestedParams {`,
 				`	return GetNestedParams{`,
@@ -2083,20 +2092,19 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536.yaml"))
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536.yaml"), false, false)
 }
 
-func TestGenParameter_Issue1536_Arrays(t *testing.T) {
+func TestGenParameter_Issue15362(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation get_nested_with_validations_parameters.go
-		"getNestedWithValidations": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedWithValidations": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedWithValidationsParams() GetNestedWithValidationsParams {`,
 				`	return GetNestedWithValidationsParams{`,
@@ -2142,8 +2150,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_required_parameters.go
-		"getNestedRequired": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedRequired": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedRequiredParams() GetNestedRequiredParams {`,
 				`	return GetNestedRequiredParams{`,
@@ -2178,6 +2186,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 				`							var objectNestedRequiredIIIIR []*models.GetNestedRequiredParamsBodyItemsItemsItemsItems`,
 				`							for iiii, objectNestedRequiredIIIIV := range objectNestedRequiredIIIIC {`,
 				`								if objectNestedRequiredIIIIV == nil {`,
+				// 										continue
+				`									objectNestedRequiredIIII := objectNestedRequiredIIIIV`,
 				`									if err := objectNestedRequiredIIII.Validate(formats); err != nil {`,
 				`										if ve, ok := err.(*errors.Validation); ok {`,
 				`											return ve.ValidateName(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "objectNestedRequired", i), ii), iii), iiii)`,
@@ -2190,8 +2200,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_simple_array_with_slice_validation_parameters.go
-		"getSimpleArrayWithSliceValidation": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getSimpleArrayWithSliceValidation": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetSimpleArrayWithSliceValidationParams() GetSimpleArrayWithSliceValidationParams {`,
 				`	return GetSimpleArrayWithSliceValidationParams{`,
@@ -2215,8 +2225,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_simple_parameters.go
-		"getSimple": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getSimple": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetSimpleParams() GetSimpleParams {`,
 				`	return GetSimpleParams{`,
@@ -2239,8 +2249,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_simple_array_with_validation_parameters.go
-		"getSimpleArrayWithValidation": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getSimpleArrayWithValidation": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetSimpleArrayWithValidationParams() GetSimpleArrayWithValidationParams {`,
 				`	return GetSimpleArrayWithValidationParams{`,
@@ -2270,8 +2280,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_parameters.go
-		"getNested": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNested": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedParams() GetNestedParams {`,
 				`	return GetNestedParams{`,
@@ -2292,8 +2302,8 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_simple_array_parameters.go
-		"getSimpleArray": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getSimpleArray": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetSimpleArrayParams() GetSimpleArrayParams {`,
 				`	return GetSimpleArrayParams{`,
@@ -2313,7 +2323,7 @@ func TestGenParameter_Issue1536_Arrays(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"))
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), false, false)
 }
 
 func TestGenParameter_Issue1536_Maps(t *testing.T) {
@@ -2325,8 +2335,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 	fixtureConfig := map[string]map[string][]string{
 
 		// load expectations for parameters in operation get_map_interface_parameters.go
-		"getMapInterface": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapInterface": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapInterfaceParams() GetMapInterfaceParams {`,
 				`	return GetMapInterfaceParams{`,
@@ -2352,8 +2362,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_array_of_interface_parameters.go
-		"getArrayOfInterface": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getArrayOfInterface": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetArrayOfInterfaceParams() GetArrayOfInterfaceParams {`,
 				`	return GetArrayOfInterfaceParams{`,
@@ -2379,8 +2389,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_array_with_max_parameters.go
-		"getMapArrayWithMax": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapArrayWithMax": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapArrayWithMaxParams() GetMapArrayWithMaxParams {`,
 				`	return GetMapArrayWithMaxParams{`,
@@ -2399,7 +2409,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`				res = append(res, errors.NewParseError("mapOfArrayWithMax", "body", "", err)`,
 				`		} else {`,
 				`			for k := range body {`,
-				`				if err := o.MapOfArrayWithMax[k].Validate(route.Formats); err != nil {`,
+				`				if val, ok := o.MapOfArrayWithMax[k]; ok {`,
+				`				if err := val.Validate(route.Formats); err != nil {`,
 				`					break`,
 				`			if len(res) == 0 {`,
 				`				o.MapOfArrayWithMax = body`,
@@ -2410,8 +2421,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_array_nested_simple_parameters.go
-		"getArrayNestedSimple": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getArrayNestedSimple": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetArrayNestedSimpleParams() GetArrayNestedSimpleParams {`,
 				`	return GetArrayNestedSimpleParams{`,
@@ -2451,8 +2462,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_of_format_parameters.go
-		"getMapOfFormat": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapOfFormat": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapOfFormatParams() GetMapOfFormatParams {`,
 				`	return GetMapOfFormatParams{`,
@@ -2487,8 +2498,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_array_of_map_parameters.go
-		"getArrayOfMap": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getArrayOfMap": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetArrayOfMapParams() GetArrayOfMapParams {`,
 				`	return GetArrayOfMapParams{`,
@@ -2533,8 +2544,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_anon_array_with_x_nullable_parameters.go
-		"getMapAnonArrayWithXNullable": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapAnonArrayWithXNullable": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapAnonArrayWithXNullableParams() GetMapAnonArrayWithXNullableParams {`,
 				`	return GetMapAnonArrayWithXNullableParams{`,
@@ -2560,8 +2571,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_array_nested_parameters.go
-		"getArrayNested": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getArrayNested": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetArrayNestedParams() GetArrayNestedParams {`,
 				`	return GetArrayNestedParams{`,
@@ -2603,8 +2614,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_array_parameters.go
-		"getMapArray": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapArray": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapArrayParams() GetMapArrayParams {`,
 				`	return GetMapArrayParams{`,
@@ -2632,8 +2643,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_anon_array_with_nullable_parameters.go
-		"getMapAnonArrayWithNullable": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapAnonArrayWithNullable": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapAnonArrayWithNullableParams() GetMapAnonArrayWithNullableParams {`,
 				`	return GetMapAnonArrayWithNullableParams{`,
@@ -2672,8 +2683,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_of_anon_array_parameters.go
-		"getMapOfAnonArray": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapOfAnonArray": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapOfAnonArrayParams() GetMapOfAnonArrayParams {`,
 				`	return GetMapOfAnonArrayParams{`,
@@ -2712,8 +2723,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_of_anon_map_parameters.go
-		"getMapOfAnonMap": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapOfAnonMap": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapOfAnonMapParams() GetMapOfAnonMapParams {`,
 				`	return GetMapOfAnonMapParams{`,
@@ -2756,8 +2767,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_anon_array_parameters.go
-		"getMapAnonArray": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapAnonArray": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapAnonArrayParams() GetMapAnonArrayParams {`,
 				`	return GetMapAnonArrayParams{`,
@@ -2796,8 +2807,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_of_primitive_parameters.go
-		"getMapOfPrimitive": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapOfPrimitive": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapOfPrimitiveParams() GetMapOfPrimitiveParams {`,
 				`	return GetMapOfPrimitiveParams{`,
@@ -2832,8 +2843,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_array_parameters.go
-		"getArray": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getArray": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetArrayParams() GetArrayParams {`,
 				`	return GetArrayParams{`,
@@ -2864,8 +2875,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_object_parameters.go
-		"getMapObject": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapObject": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapObjectParams() GetMapObjectParams {`,
 				`	return GetMapObjectParams{`,
@@ -2893,8 +2904,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_map_of_map_parameters.go
-		"getMapOfMap": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getMapOfMap": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetMapOfMapParams() GetMapOfMapParams {`,
 				`	return GetMapOfMapParams{`,
@@ -2934,9 +2945,255 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"))
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), false, false)
 }
 
+func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	fixtureConfig := map[string]map[string][]string{
+		// load expectations for parameters in operation get_map_of_array_of_map_parameters.go
+		"getMapOfArrayOfMap": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapOfArrayOfMapParams() GetMapOfArrayOfMapParams {`,
+				`	return GetMapOfArrayOfMapParams{`,
+				`type GetMapOfArrayOfMapParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfArrayOfMap map[string][]map[string]int64`,
+				`func (o *GetMapOfArrayOfMapParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string][]map[string]int64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfArrayOfMap", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfArrayOfMap", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfArrayOfMap = body`,
+				`			if err := o.validateMapOfArrayOfMapBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfArrayOfMap", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetMapOfArrayOfMapParams) validateMapOfArrayOfMapBody(formats strfmt.Registry) error {`,
+				`	mapOfArrayOfMapIC := o.MapOfArrayOfMap`,
+				`	mapOfArrayOfMapIR := make(map[string][]map[string]int64, len(mapOfArrayOfMapIC)`,
+				`	for k, mapOfArrayOfMapIV := range mapOfArrayOfMapIC {`,
+				`		mapOfArrayOfMapIIC := mapOfArrayOfMapIV`,
+				`		mapOfArrayOfMapISize := int64(len(mapOfArrayOfMapIIC)`,
+				`		if err := validate.MaxItems(fmt.Sprintf("%s.%v", "mapOfArrayOfMap", k), "body", mapOfArrayOfMapISize, 10); err != nil {`,
+				`		var mapOfArrayOfMapIIR []map[string]int64`,
+				`		for _, mapOfArrayOfMapIIV := range mapOfArrayOfMapIIC {`,
+				`			mapOfArrayOfMapIIIC := mapOfArrayOfMapIIV`,
+				`			mapOfArrayOfMapIIIR := make(map[string]int64, len(mapOfArrayOfMapIIIC)`,
+				`			for kkk, mapOfArrayOfMapIIIV := range mapOfArrayOfMapIIIC {`,
+				`				mapOfArrayOfMapIII := mapOfArrayOfMapIIIV`,
+				`				mapOfArrayOfMapIIIR[kkk] = mapOfArrayOfMapIII`,
+				`			mapOfArrayOfMapIIR = append(mapOfArrayOfMapIIR, mapOfArrayOfMapIIIR`,
+				`		mapOfArrayOfMapIR[k] = mapOfArrayOfMapIIR`,
+				`	o.MapOfArrayOfMap = mapOfArrayOfMapIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_of_array_of_nullable_map_parameters.go
+		"getMapOfArrayOfNullableMap": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapOfArrayOfNullableMapParams() GetMapOfArrayOfNullableMapParams {`,
+				`	return GetMapOfArrayOfNullableMapParams{`,
+				`type GetMapOfArrayOfNullableMapParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfArrayOfNullableMap map[string][]GetMapOfArrayOfNullableMapParamsBodyItems0`,
+				`func (o *GetMapOfArrayOfNullableMapParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string][]GetMapOfArrayOfNullableMapParamsBodyItems0`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfArrayOfNullableMap", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfArrayOfNullableMap", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfArrayOfNullableMap = body`,
+				`			if err := o.validateMapOfArrayOfNullableMapBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfArrayOfNullableMap", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetMapOfArrayOfNullableMapParams) validateMapOfArrayOfNullableMapBody(formats strfmt.Registry) error {`,
+				`	mapOfArrayOfNullableMapIC := o.MapOfArrayOfNullableMap`,
+				`	mapOfArrayOfNullableMapIR := make(map[string][]GetMapOfArrayOfNullableMapParamsBodyItems0, len(mapOfArrayOfNullableMapIC)`,
+				`	for k, mapOfArrayOfNullableMapIV := range mapOfArrayOfNullableMapIC {`,
+				`		mapOfArrayOfNullableMapIIC := mapOfArrayOfNullableMapIV`,
+				`		mapOfArrayOfNullableMapISize := int64(len(mapOfArrayOfNullableMapIIC)`,
+				`		if err := validate.MaxItems(fmt.Sprintf("%s.%v", "mapOfArrayOfNullableMap", k), "body", mapOfArrayOfNullableMapISize, 10); err != nil {`,
+				`		var mapOfArrayOfNullableMapIIR []GetMapOfArrayOfNullableMapParamsBodyItems0`,
+				`		for ii, mapOfArrayOfNullableMapIIV := range mapOfArrayOfNullableMapIIC {`,
+				`			mapOfArrayOfNullableMapII := mapOfArrayOfNullableMapIIV`,
+				`			if err := mapOfArrayOfNullableMapII.Validate(formats); err != nil {`,
+				`				if ve, ok := err.(*errors.Validation); ok {`,
+				`					return ve.ValidateName(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfArrayOfNullableMap", k), ii)`,
+				`			mapOfArrayOfNullableMapIIR = append(mapOfArrayOfNullableMapIIR, mapOfArrayOfNullableMapII`,
+				`		mapOfArrayOfNullableMapIR[k] = mapOfArrayOfNullableMapIIR`,
+				`	o.MapOfArrayOfNullableMap = mapOfArrayOfNullableMapIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_array_of_array_parameters.go
+		"getMapArrayOfArray": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapArrayOfArrayParams() GetMapArrayOfArrayParams {`,
+				`	return GetMapArrayOfArrayParams{`,
+				`type GetMapArrayOfArrayParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfArrayOfArray map[string][][]GetMapArrayOfArrayParamsBodyItems0`,
+				`func (o *GetMapArrayOfArrayParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string][][]GetMapArrayOfArrayParamsBodyItems0`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfArrayOfArray", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfArrayOfArray", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfArrayOfArray = body`,
+				`			if err := o.validateMapOfArrayOfArrayBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfArrayOfArray", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetMapArrayOfArrayParams) validateMapOfArrayOfArrayBody(formats strfmt.Registry) error {`,
+				`	mapOfArrayOfArrayIC := o.MapOfArrayOfArray`,
+				`	mapOfArrayOfArrayIR := make(map[string][][]GetMapArrayOfArrayParamsBodyItems0, len(mapOfArrayOfArrayIC)`,
+				`	for k, mapOfArrayOfArrayIV := range mapOfArrayOfArrayIC {`,
+				`		mapOfArrayOfArrayIIC := mapOfArrayOfArrayIV`,
+				`		mapOfArrayOfArrayISize := int64(len(mapOfArrayOfArrayIIC)`,
+				`		if err := validate.MaxItems(fmt.Sprintf("%s.%v", "mapOfArrayOfArray", k), "body", mapOfArrayOfArrayISize, 10); err != nil {`,
+				`		var mapOfArrayOfArrayIIR [][]GetMapArrayOfArrayParamsBodyItems0`,
+				`		for ii, mapOfArrayOfArrayIIV := range mapOfArrayOfArrayIIC {`,
+				`			mapOfArrayOfArrayIIIC := mapOfArrayOfArrayIIV`,
+				`			if len(mapOfArrayOfArrayIIIC) > 0 {`,
+				`				var mapOfArrayOfArrayIIIR []GetMapArrayOfArrayParamsBodyItems0`,
+				`				for iii, mapOfArrayOfArrayIIIV := range mapOfArrayOfArrayIIIC {`,
+				`					mapOfArrayOfArrayIII := mapOfArrayOfArrayIIIV`,
+				`					if err := mapOfArrayOfArrayIII.Validate(formats); err != nil {`,
+				`						if ve, ok := err.(*errors.Validation); ok {`,
+				`							return ve.ValidateName(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfArrayOfArray", k), ii), iii)`,
+				`					mapOfArrayOfArrayIIIR = append(mapOfArrayOfArrayIIIR, mapOfArrayOfArrayIII`,
+				`				mapOfArrayOfArrayIIR = append(mapOfArrayOfArrayIIR, mapOfArrayOfArrayIIIR`,
+				`		mapOfArrayOfArrayIR[k] = mapOfArrayOfArrayIIR`,
+				`	o.MapOfArrayOfArray = mapOfArrayOfArrayIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_anon_array_with_nested_nullable_parameters.go
+		"getMapAnonArrayWithNestedNullable": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapAnonArrayWithNestedNullableParams() GetMapAnonArrayWithNestedNullableParams {`,
+				`	return GetMapAnonArrayWithNestedNullableParams{`,
+				`type GetMapAnonArrayWithNestedNullableParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfAnonArrayWithNestedNullable map[string][][]*int64`,
+				`func (o *GetMapAnonArrayWithNestedNullableParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string][][]*int64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfAnonArrayWithNestedNullable", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfAnonArrayWithNestedNullable = body`,
+				`			if err := o.validateMapOfAnonArrayWithNestedNullableBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetMapAnonArrayWithNestedNullableParams) validateMapOfAnonArrayWithNestedNullableBody(formats strfmt.Registry) error {`,
+				`	mapOfAnonArrayWithNestedNullableIC := o.MapOfAnonArrayWithNestedNullable`,
+				`	mapOfAnonArrayWithNestedNullableIR := make(map[string][][]*int64, len(mapOfAnonArrayWithNestedNullableIC)`,
+				`	for k, mapOfAnonArrayWithNestedNullableIV := range mapOfAnonArrayWithNestedNullableIC {`,
+				`		mapOfAnonArrayWithNestedNullableIIC := mapOfAnonArrayWithNestedNullableIV`,
+				`		var mapOfAnonArrayWithNestedNullableIIR [][]*int64`,
+				`		for ii, mapOfAnonArrayWithNestedNullableIIV := range mapOfAnonArrayWithNestedNullableIIC {`,
+				`			mapOfAnonArrayWithNestedNullableIIIC := mapOfAnonArrayWithNestedNullableIIV`,
+				`			if len(mapOfAnonArrayWithNestedNullableIIIC) > 0 {`,
+				`				var mapOfAnonArrayWithNestedNullableIIIR []*int64`,
+				`				for iii, mapOfAnonArrayWithNestedNullableIIIV := range mapOfAnonArrayWithNestedNullableIIIC {`,
+				`					mapOfAnonArrayWithNestedNullableIII := mapOfAnonArrayWithNestedNullableIIIV`,
+				`					if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArrayWithNestedNullable", k), ii), iii), "", int64(*mapOfAnonArrayWithNestedNullableIII), 0, false); err != nil {`,
+				`					mapOfAnonArrayWithNestedNullableIIIR = append(mapOfAnonArrayWithNestedNullableIIIR, mapOfAnonArrayWithNestedNullableIII`,
+				`				mapOfAnonArrayWithNestedNullableIIR = append(mapOfAnonArrayWithNestedNullableIIR, mapOfAnonArrayWithNestedNullableIIIR`,
+				`		mapOfAnonArrayWithNestedNullableIR[k] = mapOfAnonArrayWithNestedNullableIIR`,
+				`	o.MapOfAnonArrayWithNestedNullable = mapOfAnonArrayWithNestedNullableIR`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_of_model_map_parameters.go
+		"getMapOfModelMap": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapOfModelMapParams() GetMapOfModelMapParams {`,
+				`	return GetMapOfModelMapParams{`,
+				`type GetMapOfModelMapParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfModelMap map[string]map[string]int64`,
+				`func (o *GetMapOfModelMapParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string]map[string]int64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfModelMap", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfModelMap", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfModelMap = body`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfModelMap", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_map_of_model_map_nullable_parameters.go
+		"getMapOfModelMapNullable": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetMapOfModelMapNullableParams() GetMapOfModelMapNullableParams {`,
+				`	return GetMapOfModelMapNullableParams{`,
+				`type GetMapOfModelMapNullableParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	MapOfModelMapNullable map[string]map[string]*int64`,
+				`func (o *GetMapOfModelMapNullableParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string]map[string]*int64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("mapOfModelMapNullable", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("mapOfModelMapNullable", "body", "", err)`,
+				`		} else {`,
+				`			o.MapOfModelMapNullable = body`,
+				`	} else {`,
+				`		res = append(res, errors.Required("mapOfModelMapNullable", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
+}
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {
@@ -2949,17 +3206,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	fixtureConfig := map[string]map[string][]string{
 
 		// load expectations for parameters in operation get_nested_map04_parameters.go
-		"getNestedMap04": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMap04": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMap04Params() GetNestedMap04Params {`,
 				`	return GetNestedMap04Params{`,
 				`type GetNestedMap04Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMap04 map[string]map[string]map[string]*bool`,
 				`func (o *GetNestedMap04Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -2980,18 +3233,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_slice_and_map01_parameters.go
-		"getNestedSliceAndMap01": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedSliceAndMap01": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedSliceAndMap01Params() GetNestedSliceAndMap01Params {`,
 				`	return GetNestedSliceAndMap01Params{`,
 				`type GetNestedSliceAndMap01Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Unique: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedSliceAndMap01 []map[string][]map[string]strfmt.Date`,
 				`func (o *GetNestedSliceAndMap01Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3035,17 +3283,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map_and_slice02_parameters.go
-		"getNestedMapAndSlice02": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMapAndSlice02": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMapAndSlice02Params() GetNestedMapAndSlice02Params {`,
 				`	return GetNestedMapAndSlice02Params{`,
 				`type GetNestedMapAndSlice02Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMapAndSlice02 map[string][]map[string][]map[string]*int64`,
 				`func (o *GetNestedMapAndSlice02Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3094,18 +3338,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_slice_and_map03_parameters.go
-		"getNestedSliceAndMap03": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedSliceAndMap03": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedSliceAndMap03Params() GetNestedSliceAndMap03Params {`,
 				`	return GetNestedSliceAndMap03Params{`,
 				`type GetNestedSliceAndMap03Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Unique: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedSliceAndMap03 []map[string][]map[string]string`,
 				`func (o *GetNestedSliceAndMap03Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3148,17 +3387,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_array03_parameters.go
-		"getNestedArray03": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedArray03": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedArray03Params() GetNestedArray03Params {`,
 				`	return GetNestedArray03Params{`,
 				`type GetNestedArray03Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedArray03 [][][]string`,
 				`func (o *GetNestedArray03Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3179,18 +3414,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_array04_parameters.go
-		"getNestedArray04": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedArray04": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedArray04Params() GetNestedArray04Params {`,
 				`	return GetNestedArray04Params{`,
 				`type GetNestedArray04Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Unique: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedArray03 [][][]string`,
 				`func (o *GetNestedArray04Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3232,17 +3462,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map_and_slice01_parameters.go
-		"getNestedMapAndSlice01": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMapAndSlice01": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMapAndSlice01Params() GetNestedMapAndSlice01Params {`,
 				`	return GetNestedMapAndSlice01Params{`,
 				`type GetNestedMapAndSlice01Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMapAndSlice01 map[string][]map[string][]map[string]strfmt.Date`,
 				`func (o *GetNestedMapAndSlice01Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3290,16 +3516,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_slice_and_map03_ref_parameters.go
-		"getNestedSliceAndMap03Ref": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedSliceAndMap03Ref": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedSliceAndMap03RefParams() GetNestedSliceAndMap03RefParams {`,
 				`	return GetNestedSliceAndMap03RefParams{`,
 				`type GetNestedSliceAndMap03RefParams struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedSliceAndMap03Ref models.NestedSliceAndMap03Ref`,
 				`func (o *GetNestedSliceAndMap03RefParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3317,17 +3540,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map02_parameters.go
-		"getNestedMap02": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMap02": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMap02Params() GetNestedMap02Params {`,
 				`	return GetNestedMap02Params{`,
 				`type GetNestedMap02Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMap02 map[string]map[string]map[string]*string`,
 				`func (o *GetNestedMap02Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3366,17 +3585,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map_and_slice03_parameters.go
-		"getNestedMapAndSlice03": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMapAndSlice03": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMapAndSlice03Params() GetNestedMapAndSlice03Params {`,
 				`	return GetNestedMapAndSlice03Params{`,
 				`type GetNestedMapAndSlice03Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMapAndSlice03 map[string][]map[string][]map[string]int64`,
 				`func (o *GetNestedMapAndSlice03Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3423,18 +3638,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_slice_and_map02_parameters.go
-		"getNestedSliceAndMap02": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedSliceAndMap02": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedSliceAndMap02Params() GetNestedSliceAndMap02Params {`,
 				`	return GetNestedSliceAndMap02Params{`,
 				`type GetNestedSliceAndMap02Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Unique: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedSliceAndMap02 []map[string][]map[string]*string`,
 				`func (o *GetNestedSliceAndMap02Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3479,17 +3689,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map01_parameters.go
-		"getNestedMap01": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMap01": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMap01Params() GetNestedMap01Params {`,
 				`	return GetNestedMap01Params{`,
 				`type GetNestedMap01Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMap01 map[string]map[string]map[string]strfmt.Date`,
 				`func (o *GetNestedMap01Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3527,17 +3733,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_map03_parameters.go
-		"getNestedMap03": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedMap03": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedMap03Params() GetNestedMap03Params {`,
 				`	return GetNestedMap03Params{`,
 				`type GetNestedMap03Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedMap03 map[string]map[string]map[string]string`,
 				`func (o *GetNestedMap03Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3558,18 +3760,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_array01_parameters.go
-		"getNestedArray01": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedArray01": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedArray01Params() GetNestedArray01Params {`,
 				`	return GetNestedArray01Params{`,
 				`type GetNestedArray01Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Max Items: 10`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedArray01 [][][]strfmt.Date`,
 				`func (o *GetNestedArray01Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3615,18 +3812,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 
 		// load expectations for parameters in operation get_nested_array02_parameters.go
-		"getNestedArray02": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedArray02": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedArray02Params() GetNestedArray02Params {`,
 				`	return GetNestedArray02Params{`,
 				`type GetNestedArray02Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  Required: true`,
-				`	  Max Items: 10`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedArray01 [][][]*string`,
 				`func (o *GetNestedArray02Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3677,16 +3869,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 			},
 		},
 		// load expectations for parameters in operation get_nested_ref_no_validation01_parameters.go
-		"getNestedRefNoValidation01": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedRefNoValidation01": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedRefNoValidation01Params() GetNestedRefNoValidation01Params {`,
 				`	return GetNestedRefNoValidation01Params{`,
 				`type GetNestedRefNoValidation01Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedRefNovalidation01 map[string]models.NestedRefNoValidation`,
 				`func (o *GetNestedRefNoValidation01Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3697,7 +3886,8 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`			res = append(res, errors.NewParseError("nestedRefNovalidation01", "body", "", err)`,
 				`		} else {`,
 				`			for k := range body {`,
-				`				if err := o.NestedRefNovalidation01[k].Validate(route.Formats); err != nil {`,
+				`				if val, ok := o.NestedRefNovalidation01[k]; ok {`,
+				`				if err := val.Validate(route.Formats); err != nil {`,
 				`					break`,
 				`			if len(res) == 0 {`,
 				`				o.NestedRefNovalidation01 = body`,
@@ -3705,16 +3895,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 			},
 		},
 		// load expectations for parameters in operation get_nested_ref_no_validation02_parameters.go
-		"getNestedRefNoValidation02": map[string][]string{ // fixture index
-			"serverParameter": []string{ // executed template
+		"getNestedRefNoValidation02": { // fixture index
+			"serverParameter": { // executed template
 				// expected code lines
 				`func NewGetNestedRefNoValidation02Params() GetNestedRefNoValidation02Params {`,
 				`	return GetNestedRefNoValidation02Params{`,
 				`type GetNestedRefNoValidation02Params struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	/*`,
-				`	  In: body`,
-				`	*/`,
 				`	NestedRefNovalidation02 map[string]map[string]models.NestedRefNoValidation`,
 				`func (o *GetNestedRefNoValidation02Params) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
@@ -3745,5 +3932,74 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-4.yaml"))
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-4.yaml"), false, false)
+}
+
+func TestGenParameter_Issue15362_SkipFlatten(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	fixtureConfig := map[string]map[string][]string{
+		// load expectations for parameters in operation get_nested_required_parameters.go
+		"getNestedRequired": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetNestedRequiredParams() GetNestedRequiredParams {`,
+				`	return GetNestedRequiredParams{`,
+				`type GetNestedRequiredParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	ObjectNestedRequired [][][][]*GetNestedRequiredParamsBodyItems0`,
+				`func (o *GetNestedRequiredParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body [][][][]*GetNestedRequiredParamsBodyItems0`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("objectNestedRequired", "body", "", err)`,
+				`		} else {`,
+				`			o.ObjectNestedRequired = body`,
+				`			if err := o.validateObjectNestedRequiredBody(route.Formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetNestedRequiredParams) validateObjectNestedRequiredBody(formats strfmt.Registry) error {`,
+				`	objectNestedRequiredIC := o.ObjectNestedRequired`,
+				`	var objectNestedRequiredIR [][][][]*GetNestedRequiredParamsBodyItems0`,
+				`	for i, objectNestedRequiredIV := range objectNestedRequiredIC {`,
+				`		objectNestedRequiredIIC := objectNestedRequiredIV`,
+				`		if len(objectNestedRequiredIIC) > 0 {`,
+				`			var objectNestedRequiredIIR [][][]*GetNestedRequiredParamsBodyItems0`,
+				`			for ii, objectNestedRequiredIIV := range objectNestedRequiredIIC {`,
+				`				objectNestedRequiredIIIC := objectNestedRequiredIIV`,
+				`				if len(objectNestedRequiredIIIC) > 0 {`,
+				`					var objectNestedRequiredIIIR [][]*GetNestedRequiredParamsBodyItems0`,
+				`					for iii, objectNestedRequiredIIIV := range objectNestedRequiredIIIC {`,
+				`						objectNestedRequiredIIIIC := objectNestedRequiredIIIV`,
+				`						if len(objectNestedRequiredIIIIC) > 0 {`,
+				`							var objectNestedRequiredIIIIR []*GetNestedRequiredParamsBodyItems0`,
+				`							for iiii, objectNestedRequiredIIIIV := range objectNestedRequiredIIIIC {`,
+				`								objectNestedRequiredIIII := objectNestedRequiredIIIIV`,
+				`								if err := objectNestedRequiredIIII.Validate(formats); err != nil {`,
+				`									if ve, ok := err.(*errors.Validation); ok {`,
+				`										return ve.ValidateName(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "objectNestedRequired", i), ii), iii), iiii)`,
+				`								objectNestedRequiredIIIIR = append(objectNestedRequiredIIIIR, objectNestedRequiredIIII`,
+				`							objectNestedRequiredIIIR = append(objectNestedRequiredIIIR, objectNestedRequiredIIIIR`,
+				`					objectNestedRequiredIIR = append(objectNestedRequiredIIR, objectNestedRequiredIIIR`,
+				`			objectNestedRequiredIR = append(objectNestedRequiredIR, objectNestedRequiredIIR`,
+				`	o.ObjectNestedRequired = objectNestedRequiredIR`,
+			},
+			"serverOperation": { // executed template
+				// expected code lines
+				`type GetNestedRequiredParamsBodyItems0 struct {`,
+				"	Pkcs *string `json:\"pkcs\"`",
+				`func (o *GetNestedRequiredParamsBodyItems0) Validate(formats strfmt.Registry) error {`,
+				`	if err := o.validatePkcs(formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetNestedRequiredParamsBodyItems0) validatePkcs(formats strfmt.Registry) error {`,
+				`	if err := validate.Required("pkcs", "body", o.Pkcs); err != nil {`,
+			},
+		},
+	}
+
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), true, false)
 }

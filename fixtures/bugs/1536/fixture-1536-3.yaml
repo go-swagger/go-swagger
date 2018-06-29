@@ -1,13 +1,13 @@
 ---
   swagger: "2.0"
-  info: 
+  info:
     title: "param body with maps"
     version: "0.0.1"
     description: "repro issue 1537"
-    license: 
+    license:
       name: "Apache 2.0"
       url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-  definitions: 
+  definitions:
     modelInterface:
       type: object
       additionalProperties: true
@@ -17,12 +17,21 @@
         aProp:
           type: string
           format: hostname
+    modelMap:
+      type: object
+      additionalProperties:
+        type: integer
+    modelMapNullable:
+      type: object
+      additionalProperties:
+        type: integer
+        x-nullable: true
     modelArray:
       type: array
       items:
         type: object
         properties:
-          aNum: 
+          aNum:
             type: integer
             maximum: 10
     modelArrayWithMax:
@@ -30,9 +39,9 @@
       maxItems: 10
       items:
         type: object
-  paths: 
-    /getArray: 
-      get: 
+  paths:
+    /getArray:
+      get:
         operationId: getArray
         parameters:
           - name: arrayOfObject
@@ -42,11 +51,11 @@
               type: array
               items:
                 $ref: '#/definitions/modelObject'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
-    /getArrayNested: 
-      get: 
+    /getArrayNested:
+      get:
         operationId: getArrayNested
         parameters:
           - name: arrayOfarray
@@ -58,11 +67,11 @@
                 type: array
                 items:
                   $ref: '#/definitions/modelObject'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
-    /getArrayNestedSimple: 
-      get: 
+    /getArrayNestedSimple:
+      get:
         operationId: getArrayNestedSimple
         parameters:
           - name: arrayOfarraySimple
@@ -75,11 +84,11 @@
                 items:
                   type: string
                   maxLength: 100
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
-    /getMapInterface: 
-      get: 
+    /getMapInterface:
+      get:
         operationId: getMapInterface
         parameters:
           - name: mapOfInterface
@@ -89,11 +98,11 @@
               type: object
               additionalProperties:
                 $ref: '#/definitions/modelInterface'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
-    /getMapObject: 
-      get: 
+    /getMapObject:
+      get:
         operationId: getMapObject
         parameters:
           - name: mapOfObject
@@ -103,11 +112,11 @@
               type: object
               additionalProperties:
                 $ref: '#/definitions/modelObject'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapArray:
-      get: 
+      get:
         operationId: getMapArray
         parameters:
           - name: mapOfArray
@@ -117,11 +126,66 @@
               type: object
               additionalProperties:
                 $ref: '#/definitions/modelArray'
-        responses: 
-          200: 
+        responses:
+          200:
+            description: "OK"
+    /getMapOfArrayOfMap:
+      get:
+        operationId: getMapOfArrayOfMap
+        parameters:
+          - name: mapOfArrayOfMap
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/definitions/modelMap'
+        responses:
+          200:
+            description: "OK"
+    /getMapOfArrayOfNullableMap:
+      get:
+        operationId: getMapOfArrayOfNullableMap
+        parameters:
+          - name: mapOfArrayOfNullableMap
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                maxItems: 10
+                items:
+                  type: object
+                  properties:
+                    prop1:
+                      type: integer
+                  x-nullable: true
+        responses:
+          200:
+            description: "OK"
+    /getMapArrayOfArray:
+      get:
+        operationId: getMapArrayOfArray
+        parameters:
+          - name: mapOfArrayOfArray
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                maxItems: 10
+                items:
+                  $ref: '#/definitions/modelArray'
+        responses:
+          200:
             description: "OK"
     /getMapAnonArray:
-      get: 
+      get:
         operationId: getMapAnonArray
         parameters:
           - name: mapOfAnonArray
@@ -134,11 +198,11 @@
                 items:
                   type: integer
                   minimum: 10
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapAnonArrayWithNullable:
-      get: 
+      get:
         operationId: getMapAnonArrayWithNullable
         parameters:
           - name: mapOfAnonArrayWithNullable
@@ -151,11 +215,30 @@
                 items:
                   type: integer
                   minimum: 0
-        responses: 
-          200: 
+        responses:
+          200:
+            description: "OK"
+    /getMapAnonArrayWithNestedNullable:
+      get:
+        operationId: getMapAnonArrayWithNestedNullable
+        parameters:
+          - name: mapOfAnonArrayWithNestedNullable
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 0
+        responses:
+          200:
             description: "OK"
     /getMapAnonArrayWithXNullable:
-      get: 
+      get:
         operationId: getMapAnonArrayWithXNullable
         parameters:
           - name: mapOfAnonArrayWithXNullable
@@ -168,11 +251,11 @@
                 items:
                   type: integer
                   x-nullable: true
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapArrayWithMax:
-      get: 
+      get:
         operationId: getMapArrayWithMax
         parameters:
           - name: mapOfArrayWithMax
@@ -182,11 +265,11 @@
               type: object
               additionalProperties:
                 $ref: '#/definitions/modelArrayWithMax'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapOfAnonArray:
-      get: 
+      get:
         operationId: getMapOfAnonArray
         parameters:
           - name: mapOfAnonArray
@@ -200,11 +283,11 @@
                 items:
                   type: integer
                   maximum: 100
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapOfMap:
-      get: 
+      get:
         operationId: getMapOfMap
         parameters:
           - name: mapOfMap
@@ -216,11 +299,11 @@
                 type: object
                 additionalProperties:
                   $ref: '#/definitions/modelArrayWithMax'
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapOfPrimitive:
-      get: 
+      get:
         operationId: getMapOfPrimitive
         parameters:
           - name: mapOfPrimitive
@@ -231,11 +314,11 @@
               additionalProperties:
                 type: integer
                 maximum: 100
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapOfFormat:
-      get: 
+      get:
         operationId: getMapOfFormat
         parameters:
           - name: mapOfFormat
@@ -246,11 +329,11 @@
               additionalProperties:
                 type: string
                 format: uuid
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getMapOfAnonMap:
-      get: 
+      get:
         operationId: getMapOfAnonMap
         parameters:
           - name: mapOfAnonMap
@@ -266,11 +349,11 @@
                     type: integer
                     maximum: 100
 
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getArrayOfMap:
-      get: 
+      get:
         operationId: getArrayOfMap
         parameters:
           - name: arrayOfMap
@@ -288,11 +371,11 @@
                     type: integer
                     format: int32
                     maximum: 100
-        responses: 
-          200: 
+        responses:
+          200:
             description: "OK"
     /getArrayOfInterface:
-      get: 
+      get:
         operationId: getArrayOfInterface
         parameters:
           - name: arrayOfInterface
@@ -303,6 +386,34 @@
               items:
                 type: object
                 additionalProperties: true
-        responses: 
-          200: 
+        responses:
+          200:
+            description: "OK"
+    /getMapOfModelMap:
+      get:
+        operationId: getMapOfModelMap
+        parameters:
+          - name: mapOfModelMap
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelMap'
+        responses:
+          200:
+            description: "OK"
+    /getMapOfModelMapNullable:
+      get:
+        operationId: getMapOfModelMapNullable
+        parameters:
+          - name: mapOfModelMapNullable
+            in: body
+            required: true
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/definitions/modelMapNullable'
+        responses:
+          200:
             description: "OK"

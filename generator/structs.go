@@ -29,7 +29,7 @@ type GenDefinition struct {
 	Package        string
 	Imports        map[string]string
 	DefaultImports []string
-	ExtraSchemas   []GenSchema
+	ExtraSchemas   GenSchemaList
 	DependsOn      []string
 }
 
@@ -120,11 +120,8 @@ type sharedValidations struct {
 	UniqueItems         bool
 	HasSliceValidations bool
 
-	// Not used yet (intended for maxProperties, minProperties validations)
+	// Not used yet (perhaps intended for maxProperties, minProperties validations?)
 	NeedsSize bool
-	// Not used: deprecated
-	//NeedsValidation bool
-	//NeedsRequired bool
 
 	// NOTE: "patternProperties" and "dependencies" not supported by Swagger 2.0
 }
@@ -431,7 +428,7 @@ type GenOperation struct {
 
 	Imports        map[string]string
 	DefaultImports []string
-	ExtraSchemas   []GenSchema
+	ExtraSchemas   GenSchemaList
 
 	Authorized          bool
 	Security            []GenSecurityRequirements

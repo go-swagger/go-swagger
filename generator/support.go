@@ -204,30 +204,20 @@ func (a *appGenerator) Generate() error {
 		return nil
 	}
 
+	// NOTE: relative to previous implem with chan.
 	// IPC removed concurrent execution because of the FuncMap that is being shared
 	// templates are now lazy loaded so there is concurrent map access I can't guard
-
-	// errChan := make(chan error, 100)
-	// wg := nsync.NewControlWaitGroup(20)
-
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
-			// if len(errChan) > 0 {
-			// 	wg.Wait()
-			// 	return <-errChan
-			// }
 			modCopy := mod
-			// wg.Do(func() {
 			modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
 			modCopy.IncludeModel = true
 			if err := a.GenOpts.renderDefinition(&modCopy); err != nil {
 				return err
 			}
-			// })
 		}
 	}
-	// wg.Wait()
 
 	if a.GenOpts.IncludeHandler {
 		log.Printf("rendering %d operation groups (tags)", app.OperationGroups.Len())
@@ -252,17 +242,10 @@ func (a *appGenerator) Generate() error {
 
 	if a.GenOpts.IncludeSupport {
 		log.Printf("rendering support")
-		// wg.Do(func() {
 		if err := a.GenerateSupport(&app); err != nil {
-			// errChan <- err
 			return err
 		}
-		// })
 	}
-	// wg.Wait()
-	// if len(errChan) > 0 {
-	// 	return <-errChan
-	// }
 	return nil
 }
 
@@ -594,6 +577,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.SecurityDefinitions = a.Analyzed.SecurityDefinitionsFor(o)
 		bldr.RootAPIPackage = swag.ToFileName(a.APIPackage)
 		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
+		bldr.IncludeValidator = true
 
 		bldr.APIPackage = bldr.RootAPIPackage
 		st := o.Tags
@@ -639,14 +623,28 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var opGroups GenOperationGroups
 	for k, v := range opsGroupedByPackage {
 		sort.Sort(v)
+		// trim duplicate extra schemas within the same package
+		vv := make(GenOperations, 0, len(v))
+		seenExtraSchema := make(map[string]bool)
+		for _, op := range v {
+			uniqueExtraSchemas := make(GenSchemaList, 0, len(op.ExtraSchemas))
+			for _, xs := range op.ExtraSchemas {
+				if _, alreadyThere := seenExtraSchema[xs.Name]; !alreadyThere {
+					seenExtraSchema[xs.Name] = true
+					uniqueExtraSchemas = append(uniqueExtraSchemas, xs)
+				}
+			}
+			op.ExtraSchemas = uniqueExtraSchemas
+			vv = append(vv, op)
+		}
+
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
 				Copyright:        a.GenOpts.Copyright,
 				TargetImportPath: filepath.ToSlash(baseImport),
 			},
-			Name:       k,
-			Operations: v,
-			// DefaultImports: []string{filepath.ToSlash(filepath.Join(baseImport, a.ModelsPackage))},
+			Name:           k,
+			Operations:     vv,
 			DefaultImports: defaultImports,
 			Imports:        imports,
 			RootPackage:    a.APIPackage,

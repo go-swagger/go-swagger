@@ -1,0 +1,79 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "param body with array of empty objects"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions: 
+    recordsModel:
+      type: array
+      items:
+        type: object
+  paths: 
+    /getNestedAnonymous: 
+      get: 
+        operationId: getNestedAnonymous
+        parameters:
+          - name: nestedAnonymous
+            in: body
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        a:
+                          type: string
+        responses: 
+          200: 
+            description: "OK"
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        a:
+                          type: string
+    /getNestedModel: 
+      get: 
+        operationId: getNestedModel
+        parameters:
+          - name: nestedModel
+            in: body
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      $ref: '#/definitions/recordsModel'
+        responses: 
+          200: 
+            description: "OK"
+            schema:
+              type: array
+              items: 
+                type: array
+                items:
+                  type: array
+                  items: 
+                    type: array
+                    items:
+                      $ref: '#/definitions/recordsModel'

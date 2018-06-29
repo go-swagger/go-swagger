@@ -211,6 +211,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	}
 
 	receiver := "m"
+	// models are resolved in the current package
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
 	analyzed := analysis.New(specDoc.Spec())
@@ -332,20 +333,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		"github.com/go-openapi/validate",
 	}
 
-	// ExtraSchemas are inlined types rendered in the same model file
-	var extras []GenSchema
-	var extraKeys []string
-	for k := range pg.ExtraSchemas {
-		extraKeys = append(extraKeys, k)
-	}
-	sort.Strings(extraKeys)
-	for _, k := range extraKeys {
-		// figure out if top level validations are needed
-		p := pg.ExtraSchemas[k]
-		p.HasValidations = shallowValidationLookup(p)
-		extras = append(extras, p)
-	}
-
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
@@ -355,7 +342,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
-		ExtraSchemas:   extras,
+		ExtraSchemas:   gatherExtraSchemas(pg.ExtraSchemas),
 		Imports:        findImports(&pg.GenSchema),
 	}, nil
 }
@@ -469,9 +456,7 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	pg.Schema = *schema
 	pg.Required = false
 	if sg.IsVirtual {
-		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
-		resolver.ModelName = sg.TypeResolver.ModelName
-		pg.TypeResolver = resolver
+		pg.TypeResolver = sg.TypeResolver.NewWithModelName(sg.TypeResolver.ModelName)
 	}
 
 	// when this is an anonymous complex object, this needs to become a ref
@@ -659,28 +644,16 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 
 	isRequired := sg.Required
 	if model.Default != nil || model.ReadOnly {
-		// when readOnly or default is specified, this disables Required (Swagger-specific)
+		// when readOnly or default is specified, this disables Required validation (Swagger-specific)
 		isRequired = false
 	}
-	hasValidation := hasValidations(&model, isRequired)
+	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems || len(model.Enum) > 0
+	hasValidations := hasValidations(&model, isRequired)
 
-	return sharedValidations{
-		Required:            sg.Required,
-		Maximum:             model.Maximum,
-		ExclusiveMaximum:    model.ExclusiveMaximum,
-		Minimum:             model.Minimum,
-		ExclusiveMinimum:    model.ExclusiveMinimum,
-		MaxLength:           model.MaxLength,
-		MinLength:           model.MinLength,
-		Pattern:             model.Pattern,
-		MaxItems:            model.MaxItems,
-		MinItems:            model.MinItems,
-		UniqueItems:         model.UniqueItems,
-		MultipleOf:          model.MultipleOf,
-		Enum:                model.Enum,
-		HasValidations:      hasValidation,
-		HasSliceValidations: hasSliceValidations(&model),
-	}
+	s := sharedValidationsFromSchema(model, sg.Required)
+	s.HasValidations = hasValidations
+	s.HasSliceValidations = hasSliceValidations
+	return s
 }
 
 func mergeValidation(other *schemaGenContext) bool {
@@ -827,8 +800,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			// set property name
 			var nm = filepath.Base(emprop.Schema.Ref.GetURL().Fragment)
 
-			tr := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
-			tr.ModelName = goName(&emprop.Schema, swag.ToGoName(nm))
+			tr := sg.TypeResolver.NewWithModelName(goName(&emprop.Schema, swag.ToGoName(nm)))
 			ttpe, err := tr.ResolveSchema(sch, false, true)
 			if err != nil {
 				return err
@@ -1178,7 +1150,7 @@ func (mt *mapStack) Build() error {
 		}
 
 		if cur.Context.GenSchema.AdditionalProperties != nil {
-			// propagate overrides up the resolved schemas, but leave any ExtraSchema untouched
+			// propagate overrides up the resolved schemas, but leaves any ExtraSchema untouched
 			cur.Context.GenSchema.AdditionalProperties.IsMapNullOverride = cur.Context.GenSchema.IsMapNullOverride
 		}
 		cur = cur.Previous
@@ -1409,9 +1381,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		IncludeModel:     sg.IncludeModel,
 	}
 	if schema.Ref.String() == "" {
-		resolver := newTypeResolver(sg.TypeResolver.ModelsPackage, sg.TypeResolver.Doc)
-		resolver.ModelName = name
-		pg.TypeResolver = resolver
+		pg.TypeResolver = sg.TypeResolver.NewWithModelName(name)
 	}
 	pg.GenSchema.IsVirtual = true
 
@@ -1753,12 +1723,13 @@ func goName(sch *spec.Schema, orig string) string {
 	return orig
 }
 
-func (sg *schemaGenContext) checkNeedsDeref(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
+func (sg *schemaGenContext) checkNeedsPointer(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
 	derefType := strings.TrimPrefix(elem.GoType, "*")
 	if outer.IsAliased && !strings.HasSuffix(outer.AliasedType, "*"+derefType) {
 		// override nullability of map of primitive elements: render element of aliased or anonymous map as a pointer
 		outer.AliasedType = strings.TrimSuffix(outer.AliasedType, derefType) + "*" + derefType
 	} else if sch != nil {
+		// nullable primitive
 		if sch.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType) {
 			sch.GoType = strings.TrimSuffix(sch.GoType, derefType) + "*" + derefType
 		}
@@ -1772,7 +1743,7 @@ func (sg *schemaGenContext) checkNeedsDeref(outer *GenSchema, sch *GenSchema, el
 //
 // NOTE: at the moment, we decide to align the type of the outer element (map) to the type of the inner element
 // The opposite could be done and result in non nullable primitive elements. If we do so, the validation
-// code needs to be adapted by removing IsZero() and Required() calls.
+// code needs to be adapted by removing IsZero() and Required() calls in codegen.
 func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 	outer := &sg.GenSchema
 	if outer == nil {
@@ -1785,13 +1756,13 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 		elem := sch.AdditionalProperties
 		for elem != nil {
 			if elem.IsPrimitive && elem.IsNullable {
-				sg.checkNeedsDeref(outer, nil, elem)
+				sg.checkNeedsPointer(outer, nil, elem)
 			} else if elem.IsArray {
 				// override nullability of array of primitive elements: render element of aliased or anonyous map as a pointer
 				it := elem.Items
 				for it != nil {
 					if it.IsPrimitive && it.IsNullable {
-						sg.checkNeedsDeref(outer, sch, it)
+						sg.checkNeedsPointer(outer, sch, it)
 					} else if it.IsMap {
 						sg.buildMapOfNullable(it)
 					}

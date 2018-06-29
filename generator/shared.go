@@ -916,8 +916,8 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 
 	// Validate if needed
 	if opts.ValidateSpec {
-		if err := validateSpec(opts.Spec, specDoc); err != nil {
-			return specDoc, err
+		if erv := validateSpec(opts.Spec, specDoc); erv != nil {
+			return specDoc, erv
 		}
 	}
 
@@ -991,5 +991,61 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 		})
 	}
 	sort.Sort(security)
+	return
+}
+
+// gatherExtraSchemas produces a sorted list of extra schemas.
+//
+// ExtraSchemas are inlined types rendered in the same model file.
+func gatherExtraSchemas(extraMap map[string]GenSchema) (extras GenSchemaList) {
+	var extraKeys []string
+	for k := range extraMap {
+		extraKeys = append(extraKeys, k)
+	}
+	sort.Strings(extraKeys)
+	for _, k := range extraKeys {
+		// figure out if top level validations are needed
+		p := extraMap[k]
+		p.HasValidations = shallowValidationLookup(p)
+		extras = append(extras, p)
+	}
+	return
+}
+
+func sharedValidationsFromSimple(v spec.CommonValidations, isRequired bool) (sh sharedValidations) {
+	sh = sharedValidations{
+		Required:         isRequired,
+		Maximum:          v.Maximum,
+		ExclusiveMaximum: v.ExclusiveMaximum,
+		Minimum:          v.Minimum,
+		ExclusiveMinimum: v.ExclusiveMinimum,
+		MaxLength:        v.MaxLength,
+		MinLength:        v.MinLength,
+		Pattern:          v.Pattern,
+		MaxItems:         v.MaxItems,
+		MinItems:         v.MinItems,
+		UniqueItems:      v.UniqueItems,
+		MultipleOf:       v.MultipleOf,
+		Enum:             v.Enum,
+	}
+	return
+}
+
+func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValidations) {
+	sh = sharedValidations{
+		Required:         isRequired,
+		Maximum:          v.Maximum,
+		ExclusiveMaximum: v.ExclusiveMaximum,
+		Minimum:          v.Minimum,
+		ExclusiveMinimum: v.ExclusiveMinimum,
+		MaxLength:        v.MaxLength,
+		MinLength:        v.MinLength,
+		Pattern:          v.Pattern,
+		MaxItems:         v.MaxItems,
+		MinItems:         v.MinItems,
+		UniqueItems:      v.UniqueItems,
+		MultipleOf:       v.MultipleOf,
+		Enum:             v.Enum,
+	}
 	return
 }

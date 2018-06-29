@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-openapi/spec"
@@ -141,7 +142,8 @@ func TestInlinedSchemaResponses(t *testing.T) {
 							}
 						}
 						assert.Len(t, b.ExtraSchemas, 1)
-						assert.Equal(t, "[]*models.SuccessBodyItems0", res.Schema.GoType)
+						// ExtraSchema is not a definition: it is rendered in current operations package
+						assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
 					}
 				}
 			}
@@ -514,4 +516,41 @@ func TestGenResponses_Issue1013(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestGenResponse_15362_SkipFlatten(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	fixtureConfig := map[string]map[string][]string{
+		// load expectations for parameters in operation get_nested_required_responses.go
+		"getNestedRequired": { // fixture index
+			"serverResponses": { // executed template
+				// expected code lines
+				`const GetNestedRequiredOKCode int = 200`,
+				`type GetNestedRequiredOK struct {`,
+				"	Payload [][][][]*GetNestedRequiredOKBodyItems0 `json:\"body,omitempty\"`",
+				`func NewGetNestedRequiredOK() *GetNestedRequiredOK {`,
+				`	return &GetNestedRequiredOK{`,
+				`func (o *GetNestedRequiredOK) WithPayload(payload [][][][]*GetNestedRequiredOKBodyItems0) *GetNestedRequiredOK {`,
+				`func (o *GetNestedRequiredOK) SetPayload(payload [][][][]*GetNestedRequiredOKBodyItems0) {`,
+				`func (o *GetNestedRequiredOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {`,
+			},
+			"serverOperation": { // executed template
+				// expected code lines
+				`type GetNestedRequiredOKBodyItems0 struct {`,
+				"	Pkcs *string `json:\"pkcs\"`",
+				`func (o *GetNestedRequiredOKBodyItems0) Validate(formats strfmt.Registry) error {`,
+				`	if err := o.validatePkcs(formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetNestedRequiredOKBodyItems0) validatePkcs(formats strfmt.Registry) error {`,
+				`	if err := validate.Required("pkcs", "body", o.Pkcs); err != nil {`,
+			},
+		},
+	}
+
+	// assertParams also works for responses
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2-responses.yaml"), true, false)
 }

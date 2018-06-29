@@ -119,7 +119,7 @@ func typeForHeader(header spec.Header) resolvedType {
 
 func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
-	resolver.KnownDefs = make(map[string]struct{}, 64)
+	resolver.KnownDefs = make(map[string]struct{}, len(doc.Spec().Definitions))
 	for k, sch := range doc.Spec().Definitions {
 		tpe, _, _ := knownDefGoType(k, sch, nil)
 		resolver.KnownDefs[tpe] = struct{}{}
@@ -168,15 +168,31 @@ type typeResolver struct {
 	ModelsPackage string
 	ModelName     string
 	KnownDefs     map[string]struct{}
+	// unexported fields
+	keepDefinitionsPkg string
+	knownDefsKept      map[string]struct{}
 }
 
+// NewWithModelName clones a type resolver and specifies a new model name
 func (t *typeResolver) NewWithModelName(name string) *typeResolver {
-	return &typeResolver{
-		Doc:           t.Doc,
-		ModelsPackage: t.ModelsPackage,
-		ModelName:     name,
-		KnownDefs:     t.KnownDefs,
+	tt := newTypeResolver(t.ModelsPackage, t.Doc)
+	tt.ModelName = name
+
+	// propagates kept definitions
+	tt.keepDefinitionsPkg = t.keepDefinitionsPkg
+	tt.knownDefsKept = t.knownDefsKept
+	return tt
+}
+
+// withKeepDefinitionsPackage instructs the type resolver to keep previously resolved package name for
+// definitions known at the moment it is first called.
+func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *typeResolver {
+	t.keepDefinitionsPkg = definitionsPackage
+	t.knownDefsKept = make(map[string]struct{}, len(t.KnownDefs))
+	for k := range t.KnownDefs {
+		t.knownDefsKept[k] = struct{}{}
 	}
+	return t
 }
 
 // IsNullable hints the generator as to render the type with a pointer or not.
@@ -373,6 +389,16 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 }
 
 func (t *typeResolver) goTypeName(nm string) string {
+	if len(t.knownDefsKept) > 0 {
+		// if a definitions package has been defined, already resolved definitions are
+		// always resolved against their original package (e.g. "models"), and not the
+		// current package.
+		// This allows complex anonymous extra schemas to reuse known definitions generated in another package.
+		if _, ok := t.knownDefsKept[nm]; ok {
+			return strings.Join([]string{t.keepDefinitionsPkg, swag.ToGoName(nm)}, ".")
+		}
+	}
+
 	if t.ModelsPackage == "" {
 		return swag.ToGoName(nm)
 	}

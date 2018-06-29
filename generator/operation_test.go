@@ -150,11 +150,13 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 				if assert.NotEmpty(t, body.Properties) {
 					prop := body.Properties[0]
 					assert.Equal(t, "data", prop.Name)
-					assert.Equal(t, "[]*models.DataItems0", prop.GoType)
+					// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
+					assert.Equal(t, "[]*DataItems0", prop.GoType)
 				}
 				items := b.ExtraSchemas["DataItems0"]
 				if assert.NotEmpty(t, items.AllOf) {
 					media := items.AllOf[0]
+					// expect #definitions/media to be captured and reused by ExtraSchema
 					assert.Equal(t, "models.Media", media.GoType)
 				}
 			}
@@ -208,18 +210,75 @@ func TestMakeOperation(t *testing.T) {
 func TestRenderOperation_InstagramSearch(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
 	if assert.NoError(t, err) {
-		gO, err := b.MakeOperation()
-		if assert.NoError(t, err) {
+		gO, ero := b.MakeOperation()
+		if assert.NoError(t, ero) {
 			buf := bytes.NewBuffer(nil)
 			opts := opts()
-			err := templates.MustGet("serverOperation").Execute(buf, gO)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, err) {
+			ert := templates.MustGet("serverOperation").Execute(buf, gO)
+			if assert.NoError(t, ert) {
+				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+				if assert.NoError(t, erf) {
 					res := string(ff)
-					// fmt.Println(res)
-					assertInCode(t, "Data []*models.DataItems0 `json:\"data\"`", res)
+					assertInCode(t, "type GetMediaSearchOKBody struct {", res)
+					// codegen does not assumes objects are only in models
+					// this is inlined
+					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
+					assertInCode(t, "type DataItems0 struct {", res)
+					// this is a definition: expect this definition to be reused from the models pkg
 					assertInCode(t, "models.Media", res)
+				} else {
+					fmt.Println(buf.String())
+					t.FailNow()
+				}
+			} else {
+				t.FailNow()
+			}
+
+			buf = bytes.NewBuffer(nil)
+			ert = templates.MustGet("serverResponses").Execute(buf, gO)
+			if assert.NoError(t, ert) {
+				ff, erf := opts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+				if assert.NoError(t, erf) {
+					res := string(ff)
+					// codegen does not assumes objects are only in models
+					assertInCode(t, "type GetMediaSearchOK struct {", res)
+					assertInCode(t, "GetMediaSearchOKBody", res)
+				} else {
+					fmt.Println(buf.String())
+					t.FailNow()
+				}
+			} else {
+				t.FailNow()
+			}
+		}
+	}
+	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	if assert.NoError(t, err) {
+		gO, ero := b.MakeOperation()
+		if assert.NoError(t, ero) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			ert := templates.MustGet("serverOperation").Execute(buf, gO)
+			if assert.NoError(t, ert) {
+				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+				if assert.NoError(t, erf) {
+					res := string(ff)
+					assertNotInCode(t, "DataItems0", res)
+					assertNotInCode(t, "models", res)
+				} else {
+					fmt.Println(buf.String())
+					t.FailNow()
+				}
+			} else {
+				t.FailNow()
+			}
+			buf = bytes.NewBuffer(nil)
+			ert = templates.MustGet("serverResponses").Execute(buf, gO)
+			if assert.NoError(t, ert) {
+				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+				if assert.NoError(t, erf) {
+					res := string(ff)
+					assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
 				} else {
 					fmt.Println(buf.String())
 				}
@@ -261,7 +320,52 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	}, nil
 }
 
-func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
+func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
+	if fname == "" {
+		fname = "../fixtures/codegen/todolist.simple.yml"
+	}
+
+	specDoc, err := loads.Spec(fname)
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+
+	o := &GenOpts{
+		FlattenSpec:  true,
+		ValidateSpec: false,
+		Spec:         fname,
+	}
+
+	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	if err != nil {
+		return codeGenOpBuilder{}, err
+	}
+
+	analyzed := analysis.New(specDoc.Spec())
+	op, ok := analyzed.OperationFor(method, path)
+	if !ok {
+		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
+	}
+
+	return codeGenOpBuilder{
+		Name:          method + " " + path,
+		Method:        method,
+		Path:          path,
+		APIPackage:    "restapi",
+		ModelsPackage: "models",
+		Principal:     "models.User",
+		Target:        ".",
+		Operation:     *op,
+		Doc:           specDoc,
+		Analyzed:      analyzed,
+		Authed:        false,
+		ExtraSchemas:  make(map[string]GenSchema),
+		GenOpts:       opts(),
+	}, nil
+}
+
+// opBuilderWithOpts prepares the making of an operation with spec flattening options
+func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error) {
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
@@ -275,11 +379,7 @@ func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-	o := &GenOpts{
-		FlattenSpec:  true,
-		ValidateSpec: false,
-		Spec:         fname,
-	}
+
 	specDoc, err = validateAndFlattenSpec(o, specDoc)
 	if err != nil {
 		return codeGenOpBuilder{}, err
@@ -310,6 +410,27 @@ func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	}, nil
 }
 
+// opBuilderWithFlatten prepares the making of an operation with spec flattening prior to rendering
+func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
+	o := &GenOpts{
+		FlattenSpec:  true,
+		ValidateSpec: false,
+		Spec:         fname,
+	}
+	return opBuilderWithOpts(name, fname, o)
+}
+
+// opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering
+func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
+	o := &GenOpts{
+		FlattenSpec:  false,
+		ValidateSpec: false,
+		Spec:         fname,
+	}
+	return opBuilderWithOpts(name, fname, o)
+}
+
+// opBuilder prepares the making of an operation without spec alteration
 func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
@@ -1001,4 +1122,71 @@ func TestGenSecurityRequirements(t *testing.T) {
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements = b.makeSecurityRequirements("o")
 	assert.Nil(t, genRequirements)
+}
+
+func TestGenerateServerOperation(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	fname := "../fixtures/codegen/todolist.simple.yml"
+
+	tgt, _ := ioutil.TempDir(filepath.Dir(fname), "generated")
+	defer os.RemoveAll(tgt)
+	o := &GenOpts{
+		IncludeValidator:  true,
+		FlattenSpec:       true,
+		ValidateSpec:      false,
+		IncludeModel:      true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		ModelPackage:      "models",
+		Spec:              fname,
+		Target:            tgt,
+	}
+	if err := o.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+
+	err := GenerateServerOperation([]string{"createTask"}, nil)
+	assert.Error(t, err)
+
+	d := o.TemplateDir
+	o.TemplateDir = "./nowhere"
+	err = GenerateServerOperation([]string{"notFound"}, o)
+	assert.Error(t, err)
+	o.TemplateDir = d
+
+	d = o.Spec
+	o.Spec = "nowhere.yaml"
+	err = GenerateServerOperation([]string{"notFound"}, o)
+	assert.Error(t, err)
+	o.Spec = d
+
+	err = GenerateServerOperation([]string{"notFound"}, o)
+	assert.Error(t, err)
+
+	err = GenerateServerOperation([]string{"createTask"}, o)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	// check expected files are generated and that's it
+	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_parameters.go"))
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_responses.go"))
+	assert.NoError(t, err)
+
+	origStdout := os.Stdout
+	defer func() {
+		os.Stdout = origStdout
+	}()
+	os.Stdout, _ = os.Create(filepath.Join(tgt, "stdout"))
+	o.DumpData = true
+	// just checks this does not fail
+	err = GenerateServerOperation([]string{"createTask"}, o)
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tgt, "stdout"))
+	assert.NoError(t, err)
 }
