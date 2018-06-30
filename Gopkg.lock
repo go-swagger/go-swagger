@@ -20,10 +20,10 @@
   version = "v9"
 
 [[projects]]
-  branch = "v2"
   name = "github.com/coreos/go-oidc"
   packages = ["."]
   revision = "1180514eaf4d9f38d0d19eef639a1d695e066e72"
+  version = "v2.0.0"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -53,7 +53,7 @@
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "5957818e100395077187fb7ef3b8a28227af06c6"
+  revision = "ecce8cb68f3d9cdf720bd203b6de599fe03e5673"
 
 [[projects]]
   branch = "master"
@@ -102,7 +102,7 @@
     "middleware/untyped",
     "security"
   ]
-  revision = "c0cae94704c76c8643896d8054080f91e920105b"
+  revision = "9a3091f566c0811ef4d54b535179bc0fc484a11f"
 
 [[projects]]
   branch = "master"
@@ -126,13 +126,13 @@
   branch = "master"
   name = "github.com/go-openapi/validate"
   packages = ["."]
-  revision = "9286f6d0e5c1ffc7cf2bda1d59291dc3c4f2f828"
+  revision = "b0a3ed684d0fdd3e1eda00433382188ce8aa7169"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-swagger/scan-repo-boundary"
   packages = ["makeplans"]
-  revision = "196ec52cfa1c96b45dd793dfa0fa3f8877b299da"
+  revision = "973b3573c01343537efb657a4aeed98262a2634a"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -195,7 +195,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "8b799c424f57fa123fc63a99d6383bc6e4c02578"
+  revision = "3fdea8d05856a0c8df22ed4bc71b3219245e4485"
 
 [[projects]]
   branch = "master"
@@ -206,8 +206,8 @@
 [[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
+  version = "v1.2.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -230,8 +230,8 @@
     ".",
     "mem"
   ]
-  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
-  version = "v1.1.0"
+  revision = "787d034dfe70e44075ccc060d346146ef53270ad"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -260,8 +260,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   name = "github.com/toqueteos/webbrowser"
@@ -282,7 +282,7 @@
     "ed25519",
     "ed25519/internal/edwards25519"
   ]
-  revision = "159ae71589f303f9fbfd7528413e0fe944b9c1cb"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
@@ -290,9 +290,10 @@
   packages = [
     "context",
     "context/ctxhttp",
-    "idna"
+    "idna",
+    "netutil"
   ]
-  revision = "9ef9f5bb98a1fdc41f8cf6c250a4404b4085e389"
+  revision = "4cb1c02c05b0e749b0365f61ae859a8e0cfceed9"
 
 [[projects]]
   branch = "master"
@@ -301,13 +302,13 @@
     ".",
     "internal"
   ]
-  revision = "770e5ebd4ab27c4d70b0983674d138217f5e2c72"
+  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "04b83988a018ef3ebffe1485df79d6499b76a4b4"
+  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -341,7 +342,7 @@
     "imports",
     "internal/fastwalk"
   ]
-  revision = "1937f90a1bb43667aff4059b1bab13eb15121e8e"
+  revision = "1c99e1239a0c8b0e59c34000995c4e319b7702ca"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -354,8 +355,8 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "v2"
@@ -385,6 +386,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8d9c591b54bf12934ba06b5e0191a1ccf422b0b64e7be5ea31bcf4904a9dc65a"
+  inputs-digest = "4264f0f59f894738bff2b736cee39f2a3f1c298d22a83aae4a6736d4c9f6b7a5"
   solver-name = "gps-cdcl"
   solver-version = 1

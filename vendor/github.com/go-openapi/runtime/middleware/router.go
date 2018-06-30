@@ -244,7 +244,7 @@ type RouteAuthenticators []RouteAuthenticator
 // AllowsAnonymous returns true when there is an authenticator that means optional auth
 func (ras RouteAuthenticators) AllowsAnonymous() bool {
 	for _, ra := range ras {
-		if len(ra.Authenticator) == 0 && len(ra.Schemes) == 0 {
+		if ra.AllowsAnonymous() {
 			return true
 		}
 	}

@@ -1118,7 +1118,6 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 		fixNullable = func(child *GenItems) string {
 			if !child.IsArray && !child.IsMap {
 				if child.IsComplexObject {
-					log.Printf("FRED DEBUG GoType: %s", child.GoType)
 					return child.GoType
 				}
 				return ""
@@ -1126,7 +1125,6 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 			if innerType := fixNullable(child.Child); innerType != "" {
 				if child.IsMapNullOverride && child.IsArray {
 					child.GoType = "[]" + innerType
-					log.Printf("FRED DEBUG(in) GoType: %s", child.GoType)
 					return child.GoType
 				}
 			}

@@ -209,12 +209,14 @@ func New(host, basePath string, schemes []string) *Runtime {
 		runtime.JSONMime:    runtime.JSONConsumer(),
 		runtime.XMLMime:     runtime.XMLConsumer(),
 		runtime.TextMime:    runtime.TextConsumer(),
+		runtime.HTMLMime:    runtime.TextConsumer(),
 		runtime.DefaultMime: runtime.ByteStreamConsumer(),
 	}
 	rt.Producers = map[string]runtime.Producer{
 		runtime.JSONMime:    runtime.JSONProducer(),
 		runtime.XMLMime:     runtime.XMLProducer(),
 		runtime.TextMime:    runtime.TextProducer(),
+		runtime.HTMLMime:    runtime.TextProducer(),
 		runtime.DefaultMime: runtime.ByteStreamProducer(),
 	}
 	rt.Transport = http.DefaultTransport
@@ -340,9 +342,9 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 		}
 	}
 
-    if _, ok := r.Producers[cmt]; !ok {
-        return nil, fmt.Errorf("none of producers: %v registered. try %s",r.Producers, cmt)
-    }
+	if _, ok := r.Producers[cmt]; !ok && cmt != runtime.MultipartFormMime {
+		return nil, fmt.Errorf("none of producers: %v registered. try %s", r.Producers, cmt)
+	}
 
 	req, err := request.buildHTTP(cmt, r.BasePath, r.Producers, r.Formats, auth)
 	if err != nil {
@@ -418,8 +420,10 @@ func (r *Runtime) Submit(operation *runtime.ClientOperation) (interface{}, error
 
 	cons, ok := r.Consumers[mt]
 	if !ok {
-		// scream about not knowing what to do
-		return nil, fmt.Errorf("no consumer: %q", ct)
+		if cons, ok = r.Consumers["*/*"]; !ok {
+			// scream about not knowing what to do
+			return nil, fmt.Errorf("no consumer: %q", ct)
+		}
 	}
 	return readResponse.ReadResponse(response{res}, cons)
 }

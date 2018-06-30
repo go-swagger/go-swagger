@@ -1,0 +1,18 @@
+pathItems:
+  patchMethod:
+    parameters:
+    - name: somePatchParam
+      in: query
+      type: string
+    patch:
+      operationId: patchOp
+      parameters:
+      - name: myPatchParam
+        in: query
+        required: false
+        type: integer
+      responses:
+        200:
+          description: ok
+          schema:
+            type: string

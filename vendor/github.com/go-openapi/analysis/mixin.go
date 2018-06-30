@@ -45,7 +45,7 @@ import (
 // scripts. Carefully review the collisions before accepting them;
 // consider renaming things if possible.
 //
-// No normalization of any keys takes place (paths, type defs,
+// No key normalization takes place (paths, type defs,
 // etc). Ensure they are canonical if your downstream tools do
 // key normalization of any form.
 //

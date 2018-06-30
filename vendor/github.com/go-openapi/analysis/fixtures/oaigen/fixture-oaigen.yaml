@@ -1,0 +1,180 @@
+---
+swagger: '2.0'
+info:
+  version: '0.1.0'
+  title: reference analysis
+
+parameters:
+  someParam:
+    name: some
+    in: query
+    type: string
+  bodyParam:
+    name: some
+    in: body
+    schema:
+      # expect this $ref to be kept
+      $ref: '#/definitions/myBody'
+
+responses:
+  notFound:
+    description: 'Not Found'
+    schema:
+      $ref: '#/definitions/notFound'
+
+paths:
+  /some/where:
+    parameters:
+    - $ref: '#/parameters/someParam'
+    get:
+      parameters:
+      - $ref: '#/parameters/bodyParam' 
+      - name: other
+        in: query
+        type: string
+      responses:
+        default:
+          $ref: '#/responses/notFound'
+        404:
+          description: ok
+          schema:
+            $ref: '#/definitions/myResponse'
+        304:
+          description: ok
+          schema:
+            $ref: 'transitive-1.yaml#/definitions/transitive-1.1'
+        204:
+          description: ok
+          schema:
+            $ref: '#/definitions/uniqueName1'
+        200:
+          description: 'RecordHolder'
+          schema:
+            type: object
+            properties:
+              prop0:
+                $ref: '#/definitions/myBody'
+        206:
+          description: ok
+          schema:
+            $ref: 'transitive-1.yaml#/definitions/a'
+        205:
+          description: ok
+          schema:
+            $ref: 'transitive-1.yaml#/definitions/b'
+    # arbitrary json pointers
+    post:
+      responses:
+        200:
+          description: ok
+          schema:
+            # this one gets resolved
+            $ref: 'transitive-2.yaml#/definitions/a/properties/b'
+        204:
+          description: ok
+          schema:
+            # this one gets resolved
+            $ref: 'transitive-1.yaml#/definitions/c/properties/d'
+        default:
+          description: default
+          schema:
+            # this one remains (same file)
+            $ref: '#/definitions/myDefaultResponse/properties/zzz'
+  /some/where/else:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            $ref: '#/definitions/notFound'
+  /yet/again/some/where:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            $ref: 'transitive-1.yaml#/somewhere'
+  /with/slice/container:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            allOf:
+            - $ref: '#/definitions/uniqueName3'
+            - $ref: 'transitive-1.yaml#/definitions/uniqueName3'
+  /with/tuple/container:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            type: array
+            items:
+            - $ref: '#/definitions/uniqueName3'
+            - $ref: 'transitive-1.yaml#/definitions/uniqueName3'
+  /with/tuple/conflict:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            type: array
+            items:
+            - $ref: 'transitive-1.yaml#/definitions/uniqueName4'
+            - $ref: 'transitive-2.yaml#/definitions/uniqueName4'
+  /with/boolable/container:
+    get:
+      responses:
+        default:
+          description: default
+          schema:
+            type: object
+            additionalProperties:
+              $ref: 'transitive-1.yaml#/definitions/uniqueName5'
+definitions:
+  myDefaultResponse:
+    type: object
+    properties:
+      zzz:
+        type: integer
+  myBody:
+    type: object
+    properties: 
+      prop1: 
+        type: integer
+      aA:
+        $ref: '#/definitions/aA'
+  aA:
+    type: string
+    format: date
+  bB:
+    type: string
+    format: date-time
+  myResponse:
+    type: object
+    properties: 
+      prop2: 
+        type: integer
+  notFound:
+    type: array
+    items:
+      type: integer
+  uniqueName1:
+    # expect this to be expanded after OAIGen stripping
+    $ref: 'transitive-1.yaml#/definitions/uniqueName1'
+  notUniqueName2:
+    # this one prevents OAIGen stripping
+    $ref: 'transitive-1.yaml#/definitions/uniqueName2'
+  uniqueName2:
+    $ref: 'transitive-1.yaml#/definitions/uniqueName2'
+  uniqueName3:
+    type: object
+    properties:
+      prop7:
+        type: integer
+  uniqueName5:
+    type: object
+    properties:
+      prop10:
+        type: integer

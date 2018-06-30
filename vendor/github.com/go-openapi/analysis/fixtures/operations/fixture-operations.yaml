@@ -1,0 +1,98 @@
+---
+swagger: '2.0'
+info:
+  version: '0.1.0'
+  title: operations and operationIDs
+
+parameters:
+  someParam:
+    name: some
+    in: query
+    type: string
+  bodyParam:
+    name: some
+    in: body
+    schema:
+      $ref: '#/definitions/myBody'
+
+responses:
+  notFound:
+    description: 'Not Found'
+    schema:
+      type: string
+      default: "Element no found"
+  defaultResponse:
+    description: 'Default response'
+    schema:
+      type: string
+      maxLength: 255
+
+definitions:
+  myBody:
+    type: integer
+  unused:
+    type: integer
+
+paths:
+  /some/where:
+    parameters:
+    - $ref: '#/parameters/someParam'
+    get:
+      operationId: getSomeWhere
+      parameters:
+      - $ref: '#/parameters/bodyParam' 
+      - name: other
+        in: query
+        type: string
+      responses:
+        403:
+          $ref: '#/responses/notFound'
+    post:
+      operationId: postSomeWhere
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+  /some/where/else:
+    parameters:
+    - $ref: '#/parameters/someParam'
+    get:
+      operationId: getSomeWhereElse
+      parameters:
+      - $ref: '#/parameters/someParam'
+      - name: myOtherBodyParam
+        in: body
+        schema:
+          $ref: '#/definitions/myBody'
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    put:
+      operationId: putSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    post:
+      operationId: postSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    patch:
+      operationId: patchSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    delete:
+      operationId: deleteSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    head:
+      operationId: headSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+    options:
+      operationId: optionsSomeWhereElse
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'

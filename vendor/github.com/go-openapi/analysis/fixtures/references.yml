@@ -38,6 +38,15 @@ paths:
         in: query
         type: array
         items:
+          # NOTE: $ref here is forbidden in swagger 2.0 
+          # however, it is possible to analyze this
+          $ref: "#/definitions/named"
+      - name: otherHeader
+        in: header
+        type: array
+        items:
+          # NOTE: $ref here is forbidden in swagger 2.0 
+          # however, it is possible to analyze this
           $ref: "#/definitions/named"
       - name: body
         in: body
@@ -45,6 +54,13 @@ paths:
           type: object
       responses:
         default:
+          headers:
+            x-array-header:
+              type: array
+              items:
+                # NOTE: $ref here is forbidden in swagger 2.0 
+                # however, it is possible to analyze this
+                $ref: '#/definitions/named'
           schema:
             type: object
         404:
