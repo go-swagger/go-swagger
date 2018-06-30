@@ -2436,7 +2436,8 @@ func initFixtureItching() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.MyBytes) {`,
-		`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		// Fixed this: we don't want to call validate.FormatOf() for base64
+		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
@@ -2462,7 +2463,8 @@ func initFixtureItching() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.MyBytes) {`,
-		`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		// Fixed this: we don't want to call validate.FormatOf() for base64
+		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
@@ -9457,4 +9459,76 @@ func initFixture15365() {
 		// output in log
 		noLines,
 		noLines)
+}
+
+func initFixture1548() {
+	// testing fixture-1548.yaml with flatten
+
+	/*
+		My App API: check that there is no format validation on Base64 types
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1548/fixture-1548.yaml", "My App API")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: base64_alias.go
+	thisRun.AddExpectations("base64_alias.go", []string{
+		`type Base64Alias strfmt.Base64`,
+		`func (m *Base64Alias) UnmarshalJSON(b []byte) error {`,
+		`	return ((*strfmt.Base64)(m)).UnmarshalJSON(b`,
+		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
+		`	return (strfmt.Base64(m)).MarshalJSON(`,
+		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		[]string{"TODO", "validate.FormatOf("},
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: base64_map.go
+	thisRun.AddExpectations("base64_map.go", []string{
+		`type Base64Map map[string]strfmt.Base64`,
+		`func (m Base64Map) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		`		if swag.IsZero(m[k]) {`,
+		`		if err := validate.MaxLength(k, "body", string(m[k]), 100); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		[]string{"TODO", "validate.FormatOf("},
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: base64_array.go
+	thisRun.AddExpectations("base64_array.go", []string{
+		`type Base64Array []strfmt.Base64`,
+		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		[]string{"TODO", "validate.FormatOf("},
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: base64_model.go
+	thisRun.AddExpectations("base64_model.go", []string{
+		`type Base64Model struct {`,
+		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
+		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.validateProp1(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Prop1) {`,
+	},
+		// not expected
+		[]string{"TODO", "validate.FormatOf("},
+		// output in log
+		noLines,
+		noLines)
+
 }

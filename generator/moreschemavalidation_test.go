@@ -176,6 +176,9 @@ func initModelFixtures() {
 	// more maps and nullability checks
 	initFixture15365()
 	initFixtureNestedMaps()
+
+	// format "byte" validation
+	initFixture1548()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
