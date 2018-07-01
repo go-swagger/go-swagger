@@ -394,7 +394,7 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 			ReceiverName: a.Receiver,
 			Name:         "json",
 			MediaType:    runtime.JSONMime,
-			AllSerializers: []GenSerializer{GenSerializer{
+			AllSerializers: []GenSerializer{{
 				AppName:        a.Name,
 				ReceiverName:   a.Receiver,
 				Name:           "json",
@@ -470,7 +470,7 @@ func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool)
 			ReceiverName: a.Receiver,
 			Name:         "json",
 			MediaType:    runtime.JSONMime,
-			AllSerializers: []GenSerializer{GenSerializer{
+			AllSerializers: []GenSerializer{{
 				AppName:        a.Name,
 				ReceiverName:   a.Receiver,
 				Name:           "json",

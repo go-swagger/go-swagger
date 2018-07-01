@@ -34,23 +34,29 @@ testcases="${testcases} ../1277/cloudbreak.json"
 testcases="${testcases} ../../codegen/todolist.schemavalidation.yml"
 testcases="${testcases} ../../codegen/todolist.discriminators.yml"
 testcases="${testcases} ../../codegen/billforward.discriminators.yml"
-#export SWAGGER_DEBUG=1
-for opts in  "" "--skip-flatten" ; do
+
+# Generation options
+fullFlatten="--with-flatten=full"
+withExpand="--with-expand"
+minimal="--with-flatten=minimal"
+for opts in ${fullFlatten} ${withExpand} ${minimal} ; do
 for testcase in ${testcases} ; do
     grep -q discriminator ${testcase}
     discriminated=$?
-    if [[ ${discriminated} -eq 0 && ${opts} == "--skip-flatten" ]] ; then
+    if [[ ${discriminated} -eq 0 && ${opts} == ${withExpand} ]] ; then
         echo "Skipped ${testcase} with ${opts}: discriminator not supported with ${opts}"
         continue
     fi
-    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == "--skip-flatten" ]] ; then
+    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == ${withExpand} ]] ; then
         echo "Skipped ${testcase} with ${opts}: known issue with enum in anonymous allOf not validated. See you next PR"
         continue
     fi
 
     spec=${testcase}
     testcase=`basename ${testcase}`
-    if [[ -z ${opts} ]]; then
+    if [[ -z ${opts} || ${opts} == ${minimal} ]] ; then
+        target=./gen-${testcase%.*}-minimal
+    elif [[ ${opts} ==  ${fullFlatten} ]] ; then
         target=./gen-${testcase%.*}-flatten
     else
         target=./gen-${testcase%.*}-expand

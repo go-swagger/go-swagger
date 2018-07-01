@@ -50,7 +50,7 @@ func (c *ValidateSpec) Execute(args []string) error {
 
 	specDoc, err := loads.Spec(swaggerDoc)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	// Attempts to report about all errors

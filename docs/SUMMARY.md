@@ -17,6 +17,9 @@
   - [Options and commands](usage/swagger.md)
   - [Serve UI](usage/serve_ui.md)
   - [Validate](usage/validate.md)
+  - [Flatten](usage/flatten.md)
+  - [Expand](usage/expand.md)
+  - [Mixin](usage/mixin.md)
   - Generate
     - [Dependencies & Requirements](generate/requirements.md)
     - [API Client](generate/client.md)

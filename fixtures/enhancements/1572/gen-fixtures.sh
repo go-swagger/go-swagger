@@ -4,17 +4,9 @@ if [[ ${1} == "--clean" ]] ; then
 fi
 continueOnError=
 # A small utility to build fixture servers
-# Fixtures with models only
-testcases="${testcases} fixture-1536.yaml"
-testcases="${testcases} fixture-1536-2.yaml"
-testcases="${testcases} fixture-1536-3.yaml"
-testcases="${testcases} fixture-1536-4.yaml"
-testcases="${testcases} fixture-1536-5.yaml"
-testcases="${testcases} fixture-1536-2-responses.yaml"
-testcases="${testcases} ../../codegen/instagram.yml"
-testcases="${testcases} ../../codegen/todolist.responses.yml"
-testcases="${testcases} fixture-1536-models.yaml"
-for opts in  "" "--with-expand" ; do
+testcases="${testcases} fixture-1572.yaml"
+testcases="${testcases} fixture-deepMaps.yaml"
+for opts in  "" "--with-flatten=full" "--with-expand" ; do
 for testcase in ${testcases} ; do
     grep -q discriminator ${testcase}
     discriminated=$?
@@ -22,14 +14,11 @@ for testcase in ${testcases} ; do
         echo "Skipped ${testcase} with ${opts}: discriminator not supported with ${opts}"
         continue
     fi
-    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == "--with-expand" ]] ; then
-        echo "Skipped ${testcase} with ${opts}: known issue with enum in anonymous allOf not validated. See you next PR"
-        continue
-    fi
-
     spec=${testcase}
     testcase=`basename ${testcase}`
     if [[ -z ${opts} ]]; then
+        target=./gen-${testcase%.*}-minimal
+    elif [[ ${opts} == "--with-flatten=full" ]] ; then
         target=./gen-${testcase%.*}-flatten
     else
         target=./gen-${testcase%.*}-expand
@@ -37,10 +26,9 @@ for testcase in ${testcases} ; do
     serverName="codegensrv"
     rm -rf ${target}
     mkdir ${target}
-    echo "Model generation for ${spec} with opts=${opts}"
+    echo "Server generation for ${spec} with opts=${opts}"
     serverName="nrcodegen"
     swagger generate server --skip-validation ${opts} --spec ${spec} --target ${target} --name=${serverName} 1>${testcase%.*}.log 2>&1
-    # 1>x.log 2>&1
     #
     if [[ $? != 0 ]] ; then
         echo "Generation failed for ${spec}"

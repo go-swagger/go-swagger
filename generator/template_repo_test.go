@@ -415,8 +415,8 @@ func TestTemplates_AddFile(t *testing.T) {
 	// unprotected
 	err := AddFile("functpl", funcTpl)
 	if assert.NoError(t, err) {
-		_, err := templates.Get("functpl")
-		assert.Nil(t, err)
+		_, erg := templates.Get("functpl")
+		assert.Nil(t, erg)
 	}
 	// protected
 	err = AddFile("schemabody", funcTpl)

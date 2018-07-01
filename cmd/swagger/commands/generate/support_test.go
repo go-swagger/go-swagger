@@ -9,20 +9,11 @@ import (
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateModel(t *testing.T) {
+func TestGenerateSupport(t *testing.T) {
 	specs := []string{
-		"billforward.discriminators.yml",
-		"existing-model.yml",
-		"instagram.yml",
-		"shipyard.yml",
-		"sodabooth.json",
 		"tasklist.basic.yml",
-		"todolist.simpleform.yml",
-		"todolist.simpleheader.yml",
-		"todolist.simplequery.yml",
 	}
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
@@ -38,11 +29,11 @@ func TestGenerateModel(t *testing.T) {
 			defer func() {
 				_ = os.RemoveAll(generated)
 			}()
-			m := &generate.Model{}
-			_, _ = flags.Parse(m)
+			m := &generate.Support{}
 			if i == 0 {
-				m.ExistingModels = "nonExisting"
+				m.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
 			}
+			_, _ = flags.Parse(m)
 			m.Spec = flags.Filename(path)
 			m.Target = flags.Filename(generated)
 
@@ -51,16 +42,4 @@ func TestGenerateModel(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestGenerateModel_Check(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	m := &generate.Model{}
-	_, _ = flags.Parse(m)
-	m.DumpData = true
-	m.Name = []string{"model1", "model2"}
-	err := m.Execute([]string{})
-	assert.Error(t, err)
 }

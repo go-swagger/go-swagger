@@ -27,6 +27,9 @@ func TestGenerateAndBuild(t *testing.T) {
 		"issue 844": {
 			"../fixtures/bugs/844/swagger.json",
 		},
+		"issue 844 (with params)": {
+			"../fixtures/bugs/844/swagger-bis.json",
+		},
 		"issue 1216": {
 			"../fixtures/bugs/1216/swagger.yml",
 		},
@@ -43,7 +46,7 @@ func TestGenerateAndBuild(t *testing.T) {
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}
-			defer os.RemoveAll(generated)
+			defer func() { _ = os.RemoveAll(generated) }()
 
 			err = newTestClient(spec, generated).Execute(nil)
 			if err != nil {

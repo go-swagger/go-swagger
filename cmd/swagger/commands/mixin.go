@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -9,13 +9,22 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	flags "github.com/jessevdk/go-flags"
+)
+
+const (
+	// Output messages
+	nothingToDo = "Nothing to do. Need some swagger files to merge.\nUSAGE: swagger mixin [-c <expected#Collisions>] <primary-swagger-file> <mixin-swagger-file>..."
 )
 
 // MixinSpec holds command line flag definitions specific to the mixin
 // command. The flags are defined using struct field tags with the
 // "github.com/jessevdk/go-flags" format.
 type MixinSpec struct {
-	ExpectedCollisionCount uint `short:"c" description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual."`
+	ExpectedCollisionCount uint           `short:"c" description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual."`
+	Compact                bool           `long:"compact" description:"applies to JSON formated specs. When present, doesn't prettify the json"`
+	Output                 flags.Filename `long:"output" short:"o" description:"the file to write to"`
+	Format                 string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
 }
 
 // Execute runs the mixin command which merges Swagger 2.0 specs into
@@ -38,19 +47,19 @@ type MixinSpec struct {
 func (c *MixinSpec) Execute(args []string) error {
 
 	if len(args) < 2 {
-		log.Fatalln("Nothing to do. Need some swagger files to merge.\nUSAGE: swagger mixin [-c <expected#Collisions>] <primary-swagger-file> <mixin-swagger-file>...")
+		return errors.New(nothingToDo)
 	}
 
 	log.Printf("args[0] = %v\n", args[0])
 	log.Printf("args[1:] = %v\n", args[1:])
-	collisions, err := MixinFiles(args[0], args[1:], os.Stdout)
+	collisions, err := c.MixinFiles(args[0], args[1:], os.Stdout)
 
 	for _, warn := range collisions {
 		log.Println(warn)
 	}
 
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	if len(collisions) != int(c.ExpectedCollisionCount) {
@@ -68,9 +77,9 @@ func (c *MixinSpec) Execute(args []string) error {
 // swagger files, adds the mixins to primary, calls
 // FixEmptyResponseDescriptions on the primary, and writes the primary
 // with mixins to the given writer in JSON.  Returns the warning
-// messages for collsions that occured during mixin process and any
+// messages for collisions that occured during mixin process and any
 // error.
-func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string, error) {
+func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string, error) {
 
 	primaryDoc, err := loads.Spec(primaryFile)
 	if err != nil {
@@ -90,15 +99,5 @@ func MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string,
 	collisions := analysis.Mixin(primary, mixins...)
 	analysis.FixEmptyResponseDescriptions(primary)
 
-	bs, err := json.MarshalIndent(primary, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = w.Write(bs)
-	if err != nil {
-		return nil, err
-	}
-
-	return collisions, nil
+	return collisions, writeToFile(primary, !c.Compact, c.Format, string(c.Output))
 }

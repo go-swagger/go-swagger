@@ -1163,6 +1163,7 @@ func (mt *mapStack) HasMore() bool {
 	return mt.Type.AdditionalProperties != nil && (mt.Type.AdditionalProperties.Schema != nil || mt.Type.AdditionalProperties.Allows)
 }
 
+/* currently unused:
 func (mt *mapStack) Dict() map[string]interface{} {
 	res := make(map[string]interface{})
 	res["context"] = mt.Context.Schema
@@ -1177,6 +1178,7 @@ func (mt *mapStack) Dict() map[string]interface{} {
 	}
 	return res
 }
+*/
 
 func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if sg.Schema.AdditionalProperties == nil {
@@ -1866,6 +1868,13 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	}
 	if e := sg.buildAdditionalProperties(); e != nil {
 		return e
+	}
+
+	// rewrite value expression from top-down
+	cur := &sg.GenSchema
+	for cur.AdditionalProperties != nil {
+		cur.AdditionalProperties.ValueExpression = cur.ValueExpression + "[" + cur.AdditionalProperties.KeyVar + "]"
+		cur = cur.AdditionalProperties
 	}
 
 	prev := sg.GenSchema
