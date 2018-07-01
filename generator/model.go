@@ -1498,6 +1498,24 @@ func (sg *schemaGenContext) buildItems() error {
 		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name)
 		for i, s := range sg.Schema.Items.Schemas {
 			elProp := sg.NewTupleElement(&s, i)
+
+			if s.Ref.String() == "" {
+				tpe, err := sg.TypeResolver.ResolveSchema(&s, s.Ref.String() == "", true)
+				if err != nil {
+					return err
+				}
+				if tpe.IsComplexObject && tpe.IsAnonymous {
+					// if the tuple element is an anonymous complex object, build a new type for it
+					pg := sg.makeNewStruct(sg.Name+" Items"+strconv.Itoa(i), s)
+					if err := pg.makeGenSchema(); err != nil {
+						return err
+					}
+					elProp.Schema = *spec.RefProperty("#/definitions/" + pg.Name)
+					elProp.MergeResult(pg, false)
+					elProp.ExtraSchemas[pg.Name] = pg.GenSchema
+				}
+			}
+
 			if err := elProp.makeGenSchema(); err != nil {
 				return err
 			}
@@ -1518,7 +1536,7 @@ func (sg *schemaGenContext) buildItems() error {
 	// new tuple object
 	var sch spec.Schema
 	sch.Typed("object", "")
-	sch.Properties = make(map[string]spec.Schema)
+	sch.Properties = make(map[string]spec.Schema, len(sg.Schema.Items.Schemas))
 	for i, v := range sg.Schema.Items.Schemas {
 		sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
 		sch.Properties["P"+strconv.Itoa(i)] = v
@@ -1567,6 +1585,10 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 		}
 
 		it := sg.NewAdditionalItems(sg.Schema.AdditionalItems.Schema)
+		// if AdditionalItems are themselves arrays, bump the index var
+		if tpe.IsArray {
+			it.IndexVar += "i"
+		}
 
 		if tpe.IsInterface {
 			it.Untyped = true

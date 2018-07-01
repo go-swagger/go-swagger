@@ -1,0 +1,27 @@
+{
+  "type": "array",
+  "uniqueItems": true,
+  "items": [
+    {
+      "type": "string",
+      "enum": [
+        "CONST5",
+        "CONST6"
+      ]
+    },
+    {
+      "type": "string",
+      "enum": [
+        "CONST7",
+        "CONST8"
+      ]
+    }
+  ],
+  "additionalItems": {
+    "type": "integer",
+    "enum": [
+      1,
+      2
+    ]
+  }
+}

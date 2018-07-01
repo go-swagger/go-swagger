@@ -559,6 +559,11 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
     return nil
   }
         {{ end }}
+        {{- if and $.IsTuple .IsMap .Required }}
+  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+    return err
+  }
+        {{- end }}
         {{template "propertyvalidator" . }}
 
   return nil

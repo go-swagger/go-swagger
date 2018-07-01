@@ -1,0 +1,84 @@
+{
+  "definitions": {
+    "trueTupleThing": {
+      "type": "array",
+      "additionalItems": true,
+      "items": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "falseTupleThing": {
+      "type": "array",
+      "additionalItems": false,
+      "items": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "tupleThing": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string",
+          "enum": [
+            "CONST1",
+            "CONST2"
+          ]
+        },
+        {
+          "type": "string",
+          "enum": [
+            "CONST3",
+            "CONST4"
+          ]
+        }
+      ],
+      "enum": [
+        [
+          "CONST1",
+          "CONST3"
+        ],
+        [
+          "CONST2",
+          "CONST4"
+        ]
+      ]
+    },
+    "tupleThingWithAdditionalItems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": [
+        {
+          "type": "string",
+          "enum": [
+            "CONST5",
+            "CONST6"
+          ]
+        },
+        {
+          "type": "string",
+          "enum": [
+            "CONST7",
+            "CONST8"
+          ]
+        }
+      ],
+      "additionalItems": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ]
+      }
+    }
+  }
+}

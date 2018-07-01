@@ -93,6 +93,7 @@ fixture-allOf.yaml|\
 fixture-errors.yaml|\
 fixture-itching.yaml|\
 fixture-tuple.yaml|\
+fixture-simple-tuple.yaml|\
 )"
 
 # A list of known client build failures
@@ -149,6 +150,7 @@ specdir=${specdir}" ../fixtures/bugs/1392"
 specdir=${specdir}" ../fixtures/bugs/1277"
 specdir=${specdir}" ../fixtures/bugs/1536"
 specdir=${specdir}" ../fixtures/bugs/1487"
+specdir=${specdir}" ../fixtures/bugs/1571"
 gendir=./tmp-gen
 rm -rf ${gendir}
 
