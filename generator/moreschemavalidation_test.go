@@ -187,11 +187,13 @@ func initModelFixtures() {
 	// more maps and nullability checks
 	initFixture15365()
 	initFixtureNestedMaps()
+	initFixtureDeepMaps()
 
 	// format "byte" validation
 	initFixture1548()
 
-	initFixtureDeepMaps()
+	// more tuples
+	initFixtureSimpleTuple()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

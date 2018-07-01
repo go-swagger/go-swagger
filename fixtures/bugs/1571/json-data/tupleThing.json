@@ -1,0 +1,19 @@
+{
+  "type": "array",
+  "items": [
+    {
+      "type": "string",
+      "enum": [
+        "CONST1",
+        "CONST2"
+      ]
+    },
+    {
+      "type": "string",
+      "enum": [
+        "CONST3",
+        "CONST4"
+      ]
+    }
+  ]
+}

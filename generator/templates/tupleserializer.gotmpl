@@ -11,23 +11,26 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     return err
   }
 
-  // stage 2
+  // stage 2: hydrates struct members with tuple elements
   {{ if .AdditionalItems }}
   var lastIndex int
   {{ end }}
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
+    var data{{ pascalize .Name }} {{ template "dereffedSchemaType" . }}
     buf = bytes.NewBuffer(stage1[{{ $idx }}])
     dec := json.NewDecoder(buf)
     dec.UseNumber()
-    if err := dec.Decode({{ if (not $val.IsNullable) }}&{{ end }}{{ $val.ReceiverName }}.{{ pascalize $val.Name }}); err != nil {
+    if err := dec.Decode(&data{{ pascalize .Name }}); err != nil {
       return err
     }
+    {{ .ReceiverName }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = {{ if .IsNullable }}&{{ end }}data{{ pascalize .Name }}
     {{ if $.AdditionalItems }}
     lastIndex = {{ $idx }}
     {{ end }}
   }
   {{ end }}
   {{ if .AdditionalItems }}
+  // stage 3: hydrates AdditionalItems
   if len(stage1) > lastIndex+1 {
     for _, val := range stage1[lastIndex+1:] {
       var toadd {{ template "schemaType" .AdditionalItems }}
