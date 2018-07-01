@@ -29,16 +29,16 @@ func TestKeyExpiry(t *testing.T) {
 	//
 	// So this should select the newest, non-expired encryption key.
 	key, _ := entity.encryptionKey(time1)
-	if id := key.PublicKey.KeyIdShortString(); id != "96A672F5" {
-		t.Errorf("Expected key 1ABB25A0 at time %s, but got key %s", time1.Format(timeFormat), id)
+	if id, expected := key.PublicKey.KeyIdShortString(), "96A672F5"; id != expected {
+		t.Errorf("Expected key %s at time %s, but got key %s", expected, time1.Format(timeFormat), id)
 	}
 
 	// Once the first encryption subkey has expired, the second should be
 	// selected.
 	time2, _ := time.Parse(timeFormat, "2013-07-09")
 	key, _ = entity.encryptionKey(time2)
-	if id := key.PublicKey.KeyIdShortString(); id != "96A672F5" {
-		t.Errorf("Expected key 96A672F5 at time %s, but got key %s", time2.Format(timeFormat), id)
+	if id, expected := key.PublicKey.KeyIdShortString(), "96A672F5"; id != expected {
+		t.Errorf("Expected key %s at time %s, but got key %s", expected, time2.Format(timeFormat), id)
 	}
 
 	// Once all the keys have expired, nothing should be returned.
@@ -102,6 +102,33 @@ func TestGoodCrossSignature(t *testing.T) {
 	}
 	if len(keys[0].Subkeys) != 1 {
 		t.Errorf("Failed to accept good subkey, %d", len(keys[0].Subkeys))
+	}
+}
+
+func TestRevokedUserID(t *testing.T) {
+	// This key contains 2 UIDs, one of which is revoked:
+	// [ultimate] (1)  Golang Gopher <no-reply@golang.com>
+	// [ revoked] (2)  Golang Gopher <revoked@golang.com>
+	keys, err := ReadArmoredKeyRing(bytes.NewBufferString(revokedUserIDKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(keys) != 1 {
+		t.Fatal("Failed to read key with a revoked user id")
+	}
+
+	var identities []*Identity
+	for _, identity := range keys[0].Identities {
+		identities = append(identities, identity)
+	}
+
+	if numIdentities, numExpected := len(identities), 1; numIdentities != numExpected {
+		t.Errorf("obtained %d identities, expected %d", numIdentities, numExpected)
+	}
+
+	if identityName, expectedName := identities[0].Name, "Golang Gopher <no-reply@golang.com>"; identityName != expectedName {
+		t.Errorf("obtained identity %s expected %s", identityName, expectedName)
 	}
 }
 
@@ -480,4 +507,43 @@ C5pygfXw1DJrhAP+NyPJ4um/bU1I+rXaHHJYroYJs8YSweiNcwiHDQn0Engh/mVZ
 SqLHvbKh2dL/RXymC3+rjPvQf5cup9bPxNMa6WagdYBNAfzWGtkVISeaQW+cTEp/
 MtgVijRGXR/lGLGETPg2X3Afwn9N9bLMBkBprKgbBqU7lpaoPupxT61bL70=
 =vtbN
+-----END PGP PUBLIC KEY BLOCK-----`
+
+const revokedUserIDKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+7qTZOahrETw=
+=IKnw
 -----END PGP PUBLIC KEY BLOCK-----`

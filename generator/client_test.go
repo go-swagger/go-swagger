@@ -24,6 +24,9 @@ import (
 )
 
 func TestClient_InvalidSpec(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/825/swagger.yml"
 	opts.ValidateSpec = true
@@ -37,7 +40,7 @@ func TestClient_BaseImportDisabled(t *testing.T) {
 	}
 	log.SetOutput(ioutil.Discard)
 	defer func() {
-		os.RemoveAll(targetdir)
+		_ = os.RemoveAll(targetdir)
 		log.SetOutput(os.Stdout)
 	}()
 	opts := testGenOpts()

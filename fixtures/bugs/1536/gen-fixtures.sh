@@ -14,15 +14,15 @@ testcases="${testcases} fixture-1536-2-responses.yaml"
 testcases="${testcases} ../../codegen/instagram.yml"
 testcases="${testcases} ../../codegen/todolist.responses.yml"
 testcases="${testcases} fixture-1536-models.yaml"
-for opts in  "" "--skip-flatten" ; do
+for opts in  "" "--with-expand" ; do
 for testcase in ${testcases} ; do
     grep -q discriminator ${testcase}
     discriminated=$?
-    if [[ ${discriminated} -eq 0 && ${opts} == "--skip-flatten" ]] ; then
+    if [[ ${discriminated} -eq 0 && ${opts} == "--with-expand" ]] ; then
         echo "Skipped ${testcase} with ${opts}: discriminator not supported with ${opts}"
         continue
     fi
-    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == "--skip-flatten" ]] ; then
+    if [[ ${testcase} == "../1479/fixture-1479-part.yaml" && ${opts} == "--with-expand" ]] ; then
         echo "Skipped ${testcase} with ${opts}: known issue with enum in anonymous allOf not validated. See you next PR"
         continue
     fi

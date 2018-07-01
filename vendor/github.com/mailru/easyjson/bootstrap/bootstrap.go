@@ -22,10 +22,11 @@ type Generator struct {
 	PkgPath, PkgName string
 	Types            []string
 
-	NoStdMarshalers bool
-	SnakeCase       bool
-	LowerCamelCase  bool
-	OmitEmpty       bool
+	NoStdMarshalers       bool
+	SnakeCase             bool
+	LowerCamelCase        bool
+	OmitEmpty             bool
+	DisallowUnknownFields bool
 
 	OutName   string
 	BuildTags string
@@ -119,6 +120,9 @@ func (g *Generator) writeMain() (path string, err error) {
 	}
 	if g.NoStdMarshalers {
 		fmt.Fprintln(f, "  g.NoStdMarshalers()")
+	}
+	if g.DisallowUnknownFields {
+		fmt.Fprintln(f, "  g.DisallowUnknownFields()")
 	}
 
 	sort.Strings(g.Types)

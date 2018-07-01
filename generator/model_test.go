@@ -293,6 +293,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k.AliasedType = k.GoType
 			k.GoType = "myAliasedType"
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\d*\)` + `\)`)
+			assert.True(t, rex.MatchString(k.Zero()))
 			//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
 		case "strfmt.Base64": // akin to []byte
 			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\[\]byte.*\)`)
@@ -302,6 +303,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k.AliasedType = k.GoType
 			k.GoType = "myAliasedType"
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
+			assert.True(t, rex.MatchString(k.Zero()))
 			// t.Logf("Zero for %s: %s", k.GoType, k.Zero())
 		case "interface{}":
 			assert.Equal(t, `nil`, v.Value.Zero())
@@ -322,6 +324,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 				k.AliasedType = k.GoType
 				k.GoType = "myAliasedType"
 				rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(".*"\)` + `\)`)
+				assert.True(t, rex.MatchString(k.Zero()))
 				//t.Logf("Zero for %s: %s", k.GoType, k.Zero())
 			}
 		}
@@ -2393,6 +2396,9 @@ func TestGenModel_Issue1409(t *testing.T) {
 
 // This tests makes sure model definitions from inline schema in response are properly flattened and get validation
 func TestGenModel_Issue866(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	specDoc, err := loads.Spec("../fixtures/bugs/866/fixture-866.yaml")
 	if assert.NoError(t, err) {
 		p, ok := specDoc.Spec().Paths.Paths["/"]

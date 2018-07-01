@@ -46,9 +46,9 @@
   {{- else if and .HasSimpleBodyParams .HasModelBodyMap }}
     {{- if and .Schema.HasValidations (not (or .Schema.AdditionalProperties.IsInterface .Schema.AdditionalProperties.IsStream)) }}
   // validate map of body objects
-  for k := range body {
+  for {{ .KeyVar }} := range body {
       {{- if .Schema.AdditionalProperties.Required }}
-    if err := validate.Required({{ if .Child.Path }}{{ .Child.Path }}{{ else }}""{{ end }}, {{ printf "%q" .Child.Location }}, {{ if not .IsAnonymous }}{{ .Schema.GoType }}({{ end }}{{.Child.ValueExpression }}{{ if not .IsAnonymous }}){{ end }}); err != nil {
+    if err := validate.Required({{ if .Child.Path }}{{ .Child.Path }}{{ else }}""{{ end }}, {{ printf "%q" .Child.Location }}, {{ if not .IsAnonymous }}{{ .Schema.GoType }}({{ end }}body[{{ .KeyVar }}]{{ if not .IsAnonymous }}){{ end }}); err != nil {
       return err
     }
       {{- end }}
@@ -62,7 +62,7 @@
         {{- end }}
     }
       {{- end }}
-    if val , ok :={{ .ValueExpression }}[{{ .KeyVar }}]; ok {
+    if val , ok :=body[{{ .KeyVar }}]; ok {
         {{- if and .IsNullable (not .IsMapNullOverride) }}
         if val != nil {
         {{- end }}
@@ -219,9 +219,13 @@ if err := validate.Enum(
     {{ template "validationPrimitive" . }}
   {{- end }}
   {{- if and .IsCustomFormatter (not .IsStream) }}
+    {{- if ne .SwaggerFormat "byte" }}
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }
+    {{- else }}
+  // Format "byte" (base64 string) is already validated when parsed
+    {{- end }}
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
     {{ template "sliceparamvalidator" . }}

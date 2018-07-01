@@ -808,3 +808,71 @@ func TestRuntime_PreserveTrailingSlash(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestRuntime_FallbackConsumer(t *testing.T) {
+	result := `W3siY29tcGxldGVkIjpmYWxzZSwiY29udGVudCI6ImRHRnpheUF4SUdOdmJuUmxiblE9IiwiaWQiOjF9XQ==`
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Add(runtime.HeaderContentType, "application/x-task")
+		rw.WriteHeader(http.StatusOK)
+		_, _ = rw.Write([]byte(result))
+	}))
+	defer server.Close()
+
+	rwrtr := runtime.ClientRequestWriterFunc(func(req runtime.ClientRequest, _ strfmt.Registry) error {
+		return req.SetBodyParam(bytes.NewBufferString("hello"))
+	})
+
+	hu, _ := url.Parse(server.URL)
+	rt := New(hu.Host, "/", []string{"http"})
+
+	// without the fallback consumer
+	_, err := rt.Submit(&runtime.ClientOperation{
+		ID:                 "getTasks",
+		Method:             "POST",
+		PathPattern:        "/",
+		Schemes:            []string{"http"},
+		ConsumesMediaTypes: []string{"application/octet-stream"},
+		Params:             rwrtr,
+		Reader: runtime.ClientResponseReaderFunc(func(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []byte
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
+
+	if assert.Error(t, err) {
+		assert.Equal(t, `no consumer: "application/x-task"`, err.Error())
+	}
+
+	// add the fallback consumer
+	rt.Consumers["*/*"] = rt.Consumers[runtime.DefaultMime]
+	res, err := rt.Submit(&runtime.ClientOperation{
+		ID:                 "getTasks",
+		Method:             "POST",
+		PathPattern:        "/",
+		Schemes:            []string{"http"},
+		ConsumesMediaTypes: []string{"application/octet-stream"},
+		Params:             rwrtr,
+		Reader: runtime.ClientResponseReaderFunc(func(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+			if response.Code() == 200 {
+				var result []byte
+				if err := consumer.Consume(response.Body(), &result); err != nil {
+					return nil, err
+				}
+				return result, nil
+			}
+			return nil, errors.New("Generic error")
+		}),
+	})
+
+	if assert.NoError(t, err) {
+		assert.IsType(t, []byte{}, res)
+		actual := res.([]byte)
+		assert.EqualValues(t, result, actual)
+	}
+}

@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	goruntime "runtime"
@@ -77,8 +76,10 @@ func TestBaseImport(t *testing.T) {
 	// 3. Check results.
 
 	oldgopath := os.Getenv("GOPATH")
-	defer os.Setenv("GOPATH", oldgopath)
-	defer os.RemoveAll(filepath.Join(tempdir, "root"))
+	defer func() {
+		_ = os.Setenv("GOPATH", oldgopath)
+		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
+	}()
 
 	for _, item := range checkbaseimporttest {
 
@@ -105,11 +106,11 @@ func TestBaseImport(t *testing.T) {
 					t.Errorf("baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 				}
 
-				os.RemoveAll(filepath.Join(tempdir, "root"))
+				_ = os.RemoveAll(filepath.Join(tempdir, "root"))
 
 			} else {
-				log.Printf("WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v", item.symlinksrc, item.symlinkdest, err)
-				log.Printf("WARNING:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)")
+				t.Logf("WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v", item.symlinksrc, item.symlinkdest, err)
+				t.Logf("WARNING:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)")
 			}
 		}
 	}

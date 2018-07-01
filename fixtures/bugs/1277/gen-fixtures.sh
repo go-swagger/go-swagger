@@ -3,7 +3,7 @@ if [[ ${1} == "--clean" ]] ; then
     clean=1
 fi
 # A small utility to build fixture servers
-testcases="fixture-1277.json"
+testcases="fixture-cloudbreak-1277.json"
 for testcase in ${testcases} ; do
     target=gen-${testcase%.json}
     spec=./${testcase}

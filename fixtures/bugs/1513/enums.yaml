@@ -6,7 +6,7 @@ paths:
 
   /example:
     put:
-      operationid: put-enum
+      operationId: put-enum
       parameters:
       - name: "something"
         in: "body"

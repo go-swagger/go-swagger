@@ -1,0 +1,153 @@
+---
+swagger: '2.0'
+info:
+  version: '0.1.0'
+  title: parameters and responses expansion
+
+parameters:
+  someParam:
+    name: some
+    in: query
+    type: string
+    pattern: '^[a-z]$'
+  bodyParam:
+    name: some
+    in: body
+    schema:
+      $ref: '#/definitions/myBody'
+  someHeader:
+    name: headerRefed
+    in: header
+    type: string
+  anotherHeader:
+    name: headerSlice
+    in: header
+    type: array
+    items:
+      type: string
+  arrayQuery:
+    name: arrayInQuery
+    in: query
+    type: array
+    items:
+      type: integer
+
+responses:
+  notFound:
+    description: 'Not Found'
+    schema:
+      type: string
+      default: "Element no found"
+  defaultResponse:
+    description: 'Default response'
+    headers:
+      x-yet-another-header:
+        type: array
+        items:
+          type: string
+    schema:
+      type: string
+      maxLength: 255
+
+definitions:
+  myBody:
+    type: integer
+  unused:
+    type: integer
+  schemaWithAllOf:
+    type: object
+    allOf:
+    - type: object
+      properties:
+        prop1:
+          type: integer
+    - type: object
+      properties:
+        prop2:
+          type: string
+          pattern: '^[a-z]$'
+paths:
+  /some/where:
+    parameters:
+      - $ref: '#/parameters/someParam'
+      - $ref: '#/parameters/arrayQuery'
+      - name: anotherArray
+        in: query
+        type: array
+        items:
+          type: integer
+    get:
+      parameters:
+      - $ref: '#/parameters/bodyParam'
+      - name: other
+        in: query
+        type: string
+      - $ref: '#/parameters/anotherHeader'
+      - name: andAnother
+        in: query
+        type: array
+        items:
+          type: integer
+      responses:
+        403:
+          $ref: '#/responses/notFound'
+        default:
+          description: default
+          headers:
+            x-pattern-default:
+              type: string
+              pattern: '^[a-z]$'
+            x-array-pattern-default:
+              type: array
+              items:
+                type: string
+                pattern: '^[a-z]$'
+    post:
+      operationId: postSomeWhere
+      parameters:
+      - name: headerParam
+        in: header
+        type: string
+      - $ref: '#/parameters/someHeader'
+      - name: nestedParam
+        in: query
+        type: array
+        items: 
+          type: array
+          items:
+            type: string
+            pattern: '^[a-z]$'
+      responses:
+        200:
+          description: ok
+          headers:
+            x-post-header:
+              type: string
+              pattern: '^[a-z]$'
+            x-response-array-header:
+              type: array
+              items: 
+                type: string
+          schema:
+            $ref: '#/definitions/schemaWithAllOf'
+        201:
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/schemaWithAllOf'
+        default:
+          $ref: '#/responses/defaultResponse'
+  /some/where/else:
+    get:
+      parameters:
+      - $ref: '#/parameters/someParam'
+      - name: myOtherBodyParam
+        in: body
+        schema:
+          $ref: '#/definitions/myBody'
+      responses:
+        default:
+          $ref: '#/responses/defaultResponse'
+  /some/remote:
+    $ref: 'other-source.yaml#/pathItems/patchMethod'

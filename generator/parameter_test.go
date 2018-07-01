@@ -454,6 +454,11 @@ var bug163Properties = []paramTestContext{
 }
 
 func TestGenParameters_Simple(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
 	if !assert.NoError(t, err) {
 		t.FailNow()
@@ -467,6 +472,11 @@ func TestGenParameters_Simple(t *testing.T) {
 }
 
 func TestGenParameter_Issue163(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
@@ -490,6 +500,11 @@ func TestGenParameter_Issue163(t *testing.T) {
 }
 
 func TestGenParameter_Issue195(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
 	b, err := opBuilder("getTesting", "../fixtures/bugs/195/swagger.json")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
@@ -511,6 +526,11 @@ func TestGenParameter_Issue195(t *testing.T) {
 }
 
 func TestGenParameter_Issue196(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
 	b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
 	if assert.NoError(t, err) {
 		op, err := b.MakeOperation()
@@ -1185,24 +1205,26 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	}
 }
 
-func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fixture string, skipFlatten bool, withExpand bool) {
+func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fixture string, minimalFlatten bool, withExpand bool) {
 	fixtureSpec := path.Base(fixture)
 	tassert := assert.New(t)
 	for fixtureIndex, fixtureContents := range fixtureConfig {
 		var gen codeGenOpBuilder
 		var err error
-		if skipFlatten && !withExpand {
+		if minimalFlatten && !withExpand {
+			// proceed with minimal spec flattening
 			gen, err = opBuilder(fixtureIndex, fixture)
-		} else if !skipFlatten {
+		} else if !minimalFlatten {
+			// proceed with full flattening
 			gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
 		} else {
+			// proceed with spec expansion
 			gen, err = opBuilderWithExpand(fixtureIndex, fixture)
 		}
 		if tassert.NoError(err) {
 			op, err := gen.MakeOperation()
 			if tassert.NoError(err) {
 				opts := opts()
-				//opts.FlattenSpec = true
 				for fixtureTemplate, expectedCode := range fixtureContents {
 					buf := bytes.NewBuffer(nil)
 					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
@@ -1751,6 +1773,9 @@ func TestGenParameter_Issue1392(t *testing.T) {
 }
 
 func TestGenParameter_Issue1513(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	assert := assert.New(t)
 	var assertion = `r.SetBodyParam(o.Something)`
 	gen, err := opBuilderWithFlatten("put-enum", "../fixtures/bugs/1513/enums.yaml")
@@ -2409,7 +2434,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`				res = append(res, errors.NewParseError("mapOfArrayWithMax", "body", "", err)`,
 				`		} else {`,
 				`			for k := range body {`,
-				`				if val, ok := o.MapOfArrayWithMax[k]; ok {`,
+				`				if val, ok := body[k]; ok {`,
 				`				if err := val.Validate(route.Formats); err != nil {`,
 				`					break`,
 				`			if len(res) == 0 {`,
@@ -2621,19 +2646,26 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`	return GetMapArrayParams{`,
 				`type GetMapArrayParams struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	MapOfArray models.GetMapArrayParamsBody`,
+				// maps are now simple types
+				//`	MapOfArray models.GetMapArrayParamsBody`,
+				`	MapOfArray map[string]models.ModelArray`,
 				`func (o *GetMapArrayParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
 				`	if runtime.HasBody(r) {`,
 				`		defer r.Body.Close(`,
-				`		var body models.GetMapArrayParamsBody`,
+				//`		var body models.GetMapArrayParamsBody`,
+				`		var body map[string]models.ModelArray`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
 				`				res = append(res, errors.Required("mapOfArray", "body")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArray", "body", "", err)`,
 				`		} else {`,
-				`			if err := body.Validate(route.Formats); err != nil {`,
+				//`			if err := body.Validate(route.Formats); err != nil {`,
+				`       	for k := range body {`,
+				`       		if err := validate.Required(fmt.Sprintf("%s.%v", "mapOfArray", k), "body", body[k]); err != nil {`,
+				`       		if val, ok := body[k]; ok {`,
+				`       			if err := val.Validate(route.Formats); err != nil {`,
 				`			if len(res) == 0 {`,
 				`				o.MapOfArray = body`,
 				`	} else {`,
@@ -2882,19 +2914,26 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`	return GetMapObjectParams{`,
 				`type GetMapObjectParams struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				`	MapOfObject models.GetMapObjectParamsBody`,
+				//`	MapOfObject models.GetMapObjectParamsBody`,
+				// maps are now simple types
+				`	MapOfObject map[string]models.ModelObject`,
 				`func (o *GetMapObjectParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
 				`	if runtime.HasBody(r) {`,
 				`		defer r.Body.Close(`,
-				`		var body models.GetMapObjectParamsBody`,
+				//`		var body models.GetMapObjectParamsBody`,
+				`		var body map[string]models.ModelObject`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
 				`				res = append(res, errors.Required("mapOfObject", "body")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfObject", "body", "", err)`,
 				`		} else {`,
-				`			if err := body.Validate(route.Formats); err != nil {`,
+				//`			if err := body.Validate(route.Formats); err != nil {`,
+				`       	for k := range body {`,
+				`       		if err := validate.Required(fmt.Sprintf("%s.%v", "mapOfObject", k), "body", body[k]); err != nil {`,
+				`       		if val, ok := body[k]; ok {`,
+				`       			if err := val.Validate(route.Formats); err != nil {`,
 				`			if len(res) == 0 {`,
 				`				o.MapOfObject = body`,
 				`	} else {`,
@@ -3886,7 +3925,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`			res = append(res, errors.NewParseError("nestedRefNovalidation01", "body", "", err)`,
 				`		} else {`,
 				`			for k := range body {`,
-				`				if val, ok := o.NestedRefNovalidation01[k]; ok {`,
+				`				if val, ok := body[k]; ok {`,
 				`				if err := val.Validate(route.Formats); err != nil {`,
 				`					break`,
 				`			if len(res) == 0 {`,
@@ -3935,7 +3974,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-4.yaml"), false, false)
 }
 
-func TestGenParameter_Issue15362_SkipFlatten(t *testing.T) {
+func TestGenParameter_Issue15362_WithExpand(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
@@ -4002,4 +4041,213 @@ func TestGenParameter_Issue15362_SkipFlatten(t *testing.T) {
 	}
 
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), true, false)
+}
+
+func TestGenParameter_Issue1548_base64(t *testing.T) {
+	// testing fixture-1548.yaml with flatten
+	// My App API
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters in operation my_method_parameters.go
+		"MyMethod": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewMyMethodParams() MyMethodParams {`,
+				`	return MyMethodParams{`,
+				`type MyMethodParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	ByteInQuery strfmt.Base64`,
+				`	Data strfmt.Base64`,
+				`func (o *MyMethodParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	qs := runtime.Values(r.URL.Query()`,
+				`	qByteInQuery, qhkByteInQuery, _ := qs.GetOK("byteInQuery"`,
+				`	if err := o.bindByteInQuery(qByteInQuery, qhkByteInQuery, route.Formats); err != nil {`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body strfmt.Base64`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
+				`		} else {`,
+				`			o.Data = body`,
+				`			if err := o.validateDataBody(route.Formats); err != nil {`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *MyMethodParams) bindByteInQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {`,
+				`	if !hasKey {`,
+				`		return errors.Required("byteInQuery", "query"`,
+				`	var raw string`,
+				`	if len(rawData) > 0 {`,
+				`		raw = rawData[len(rawData)-1]`,
+				`	if err := validate.RequiredString("byteInQuery", "query", raw); err != nil {`,
+				`	value, err := formats.Parse("byte", raw`,
+				`	if err != nil {`,
+				`		return errors.InvalidType("byteInQuery", "query", "strfmt.Base64", raw`,
+				`	o.ByteInQuery = *(value.(*strfmt.Base64)`,
+				`	if err := o.validateByteInQuery(formats); err != nil {`,
+				`func (o *MyMethodParams) validateByteInQuery(formats strfmt.Registry) error {`,
+				`	if err := validate.MaxLength("byteInQuery", "query", o.ByteInQuery.String(), 100); err != nil {`,
+				`func (o *MyMethodParams) validateDataBody(formats strfmt.Registry) error {`,
+			},
+		},
+
+		// load expectations for parameters in operation my_model_method_parameters.go
+		"MyModelMethod": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewMyModelMethodParams() MyModelMethodParams {`,
+				`	return MyModelMethodParams{`,
+				`type MyModelMethodParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	Data *models.Base64Model`,
+				`func (o *MyModelMethodParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body models.Base64Model`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
+				`		} else {`,
+				`			if err := body.Validate(route.Formats); err != nil {`,
+				`			if len(res) == 0 {`,
+				`				o.Data = &body`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+	}
+
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1548", "fixture-1548.yaml"), true, false)
+}
+
+func TestGenParameter_1572(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1572.yaml with minimal flatten
+	// edge cases for operations schemas
+
+	/*
+	        Run the following test caes and exercise the minimal flatten mode:
+	   - [x] nil schema in body param / response
+	   - [x] interface{} in body param /response
+	   - [x] additional schema reused from model (body param and response) (with maps or arrays)
+	   - [x] primitive body / response
+	   - [x] $ref'ed response and param (check that minimal flatten expands it)
+
+	*/
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters in operation get_interface_parameters.go
+		"getInterface": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetInterfaceParams() GetInterfaceParams {`,
+				`	return GetInterfaceParams{`,
+				`type GetInterfaceParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	InterfaceBody interface{`,
+				`func (o *GetInterfaceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("interfaceBody", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("interfaceBody", "body", "", err)`,
+				`		} else {`,
+				`			o.InterfaceBody = body`,
+				`	} else {`,
+				`		res = append(res, errors.Required("interfaceBody", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_null_parameters.go
+		"getNull": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetNullParams() GetNullParams {`,
+				`	return GetNullParams{`,
+				`type GetNullParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	NullBody interface{`,
+				`func (o *GetNullParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body interface{`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("nullBody", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("nullBody", "body", "", err)`,
+				`		} else {`,
+				`			o.NullBody = body`,
+				`	} else {`,
+				`		res = append(res, errors.Required("nullBody", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+
+		// load expectations for parameters in operation get_primitive_parameters.go
+		"getPrimitive": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetPrimitiveParams() GetPrimitiveParams {`,
+				`	return GetPrimitiveParams{`,
+				`type GetPrimitiveParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	PrimitiveBody uint32`,
+				`func (o *GetPrimitiveParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body uint32`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("primitiveBody", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("primitiveBody", "body", "", err)`,
+				`		} else {`,
+				`			o.PrimitiveBody = body`,
+				`			if err := o.validatePrimitiveBodyBody(route.Formats); err != nil {`,
+				`	} else {`,
+				`		res = append(res, errors.Required("primitiveBody", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+				`func (o *GetPrimitiveParams) validatePrimitiveBodyBody(formats strfmt.Registry) error {`,
+				`	if err := validate.MaximumInt("primitiveBody", "body", int64(o.PrimitiveBody), 100, false); err != nil {`,
+			},
+		},
+
+		// load expectations for parameters in operation get_model_interface_parameters.go
+		"getModelInterface": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func NewGetModelInterfaceParams() GetModelInterfaceParams {`,
+				`	return GetModelInterfaceParams{`,
+				`type GetModelInterfaceParams struct {`,
+				"	HTTPRequest *http.Request `json:\"-\"`",
+				`	InterfaceBody map[string]models.ModelInterface`,
+				`func (o *GetModelInterfaceParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
+				`	o.HTTPRequest = r`,
+				`	if runtime.HasBody(r) {`,
+				`		defer r.Body.Close(`,
+				`		var body map[string]models.ModelInterface`,
+				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
+				`			if err == io.EOF {`,
+				`				res = append(res, errors.Required("interfaceBody", "body")`,
+				`			} else {`,
+				`				res = append(res, errors.NewParseError("interfaceBody", "body", "", err)`,
+				`		} else {`,
+				`			o.InterfaceBody = body`,
+				`	} else {`,
+				`		res = append(res, errors.Required("interfaceBody", "body")`,
+				`		return errors.CompositeValidationError(res...`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "1572", "fixture-1572.yaml"), true, false)
 }

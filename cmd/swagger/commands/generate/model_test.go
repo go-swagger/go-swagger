@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateModel(t *testing.T) {
@@ -27,16 +28,21 @@ func TestGenerateModel(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
-	for _, spec := range specs {
+	for i, spec := range specs {
 		_ = t.Run(spec, func(t *testing.T) {
 			path := filepath.Join(base, "fixtures/codegen", spec)
 			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}
-			defer os.RemoveAll(generated)
+			defer func() {
+				_ = os.RemoveAll(generated)
+			}()
 			m := &generate.Model{}
-			flags.Parse(m)
+			_, _ = flags.Parse(m)
+			if i == 0 {
+				m.ExistingModels = "nonExisting"
+			}
 			m.Spec = flags.Filename(path)
 			m.Target = flags.Filename(generated)
 
@@ -45,4 +51,16 @@ func TestGenerateModel(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGenerateModel_Check(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	m := &generate.Model{}
+	_, _ = flags.Parse(m)
+	m.DumpData = true
+	m.Name = []string{"model1", "model2"}
+	err := m.Execute([]string{})
+	assert.Error(t, err)
 }

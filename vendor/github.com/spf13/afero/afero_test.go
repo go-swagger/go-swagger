@@ -570,6 +570,25 @@ func TestReaddir(t *testing.T) {
 	}
 }
 
+// https://github.com/spf13/afero/issues/169
+func TestReaddirRegularFile(t *testing.T) {
+	defer removeAllTestFiles(t)
+	for _, fs := range Fss {
+		f := tmpFile(fs)
+		defer f.Close()
+
+		_, err := f.Readdirnames(-1)
+		if err == nil {
+			t.Fatal("Expected error")
+		}
+
+		_, err = f.Readdir(-1)
+		if err == nil {
+			t.Fatal("Expected error")
+		}
+	}
+}
+
 type myFileInfo []os.FileInfo
 
 func (m myFileInfo) String() string {

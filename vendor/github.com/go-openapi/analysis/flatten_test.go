@@ -15,7 +15,12 @@
 package analysis
 
 import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -61,7 +66,8 @@ func TestDefinitionName(t *testing.T) {
 	}
 
 	for _, v := range values {
-		assert.Equal(t, v.Expected, uniqifyName(v.Definitions, nameFromRef(spec.MustCreateRef(v.Source))))
+		u, _ := uniqifyName(v.Definitions, nameFromRef(spec.MustCreateRef(v.Source)))
+		assert.Equal(t, v.Expected, u)
 	}
 }
 
@@ -449,6 +455,11 @@ func TestDepthFirstSort(t *testing.T) {
 	bp := filepath.Join("fixtures", "inline_schemas.yml")
 	sp, err := loadSpec(bp)
 	values := []string{
+		// Added shared parameters and responses
+		"#/parameters/someParam/schema/properties/createdAt",
+		"#/parameters/someParam/schema",
+		"#/responses/someResponse/schema/properties/createdAt",
+		"#/responses/someResponse/schema",
 		"#/paths/~1some~1where~1{id}/parameters/1/schema/properties/createdAt",
 		"#/paths/~1some~1where~1{id}/parameters/1/schema",
 		"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/createdAt",
@@ -542,8 +553,9 @@ func TestNameInlinedSchemas(t *testing.T) {
 		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/2", "#/definitions/getSomeWhereIdDefaultBodyRecord/items/2", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems2")},
 		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record", "#/definitions/getSomeWhereIdDefaultBody/properties/record", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecord")},
 		{"#/paths/~1some~1where~1{id}/get/responses/default/schema", "#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBody")},
-		{"#/definitions/nestedThing/properties/record/items/2/allOf/1/additionalProperties", "#/definitions/nestedThingRecordItems2AllOf1/additionalProperties", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1AdditionalProperties")},
-		{"#/definitions/nestedThing/properties/record/items/2/allOf/1", "#/definitions/nestedThingRecordItems2/allOf/1", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1")},
+		// maps:
+		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1/additionalProperties", "#/definitions/nestedThingRecordItems2AllOf1/additionalProperties", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1AdditionalProperties")},
+		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1", "#/definitions/nestedThingRecordItems2/allOf/1", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1")},
 		{"#/definitions/nestedThing/properties/record/items/2/properties/name", "#/definitions/nestedThingRecordItems2/properties/name", spec.MustCreateRef("#/definitions/nestedThingRecordItems2Name")},
 		{"#/definitions/nestedThing/properties/record/items/1", "#/definitions/nestedThingRecord/items/1", spec.MustCreateRef("#/definitions/nestedThingRecordItems1")},
 		{"#/definitions/nestedThing/properties/record/items/2", "#/definitions/nestedThingRecord/items/2", spec.MustCreateRef("#/definitions/nestedThingRecordItems2")},
@@ -556,6 +568,7 @@ func TestNameInlinedSchemas(t *testing.T) {
 		{"#/definitions/otherRecords/items", "#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/otherRecordsItems")},
 		{"#/definitions/tags/additionalProperties", "#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tagsAdditionalProperties")},
 	}
+
 	if assert.NoError(t, err) {
 		err := nameInlinedSchemas(&FlattenOpts{
 			Spec:     New(sp),
@@ -599,7 +612,7 @@ func TestNameInlinedSchemas(t *testing.T) {
 				if rr.Schema != nil && rr.Schema.Ref.String() == "" && !rr.TopLevel {
 					asch, err := Schema(SchemaOpts{Schema: rr.Schema, Root: sp, BasePath: bp})
 					if assert.NoError(t, err, "for key: %s", k) {
-						if !asch.IsSimpleSchema && !asch.IsArray {
+						if !asch.IsSimpleSchema && !asch.IsArray && !asch.IsMap {
 							assert.Fail(t, "not a top level schema", "for key: %s", k)
 						}
 					}
@@ -709,12 +722,14 @@ func TestFlatten(t *testing.T) {
 			spec.MustCreateRef("#/definitions/tag"),
 			"",
 		},
+		/* Maps are now considered simple schemas
 		{
 			"#/definitions/nestedThingRecordItems2/allOf/1",
 			"",
 			spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1"),
 			"",
 		},
+		*/
 		{
 			"#/definitions/nestedThingRecord/items/1",
 			"",
@@ -796,8 +811,6 @@ func TestFlatten(t *testing.T) {
 	}
 	if assert.NoError(t, err) {
 		err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp})
-		//b, _ := sp.MarshalJSON()
-		//panic(string(b))
 		if assert.NoError(t, err) {
 			for i, v := range values {
 				pk := v.Key[1:]
@@ -837,4 +850,834 @@ func TestFlatten(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestFlatten_oaigenFull(t *testing.T) {
+	defer log.SetOutput(os.Stdout)
+
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+	msg := logCapture.String()
+	//t.Log(msg)
+
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	if !assert.Containsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as uniqueName2OAIGen", "Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+	res := getInPath(t, sp, "/some/where", "/get/responses/204/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/uniqueName1"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/204/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/d"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/206/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/a"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/304/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/transitive11"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/205/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/b"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/200/schema")
+	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/default/schema")
+	// pointer expanded
+	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "a")
+	assert.JSONEqf(t, `{"type": "object", "properties": { "a": { "$ref": "#/definitions/aAOAIGen" }}}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "aA")
+	assert.JSONEqf(t, `{"type": "string", "format": "date"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "aAOAIGen")
+	assert.JSONEqf(t, `{
+		"type": "object",
+		   "properties": {
+		    "b": {
+		     "type": "integer"
+		 }},
+		 "x-go-gen-location": "models"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "bB")
+	assert.JSONEqf(t, `{"type": "string", "format": "date-time"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "d")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "c": {
+		     "type": "integer"
+		    }
+		   }
+	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "myBody")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "aA": {
+		     "$ref": "#/definitions/aA"
+		    },
+		    "prop1": {
+		     "type": "integer"
+		    }
+		   }
+	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "uniqueName2")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/notUniqueName2"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "notUniqueName2")
+	assert.JSONEqf(t, `{
+		  "type": "object",
+		   "properties": {
+		    "prop6": {
+		     "type": "integer"
+		    }
+		   }
+	   }`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "uniqueName1")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "prop5": {
+		     "type": "integer"
+		    }}}`, res, "Expected a simple schema for response")
+
+	// allOf container: []spec.Schema
+	res = getDefinition(t, sp, "getWithSliceContainerDefaultBody")
+	assert.JSONEqf(t, `{
+		"allOf": [
+		    {
+		     "$ref": "#/definitions/uniqueName3"
+		    },
+		    {
+		     "$ref": "#/definitions/getWithSliceContainerDefaultBodyAllOf1"
+		    }
+		   ],
+		   "x-go-gen-location": "operations"
+		    }`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "getWithSliceContainerDefaultBodyAllOf1")
+	assert.JSONEqf(t, `{
+		"type": "object",
+		   "properties": {
+		    "prop8": {
+		     "type": "string"
+		    }
+		   },
+		   "x-go-gen-location": "models"
+		    }`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "getWithTupleContainerDefaultBody")
+	assert.JSONEqf(t, `{
+		   "type": "array",
+		   "items": [
+		    {
+		     "$ref": "#/definitions/uniqueName3"
+		    },
+		    {
+		     "$ref": "#/definitions/getWithSliceContainerDefaultBodyAllOf1"
+		    }
+		   ],
+		   "x-go-gen-location": "operations"
+		    }`, res, "Expected a simple schema for response")
+
+	// with container SchemaOrArray
+	res = getDefinition(t, sp, "getWithTupleConflictDefaultBody")
+	assert.JSONEqf(t, `{
+		   "type": "array",
+		   "items": [
+		    {
+		     "$ref": "#/definitions/uniqueName4"
+		    },
+		    {
+		     "$ref": "#/definitions/getWithTupleConflictDefaultBodyItems1"
+		    }
+		   ],
+		   "x-go-gen-location": "operations"
+	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "getWithTupleConflictDefaultBodyItems1")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "prop10": {
+		     "type": "string"
+		    }
+		   },
+		   "x-go-gen-location": "models"
+	}`, res, "Expected a simple schema for response")
+}
+
+func TestFlatten_oaigenMinimal(t *testing.T) {
+	defer log.SetOutput(os.Stdout)
+
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+
+	msg := logCapture.String()
+	//t.Log(msg)
+	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as uniqueName2OAIGen", "Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+	res := getInPath(t, sp, "/some/where", "/get/responses/204/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/uniqueName1"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/204/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/d"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/206/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/a"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/304/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/transitive11"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/get/responses/205/schema")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/b"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/200/schema")
+	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where", "/post/responses/default/schema")
+	//assert.JSONEqf(t, `{"$ref": "#/definitions/myDefaultResponse/properties/zzz"}`, res, "Expected a simple schema for response")
+	// This JSON pointer is expanded
+	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "aA")
+	assert.JSONEqf(t, `{"type": "string", "format": "date"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "a")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "a": {
+		     "type": "object",
+		     "properties": {
+		      "b": {
+		       "type": "integer"
+		      }
+		     }
+		    }
+		   }
+		  }`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "bB")
+	assert.JSONEqf(t, `{"type": "string", "format": "date-time"}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "d")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "c": {
+		     "type": "integer"
+		    }
+		   }
+	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "myBody")
+	assert.JSONEqf(t, `{
+		   "type": "object",
+		   "properties": {
+		    "aA": {
+		     "$ref": "#/definitions/aA"
+		    },
+		    "prop1": {
+		     "type": "integer"
+		    }
+		   }
+	}`, res, "Expected a simple schema for response")
+
+	res = getDefinition(t, sp, "uniqueName2")
+	assert.JSONEqf(t, `{"$ref": "#/definitions/notUniqueName2"}`, res, "Expected a simple schema for response")
+
+	// with allOf container: []spec.Schema
+	res = getInPath(t, sp, "/with/slice/container", "/get/responses/default/schema")
+	assert.JSONEqf(t, `{
+ 			"allOf": [
+		        {
+		         "$ref": "#/definitions/uniqueName3"
+		        },
+				{
+			     "$ref": "#/definitions/getWithSliceContainerDefaultBodyAllOf1"
+				}
+		       ]
+	}`, res, "Expected a simple schema for response")
+
+	// with tuple container
+	res = getInPath(t, sp, "/with/tuple/container", "/get/responses/default/schema")
+	assert.JSONEqf(t, `{
+		       "type": "array",
+		       "items": [
+		        {
+		         "$ref": "#/definitions/uniqueName3"
+		        },
+		        {
+		         "$ref": "#/definitions/getWithSliceContainerDefaultBodyAllOf1"
+		        }
+		       ]
+	}`, res, "Expected a simple schema for response")
+
+	// with SchemaOrArray container
+	res = getInPath(t, sp, "/with/tuple/conflict", "/get/responses/default/schema")
+	assert.JSONEqf(t, `{
+		       "type": "array",
+		       "items": [
+		        {
+		         "$ref": "#/definitions/uniqueName4"
+		        },
+		        {
+		         "type": "object",
+		         "properties": {
+		          "prop10": {
+		           "type": "string"
+		          }
+		         }
+		        }
+		       ]
+	}`, res, "Expected a simple schema for response")
+}
+
+func TestFlatten_oaigen_1260(t *testing.T) {
+	// test fixture from issue go-swagger/go-swagger#1260
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-swagger.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	msg := logCapture.String()
+	assert.NotContains(t, msg, "warning")
+
+	for k := range sp.Definitions {
+		if !assert.NotContains(t, k, "OAIGen") {
+			t.FailNow()
+			return
+		}
+	}
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+}
+
+func TestFlatten_oaigen_1260bis(t *testing.T) {
+	// test fixture from issue go-swagger/go-swagger#1260
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-bis-swagger.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	msg := logCapture.String()
+	assert.NotContains(t, msg, "warning")
+
+	for k := range sp.Definitions {
+		if !assert.NotContains(t, k, "OAIGen") {
+			t.FailNow()
+			return
+		}
+	}
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+}
+
+func TestFlatten_oaigen_1260ter(t *testing.T) {
+	// test fixture from issue go-swagger/go-swagger#1260
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-ter-swagger.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	msg := logCapture.String()
+	assert.NotContains(t, msg, "warning")
+
+	for k := range sp.Definitions {
+		if !assert.NotContains(t, k, "OAIGen") {
+			t.FailNow()
+			return
+		}
+	}
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+}
+
+func getDefinition(t *testing.T, sp *spec.Swagger, key string) string {
+	d, ok := sp.Definitions[key]
+	if !assert.Truef(t, ok, "Expected definition for %s", key) {
+		t.FailNow()
+	}
+	res, _ := json.Marshal(d)
+	return string(res)
+}
+
+func getInPath(t *testing.T, sp *spec.Swagger, path, key string) string {
+	ptr, erp := jsonpointer.New(key)
+	if !assert.NoError(t, erp, "at %s no key", key) {
+		t.FailNow()
+	}
+	d, _, erg := ptr.Get(sp.Paths.Paths[path])
+	if !assert.NoError(t, erg, "at %s no value for %s", path, key) {
+		t.FailNow()
+	}
+	res, _ := json.Marshal(d)
+	return string(res)
+}
+
+func TestMoreNameInlinedSchemas(t *testing.T) {
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "more_nested_inline_schemas.yml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	assert.NoError(t, err)
+
+	res := getInPath(t, sp, "/some/where/{id}", "/post/responses/200/schema")
+	assert.JSONEqf(t, `{"type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/definitions/postSomeWhereIdOKBodyAdditionalPropertiesAdditionalPropertiesAdditionalProperties"}}}}`, res, "Expected a simple schema for response")
+
+	res = getInPath(t, sp, "/some/where/{id}", "/post/responses/204/schema")
+	assert.JSONEqf(t, `{
+		       "type": "object",
+		       "additionalProperties": {
+		        "type": "array",
+		        "items": {
+		         "type": "object",
+		         "additionalProperties": {
+		          "type": "array",
+		          "items": {
+		           "type": "object",
+		           "additionalProperties": {
+		            "type": "array",
+		            "items": {
+		             "$ref": "#/definitions/postSomeWhereIdNoContentBodyAdditionalPropertiesItemsAdditionalPropertiesItemsAdditionalPropertiesItems"
+		            }
+		           }
+		          }
+		         }
+		        }
+		       }
+		   }`, res, "Expected a simple schema for response")
+
+}
+
+func TestRemoveUnused(t *testing.T) {
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: false, Minimal: true, RemoveUnused: true})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	assert.Nil(t, sp.Parameters)
+	assert.Nil(t, sp.Responses)
+
+	bp = filepath.Join(cwd, "fixtures", "parameters", "fixture-parameters.yaml")
+	sp, err = loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: true, RemoveUnused: true})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	assert.Nil(t, sp.Parameters)
+	assert.Nil(t, sp.Responses)
+
+	op, ok := an.OperationFor("GET", "/some/where")
+	assert.True(t, ok)
+	assert.Lenf(t, op.Parameters, 4, "Expected 4 parameters expanded for this operation")
+	assert.Lenf(t, an.ParamsFor("GET", "/some/where"), 7, "Expected 7 parameters (with default) expanded for this operation")
+
+	op, ok = an.OperationFor("PATCH", "/some/remote")
+	assert.True(t, ok)
+	assert.Lenf(t, op.Parameters, 1, "Expected 1 parameter expanded for this operation")
+	assert.Lenf(t, an.ParamsFor("PATCH", "/some/remote"), 2, "Expected 2 parameters (with default) expanded for this operation")
+
+	_, ok = sp.Definitions["unused"]
+	assert.False(t, ok, "Did not expect to find #/definitions/unused")
+
+	bp = filepath.Join(cwd, "fixtures", "parameters", "fixture-parameters.yaml")
+	sp, err = loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: true})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	msg := logCapture.String()
+	if !assert.Containsf(t, msg, "info: removing unused definition: unused", "Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+
+	assert.Nil(t, sp.Parameters)
+	assert.Nil(t, sp.Responses)
+	_, ok = sp.Definitions["unused"]
+	assert.Falsef(t, ok, "Did not expect to find #/definitions/unused")
+}
+
+func TestOperationIDs(t *testing.T) {
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "operations", "fixture-operations.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, RemoveUnused: false})
+	assert.NoError(t, err)
+
+	res := gatherOperations(New(sp), []string{"getSomeWhere", "getSomeWhereElse"})
+	_, ok := res["getSomeWhere"]
+	assert.Truef(t, ok, "Expected to find operation")
+	_, ok = res["getSomeWhereElse"]
+	assert.Truef(t, ok, "Expected to find operation")
+	_, ok = res["postSomeWhere"]
+	assert.Falsef(t, ok, "Did not expect to find operation")
+
+	op, ok := an.OperationFor("GET", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("getSomeWhereElse"), 2)
+
+	op, ok = an.OperationFor("POST", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("postSomeWhereElse"), 1)
+
+	op, ok = an.OperationFor("PUT", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("putSomeWhereElse"), 1)
+
+	op, ok = an.OperationFor("PATCH", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("patchSomeWhereElse"), 1)
+
+	op, ok = an.OperationFor("DELETE", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("deleteSomeWhereElse"), 1)
+
+	op, ok = an.OperationFor("HEAD", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("headSomeWhereElse"), 1)
+
+	op, ok = an.OperationFor("OPTIONS", "/some/where/else")
+	assert.True(t, ok)
+	assert.NotNil(t, op)
+	assert.Len(t, an.ParametersFor("optionsSomeWhereElse"), 1)
+
+	assert.Len(t, an.ParametersFor("outOfThisWorld"), 0)
+}
+
+func TestFlatten_Pointers(t *testing.T) {
+	defer log.SetOutput(os.Stdout)
+
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "pointers", "fixture-pointers.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	//bb, _ := json.MarshalIndent(sp, "", " ")
+	//t.Log(string(bb))
+	msg := logCapture.String()
+	if !assert.NotContains(t, msg, "warning") {
+		t.Log(msg)
+	}
+
+	// re-analyse and check all $ref's point to #/definitions
+	bn := New(sp)
+	for _, r := range bn.AllRefs() {
+		assert.True(t, path.Dir(r.String()) == definitionsPath)
+	}
+}
+
+// unit test guards in flatten not easily testable with actual specs
+func TestFlatten_ErrorHandling(t *testing.T) {
+	// invalid spec expansion
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "errors", "fixture-unexpandable.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: true})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	sp, _ = loadSpec(bp)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: false})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	bp = filepath.Join(cwd, "fixtures", "errors", "fixture-unexpandable-2.yaml")
+	sp, err = loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: false})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	sp, _ = loadSpec(bp)
+	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Minimal: true, Expand: false})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	sp, _ = loadSpec(bp)
+	err = rewriteSchemaToRef(sp, "#/invalidPointer/key", spec.Ref{})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	err = rewriteParentRef(sp, "#/invalidPointer/key", spec.Ref{})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	err = updateRef(sp, "#/invalidPointer/key", spec.Ref{})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	err = updateRefWithSchema(sp, "#/invalidPointer/key", &spec.Schema{})
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	_, _, err = getPointerFromKey(sp, "#/invalidPointer/key")
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	_, _, err = getPointerFromKey(sp, "--->#/invalidJsonPointer")
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	_, _, _, err = getParentFromKey(sp, "#/invalidPointer/key")
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	_, _, _, err = getParentFromKey(sp, "--->#/invalidJsonPointer")
+	if !assert.Errorf(t, err, "Expected a failure") {
+		t.FailNow()
+		return
+	}
+
+	assert.NotPanics(t, saveNilSchema)
+}
+
+func saveNilSchema() {
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "errors", "fixture-unexpandable-2.yaml")
+	sp, _ := loadSpec(bp)
+	saveSchema(sp, "ThisNilSchema", nil)
+}
+
+func TestFlatten_UnitGuards(t *testing.T) {
+	parts := keyParts("#/nowhere/arbitrary/pointer")
+	res := genLocation(parts)
+	assert.Equal(t, "", res)
+
+	res = parts.DefinitionName()
+	assert.Equal(t, "", res)
+
+	res = parts.ResponseName()
+	assert.Equal(t, "", res)
+
+	b := parts.isKeyName(-1)
+	assert.False(t, b)
+
+}
+
+func TestFlatten_PointersLoop(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "pointers", "fixture-pointers-loop.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	if !assert.Error(t, err) {
+		t.FailNow()
+		return
+	}
+}
+
+func TestFlatten_Bitbucket(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "bugs", "bitbucket.json")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	an := New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	sp, _ = loadSpec(bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	sp, _ = loadSpec(bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Expand: true, RemoveUnused: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	sp, _ = loadSpec(bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Expand: true, RemoveUnused: true})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	assert.Len(t, sp.Definitions, 2) // only 2 remaining refs after expansion: circular $ref
+	_, ok := sp.Definitions["base_commit"]
+	assert.True(t, ok)
+	_, ok = sp.Definitions["repository"]
+	assert.True(t, ok)
+	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
+	//log.Printf(string(bbb))
 }

@@ -1,0 +1,101 @@
+swagger: "2.0"
+info: 
+  title: "edge cases for operations schemas"
+  version: "0.0.1"
+  description: |
+      Run the following test caes and exercise the minimal flatten mode:
+        - [x] nil schema in body param / response
+        - [x] interface{} in body param /response
+        - [x] additional schema reused from model (body param and response) (with maps or arrays)
+        - [x] primitive body / response
+        - [x] $ref'ed response and param (check that minimal flatten expands it)
+        - [] x-go-name in inline operation schema (body param and response)
+
+  license: 
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+parameters:
+  ref1:
+    name: nullBody
+    in: body
+    required: true
+    # null schema: invalid spec
+    # empty schema
+    #schema: {}
+
+responses:
+  resp1:
+    description: "OK"
+    schema:
+      type: object
+      additionalProperties: true
+
+definitions: 
+  modelInterface:
+    type: object
+    additionalProperties: true
+paths: 
+  /getNull: 
+    get:
+      operationId: getNull
+      parameters:
+        - $ref: '#/parameters/ref1'
+      responses: 
+        200: 
+          $ref: '#/responses/resp1'
+        203: 
+          description: "OK"
+          # null schema
+  /getInterface: 
+    get: 
+      operationId: getInterface
+      parameters:
+        - name: interfaceBody
+          in: body
+          required: true
+          schema:
+            type: object
+            additionalProperties: true
+      responses: 
+        200: 
+          description: "OK"
+          schema:
+            type: object
+            additionalProperties: true
+  /getModelInterface: 
+    get: 
+      operationId: getModelInterface
+      parameters:
+        - name: interfaceBody
+          in: body
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/modelInterface'
+      responses: 
+        200: 
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/modelInterface'
+  /getPrimitive: 
+    get: 
+      operationId: getPrimitive
+      parameters:
+        - name: primitiveBody
+          in: body
+          required: true
+          schema:
+            type: integer
+            format: uint32
+            maximum: 100
+      responses: 
+        200: 
+          description: "OK"
+          schema:
+            type: number
+            format: float
+            maximum: 100

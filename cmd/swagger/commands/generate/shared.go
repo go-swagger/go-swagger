@@ -1,15 +1,72 @@
 package generate
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
 	"github.com/go-swagger/go-swagger/generator"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 )
+
+// FlattenCmdOptions determines options to the flatten spec preprocessing
+type FlattenCmdOptions struct {
+	WithExpand  bool     `long:"with-expand" description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)"`
+	WithFlatten []string `long:"with-flatten" description:"flattens all $ref's in spec prior to generation" choice:"minimal" choice:"full" choice:"expand" choice:"verbose" choice:"noverbose" choice:"remove-unused" default:"minimal" default:"verbose"`
+}
+
+// SetFlattenOptions builds flatten options from command line args
+func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *analysis.FlattenOpts) {
+	res = &analysis.FlattenOpts{}
+	if dflt != nil {
+		*res = *dflt
+	}
+	if f == nil {
+		return
+	}
+	verboseIsSet := false
+	minimalIsSet := false
+	//removeUnusedIsSet := false
+	expandIsSet := false
+	if f.WithExpand {
+		res.Expand = true
+		expandIsSet = true
+	}
+	for _, opt := range f.WithFlatten {
+		if opt == "verbose" {
+			res.Verbose = true
+			verboseIsSet = true
+		}
+		if opt == "noverbose" && !verboseIsSet {
+			// verbose flag takes precedence
+			res.Verbose = false
+			verboseIsSet = true
+		}
+		if opt == "remove-unused" {
+			res.RemoveUnused = true
+			//removeUnusedIsSet = true
+		}
+		if opt == "expand" {
+			res.Expand = true
+			expandIsSet = true
+		}
+		if opt == "full" && !minimalIsSet && !expandIsSet {
+			// minimal flag takes precedence
+			res.Minimal = false
+			minimalIsSet = true
+		}
+		if opt == "minimal" && !expandIsSet {
+			// expand flag takes precedence
+			res.Minimal = true
+			minimalIsSet = true
+		}
+	}
+	return
+}
 
 type shared struct {
 	Spec                  flags.Filename `long:"spec" short:"f" description:"the spec file to use (default swagger.{json,yml,yaml})"`
@@ -23,11 +80,12 @@ type shared struct {
 	CopyrightFile         flags.Filename `long:"copyright-file" short:"r" description:"copyright file used to add copyright header"`
 	ExistingModels        string         `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 	AdditionalInitialisms []string       `long:"additional-initialism" description:"consecutive capitals that should be considered intialisms"`
-	genOpts               *generator.GenOpts
+	FlattenCmdOptions
 }
 
 type sharedCommand interface {
 	getOpts() (*generator.GenOpts, error)
+	getShared() *shared
 	getConfigFile() flags.Filename
 	getAdditionalInitialisms() []string
 	generate(*generator.GenOpts) error
@@ -42,16 +100,32 @@ func (s *shared) getAdditionalInitialisms() []string {
 	return s.AdditionalInitialisms
 }
 
+func (s *shared) setCopyright() (string, error) {
+	var copyrightstr string
+	copyrightfile := string(s.CopyrightFile)
+	if copyrightfile != "" {
+		//Read the Copyright from file path in opts
+		bytebuffer, err := ioutil.ReadFile(copyrightfile)
+		if err != nil {
+			return "", err
+		}
+		copyrightstr = string(bytebuffer)
+	} else {
+		copyrightstr = ""
+	}
+	return copyrightstr, nil
+}
+
 func createSwagger(s sharedCommand) error {
-	cfg, err := readConfig(string(s.getConfigFile()))
-	if err != nil {
-		return err
+	cfg, erc := readConfig(string(s.getConfigFile()))
+	if erc != nil {
+		return erc
 	}
 	setDebug(cfg)
 
-	opts, err := s.getOpts()
-	if err != nil {
-		return err
+	opts, ero := s.getOpts()
+	if ero != nil {
+		return ero
 	}
 
 	if err := opts.EnsureDefaults(); err != nil {
@@ -64,13 +138,24 @@ func createSwagger(s sharedCommand) error {
 
 	swag.AddInitialisms(s.getAdditionalInitialisms()...)
 
+	if sharedOpts := s.getShared(); sharedOpts != nil {
+		// process shared options
+		opts.FlattenOpts = sharedOpts.FlattenCmdOptions.SetFlattenOptions(opts.FlattenOpts)
+
+		copyrightStr, erc := sharedOpts.setCopyright()
+		if erc != nil {
+			return erc
+		}
+		opts.Copyright = copyrightStr
+	}
+
 	if err := s.generate(opts); err != nil {
 		return err
 	}
 
-	basepath, err := filepath.Abs(".")
-	if err != nil {
-		return err
+	basepath, era := filepath.Abs(".")
+	if era != nil {
+		return era
 	}
 
 	targetAbs, err := filepath.Abs(opts.Target)
@@ -94,7 +179,7 @@ func readConfig(filename string) (*viper.Viper, error) {
 
 	abspath, err := filepath.Abs(filename)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 	log.Println("trying to read config from", abspath)
 	return generator.ReadConfig(abspath)

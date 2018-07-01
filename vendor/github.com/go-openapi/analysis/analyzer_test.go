@@ -189,6 +189,8 @@ func TestDefinitionAnalysis(t *testing.T) {
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf")
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/0")
 		assertSchemaRefExists(t, definitions, "#/definitions/withAllOf/allOf/1")
+		assertSchemaRefExists(t, definitions, "#/definitions/withOneOf/oneOf/0")
+		assertSchemaRefExists(t, definitions, "#/definitions/withOneOf/oneOf/1")
 		allOfs := analyzer.allOfs
 		assert.Len(t, allOfs, 1)
 		assert.Contains(t, allOfs, "#/definitions/withAllOf")
@@ -222,7 +224,8 @@ func loadSpec(path string) (*spec.Swagger, error) {
 func TestReferenceAnalysis(t *testing.T) {
 	doc, err := loadSpec(filepath.Join("fixtures", "references.yml"))
 	if assert.NoError(t, err) {
-		definitions := New(doc).references
+		an := New(doc)
+		definitions := an.references
 
 		// parameters
 		assertRefExists(t, definitions.parameters, "#/paths/~1some~1where~1{id}/parameters/0")
@@ -240,7 +243,16 @@ func TestReferenceAnalysis(t *testing.T) {
 		assertRefExists(t, definitions.schemas, "#/definitions/tag/properties/audit")
 
 		// items
+		// Supported non-swagger 2.0 constructs ($ref in simple schema items)
 		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/parameters/1/items")
+		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/parameters/2/items")
+		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
+
+		assert.Lenf(t, an.AllItemsReferences(), 3, "Expected 3 items references in this spec")
+
+		assertRefExists(t, definitions.parameterItems, "#/paths/~1some~1where~1{id}/get/parameters/1/items")
+		assertRefExists(t, definitions.parameterItems, "#/paths/~1some~1where~1{id}/get/parameters/2/items")
+		assertRefExists(t, definitions.headerItems, "#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
 	}
 }
 
@@ -261,7 +273,8 @@ func assertSchemaRefExists(t testing.TB, data map[string]SchemaRef, key string) 
 func TestPatternAnalysis(t *testing.T) {
 	doc, err := loadSpec(filepath.Join("fixtures", "patterns.yml"))
 	if assert.NoError(t, err) {
-		pt := New(doc).patterns
+		an := New(doc)
+		pt := an.patterns
 
 		// parameters
 		assertPattern(t, pt.parameters, "#/parameters/idParam", "a[A-Za-Z0-9]+")
@@ -281,6 +294,12 @@ func TestPatternAnalysis(t *testing.T) {
 		// items
 		assertPattern(t, pt.items, "#/paths/~1some~1where~1{id}/get/parameters/1/items", "c[A-Za-z0-9]+")
 		assertPattern(t, pt.items, "#/paths/~1other~1place/post/responses/default/headers/Via/items", "[A-Za-z]+")
+
+		// patternProperties (beyond Swagger 2.0)
+		_, ok := an.spec.Definitions["withPatternProperties"]
+		assert.True(t, ok)
+		_, ok = an.allSchemas["#/definitions/withPatternProperties/patternProperties/^prop[0-9]+$"]
+		assert.True(t, ok)
 	}
 }
 
@@ -333,9 +352,11 @@ func TestAnalyzer_paramsAsMap(Pt *testing.T) {
 		m := make(map[string]spec.Parameter)
 		pi, ok := s.spec.Paths.Paths["/items"]
 		if assert.True(Pt, ok) {
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			s.paramsAsMap(pi.Parameters, m, nil)
-			// TODO: Assert?
+			assert.Len(Pt, m, 1)
+			p, ok := m["query#Limit"]
+			assert.True(Pt, ok)
+			assert.Equal(Pt, p.Name, "limit")
 		}
 	}
 
@@ -346,9 +367,11 @@ func TestAnalyzer_paramsAsMap(Pt *testing.T) {
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			s.paramsAsMap(pi.Parameters, m, nil)
-			// TODO: Assert?
+			assert.Len(Pt, m, 1)
+			p, ok := m["body#DespicableMe"]
+			assert.True(Pt, ok)
+			assert.Equal(Pt, p.Name, "despicableMe")
 		}
 	}
 }
@@ -733,4 +756,85 @@ func prepareTestParamsAuth() *Spec {
 	}
 	analyzer := New(spec)
 	return analyzer
+}
+
+func TestMoreParamAnalysis(t *testing.T) {
+	cwd, _ := os.Getwd()
+	bp := filepath.Join(cwd, "fixtures", "parameters", "fixture-parameters.yaml")
+	sp, err := loadSpec(bp)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+
+	an := New(sp)
+
+	res := an.AllPatterns()
+	assert.Lenf(t, res, 6, "Expected 6 patterns in this spec")
+
+	res = an.SchemaPatterns()
+	assert.Lenf(t, res, 1, "Expected 1 schema pattern in this spec")
+
+	res = an.HeaderPatterns()
+	assert.Lenf(t, res, 2, "Expected 2 header pattern in this spec")
+
+	res = an.ItemsPatterns()
+	assert.Lenf(t, res, 2, "Expected 2 items pattern in this spec")
+
+	res = an.ParameterPatterns()
+	assert.Lenf(t, res, 1, "Expected 1 simple param pattern in this spec")
+
+	refs := an.AllRefs()
+	assert.Lenf(t, refs, 10, "Expected 10 reference usage in this spec")
+
+	references := an.AllReferences()
+	assert.Lenf(t, references, 14, "Expected 14 reference usage in this spec")
+
+	references = an.AllItemsReferences()
+	assert.Lenf(t, references, 0, "Expected 0 items reference in this spec")
+
+	references = an.AllPathItemReferences()
+	assert.Lenf(t, references, 1, "Expected 1 pathItem reference in this spec")
+
+	references = an.AllResponseReferences()
+	assert.Lenf(t, references, 3, "Expected 3 response references in this spec")
+
+	references = an.AllParameterReferences()
+	assert.Lenf(t, references, 6, "Expected 6 parameter references in this spec")
+
+	schemaRefs := an.AllDefinitions()
+	assert.Lenf(t, schemaRefs, 14, "Expected 14 schema definitions in this spec")
+	//for _, refs := range schemaRefs {
+	//	t.Logf("Schema Ref: %s (%s)", refs.Name, refs.Ref.String())
+	//}
+	schemaRefs = an.SchemasWithAllOf()
+	assert.Lenf(t, schemaRefs, 1, "Expected 1 schema with AllOf definition in this spec")
+
+	method, path, op, found := an.OperationForName("postSomeWhere")
+	assert.Equal(t, "POST", method)
+	assert.Equal(t, "/some/where", path)
+	if assert.NotNil(t, op) && assert.True(t, found) {
+		sec := an.SecurityRequirementsFor(op)
+		assert.Nil(t, sec)
+		secScheme := an.SecurityDefinitionsFor(op)
+		assert.Nil(t, secScheme)
+
+		bag := an.ParametersFor("postSomeWhere")
+		assert.Lenf(t, bag, 6, "Expected 6 parameters for this operation")
+	}
+
+	method, path, op, found = an.OperationForName("notFound")
+	assert.Equal(t, "", method)
+	assert.Equal(t, "", path)
+	assert.Nil(t, op)
+	assert.False(t, found)
+
+	// does not take ops under pathItem $ref
+	ops := an.OperationMethodPaths()
+	assert.Lenf(t, ops, 3, "Expected 3 ops")
+	ops = an.OperationIDs()
+	assert.Lenf(t, ops, 3, "Expected 3 ops")
+	assert.Contains(t, ops, "postSomeWhere")
+	assert.Contains(t, ops, "GET /some/where/else")
+	assert.Contains(t, ops, "GET /some/where")
 }

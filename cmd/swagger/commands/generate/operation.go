@@ -33,7 +33,6 @@ type Operation struct {
 	NoResponses    bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
 	NoURLBuilder   bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
-	SkipFlattening bool     `long:"skip-flatten" description:"skips flattening of spec prior to generation"`
 	SkipValidation bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
 
@@ -54,9 +53,12 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		IncludeParameters: !o.NoStruct,
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
-		FlattenSpec:       !o.SkipFlattening,
 		ValidateSpec:      !o.SkipValidation,
 	}, nil
+}
+
+func (o *Operation) getShared() *shared {
+	return &o.shared
 }
 
 func (o *Operation) generate(opts *generator.GenOpts) error {
