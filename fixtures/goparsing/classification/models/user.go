@@ -18,7 +18,7 @@ import "github.com/go-openapi/strfmt"
 
 // User represents the user for this application
 //
-// A user is the security principal for this aplication.
+// A user is the security principal for this application.
 // It's also used as one of main axis for reporting.
 //
 // A user can have friends with whom they can share what they like.

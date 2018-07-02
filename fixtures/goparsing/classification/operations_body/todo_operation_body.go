@@ -222,7 +222,6 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// 422: body:validationError
 	mountItem("DELETE", basePath+"/orders/:id", nil)
 
-
 	// swagger:route POST /param-test params testParams
 	//
 	// Allow some params with constraints.

@@ -205,7 +205,7 @@ func TestRoutesParserBody(t *testing.T) {
 }
 
 func validateRoutesParameters(t *testing.T, ops spec.Paths) {
-	po, _ := ops.Paths["/pets"]
+	po := ops.Paths["/pets"]
 	assert.Equal(t, 2, len(po.Post.Parameters))
 
 	// Testing standard param properties
@@ -222,14 +222,14 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, true, p.Required)
 	assert.Equal(t, false, p.AllowEmptyValue)
 
-	po, _ = ops.Paths["/orders"]
+	po = ops.Paths["/orders"]
 	assert.Equal(t, 2, len(po.Post.Parameters))
 
 	// Testing invalid value for "in"
 	p = po.Post.Parameters[0]
 	assert.Equal(t, "id", p.Name)
 	assert.Equal(t, "The order id", p.Description)
-	assert.Equal(t, "", p.In)  // Invalid value should not be set
+	assert.Equal(t, "", p.In) // Invalid value should not be set
 	assert.Equal(t, false, p.Required)
 	assert.Equal(t, true, p.AllowEmptyValue)
 
@@ -238,7 +238,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "body", p.In)
 	assert.Equal(t, "The request model.", p.Description)
 
-	po, _ = ops.Paths["/param-test"]
+	po = ops.Paths["/param-test"]
 	assert.Equal(t, 6, len(po.Post.Parameters))
 
 	// Testing number param with "max" and "min" constraints

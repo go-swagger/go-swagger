@@ -1062,6 +1062,7 @@ func verifySwaggerMultiArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefi
 }
 
 func TestEnhancement793(t *testing.T) {
+	var err error
 	scanner, err := newAppScanner(&Opts{
 		BasePath:   "../fixtures/enhancements/793",
 		ScanModels: true,
@@ -1075,7 +1076,7 @@ func TestEnhancement793(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, bytes)
 
-		file, err := ioutil.TempFile(os.TempDir(), "scanner")
+		file, _ := ioutil.TempFile(os.TempDir(), "scanner")
 		file.Write(bytes)
 		file.Close()
 

@@ -33,10 +33,9 @@ do
     kubernetes|docker)
         # docker has an invalid spec with duplicate operationIds. Generates on docker-fixed
         # kubernetes uses unsupported media type options (issue#1377)
-        # ms-cog-sci
         client=true
         server=false
-        echo "$dir is disabled for server generation now"
+        echo "$dir is disabled for server generation now (only client is generated)"
         ;;
     *)
         client=true
@@ -45,11 +44,13 @@ do
     esac
     if [[ ${client} == "true" ]] ; then
         rm -rf client models restapi cmd
+        echo "generating client for $dir..."
         swagger generate client --skip-validation --quiet
         go test ./...
     fi
 
     if [[ ${server} == "true" ]] ; then
+        echo "generating server for $dir..."
         swagger generate server --skip-validation --quiet
         go test ./...
     fi

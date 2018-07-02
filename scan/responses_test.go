@@ -186,7 +186,7 @@ func TestParseResponses(t *testing.T) {
 			}
 
 		default:
-			assert.Fail(t, "unkown property: "+k)
+			assert.Fail(t, "unknown property: "+k)
 		}
 	}
 

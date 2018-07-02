@@ -99,8 +99,8 @@ var destroyOne = runtime.OperationHandlerFunc(func(params interface{}) (interfac
 })
 
 var items = []map[string]interface{}{
-	map[string]interface{}{"id": int64(1), "description": "feed dog", "completed": true},
-	map[string]interface{}{"id": int64(2), "description": "feed cat"},
+	{"id": int64(1), "description": "feed dog", "completed": true},
+	{"id": int64(2), "description": "feed cat"},
 }
 
 var itemsLock = &sync.Mutex{}

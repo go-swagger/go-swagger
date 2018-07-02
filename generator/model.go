@@ -1318,11 +1318,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		if err != nil {
 			return err
 		}
-		if err := ls.Build(); err != nil {
-			return err
-		}
-
-		return nil
+		return ls.Build()
 	}
 
 	if sg.GenSchema.IsAdditionalProperties && !sg.Named {

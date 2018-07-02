@@ -131,10 +131,10 @@ func TestClassifierInclude(t *testing.T) {
 	prog := classificationProg
 	classifier := &programClassifier{
 		Includes: packageFilters([]packageFilter{
-			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification"},
-			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"},
-			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations"},
-			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations_annotation"},
+			{Name: "github.com/go-swagger/go-swagger/fixtures/goparsing/classification"},
+			{Name: "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"},
+			{Name: "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations"},
+			{Name: "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations_annotation"},
 		}),
 	}
 	classified, err := classifier.Classify(prog)
@@ -160,7 +160,7 @@ func TestClassifierExclude(t *testing.T) {
 	prog := classificationProg
 	classifier := &programClassifier{
 		Excludes: packageFilters([]packageFilter{
-			packageFilter{"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"},
+			{Name: "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"},
 		}),
 	}
 	classified, err := classifier.Classify(prog)
