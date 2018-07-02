@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -22,21 +23,42 @@ import (
 	"runtime"
 )
 
-// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
-// the generators will be very noisy about what they are doing
-var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+var (
+	// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
+	// the generators will be very noisy about what they are doing
+	Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	// generatorLogger is a debug logger for this package
+	generatorLogger *log.Logger
+)
 
-func logDebug(frmt string, args ...interface{}) {
+func init() {
+	debugOptions()
+}
+
+func debugOptions() {
+	generatorLogger = log.New(os.Stdout, "generator:", log.LstdFlags)
+}
+
+// debugLog wraps log.Printf with a debug-specific logger
+func debugLog(frmt string, args ...interface{}) {
 	if Debug {
-		_, file, pos, _ := runtime.Caller(2)
-		log.Printf("%s:%d: %s", filepath.Base(file), pos, fmt.Sprintf(frmt, args...))
+		_, file, pos, _ := runtime.Caller(1)
+		generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
+			fmt.Sprintf(frmt, args...))
 	}
 }
 
-// debuglog is used to debug the typeResolver (types.go)
-func debugLog(format string, args ...interface{}) {
+// debugLogAsJSON unmarshals its last arg as pretty JSON
+func debugLogAsJSON(frmt string, args ...interface{}) {
 	if Debug {
-		_, file, pos, _ := runtime.Caller(2)
-		log.Printf("%s:%d: "+format, append([]interface{}{filepath.Base(file), pos}, args...)...)
+		_, file, pos, _ := runtime.Caller(1)
+		if len(args) > 0 {
+			bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ")
+			generatorLogger.Printf("%s:%d: %s\n%s", filepath.Base(file), pos,
+				fmt.Sprintf(frmt, args[0:len(args)-1]...), string(bbb))
+		} else {
+			generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
+				fmt.Sprintf(frmt, args...))
+		}
 	}
 }

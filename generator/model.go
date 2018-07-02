@@ -127,9 +127,7 @@ func (m *definitionGenerator) Generate() error {
 }
 
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
-	if Debug {
-		log.Printf("rendering definitions for %+v", *g)
-	}
+	debugLog("rendering definitions for %+v", *g)
 	return m.opts.renderDefinition(g)
 }
 
@@ -429,9 +427,7 @@ type schemaGenContext struct {
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
-	if Debug {
-		log.Printf("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
-	}
+	debugLog("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	if pg.Path == "" {
@@ -464,9 +460,7 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 }
 
 func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenContext {
-	if Debug {
-		log.Printf("new additional items\n")
-	}
+	debugLog("new additional items\n")
 
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
@@ -495,9 +489,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 }
 
 func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
-	if Debug {
-		log.Printf("New tuple element\n")
-	}
+	debugLog("New tuple element\n")
 
 	pg := sg.shallowClone()
 	if pg.Path == "" {
@@ -515,9 +507,7 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 }
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
-	if Debug {
-		log.Printf("new struct branch %s (parent %s)", sg.Name, sg.Container)
-	}
+	debugLog("new struct branch %s (parent %s)", sg.Name, sg.Container)
 	pg := sg.shallowClone()
 	if sg.Path == "" {
 		pg.Path = fmt.Sprintf("%q", name)
@@ -533,16 +523,12 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 			break
 		}
 	}
-	if Debug {
-		log.Printf("made new struct branch %s (parent %s)", pg.Name, pg.Container)
-	}
+	debugLog("made new struct branch %s (parent %s)", pg.Name, pg.Container)
 	return pg
 }
 
 func (sg *schemaGenContext) shallowClone() *schemaGenContext {
-	if Debug {
-		log.Printf("cloning context %s\n", sg.Name)
-	}
+	debugLog("cloning context %s\n", sg.Name)
 	pg := new(schemaGenContext)
 	*pg = *sg
 	if pg.Container == "" {
@@ -559,9 +545,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 }
 
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
-	if Debug {
-		log.Printf("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
-	}
+	debugLog("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "AO" + strconv.Itoa(index)
@@ -569,16 +553,12 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 		pg.Name = sg.Name + pg.Name
 	}
 	pg.Index = index
-	if Debug {
-		log.Printf("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
-	}
+	debugLog("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
 	return pg
 }
 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
-	if Debug {
-		log.Printf("new additional property %s (expr: %s)", sg.Name, sg.ValueExpr)
-	}
+	debugLog("new additional property %s (expr: %s)", sg.Name, sg.ValueExpr)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	if pg.KeyVar == "" {
@@ -698,17 +678,13 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 }
 
 func (sg *schemaGenContext) buildProperties() error {
-
-	if Debug {
-		log.Printf("building properties %s (parent: %s)", sg.Name, sg.Container)
-	}
+	debugLog("building properties %s (parent: %s)", sg.Name, sg.Container)
 
 	for k, v := range sg.Schema.Properties {
-		if Debug {
-			bbb, _ := json.MarshalIndent(sg.Schema, "", "  ")
-			log.Printf("building property %s[%q] (tup: %t) (BaseType: %t) %s\n", sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, bbb)
-			log.Printf("property %s[%q] (tup: %t) HasValidations: %t)", sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
-		}
+		debugLogAsJSON("building property %s[%q] (tup: %t) (BaseType: %t) %s",
+			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.Schema)
+		debugLog("property %s[%q] (tup: %t) HasValidations: %t)",
+			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
 		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
@@ -883,11 +859,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 	if sg.Container == "" {
 		sg.Container = sg.Name
 	}
-	if Debug {
-		log.Printf("building all of for %d entries", len(sg.Schema.AllOf))
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("building all of for %d entries", len(sg.Schema.AllOf), sg.Schema)
 	for i, sch := range sg.Schema.AllOf {
 		tpe, ert := sg.TypeResolver.ResolveSchema(&sch, sch.Ref.String() == "", false)
 		if ert != nil {
@@ -903,19 +875,14 @@ func (sg *schemaGenContext) buildAllOf() error {
 		} else {
 			hasNonArray++
 		}
-		if Debug {
-			b, _ := json.MarshalIndent(sch, "", "  ")
-			log.Println("trying", string(b))
-		}
+		debugLogAsJSON("trying", sch)
 		if (tpe.IsAnonymous && len(sch.AllOf) > 0) || (sch.Ref.String() == "" && !tpe.IsComplexObject && (tpe.IsArray || tpe.IsInterface || tpe.IsPrimitive)) {
 			// cases where anonymous structures cause the creation of a new type:
 			// - nested allOf: this one is itself a AllOf: build a new type for it
 			// - anonymous simple types for edge cases: array, primitive, interface{}
 			// NOTE: when branches are aliased or anonymous, the nullable property in the branch type is lost.
 			name := swag.ToVarName(goName(&sch, sg.Name+"AllOf"+strconv.Itoa(i)))
-			if Debug {
-				log.Printf("building anonymous nested allOf in %s: %s", sg.Name, name)
-			}
+			debugLog("building anonymous nested allOf in %s: %s", sg.Name, name)
 			ng := sg.makeNewStruct(name, sch)
 			if err := ng.makeGenSchema(); err != nil {
 				return err
@@ -1083,9 +1050,7 @@ func (mt *mapStack) Build() error {
 			mt.Context.GenSchema.AdditionalProperties.HasValidations = true
 		}
 
-		if Debug {
-			log.Printf("early mapstack exit, nullable: %t for %s", cp.GenSchema.IsNullable, cp.GenSchema.Name)
-		}
+		debugLog("early mapstack exit, nullable: %t for %s", cp.GenSchema.IsNullable, cp.GenSchema.Name)
 		return nil
 	}
 	cur := mt
@@ -1219,9 +1184,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			}
 			sg.MergeResult(cp, false)
 			sg.GenSchema.AdditionalProperties = &cp.GenSchema
-			if Debug {
-				log.Println("added interface{} schema for additionalProperties[allows == true]", cp.GenSchema.IsInterface)
-			}
+			debugLog("added interface{} schema for additionalProperties[allows == true]", cp.GenSchema.IsInterface)
 		}
 		return nil
 	}
@@ -1351,9 +1314,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
-	if Debug {
-		log.Println("making new struct", name, sg.Container)
-	}
+	debugLog("making new struct", name, sg.Container)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
@@ -1627,11 +1588,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	if sg.RefHandled || !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
-	if Debug {
-		log.Printf("short circuit named ref: %q", sg.Schema.Ref.String())
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("short circuit named ref: %q", sg.Schema.Ref.String(), sg.Schema)
 
 	nullableOverride := sg.GenSchema.IsNullable
 	tpe := resolvedType{}
@@ -1694,9 +1651,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 
 	if seenSchema == 1 {
 		// when there only a single schema to lift in allOf, replace the schema by its allOf definition
-		if Debug {
-			log.Printf("lifted schema in allOf for %s", sg.Name)
-		}
+		debugLog("lifted schema in allOf for %s", sg.Name)
 		sg.Schema = schemaToLift
 		sg.GenSchema.IsNullable = seenNullable
 	}
@@ -1778,7 +1733,8 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 			if elem.IsPrimitive && elem.IsNullable {
 				sg.checkNeedsPointer(outer, nil, elem)
 			} else if elem.IsArray {
-				// override nullability of array of primitive elements: render element of aliased or anonyous map as a pointer
+				// override nullability of array of primitive elements:
+				// render element of aliased or anonyous map as a pointer
 				it := elem.Items
 				for it != nil {
 					if it.IsPrimitive && it.IsNullable {
@@ -1795,11 +1751,8 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 }
 
 func (sg *schemaGenContext) makeGenSchema() error {
-	if Debug {
-		log.Printf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n", !sg.Named, sg.Required, sg.IsTuple, sg.Name)
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("making gen schema (anon: %t, req: %t, tuple: %t) %s\n",
+		!sg.Named, sg.Required, sg.IsTuple, sg.Name, sg.Schema)
 
 	ex := ""
 	if sg.Schema.Example != nil {
@@ -1831,21 +1784,13 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	if returns {
 		return nil
 	}
-	if Debug {
-		log.Println("after short circuit named ref")
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("after short circuit named ref", sg.Schema)
 
 	if e := sg.liftSpecialAllOf(); e != nil {
 		return e
 	}
 	nullableOverride := sg.GenSchema.IsNullable
-	if Debug {
-		log.Println("after lifting special all of")
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("after lifting special all of", sg.Schema)
 
 	if sg.Container == "" {
 		sg.Container = sg.GenSchema.Name
@@ -1864,9 +1809,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	if Debug {
-		log.Println("gschema rrequired", sg.GenSchema.Required, "nullable", sg.GenSchema.IsNullable)
-	}
+	debugLog("gschema rrequired: %t, nullable: %t", sg.GenSchema.Required, sg.GenSchema.IsNullable)
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsBaseType = tpe.IsBaseType
@@ -1881,9 +1824,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		sg.GenSchema.ValueExpression += "()"
 	}
 
-	if Debug {
-		log.Println("gschema nullable", sg.GenSchema.IsNullable)
-	}
+	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)
 	if e := sg.buildAdditionalProperties(); e != nil {
 		return e
 	}
@@ -1897,24 +1838,18 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	prev := sg.GenSchema
 	if sg.Untyped {
-		if Debug {
-			log.Println("untyped resolve", sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
-			b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-			log.Println(string(b))
-		}
+		debugLogAsJSON("untyped resolve:%t", sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.Schema)
 		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
-		if Debug {
-			log.Printf("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t), BaseType(%t)", !sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.GenSchema.IsBaseType)
-			b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-			log.Println(string(b))
-		}
+		debugLogAsJSON("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t), BaseType(%t)",
+			!sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required,
+			sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.GenSchema.IsBaseType, sg.Schema)
 		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	}
 	if err != nil {
 		return err
 	}
-	otn := tpe.IsNullable
+	otn := tpe.IsNullable // for debug only
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsComplexObject = prev.IsComplexObject
@@ -1922,11 +1857,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsAdditionalProperties = prev.IsAdditionalProperties
 	sg.GenSchema.IsBaseType = sg.GenSchema.HasDiscriminator
 
-	if Debug {
-		log.Println("gschema nnullable", sg.GenSchema.IsNullable, otn, nullableOverride)
-		b, _ := json.MarshalIndent(sg.Schema, "", "  ")
-		log.Println(string(b))
-	}
+	debugLogAsJSON("gschema nnullable:IsNullable:%t,resolver.IsNullable:%t,nullableOverride:%t",
+		sg.GenSchema.IsNullable, otn, nullableOverride, sg.Schema)
 	if err := sg.buildProperties(); err != nil {
 		return err
 	}
@@ -1949,8 +1881,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	sg.buildMapOfNullable(nil)
 
-	if Debug {
-		log.Printf("finished gen schema for %q\n", sg.Name)
-	}
+	debugLog("finished gen schema for %q", sg.Name)
 	return nil
 }

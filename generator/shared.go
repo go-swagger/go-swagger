@@ -600,9 +600,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	if err := templ.Execute(&tBuf, data); err != nil {
 		return nil, fmt.Errorf("template execution failed for template %s: %v", t.Name, err)
 	}
-	//if Debug {
 	log.Printf("executed template %s", t.Source)
-	//}
 
 	return tBuf.Bytes(), nil
 }
@@ -618,9 +616,8 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
-		if Debug {
-			log.Printf("skipping generation of %s because it already exists and skip_exist directive is set for %s", filepath.Join(dir, fname), t.Name)
-		}
+		debugLog("skipping generation of %s because it already exists and skip_exist directive is set for %s",
+			filepath.Join(dir, fname), t.Name)
 		return nil
 	}
 
@@ -633,9 +630,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	if dir != "" {
 		_, exists := os.Stat(dir)
 		if os.IsNotExist(exists) {
-			if Debug {
-				log.Printf("creating directory %q for \"%s\"", dir, t.Name)
-			}
+			debugLog("creating directory %q for \"%s\"", dir, t.Name)
 			// Directory settings consistent with file privileges.
 			// Environment's umask may alter this setup
 			if e := os.MkdirAll(dir, 0755); e != nil {
@@ -955,12 +950,13 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	//
 	// Eventually, an "expand spec" option is available. It is essentially useful for testing purposes.
 	//
-	// NOTE(fredbi): spec expansion may produce some unsupported constructs and is not yet protected against the following cases:
+	// NOTE(fredbi): spec expansion may produce some unsupported constructs and is not yet protected against the
+	// following cases:
 	//  - polymorphic types generation may fail with expansion (expand destructs the reuse intent of the $ref in allOf)
 	//  - name duplicates may occur and result in compilation failures
 	// The right place to fix these shortcomings is go-openapi/analysis.
 
-	opts.FlattenOpts.BasePath = absBasePath // BasePath must be absolute. This is guaranteed because opts.Spec is absolute
+	opts.FlattenOpts.BasePath = absBasePath // BasePath must be absolute. This is guaranteed as opts.Spec is absolute
 	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
 
 	var preprocessingOption string
