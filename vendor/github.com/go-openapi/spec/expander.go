@@ -59,6 +59,7 @@ func init() {
 	resCache = initResolutionCache()
 }
 
+// initResolutionCache initializes the URI resolution cache
 func initResolutionCache() ResolutionCache {
 	return &simpleCache{store: map[string]interface{}{
 		"http://swagger.io/v2/schema.json":       MustLoadSwagger20Schema(),
@@ -66,6 +67,7 @@ func initResolutionCache() ResolutionCache {
 	}}
 }
 
+// Get retrieves a cached URI
 func (s *simpleCache) Get(uri string) (interface{}, bool) {
 	debugLog("getting %q from resolution cache", uri)
 	s.lock.Lock()
@@ -76,6 +78,7 @@ func (s *simpleCache) Get(uri string) (interface{}, bool) {
 	return v, ok
 }
 
+// Set caches a URI
 func (s *simpleCache) Set(uri string, data interface{}) {
 	s.lock.Lock()
 	s.store[uri] = data
@@ -116,19 +119,19 @@ func ResolveRef(root interface{}, ref *Ref) (*Schema, error) {
 	case map[string]interface{}:
 		b, _ := json.Marshal(sch)
 		newSch := new(Schema)
-		json.Unmarshal(b, newSch)
+		_ = json.Unmarshal(b, newSch)
 		return newSch, nil
 	default:
 		return nil, fmt.Errorf("unknown type for the resolved reference")
 	}
 }
 
-// ResolveParameter resolves a paramter reference against a context root
+// ResolveParameter resolves a parameter reference against a context root
 func ResolveParameter(root interface{}, ref Ref) (*Parameter, error) {
 	return ResolveParameterWithBase(root, ref, nil)
 }
 
-// ResolveParameterWithBase resolves a paramter reference against a context root and base path
+// ResolveParameterWithBase resolves a parameter reference against a context root and base path
 func ResolveParameterWithBase(root interface{}, ref Ref, opts *ExpandOptions) (*Parameter, error) {
 	resolver, err := defaultSchemaLoader(root, opts, nil)
 	if err != nil {
@@ -400,7 +403,7 @@ func (r *schemaLoader) resolveRef(ref *Ref, target interface{}, basePath string)
 	// it is pointing somewhere in the root.
 	root := r.root
 	if (ref.IsRoot() || ref.HasFragmentOnly) && root == nil && basePath != "" {
-		if baseRef, err := NewRef(basePath); err == nil {
+		if baseRef, erb := NewRef(basePath); erb == nil {
 			root, _, _, _ = r.load(baseRef.GetURL())
 		}
 	}
@@ -829,7 +832,8 @@ func expandPathItem(pathItem *PathItem, resolver *schemaLoader, basePath string)
 	}
 	pathItem.Ref = Ref{}
 
-	parentRefs = parentRefs[0:]
+	// Currently unused:
+	//parentRefs = parentRefs[0:]
 
 	for idx := range pathItem.Parameters {
 		if err := expandParameter(&(pathItem.Parameters[idx]), resolver, basePath); shouldStopOnError(err, resolver.options) {

@@ -109,7 +109,7 @@ func (d Date) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the Date from JSON
 func (d *Date) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == jsonNull {
 		return nil
 	}
 	l := jlexer.Lexer{Data: data}

@@ -46,10 +46,10 @@ var schema = Schema{
 		MinProperties:    int64Ptr(1),
 		Required:         []string{"id", "name"},
 		Items:            &SchemaOrArray{Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
-		AllOf:            []Schema{Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}},
+		AllOf:            []Schema{{SchemaProps: SchemaProps{Type: []string{"string"}}}},
 		Properties: map[string]Schema{
-			"id":   Schema{SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int64"}},
-			"name": Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			"id":   {SchemaProps: SchemaProps{Type: []string{"integer"}, Format: "int64"}},
+			"name": {SchemaProps: SchemaProps{Type: []string{"string"}}},
 		},
 		AdditionalProperties: &SchemaOrBool{Allows: true, Schema: &Schema{SchemaProps: SchemaProps{
 			Type:   []string{"integer"},

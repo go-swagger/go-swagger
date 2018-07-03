@@ -58,6 +58,8 @@ const (
 	UUID4Pattern = `(?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?4[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$`
 	// UUID5Pattern Regex for UUID5 that allows uppercase
 	UUID5Pattern = `(?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?5[0-9a-f]{3}-?[89ab][0-9a-f]{3}-?[0-9a-f]{12}$`
+	// json null type
+	jsonNull = "null"
 )
 
 var (
@@ -189,9 +191,11 @@ func init() {
 	Default.Add("password", &pw, func(_ string) bool { return true })
 }
 
+/* unused:
 var formatCheckers = map[string]Validator{
 	"byte": govalidator.IsBase64,
 }
+*/
 
 // Base64 represents a base64 encoded string
 //
@@ -862,7 +866,7 @@ func (u UUID) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID from JSON
 func (u *UUID) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == jsonNull {
 		return nil
 	}
 	l := jlexer.Lexer{Data: data}
@@ -950,7 +954,7 @@ func (u UUID3) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID3 from JSON
 func (u *UUID3) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == jsonNull {
 		return nil
 	}
 	l := jlexer.Lexer{Data: data}
@@ -1038,7 +1042,7 @@ func (u UUID4) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID4 from JSON
 func (u *UUID4) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == jsonNull {
 		return nil
 	}
 	l := jlexer.Lexer{Data: data}
@@ -1126,7 +1130,7 @@ func (u UUID5) MarshalEasyJSON(w *jwriter.Writer) {
 
 // UnmarshalJSON sets the UUID5 from JSON
 func (u *UUID5) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
+	if string(data) == jsonNull {
 		return nil
 	}
 	l := jlexer.Lexer{Data: data}

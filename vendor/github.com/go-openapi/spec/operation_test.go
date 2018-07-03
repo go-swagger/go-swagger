@@ -37,12 +37,12 @@ var operation = Operation{
 		ID:          "sendCat",
 		Deprecated:  true,
 		Security: []map[string][]string{
-			map[string][]string{
-				"apiKey": []string{},
+			{
+				"apiKey": {},
 			},
 		},
 		Parameters: []Parameter{
-			Parameter{Refable: Refable{Ref: MustCreateRef("Cat")}},
+			{Refable: Refable{Ref: MustCreateRef("Cat")}},
 		},
 		Responses: &Responses{
 			ResponsesProps: ResponsesProps{

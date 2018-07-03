@@ -66,7 +66,7 @@ type ItemKey struct {
 	index int
 }
 
-// NewItemKey returns a pair of an object and field usable as a key of a map.
+// NewFieldKey returns a pair of an object and field usable as a key of a map.
 func NewFieldKey(obj map[string]interface{}, field string) FieldKey {
 	return FieldKey{object: reflect.ValueOf(obj), field: field}
 }
@@ -76,7 +76,7 @@ func (fk *FieldKey) Object() map[string]interface{} {
 	return fk.object.Interface().(map[string]interface{})
 }
 
-// Object returns the underlying field of this key.
+// Field returns the underlying field of this key.
 func (fk *FieldKey) Field() string {
 	return fk.field
 }

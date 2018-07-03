@@ -187,9 +187,9 @@ func TestBasicSliceValidator_HasDuplicates(t *testing.T) {
 	vi := []int{1, 2, 3}
 	vs := []string{"a", "b", "c"}
 	vt := []anything{
-		anything{anyProperty: 1},
-		anything{anyProperty: 2},
-		anything{anyProperty: 3},
+		{anyProperty: 1},
+		{anyProperty: 2},
+		{anyProperty: 3},
 	}
 	assert.False(t, s.hasDuplicates(reflect.ValueOf(vi), len(vi)))
 	// how UniqueItems() is superior? Look:   err := uniqueItems("path","body", vi)
@@ -199,9 +199,9 @@ func TestBasicSliceValidator_HasDuplicates(t *testing.T) {
 	di := []int{1, 1, 3}
 	ds := []string{"a", "b", "a"}
 	dt := []anything{
-		anything{anyProperty: 1},
-		anything{anyProperty: 2},
-		anything{anyProperty: 2},
+		{anyProperty: 1},
+		{anyProperty: 2},
+		{anyProperty: 2},
 	}
 	assert.True(t, s.hasDuplicates(reflect.ValueOf(di), len(di)))
 	assert.True(t, s.hasDuplicates(reflect.ValueOf(ds), len(ds)))

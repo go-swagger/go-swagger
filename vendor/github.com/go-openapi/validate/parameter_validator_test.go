@@ -54,9 +54,9 @@ func makeFloat(data interface{}) float64 {
 func TestNumberParameterValidation(t *testing.T) {
 
 	values := [][]interface{}{
-		[]interface{}{23, 49, 56, 21, 14, 35, 28, 7, 42},
-		[]interface{}{uint(23), uint(49), uint(56), uint(21), uint(14), uint(35), uint(28), uint(7), uint(42)},
-		[]interface{}{float64(23), float64(49), float64(56), float64(21), float64(14), float64(35), float64(28), float64(7), float64(42)},
+		{23, 49, 56, 21, 14, 35, 28, 7, 42},
+		{uint(23), uint(49), uint(56), uint(21), uint(14), uint(35), uint(28), uint(7), uint(42)},
+		{float64(23), float64(49), float64(56), float64(21), float64(14), float64(35), float64(28), float64(7), float64(42)},
 	}
 
 	for _, v := range values {

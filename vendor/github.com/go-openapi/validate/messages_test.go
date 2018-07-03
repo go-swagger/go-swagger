@@ -415,7 +415,7 @@ func verifyLoadErrors(t *testing.T, err error, expectedMessages []ExpectedMessag
 	// we just want to figure out how all this is captured at the validate package level.
 	v := err.Error()
 	for _, s := range expectedMessages {
-		found := false
+		var found bool
 		if s.IsRegexp {
 			if matched, _ := regexp.MatchString(s.Message, v); matched {
 				found = true

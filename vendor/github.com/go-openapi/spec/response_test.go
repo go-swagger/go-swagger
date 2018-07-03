@@ -51,3 +51,40 @@ func TestIntegrationResponse(t *testing.T) {
 
 	assertParsesJSON(t, responseJSON, response)
 }
+
+func TestJSONLookupResponse(t *testing.T) {
+	res, err := response.JSONLookup("$ref")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	if assert.IsType(t, &Ref{}, res) {
+		ref := res.(*Ref)
+		assert.EqualValues(t, MustCreateRef("Dog"), *ref)
+	}
+
+	var def string
+	res, err = response.JSONLookup("description")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, def, res) {
+		t.FailNow()
+		return
+	}
+	def = res.(string)
+	assert.Equal(t, "Dog exists", def)
+
+	var x *interface{}
+	res, err = response.JSONLookup("x-go-name")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, x, res) {
+		t.FailNow()
+		return
+	}
+
+	x = res.(*interface{})
+	assert.EqualValues(t, "PutDogExists", *x)
+
+	res, err = response.JSONLookup("unknown")
+	if !assert.Error(t, err) || !assert.Nil(t, res) {
+		t.FailNow()
+		return
+	}
+}

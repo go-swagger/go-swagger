@@ -52,7 +52,7 @@ import (
 // Merging schemes (http, https), and consumers/producers do not account for
 // collisions.
 func Mixin(primary *spec.Swagger, mixins ...*spec.Swagger) []string {
-	var skipped []string
+	skipped := make([]string, 0, len(mixins))
 	opIds := getOpIds(primary)
 	initPrimary(primary)
 
@@ -118,7 +118,8 @@ func appendOp(ops []*spec.Operation, op *spec.Operation) []*spec.Operation {
 func mergeSecurityDefinitions(primary *spec.Swagger, m *spec.Swagger) (skipped []string) {
 	for k, v := range m.SecurityDefinitions {
 		if _, exists := primary.SecurityDefinitions[k]; exists {
-			warn := fmt.Sprintf("SecurityDefinitions entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
+			warn := fmt.Sprintf(
+				"SecurityDefinitions entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
 			skipped = append(skipped, warn)
 			continue
 		}
@@ -137,7 +138,8 @@ func mergeSecurityRequirements(primary *spec.Swagger, m *spec.Swagger) (skipped 
 			}
 		}
 		if found {
-			warn := fmt.Sprintf("Security requirement: '%v' already exists in primary or higher priority mixin, skipping\n", v)
+			warn := fmt.Sprintf(
+				"Security requirement: '%v' already exists in primary or higher priority mixin, skipping\n", v)
 			skipped = append(skipped, warn)
 			continue
 		}
@@ -150,7 +152,8 @@ func mergeDefinitions(primary *spec.Swagger, m *spec.Swagger) (skipped []string)
 	for k, v := range m.Definitions {
 		// assume name collisions represent IDENTICAL type. careful.
 		if _, exists := primary.Definitions[k]; exists {
-			warn := fmt.Sprintf("definitions entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
+			warn := fmt.Sprintf(
+				"definitions entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
 			skipped = append(skipped, warn)
 			continue
 		}
@@ -163,7 +166,8 @@ func mergePaths(primary *spec.Swagger, m *spec.Swagger, opIds map[string]bool, m
 	if m.Paths != nil {
 		for k, v := range m.Paths.Paths {
 			if _, exists := primary.Paths.Paths[k]; exists {
-				warn := fmt.Sprintf("paths entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
+				warn := fmt.Sprintf(
+					"paths entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
 				skipped = append(skipped, warn)
 				continue
 			}
@@ -193,7 +197,8 @@ func mergeParameters(primary *spec.Swagger, m *spec.Swagger) (skipped []string) 
 		// have to fix $refs in the mixin. Complain
 		// for now
 		if _, exists := primary.Parameters[k]; exists {
-			warn := fmt.Sprintf("top level parameters entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
+			warn := fmt.Sprintf(
+				"top level parameters entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
 			skipped = append(skipped, warn)
 			continue
 		}
@@ -208,7 +213,8 @@ func mergeResponses(primary *spec.Swagger, m *spec.Swagger) (skipped []string) {
 		// have to fix $refs in the mixin. Complain
 		// for now
 		if _, exists := primary.Responses[k]; exists {
-			warn := fmt.Sprintf("top level responses entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
+			warn := fmt.Sprintf(
+				"top level responses entry '%v' already exists in primary or higher priority mixin, skipping\n", k)
 			skipped = append(skipped, warn)
 			continue
 		}
@@ -263,7 +269,8 @@ func mergeTags(primary *spec.Swagger, m *spec.Swagger) (skipped []string) {
 			}
 		}
 		if found {
-			warn := fmt.Sprintf("top level tags entry with name '%v' already exists in primary or higher priority mixin, skipping\n", v.Name)
+			warn := fmt.Sprintf(
+				"top level tags entry with name '%v' already exists in primary or higher priority mixin, skipping\n", v.Name)
 			skipped = append(skipped, warn)
 			continue
 		}
