@@ -103,7 +103,6 @@ var (
 
 	rxIn              = regexp.MustCompile(`[Ii]n\p{Zs}*:\p{Zs}*(query|path|header|body|formData)$`)
 	rxRequired        = regexp.MustCompile(`[Rr]equired\p{Zs}*:\p{Zs}*(true|false)$`)
-	rxExample         = regexp.MustCompile(`[Ex]ample\p{Zs}*:\p{Zs}*(.*)$`)
 	rxDiscriminator   = regexp.MustCompile(`[Dd]iscriminator\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxReadOnly        = regexp.MustCompile(`[Rr]ead(?:\p{Zs}*|[\p{Pd}\p{Pc}])?[Oo]nly\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxConsumes        = regexp.MustCompile(`[Cc]onsumes\p{Zs}*:`)
@@ -121,6 +120,7 @@ var (
 	rxTOS             = regexp.MustCompile(`[Tt](:?erms)?\p{Zs}*-?[Oo]f?\p{Zs}*-?[Ss](?:ervice)?\p{Zs}*:`)
 	rxExtensions      = regexp.MustCompile(`[Ee]xtensions\p{Zs}*:`)
 	rxInfoExtensions  = regexp.MustCompile(`[In]nfo\p{Zs}*[Ee]xtensions:`)
+	// currently unused: rxExample         = regexp.MustCompile(`[Ex]ample\p{Zs}*:\p{Zs}*(.*)$`)
 )
 
 // Many thanks go to https://github.com/yvasiyarov/swagger

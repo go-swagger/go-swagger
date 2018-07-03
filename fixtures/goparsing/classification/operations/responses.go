@@ -29,7 +29,7 @@ type GenericError struct {
 	}
 }
 
-// MyOwnFunc contians a response inside it.
+// MyOwnFunc contains a response inside it.
 func MyOwnFunc() {
 	// SimpleOnesFunc is a collection of SimpleOne
 	// swagger:response simpleOnesFunc

@@ -1011,7 +1011,7 @@ func (scp *schemaParser) parseIdentProperty(pkg *loader.PackageInfo, expr *ast.I
 	}
 
 	if typeName, ok := typeName(gd.Doc); ok {
-		swaggerSchemaForType(typeName, prop)
+		_ = swaggerSchemaForType(typeName, prop)
 		return nil
 	}
 

@@ -408,7 +408,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 
 // AddFile() global package function (protected vs unprotected)
 // Mostly unused in tests, since the Repository.AddFile()
-// is generally prefered.
+// is generally preferred.
 func TestTemplates_AddFile(t *testing.T) {
 	log.SetOutput(os.Stdout)
 

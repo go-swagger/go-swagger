@@ -309,14 +309,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	}
 	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
 	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
+	//
 	// Fully flattened means that all complex constructs are present as
 	// definitions and models produced accordingly in ModelsPackage,
-	// wherease minimal flatten simply ensures that there are no weird $ref's in the spec.
+	// whereas minimal flatten simply ensures that there are no weird $ref's in the spec.
 	//
 	// When some complex anonymous constructs are specified, extra schemas are produced in the operations package.
 	//
 	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
-	// we take it from here the spec possibly already transformed by the GenDefinitions stage.
+	// we take from there the spec possibly already transformed by the GenDefinitions stage.
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc)
 	receiver := "o"
 

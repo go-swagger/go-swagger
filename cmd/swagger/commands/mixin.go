@@ -77,7 +77,7 @@ func (c *MixinSpec) Execute(args []string) error {
 // swagger files, adds the mixins to primary, calls
 // FixEmptyResponseDescriptions on the primary, and writes the primary
 // with mixins to the given writer in JSON.  Returns the warning
-// messages for collisions that occured during mixin process and any
+// messages for collisions that occurred during mixin process and any
 // error.
 func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, w io.Writer) ([]string, error) {
 

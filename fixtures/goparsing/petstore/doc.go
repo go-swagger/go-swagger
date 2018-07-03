@@ -40,4 +40,5 @@
 // swagger:meta
 package petstore
 
+// APIVersion shows this API's current version
 var APIVersion string

@@ -16,7 +16,7 @@ package mods
 
 // Pet represents a pet in our store
 //
-// this model is not explictly mentioned in the import paths
+// This model is not explicitly mentioned in the import paths,
 // but because it it transitively required by the order
 // it should also be collected.
 //

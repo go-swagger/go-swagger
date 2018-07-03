@@ -52,7 +52,6 @@ func TestCmd_Validate_Issue1171(t *testing.T) {
 }
 
 // Test proper validation: reference to inner property in schema
-// NOTE: Open a dedicated issue on message relevance (repeated occurence of message).
 func TestCmd_Validate_Issue342_ForbiddenProperty(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
@@ -63,9 +62,10 @@ func TestCmd_Validate_Issue342_ForbiddenProperty(t *testing.T) {
 	assert.Error(t, result)
 }
 
-//fixture 342-2 (a variant of invalid specification) (cannot unmarshal)
+// fixture 342-2 (a variant of invalid specification) (cannot unmarshal)
 // Test proper validation: reference to shared top level parameter, but with incorrect
 // yaml syntax: use map key instead of array item.
+//
 // NOTE: this error message is not clear enough. The role of this test
 // is to determine that the validation does not panic and correctly states the spec is invalid.
 // Open a dedicated issue on message relevance. This test shall be updated with the finalized message.

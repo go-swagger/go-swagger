@@ -213,7 +213,8 @@ func asPrettyJSON(data interface{}) (string, error) {
 func goSliceInitializer(data interface{}) (string, error) {
 	// goSliceInitializer constructs a Go literal initializer from interface{} literals.
 	// e.g. []interface{}{"a", "b"} is transformed in {"a","b",}
-	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}
+	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}.
+	//
 	// NOTE: this is currently used to construct simple slice intializers for default values.
 	// This allows for nicer slice initializers for slices of primitive types and avoid systematic use for json.Unmarshal().
 	b, err := json.Marshal(data)
@@ -238,7 +239,7 @@ func NewRepository(funcs template.FuncMap) *Repository {
 	return &repo
 }
 
-// Repository is the repository for the generator templates.
+// Repository is the repository for the generator templates
 type Repository struct {
 	files     map[string]string
 	templates map[string]*template.Template
@@ -303,7 +304,7 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 		}
 	}
 
-	// Add each defined tempalte into the cache
+	// Add each defined template into the cache
 	for _, template := range templ.Templates() {
 
 		t.files[template.Name()] = fileName

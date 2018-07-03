@@ -84,8 +84,8 @@ func TestParamsParser(t *testing.T) {
 	}
 	assert.Len(t, noParamOps, 10)
 
-	cr, ok := noParamOps["yetAnotherOperation"]
-	assert.True(t, ok)
+	cr, okParam := noParamOps["yetAnotherOperation"]
+	assert.True(t, okParam)
 	assert.Len(t, cr.Parameters, 8)
 	for _, param := range cr.Parameters {
 		switch param.Name {
@@ -114,12 +114,12 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.Equal(t, "", param.Format)
 		default:
-			assert.Fail(t, "unkown property: "+param.Name)
+			assert.Fail(t, "unknown property: "+param.Name)
 		}
 	}
 
-	ob, ok := noParamOps["updateOrder"]
-	assert.True(t, ok)
+	ob, okParam := noParamOps["updateOrder"]
+	assert.True(t, okParam)
 	assert.Len(t, ob.Parameters, 1)
 	bodyParam := ob.Parameters[0]
 	assert.Equal(t, "The order to submit.", bodyParam.Description)
@@ -127,8 +127,8 @@ func TestParamsParser(t *testing.T) {
 	assert.Equal(t, "#/definitions/order", bodyParam.Schema.Ref.String())
 	assert.True(t, bodyParam.Required)
 
-	mop, ok := noParamOps["getOrders"]
-	assert.True(t, ok)
+	mop, okParam := noParamOps["getOrders"]
+	assert.True(t, okParam)
 	assert.Len(t, mop.Parameters, 2)
 	ordersParam := mop.Parameters[0]
 	assert.Equal(t, "The orders", ordersParam.Description)
@@ -137,8 +137,8 @@ func TestParamsParser(t *testing.T) {
 	otherParam := mop.Parameters[1]
 	assert.Equal(t, "And another thing", otherParam.Description)
 
-	op, ok := noParamOps["someOperation"]
-	assert.True(t, ok)
+	op, okParam := noParamOps["someOperation"]
+	assert.True(t, okParam)
 	assert.Len(t, op.Parameters, 8)
 
 	for _, param := range op.Parameters {
@@ -283,7 +283,7 @@ func TestParamsParser(t *testing.T) {
 			}
 
 		default:
-			assert.Fail(t, "unkown property: "+param.Name)
+			assert.Fail(t, "unknown property: "+param.Name)
 		}
 	}
 
@@ -311,7 +311,7 @@ func TestParamsParser(t *testing.T) {
 		case "items":
 			assert.Equal(t, 7, index, "%s index incorrect", param.Name)
 		default:
-			assert.Fail(t, "unkown property: "+param.Name)
+			assert.Fail(t, "unknown property: "+param.Name)
 		}
 	}
 
@@ -340,7 +340,7 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "integer", param.Type)
 			assert.Equal(t, "int64", param.Format)
 		default:
-			assert.Fail(t, "unkown property: "+param.Name)
+			assert.Fail(t, "unknown property: "+param.Name)
 		}
 	}
 }
