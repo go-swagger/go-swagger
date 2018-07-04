@@ -160,23 +160,18 @@ func (a *AnalyzedSchema) inferMap() error {
 }
 
 func (a *AnalyzedSchema) inferArray() error {
-	fromValid := a.isArrayType() && (a.schema.Items == nil || a.schema.Items.Len() < 2)
-	a.IsArray = fromValid || (a.hasItems && a.schema.Items.Len() < 2)
+	// an array has Items defined as an object schema, otherwise we qualify this JSON array as a tuple
+	// (yes, even if the Items array contains only one element).
+	// arrays in JSON schema may be unrestricted (i.e no Items specified).
+	// Note that arrays in Swagger MUST have Items. Nonetheless, we analyze unrestricted arrays.
+	//
+	// NOTE: the spec package misses the distinction between:
+	// items: [] and items: {}, so we consider both arrays here.
+	a.IsArray = a.isArrayType() && (a.schema.Items == nil || a.schema.Items.Schemas == nil)
 	if a.IsArray && a.hasItems {
 		if a.schema.Items.Schema != nil {
 			itsch, err := Schema(SchemaOpts{
 				Schema:   a.schema.Items.Schema,
-				Root:     a.root,
-				BasePath: a.basePath,
-			})
-			if err != nil {
-				return err
-			}
-			a.IsSimpleArray = itsch.IsSimpleSchema
-		}
-		if len(a.schema.Items.Schemas) > 0 {
-			itsch, err := Schema(SchemaOpts{
-				Schema:   &a.schema.Items.Schemas[0],
 				Root:     a.root,
 				BasePath: a.basePath,
 			})
@@ -193,7 +188,7 @@ func (a *AnalyzedSchema) inferArray() error {
 }
 
 func (a *AnalyzedSchema) inferTuple() error {
-	tuple := a.hasItems && a.schema.Items.Len() > 1
+	tuple := a.hasItems && a.schema.Items.Schemas != nil
 	a.IsTuple = tuple && !a.hasAdditionalItems
 	a.IsTupleWithExtra = tuple && a.hasAdditionalItems
 	return nil

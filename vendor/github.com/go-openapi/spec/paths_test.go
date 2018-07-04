@@ -24,7 +24,7 @@ import (
 var paths = Paths{
 	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
 	Paths: map[string]PathItem{
-		"/": PathItem{
+		"/": {
 			Refable: Refable{Ref: MustCreateRef("cats")},
 		},
 	},

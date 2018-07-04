@@ -61,7 +61,8 @@ func TestDefinitionName(t *testing.T) {
 		{"http://somewhere.com/definitions/errorModel", "errorModel", map[string]spec.Schema(nil)},
 		{"#/definitions/errorModel", "errorModel", map[string]spec.Schema{"apples": *spec.StringProperty()}},
 		{"#/definitions/errorModel", "errorModelOAIGen", map[string]spec.Schema{"errorModel": *spec.StringProperty()}},
-		{"#/definitions/errorModel", "errorModelOAIGen1", map[string]spec.Schema{"errorModel": *spec.StringProperty(), "errorModelOAIGen": *spec.StringProperty()}},
+		{"#/definitions/errorModel", "errorModelOAIGen1",
+			map[string]spec.Schema{"errorModel": *spec.StringProperty(), "errorModelOAIGen": *spec.StringProperty()}},
 		{"#", "oaiGen", nil},
 	}
 
@@ -71,32 +72,32 @@ func TestDefinitionName(t *testing.T) {
 	}
 }
 
+var refFixture = []struct {
+	Key string
+	Ref spec.Ref
+}{
+	{"#/parameters/someParam/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/paths/~1some~1where~1{id}/parameters/1/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/paths/~1some~1where~1{id}/get/parameters/2/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/responses/someResponse/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/paths/~1some~1where~1{id}/get/responses/200/schema", spec.MustCreateRef("#/definitions/record")},
+	{"#/definitions/namedAgain", spec.MustCreateRef("#/definitions/named")},
+	{"#/definitions/datedTag/allOf/1", spec.MustCreateRef("#/definitions/tag")},
+	{"#/definitions/datedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
+	{"#/definitions/datedTaggedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
+	{"#/definitions/datedTaggedRecords/additionalItems", spec.MustCreateRef("#/definitions/tag")},
+	{"#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/record")},
+	{"#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tag")},
+	{"#/definitions/namedThing/properties/name", spec.MustCreateRef("#/definitions/named")},
+}
+
 func TestUpdateRef(t *testing.T) {
 	bp := filepath.Join("fixtures", "external_definitions.yml")
 	sp, err := loadSpec(bp)
 	if assert.NoError(t, err) {
 
-		values := []struct {
-			Key string
-			Ref spec.Ref
-		}{
-			{"#/parameters/someParam/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/parameters/1/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/parameters/2/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/responses/someResponse/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/200/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/namedAgain", spec.MustCreateRef("#/definitions/named")},
-			{"#/definitions/datedTag/allOf/1", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/datedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/additionalItems", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/namedThing/properties/name", spec.MustCreateRef("#/definitions/named")},
-		}
-
-		for _, v := range values {
+		for _, v := range refFixture {
 			err := updateRef(sp, v.Key, v.Ref)
 			if assert.NoError(t, err) {
 				ptr, err := jsonpointer.New(v.Key[1:])
@@ -128,26 +129,11 @@ func TestImportExternalReferences(t *testing.T) {
 	sp, err := loadSpec(bp)
 	if assert.NoError(t, err) {
 
-		values := []struct {
-			Key string
-			Ref spec.Ref
-		}{
-			{"#/parameters/someParam/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/parameters/1/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/parameters/2/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/responses/someResponse/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/200/schema", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/namedAgain", spec.MustCreateRef("#/definitions/named")},
-			{"#/definitions/datedTag/allOf/1", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/datedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/additionalItems", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/namedThing/properties/name", spec.MustCreateRef("#/definitions/named")},
-		}
-		for _, v := range values {
+		for i, v := range refFixture {
+			// there is 1 notable difference with the updateRef test:
+			if i == 5 {
+				v.Ref = spec.MustCreateRef("#/definitions/tag")
+			}
 			// technically not necessary to run for each value, but if things go right
 			// this is idempotent, so having it repeat shouldn't matter
 			// this validates that behavior
@@ -191,27 +177,7 @@ func TestRewriteSchemaRef(t *testing.T) {
 	sp, err := loadSpec(bp)
 	if assert.NoError(t, err) {
 
-		values := []struct {
-			Key string
-			Ref spec.Ref
-		}{
-			{"#/parameters/someParam/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/parameters/1/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/parameters/2/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/responses/someResponse/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/paths/~1some~1where~1{id}/get/responses/200/schema", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/namedAgain", spec.MustCreateRef("#/definitions/named")},
-			{"#/definitions/datedTag/allOf/1", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/datedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/items/1", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/datedTaggedRecords/additionalItems", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/record")},
-			{"#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tag")},
-			{"#/definitions/namedThing/properties/name", spec.MustCreateRef("#/definitions/named")},
-		}
-
-		for i, v := range values {
+		for i, v := range refFixture {
 			err := rewriteSchemaToRef(sp, v.Key, v.Ref)
 			if assert.NoError(t, err) {
 				ptr, err := jsonpointer.New(v.Key[1:])
@@ -410,7 +376,8 @@ func TestNamesFromKey(t *testing.T) {
 			Key   string
 			Names []string
 		}{
-			{"#/paths/~1some~1where~1{id}/parameters/1/schema", []string{"GetSomeWhereID params body", "PostSomeWhereID params body"}},
+			{"#/paths/~1some~1where~1{id}/parameters/1/schema",
+				[]string{"GetSomeWhereID params body", "PostSomeWhereID params body"}},
 			{"#/paths/~1some~1where~1{id}/get/parameters/2/schema", []string{"GetSomeWhereID params body"}},
 			{"#/paths/~1some~1where~1{id}/get/responses/default/schema", []string{"GetSomeWhereID Default body"}},
 			{"#/paths/~1some~1where~1{id}/get/responses/200/schema", []string{"GetSomeWhereID OK body"}},
@@ -489,7 +456,8 @@ func TestDepthFirstSort(t *testing.T) {
 		"#/definitions/datedTaggedRecords/items/1",
 		"#/definitions/namedAgain/properties/id",
 		"#/definitions/namedThing/properties/name",
-		"#/definitions/pneumonoultramicroscopicsilicovolcanoconiosisAntidisestablishmentarianism/properties/floccinaucinihilipilificationCreatedAt",
+		"#/definitions/pneumonoultramicroscopicsilicovolcanoconiosisAntidisestablishmentarianism/properties/" +
+			"floccinaucinihilipilificationCreatedAt",
 		"#/definitions/records/items/0",
 		"#/definitions/datedTaggedRecords/additionalItems",
 		"#/definitions/otherRecords/items",
@@ -517,104 +485,205 @@ func TestBuildNameWithReservedKeyWord(t *testing.T) {
 	segments := []string{"fullview"}
 	newName := s.BuildName(segments, startIdx, nil)
 	assert.Equal(t, "fullview properties", newName)
-	s = splitKey([]string{"definitions", "fullview", "properties", "properties", "properties", "properties", "properties", "properties"})
+	s = splitKey([]string{"definitions", "fullview",
+		"properties", "properties", "properties", "properties", "properties", "properties"})
 	newName = s.BuildName(segments, startIdx, nil)
 	assert.Equal(t, "fullview properties properties properties", newName)
 }
 
 func TestNameInlinedSchemas(t *testing.T) {
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "nested_inline_schemas.yml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-	err = spec.ExpandSpec(sp, &spec.ExpandOptions{
-		RelativeBase: bp,
-		SkipSchemas:  true,
-	})
-	assert.NoError(t, err)
 	values := []struct {
 		Key      string
 		Location string
 		Ref      spec.Ref
 	}{
-		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/2/properties/name", "#/definitions/getSomeWhereIdParamsBodyRecordItems2/properties/name", spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems2Name")},
-		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/1", "#/definitions/getSomeWhereIdParamsBodyRecord/items/1", spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems1")},
-		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/2", "#/definitions/getSomeWhereIdParamsBodyRecord/items/2", spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems2")},
-		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/2/properties/name", "#/definitions/getSomeWhereIdOKBodyRecordItems2/properties/name", spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems2Name")},
-		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/1", "#/definitions/getSomeWhereIdOKBodyRecord/items/1", spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems1")},
-		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/2", "#/definitions/getSomeWhereIdOKBodyRecord/items/2", spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems2")},
-		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record", "#/definitions/getSomeWhereIdOKBody/properties/record", spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecord")},
-		{"#/paths/~1some~1where~1{id}/get/responses/200/schema", "#/paths/~1some~1where~1{id}/get/responses/200/schema", spec.MustCreateRef("#/definitions/getSomeWhereIdOKBody")},
-		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/2/properties/name", "#/definitions/getSomeWhereIdDefaultBodyRecordItems2/properties/name", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems2Name")},
-		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/1", "#/definitions/getSomeWhereIdDefaultBodyRecord/items/1", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems1")},
-		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/2", "#/definitions/getSomeWhereIdDefaultBodyRecord/items/2", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems2")},
-		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record", "#/definitions/getSomeWhereIdDefaultBody/properties/record", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecord")},
-		{"#/paths/~1some~1where~1{id}/get/responses/default/schema", "#/paths/~1some~1where~1{id}/get/responses/default/schema", spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBody")},
+		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/2/properties/name",
+			"#/definitions/getSomeWhereIdParamsBodyRecordItems2/properties/name",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems2Name"),
+		},
+		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/1",
+			"#/definitions/getSomeWhereIdParamsBodyRecord/items/1",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems1"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/parameters/2/schema/properties/record/items/2",
+			"#/definitions/getSomeWhereIdParamsBodyRecord/items/2",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdParamsBodyRecordItems2"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/2/properties/name",
+			"#/definitions/getSomeWhereIdOKBodyRecordItems2/properties/name",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems2Name"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/1",
+			"#/definitions/getSomeWhereIdOKBodyRecord/items/1",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems1"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record/items/2",
+			"#/definitions/getSomeWhereIdOKBodyRecord/items/2",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecordItems2"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/200/schema/properties/record",
+			"#/definitions/getSomeWhereIdOKBody/properties/record",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdOKBodyRecord"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/200/schema",
+			"#/paths/~1some~1where~1{id}/get/responses/200/schema",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdOKBody"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/2/properties/name",
+			"#/definitions/getSomeWhereIdDefaultBodyRecordItems2/properties/name",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems2Name"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/1",
+			"#/definitions/getSomeWhereIdDefaultBodyRecord/items/1",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems1"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record/items/2",
+			"#/definitions/getSomeWhereIdDefaultBodyRecord/items/2",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecordItems2"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/default/schema/properties/record",
+			"#/definitions/getSomeWhereIdDefaultBody/properties/record",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBodyRecord"),
+		},
+
+		{"#/paths/~1some~1where~1{id}/get/responses/default/schema",
+			"#/paths/~1some~1where~1{id}/get/responses/default/schema",
+			spec.MustCreateRef("#/definitions/getSomeWhereIdDefaultBody"),
+		},
 		// maps:
-		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1/additionalProperties", "#/definitions/nestedThingRecordItems2AllOf1/additionalProperties", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1AdditionalProperties")},
-		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1", "#/definitions/nestedThingRecordItems2/allOf/1", spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1")},
-		{"#/definitions/nestedThing/properties/record/items/2/properties/name", "#/definitions/nestedThingRecordItems2/properties/name", spec.MustCreateRef("#/definitions/nestedThingRecordItems2Name")},
-		{"#/definitions/nestedThing/properties/record/items/1", "#/definitions/nestedThingRecord/items/1", spec.MustCreateRef("#/definitions/nestedThingRecordItems1")},
-		{"#/definitions/nestedThing/properties/record/items/2", "#/definitions/nestedThingRecord/items/2", spec.MustCreateRef("#/definitions/nestedThingRecordItems2")},
-		{"#/definitions/datedRecords/items/1", "#/definitions/datedRecords/items/1", spec.MustCreateRef("#/definitions/datedRecordsItems1")},
-		{"#/definitions/datedTaggedRecords/items/1", "#/definitions/datedTaggedRecords/items/1", spec.MustCreateRef("#/definitions/datedTaggedRecordsItems1")},
-		{"#/definitions/namedThing/properties/name", "#/definitions/namedThing/properties/name", spec.MustCreateRef("#/definitions/namedThingName")},
-		{"#/definitions/nestedThing/properties/record", "#/definitions/nestedThing/properties/record", spec.MustCreateRef("#/definitions/nestedThingRecord")},
-		{"#/definitions/records/items/0", "#/definitions/records/items/0", spec.MustCreateRef("#/definitions/recordsItems0")},
-		{"#/definitions/datedTaggedRecords/additionalItems", "#/definitions/datedTaggedRecords/additionalItems", spec.MustCreateRef("#/definitions/datedTaggedRecordsItemsAdditionalItems")},
-		{"#/definitions/otherRecords/items", "#/definitions/otherRecords/items", spec.MustCreateRef("#/definitions/otherRecordsItems")},
-		{"#/definitions/tags/additionalProperties", "#/definitions/tags/additionalProperties", spec.MustCreateRef("#/definitions/tagsAdditionalProperties")},
+		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1/additionalProperties",
+		//"#/definitions/nestedThingRecordItems2AllOf1/additionalProperties",
+		//spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1AdditionalProperties"),
+		// },
+
+		//{"#/definitions/nestedThing/properties/record/items/2/allOf/1",
+		//"#/definitions/nestedThingRecordItems2/allOf/1",
+		//spec.MustCreateRef("#/definitions/nestedThingRecordItems2AllOf1"),
+		//},
+		{"#/definitions/nestedThing/properties/record/items/2/properties/name",
+			"#/definitions/nestedThingRecordItems2/properties/name",
+			spec.MustCreateRef("#/definitions/nestedThingRecordItems2Name"),
+		},
+
+		{"#/definitions/nestedThing/properties/record/items/1",
+			"#/definitions/nestedThingRecord/items/1",
+			spec.MustCreateRef("#/definitions/nestedThingRecordItems1"),
+		},
+
+		{"#/definitions/nestedThing/properties/record/items/2",
+			"#/definitions/nestedThingRecord/items/2",
+			spec.MustCreateRef("#/definitions/nestedThingRecordItems2"),
+		},
+
+		{"#/definitions/datedRecords/items/1",
+			"#/definitions/datedRecords/items/1",
+			spec.MustCreateRef("#/definitions/datedRecordsItems1"),
+		},
+
+		{"#/definitions/datedTaggedRecords/items/1",
+			"#/definitions/datedTaggedRecords/items/1",
+			spec.MustCreateRef("#/definitions/datedTaggedRecordsItems1"),
+		},
+
+		{"#/definitions/namedThing/properties/name",
+			"#/definitions/namedThing/properties/name",
+			spec.MustCreateRef("#/definitions/namedThingName"),
+		},
+
+		{"#/definitions/nestedThing/properties/record",
+			"#/definitions/nestedThing/properties/record",
+			spec.MustCreateRef("#/definitions/nestedThingRecord"),
+		},
+
+		{"#/definitions/records/items/0",
+			"#/definitions/records/items/0",
+			spec.MustCreateRef("#/definitions/recordsItems0"),
+		},
+
+		{"#/definitions/datedTaggedRecords/additionalItems",
+			"#/definitions/datedTaggedRecords/additionalItems",
+			spec.MustCreateRef("#/definitions/datedTaggedRecordsItemsAdditionalItems"),
+		},
+
+		{"#/definitions/otherRecords/items",
+			"#/definitions/otherRecords/items",
+			spec.MustCreateRef("#/definitions/otherRecordsItems"),
+		},
+
+		{"#/definitions/tags/additionalProperties",
+			"#/definitions/tags/additionalProperties",
+			spec.MustCreateRef("#/definitions/tagsAdditionalProperties"),
+		},
 	}
 
-	if assert.NoError(t, err) {
-		err := nameInlinedSchemas(&FlattenOpts{
-			Spec:     New(sp),
-			BasePath: bp,
-		})
+	bp := filepath.Join("fixtures", "nested_inline_schemas.yml")
+	sp := loadOrFail(t, bp)
 
-		if assert.NoError(t, err) {
-			for i, v := range values {
-				ptr, err := jsonpointer.New(v.Location[1:])
-				if assert.NoError(t, err, "at %d for %s", i, v.Key) {
-					vv, _, err := ptr.Get(sp)
+	ere := spec.ExpandSpec(sp, &spec.ExpandOptions{
+		RelativeBase: bp,
+		SkipSchemas:  true,
+	})
+	if !assert.NoError(t, ere) {
+		t.FailNow()
+		return
+	}
 
-					if assert.NoError(t, err, "at %d for %s", i, v.Key) {
-						switch tv := vv.(type) {
-						case *spec.Schema:
-							assert.Equal(t, v.Ref.String(), tv.Ref.String(), "at %d for %s", i, v.Key)
-						case spec.Schema:
-							assert.Equal(t, v.Ref.String(), tv.Ref.String(), "at %d for %s", i, v.Key)
-						case *spec.SchemaOrBool:
-							var sRef spec.Ref
-							if tv != nil && tv.Schema != nil {
-								sRef = tv.Schema.Ref
-							}
-							assert.Equal(t, v.Ref.String(), sRef.String(), "at %d for %s", i, v.Key)
-						case *spec.SchemaOrArray:
-							var sRef spec.Ref
-							if tv != nil && tv.Schema != nil {
-								sRef = tv.Schema.Ref
-							}
-							assert.Equal(t, v.Ref.String(), sRef.String(), "at %d for %s", i, v.Key)
-						default:
-							assert.Fail(t, "unknown type", "got %T", vv)
-						}
+	ern := nameInlinedSchemas(&FlattenOpts{
+		Spec:     New(sp),
+		BasePath: bp,
+	})
+	if !assert.NoError(t, ern) {
+		t.FailNow()
+		return
+	}
+
+	for i, v := range values {
+		ptr, err := jsonpointer.New(v.Location[1:])
+		if assert.NoError(t, err, "at %d for %s", i, v.Key) {
+			vv, _, err := ptr.Get(sp)
+
+			if assert.NoError(t, err, "at %d for %s", i, v.Key) {
+				switch tv := vv.(type) {
+				case *spec.Schema:
+					assert.Equal(t, v.Ref.String(), tv.Ref.String(), "at %d for %s", i, v.Key)
+				case spec.Schema:
+					assert.Equal(t, v.Ref.String(), tv.Ref.String(), "at %d for %s", i, v.Key)
+				case *spec.SchemaOrBool:
+					var sRef spec.Ref
+					if tv != nil && tv.Schema != nil {
+						sRef = tv.Schema.Ref
 					}
+					assert.Equal(t, v.Ref.String(), sRef.String(), "at %d for %s", i, v.Key)
+				case *spec.SchemaOrArray:
+					var sRef spec.Ref
+					if tv != nil && tv.Schema != nil {
+						sRef = tv.Schema.Ref
+					}
+					assert.Equal(t, v.Ref.String(), sRef.String(), "at %d for %s", i, v.Key)
+				default:
+					assert.Fail(t, "unknown type", "got %T", vv)
 				}
 			}
 		}
+	}
 
-		for k, rr := range New(sp).allSchemas {
-			if !strings.HasPrefix(k, "#/responses") && !strings.HasPrefix(k, "#/parameters") {
-				if rr.Schema != nil && rr.Schema.Ref.String() == "" && !rr.TopLevel {
-					asch, err := Schema(SchemaOpts{Schema: rr.Schema, Root: sp, BasePath: bp})
-					if assert.NoError(t, err, "for key: %s", k) {
-						if !asch.IsSimpleSchema && !asch.IsArray && !asch.IsMap {
-							assert.Fail(t, "not a top level schema", "for key: %s", k)
-						}
+	for k, rr := range New(sp).allSchemas {
+		if !strings.HasPrefix(k, "#/responses") && !strings.HasPrefix(k, "#/parameters") {
+			if rr.Schema != nil && rr.Schema.Ref.String() == "" && !rr.TopLevel {
+				asch, err := Schema(SchemaOpts{Schema: rr.Schema, Root: sp, BasePath: bp})
+				if assert.NoError(t, err, "for key: %s", k) {
+					if !asch.IsSimpleSchema && !asch.IsArray && !asch.IsMap {
+						assert.Fail(t, "not a top level schema", "for key: %s", k)
 					}
 				}
 			}
@@ -876,10 +945,12 @@ func TestFlatten_oaigenFull(t *testing.T) {
 		return
 	}
 
-	if !assert.Containsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
+	if !assert.Containsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen",
+		"Expected log message") {
 		t.Logf("Captured log: %s", msg)
 	}
-	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as uniqueName2OAIGen", "Expected log message") {
+	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as uniqueName2OAIGen",
+		"Expected log message") {
 		t.Logf("Captured log: %s", msg)
 	}
 	res := getInPath(t, sp, "/some/where", "/get/responses/204/schema")
@@ -905,7 +976,9 @@ func TestFlatten_oaigenFull(t *testing.T) {
 	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
 
 	res = getDefinition(t, sp, "a")
-	assert.JSONEqf(t, `{"type": "object", "properties": { "a": { "$ref": "#/definitions/aAOAIGen" }}}`, res, "Expected a simple schema for response")
+	assert.JSONEqf(t,
+		`{"type": "object", "properties": { "a": { "$ref": "#/definitions/aAOAIGen" }}}`,
+		res, "Expected a simple schema for response")
 
 	res = getDefinition(t, sp, "aA")
 	assert.JSONEqf(t, `{"type": "string", "format": "date"}`, res, "Expected a simple schema for response")
@@ -1055,10 +1128,12 @@ func TestFlatten_oaigenMinimal(t *testing.T) {
 
 	msg := logCapture.String()
 	//t.Log(msg)
-	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
+	if !assert.NotContainsf(t, msg,
+		"warning: duplicate flattened definition name resolved as aAOAIGen", "Expected log message") {
 		t.Logf("Captured log: %s", msg)
 	}
-	if !assert.NotContainsf(t, msg, "warning: duplicate flattened definition name resolved as uniqueName2OAIGen", "Expected log message") {
+	if !assert.NotContainsf(t, msg,
+		"warning: duplicate flattened definition name resolved as uniqueName2OAIGen", "Expected log message") {
 		t.Logf("Captured log: %s", msg)
 	}
 	res := getInPath(t, sp, "/some/where", "/get/responses/204/schema")
@@ -1080,7 +1155,6 @@ func TestFlatten_oaigenMinimal(t *testing.T) {
 	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
 
 	res = getInPath(t, sp, "/some/where", "/post/responses/default/schema")
-	//assert.JSONEqf(t, `{"$ref": "#/definitions/myDefaultResponse/properties/zzz"}`, res, "Expected a simple schema for response")
 	// This JSON pointer is expanded
 	assert.JSONEqf(t, `{"type": "integer"}`, res, "Expected a simple schema for response")
 
@@ -1178,94 +1252,55 @@ func TestFlatten_oaigenMinimal(t *testing.T) {
 	}`, res, "Expected a simple schema for response")
 }
 
-func TestFlatten_oaigen_1260(t *testing.T) {
-	// test fixture from issue go-swagger/go-swagger#1260
+func loadOrFail(t *testing.T, bp string) *spec.Swagger {
 	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-swagger.yaml")
-	sp, err := loadSpec(bp)
+	sp, err := loadSpec(filepath.Join(cwd, bp))
 	if !assert.NoError(t, err) {
 		t.FailNow()
-		return
+		return nil
 	}
+	return sp
+}
 
+func assertNoOAIGen(t *testing.T, bp string, sp *spec.Swagger) bool {
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
 	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
+		t.Fail()
+		return false
 	}
 	msg := logCapture.String()
 	assert.NotContains(t, msg, "warning")
 
 	for k := range sp.Definitions {
 		if !assert.NotContains(t, k, "OAIGen") {
-			t.FailNow()
-			return
+			t.Fail()
+			return false
 		}
 	}
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
+	return true
+}
+
+func TestFlatten_oaigen_1260(t *testing.T) {
+	// test fixture from issue go-swagger/go-swagger#1260
+	bp := filepath.Join("fixtures", "oaigen", "test3-swagger.yaml")
+	sp := loadOrFail(t, bp)
+	assert.Truef(t, assertNoOAIGen(t, bp, sp), "did not expect an OAIGen definition here")
 }
 
 func TestFlatten_oaigen_1260bis(t *testing.T) {
 	// test fixture from issue go-swagger/go-swagger#1260
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-bis-swagger.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-
-	var logCapture bytes.Buffer
-	log.SetOutput(&logCapture)
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-	msg := logCapture.String()
-	assert.NotContains(t, msg, "warning")
-
-	for k := range sp.Definitions {
-		if !assert.NotContains(t, k, "OAIGen") {
-			t.FailNow()
-			return
-		}
-	}
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
+	bp := filepath.Join("fixtures", "oaigen", "test3-bis-swagger.yaml")
+	sp := loadOrFail(t, bp)
+	assert.Truef(t, assertNoOAIGen(t, bp, sp), "did not expect an OAIGen definition here")
 }
 
 func TestFlatten_oaigen_1260ter(t *testing.T) {
 	// test fixture from issue go-swagger/go-swagger#1260
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "oaigen", "test3-ter-swagger.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-
-	var logCapture bytes.Buffer
-	log.SetOutput(&logCapture)
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-	msg := logCapture.String()
-	assert.NotContains(t, msg, "warning")
-
-	for k := range sp.Definitions {
-		if !assert.NotContains(t, k, "OAIGen") {
-			t.FailNow()
-			return
-		}
-	}
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
+	bp := filepath.Join("fixtures", "oaigen", "test3-ter-swagger.yaml")
+	sp := loadOrFail(t, bp)
+	assert.Truef(t, assertNoOAIGen(t, bp, sp), "did not expect an OAIGen definition here")
 }
 
 func getDefinition(t *testing.T, sp *spec.Swagger, key string) string {
@@ -1291,19 +1326,19 @@ func getInPath(t *testing.T, sp *spec.Swagger, path, key string) string {
 }
 
 func TestMoreNameInlinedSchemas(t *testing.T) {
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "more_nested_inline_schemas.yml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "more_nested_inline_schemas.yml")
+	sp := loadOrFail(t, bp)
 
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
 	assert.NoError(t, err)
 
 	res := getInPath(t, sp, "/some/where/{id}", "/post/responses/200/schema")
-	assert.JSONEqf(t, `{"type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/definitions/postSomeWhereIdOKBodyAdditionalPropertiesAdditionalPropertiesAdditionalProperties"}}}}`, res, "Expected a simple schema for response")
+	assert.JSONEqf(t,
+		`{"type": "object", "additionalProperties":`+
+			`{ "type": "object", "additionalProperties": { "type": "object", "additionalProperties":`+
+			` { "$ref":`+
+			` "#/definitions/postSomeWhereIdOKBodyAdditionalPropertiesAdditionalPropertiesAdditionalProperties"}}}}`,
+		res, "Expected a simple schema for response")
 
 	res = getInPath(t, sp, "/some/where/{id}", "/post/responses/204/schema")
 	assert.JSONEqf(t, `{
@@ -1319,7 +1354,9 @@ func TestMoreNameInlinedSchemas(t *testing.T) {
 		           "additionalProperties": {
 		            "type": "array",
 		            "items": {
-		             "$ref": "#/definitions/postSomeWhereIdNoContentBodyAdditionalPropertiesItemsAdditionalPropertiesItemsAdditionalPropertiesItems"
+						"$ref":`+
+		`"#/definitions/`+
+		`postSomeWhereIdNoContentBodyAdditionalPropertiesItemsAdditionalPropertiesItemsAdditionalPropertiesItems"
 		            }
 		           }
 		          }
@@ -1331,15 +1368,10 @@ func TestMoreNameInlinedSchemas(t *testing.T) {
 }
 
 func TestRemoveUnused(t *testing.T) {
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "oaigen", "fixture-oaigen.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "oaigen", "fixture-oaigen.yaml")
+	sp := loadOrFail(t, bp)
 
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: false, Minimal: true, RemoveUnused: true})
+	err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: false, Minimal: true, RemoveUnused: true})
 	if !assert.NoError(t, err) {
 		t.FailNow()
 		return
@@ -1348,13 +1380,8 @@ func TestRemoveUnused(t *testing.T) {
 	assert.Nil(t, sp.Parameters)
 	assert.Nil(t, sp.Responses)
 
-	bp = filepath.Join(cwd, "fixtures", "parameters", "fixture-parameters.yaml")
-	sp, err = loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-
+	bp = filepath.Join("fixtures", "parameters", "fixture-parameters.yaml")
+	sp = loadOrFail(t, bp)
 	an := New(sp)
 	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: true, RemoveUnused: true})
 	if !assert.NoError(t, err) {
@@ -1368,17 +1395,19 @@ func TestRemoveUnused(t *testing.T) {
 	op, ok := an.OperationFor("GET", "/some/where")
 	assert.True(t, ok)
 	assert.Lenf(t, op.Parameters, 4, "Expected 4 parameters expanded for this operation")
-	assert.Lenf(t, an.ParamsFor("GET", "/some/where"), 7, "Expected 7 parameters (with default) expanded for this operation")
+	assert.Lenf(t, an.ParamsFor("GET", "/some/where"), 7,
+		"Expected 7 parameters (with default) expanded for this operation")
 
 	op, ok = an.OperationFor("PATCH", "/some/remote")
 	assert.True(t, ok)
 	assert.Lenf(t, op.Parameters, 1, "Expected 1 parameter expanded for this operation")
-	assert.Lenf(t, an.ParamsFor("PATCH", "/some/remote"), 2, "Expected 2 parameters (with default) expanded for this operation")
+	assert.Lenf(t, an.ParamsFor("PATCH", "/some/remote"), 2,
+		"Expected 2 parameters (with default) expanded for this operation")
 
 	_, ok = sp.Definitions["unused"]
 	assert.False(t, ok, "Did not expect to find #/definitions/unused")
 
-	bp = filepath.Join(cwd, "fixtures", "parameters", "fixture-parameters.yaml")
+	bp = filepath.Join("fixtures", "parameters", "fixture-parameters.yaml")
 	sp, err = loadSpec(bp)
 	if !assert.NoError(t, err) {
 		t.FailNow()
@@ -1405,16 +1434,11 @@ func TestRemoveUnused(t *testing.T) {
 }
 
 func TestOperationIDs(t *testing.T) {
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "operations", "fixture-operations.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "operations", "fixture-operations.yaml")
+	sp := loadOrFail(t, bp)
 
 	an := New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, RemoveUnused: false})
 	assert.NoError(t, err)
 
 	res := gatherOperations(New(sp), []string{"getSomeWhere", "getSomeWhereElse"})
@@ -1466,18 +1490,13 @@ func TestOperationIDs(t *testing.T) {
 func TestFlatten_Pointers(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
 
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "pointers", "fixture-pointers.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "pointers", "fixture-pointers.yaml")
+	sp := loadOrFail(t, bp)
 
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
 	an := New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
 	if !assert.NoError(t, err) {
 		t.FailNow()
 		return
@@ -1498,47 +1517,43 @@ func TestFlatten_Pointers(t *testing.T) {
 
 // unit test guards in flatten not easily testable with actual specs
 func TestFlatten_ErrorHandling(t *testing.T) {
+	bp := filepath.Join("fixtures", "errors", "fixture-unexpandable.yaml")
+
 	// invalid spec expansion
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "errors", "fixture-unexpandable.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
-	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: true})
+	sp := loadOrFail(t, bp)
+
+	err := Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: true})
 	if !assert.Errorf(t, err, "Expected a failure") {
 		t.FailNow()
 		return
 	}
 
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: false})
 	if !assert.Errorf(t, err, "Expected a failure") {
 		t.FailNow()
 		return
 	}
 
-	bp = filepath.Join(cwd, "fixtures", "errors", "fixture-unexpandable-2.yaml")
-	sp, err = loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp = filepath.Join("fixtures", "errors", "fixture-unexpandable-2.yaml")
+	sp = loadOrFail(t, bp)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Expand: false})
 	if !assert.Errorf(t, err, "Expected a failure") {
 		t.FailNow()
 		return
 	}
 
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Minimal: true, Expand: false})
 	if !assert.Errorf(t, err, "Expected a failure") {
 		t.FailNow()
 		return
 	}
 
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	err = rewriteSchemaToRef(sp, "#/invalidPointer/key", spec.Ref{})
 	if !assert.Errorf(t, err, "Expected a failure") {
 		t.FailNow()
@@ -1617,16 +1632,11 @@ func TestFlatten_PointersLoop(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "pointers", "fixture-pointers-loop.yaml")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "pointers", "fixture-pointers-loop.yaml")
+	sp := loadOrFail(t, bp)
 
 	an := New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
 	if !assert.Error(t, err) {
 		t.FailNow()
 		return
@@ -1637,22 +1647,18 @@ func TestFlatten_Bitbucket(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	cwd, _ := os.Getwd()
-	bp := filepath.Join(cwd, "fixtures", "bugs", "bitbucket.json")
-	sp, err := loadSpec(bp)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	bp := filepath.Join("fixtures", "bugs", "bitbucket.json")
+	sp := loadOrFail(t, bp)
 
 	an := New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
 	if !assert.NoError(t, err) {
 		t.FailNow()
 		return
 	}
 
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	an = New(sp)
 	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
 	if !assert.NoError(t, err) {
@@ -1660,14 +1666,16 @@ func TestFlatten_Bitbucket(t *testing.T) {
 		return
 	}
 
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	an = New(sp)
 	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Expand: true, RemoveUnused: false})
 	if !assert.NoError(t, err) {
 		t.FailNow()
 		return
 	}
-	sp, _ = loadSpec(bp)
+	// reload original spec
+	sp = loadOrFail(t, bp)
 	an = New(sp)
 	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Expand: true, RemoveUnused: true})
 	if !assert.NoError(t, err) {

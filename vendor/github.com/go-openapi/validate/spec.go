@@ -170,7 +170,7 @@ func (s *SpecValidator) validateNonEmptyPathParamNames() *Result {
 }
 
 func (s *SpecValidator) validateDuplicateOperationIDs() *Result {
-	// OperationID, if specified, must be unique accross the board
+	// OperationID, if specified, must be unique across the board
 	res := new(Result)
 	known := make(map[string]int)
 	for _, v := range s.analyzer.OperationIDs() {
@@ -200,7 +200,7 @@ func (s *SpecValidator) validateDuplicatePropertyNames() *Result {
 		}
 
 		knownanc := map[string]struct{}{
-			"#/definitions/" + k: struct{}{},
+			"#/definitions/" + k: {},
 		}
 
 		ancs, rec := s.validateCircularAncestry(k, sch, knownanc)
@@ -753,7 +753,7 @@ func (s *SpecValidator) checkUniqueParams(path, method string, op *spec.Operatio
 
 	if op.Parameters != nil { // Safeguard
 		for _, ppr := range op.Parameters {
-			ok := false
+			var ok bool
 			pr, red := paramHelp.resolveParam(path, method, op.ID, &ppr, s)
 			res.Merge(red)
 

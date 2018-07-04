@@ -51,7 +51,7 @@ var pathItem = PathItem{
 			OperationProps: OperationProps{Description: "patch operation description"},
 		},
 		Parameters: []Parameter{
-			Parameter{
+			{
 				ParamProps: ParamProps{In: "path"},
 			},
 		},

@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -210,19 +209,14 @@ func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() != "" {
-		if Debug {
-			_, file, pos, _ := runtime.Caller(1)
-			log.Printf("%s:%d: resolving ref (anon: %t, req: %t) %s\n", filepath.Base(file), pos, false, isRequired, schema.Ref.String())
-		}
+		debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
 		returns = true
 		var ref *spec.Schema
 		var er error
 
 		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
 		if er != nil {
-			if Debug {
-				log.Printf("error resolving ref %s: %v", schema.Ref.String(), er)
-			}
+			debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
 			err = er
 			return
 		}
@@ -235,9 +229,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 
 		tn := filepath.Base(schema.Ref.GetURL().Fragment)
 		tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
-		if Debug {
-			log.Printf("type name %s, package %s, alias %s", tpe, pkg, alias)
-		}
+		debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
 		if tpe != "" {
 			result.GoType = tpe
 			result.Pkg = pkg
@@ -264,10 +256,7 @@ func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, 
 func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRequired bool) (returns bool, result resolvedType, err error) {
 
 	if schema.Format != "" {
-		if Debug {
-			_, file, pos, _ := runtime.Caller(1)
-			log.Printf("%s:%d: resolving format (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, isRequired) //, bbb)
-		}
+		debugLog("resolving format (anon: %t, req: %t)", isAnonymous, isRequired)
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
 		if tpe, ok := typeMapping[schFmt]; ok {
 			returns = true
@@ -335,10 +324,7 @@ func (t *typeResolver) firstType(schema *spec.Schema) string {
 }
 
 func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
-	if Debug {
-		_, file, pos, _ := runtime.Caller(1)
-		log.Printf("%s:%d: resolving array (anon: %t, req: %t)\n", filepath.Base(file), pos, isAnonymous, isRequired) //, bbb)
-	}
+	debugLog("resolving array (anon: %t, req: %t)", isAnonymous, isRequired)
 
 	result.IsArray = true
 	result.IsNullable = false
@@ -409,10 +395,7 @@ func (t *typeResolver) goTypeName(nm string) string {
 }
 
 func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (result resolvedType, err error) {
-	if Debug {
-		_, file, pos, _ := runtime.Caller(1)
-		log.Printf("%s:%d: resolving object %s (anon: %t, req: %t)\n", filepath.Base(file), pos, t.ModelName, isAnonymous, false) //, bbb)
-	}
+	debugLog("resolving object %s (anon: %t, req: %t)", t.ModelName, isAnonymous, false)
 
 	result.IsAnonymous = isAnonymous
 
@@ -617,7 +600,7 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 }
 
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
-	logDebug("resolving schema (anon: %t, req: %t) %s\n", isAnonymous, isRequired, t.ModelName)
+	debugLog("resolving schema (anon: %t, req: %t) %s", isAnonymous, isRequired, t.ModelName)
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = iface
@@ -630,9 +613,9 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
-			logDebug("not anonymous ref")
+			debugLog("not anonymous ref")
 		}
-		logDebug("returning after ref")
+		debugLog("returning after ref")
 		return
 	}
 
@@ -648,7 +631,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 
 	returns, result, err = t.resolveFormat(schema, isAnonymous, isRequired)
 	if returns {
-		logDebug("returning after resolve format: %s", pretty.Sprint(result))
+		debugLog("returning after resolve format: %s", pretty.Sprint(result))
 		return
 	}
 

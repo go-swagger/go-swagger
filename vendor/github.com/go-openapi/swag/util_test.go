@@ -46,7 +46,7 @@ func TestToGoName(t *testing.T) {
 		{"findTHINGSbyID", "FindTHINGSbyID"},
 	}
 
-	for k := range commonInitialisms {
+	for _, k := range commonInitialisms.sorted() {
 		samples = append(samples,
 			translationSample{"sample " + lower(k) + " text", "Sample" + k + "Text"},
 			translationSample{"sample-" + lower(k) + "-text", "Sample" + k + "Text"},
@@ -137,7 +137,7 @@ func TestToFileName(t *testing.T) {
 		{"elbHTTPLoadBalancer", "elb_http_load_balancer"},
 		{"ELBHTTPLoadBalancer", "elb_http_load_balancer"},
 	}
-	for k := range commonInitialisms {
+	for _, k := range commonInitialisms.sorted() {
 		samples = append(samples,
 			translationSample{"Sample" + k + "Text", "sample_" + lower(k) + "_text"},
 		)
@@ -155,7 +155,7 @@ func TestToCommandName(t *testing.T) {
 		{"elbHTTPLoadBalancer", "elb-http-load-balancer"},
 	}
 
-	for k := range commonInitialisms {
+	for _, k := range commonInitialisms.sorted() {
 		samples = append(samples,
 			translationSample{"Sample" + k + "Text", "sample-" + lower(k) + "-text"},
 		)
@@ -173,7 +173,7 @@ func TestToHumanName(t *testing.T) {
 		{"elbHTTPLoadBalancer", "elb HTTP load balancer"},
 	}
 
-	for k := range commonInitialisms {
+	for _, k := range commonInitialisms.sorted() {
 		samples = append(samples,
 			translationSample{"Sample" + k + "Text", "sample " + k + " text"},
 		)
@@ -191,7 +191,7 @@ func TestToJSONName(t *testing.T) {
 		{"elbHTTPLoadBalancer", "elbHttpLoadBalancer"},
 	}
 
-	for k := range commonInitialisms {
+	for _, k := range commonInitialisms.sorted() {
 		samples = append(samples,
 			translationSample{"Sample" + k + "Text", "sample" + titleize(k) + "Text"},
 		)

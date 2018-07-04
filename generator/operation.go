@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -304,9 +303,7 @@ func renameTimeout(seenIds map[string][]string, current string) string {
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
-	if Debug {
-		log.Printf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
-	}
+	debugLog("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
 	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
 	//
@@ -559,9 +556,7 @@ func concatUnique(collections ...[]string) []string {
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
-	if Debug {
-		log.Printf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
-	}
+	debugLog("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
@@ -715,9 +710,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 }
 
 func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter, idMapping map[string]map[string]string) (GenParameter, error) {
-	if Debug {
-		log.Printf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
-	}
+	debugLog("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 

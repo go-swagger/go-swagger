@@ -16,7 +16,6 @@ package swag
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,12 +25,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type failJSONMarhal struct {
+/* currently unused:
+type failJSONMarshal struct {
 }
 
-func (f failJSONMarhal) MarshalJSON() ([]byte, error) {
+func (f failJSONMarshal) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("expected")
 }
+*/
 
 func TestLoadHTTPBytes(t *testing.T) {
 	_, err := LoadFromFileOrHTTP("httx://12394:abd")

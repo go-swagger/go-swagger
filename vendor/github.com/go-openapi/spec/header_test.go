@@ -88,3 +88,39 @@ func TestIntegrationHeader(t *testing.T) {
 
 	assertParsesJSON(t, headerJSON, header)
 }
+
+func TestJSONLookupHeader(t *testing.T) {
+	var def string
+	res, err := header.JSONLookup("default")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, def, res) {
+		t.FailNow()
+		return
+	}
+	def = res.(string)
+	assert.Equal(t, "8", def)
+
+	var x *interface{}
+	res, err = header.JSONLookup("x-framework")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, x, res) {
+		t.FailNow()
+		return
+	}
+
+	x = res.(*interface{})
+	assert.EqualValues(t, "swagger-go", *x)
+
+	res, err = header.JSONLookup("unknown")
+	if !assert.Error(t, err) || !assert.Nil(t, res) {
+		t.FailNow()
+		return
+	}
+
+	var max *float64
+	res, err = header.JSONLookup("maximum")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, max, res) {
+		t.FailNow()
+		return
+	}
+	max = res.(*float64)
+	assert.Equal(t, float64(100), *max)
+}

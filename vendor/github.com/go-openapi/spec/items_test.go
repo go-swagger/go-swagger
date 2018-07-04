@@ -79,3 +79,63 @@ func TestIntegrationItems(t *testing.T) {
 
 	assertParsesJSON(t, itemsJSON, items)
 }
+
+func TestTypeNameItems(t *testing.T) {
+	var nilItems Items
+	assert.Equal(t, "", nilItems.TypeName())
+
+	assert.Equal(t, "date", items.TypeName())
+	assert.Equal(t, "", items.ItemsTypeName())
+
+	nested := Items{
+		SimpleSchema: SimpleSchema{
+			Type: "array",
+			Items: &Items{
+				SimpleSchema: SimpleSchema{
+					Type:   "integer",
+					Format: "int32",
+				},
+			},
+			CollectionFormat: "csv",
+		},
+	}
+
+	assert.Equal(t, "array", nested.TypeName())
+	assert.Equal(t, "int32", nested.ItemsTypeName())
+}
+
+func TestJSONLookupItems(t *testing.T) {
+	res, err := items.JSONLookup("$ref")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	if assert.IsType(t, &Ref{}, res) {
+		ref := res.(*Ref)
+		assert.EqualValues(t, MustCreateRef("Dog"), *ref)
+	}
+
+	var max *float64
+	res, err = items.JSONLookup("maximum")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, max, res) {
+		t.FailNow()
+		return
+	}
+	max = res.(*float64)
+	assert.Equal(t, float64(100), *max)
+
+	var f string
+	res, err = items.JSONLookup("collectionFormat")
+	if !assert.NoError(t, err) || !assert.NotNil(t, res) || !assert.IsType(t, f, res) {
+		t.FailNow()
+		return
+	}
+	f = res.(string)
+	assert.Equal(t, "csv", f)
+
+	res, err = items.JSONLookup("unknown")
+	if !assert.Error(t, err) || !assert.Nil(t, res) {
+		t.FailNow()
+		return
+	}
+}
