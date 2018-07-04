@@ -36,7 +36,6 @@ func TestDate(t *testing.T) {
 	assert.Error(t, err)
 
 	orig := "2014-12-15"
-	b := []byte(orig)
 	bj := []byte("\"" + orig + "\"")
 	err = pp.UnmarshalText([]byte(orig))
 	assert.NoError(t, err)
@@ -52,7 +51,7 @@ func TestDate(t *testing.T) {
 	err = pp.UnmarshalJSON([]byte(`"1972/01/01"`))
 	assert.Error(t, err)
 
-	b, err = pp.MarshalJSON()
+	b, err := pp.MarshalJSON()
 	assert.NoError(t, err)
 	assert.Equal(t, bj, b)
 
@@ -67,7 +66,7 @@ func TestDate(t *testing.T) {
 	assert.Equal(t, dateOriginal, dateCopy)
 
 	var dateZero Date
-	err = dateZero.UnmarshalJSON([]byte("null"))
+	err = dateZero.UnmarshalJSON([]byte(jsonNull))
 	assert.NoError(t, err)
 	assert.Equal(t, Date{}, dateZero)
 }

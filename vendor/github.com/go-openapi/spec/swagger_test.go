@@ -16,13 +16,10 @@ package spec
 
 import (
 	"encoding/json"
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -122,6 +119,8 @@ var specJSON = `{
 // 	compareSpecMaps(actual, expected)
 // }
 
+/*
+// assertEquivalent is currently unused
 func assertEquivalent(t testing.TB, actual, expected interface{}) bool {
 	if actual == nil || expected == nil || reflect.DeepEqual(actual, expected) {
 		return true
@@ -149,6 +148,7 @@ func assertEquivalent(t testing.TB, actual, expected interface{}) bool {
 	return assert.Fail(t, errFmt, expected, expected, actual, actual)
 }
 
+// ShouldBeEquivalentTo is currently unused
 func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 	expected := expecteds[0]
 	if actual == nil || expected == nil {
@@ -182,6 +182,7 @@ func ShouldBeEquivalentTo(actual interface{}, expecteds ...interface{}) string {
 
 }
 
+// assertSpecMaps is currently unused
 func assertSpecMaps(t testing.TB, actual, expected map[string]interface{}) bool {
 	res := true
 	if id, ok := expected["id"]; ok {
@@ -205,12 +206,14 @@ func assertSpecMaps(t testing.TB, actual, expected map[string]interface{}) bool 
 
 	return res
 }
-
+*/
 func assertSpecs(t testing.TB, actual, expected Swagger) bool {
 	expected.Swagger = "2.0"
 	return assert.Equal(t, actual, expected)
 }
 
+/*
+// assertSpecJSON is currently unused
 func assertSpecJSON(t testing.TB, specJSON []byte) bool {
 	var expected map[string]interface{}
 	if !assert.NoError(t, json.Unmarshal(specJSON, &expected)) {
@@ -232,6 +235,7 @@ func assertSpecJSON(t testing.TB, specJSON []byte) bool {
 	}
 	return assertSpecMaps(t, actual, expected)
 }
+*/
 
 func TestSwaggerSpec_Serialize(t *testing.T) {
 	expected := make(map[string]interface{})
@@ -262,11 +266,27 @@ func TestVendorExtensionStringSlice(t *testing.T) {
 		if assert.True(t, ok) {
 			assert.EqualValues(t, []string{"unix", "amqp"}, schemes)
 		}
+		notSlice, ok := actual.Extensions.GetStringSlice("x-some-extension")
+		assert.Nil(t, notSlice)
+		assert.False(t, ok)
+
+		actual.AddExtension("x-another-ext", 100)
+		notString, ok := actual.Extensions.GetStringSlice("x-another-ext")
+		assert.Nil(t, notString)
+		assert.False(t, ok)
+
+		actual.AddExtension("x-another-slice-ext", []interface{}{100, 100})
+		notStringSlice, ok := actual.Extensions.GetStringSlice("x-another-slice-ext")
+		assert.Nil(t, notStringSlice)
+		assert.False(t, ok)
+
+		_, ok = actual.Extensions.GetStringSlice("x-notfound-ext")
+		assert.False(t, ok)
 	}
 }
 
 func TestOptionalSwaggerProps_Serialize(t *testing.T) {
-	minimalJsonSpec := []byte(`{
+	minimalJSONSpec := []byte(`{
 	"swagger": "2.0",
 	"info": {
 		"version": "0.0.0",
@@ -286,7 +306,7 @@ func TestOptionalSwaggerProps_Serialize(t *testing.T) {
 }`)
 
 	var minimalSpec Swagger
-	err := json.Unmarshal(minimalJsonSpec, &minimalSpec)
+	err := json.Unmarshal(minimalJSONSpec, &minimalSpec)
 	if assert.NoError(t, err) {
 		bytes, err := json.Marshal(&minimalSpec)
 		if assert.NoError(t, err) {
@@ -310,7 +330,7 @@ func TestOptionalSwaggerProps_Serialize(t *testing.T) {
 }
 
 func TestSecurityRequirements(t *testing.T) {
-	minimalJsonSpec := []byte(`{
+	minimalJSONSpec := []byte(`{
 		"swagger": "2.0",
 		"info": {
 			"version": "0.0.0",
@@ -356,7 +376,7 @@ func TestSecurityRequirements(t *testing.T) {
 	}`)
 
 	var minimalSpec Swagger
-	err := json.Unmarshal(minimalJsonSpec, &minimalSpec)
+	err := json.Unmarshal(minimalJSONSpec, &minimalSpec)
 	if assert.NoError(t, err) {
 		sec := minimalSpec.Paths.Paths["/"].Get.Security
 		require.Len(t, sec, 3)

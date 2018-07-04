@@ -478,9 +478,11 @@ func (s *Spec) SecurityDefinitionsFor(operation *spec.Operation) map[string]spec
 	for _, reqs := range requirements {
 		for _, v := range reqs {
 			if v.Name == "" {
+				// optional requirement
 				continue
 			}
 			if _, ok := result[v.Name]; ok {
+				// duplicate requirement
 				continue
 			}
 			if definition, ok := s.spec.SecurityDefinitions[v.Name]; ok {
@@ -818,7 +820,8 @@ func (s *Spec) AllPathItemReferences() (result []string) {
 
 // AllItemsReferences returns the references for all the items in simple schemas (parameters or headers).
 //
-// NOTE: since Swagger 2.0 forbids $ref in simple params, this should always yield an empty slice for a valid Swagger 2.0 spec.
+// NOTE: since Swagger 2.0 forbids $ref in simple params, this should always yield an empty slice for a valid
+// Swagger 2.0 spec.
 func (s *Spec) AllItemsReferences() (result []string) {
 	for _, v := range s.references.items {
 		result = append(result, v.String())

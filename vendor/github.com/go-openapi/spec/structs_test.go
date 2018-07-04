@@ -82,11 +82,14 @@ func TestSerialization_SerializeJSON(t *testing.T) {
 	assertSerializeJSON(t, []string{"hello"}, "[\"hello\"]")
 	assertSerializeJSON(t, []string{"hello", "world", "and", "stuff"}, "[\"hello\",\"world\",\"and\",\"stuff\"]")
 	assertSerializeJSON(t, StringOrArray(nil), "null")
-	assertSerializeJSON(t, SchemaOrArray{Schemas: []Schema{Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}}, "[{\"type\":\"string\"}]")
 	assertSerializeJSON(t, SchemaOrArray{
 		Schemas: []Schema{
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}}},
+	}, "[{\"type\":\"string\"}]")
+	assertSerializeJSON(t, SchemaOrArray{
+		Schemas: []Schema{
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
 		}}, "[{\"type\":\"string\"},{\"type\":\"string\"}]")
 	assertSerializeJSON(t, SchemaOrArray{}, "null")
 }
@@ -94,16 +97,19 @@ func TestSerialization_SerializeJSON(t *testing.T) {
 func TestSerialization_DeserializeJSON(t *testing.T) {
 	// String
 	assertParsesJSON(t, "\"hello\"", StringOrArray([]string{"hello"}))
-	assertParsesJSON(t, "[\"hello\",\"world\",\"and\",\"stuff\"]", StringOrArray([]string{"hello", "world", "and", "stuff"}))
+	assertParsesJSON(t, "[\"hello\",\"world\",\"and\",\"stuff\"]",
+		StringOrArray([]string{"hello", "world", "and", "stuff"}))
 	assertParsesJSON(t, "[\"hello\",\"world\",null,\"stuff\"]", StringOrArray([]string{"hello", "world", "", "stuff"}))
 	assertParsesJSON(t, "null", StringOrArray(nil))
 
 	// Schema
-	assertParsesJSON(t, "{\"type\":\"string\"}", SchemaOrArray{Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}})
+	assertParsesJSON(t, "{\"type\":\"string\"}", SchemaOrArray{Schema: &Schema{
+		SchemaProps: SchemaProps{Type: []string{"string"}}},
+	})
 	assertParsesJSON(t, "[{\"type\":\"string\"},{\"type\":\"string\"}]", &SchemaOrArray{
 		Schemas: []Schema{
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
 		},
 	})
 	assertParsesJSON(t, "null", SchemaOrArray{})

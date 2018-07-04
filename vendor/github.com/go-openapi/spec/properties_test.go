@@ -24,8 +24,8 @@ func TestPropertySerialization(t *testing.T) {
 
 	prop := &Schema{SchemaProps: SchemaProps{
 		Items: &SchemaOrArray{Schemas: []Schema{
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
-			Schema{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
+			{SchemaProps: SchemaProps{Type: []string{"string"}}},
 		}},
 	}}
 

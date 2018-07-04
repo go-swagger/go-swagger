@@ -99,7 +99,7 @@ func testDurationSQLScanner(t *testing.T, dur time.Duration) {
 		assert.NoError(t, err)
 		assert.Equal(t, dur, time.Duration(result))
 
-		// And the other way arround
+		// And the other way around
 		resv, erv := result.Value()
 		assert.NoError(t, erv)
 		assert.EqualValues(t, value, resv)

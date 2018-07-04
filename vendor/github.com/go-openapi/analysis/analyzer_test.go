@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -38,8 +39,32 @@ func schemeNames(schemes [][]SecurityRequirement) []string {
 			names = append(names, v.Name)
 		}
 	}
-	sort.Sort(sort.StringSlice(names))
+	sort.Strings(names)
 	return names
+}
+
+func makeFixturepec(pi, pi2 spec.PathItem, formatParam *spec.Parameter) *spec.Swagger {
+	return &spec.Swagger{
+		SwaggerProps: spec.SwaggerProps{
+			Consumes: []string{"application/json"},
+			Produces: []string{"application/json"},
+			Security: []map[string][]string{
+				{"apikey": nil},
+			},
+			SecurityDefinitions: map[string]*spec.SecurityScheme{
+				"basic":  spec.BasicAuth(),
+				"apiKey": spec.APIKeyAuth("api_key", "query"),
+				"oauth2": spec.OAuth2AccessToken("http://authorize.com", "http://token.com"),
+			},
+			Parameters: map[string]spec.Parameter{"format": *formatParam},
+			Paths: &spec.Paths{
+				Paths: map[string]spec.PathItem{
+					"/":      pi,
+					"/items": pi2,
+				},
+			},
+		},
+	}
 }
 
 func TestAnalyzer(t *testing.T) {
@@ -57,8 +82,8 @@ func TestAnalyzer(t *testing.T) {
 	op.Consumes = []string{"application/x-yaml"}
 	op.Produces = []string{"application/x-yaml"}
 	op.Security = []map[string][]string{
-		map[string][]string{"oauth2": []string{}},
-		map[string][]string{"basic": nil},
+		{"oauth2": {}},
+		{"basic": nil},
 	}
 	op.ID = "someOperation"
 	op.Parameters = []spec.Parameter{*skipParam}
@@ -71,27 +96,7 @@ func TestAnalyzer(t *testing.T) {
 	op2.Parameters = []spec.Parameter{*skipParam}
 	pi2.Get = op2
 
-	spec := &spec.Swagger{
-		SwaggerProps: spec.SwaggerProps{
-			Consumes: []string{"application/json"},
-			Produces: []string{"application/json"},
-			Security: []map[string][]string{
-				map[string][]string{"apikey": nil},
-			},
-			SecurityDefinitions: map[string]*spec.SecurityScheme{
-				"basic":  spec.BasicAuth(),
-				"apiKey": spec.APIKeyAuth("api_key", "query"),
-				"oauth2": spec.OAuth2AccessToken("http://authorize.com", "http://token.com"),
-			},
-			Parameters: map[string]spec.Parameter{"format": *formatParam},
-			Paths: &spec.Paths{
-				Paths: map[string]spec.PathItem{
-					"/":      pi,
-					"/items": pi2,
-				},
-			},
-		},
-	}
+	spec := makeFixturepec(pi, pi2, formatParam)
 	analyzer := New(spec)
 
 	assert.Len(t, analyzer.consumes, 2)
@@ -100,27 +105,30 @@ func TestAnalyzer(t *testing.T) {
 	assert.Equal(t, analyzer.operations["GET"]["/"], spec.Paths.Paths["/"].Get)
 
 	expected := []string{"application/x-yaml"}
-	sort.Sort(sort.StringSlice(expected))
+	sort.Strings(expected)
 	consumes := analyzer.ConsumesFor(spec.Paths.Paths["/"].Get)
-	sort.Sort(sort.StringSlice(consumes))
+	sort.Strings(consumes)
 	assert.Equal(t, expected, consumes)
 
 	produces := analyzer.ProducesFor(spec.Paths.Paths["/"].Get)
-	sort.Sort(sort.StringSlice(produces))
+	sort.Strings(produces)
 	assert.Equal(t, expected, produces)
 
 	expected = []string{"application/json"}
-	sort.Sort(sort.StringSlice(expected))
+	sort.Strings(expected)
 	consumes = analyzer.ConsumesFor(spec.Paths.Paths["/items"].Get)
-	sort.Sort(sort.StringSlice(consumes))
+	sort.Strings(consumes)
 	assert.Equal(t, expected, consumes)
 
 	produces = analyzer.ProducesFor(spec.Paths.Paths["/items"].Get)
-	sort.Sort(sort.StringSlice(produces))
+	sort.Strings(produces)
 	assert.Equal(t, expected, produces)
 
 	expectedSchemes := [][]SecurityRequirement{
-		[]SecurityRequirement{SecurityRequirement{"oauth2", []string{}}, SecurityRequirement{"basic", nil}},
+		{
+			{Name: "oauth2", Scopes: []string{}},
+			{Name: "basic", Scopes: nil},
+		},
 	}
 	schemes := analyzer.SecurityRequirementsFor(spec.Paths.Paths["/"].Get)
 	assert.Equal(t, schemeNames(expectedSchemes), schemeNames(schemes))
@@ -153,6 +161,32 @@ func TestAnalyzer(t *testing.T) {
 	op, ok = analyzer.OperationFor("delete", "/")
 	assert.False(t, ok)
 	assert.Nil(t, op)
+
+	// check for duplicates in sec. requirements for operation
+	pi.Get.Security = []map[string][]string{
+		{"oauth2": {}},
+		{"basic": nil},
+		{"basic": nil},
+	}
+	spec = makeFixturepec(pi, pi2, formatParam)
+	analyzer = New(spec)
+	securityDefinitions = analyzer.SecurityDefinitionsFor(spec.Paths.Paths["/"].Get)
+	assert.Len(t, securityDefinitions, 2)
+	assert.Equal(t, *spec.SecurityDefinitions["basic"], securityDefinitions["basic"])
+	assert.Equal(t, *spec.SecurityDefinitions["oauth2"], securityDefinitions["oauth2"])
+
+	// check for empty (optional) in sec. requirements for operation
+	pi.Get.Security = []map[string][]string{
+		{"oauth2": {}},
+		{"": nil},
+		{"basic": nil},
+	}
+	spec = makeFixturepec(pi, pi2, formatParam)
+	analyzer = New(spec)
+	securityDefinitions = analyzer.SecurityDefinitionsFor(spec.Paths.Paths["/"].Get)
+	assert.Len(t, securityDefinitions, 2)
+	assert.Equal(t, *spec.SecurityDefinitions["basic"], securityDefinitions["basic"])
+	assert.Equal(t, *spec.SecurityDefinitions["oauth2"], securityDefinitions["oauth2"])
 }
 
 func TestDefinitionAnalysis(t *testing.T) {
@@ -246,13 +280,15 @@ func TestReferenceAnalysis(t *testing.T) {
 		// Supported non-swagger 2.0 constructs ($ref in simple schema items)
 		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/parameters/1/items")
 		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/parameters/2/items")
-		assertRefExists(t, definitions.allRefs, "#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
+		assertRefExists(t, definitions.allRefs,
+			"#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
 
 		assert.Lenf(t, an.AllItemsReferences(), 3, "Expected 3 items references in this spec")
 
 		assertRefExists(t, definitions.parameterItems, "#/paths/~1some~1where~1{id}/get/parameters/1/items")
 		assertRefExists(t, definitions.parameterItems, "#/paths/~1some~1where~1{id}/get/parameters/2/items")
-		assertRefExists(t, definitions.headerItems, "#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
+		assertRefExists(t, definitions.headerItems,
+			"#/paths/~1some~1where~1{id}/get/responses/default/headers/x-array-header/items")
 	}
 }
 
@@ -283,10 +319,12 @@ func TestPatternAnalysis(t *testing.T) {
 
 		// responses
 		assertPattern(t, pt.headers, "#/responses/notFound/headers/ContentLength", "[0-9]+")
-		assertPattern(t, pt.headers, "#/paths/~1some~1where~1{id}/get/responses/200/headers/X-Request-Id", "d[A-Za-z0-9]+")
+		assertPattern(t, pt.headers,
+			"#/paths/~1some~1where~1{id}/get/responses/200/headers/X-Request-Id", "d[A-Za-z0-9]+")
 
 		// definitions
-		assertPattern(t, pt.schemas, "#/paths/~1other~1place/post/parameters/0/schema/properties/value", "e[A-Za-z0-9]+")
+		assertPattern(t, pt.schemas,
+			"#/paths/~1other~1place/post/parameters/0/schema/properties/value", "e[A-Za-z0-9]+")
 		assertPattern(t, pt.schemas, "#/paths/~1other~1place/post/responses/200/schema/properties/data", "[0-9]+[abd]")
 		assertPattern(t, pt.schemas, "#/definitions/named", "f[A-Za-z0-9]+")
 		assertPattern(t, pt.schemas, "#/definitions/tag/properties/value", "g[A-Za-z0-9]+")
@@ -384,7 +422,6 @@ func TestAnalyzer_paramsAsMapWithCallback(Pt *testing.T) {
 		e := []string{}
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
 			s.paramsAsMap(pi.Parameters, m, func(param spec.Parameter, err error) bool {
 				//Pt.Logf("ERROR on %+v : %v", param, err)
@@ -400,7 +437,6 @@ func TestAnalyzer_paramsAsMapWithCallback(Pt *testing.T) {
 		e = []string{}
 		pi, ok = s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
 			s.paramsAsMap(pi.Parameters, m, func(param spec.Parameter, err error) bool {
 				//Pt.Logf("ERROR on %+v : %v", param, err)
@@ -420,7 +456,6 @@ func TestAnalyzer_paramsAsMapWithCallback(Pt *testing.T) {
 		e := []string{}
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
 			s.paramsAsMap(pi.Parameters, m, func(param spec.Parameter, err error) bool {
 				//Pt.Logf("ERROR on %+v : %v", param, err)
@@ -440,7 +475,6 @@ func TestAnalyzer_paramsAsMapWithCallback(Pt *testing.T) {
 		e := []string{}
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
-			//func (s *Spec) paramsAsMap(parameters []spec.Parameter, res map[string]spec.Parameter, callmeOnError ErrorOnParamFunc) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
 			s.paramsAsMap(pi.Parameters, m, func(param spec.Parameter, err error) bool {
 				//Pt.Logf("ERROR on %+v : %v", param, err)
@@ -470,7 +504,6 @@ func TestAnalyzer_SafeParamsFor(Pt *testing.T) {
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
-			//func (s *Spec) SafeParamsFor(method, path string, callmeOnError ErrorOnParamFunc) map[string]spec.Parameter {
 			for range s.SafeParamsFor("Get", "/fixture", func(param spec.Parameter, err error) bool {
 				e = append(e, err.Error())
 				return true // Continue
@@ -489,7 +522,6 @@ func panickerParamsFor() {
 	pi, ok := s.spec.Paths.Paths["/fixture"]
 	if ok {
 		pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
-		//func (s *Spec) ParamsFor(method, path string) map[string]spec.Parameter {
 		s.ParamsFor("Get", "/fixture")
 	}
 }
@@ -514,7 +546,6 @@ func TestAnalyzer_SafeParametersFor(Pt *testing.T) {
 		pi, ok := s.spec.Paths.Paths["/fixture"]
 		if assert.True(Pt, ok) {
 			pi.Parameters = pi.PathItemProps.Get.OperationProps.Parameters
-			//func (s *Spec) SafeParametersFor(operationID string, callmeOnError ErrorOnParamFunc) []spec.Parameter {
 			for range s.SafeParametersFor("fixtureOp", func(param spec.Parameter, err error) bool {
 				e = append(e, err.Error())
 				return true // Continue
@@ -565,8 +596,8 @@ func prepareTestParamsValid() *Spec {
 	op.Consumes = []string{"application/x-yaml"}
 	op.Produces = []string{"application/x-yaml"}
 	op.Security = []map[string][]string{
-		map[string][]string{"oauth2": []string{}},
-		map[string][]string{"basic": nil},
+		{"oauth2": {}},
+		{"basic": nil},
 	}
 	op.ID = "someOperation"
 	op.Parameters = []spec.Parameter{*skipParam}
@@ -579,27 +610,7 @@ func prepareTestParamsValid() *Spec {
 	op2.Parameters = []spec.Parameter{*skipParam}
 	pi2.Get = op2
 
-	spec := &spec.Swagger{
-		SwaggerProps: spec.SwaggerProps{
-			Consumes: []string{"application/json"},
-			Produces: []string{"application/json"},
-			Security: []map[string][]string{
-				map[string][]string{"apikey": nil},
-			},
-			SecurityDefinitions: map[string]*spec.SecurityScheme{
-				"basic":  spec.BasicAuth(),
-				"apiKey": spec.APIKeyAuth("api_key", "query"),
-				"oauth2": spec.OAuth2AccessToken("http://authorize.com", "http://token.com"),
-			},
-			Parameters: map[string]spec.Parameter{"format": *formatParam},
-			Paths: &spec.Paths{
-				Paths: map[string]spec.PathItem{
-					"/":      pi,
-					"/items": pi2,
-				},
-			},
-		},
-	}
+	spec := makeFixturepec(pi, pi2, formatParam)
 	analyzer := New(spec)
 	return analyzer
 }
@@ -709,8 +720,8 @@ func prepareTestParamsAuth() *Spec {
 	op.Consumes = []string{"application/x-yaml"}
 	op.Produces = []string{"application/x-yaml"}
 	op.Security = []map[string][]string{
-		map[string][]string{"oauth2": []string{"the-scope"}},
-		map[string][]string{"basic": nil},
+		{"oauth2": {"the-scope"}},
+		{"basic": nil},
 	}
 	op.ID = "someOperation"
 	op.Parameters = []spec.Parameter{*skipParam}
@@ -721,11 +732,11 @@ func prepareTestParamsAuth() *Spec {
 	op2 := &spec.Operation{}
 	op2.ID = "anotherOperation"
 	op2.Security = []map[string][]string{
-		map[string][]string{"oauth2": []string{"the-scope"}},
-		map[string][]string{},
-		map[string][]string{
-			"basic":  []string{},
-			"apiKey": []string{},
+		{"oauth2": {"the-scope"}},
+		{},
+		{
+			"basic":  {},
+			"apiKey": {},
 		},
 	}
 	op2.Parameters = []spec.Parameter{*skipParam}
@@ -738,7 +749,7 @@ func prepareTestParamsAuth() *Spec {
 			Consumes: []string{"application/json"},
 			Produces: []string{"application/json"},
 			Security: []map[string][]string{
-				map[string][]string{"apikey": nil},
+				{"apikey": nil},
 			},
 			SecurityDefinitions: map[string]*spec.SecurityScheme{
 				"basic":  spec.BasicAuth(),
@@ -837,4 +848,39 @@ func TestMoreParamAnalysis(t *testing.T) {
 	assert.Contains(t, ops, "postSomeWhere")
 	assert.Contains(t, ops, "GET /some/where/else")
 	assert.Contains(t, ops, "GET /some/where")
+}
+
+func Test_EdgeCases(t *testing.T) {
+	// check return values are consistent in some nil/empty edge cases
+	sp := Spec{}
+	res1 := sp.AllPaths()
+	assert.Nil(t, res1)
+
+	res2 := sp.OperationIDs()
+	assert.Nil(t, res2)
+
+	res3 := sp.OperationMethodPaths()
+	assert.Nil(t, res3)
+
+	res4 := sp.structMapKeys(nil)
+	assert.Nil(t, res4)
+
+	res5 := sp.structMapKeys(make(map[string]struct{}, 10))
+	assert.Nil(t, res5)
+
+	// check AllRefs() skips empty $refs
+	sp.references.allRefs = make(map[string]spec.Ref, 3)
+	for i := 0; i < 3; i++ {
+		sp.references.allRefs["ref"+strconv.Itoa(i)] = spec.Ref{}
+	}
+	assert.Len(t, sp.references.allRefs, 3)
+	res6 := sp.AllRefs()
+	assert.Len(t, res6, 0)
+
+	// check AllRefs() skips duplicate $refs
+	sp.references.allRefs["refToOne"] = spec.MustCreateRef("#/ref1")
+	sp.references.allRefs["refToOneAgain"] = spec.MustCreateRef("#/ref1")
+	res7 := sp.AllRefs()
+	assert.NotNil(t, res7)
+	assert.Len(t, res7, 1)
 }

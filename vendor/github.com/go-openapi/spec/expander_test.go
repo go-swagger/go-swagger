@@ -214,10 +214,9 @@ func TestResponseExpansion(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp := spec.Responses["anotherPet"]
-	r := spec.Responses["petResponse"]
-	err = expandResponse(&r, resolver, basePath)
+	expected := spec.Responses["petResponse"]
+	err = expandResponse(&expected, resolver, basePath)
 	assert.NoError(t, err)
-	expected := r
 
 	err = expandResponse(&resp, resolver, basePath)
 	// b, _ := resp.MarshalJSON()
@@ -255,10 +254,9 @@ func TestExportedResponseExpansion(t *testing.T) {
 	assert.NoError(t, err)
 
 	resp := spec.Responses["anotherPet"]
-	r := spec.Responses["petResponse"]
-	err = ExpandResponse(&r, basePath)
+	expected := spec.Responses["petResponse"]
+	err = ExpandResponse(&expected, basePath)
 	assert.NoError(t, err)
-	expected := r
 
 	err = ExpandResponse(&resp, basePath)
 	// b, _ := resp.MarshalJSON()
@@ -874,20 +872,20 @@ func TestResolveRemoteRef_RootSame(t *testing.T) {
 	// the filename doesn't matter because ref will eventually point to refed.json
 	specBase, _ := absPath("fixtures/specs/anyotherfile.json")
 	if assert.NoError(t, err) && assert.NoError(t, json.Unmarshal(b, rootDoc)) {
-		var result_0 Swagger
-		ref_0, _ := NewRef(server.URL + "/refed.json#")
-		resolver_0, _ := defaultSchemaLoader(rootDoc, nil, nil)
-		if assert.NoError(t, resolver_0.Resolve(&ref_0, &result_0, "")) {
-			assertSpecs(t, result_0, *rootDoc)
+		var result0 Swagger
+		ref0, _ := NewRef(server.URL + "/refed.json#")
+		resolver0, _ := defaultSchemaLoader(rootDoc, nil, nil)
+		if assert.NoError(t, resolver0.Resolve(&ref0, &result0, "")) {
+			assertSpecs(t, result0, *rootDoc)
 		}
 
-		var result_1 Swagger
-		ref_1, _ := NewRef("./refed.json")
-		resolver_1, _ := defaultSchemaLoader(rootDoc, &ExpandOptions{
+		var result1 Swagger
+		ref1, _ := NewRef("./refed.json")
+		resolver1, _ := defaultSchemaLoader(rootDoc, &ExpandOptions{
 			RelativeBase: specBase,
 		}, nil)
-		if assert.NoError(t, resolver_1.Resolve(&ref_1, &result_1, specBase)) {
-			assertSpecs(t, result_1, *rootDoc)
+		if assert.NoError(t, resolver1.Resolve(&ref1, &result1, specBase)) {
+			assertSpecs(t, result1, *rootDoc)
 		}
 	}
 }
