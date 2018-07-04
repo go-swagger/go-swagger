@@ -61,6 +61,7 @@ func (o *ElapseParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 	return nil
 }
 
+// bindLength binds and validates parameter Length from path.
 func (o *ElapseParams) bindLength(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -83,6 +84,7 @@ func (o *ElapseParams) bindLength(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
+// validateLength carries on validations for parameter Length
 func (o *ElapseParams) validateLength(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("length", "path", int64(o.Length), 2, false); err != nil {

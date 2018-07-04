@@ -58,7 +58,6 @@ func (o *AddOrderParams) BindRequest(r *http.Request, route *middleware.MatchedR
 				res = append(res, errors.NewParseError("order", "body", "", err))
 			}
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)

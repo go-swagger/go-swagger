@@ -9,7 +9,6 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
-	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
@@ -45,7 +44,6 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 	})
@@ -73,7 +71,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *graceful.Server, scheme, addr string) {
+func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

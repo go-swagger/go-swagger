@@ -61,6 +61,7 @@ type TaskCard struct {
 	// This field is read-only, so it's only sent as part of the response.
 	//
 	// Read Only: true
+	// Format: date-time
 	ReportedAt strfmt.DateTime `json:"reportedAt,omitempty"`
 
 	// severity
@@ -74,6 +75,7 @@ type TaskCard struct {
 	// Ignored means as much as accepted but not now, perhaps later.
 	//
 	// Required: true
+	// Enum: [open closed ignored rejected]
 	Status *string `json:"status"`
 
 	// task tags.
@@ -99,47 +101,38 @@ func (m *TaskCard) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAssignedTo(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateEffort(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateKarma(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateMilestone(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateReportedAt(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSeverity(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateStatus(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTags(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTitle(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -156,14 +149,12 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 	}
 
 	if m.AssignedTo != nil {
-
 		if err := m.AssignedTo.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("assignedTo")
 			}
 			return err
 		}
-
 	}
 
 	return nil
@@ -210,14 +201,12 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 	}
 
 	if m.Milestone != nil {
-
 		if err := m.Milestone.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("milestone")
 			}
 			return err
 		}
-
 	}
 
 	return nil

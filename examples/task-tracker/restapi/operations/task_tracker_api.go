@@ -65,13 +65,13 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 			return middleware.NotImplemented("operation TasksUploadTaskFile has not yet been implemented")
 		}),
 
-		// Applies when the "X-Token" header is set
-		TokenHeaderAuth: func(token string) (interface{}, error) {
-			return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
-		},
 		// Applies when the "token" query is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
+		},
+		// Applies when the "X-Token" header is set
+		TokenHeaderAuth: func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
 		},
 
 		// default authorizer is authorized meaning no requests are blocked
@@ -115,13 +115,13 @@ type TaskTrackerAPI struct {
 	// JSONProducer registers a producer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
 	JSONProducer runtime.Producer
 
-	// TokenHeaderAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key X-Token provided in the header
-	TokenHeaderAuth func(string) (interface{}, error)
-
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key token provided in the query
 	APIKeyAuth func(string) (interface{}, error)
+
+	// TokenHeaderAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key X-Token provided in the header
+	TokenHeaderAuth func(string) (interface{}, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -209,12 +209,12 @@ func (o *TaskTrackerAPI) Validate() error {
 		unregistered = append(unregistered, "JSONProducer")
 	}
 
-	if o.TokenHeaderAuth == nil {
-		unregistered = append(unregistered, "XTokenAuth")
-	}
-
 	if o.APIKeyAuth == nil {
 		unregistered = append(unregistered, "TokenAuth")
+	}
+
+	if o.TokenHeaderAuth == nil {
+		unregistered = append(unregistered, "XTokenAuth")
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
@@ -268,13 +268,13 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 	for name, scheme := range schemes {
 		switch name {
 
-		case "token_header":
-
-			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.TokenHeaderAuth)
-
 		case "api_key":
 
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
+
+		case "token_header":
+
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.TokenHeaderAuth)
 
 		}
 	}

@@ -88,6 +88,7 @@ func (o *UpdatePetWithFormParams) BindRequest(r *http.Request, route *middleware
 	return nil
 }
 
+// bindName binds and validates parameter Name from formData.
 func (o *UpdatePetWithFormParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("name", "formData")
@@ -108,6 +109,7 @@ func (o *UpdatePetWithFormParams) bindName(rawData []string, hasKey bool, format
 	return nil
 }
 
+// bindPetID binds and validates parameter PetID from path.
 func (o *UpdatePetWithFormParams) bindPetID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -122,6 +124,7 @@ func (o *UpdatePetWithFormParams) bindPetID(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// bindStatus binds and validates parameter Status from formData.
 func (o *UpdatePetWithFormParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("status", "formData")

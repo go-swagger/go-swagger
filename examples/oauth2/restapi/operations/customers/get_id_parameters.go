@@ -52,7 +52,6 @@ func (o *GetIDParams) BindRequest(r *http.Request, route *middleware.MatchedRout
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("info", "body", "", err))
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)

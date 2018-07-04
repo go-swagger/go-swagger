@@ -278,7 +278,12 @@ func init() {
           "200": {
             "description": "login",
             "schema": {
-              "$ref": "#/definitions/getAuthCallbackOKBody"
+              "properties": {
+                "access_token": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
             }
           },
           "default": {
@@ -372,7 +377,12 @@ func init() {
           "200": {
             "description": "login",
             "schema": {
-              "$ref": "#/definitions/getLoginOKBody"
+              "properties": {
+                "access_token": {
+                  "type": "string",
+                  "format": "string"
+                }
+              }
             }
           },
           "default": {
@@ -447,24 +457,6 @@ func init() {
           "type": "string"
         }
       }
-    },
-    "getAuthCallbackOKBody": {
-      "properties": {
-        "access_token": {
-          "type": "string",
-          "format": "string"
-        }
-      },
-      "x-go-gen-location": "operations"
-    },
-    "getLoginOKBody": {
-      "properties": {
-        "access_token": {
-          "type": "string",
-          "format": "string"
-        }
-      },
-      "x-go-gen-location": "operations"
     },
     "principal": {
       "type": "string"

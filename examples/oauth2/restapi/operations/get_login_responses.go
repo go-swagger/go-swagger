@@ -25,7 +25,7 @@ type GetLoginOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetLoginOKBody `json:"body,omitempty"`
+	Payload *GetLoginOKBody `json:"body,omitempty"`
 }
 
 // NewGetLoginOK creates GetLoginOK with default headers values
@@ -35,13 +35,13 @@ func NewGetLoginOK() *GetLoginOK {
 }
 
 // WithPayload adds the payload to the get login o k response
-func (o *GetLoginOK) WithPayload(payload *models.GetLoginOKBody) *GetLoginOK {
+func (o *GetLoginOK) WithPayload(payload *GetLoginOKBody) *GetLoginOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get login o k response
-func (o *GetLoginOK) SetPayload(payload *models.GetLoginOKBody) {
+func (o *GetLoginOK) SetPayload(payload *GetLoginOKBody) {
 	o.Payload = payload
 }
 

@@ -97,8 +97,8 @@ var (
 	state = "foobar" // Don't make this a global in production.
 
     // the credentials for this API (adapt values when registering API)
-	clientID     = ""
-	clientSecret = ""
+	clientID     = "" // <= enter registered API client ID here
+	clientSecret = "" // <= enter registered API client secret here
 
     //  unused in this example: the signer of the delivered token
 	issuer       = "https://accounts.google.com"
@@ -213,7 +213,7 @@ We set the following implementation for authentication in `restapi/implementatio
 func login(r *http.Request) string {
 	// implements the login with a redirection and an access token
 	var accessToken string
-	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
+	wG := r.Context().Value(ctxResponseWriter).(http.ResponseWriter)
 	log.Println("Access token:", accessToken)
 	return accessToken
 }

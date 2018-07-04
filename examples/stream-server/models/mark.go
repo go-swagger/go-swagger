@@ -27,7 +27,6 @@ func (m *Mark) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateRemains(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

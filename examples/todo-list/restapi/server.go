@@ -3,6 +3,7 @@
 package restapi
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -12,15 +13,17 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/go-openapi/runtime/flagext"
 	"github.com/go-openapi/swag"
 	flag "github.com/spf13/pflag"
-	graceful "github.com/tylerb/graceful"
+	"golang.org/x/net/netutil"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 )
@@ -147,6 +150,7 @@ func NewServer(api *operations.TodoListAPI) *Server {
 	s.TLSWriteTimeout = tlsWriteTimeout
 	s.shutdown = make(chan struct{})
 	s.api = api
+	s.interrupt = make(chan os.Signal, 1)
 	return s
 }
 
@@ -197,6 +201,9 @@ type Server struct {
 	hasListeners bool
 	shutdown     chan struct{}
 	shuttingDown int32
+	interrupted  bool
+	interrupt    chan os.Signal
+	chanLock     sync.RWMutex
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
@@ -264,14 +271,17 @@ func (s *Server) Serve() (err error) {
 	}
 
 	var wg sync.WaitGroup
+	quitting := make(chan struct{})
+	once := new(sync.Once)
+	signalNotify(s.interrupt)
+	go handleInterrupt(once, s, quitting)
 
 	if s.hasScheme(schemeUnix) {
-		domainSocket := &graceful.Server{Server: new(http.Server)}
+		domainSocket := new(http.Server)
 		domainSocket.MaxHeaderBytes = int(s.MaxHeaderSize)
 		domainSocket.Handler = s.handler
-		domainSocket.LogFunc = s.Logf
 		if int64(s.CleanupTimeout) > 0 {
-			domainSocket.Timeout = s.CleanupTimeout
+			domainSocket.IdleTimeout = s.CleanupTimeout
 		}
 
 		configureServer(domainSocket, "unix", string(s.SocketPath))
@@ -289,22 +299,20 @@ func (s *Server) Serve() (err error) {
 	}
 
 	if s.hasScheme(schemeHTTP) {
-		httpServer := &graceful.Server{Server: new(http.Server)}
+		httpServer := new(http.Server)
 		httpServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpServer.ReadTimeout = s.ReadTimeout
 		httpServer.WriteTimeout = s.WriteTimeout
 		httpServer.SetKeepAlivesEnabled(int64(s.KeepAlive) > 0)
-		httpServer.TCPKeepAlive = s.KeepAlive
 		if s.ListenLimit > 0 {
-			httpServer.ListenLimit = s.ListenLimit
+			s.httpServerL = netutil.LimitListener(s.httpServerL, s.ListenLimit)
 		}
 
 		if int64(s.CleanupTimeout) > 0 {
-			httpServer.Timeout = s.CleanupTimeout
+			httpServer.IdleTimeout = s.CleanupTimeout
 		}
 
 		httpServer.Handler = s.handler
-		httpServer.LogFunc = s.Logf
 
 		configureServer(httpServer, "http", s.httpServerL.Addr().String())
 
@@ -321,20 +329,18 @@ func (s *Server) Serve() (err error) {
 	}
 
 	if s.hasScheme(schemeHTTPS) {
-		httpsServer := &graceful.Server{Server: new(http.Server)}
+		httpsServer := new(http.Server)
 		httpsServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpsServer.ReadTimeout = s.TLSReadTimeout
 		httpsServer.WriteTimeout = s.TLSWriteTimeout
 		httpsServer.SetKeepAlivesEnabled(int64(s.TLSKeepAlive) > 0)
-		httpsServer.TCPKeepAlive = s.TLSKeepAlive
 		if s.TLSListenLimit > 0 {
-			httpsServer.ListenLimit = s.TLSListenLimit
+			s.httpsServerL = netutil.LimitListener(s.httpsServerL, s.TLSListenLimit)
 		}
 		if int64(s.CleanupTimeout) > 0 {
-			httpsServer.Timeout = s.CleanupTimeout
+			httpsServer.IdleTimeout = s.CleanupTimeout
 		}
 		httpsServer.Handler = s.handler
-		httpsServer.LogFunc = s.Logf
 
 		// Inspired by https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
 		httpsServer.TLSConfig = &tls.Config{
@@ -487,26 +493,44 @@ func (s *Server) Shutdown() error {
 		s.Logf("already shutting down")
 		return nil
 	}
-	s.shutdown <- struct{}{}
+	close(s.shutdown)
 	return nil
 }
 
-func (s *Server) handleShutdown(wg *sync.WaitGroup, server *graceful.Server) {
+func (s *Server) handleShutdown(wg *sync.WaitGroup, server *http.Server) {
 	defer wg.Done()
-	for {
+	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	defer cancel()
+
+	<-s.shutdown
+	if err := server.Shutdown(ctx); err != nil {
+		// Error from closing listeners, or context timeout:
+		s.Logf("HTTP server Shutdown: %v", err)
+	} else {
+		atomic.AddInt32(&s.shuttingDown, 1)
 		select {
-		case <-s.shutdown:
-			atomic.AddInt32(&s.shuttingDown, 1)
-			server.Stop(s.CleanupTimeout)
-			<-server.StopChan()
-			s.api.ServerShutdown()
-			return
-		case <-server.StopChan():
-			atomic.AddInt32(&s.shuttingDown, 1)
-			s.api.ServerShutdown()
-			return
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				s.Logf("Error %s", err)
+			}
+		default:
+			done := make(chan error)
+			defer close(done)
+			go func() {
+				<-ctx.Done()
+				done <- ctx.Err()
+			}()
+			go func() {
+				//done <- s.api.Shutdown(ctx)
+				s.api.ServerShutdown()
+				done <- errors.New("API shut down")
+			}()
+			if err := <-done; err != nil {
+				s.Logf("Error %s", err)
+			}
 		}
 	}
+	return
 }
 
 // GetHandler returns a handler useful for testing
@@ -547,4 +571,32 @@ func (s *Server) TLSListener() (net.Listener, error) {
 		}
 	}
 	return s.httpsServerL, nil
+}
+
+func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
+	once.Do(func() {
+		for _ = range s.interrupt {
+			if s.interrupted {
+				s.Logf("Server already shutting down")
+				continue
+			}
+			s.interrupted = true
+			s.Logf("Shutting down... ")
+			close(quitting)
+
+			if err := s.httpServerL.Close(); err != nil {
+				s.Logf("Error: %s", err)
+			}
+			if err := s.httpsServerL.Close(); err != nil {
+				s.Logf("Error: %s", err)
+			}
+			if err := s.domainSocketL.Close(); err != nil {
+				s.Logf("Error: %s", err)
+			}
+		}
+	})
+}
+
+func signalNotify(interrupt chan<- os.Signal) {
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
 }

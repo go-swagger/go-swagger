@@ -58,6 +58,7 @@ func (o *GetPetByIDParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindPetID binds and validates parameter PetID from path.
 func (o *GetPetByIDParams) bindPetID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

@@ -60,6 +60,9 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
+// bindTags binds and validates array parameter Tags from query.
+//
+// Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *FindPetsByTagsParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	// CollectionFormat: multi

@@ -9,7 +9,6 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
-	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
@@ -37,14 +36,13 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	// Applies when the "X-Token" header is set
-	api.TokenHeaderAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
-	}
-
 	// Applies when the "token" query is set
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
+	}
+	// Applies when the "X-Token" header is set
+	api.TokenHeaderAuth = func(token string) (interface{}, error) {
+		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -52,7 +50,6 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-
 	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 	})
@@ -92,7 +89,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *graceful.Server, scheme, addr string) {
+func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

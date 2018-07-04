@@ -27,5 +27,5 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println("Serving petstore api on http://127.0.0.1:8344/swagger-ui/")
-	http.ListenAndServe(":8344", petstoreAPI)
+	_ = http.ListenAndServe(":8344", petstoreAPI)
 }

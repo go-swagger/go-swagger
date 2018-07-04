@@ -89,6 +89,7 @@ func (o *GetTaskCommentsParams) BindRequest(r *http.Request, route *middleware.M
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *GetTaskCommentsParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -107,6 +108,7 @@ func (o *GetTaskCommentsParams) bindID(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// bindPageSize binds and validates parameter PageSize from query.
 func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -129,6 +131,7 @@ func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, form
 	return nil
 }
 
+// bindSince binds and validates parameter Since from query.
 func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -155,11 +158,11 @@ func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats
 	return nil
 }
 
+// validateSince carries on validations for parameter Since
 func (o *GetTaskCommentsParams) validateSince(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("since", "query", "date-time", o.Since.String(), formats); err != nil {
 		return err
 	}
-
 	return nil
 }

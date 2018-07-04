@@ -93,8 +93,8 @@ type Pet struct {
 }
 
 var pets = []Pet{
-	{1, "Dog", []string{}, "available", nil},
-	{2, "Cat", []string{}, "pending", nil},
+	{ID: 1, Name: "Dog", PhotoURLs: []string{}, Status: "available", Tags: nil},
+	{ID: 2, Name: "Cat", PhotoURLs: []string{}, Status: "pending", Tags: nil},
 }
 
 var petsLock = &sync.Mutex{}

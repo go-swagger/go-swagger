@@ -66,7 +66,6 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 				res = append(res, errors.NewParseError("body", "body", "", err))
 			}
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)
@@ -90,6 +89,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *UpdateTaskParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

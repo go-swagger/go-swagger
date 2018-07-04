@@ -57,6 +57,7 @@ func (o *GetUserByNameParams) BindRequest(r *http.Request, route *middleware.Mat
 	return nil
 }
 
+// bindUsername binds and validates parameter Username from path.
 func (o *GetUserByNameParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

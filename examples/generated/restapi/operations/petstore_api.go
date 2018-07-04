@@ -99,13 +99,12 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 			return middleware.NotImplemented("operation UserUpdateUser has not yet been implemented")
 		}),
 
-		PetstoreAuthAuth: func(token string, scopes []string) (interface{}, error) {
-			return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
-		},
-
 		// Applies when the "api_key" header is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
+		},
+		PetstoreAuthAuth: func(token string, scopes []string) (interface{}, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
 		},
 
 		// default authorizer is authorized meaning no requests are blocked
@@ -152,13 +151,13 @@ type PetstoreAPI struct {
 	// XMLProducer registers a producer for a "application/xml" mime type
 	XMLProducer runtime.Producer
 
-	// PetstoreAuthAuth registers a function that takes an access token and a collection of required scopes and returns a principal
-	// it performs authentication based on an oauth2 bearer token provided in the request
-	PetstoreAuthAuth func(string, []string) (interface{}, error)
-
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key api_key provided in the header
 	APIKeyAuth func(string) (interface{}, error)
+
+	// PetstoreAuthAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	PetstoreAuthAuth func(string, []string) (interface{}, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -274,12 +273,12 @@ func (o *PetstoreAPI) Validate() error {
 		unregistered = append(unregistered, "XMLProducer")
 	}
 
-	if o.PetstoreAuthAuth == nil {
-		unregistered = append(unregistered, "PetstoreAuthAuth")
-	}
-
 	if o.APIKeyAuth == nil {
 		unregistered = append(unregistered, "APIKeyAuth")
+	}
+
+	if o.PetstoreAuthAuth == nil {
+		unregistered = append(unregistered, "PetstoreAuthAuth")
 	}
 
 	if o.PetAddPetHandler == nil {
@@ -373,13 +372,13 @@ func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 	for name, scheme := range schemes {
 		switch name {
 
-		case "petstore_auth":
-
-			result[name] = o.BearerAuthenticator(scheme.Name, o.PetstoreAuthAuth)
-
 		case "api_key":
 
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
+
+		case "petstore_auth":
+
+			result[name] = o.BearerAuthenticator(scheme.Name, o.PetstoreAuthAuth)
 
 		}
 	}

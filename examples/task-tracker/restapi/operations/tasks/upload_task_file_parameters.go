@@ -94,6 +94,7 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
+// bindDescription binds and validates parameter Description from formData.
 func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -111,11 +112,14 @@ func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// bindFile binds file parameter File.
+//
+// The only supported validations on files are MinLength and MaxLength
 func (o *UploadTaskFileParams) bindFile(file multipart.File, header *multipart.FileHeader) error {
-
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *UploadTaskFileParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

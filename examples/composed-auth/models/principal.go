@@ -8,7 +8,6 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -25,25 +24,6 @@ type Principal struct {
 
 // Validate validates this principal
 func (m *Principal) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateRoles(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *Principal) validateRoles(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Roles) { // not required
-		return nil
-	}
-
 	return nil
 }
 

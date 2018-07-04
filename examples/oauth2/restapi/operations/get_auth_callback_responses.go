@@ -25,7 +25,7 @@ type GetAuthCallbackOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetAuthCallbackOKBody `json:"body,omitempty"`
+	Payload *GetAuthCallbackOKBody `json:"body,omitempty"`
 }
 
 // NewGetAuthCallbackOK creates GetAuthCallbackOK with default headers values
@@ -35,13 +35,13 @@ func NewGetAuthCallbackOK() *GetAuthCallbackOK {
 }
 
 // WithPayload adds the payload to the get auth callback o k response
-func (o *GetAuthCallbackOK) WithPayload(payload *models.GetAuthCallbackOKBody) *GetAuthCallbackOK {
+func (o *GetAuthCallbackOK) WithPayload(payload *GetAuthCallbackOKBody) *GetAuthCallbackOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get auth callback o k response
-func (o *GetAuthCallbackOK) SetPayload(payload *models.GetAuthCallbackOKBody) {
+func (o *GetAuthCallbackOK) SetPayload(payload *GetAuthCallbackOKBody) {
 	o.Payload = payload
 }
 

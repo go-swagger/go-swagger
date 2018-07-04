@@ -58,6 +58,7 @@ func (o *DeleteTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *DeleteTaskParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

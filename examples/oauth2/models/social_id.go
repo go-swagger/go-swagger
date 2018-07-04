@@ -28,7 +28,6 @@ func (m *SocialID) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateSsn(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

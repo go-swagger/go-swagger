@@ -30,6 +30,7 @@ type Order struct {
 	Quantity int32 `json:"quantity,omitempty"`
 
 	// ship date
+	// Format: date-time
 	ShipDate strfmt.DateTime `json:"shipDate,omitempty"`
 
 	// Order Status
@@ -41,7 +42,6 @@ func (m *Order) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateShipDate(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

@@ -25,7 +25,9 @@ func main() {
 	// create new service API
 	api := operations.NewGreeterAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer server.Shutdown()
+	defer func() {
+		_ = server.Shutdown()
+	}()
 
 	// parse flags
 	flag.Parse()
