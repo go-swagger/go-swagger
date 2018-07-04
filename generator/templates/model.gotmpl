@@ -7,6 +7,7 @@
       // {{ pascalize .Name }} {{ template "docstring" . }}
       {{- if not .IsBaseType }}
 // swagger:model {{ .Name }}
+// easyjson:json
       {{- else }}
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
       {{- end }}
@@ -20,6 +21,7 @@
 {{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
   {{- if not .IsBaseType }}
 // swagger:model {{ .Name }}
+// easyjson:json
   {{- else }}
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
   {{- end }}
