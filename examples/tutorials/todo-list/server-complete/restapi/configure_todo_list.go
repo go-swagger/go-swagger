@@ -1,3 +1,5 @@
+// This file is safe to edit. Once it exists it will not be overwritten
+
 package restapi
 
 import (
@@ -10,14 +12,11 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
-	"github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/models"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
 )
-
-// This file is safe to edit. Once it exists it will not be overwritten
 
 //go:generate swagger generate server --target .. --name TodoList --spec ../swagger.yml
 
@@ -101,9 +100,10 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	// s.api.Logger = log.Printf
+	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
+
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
@@ -112,14 +112,12 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 		}
 		return todos.NewAddOneCreated().WithPayload(params.Body)
 	})
-
 	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
 		if err := deleteItem(params.ID); err != nil {
 			return todos.NewDestroyOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
 		}
 		return todos.NewDestroyOneNoContent()
 	})
-
 	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
 		mergedParams := todos.NewFindTodosParams()
 		mergedParams.Since = swag.Int64(0)
@@ -131,7 +129,6 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 		}
 		return todos.NewFindTodosOK().WithPayload(allItems(*mergedParams.Since, *mergedParams.Limit))
 	})
-
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
 		if err := updateItem(params.ID, params.Body); err != nil {
 			return todos.NewUpdateOneDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
@@ -153,7 +150,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *graceful.Server, scheme, addr string) {
+func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

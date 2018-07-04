@@ -57,6 +57,7 @@ func (o *DeleteUserParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindUsername binds and validates parameter Username from path.
 func (o *DeleteUserParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

@@ -60,6 +60,9 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
+// bindStatus binds and validates array parameter Status from query.
+//
+// Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	// CollectionFormat: multi

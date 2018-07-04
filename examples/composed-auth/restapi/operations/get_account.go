@@ -74,7 +74,3 @@ func (o *GetAccount) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
-
-// GetAccountOKBody get account o k body
-// swagger:model GetAccountOKBody
-type GetAccountOKBody interface{}

@@ -52,11 +52,12 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-
 			// validate array of body objects
-			o.Body = body
-			for _, io := range o.Body {
-				if err := io.Validate(route.Formats); err != nil {
+			for i := range body {
+				if body[i] == nil {
+					continue
+				}
+				if err := body[i].Validate(route.Formats); err != nil {
 					res = append(res, err)
 					break
 				}

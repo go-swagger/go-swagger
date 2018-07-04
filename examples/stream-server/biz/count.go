@@ -21,7 +21,7 @@ func (mc *MyCounter) Down(max int64, w io.Writer) error {
 	for ix := int64(0); ix <= max; ix++ {
 		r := max - ix
 		fmt.Printf("Iteration %d\n", r)
-		e.Encode(models.Mark{Remains: &r})
+		_ = e.Encode(models.Mark{Remains: &r})
 		if ix != max {
 			time.Sleep(1 * time.Second)
 		}

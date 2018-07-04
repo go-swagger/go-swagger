@@ -59,7 +59,6 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)
@@ -81,6 +80,7 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *UpdateOneParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

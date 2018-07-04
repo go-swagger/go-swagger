@@ -64,13 +64,13 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 			return nil, errors.NotImplemented("basic auth  (isRegistered) has not yet been implemented")
 		},
 
-		// Applies when the "CustomKeyAsQuery" query is set
-		IsResellerQueryAuth: func(token string) (*models.Principal, error) {
-			return nil, errors.NotImplemented("api key auth (isResellerQuery) CustomKeyAsQuery from query param [CustomKeyAsQuery] has not yet been implemented")
-		},
 		// Applies when the "X-Custom-Key" header is set
 		IsResellerAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (isReseller) X-Custom-Key from header param [X-Custom-Key] has not yet been implemented")
+		},
+		// Applies when the "CustomKeyAsQuery" query is set
+		IsResellerQueryAuth: func(token string) (*models.Principal, error) {
+			return nil, errors.NotImplemented("api key auth (isResellerQuery) CustomKeyAsQuery from query param [CustomKeyAsQuery] has not yet been implemented")
 		},
 
 		// default authorizer is authorized meaning no requests are blocked
@@ -140,13 +140,13 @@ type MultiAuthExampleAPI struct {
 	// it performs authentication with basic auth
 	IsRegisteredAuth func(string, string) (*models.Principal, error)
 
-	// IsResellerQueryAuth registers a function that takes a token and returns a principal
-	// it performs authentication based on an api key CustomKeyAsQuery provided in the query
-	IsResellerQueryAuth func(string) (*models.Principal, error)
-
 	// IsResellerAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-Custom-Key provided in the header
 	IsResellerAuth func(string) (*models.Principal, error)
+
+	// IsResellerQueryAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key CustomKeyAsQuery provided in the query
+	IsResellerQueryAuth func(string) (*models.Principal, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -232,12 +232,12 @@ func (o *MultiAuthExampleAPI) Validate() error {
 		unregistered = append(unregistered, "IsRegisteredAuth")
 	}
 
-	if o.IsResellerQueryAuth == nil {
-		unregistered = append(unregistered, "CustomKeyAsQueryAuth")
-	}
-
 	if o.IsResellerAuth == nil {
 		unregistered = append(unregistered, "XCustomKeyAuth")
+	}
+
+	if o.IsResellerQueryAuth == nil {
+		unregistered = append(unregistered, "CustomKeyAsQueryAuth")
 	}
 
 	if o.AddOrderHandler == nil {
@@ -291,16 +291,16 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 				return o.IsRegisteredAuth(username, password)
 			})
 
-		case "isResellerQuery":
-
-			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
-				return o.IsResellerQueryAuth(token)
-			})
-
 		case "isReseller":
 
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerAuth(token)
+			})
+
+		case "isResellerQuery":
+
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
+				return o.IsResellerQueryAuth(token)
 			})
 
 		}

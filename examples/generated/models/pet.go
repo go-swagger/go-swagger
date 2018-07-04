@@ -45,22 +45,18 @@ func (m *Pet) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCategory(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePhotoUrls(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTags(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -77,14 +73,12 @@ func (m *Pet) validateCategory(formats strfmt.Registry) error {
 	}
 
 	if m.Category != nil {
-
 		if err := m.Category.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("category")
 			}
 			return err
 		}
-
 	}
 
 	return nil
@@ -115,20 +109,17 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 	}
 
 	for i := 0; i < len(m.Tags); i++ {
-
 		if swag.IsZero(m.Tags[i]) { // not required
 			continue
 		}
 
 		if m.Tags[i] != nil {
-
 			if err := m.Tags[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
-
 		}
 
 	}

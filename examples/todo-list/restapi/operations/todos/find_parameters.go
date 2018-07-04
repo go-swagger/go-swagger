@@ -90,6 +90,7 @@ func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute
 	return nil
 }
 
+// bindXRateLimit binds and validates parameter XRateLimit from header.
 func (o *FindParams) bindXRateLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("X-Rate-Limit", "header")
@@ -114,6 +115,7 @@ func (o *FindParams) bindXRateLimit(rawData []string, hasKey bool, formats strfm
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from formData.
 func (o *FindParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("limit", "formData")
@@ -138,6 +140,9 @@ func (o *FindParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Reg
 	return nil
 }
 
+// bindTags binds and validates array parameter Tags from formData.
+//
+// Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *FindParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("tags", "formData")

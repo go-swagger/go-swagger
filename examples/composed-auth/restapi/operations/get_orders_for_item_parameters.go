@@ -57,6 +57,7 @@ func (o *GetOrdersForItemParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
+// bindItemID binds and validates parameter ItemID from path.
 func (o *GetOrdersForItemParams) bindItemID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

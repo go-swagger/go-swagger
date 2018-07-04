@@ -25,7 +25,7 @@ type GetAccountOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetAccountOKBody `json:"body,omitempty"`
+	Payload interface{} `json:"body,omitempty"`
 }
 
 // NewGetAccountOK creates GetAccountOK with default headers values
@@ -35,13 +35,13 @@ func NewGetAccountOK() *GetAccountOK {
 }
 
 // WithPayload adds the payload to the get account o k response
-func (o *GetAccountOK) WithPayload(payload GetAccountOKBody) *GetAccountOK {
+func (o *GetAccountOK) WithPayload(payload interface{}) *GetAccountOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account o k response
-func (o *GetAccountOK) SetPayload(payload GetAccountOKBody) {
+func (o *GetAccountOK) SetPayload(payload interface{}) {
 	o.Payload = payload
 }
 

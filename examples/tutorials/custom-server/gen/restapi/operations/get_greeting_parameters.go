@@ -59,6 +59,7 @@ func (o *GetGreetingParams) BindRequest(r *http.Request, route *middleware.Match
 	return nil
 }
 
+// bindName binds and validates parameter Name from query.
 func (o *GetGreetingParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

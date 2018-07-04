@@ -101,6 +101,7 @@ func (o *ListTasksParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindPageSize binds and validates parameter PageSize from query.
 func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -123,6 +124,7 @@ func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// bindSinceID binds and validates parameter SinceID from query.
 func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -144,6 +146,9 @@ func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats str
 	return nil
 }
 
+// bindStatus binds and validates array parameter Status from query.
+//
+// Arrays are parsed according to CollectionFormat: "pipes" (defaults to "csv" when empty).
 func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	var qvStatus string
@@ -176,6 +181,7 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// validateStatus carries on validations for parameter Status
 func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 
 	// uniqueItems: true
@@ -186,6 +192,9 @@ func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTags binds and validates array parameter Tags from query.
+//
+// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	var qvTags string
@@ -214,6 +223,7 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 	return nil
 }
 
+// validateTags carries on validations for parameter Tags
 func (o *ListTasksParams) validateTags(formats strfmt.Registry) error {
 
 	// uniqueItems: true

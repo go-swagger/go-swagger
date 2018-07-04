@@ -57,6 +57,7 @@ func (o *DeleteOrderParams) BindRequest(r *http.Request, route *middleware.Match
 	return nil
 }
 
+// bindOrderID binds and validates parameter OrderID from path.
 func (o *DeleteOrderParams) bindOrderID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

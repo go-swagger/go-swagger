@@ -49,3 +49,12 @@ cd "${examples}/tutorials/custom-server"
 rm -rf gen
 mkdir gen
 swagger generate server --exclude-main -A greeter -t gen -f ./swagger/swagger.yml
+
+cd "${examples}/composed-auth"
+cp restapi/configure_multi_auth_example.go .
+rm -rf cmd models restapi
+swagger generate server -A multi-auth-example -P models.Principal -f ./swagger.yml
+mv configure_multi_auth_example.go restapi/
+
+cd ${examples}
+go test -v ./...

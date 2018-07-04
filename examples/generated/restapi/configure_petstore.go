@@ -9,7 +9,6 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
-	graceful "github.com/tylerb/graceful"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
@@ -43,13 +42,12 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 
 	api.XMLProducer = runtime.XMLProducer()
 
-	api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
-		return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
-	}
-
 	// Applies when the "api_key" header is set
 	api.APIKeyAuth = func(token string) (interface{}, error) {
 		return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
+	}
+	api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
+		return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -57,7 +55,6 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-
 	api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
 		return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 	})
@@ -127,7 +124,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
-func configureServer(s *graceful.Server, scheme, addr string) {
+func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

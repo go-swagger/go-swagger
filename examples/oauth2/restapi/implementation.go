@@ -23,12 +23,13 @@ var (
 	clientSecret = "" // <= enter registered API client secret here
 
 	//  unused in this example: the signer of the delivered token
-	issuer = "https://accounts.google.com"
+	// issuer = "https://accounts.google.com"
 
 	// the Google login URL
 	authURL = "https://accounts.google.com/o/oauth2/v2/auth"
 
 	// the Google OAuth2 resource provider which delivers access tokens
+	/* #nosec */
 	tokenURL    = "https://www.googleapis.com/oauth2/v4/token"
 	userInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
@@ -51,8 +52,9 @@ var (
 )
 
 func login(r *http.Request) string {
-	// implements the login with a redirection and an access tokeb
+	// implements the login with a redirection and an access token
 	var accessToken string
+	wG := r.Context().Value(ctxResponseWriter).(http.ResponseWriter)
 	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
 	return accessToken
 }

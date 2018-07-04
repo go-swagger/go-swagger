@@ -51,27 +51,22 @@ func (m *Customer) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCustomerID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateFipsCode(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSsn(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSurname(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 

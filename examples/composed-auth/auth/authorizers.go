@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	privateKeyPath = "keys/apiKey.prv"
-	publicKeyPath  = "keys/apiKey.pem"
+	// currently unused: privateKeyPath = "keys/apiKey.prv"
+	publicKeyPath = "keys/apiKey.pem"
+	issuerName    = "example.com"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 
 	// Keys used to sign and verify our tokens
 	verifyKey *rsa.PublicKey
-	signKey   *rsa.PrivateKey
+	// currently unused: signKey   *rsa.PrivateKey
 )
 
 // roleClaims describes the format of our JWT token's claims
@@ -65,7 +66,7 @@ func IsRegistered(user, pass string) (*models.Principal, error) {
 func IsReseller(token string) (*models.Principal, error) {
 	claims, err := parseAndCheckToken(token)
 	if err == nil {
-		if claims.Issuer == "example.com" && claims.Id != "" {
+		if claims.Issuer == issuerName && claims.Id != "" {
 			isReseller := false
 			for _, role := range claims.Roles {
 				if role == "reseller" {
@@ -90,7 +91,7 @@ func IsReseller(token string) (*models.Principal, error) {
 func HasRole(token string, scopes []string) (*models.Principal, error) {
 	claims, err := parseAndCheckToken(token)
 	if err == nil {
-		if claims.Issuer == "example.com" {
+		if claims.Issuer == issuerName {
 			isInScopes := false
 			claimedRoles := []string{}
 			for _, scope := range scopes {

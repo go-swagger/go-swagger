@@ -68,6 +68,7 @@ func (o *LoginUserParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindPassword binds and validates parameter Password from query.
 func (o *LoginUserParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -85,6 +86,7 @@ func (o *LoginUserParams) bindPassword(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// bindUsername binds and validates parameter Username from query.
 func (o *LoginUserParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

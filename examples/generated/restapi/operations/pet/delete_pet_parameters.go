@@ -68,6 +68,7 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindAPIKey binds and validates parameter APIKey from header.
 func (o *DeletePetParams) bindAPIKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("api_key", "header")
@@ -88,6 +89,7 @@ func (o *DeletePetParams) bindAPIKey(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// bindPetID binds and validates parameter PetID from path.
 func (o *DeletePetParams) bindPetID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

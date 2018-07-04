@@ -59,7 +59,6 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)
@@ -81,6 +80,7 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindUsername binds and validates parameter Username from path.
 func (o *UpdateUserParams) bindUsername(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

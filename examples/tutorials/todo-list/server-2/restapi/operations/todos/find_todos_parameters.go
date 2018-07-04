@@ -78,6 +78,7 @@ func (o *FindTodosParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *FindTodosParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -100,6 +101,7 @@ func (o *FindTodosParams) bindLimit(rawData []string, hasKey bool, formats strfm
 	return nil
 }
 
+// bindSince binds and validates parameter Since from query.
 func (o *FindTodosParams) bindSince(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

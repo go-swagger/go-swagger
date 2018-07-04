@@ -52,7 +52,6 @@ func (o *AddOneParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
-
 			// validate body object
 			if err := body.Validate(route.Formats); err != nil {
 				res = append(res, err)
