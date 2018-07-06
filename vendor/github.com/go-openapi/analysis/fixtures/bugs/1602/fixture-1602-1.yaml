@@ -1,0 +1,84 @@
+---
+swagger: "2.0"
+schemes:
+  - "http"
+  - "https"
+basePath: "/v1.24"
+info:
+  title: "derived from Pouch Engine API"
+  version: "1.24"
+  description: A variation on issue go-swagger/go-swagger#1609
+paths:
+  /_ping:
+    get:
+      parameters:
+      - $ref: '#/parameters/bodyWithRef'
+      responses:
+        200:
+          description: "no error"
+          schema:
+            type: "string"
+            example: "OK"
+        301:
+          description: direct ref
+          schema:
+            $ref: "#/definitions/Error"
+        401:
+          $ref: "#/responses/401ErrorResponse"
+        404:
+          $ref: "#/responses/404ErrorResponse"
+        500:
+          $ref: "#/responses/500ErrorResponse"
+
+definitions:
+  Error:
+    type: "object"
+    properties:
+      message:
+        type: string
+
+parameters:
+  bodyWithRef:
+    name: bodyWithRefParam
+    in: body
+    schema:
+      $ref: "#/definitions/Error"
+  nobodyWithRef:
+    name: bodyWithRefParam
+    in: query
+    type: integer
+    #required: true
+  anotherBodyWithRef:
+    name: anotherBodyWithRefParam
+    in: body
+    schema:
+      $ref: "#/definitions/Error"
+  funnyParam:
+    name: funnyParam
+    in: body
+    schema:
+      $ref: "#/responses/500ErrorResponse/schema"
+
+responses:
+  401ErrorResponse:
+    description: An unexpected 401 error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  404ErrorResponse:
+    description: An unexpected 404 error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  500ErrorResponse:
+    description: An unexpected server error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  funnyResponse:
+    description: An unexpected server error occurred.
+    schema:
+      $ref: "#/responses/401ErrorResponse/schema"
+  foulResponse:
+    description: An unexpected server error occurred.
+    schema:
+      $ref: "#/responses/noSchemaResponse"
+  noSchemaResponse:
+    description: An unexpected server error occurred.

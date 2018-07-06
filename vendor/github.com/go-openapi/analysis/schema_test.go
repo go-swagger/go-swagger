@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"path/filepath"
 	"testing"
 
 	"net/http"
@@ -294,5 +295,40 @@ func TestSchemaAnalysis_SimpleSchema(t *testing.T) {
 			assert.False(t, sch.IsSimpleSchema, "item at %d should not be a simple schema", i)
 		}
 	}
+}
 
+func TestSchemaAnalys_InvalidSchema(t *testing.T) {
+	// explore error cases in schema analysis:
+	// the only cause for failure is a wrong $ref at some place
+	bp := filepath.Join("fixtures", "bugs", "1602", "other-invalid-pointers.yaml")
+	sp := loadOrFail(t, bp)
+
+	// invalid ref not detected (no digging further)
+	def := sp.Definitions["invalidRefInObject"]
+	_, err := Schema(SchemaOpts{Schema: &def, Root: sp, BasePath: bp})
+	assert.NoError(t, err, "did not expect an error here, in spite of the underlying invalid $ref")
+
+	def = sp.Definitions["invalidRefInTuple"]
+	_, err = Schema(SchemaOpts{Schema: &def, Root: sp, BasePath: bp})
+	assert.NoError(t, err, "did not expect an error here, in spite of the underlying invalid $ref")
+
+	// invalid ref detected (digging)
+	schema := refSchema(spec.MustCreateRef("#/definitions/noWhere"))
+	_, err = Schema(SchemaOpts{Schema: schema, Root: sp, BasePath: bp})
+	assert.Error(t, err, "expected an error here")
+
+	def = sp.Definitions["invalidRefInMap"]
+	_, err = Schema(SchemaOpts{Schema: &def, Root: sp, BasePath: bp})
+	assert.Error(t, err, "expected an error here")
+
+	def = sp.Definitions["invalidRefInArray"]
+	_, err = Schema(SchemaOpts{Schema: &def, Root: sp, BasePath: bp})
+	assert.Error(t, err, "expected an error here")
+
+	def = sp.Definitions["indirectToInvalidRef"]
+	_, err = Schema(SchemaOpts{Schema: &def, Root: sp, BasePath: bp})
+	assert.Error(t, err, "expected an error here")
+
+	//bbb, _ := json.MarshalIndent(def, "", " ")
+	//log.Printf(string(bbb))
 }

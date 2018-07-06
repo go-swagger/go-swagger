@@ -35,6 +35,7 @@ func Schema(opts SchemaOpts) (*AnalyzedSchema, error) {
 	}
 
 	if err := a.inferTuple(); err != nil {
+		// NOTE(fredbi): currently, inferTuple() never returns an error
 		return nil, err
 	}
 
@@ -106,6 +107,10 @@ func (a *AnalyzedSchema) inferFromRef() error {
 			return err
 		}
 		if sch != nil {
+			// NOTE(fredbi): currently the only cause for errors in
+			// unresolved ref. Since spec.ExpandSchema() expands the
+			// schema recursively, there is no chance to get there,
+			// until we add more causes for error in this schema analysis.
 			rsch, err := Schema(SchemaOpts{
 				Schema:   sch,
 				Root:     a.root,

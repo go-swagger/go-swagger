@@ -1,0 +1,330 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "swagger.yaml for investigating an issue with spec.expandSchema",
+    "version": "0.0.1",
+    "description": "expander.go test for issue analysis, the spec derived from ODataWebV3.Northwind.Model and simplified for the analysis"
+  },
+  "schemes": [
+    "http"
+  ],
+  "host": "localhost",
+  "basePath": "/modified_from_Northwind.svc",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/Employees": {
+      "get": {
+        "summary": "Get entities from Employees",
+        "responses": {
+          "200": {
+            "description": "Retrieved entities",
+            "schema": {
+              "title": "Collection of Employee",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Employee"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Category": {
+      "type": "object",
+      "properties": {
+        "CategoryID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CategoryName": {
+          "type": "string",
+          "maxLength": 15
+        },
+        "Products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        }
+      },
+      "title": "Category"
+    },
+    "CustomerDemographic": {
+      "type": "object",
+      "properties": {
+        "CustomerTypeID": {
+          "type": "string",
+          "maxLength": 10
+        },
+        "CustomerDesc": {
+          "type": "string",
+          "example": "string"
+        },
+        "Customers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Customer"
+          }
+        }
+      },
+      "title": "CustomerDemographic"
+    },
+    "Customer": {
+      "type": "object",
+      "properties": {
+        "CustomerID": {
+          "type": "string",
+          "maxLength": 5
+        },
+        "CompanyName": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "Orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order"
+          }
+        },
+        "CustomerDemographics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomerDemographic"
+          }
+        }
+      },
+      "title": "Customer"
+    },
+    "Employee": {
+      "type": "object",
+      "properties": {
+        "EmployeeID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "LastName": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "FirstName": {
+          "type": "string",
+          "maxLength": 10
+        },
+        "Employees1": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Employee"
+          }
+        },
+        "Employee1": {
+          "$ref": "#/definitions/Employee"
+        },
+        "Orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order"
+          }
+        },
+        "Territories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Territory"
+          }
+        }
+      },
+      "title": "Employee"
+    },
+    "Order_Detail": {
+      "type": "object",
+      "properties": {
+        "OrderID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ProductID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "UnitPrice": {
+          "type": "number",
+          "format": "decimal",
+          "multipleOf": 0.0001
+        },
+        "Quantity": {
+          "type": "integer",
+          "format": "int16"
+        },
+        "Order": {
+          "$ref": "#/definitions/Order"
+        },
+        "Product": {
+          "$ref": "#/definitions/Product"
+        }
+      },
+      "title": "Order_Detail"
+    },
+    "Order": {
+      "type": "object",
+      "properties": {
+        "OrderID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CustomerID": {
+          "type": "string",
+          "maxLength": 5,
+          "example": "string"
+        },
+        "Customer": {
+          "$ref": "#/definitions/Customer"
+        },
+        "Employee": {
+          "$ref": "#/definitions/Employee"
+        },
+        "Order_Details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order_Detail"
+          }
+        },
+        "Shipper": {
+          "$ref": "#/definitions/Shipper"
+        }
+      },
+      "title": "Order"
+    },
+    "Product": {
+      "type": "object",
+      "properties": {
+        "ProductID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ProductName": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "Category": {
+          "$ref": "#/definitions/Category"
+        },
+        "Order_Details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order_Detail"
+          }
+        },
+        "Supplier": {
+          "$ref": "#/definitions/Supplier"
+        }
+      },
+      "title": "Product"
+    },
+    "Region": {
+      "type": "object",
+      "properties": {
+        "RegionID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RegionDescription": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "Territories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Territory"
+          }
+        }
+      },
+      "title": "Region"
+    },
+    "Shipper": {
+      "type": "object",
+      "properties": {
+        "ShipperID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CompanyName": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "Orders": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Order"
+          }
+        }
+      },
+      "title": "Shipper"
+    },
+    "Supplier": {
+      "type": "object",
+      "properties": {
+        "SupplierID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CompanyName": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "Products": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Product"
+          }
+        }
+      },
+      "title": "Supplier"
+    },
+    "Territory": {
+      "type": "object",
+      "properties": {
+        "TerritoryID": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "TerritoryDescription": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "RegionID": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Region": {
+          "$ref": "#/definitions/Region"
+        },
+        "Employees": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Employee"
+          }
+        }
+      },
+      "title": "Territory"
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "Error"
+    }
+  }
+}

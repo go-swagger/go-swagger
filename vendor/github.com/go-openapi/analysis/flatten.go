@@ -358,7 +358,7 @@ func (isn *inlineSchemaNamer) Name(key string, schema *swspec.Schema, aschema *A
 			for k, v := range an.references.allRefs {
 				r, _, erd := deepestRef(isn.opts, v)
 				if erd != nil {
-					return erd
+					return fmt.Errorf("at %s, %v", k, erd)
 				}
 				if r.String() == key ||
 					r.String() == slashpath.Join(definitionsPath, newName) &&
@@ -1229,7 +1229,7 @@ func namePointers(opts *FlattenOpts) error {
 		}
 		replacingRef, sch, erd := deepestRef(opts, ref)
 		if erd != nil {
-			return erd
+			return fmt.Errorf("at %s, %v", k, erd)
 		}
 		debugLog("planning pointer to replace at %s: %s, resolved to: %s", k, ref.String(), replacingRef.String())
 		refsToReplace[k] = SchemaRef{
@@ -1252,7 +1252,7 @@ func namePointers(opts *FlattenOpts) error {
 		// update current replacement, which may have been updated by previous changes of deeper elements
 		replacingRef, sch, erd := deepestRef(opts, v.Ref)
 		if erd != nil {
-			return erd
+			return fmt.Errorf("at %s, %v", key, erd)
 		}
 		v.Ref = replacingRef
 		v.Schema = sch
@@ -1287,7 +1287,7 @@ func namePointers(opts *FlattenOpts) error {
 			for k, w := range an.references.allRefs {
 				r, _, erd := deepestRef(opts, w)
 				if erd != nil {
-					return erd
+					return fmt.Errorf("at %s, %v", key, erd)
 				}
 				if r.String() == v.Ref.String() {
 					callers = append(callers, k)
@@ -1381,7 +1381,10 @@ DOWNREF:
 			currentRef = refable.Schema.Ref
 
 		default:
-			return swspec.Ref{}, nil, fmt.Errorf("unhandled type to resolve JSON pointer: %T", value)
+			return swspec.Ref{}, nil,
+				fmt.Errorf("unhandled type to resolve JSON pointer %s. Expected a Schema, got: %T",
+					currentRef.String(), value)
+
 		}
 	}
 	// assess what schema we're ending with

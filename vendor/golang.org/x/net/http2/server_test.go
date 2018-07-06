@@ -3817,9 +3817,6 @@ func TestServerHandlerConnectionClose(t *testing.T) {
 				}
 			case *HeadersFrame:
 				goth := st.decodeHeader(f.HeaderBlockFragment())
-				if !sawGoAway {
-					t.Fatalf("unexpected Headers frame before GOAWAY: %s, %v", summarizeFrame(f), goth)
-				}
 				wanth := [][2]string{
 					{":status", "200"},
 					{"foo", "bar"},
@@ -3836,8 +3833,59 @@ func TestServerHandlerConnectionClose(t *testing.T) {
 				t.Logf("unexpected frame: %v", summarizeFrame(f))
 			}
 		}
+		if !sawGoAway {
+			t.Errorf("didn't see GOAWAY")
+		}
 		if !sawRes {
 			t.Errorf("didn't see response")
 		}
 	})
+}
+
+func TestServer_Headers_HalfCloseRemote(t *testing.T) {
+	var st *serverTester
+	inHandler := make(chan bool)
+	writeHeaders := make(chan bool)
+	leaveHandler := make(chan bool)
+	st = newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		inHandler <- true
+		if st.stream(1) == nil {
+			t.Errorf("nil stream 1 in handler")
+		}
+		if got, want := st.streamState(1), stateOpen; got != want {
+			t.Errorf("in handler, state is %v; want %v", got, want)
+		}
+		if n, err := r.Body.Read(make([]byte, 1)); n != 0 || err != io.EOF {
+			t.Errorf("body read = %d, %v; want 0, EOF", n, err)
+		}
+		if got, want := st.streamState(1), stateHalfClosedRemote; got != want {
+			t.Errorf("in handler, state is %v; want %v", got, want)
+		}
+		writeHeaders <- true
+
+		<-leaveHandler
+	})
+	st.greet()
+
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: st.encodeHeader(),
+		EndStream:     false, // keep it open
+		EndHeaders:    true,
+	})
+	<-inHandler
+	st.writeData(1, true, nil)
+
+	<-writeHeaders
+
+	st.writeHeaders(HeadersFrameParam{
+		StreamID:      1,
+		BlockFragment: st.encodeHeader(),
+		EndStream:     false, // keep it open
+		EndHeaders:    true,
+	})
+
+	defer close(leaveHandler)
+
+	st.wantRSTStream(1, ErrCodeStreamClosed)
 }
