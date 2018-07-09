@@ -1,0 +1,109 @@
+swagger: '2.0'
+info:
+  description: Test for x-order
+  version: 0.0.1
+  title: Test for x-order
+  contact:
+    email: takano@liberent.co.jp
+schemes:
+  - http
+paths:
+  /user/startSession:
+    post:
+      summary: Test for x-order
+      description: Test for x-order
+      operationId: StartSession
+      consumes:
+        - application/json
+        - application/x-msgpack-array
+      produces:
+        - application/json
+        - application/x-msgpack-array
+      parameters:
+        - in: body
+          name: clientProfile
+          description: client profile
+          required: true
+          schema:
+            $ref: '#/definitions/clientProfile'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/sessionData'
+          headers:
+            X-Server-Time:
+              type: integer
+              format: uint64
+              description: Unixtime
+            Content-Encoding:
+              type: string
+              description: gzip etc
+        '400':
+          description: Invalid input
+        '503':
+          description: Service in Maintenance.
+
+definitions:
+  empty:
+    type: object
+  clientProfile:
+    type: object
+    properties:
+      deviceId:
+        x-order: 0
+        type: string
+        description: deveide unique
+      os:
+        x-order: 1
+        type: string
+        description: 'OS("ios","android","pc")'
+      appVersion:
+        x-order: 2
+        type: string
+        description: app version
+      masterVersion:
+        x-order: 3
+        type: integer
+        format: uint64
+        description: master data version
+  sessionData:
+    type: object
+    properties:
+      sessionId:
+        x-order: 0
+        type: string
+        description: session unique
+      deviceId:
+        x-order: 1
+        x-go-custom-tag: hello1
+        type: string
+        description: deveide unique
+      uMain:
+        $ref: '#/definitions/u_main'
+        x-order: 2
+        x-go-custom-tag: hello2
+        description: Sample
+  u_main:
+    type: object
+    properties:
+      uuid:
+        x-order: 0
+        type: string
+        format: string
+        description: UUID
+      uid:
+        x-order: 1
+        type: integer
+        format: uint32
+        description: public user id
+      name:
+        x-order: 2
+        type: string
+        format: string
+        description: user name
+      ts:
+        x-order: 3
+        type: integer
+        format: uint64
+        description: registerd timestamp

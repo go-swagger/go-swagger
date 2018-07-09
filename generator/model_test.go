@@ -2435,3 +2435,38 @@ func TestGenModel_Issue910(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateModel_Xorder(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/x-order.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "sessionData"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("x-order.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					// if no x-order then alphabetical order, like DeviceID, SessionID, UMain.
+					// There is x-order
+					//   sessionId
+					//     x-order: 0
+					//   deviceId:
+					//     x-order: 1
+					//   uMain:
+					//     x-order: 2
+					// This is need for msgpack-array.
+					foundDeviceID := strings.Index(res, "DeviceID")
+					foundSessionID := strings.Index(res, "SessionID")
+					foundUMain := strings.Index(res, "UMain")
+					assert.True(t, foundSessionID < foundDeviceID)
+					assert.True(t, foundSessionID < foundUMain)
+				}
+			}
+		}
+	}
+}
