@@ -47,10 +47,6 @@ func (g GenDefinitions) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // version control and such
 type GenSchemaList []GenSchema
 
-func (g GenSchemaList) Len() int           { return len(g) }
-func (g GenSchemaList) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSchemaList) Less(i, j int) bool { return g[i].Name < g[j].Name }
-
 // GenSchema contains all the information needed to generate the code
 // for a schema
 type GenSchema struct {
@@ -93,6 +89,19 @@ type GenSchema struct {
 	IncludeValidator        bool
 	IncludeModel            bool
 	Default                 interface{}
+}
+
+func (g GenSchemaList) Len() int      { return len(g) }
+func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
+func (g GenSchemaList) Less(i, j int) bool {
+	a, ok := g[i].Extensions["x-order"].(float64)
+	if ok {
+		b, ok := g[j].Extensions["x-order"].(float64)
+		if ok {
+			return a < b
+		}
+	}
+	return g[i].Name < g[j].Name
 }
 
 type sharedValidations struct {
