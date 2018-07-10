@@ -3,8 +3,9 @@
 # Bails on any command failure
 set -e -o pipefail
 
-cd ${0%/*}/..
+cd `git rev-parse --show-toplevel`
 echo "Running tests in $(pwd)..."
+
 # List of packages to test
 # Currently no packaged tests are available in fixtures or examples
 packages=$(go list ./... | grep -v -E 'vendor|fixtures|examples')
@@ -20,7 +21,7 @@ else
     echo "mode: ${GOCOVMODE-atomic}" > coverage.txt
     # Standard go tooling behavior is to ignore dirs with leading underscores
     for dir in ${packages} ; do
-        pth="${dir//*$repo_pref}"
+        pth="${GOPATH}/src/${dir}"
         # -tags netgo: test as statically linked
         # -installsuffix netgo: produce suffixed object for this statically linked build
         go test -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir

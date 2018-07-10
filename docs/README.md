@@ -7,8 +7,6 @@
 [![GolangCI](https://golangci.com/badges/github.com/go-swagger/go-swagger.svg)](https://golangci.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-swagger/go-swagger)](https://goreportcard.com/report/github.com/go-swagger/go-swagger)
 
-Development of this toolkit is sponsored by VMware<br>[![VMWare](https://avatars2.githubusercontent.com/u/473334?v=3&s=200)](https://vmware.github.io) 
-
 This package contains a golang implementation of Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)):
 it knows how to serialize and deserialize swagger specifications.
 
