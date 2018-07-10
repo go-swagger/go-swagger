@@ -1,5 +1,10 @@
 ## Contribution Guidelines
 
+You'll find below general guidelines, which mostly correspond to standard
+practices for open sourced repositories.
+For a more technical insight, please see our
+[guidelines to maintainers](../docs/guidelines/README.md).
+
 ### Pull requests are always welcome
 
 We are always thrilled to receive pull requests, and do our best to

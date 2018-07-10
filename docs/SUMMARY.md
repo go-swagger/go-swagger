@@ -47,6 +47,7 @@
 - [Custom generation](use/template_layout.md)
   - [Custom templates](generate/templates.md)
 - [CLI autocompletion](cli_helpers.md)
+- [Guidelines to maintainers](guidelines/README.md)
 - [FAQ](faq/README.md)
   - [Installation,setup and environment](faq/faq_setup.md)
   - [Model generation](faq/faq_model.md)
