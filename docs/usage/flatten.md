@@ -2,7 +2,7 @@
 
 The toolkit has a command to flatten a swagger specification.
 
-Flattening a specification bundles all remote $ref in the main spec document.
+Flattening a specification bundles all remote `$ref` in the main spec document.
 
 Depending on flattening options, additional preprocessing may take place:
 

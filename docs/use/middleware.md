@@ -1,4 +1,4 @@
-# BYO middleware
+# Build Your Own middleware
 
 Go-swagger chose the golang `net/http` package as base abstraction. That means that for _any_ supported transport by the toolkit you can reuse _any_ middleware existing middlewares that following the stdlib middleware pattern.
 

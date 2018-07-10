@@ -1,44 +1,52 @@
-# Generate an API client
+# Generate an API client from a swagger spec
 
 The toolkit has a command that will let you generate a client.
 
-<!--more-->
-
-##### Usage
+### Client usage
 
 ```
-swagger [OPTIONS] generate client [client-OPTIONS]
+Usage:
+  swagger [OPTIONS] generate client [client-OPTIONS]
 
 generate all the files for a client library
 
+Application Options:
+  -q, --quiet                                                                     silence logs
+  -o, --output=LOG-FILE                                                           redirect logs to file
+
 Help Options:
-  -h, --help                  Show this help message
+  -h, --help                                                                      Show this help message
 
 [client command options]
-      -f, --spec=                   the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=            the package to save the operations (default: operations)
-      -m, --model-package=          the package to save the models (default: models)
-      -s, --server-package=         the package to save the server specific code (default: restapi)
-      -c, --client-package=         the package to save the client specific code (default: client)
-      -t, --target=                 the base directory for generating the files (default: ./)
-      -T, --template-dir=           alternative template override directory
-      -C, --config-file=            configuration file to use for overriding template options
-      -A, --name=                   the name of the application, defaults to a mangled value of info.title
-      -O, --operation=              specify an operation to include, repeat for multiple
-          --tags=                   the tags to include, if not specified defaults to all
-      -P, --principal=              the model to use for the security principal
-      -M, --model=                  specify a model to include, repeat for multiple
-          --default-scheme=         the default scheme for this client (default: http)
-          --default-produces=       the default mime type that API operations produce (default: application/json)
-          --skip-models             no models will be generated when this flag is specified
-          --skip-operations         no operations will be generated when this flag is specified
-          --dump-data               when present dumps the json for the template generator instead of generating files
-          --skip-validation         skips validation of spec prior to generation
-      -r, --copyright-file=         the file containing a copyright header for the generated source
-          --additional-initialism=  additional consecutive capitals that should be considered as initialism, repeat for multiple
+      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
+      -a, --api-package=                                                          the package to save the operations (default: operations)
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -s, --server-package=                                                       the package to save the server specific code (default: restapi)
+      -c, --client-package=                                                       the package to save the client specific code (default: client)
+      -t, --target=                                                               the base directory for generating the files (default: ./)
+      -T, --template-dir=                                                         alternative template override directory
+      -C, --config-file=                                                          configuration file to use for overriding template options
+      -r, --copyright-file=                                                       copyright file used to add copyright header
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
+          --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
+      -O, --operation=                                                            specify an operation to include, repeat for multiple
+          --tags=                                                                 the tags to include, if not specified defaults to all
+      -P, --principal=                                                            the model to use for the security principal
+      -M, --model=                                                                specify a model to include, repeat for multiple
+          --default-scheme=                                                       the default scheme for this client (default: http)
+          --default-produces=                                                     the default mime type that API operations produce (default: application/json)
+          --skip-models                                                           no models will be generated when this flag is specified
+          --skip-operations                                                       no operations will be generated when this flag is specified
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --skip-validation                                                       skips validation of spec prior to generation
 ```
 
-There is an example client in https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client
+### Build a client
+
+There is an example client provided at: https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list/client
 
 To generate a client:
 
@@ -111,7 +119,6 @@ func main() {
   fmt.Printf("%#v\n", resp.Payload)
 }
 ```
-
 
 ### Authentication
 

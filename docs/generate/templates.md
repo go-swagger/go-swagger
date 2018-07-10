@@ -15,7 +15,7 @@ first character of the next path segment will be uppercased. e.g.
 You can override the following templates. Check go-swagger/generator/templates for the default
 definitions.
  
-# Available Templates:
+# Available Templates
 
 # Client Templates
 

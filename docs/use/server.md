@@ -3,8 +3,6 @@
 The generated server serves the API but the default implementation returns 501 Not implemented for everything. Let's
 look into using the generated code.
 
-<!--more-->
-
 Go swagger primarily deals with HTTP and originally only supports the stdlib `net/http` interface. A typical HTTP
 request expects a response.  This is reflected in go-swagger where a handler is typically defined as a function of
 input parameters to a responder.
@@ -33,6 +31,8 @@ swagger generate server -P models.User
 swagger generate client -P models.User
 ```
 
+See the full list of available options [for server](../generate/server.md) and [for client](../generate/client.md).
+
 When you would execute the generate step with that parameter for the security principal then the
 AddOneAuthenticatedHandler would look a bit like this:
 
@@ -48,7 +48,7 @@ A handler is an interface/contract that defines a statically typed representatio
 an operation on your API.
 The tool generates handlers that are stubbed with a NotImplemented response when you first generate the server.
 
-### The not implemented handler
+### The `not implemented` handler
 
 The not implemented handler is actually a not implemented responder, it returns a responder that will always respond
 with status code 501 and a message that lets people know it's not the fault of the client that things don't work.

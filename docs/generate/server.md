@@ -1,4 +1,4 @@
-# Generate a server for a swagger spec
+# Generate a server from a swagger spec
 
 The toolkit has a command that will let you generate a docker friendly server with support for TLS.
 You can configure it through environment variables that are commonly used on PaaS services.
@@ -11,44 +11,54 @@ The default router for go-swagger is [naoina's denco](https://github.com/naoina/
 
 You can provide your own router implementation should you so desire it's abstracted through an interface with this use case in mind.
 
-##### Usage
+### Server usage
 
 ```
-swagger [OPTIONS] generate server [server-OPTIONS]
+Usage:
+  swagger [OPTIONS] generate server [server-OPTIONS]
 
 generate all the files for a server application
 
+Application Options:
+  -q, --quiet                                                                     silence logs
+  -o, --output=LOG-FILE                                                           redirect logs to file
+
 Help Options:
-  -h, --help                                         Show this help message
+  -h, --help                                                                      Show this help message
 
 [server command options]
-      -f, --spec=                                    the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=                             the package to save the operations (default: operations)
-      -m, --model-package=                           the package to save the models (default: models)
-      -s, --server-package=                          the package to save the server specific code (default: restapi)
-      -c, --client-package=                          the package to save the client specific code (default: client)
-      -t, --target=                                  the base directory for generating the files (default: ./)
-      -T, --template-dir=                            alternative template override directory
-      -C, --config-file=                             configuration file to use for overriding template options
-      -A, --name=                                    the name of the application, defaults to a mangled value of info.title
-      -O, --operation=                               specify an operation to include, repeat for multiple
-          --tags=                                    the tags to include, if not specified defaults to all
-      -P, --principal=                               the model to use for the security principal
-          --default-scheme=                          the default scheme for this API (default: http)
-      -M, --model=                                   specify a model to include, repeat for multiple
-          --skip-models                              no models will be generated when this flag is specified
-          --skip-operations                          no operations will be generated when this flag is specified
-          --skip-support                             no supporting files will be generated when this flag is specified
-          --exclude-main                             exclude main function, so just generate the library
-          --exclude-spec                             don't embed the swagger specification
-          --with-context                             handlers get a context as first arg
-          --dump-data                                when present dumps the json for the template generator instead of generating files
-          --flag-strategy=[go-flags|pflag]           the strategy to provide flags for the server (default: go-flags)
-          --compatibility-mode=[modern|intermediate] the compatibility mode for the tls server (default: modern)
-          --skip-validation                          skips validation of spec prior to generation
-      -r, --copyright-file=                          the file containing a copyright header for the generated source
-          --additional-initialism=                   additional consecutive capitals that should be considered as initialism, repeat for multiple
+      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
+      -a, --api-package=                                                          the package to save the operations (default: operations)
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -s, --server-package=                                                       the package to save the server specific code (default: restapi)
+      -c, --client-package=                                                       the package to save the client specific code (default: client)
+      -t, --target=                                                               the base directory for generating the files (default: ./)
+      -T, --template-dir=                                                         alternative template override directory
+      -C, --config-file=                                                          configuration file to use for overriding template options
+      -r, --copyright-file=                                                       copyright file used to add copyright header
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
+          --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
+      -O, --operation=                                                            specify an operation to include, repeat for multiple
+          --tags=                                                                 the tags to include, if not specified defaults to all
+      -P, --principal=                                                            the model to use for the security principal
+          --default-scheme=                                                       the default scheme for this API (default: http)
+      -M, --model=                                                                specify a model to include, repeat for multiple
+          --skip-models                                                           no models will be generated when this flag is specified
+          --skip-operations                                                       no operations will be generated when this flag is specified
+          --skip-support                                                          no supporting files will be generated when this flag is specified
+          --exclude-main                                                          exclude main function, so just generate the library
+          --exclude-spec                                                          don't embed the swagger specification
+          --with-context                                                          handlers get a context as first arg (deprecated)
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --flag-strategy=[go-flags|pflag]                                        the strategy to provide flags for the server (default: go-flags)
+          --compatibility-mode=[modern|intermediate]                              the compatibility mode for the tls server (default: modern)
+          --skip-validation                                                       skips validation of spec prior to generation
 ```
+
+### Build a server
 
 The server application gets generated with all the handlers stubbed out with a not implemented handler. That means that you can start the API server immediately after generating it. It will respond to all valid requests with 501 Not Implemented. When a request is invalid it will most likely respond with an appropriate 4xx response.
 

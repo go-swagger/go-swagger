@@ -1,4 +1,4 @@
-# swagger:params
+# swagger:parameters
 
 The **swagger:parameters** annotation links a struct to one or more operations. The parameters in the resulting swagger spec can be composed of several structs.
 There are no guarantees given on how property name overlaps are resolved when several structs apply to the same operation.

@@ -50,7 +50,7 @@ const (
 	xNullable    = "x-nullable" // turns the schema into a pointer
 	xOmitEmpty   = "x-omitempty"
 	xSchemes     = "x-schemes" // additional schemes supported for operations (server generation)
-	xOrder       = "x-order"   // sort propaties by
+	xOrder       = "x-order"   // sort order for properties (or any schema)
 )
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format

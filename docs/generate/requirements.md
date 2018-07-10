@@ -1,13 +1,13 @@
 # Requirements to build generated code
 
-## First time with golang?
+### First time with golang?
 
 Golang is a powerful and enticing language, but it may sometimes confuse first timers.
 
 Before engaging further with `go-swagger`, please take a while to get comfortable with golang basics 
 and conventions. That will save yourself much time and frustration.
 
-## Standard golang environment
+### Standard golang environment
 
 * version: we support the two latest versions of the go compiler
 * `GOPATH` environment variable set: all sources reside under `$GOPATH/src`
@@ -46,11 +46,8 @@ then build the vendor tree with `dep`.
 
 ### What are the dependencies required by the generated server?
 
-Additional packages required by the (default) generated server:
-
-- [`github.com/tylerb/graceful`](https://www.github.com/tylerb/graceful)
-
-And depending on your generation options, a command line flags handling package:
+Additional packages required by the (default) generated server
+depend on your generation options, a command line flags handling package:
 
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
 - [`github.com/spf13/pflags`](https://www.github.com/spf13/pflags)
