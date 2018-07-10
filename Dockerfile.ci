@@ -1,10 +1,9 @@
-FROM golang:1.9-alpine
-MAINTAINER go-swagger contributors
+FROM golang:alpine
 
 ENV GOCOVMODE atomic
 
 RUN apk add -U --no-cache bash tar gzip xz procps git curl ruby ruby-dev alpine-sdk libffi-dev rpm dpkg openssh-client &&\
-    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-17.09.1-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf -
+    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.03.1-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf -
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
