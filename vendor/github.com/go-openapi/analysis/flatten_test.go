@@ -935,10 +935,7 @@ func TestFlatten_oaigenFull(t *testing.T) {
 	var logCapture bytes.Buffer
 	log.SetOutput(&logCapture)
 	err = Flatten(FlattenOpts{Spec: New(sp), BasePath: bp, Verbose: true, Minimal: false, RemoveUnused: false})
-	//bb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bb))
 	msg := logCapture.String()
-	//t.Log(msg)
 
 	if !assert.NoError(t, err) {
 		t.FailNow()
@@ -1688,4 +1685,71 @@ func TestFlatten_Bitbucket(t *testing.T) {
 	assert.True(t, ok)
 	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
 	//log.Printf(string(bbb))
+}
+
+func TestFlatten_Issue_1602(t *testing.T) {
+	// $ref in #/responses or #/parameters
+
+	// minimal repro test case
+	bp := filepath.Join("fixtures", "bugs", "1602", "fixture-1602-1.yaml")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
+
+	// reload spec
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+
+	// reload spec
+	// with  prior expansion, a pseudo schema is produced
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: true, RemoveUnused: false})
+	assert.NoError(t, err)
+
+	// full testcase
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-full.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-1.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-2.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-3.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-4.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-5.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
+	assert.Error(t, err)
+	//t.Logf("%s: %v", bp, err)
 }

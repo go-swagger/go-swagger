@@ -336,11 +336,11 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 
 // Issue776 includes references that span multiple files. Flattening or Expanding is required
 func TestGenResponses_Issue776_Spec(t *testing.T) {
-	spec.Debug = true
+	//spec.Debug = true
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
-		spec.Debug = false
+		//spec.Debug = false
 	}()
 
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/spec.yaml")
@@ -364,11 +364,11 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 }
 
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
-	spec.Debug = true
+	//spec.Debug = true
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
-		spec.Debug = false
+		//spec.Debug = false
 	}()
 
 	b, err := opBuilderWithFlatten("getHealthy", "../fixtures/bugs/776/swagger-template.yml")

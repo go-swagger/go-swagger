@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -406,4 +408,36 @@ func TestShared_LoadTemplate(t *testing.T) {
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
+}
+func TestShared_Issue1429(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// acknowledge fix in go-openapi/spec
+	specPath := filepath.Join("..", "fixtures", "bugs", "1429", "swagger-1429.yaml")
+	specDoc, err := loads.Spec(specPath)
+	assert.NoError(t, err)
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	_, err = validateAndFlattenSpec(&opts, specDoc)
+	assert.NoError(t, err)
+
+	// more aggressive fixture on $refs, with validation errors, but flatten ok
+	specPath = filepath.Join("..", "fixtures", "bugs", "1429", "swagger.yaml")
+	specDoc, err = loads.Spec(specPath)
+	assert.NoError(t, err)
+
+	opts.Spec = specPath
+	opts.FlattenOpts.BasePath = specDoc.SpecFilePath()
+	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+	opts.FlattenOpts.Minimal = true
+	err = analysis.Flatten(*opts.FlattenOpts)
+	assert.NoError(t, err)
+
+	specDoc, _ = loads.Spec(specPath) // needs reload
+	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+	opts.FlattenOpts.Minimal = false
+	err = analysis.Flatten(*opts.FlattenOpts)
+	assert.NoError(t, err)
 }

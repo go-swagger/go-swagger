@@ -931,10 +931,10 @@ func TestGenParameter_Issue710(t *testing.T) {
 }
 
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
-	spec.Debug = true
+	//spec.Debug = true
 	log.SetOutput(ioutil.Discard)
 	defer func() {
-		spec.Debug = false
+		//spec.Debug = false
 		log.SetOutput(os.Stdout)
 	}()
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/param.yaml")

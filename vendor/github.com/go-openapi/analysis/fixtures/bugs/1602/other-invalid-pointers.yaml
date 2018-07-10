@@ -1,0 +1,84 @@
+---
+swagger: "2.0"
+schemes:
+  - "http"
+  - "https"
+basePath: "/v1.24"
+info:
+  title: Edge cases with JSON pointers
+  version: "1.24"
+  description: |
+    Explore edge cases with invalid pointers
+
+paths:
+  /invalid:
+    get:
+      responses:
+        401:
+          $ref: "#/responses/401ErrorResponse"
+        404:
+          $ref: "#/responses/404ErrorResponse"
+        500:
+          $ref: "#/responses/500ErrorResponse"
+  
+definitions:
+  invalidRefInObject:
+    type: object
+    properties:
+      prop1:
+        type: integer
+      prop2:
+        $ref: "#/definitions/noWhere"
+  invalidRefInMap:
+    type: object
+    additionalProperties:
+      $ref: "#/definitions/noWhere"
+  invalidRefInArray:
+    type: array
+    items:
+      $ref: "#/definitions/noWhere"
+  indirectToInvalidRef:
+    $ref: "#/definitions/invalidRefInArray"
+  invalidRefInTuple:
+    type: array
+    items:
+      - type: integer
+      - $ref: "#/definitions/noWhere"
+parameters:
+  bodyWithRef:
+    name: bodyWithRefParam
+    in: body
+    required: true
+    schema:
+      $ref: "#/definitions/Error"
+  anotherBodyWithRef:
+    name: anotherBodyWithRefParam
+    in: body
+    required: true
+    schema:
+      $ref: "#/definitions/Error"
+  funnyParam:
+    name: funnyParam
+    in: body
+    required: true
+    schema:
+      $ref: "#/responses/500ErrorResponse/schema"
+
+responses:
+  401ErrorResponse:
+    description: An unexpected 401 error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  404ErrorResponse:
+    description: An unexpected 404 error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  500ErrorResponse:
+    description: An unexpected server error occurred.
+    schema:
+      $ref: "#/definitions/Error"
+  funnyResponse:
+    description: An unexpected server error occurred.
+    schema:
+      $ref: "#/responses/401ErrorResponse/schema"
+

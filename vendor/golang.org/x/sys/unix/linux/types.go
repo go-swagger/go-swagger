@@ -191,6 +191,13 @@ struct sockaddr_l2 {
 	uint8_t		l2_bdaddr_type;
 };
 
+// copied from /usr/include/net/bluetooth/rfcomm.h
+struct sockaddr_rc {
+	sa_family_t rc_family;
+	uint8_t     rc_bdaddr[6];
+	uint8_t     rc_channel;
+};
+
 // copied from /usr/include/linux/un.h
 struct my_sockaddr_un {
 	sa_family_t sun_family;
@@ -401,6 +408,8 @@ type RawSockaddrHCI C.struct_sockaddr_hci
 
 type RawSockaddrL2 C.struct_sockaddr_l2
 
+type RawSockaddrRFCOMM C.struct_sockaddr_rc
+
 type RawSockaddrCAN C.struct_sockaddr_can
 
 type RawSockaddrALG C.struct_sockaddr_alg
@@ -450,6 +459,7 @@ const (
 	SizeofSockaddrNetlink   = C.sizeof_struct_sockaddr_nl
 	SizeofSockaddrHCI       = C.sizeof_struct_sockaddr_hci
 	SizeofSockaddrL2        = C.sizeof_struct_sockaddr_l2
+	SizeofSockaddrRFCOMM    = C.sizeof_struct_sockaddr_rc
 	SizeofSockaddrCAN       = C.sizeof_struct_sockaddr_can
 	SizeofSockaddrALG       = C.sizeof_struct_sockaddr_alg
 	SizeofSockaddrVM        = C.sizeof_struct_sockaddr_vm

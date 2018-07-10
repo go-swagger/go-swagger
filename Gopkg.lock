@@ -53,7 +53,7 @@
   branch = "master"
   name = "github.com/go-openapi/analysis"
   packages = ["."]
-  revision = "a300ac7e9cfde2614eb71f7fe78ea4514bb14cfa"
+  revision = "3c8fe72ed5d307113ef76c7c3035964d7e4d4b73"
 
 [[projects]]
   branch = "master"
@@ -108,7 +108,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "16284f9da51d5a5b5dc67c8109a99b014c4b7f0a"
+  revision = "90cb6221326a6e7a2ae375729b6f724c7ae66899"
 
 [[projects]]
   branch = "master"
@@ -293,7 +293,7 @@
     "idna",
     "netutil"
   ]
-  revision = "ed29d75add3d7c4bf7ca65aac0c6df3d1420216f"
+  revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
 
 [[projects]]
   branch = "master"
@@ -308,7 +308,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
+  revision = "1b2967e3c290b7c545b3db0deeda16e9be4f98a2"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -342,7 +342,7 @@
     "imports",
     "internal/fastwalk"
   ]
-  revision = "ffe88906718454e356e61776b54256e873fc133b"
+  revision = "8cb83b71b42ccf5fe279fa8a24a6a8f65507dc9c"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -365,7 +365,7 @@
     "bson",
     "internal/json"
   ]
-  revision = "3f83fa5005286a7fe593b055f0d7771a7dce4655"
+  revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [[projects]]
   name = "gopkg.in/square/go-jose.v2"

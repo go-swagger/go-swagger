@@ -30,6 +30,7 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/net/context"
 	"golang.org/x/net/http2/hpack"
 )
 
@@ -41,12 +42,13 @@ var (
 
 var tlsConfigInsecure = &tls.Config{InsecureSkipVerify: true}
 
-type testContext struct{}
+var canceledCtx context.Context
 
-func (testContext) Done() <-chan struct{}                   { return make(chan struct{}) }
-func (testContext) Err() error                              { panic("should not be called") }
-func (testContext) Deadline() (deadline time.Time, ok bool) { return time.Time{}, false }
-func (testContext) Value(key interface{}) interface{}       { return nil }
+func init() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	canceledCtx = ctx
+}
 
 func TestTransportExternal(t *testing.T) {
 	if !*extNet {
@@ -2024,12 +2026,22 @@ func TestTransportRejectsConnHeaders(t *testing.T) {
 		},
 		{
 			key:   "Connection",
+			value: []string{"CLoSe"},
+			want:  "Accept-Encoding,User-Agent",
+		},
+		{
+			key:   "Connection",
 			value: []string{"close", "something-else"},
 			want:  "ERROR: http2: invalid Connection request header: [\"close\" \"something-else\"]",
 		},
 		{
 			key:   "Connection",
 			value: []string{"keep-alive"},
+			want:  "Accept-Encoding,User-Agent",
+		},
+		{
+			key:   "Connection",
+			value: []string{"Keep-ALIVE"},
 			want:  "Accept-Encoding,User-Agent",
 		},
 		{
@@ -3044,7 +3056,7 @@ func TestClientConnPing(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = cc.Ping(testContext{}); err != nil {
+	if err = cc.Ping(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -3845,4 +3857,192 @@ func BenchmarkClientRequestHeaders(b *testing.B) {
 	b.Run("  10 Headers", func(b *testing.B) { benchSimpleRoundTrip(b, 10) })
 	b.Run(" 100 Headers", func(b *testing.B) { benchSimpleRoundTrip(b, 100) })
 	b.Run("1000 Headers", func(b *testing.B) { benchSimpleRoundTrip(b, 1000) })
+}
+
+func activeStreams(cc *ClientConn) int {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+	return len(cc.streams)
+}
+
+type closeMode int
+
+const (
+	closeAtHeaders closeMode = iota
+	closeAtBody
+	shutdown
+	shutdownCancel
+)
+
+// See golang.org/issue/17292
+func testClientConnClose(t *testing.T, closeMode closeMode) {
+	clientDone := make(chan struct{})
+	defer close(clientDone)
+	handlerDone := make(chan struct{})
+	closeDone := make(chan struct{})
+	beforeHeader := func() {}
+	bodyWrite := func(w http.ResponseWriter) {}
+	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
+		defer close(handlerDone)
+		beforeHeader()
+		w.WriteHeader(http.StatusOK)
+		w.(http.Flusher).Flush()
+		bodyWrite(w)
+		select {
+		case <-w.(http.CloseNotifier).CloseNotify():
+			// client closed connection before completion
+			if closeMode == shutdown || closeMode == shutdownCancel {
+				t.Error("expected request to complete")
+			}
+		case <-clientDone:
+			if closeMode == closeAtHeaders || closeMode == closeAtBody {
+				t.Error("expected connection closed by client")
+			}
+		}
+	}, optOnlyServer)
+	defer st.Close()
+	tr := &Transport{TLSClientConfig: tlsConfigInsecure}
+	defer tr.CloseIdleConnections()
+	cc, err := tr.dialClientConn(st.ts.Listener.Addr().String(), false)
+	req, err := http.NewRequest("GET", st.ts.URL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if closeMode == closeAtHeaders {
+		beforeHeader = func() {
+			if err := cc.Close(); err != nil {
+				t.Error(err)
+			}
+			close(closeDone)
+		}
+	}
+	var sendBody chan struct{}
+	if closeMode == closeAtBody {
+		sendBody = make(chan struct{})
+		bodyWrite = func(w http.ResponseWriter) {
+			<-sendBody
+			b := make([]byte, 32)
+			w.Write(b)
+			w.(http.Flusher).Flush()
+			if err := cc.Close(); err != nil {
+				t.Errorf("unexpected ClientConn close error: %v", err)
+			}
+			close(closeDone)
+			w.Write(b)
+			w.(http.Flusher).Flush()
+		}
+	}
+	res, err := cc.RoundTrip(req)
+	if res != nil {
+		defer res.Body.Close()
+	}
+	if closeMode == closeAtHeaders {
+		got := fmt.Sprint(err)
+		want := "http2: client connection force closed via ClientConn.Close"
+		if got != want {
+			t.Fatalf("RoundTrip error = %v, want %v", got, want)
+		}
+	} else {
+		if err != nil {
+			t.Fatalf("RoundTrip: %v", err)
+		}
+		if got, want := activeStreams(cc), 1; got != want {
+			t.Errorf("got %d active streams, want %d", got, want)
+		}
+	}
+	switch closeMode {
+	case shutdownCancel:
+		if err = cc.Shutdown(canceledCtx); err != errCanceled {
+			t.Errorf("got %v, want %v", err, errCanceled)
+		}
+		if cc.closing == false {
+			t.Error("expected closing to be true")
+		}
+		if cc.CanTakeNewRequest() == true {
+			t.Error("CanTakeNewRequest to return false")
+		}
+		if v, want := len(cc.streams), 1; v != want {
+			t.Errorf("expected %d active streams, got %d", want, v)
+		}
+		clientDone <- struct{}{}
+		<-handlerDone
+	case shutdown:
+		wait := make(chan struct{})
+		shutdownEnterWaitStateHook = func() {
+			close(wait)
+			shutdownEnterWaitStateHook = func() {}
+		}
+		defer func() { shutdownEnterWaitStateHook = func() {} }()
+		shutdown := make(chan struct{}, 1)
+		go func() {
+			if err = cc.Shutdown(context.Background()); err != nil {
+				t.Error(err)
+			}
+			close(shutdown)
+		}()
+		// Let the shutdown to enter wait state
+		<-wait
+		cc.mu.Lock()
+		if cc.closing == false {
+			t.Error("expected closing to be true")
+		}
+		cc.mu.Unlock()
+		if cc.CanTakeNewRequest() == true {
+			t.Error("CanTakeNewRequest to return false")
+		}
+		if got, want := activeStreams(cc), 1; got != want {
+			t.Errorf("got %d active streams, want %d", got, want)
+		}
+		// Let the active request finish
+		clientDone <- struct{}{}
+		// Wait for the shutdown to end
+		select {
+		case <-shutdown:
+		case <-time.After(2 * time.Second):
+			t.Fatal("expected server connection to close")
+		}
+	case closeAtHeaders, closeAtBody:
+		if closeMode == closeAtBody {
+			go close(sendBody)
+			if _, err := io.Copy(ioutil.Discard, res.Body); err == nil {
+				t.Error("expected a Copy error, got nil")
+			}
+		}
+		<-closeDone
+		if got, want := activeStreams(cc), 0; got != want {
+			t.Errorf("got %d active streams, want %d", got, want)
+		}
+		// wait for server to get the connection close notice
+		select {
+		case <-handlerDone:
+		case <-time.After(2 * time.Second):
+			t.Fatal("expected server connection to close")
+		}
+	}
+}
+
+// The client closes the connection just after the server got the client's HEADERS
+// frame, but before the server sends its HEADERS response back. The expected
+// result is an error on RoundTrip explaining the client closed the connection.
+func TestClientConnCloseAtHeaders(t *testing.T) {
+	testClientConnClose(t, closeAtHeaders)
+}
+
+// The client closes the connection between two server's response DATA frames.
+// The expected behavior is a response body io read error on the client.
+func TestClientConnCloseAtBody(t *testing.T) {
+	testClientConnClose(t, closeAtBody)
+}
+
+// The client sends a GOAWAY frame before the server finished processing a request.
+// We expect the connection not to close until the request is completed.
+func TestClientConnShutdown(t *testing.T) {
+	testClientConnClose(t, shutdown)
+}
+
+// The client sends a GOAWAY frame before the server finishes processing a request,
+// but cancels the passed context before the request is completed. The expected
+// behavior is the client closing the connection after the context is canceled.
+func TestClientConnShutdownCancel(t *testing.T) {
+	testClientConnClose(t, shutdownCancel)
 }

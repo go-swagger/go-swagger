@@ -1721,6 +1721,13 @@ func (sc *serverConn) processHeaders(f *MetaHeadersFrame) error {
 			// processing this frame.
 			return nil
 		}
+		// RFC 7540, sec 5.1: If an endpoint receives additional frames, other than
+		// WINDOW_UPDATE, PRIORITY, or RST_STREAM, for a stream that is in
+		// this state, it MUST respond with a stream error (Section 5.4.2) of
+		// type STREAM_CLOSED.
+		if st.state == stateHalfClosedRemote {
+			return streamError(id, ErrCodeStreamClosed)
+		}
 		return st.processTrailerHeaders(f)
 	}
 

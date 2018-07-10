@@ -1,0 +1,11 @@
+aRemotePlace:
+  type: object
+  properties:
+    remoteProp:
+      type: integer
+    fartherProp:
+      $ref: './farther/farther.yaml#/farFarAway'
+
+moreRemoteThanYouCanThink:
+  #$ref: './remote/remote.yaml#/farFarAway'
+  type: integer
