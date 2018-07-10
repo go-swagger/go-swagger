@@ -21,6 +21,7 @@ import (
 	"go/ast"
 	"go/build"
 	goparser "go/parser"
+	"go/types"
 	"log"
 	"os"
 	"regexp"
@@ -204,11 +205,12 @@ func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, 
 	}
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
-	ldr.ImportWithTests(opts.BasePath)
+	ldr.Import(opts.BasePath)
 	if opts.BuildTags != "" {
 		ldr.Build = &build.Default
 		ldr.Build.BuildTags = strings.Split(opts.BuildTags, ",")
 	}
+	ldr.TypeChecker = types.Config{FakeImportC: true}
 	prog, err := ldr.Load()
 	if err != nil {
 		return nil, err
