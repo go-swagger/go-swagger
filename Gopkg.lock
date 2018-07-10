@@ -108,7 +108,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "90cb6221326a6e7a2ae375729b6f724c7ae66899"
+  revision = "bce47c9386f9ecd6b86f450478a80103c3fe1402"
 
 [[projects]]
   branch = "master"
@@ -255,7 +255,7 @@
   branch = "master"
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "15738813a09db5c8e5b60a19d67d3f9bd38da3a4"
+  revision = "d493c32b69b8c6f2377bf30bc4d70267ffbc0793"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -342,7 +342,7 @@
     "imports",
     "internal/fastwalk"
   ]
-  revision = "8cb83b71b42ccf5fe279fa8a24a6a8f65507dc9c"
+  revision = "18f0b668f1069d7f55ac25b6f2670e30cd6499c0"
 
 [[projects]]
   name = "google.golang.org/appengine"

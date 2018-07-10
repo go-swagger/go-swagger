@@ -709,6 +709,18 @@ func (r *schemaLoader) isCircular(ref *Ref, basePath string, parentRefs ...strin
 	return
 }
 
+func updateBasePath(transitive *schemaLoader, resolver *schemaLoader, basePath string) string {
+	if transitive != resolver {
+		debugLog("got a new resolver")
+		if transitive.options != nil && transitive.options.RelativeBase != "" {
+			basePath, _ = absPath(transitive.options.RelativeBase)
+			debugLog("new basePath = %s", basePath)
+		}
+	}
+
+	return basePath
+}
+
 func expandSchema(target Schema, parentRefs []string, resolver *schemaLoader, basePath string) (*Schema, error) {
 	if target.Ref.String() == "" && target.Ref.IsRoot() {
 		// normalizing is important
@@ -770,15 +782,7 @@ func expandSchema(target Schema, parentRefs []string, resolver *schemaLoader, ba
 				return nil, err
 			}
 
-			if transitiveResolver != resolver {
-				debugLog("got a new resolver")
-				if transitiveResolver.options != nil && transitiveResolver.options.RelativeBase != "" {
-					basePath, _ = absPath(transitiveResolver.options.RelativeBase)
-					debugLog("new basePath = %s", basePath)
-				}
-			} else {
-				basePath = normalizedBasePath
-			}
+			basePath = updateBasePath(transitiveResolver, resolver, normalizedBasePath)
 
 			return expandSchema(*t, parentRefs, transitiveResolver, basePath)
 		}
@@ -1060,11 +1064,12 @@ func expandResponse(response *Response, resolver *schemaLoader, basePath string)
 		return err
 	}
 	if response.Ref.String() != "" {
-		var err error
-		resolver, err = transitiveResolver(basePath, response.Ref, resolver)
-		if shouldStopOnError(err, resolver.options) {
+		transitiveResolver, err := transitiveResolver(basePath, response.Ref, resolver)
+		if shouldStopOnError(err, transitiveResolver.options) {
 			return err
 		}
+		basePath = updateBasePath(transitiveResolver, resolver, basePath)
+		resolver = transitiveResolver
 	}
 	if response.Schema != nil && response.Schema.Ref.String() != "" {
 		// schema expanded to a $ref in another root
@@ -1078,7 +1083,7 @@ func expandResponse(response *Response, resolver *schemaLoader, basePath string)
 
 	parentRefs = parentRefs[0:]
 	if !resolver.options.SkipSchemas && response.Schema != nil {
-		parentRefs = append(parentRefs, response.Schema.Ref.String())
+		// parentRefs = append(parentRefs, response.Schema.Ref.String())
 		s, err := expandSchema(*response.Schema, parentRefs, resolver, basePath)
 		if shouldStopOnError(err, resolver.options) {
 			return err
@@ -1137,11 +1142,12 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader, basePath stri
 		return err
 	}
 	if parameter.Ref.String() != "" {
-		var err error
-		resolver, err = transitiveResolver(basePath, parameter.Ref, resolver)
-		if shouldStopOnError(err, resolver.options) {
+		transitiveResolver, err := transitiveResolver(basePath, parameter.Ref, resolver)
+		if shouldStopOnError(err, transitiveResolver.options) {
 			return err
 		}
+		basePath = updateBasePath(transitiveResolver, resolver, basePath)
+		resolver = transitiveResolver
 	}
 
 	if parameter.Schema != nil && parameter.Schema.Ref.String() != "" {
@@ -1156,7 +1162,6 @@ func expandParameter(parameter *Parameter, resolver *schemaLoader, basePath stri
 
 	parentRefs = parentRefs[0:]
 	if !resolver.options.SkipSchemas && parameter.Schema != nil {
-		parentRefs = append(parentRefs, parameter.Schema.Ref.String())
 		s, err := expandSchema(*parameter.Schema, parentRefs, resolver, basePath)
 		if shouldStopOnError(err, resolver.options) {
 			return err
