@@ -12,7 +12,8 @@ build_binary() {
 
 prepare() {
   rm -rf $prjdir/dist
-  mkdir -p $prjdir/dist/{bin,build}
+  mkdir -p $prjdir/dist/bin
+  mkdir -p $prjdir/dist/build
   mkdir -p $prjdir/dist/linux/amd64/usr/bin
 }
 
@@ -73,7 +74,7 @@ deploy_docker() {
 
 # prepare
 
-# build binaries
+# # build binaries
 # build_binary -os="linux darwin windows" -arch="amd64 386"
 # build_binary -os="linux" -arch="arm64 arm"
 
