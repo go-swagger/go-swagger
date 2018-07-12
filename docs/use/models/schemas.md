@@ -145,28 +145,30 @@ There are some small differences or implementation details to be aware of.
 |---                                    |---                 |---           |---          |---        |
 | `"format"`                            |   Y| Y    | Y      | Formats are provided by the extensible [`go-openapi/strfmt` package][strfmt]. See also [here](#formatted-types)|
 | `"additionalProperties": {schema}`    |   Y| Y    | Y      | Rendered as `map[string]T`                           |
-| `"additionalProperties": true\|false` |   Y| Y    | partial| Rendered as `map[string]interface{}`                           |
+| `"additionalProperties": boolean`     |   Y| Y    | partial| Rendered as `map[string]interface{}`                           |
 | `"additionalItems": {schema}`         |   Y| **N**| Y      | Rendered with [tuple models](#tuples-and-additional-items)|
-| `"additionalItems": true\|false`      |   Y| **N**| partial| See [extensible types](#extensible-types)             |
+| `"additionalItems": boolean`          |   Y| **N**| partial| See [extensible types](#extensible-types)             |
 | empty object: `{ "type": "object"}`   |   Y| Y    | Y      | Rendered as `interface{}` (anything) rather than `map[string]inferface{}` (any JSON object, e.g. not arrays)|
 | `"pattern"`                           |   Y| Y    | partial| Speed for strictness trade-off: support go regexp, which slighty differ from JSONSchema ECMA regexp (e.g does not support backtracking)|
 |  large number, arbitrary precision    |   Y| **N**| N      |    |
 | `"readOnly"`                          |   N| Y    | N      | `readOnly` is currently not supported by the model validation method |
 | `"type": [ "object", ... ]`           |   Y| N    | N      | JSONSchema multiple types are not supported: use Swagger polymorphism instead|
-| implicit type from values in `enum`   |   Y| ?    | N      | As of v1.0, when the type is empty, the object is rendered as `interface{}` and the `enum` constraint is ignored|
-| tuple validation `type: "array" items:[...]| Y| Y | partial| As of v1.0, incomplete tuples and tuples with array validation are not properly validated|
+| implicit type from values in `enum`   |   Y| ?    | N      | As of v0.15, when the type is empty, the object is rendered as `interface{}` and the `enum` constraint is ignored|
+| tuple `type: "array" items:[...]      |   Y| Y    | partial| As of v0.15, incomplete tuples and tuples with array validation are not properly validated|
 
 
-JSONSchema defaults to `"additionalProperties": true`, `go-swagger` default to ignoring this. Same for `additionalItems`.
+JSONSchema defaults to `"additionalProperties": true`, `go-swagger` defaults to ignoring this. Same for `additionalItems`.
 
 When`"additionalProperties": false` (resp. `"additionalItems": false`), uwanted properties (resp. items) do not invalidate data
-but does not store them in the model. This is the default if `additionalProperties` (resp. `additionalItems`) is not provided.
-This is an optimization as it makes the code simpler (and faster).
+but they are not kept in the model.
+
+This is the default if `additionalProperties` (resp. `additionalItems`) is not provided.
+It is an optimization as it makes the code simpler (and faster) for most use cases.
 Explicitly specifying `true` will produce models that retain those additional properties (resp. items).
 
 ### Known limitations with go-swagger models
 
-Recap as of release `1.0`:
+Recap as of release `0.15`:
 
 - re [Swagger 2.0 specification][swagger]
 
@@ -180,9 +182,9 @@ Recap as of release `1.0`:
   - `minProperties`, `maxProperties` are not supported
   - `patternProperties` and `dependencies`are not supported
   - use of `additionalItems` requires the `--skip-validation` flag (`go-openapi/validate` is strict regarding Swagger specification)
-  - JSONSchema defaults to the `"additionalProperties": true`, `go-swagger` default to ignore this. Same for `additionalItems`.
+  - JSONSchema defaults to the `"additionalProperties": true`, `go-swagger` defaults to ignore this. Same for `additionalItems`.
   - use of `additionalItems` requires the `--skip-validation` flag (`go-openapi/validate` is strict regarding Swagger specification)
-  - array validations (`minItems`, etc.) are not yet supported for tuples, as of 1.0
+  - array validations (`minItems`, etc.) are not yet supported for tuples, as of v0.15
   - objects with no properties and no additional properties schema have no validation at all (e.g. passing an array is not invalid) (rendered as `interface{}`)
   - `null` JSON type: the `null` type is not supported by Swagger - use of the `x-nullable` extension makes `null` values valid
   (notice that combining the use of `required` and `x-nullable` is not fully JSONSchema compliant - see [below](#nullability))
@@ -690,7 +692,7 @@ func UnmarshalPetSlice(reader io.Reader, consumer runtime.Consumer) ([]Pet, erro
 Note that the marshalling of a base type into JSON is processed naturally, so there is no need for a special function.
 
 > **Known limitations**:
-> As of v1.0, there are still some known limitations:
+> As of v0.15, there are still some known limitations:
 >
 > - Unmarshalling maps of base types is not supported at the moment (e.g. `UnmarshalPetMap()` factory)
 > - More complex constructs like `[][]Pet`, `[]map[string]Pet` are not supported yet
