@@ -87,7 +87,7 @@ Here is an outline of available features (see the full list [here](https://goswa
 
 There is more to that...
 
-- A [typed JSON Schema implementation](https://gowagger.io/use/model.html), supporting most Draft 4 features
+- A [typed JSON Schema implementation](https://goswagger.io/use/model.html), supporting most Draft 4 features
 - Extended string and numeric formats: [strfmt](https://github.com/go-openapi/strfmt)
 - Utilities to work with JSON, convert data types and pointers: [swag](https://github.com/go-openapi/swag)
 - A jsonschema (Draft 4) validator, with full $ref support: [validate](https://github.com/go-openapi/validate)
@@ -223,9 +223,9 @@ github.com/go-swagger/go-swagger to github.com/go-openapi
 
 Spec flattening and $ref resolution brought breaking changes in model generation, since all complex things generate their own definitions.
 
-### Migrating from 0.14 to 1.0
+### Migrating from 0.14 to 0.15
 
-Generated servers no more imports the following package (replaced by go1.8 native functionality):
+Generated servers no more import the following package (replaced by go1.8 native functionality):
 ```
 github.com/tylerb/graceful
 ```
