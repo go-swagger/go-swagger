@@ -16,6 +16,7 @@ package generator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,12 +27,14 @@ import (
 	goruntime "runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"golang.org/x/sync/semaphore"
 )
 
 // GenerateServer generates a server application
@@ -550,7 +553,17 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("planning operations")
 	tns := make(map[string]struct{})
 	var genOps GenOperations
-	for on, opp := range a.Operations {
+
+	var (
+		genLock sync.Mutex
+		genErr  error
+		genWg   sync.WaitGroup
+		genSem  = semaphore.NewWeighted(int64(goruntime.GOMAXPROCS(0)))
+
+		genCtx, genCancel = context.WithCancel(context.Background())
+	)
+
+	genOp := func(on string, opp opRef) error {
 		o := opp.Op
 		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
@@ -586,25 +599,57 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		}
 		intersected := intersectTags(o.Tags, st)
 		if len(st) > 0 && len(intersected) == 0 {
-			continue
+			return nil
 		}
 
 		if len(intersected) == 1 {
 			tag := intersected[0]
 			bldr.APIPackage = a.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), a.APIPackage)
+			genLock.Lock()
 			for _, t := range intersected {
 				tns[t] = struct{}{}
 			}
+			genLock.Unlock()
 		}
 		op, err := bldr.MakeOperation()
 		if err != nil {
-			return GenApp{}, err
+			return err
 		}
 		op.ReceiverName = receiver
 		op.Tags = intersected
+		genLock.Lock()
 		genOps = append(genOps, op)
+		genLock.Unlock()
 
+		return nil
 	}
+
+	// run genOp() with goroutine (in parallel) for speed.
+	for on, opp := range a.Operations {
+		genWg.Add(1)
+		go func(on string, opp opRef) {
+			defer genWg.Done()
+			if err := genSem.Acquire(genCtx, 1); err != nil {
+				return
+			}
+			defer genSem.Release(1)
+			if err := genOp(on, opp); err != nil {
+				genLock.Lock()
+				if genErr == nil {
+					genErr = err
+					genCancel()
+				}
+				genLock.Unlock()
+			}
+		}(on, opp)
+	}
+	// wait finish of all genOp()
+	genWg.Wait()
+	genCancel()
+	if genErr != nil {
+		return GenApp{}, genErr
+	}
+
 	for k := range tns {
 		importPath := filepath.ToSlash(filepath.Join(baseImport, a.OperationsPackage, swag.ToFileName(k)))
 		defaultImports = append(defaultImports, importPath)
