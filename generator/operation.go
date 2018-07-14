@@ -1070,7 +1070,14 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		ExtraSchemas:     make(map[string]GenSchema),
 	}
 
-	br, bs := b.saveResolveContext(rslv, sch)
+	var (
+		br *typeResolver
+		bs *spec.Schema
+	)
+	// these backups are not needed when sch has name.
+	if sch.Ref.String() == "" {
+		br, bs = b.saveResolveContext(rslv, sch)
+	}
 
 	if err := sc.makeGenSchema(); err != nil {
 		return GenSchema{}, err
