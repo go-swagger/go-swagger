@@ -600,15 +600,21 @@ func handleInterrupt(once *sync.Once, s *Server, quitting chan struct{}) {
 		s.Logf("Shutting down... ")
 		close(quitting)
 
-		if err := s.httpServerL.Close(); err != nil {
-			s.Logf("Error: %s", err)
-		}
-		if err := s.httpsServerL.Close(); err != nil {
-			s.Logf("Error: %s", err)
-		}
-		if err := s.domainSocketL.Close(); err != nil {
-			s.Logf("Error: %s", err)
-		}
+    if s.httpServerL != nil {
+      if err := s.httpServerL.Close(); err != nil {
+        s.Logf("Error: %s", err)
+      }
+    }
+    if s.httpsServerL != nil {
+      if err := s.httpsServerL.Close(); err != nil {
+        s.Logf("Error: %s", err)
+      }
+    }
+    if s.domainSocketL != nil {
+      if err := s.domainSocketL.Close(); err != nil {
+        s.Logf("Error: %s", err)
+      }
+    }
 	}
 	})
 }
