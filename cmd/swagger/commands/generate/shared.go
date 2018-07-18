@@ -75,6 +75,7 @@ type shared struct {
 	ServerPackage         string         `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
 	ClientPackage         string         `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
 	Target                flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files"`
+	Template              string         `long:"template" description:"Load contributed templates" choice:"stratoscale"`
 	TemplateDir           flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory"`
 	ConfigFile            flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options"`
 	CopyrightFile         flags.Filename `long:"copyright-file" short:"r" description:"copyright file used to add copyright header"`

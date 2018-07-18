@@ -62,6 +62,7 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		IncludeSupport:    !s.SkipSupport,
 		ValidateSpec:      !s.SkipValidation,
 		ExcludeSpec:       s.ExcludeSpec,
+		Template:          s.Template,
 		TemplateDir:       string(s.TemplateDir),
 		WithContext:       s.WithContext,
 		DumpData:          s.DumpData,

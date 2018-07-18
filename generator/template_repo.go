@@ -293,7 +293,9 @@ func (t *Repository) LoadDir(templatePath string) error {
 // LoadDir loads template from contrib directory
 func (t *Repository) LoadContrib(name string) error {
 	log.Println("Loading contrib")
-	files, err := AssetDir(filepath.Join("contrib", name))
+	// TODO: recursively walk the directory and switch all files in the assets global variable
+	//       according to their name
+	files, err := AssetDir(filepath.Join("templates/contrib", name))
 	if err != nil {
 		return fmt.Errorf("contrib not be loaded: %s", err)
 	}

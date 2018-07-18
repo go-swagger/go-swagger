@@ -42,6 +42,7 @@ func (s *Support) getOpts() (*generator.GenOpts, error) {
 		Principal:     s.Principal,
 		DumpData:      s.DumpData,
 		DefaultScheme: s.DefaultScheme,
+		Template:      s.Template,
 		TemplateDir:   string(s.TemplateDir),
 	}, nil
 }

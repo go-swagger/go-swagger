@@ -47,6 +47,7 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		Principal:         o.Principal,
 		DumpData:          o.DumpData,
 		DefaultScheme:     o.DefaultScheme,
+		Template:          o.Template,
 		TemplateDir:       string(o.TemplateDir),
 		IncludeHandler:    !o.NoHandler,
 		IncludeResponses:  !o.NoResponses,
