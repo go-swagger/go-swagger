@@ -140,11 +140,6 @@ var assets = map[string][]byte{
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
-
-	//"contrib/stratoscale/server/server.gotmpl":       MustAsset("templates/contrib/stratoscale/server/server.gotmpl"),
-	//"contrib/stratoscale/server/configureapi.gotmpl": MustAsset("templates/contrib/stratoscale/server/configureapi.gotmpl"),
-	//"contrib/stratoscale/client/client.gotmpl":       MustAsset("templates/contrib/stratoscale/client/client.gotmpl"),
-	//"contrib/stratoscale/client/facade.gotmpl":       MustAsset("templates/contrib/stratoscale/client/facade.gotmpl"),
 }
 
 var protectedTemplates = map[string]bool{
@@ -263,7 +258,6 @@ func (t *Repository) LoadDefaults() {
 
 // LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
 func (t *Repository) LoadDir(templatePath string) error {
-
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
@@ -290,17 +284,25 @@ func (t *Repository) LoadDir(templatePath string) error {
 	return nil
 }
 
-// LoadDir loads template from contrib directory
+// LoadContrib loads template from contrib directory
 func (t *Repository) LoadContrib(name string) error {
-	log.Println("Loading contrib")
-	// TODO: recursively walk the directory and switch all files in the assets global variable
-	//       according to their name
-	files, err := AssetDir(filepath.Join("templates/contrib", name))
+	log.Printf("loading contrib %s", name)
+	const pathPrefix = "generator/templates/contrib/"
+	basePath := filepath.Join(pathPrefix, name)
+	err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
+		if !strings.HasSuffix(path, ".gotmpl") {
+			return nil
+		}
+		name = path[len(basePath)+1:]
+		err = t.addFile(name, string(MustAsset(path[len("generator/"):])), true)
+		if err != nil {
+			return err
+		}
+		log.Printf("added contributed template %s from %s", name, path)
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("contrib not be loaded: %s", err)
-	}
-	for _, fileName := range files {
-		log.Println("Loaded:", fileName)
 	}
 	return nil
 }
