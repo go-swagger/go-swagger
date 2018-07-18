@@ -409,6 +409,7 @@ type GenOpts struct {
 	DefaultProduces   string
 	DefaultConsumes   string
 	TemplateDir       string
+	Template          string
 	Operations        []string
 	Models            []string
 	Tags              []string

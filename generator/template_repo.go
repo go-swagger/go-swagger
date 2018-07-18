@@ -140,6 +140,11 @@ var assets = map[string][]byte{
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+
+	//"contrib/stratoscale/server/server.gotmpl":       MustAsset("templates/contrib/stratoscale/server/server.gotmpl"),
+	//"contrib/stratoscale/server/configureapi.gotmpl": MustAsset("templates/contrib/stratoscale/server/configureapi.gotmpl"),
+	//"contrib/stratoscale/client/client.gotmpl":       MustAsset("templates/contrib/stratoscale/client/client.gotmpl"),
+	//"contrib/stratoscale/client/facade.gotmpl":       MustAsset("templates/contrib/stratoscale/client/facade.gotmpl"),
 }
 
 var protectedTemplates = map[string]bool{
@@ -281,6 +286,19 @@ func (t *Repository) LoadDir(templatePath string) error {
 	})
 	if err != nil {
 		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+	}
+	return nil
+}
+
+// LoadDir loads template from contrib directory
+func (t *Repository) LoadContrib(name string) error {
+	log.Println("Loading contrib")
+	files, err := AssetDir(filepath.Join("contrib", name))
+	if err != nil {
+		return fmt.Errorf("contrib not be loaded: %s", err)
+	}
+	for _, fileName := range files {
+		log.Println("Loaded:", fileName)
 	}
 	return nil
 }
