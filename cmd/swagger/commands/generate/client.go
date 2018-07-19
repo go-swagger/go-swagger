@@ -37,7 +37,7 @@ type Client struct {
 }
 
 func (c *Client) getOpts() (*generator.GenOpts, error) {
-	return &generator.GenOpts{
+	opts := &generator.GenOpts{
 		Spec: string(c.Spec),
 
 		Target:            string(c.Target),
@@ -61,7 +61,9 @@ func (c *Client) getOpts() (*generator.GenOpts, error) {
 		DumpData:          c.DumpData,
 		ExistingModels:    c.ExistingModels,
 		IsClient:          true,
-	}, nil
+	}
+	contribOptionsOverride(opts)
+	return opts, nil
 }
 
 func (c *Client) getShared() *shared {
