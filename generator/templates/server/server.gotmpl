@@ -515,10 +515,12 @@ func (s *Server) Shutdown() error {
 
 func (s *Server) handleShutdown(wg *sync.WaitGroup, server *http.Server) {
 	defer wg.Done()
+
+	<-s.shutdown
+
 	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
 	defer cancel()
 
-	<-s.shutdown
 	if err := server.Shutdown(ctx); err != nil {
 	// Error from closing listeners, or context timeout:
 	s.Logf("HTTP server Shutdown: %v", err)
