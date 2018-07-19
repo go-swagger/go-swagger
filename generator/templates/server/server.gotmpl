@@ -530,8 +530,7 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, server *http.Server) {
 				s.Logf("Error %s", err)
 			}
 		default:
-			done := make(chan error)
-			defer close(done)
+			done := make(chan error, 2)
 			go func() {
 				<- ctx.Done()
 				done <- ctx.Err()
