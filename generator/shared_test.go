@@ -341,13 +341,11 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll("TestGenDir")
 		log.SetOutput(os.Stdout)
-		Debug = false
 	}()
 
 	// Not skipping format
 	content := "func x {}"
 
-	Debug = true
 	_ = templates.AddFile("gendir", content)
 
 	opts := GenOpts{}

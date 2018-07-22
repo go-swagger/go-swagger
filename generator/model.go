@@ -842,7 +842,6 @@ func (sg *schemaGenContext) buildProperties() error {
 		// set custom serializer tag
 		if customTag, found := emprop.Schema.Extensions[xGoCustomTag]; found {
 			emprop.GenSchema.CustomTag = customTag.(string)
-			delete(emprop.GenSchema.Extensions, xGoCustomTag)
 		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
