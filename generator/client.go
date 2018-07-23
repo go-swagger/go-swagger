@@ -36,7 +36,9 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 
 	if opts.Template != "" {
-		templates.LoadContrib(opts.Template)
+		if err := templates.LoadContrib(opts.Template); err != nil {
+			return err
+		}
 	}
 
 	if opts.TemplateDir != "" {

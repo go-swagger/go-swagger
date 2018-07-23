@@ -1,6 +1,8 @@
 package generate
 
-import "github.com/go-swagger/go-swagger/generator"
+import (
+	"github.com/go-swagger/go-swagger/generator"
+)
 
 // contribOptionsOverride gives contributed templates the ability to override the options if they need
 func contribOptionsOverride(opts *generator.GenOpts) {

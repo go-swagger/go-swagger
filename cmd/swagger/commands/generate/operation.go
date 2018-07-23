@@ -37,7 +37,7 @@ type Operation struct {
 }
 
 func (o *Operation) getOpts() (*generator.GenOpts, error) {
-	opts := &generator.GenOpts{
+	return &generator.GenOpts{
 		Spec:              string(o.Spec),
 		Target:            string(o.Target),
 		APIPackage:        o.APIPackage,
@@ -47,7 +47,6 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		Principal:         o.Principal,
 		DumpData:          o.DumpData,
 		DefaultScheme:     o.DefaultScheme,
-		Template:          o.Template,
 		TemplateDir:       string(o.TemplateDir),
 		IncludeHandler:    !o.NoHandler,
 		IncludeResponses:  !o.NoResponses,
@@ -55,9 +54,7 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
 		ValidateSpec:      !o.SkipValidation,
-	}
-	contribOptionsOverride(opts)
-	return opts, nil
+	}, nil
 }
 
 func (o *Operation) getShared() *shared {

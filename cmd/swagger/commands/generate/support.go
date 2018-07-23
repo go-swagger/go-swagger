@@ -32,7 +32,7 @@ type Support struct {
 }
 
 func (s *Support) getOpts() (*generator.GenOpts, error) {
-	opts := &generator.GenOpts{
+	return &generator.GenOpts{
 		Spec:          string(s.Spec),
 		Target:        string(s.Target),
 		APIPackage:    s.APIPackage,
@@ -44,9 +44,7 @@ func (s *Support) getOpts() (*generator.GenOpts, error) {
 		DefaultScheme: s.DefaultScheme,
 		Template:      s.Template,
 		TemplateDir:   string(s.TemplateDir),
-	}
-	contribOptionsOverride(opts)
-	return opts, nil
+	}, nil
 }
 
 func (s *Support) getShared() *shared {

@@ -129,6 +129,10 @@ func createSwagger(s sharedCommand) error {
 		return ero
 	}
 
+	if opts.Template != "" {
+		contribOptionsOverride(opts)
+	}
+
 	if err := opts.EnsureDefaults(); err != nil {
 		return err
 	}

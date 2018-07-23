@@ -44,7 +44,7 @@ type Server struct {
 }
 
 func (s *Server) getOpts() (*generator.GenOpts, error) {
-	opts := &generator.GenOpts{
+	return &generator.GenOpts{
 		Spec:                   string(s.Spec),
 		Target:                 string(s.Target),
 		APIPackage:             s.APIPackage,
@@ -75,9 +75,7 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		FlagStrategy:           s.FlagStrategy,
 		CompatibilityMode:      s.CompatibilityMode,
 		ExistingModels:         s.ExistingModels,
-	}
-	contribOptionsOverride(opts)
-	return opts, nil
+	}, nil
 }
 
 func (s *Server) getShared() *shared {

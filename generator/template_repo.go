@@ -287,22 +287,25 @@ func (t *Repository) LoadDir(templatePath string) error {
 // LoadContrib loads template from contrib directory
 func (t *Repository) LoadContrib(name string) error {
 	log.Printf("loading contrib %s", name)
-	const pathPrefix = "generator/templates/contrib/"
-	basePath := filepath.Join(pathPrefix, name)
-	err := filepath.Walk(basePath, func(path string, info os.FileInfo, err error) error {
-		if !strings.HasSuffix(path, ".gotmpl") {
-			return nil
+	const pathPrefix = "templates/contrib/"
+	basePath := pathPrefix + name
+	filesAdded := 0
+	for _, aname := range AssetNames() {
+		if !strings.HasSuffix(aname, ".gotmpl") {
+			continue
 		}
-		name = path[len(basePath)+1:]
-		err = t.addFile(name, string(MustAsset(path[len("generator/"):])), true)
-		if err != nil {
-			return err
+		if strings.HasPrefix(aname, basePath) {
+			target := aname[len(basePath)+1:]
+			err := t.addFile(target, string(MustAsset(aname)), true)
+			if err != nil {
+				return err
+			}
+			log.Printf("added contributed template %s from %s", target, aname)
+			filesAdded++
 		}
-		log.Printf("added contributed template %s from %s", name, path)
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("contrib not be loaded: %s", err)
+	}
+	if filesAdded == 0 {
+		return fmt.Errorf("no files added from template: %s", name)
 	}
 	return nil
 }

@@ -60,7 +60,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 
 	templates.LoadDefaults()
 	if opts.Template != "" {
-		templates.LoadContrib(opts.Template)
+		if err := templates.LoadContrib(opts.Template); err != nil {
+			return nil, err
+		}
 	}
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
