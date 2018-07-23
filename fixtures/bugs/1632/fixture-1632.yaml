@@ -1,0 +1,32 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: 'string-body-api'
+paths:
+  /echo:
+    post:
+      summary: Post an object
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/pet"
+      responses:
+        '200':
+          description: All is good
+definitions:
+  pet:
+    type: object
+    required:
+      - date
+    properties:
+      date:
+        type: object
+        description: Foo
+    additionalProperties:
+      $ref: "#/definitions/petReference"
+  petReference:
+    type: object
+    properties:
+      reference:
+        type: string
