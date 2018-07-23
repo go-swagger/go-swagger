@@ -2453,7 +2453,7 @@ func TestGenModel_Issue1632(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ct)
 					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `var toadd *PetReference`, res)
+					assertInCode(t, `toadd := &PetReference{}`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
