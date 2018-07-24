@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
+
 // Perform common initialization of template repository before running tests.
 // This allows to run tests unitarily (e.g. go test -run xxx ).
 func TestMain(m *testing.M) {
@@ -157,7 +159,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/825/swagger.yml"
+	opts.Spec = invalidSpecExample
 	opts.ValidateSpec = true
 	assert.Error(t, GenerateServer("foo", nil, nil, &opts))
 }
