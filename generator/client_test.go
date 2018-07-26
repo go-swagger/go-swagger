@@ -23,17 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClient_InvalidSpec(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/825/swagger.yml"
-	opts.ValidateSpec = true
-	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
-}
-
-func TestClient_BaseImportDisabled(t *testing.T) {
+func TestClient(t *testing.T) {
 	targetdir, err := ioutil.TempDir(os.TempDir(), "swagger_nogo")
 	if err != nil {
 		t.Fatalf("Failed to create a test target directory: %v", err)
@@ -43,9 +33,55 @@ func TestClient_BaseImportDisabled(t *testing.T) {
 		_ = os.RemoveAll(targetdir)
 		log.SetOutput(os.Stdout)
 	}()
-	opts := testGenOpts()
-	opts.Target = targetdir
-	opts.Spec = "../fixtures/petstores/petstore.json"
-	opts.LanguageOpts.BaseImportFunc = nil
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+
+	tests := []struct {
+		name      string
+		template  string
+		wantError bool
+		prepare   func(opts *GenOpts)
+	}{
+		{
+			name:      "InvalidSpec",
+			wantError: true,
+			prepare: func(opts *GenOpts) {
+				opts.Spec = invalidSpecExample
+				opts.ValidateSpec = true
+			},
+		},
+		{
+			name:      "BaseImportDisabled",
+			wantError: false,
+		},
+		{
+			name:      "None_existing_contributor_tempalte",
+			template:  "NonExistingContributorTemplate",
+			wantError: true,
+		},
+		{
+			name:      "Existing_contributor",
+			template:  "stratoscale",
+			wantError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := testGenOpts()
+			opts.Target = targetdir
+			opts.Spec = "../fixtures/petstores/petstore.json"
+			opts.LanguageOpts.BaseImportFunc = nil
+			opts.Template = tt.template
+
+			if tt.prepare != nil {
+				tt.prepare(&opts)
+			}
+
+			err := GenerateClient("foo", nil, nil, &opts)
+			if tt.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

@@ -454,6 +454,37 @@ func TestTemplates_LoadDir(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// Test LoadContrib
+func TestTemplates_LoadContrib(t *testing.T) {
+	tests := []struct {
+		name      string
+		template  string
+		wantError bool
+	}{
+		{
+			name:      "None_existing_contributor_tempalte",
+			template:  "NonExistingContributorTemplate",
+			wantError: true,
+		},
+		{
+			name:      "Existing_contributor",
+			template:  "stratoscale",
+			wantError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := templates.LoadContrib(tt.template)
+			if tt.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // TODO: test error case in LoadDefaults()
 // test DumpTemplates()
 func TestTemplates_DumpTemplates(t *testing.T) {

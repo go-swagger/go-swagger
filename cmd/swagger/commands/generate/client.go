@@ -56,6 +56,7 @@ func (c *Client) getOpts() (*generator.GenOpts, error) {
 		ValidateSpec:      !c.SkipValidation,
 		Tags:              c.Tags,
 		IncludeSupport:    true,
+		Template:          c.Template,
 		TemplateDir:       string(c.TemplateDir),
 		DumpData:          c.DumpData,
 		ExistingModels:    c.ExistingModels,

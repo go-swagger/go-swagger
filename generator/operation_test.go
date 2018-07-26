@@ -619,6 +619,7 @@ func TestBuilder_Issue465(t *testing.T) {
 	err := opts.EnsureDefaults()
 	assert.NoError(t, err)
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
+
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
 		if assert.NoError(t, err) {
@@ -933,6 +934,77 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// now if flatten is false, expand takes over so server generation should resume normally
 	assert.NoError(t, err)
+}
+
+func TestGenServerWithTemplate(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+
+	tests := []struct {
+		name      string
+		opts      *GenOpts
+		wantError bool
+	}{
+		{
+			name: "None_existing_contributor_tempalte",
+			opts: &GenOpts{
+				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+				IncludeModel:      true,
+				IncludeValidator:  true,
+				IncludeHandler:    true,
+				IncludeParameters: true,
+				IncludeResponses:  true,
+				IncludeMain:       true,
+				ValidateSpec:      true,
+				APIPackage:        "restapi",
+				ModelPackage:      "model",
+				ServerPackage:     "server",
+				ClientPackage:     "client",
+				Target:            dr,
+				IsClient:          true,
+				Template:          "InvalidTemplate",
+			},
+			wantError: true,
+		},
+		{
+			name: "Existing_contributor",
+			opts: &GenOpts{
+				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+				IncludeModel:      true,
+				IncludeValidator:  true,
+				IncludeHandler:    true,
+				IncludeParameters: true,
+				IncludeResponses:  true,
+				IncludeMain:       true,
+				ValidateSpec:      true,
+				APIPackage:        "restapi",
+				ModelPackage:      "model",
+				ServerPackage:     "server",
+				ClientPackage:     "client",
+				Target:            dr,
+				IsClient:          true,
+				Template:          "stratoscale",
+			},
+			wantError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			//Testing Server Generation
+			err := tt.opts.EnsureDefaults()
+			// minimal flattening
+			tt.opts.FlattenOpts.Minimal = true
+			assert.NoError(t, err)
+			_, err = newAppGenerator("JsonRefOperation", nil, nil, tt.opts)
+			if tt.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
