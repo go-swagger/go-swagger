@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -123,6 +124,7 @@ func GoLangOpts() *LanguageOpts {
 		if err != nil {
 			log.Fatalf("could not evaluate base import path with target \"%s\": %v", tgt, err)
 		}
+
 		var tgtAbsPathExtended string
 		tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
 		if err != nil {
@@ -182,13 +184,45 @@ func GoLangOpts() *LanguageOpts {
 
 		}
 
+		mod, err := tryResolveModule(filepath.Join(tgtAbsPath, "go.mod"))
+		switch {
+		case err != nil:
+			log.Fatalf("Failed to resolve module using go.mod file: %s", err)
+		case mod != "":
+			return mod
+		}
+
 		if pth == "" {
-			log.Fatalln("target must reside inside a location in the $GOPATH/src")
+			log.Fatalln("target must reside inside a location in the $GOPATH/src or be a module")
 		}
 		return pth
 	}
 	opts.Init()
 	return opts
+}
+
+var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
+
+func tryResolveModule(path string) (string, error) {
+	f, err := os.Open(path)
+	switch {
+	case os.IsNotExist(err):
+		return "", nil
+	case err != nil:
+		return "", err
+	}
+
+	src, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	match := moduleRe.FindSubmatch(src)
+	if len(match) != 2 {
+		return "", nil
+	}
+
+	return string(match[1]), nil
 }
 
 func findSwaggerSpec(nm string) (string, error) {
