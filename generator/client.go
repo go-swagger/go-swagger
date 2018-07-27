@@ -35,6 +35,12 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		return errors.New("gen opts are required")
 	}
 
+	if opts.Template != "" {
+		if err := templates.LoadContrib(opts.Template); err != nil {
+			return err
+		}
+	}
+
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return err

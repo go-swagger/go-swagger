@@ -39,7 +39,7 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-//go:generate go-bindata -mode 420 -modtime 1482416923 -pkg=generator -ignore=.*\.sw? ./templates/...
+//go:generate go-bindata -mode 420 -modtime 1482416923 -pkg=generator -ignore=.*\.sw? -ignore=.*\.md ./templates/...
 
 // LanguageOpts to describe a language to the code generator
 type LanguageOpts struct {
@@ -353,7 +353,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 					Source:     "asset:serverConfigureapi",
 					Target:     "{{ joinFilePath .Target .ServerPackage }}",
 					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
-					SkipExists: true,
+					SkipExists: !gen.RegenerateConfigureAPI,
 				},
 				{
 					Name:     "main",
@@ -428,29 +428,31 @@ type GenOpts struct {
 	IsClient          bool
 	defaultsEnsured   bool
 
-	Spec              string
-	APIPackage        string
-	ModelPackage      string
-	ServerPackage     string
-	ClientPackage     string
-	Principal         string
-	Target            string
-	Sections          SectionOpts
-	LanguageOpts      *LanguageOpts
-	TypeMapping       map[string]string
-	Imports           map[string]string
-	DefaultScheme     string
-	DefaultProduces   string
-	DefaultConsumes   string
-	TemplateDir       string
-	Operations        []string
-	Models            []string
-	Tags              []string
-	Name              string
-	FlagStrategy      string
-	CompatibilityMode string
-	ExistingModels    string
-	Copyright         string
+	Spec                   string
+	APIPackage             string
+	ModelPackage           string
+	ServerPackage          string
+	ClientPackage          string
+	Principal              string
+	Target                 string
+	Sections               SectionOpts
+	LanguageOpts           *LanguageOpts
+	TypeMapping            map[string]string
+	Imports                map[string]string
+	DefaultScheme          string
+	DefaultProduces        string
+	DefaultConsumes        string
+	TemplateDir            string
+	Template               string
+	RegenerateConfigureAPI bool
+	Operations             []string
+	Models                 []string
+	Tags                   []string
+	Name                   string
+	FlagStrategy           string
+	CompatibilityMode      string
+	ExistingModels         string
+	Copyright              string
 }
 
 // TargetPath returns the target generation path relative to the server package

@@ -258,7 +258,6 @@ func (t *Repository) LoadDefaults() {
 
 // LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
 func (t *Repository) LoadDir(templatePath string) error {
-
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 
 		if strings.HasSuffix(path, ".gotmpl") {
@@ -281,6 +280,32 @@ func (t *Repository) LoadDir(templatePath string) error {
 	})
 	if err != nil {
 		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+	}
+	return nil
+}
+
+// LoadContrib loads template from contrib directory
+func (t *Repository) LoadContrib(name string) error {
+	log.Printf("loading contrib %s", name)
+	const pathPrefix = "templates/contrib/"
+	basePath := pathPrefix + name
+	filesAdded := 0
+	for _, aname := range AssetNames() {
+		if !strings.HasSuffix(aname, ".gotmpl") {
+			continue
+		}
+		if strings.HasPrefix(aname, basePath) {
+			target := aname[len(basePath)+1:]
+			err := t.addFile(target, string(MustAsset(aname)), true)
+			if err != nil {
+				return err
+			}
+			log.Printf("added contributed template %s from %s", target, aname)
+			filesAdded++
+		}
+	}
+	if filesAdded == 0 {
+		return fmt.Errorf("no files added from template: %s", name)
 	}
 	return nil
 }

@@ -56,5 +56,10 @@ rm -rf cmd models restapi
 swagger generate server -A multi-auth-example -P models.Principal -f ./swagger.yml
 mv configure_multi_auth_example.go restapi/
 
+cd "${examples}/contributed-templates/stratoscale"
+rm -rf client cmd models restapi
+swagger generate client -A Petstore --template stratoscale
+swagger generate server -A Petstore --template stratoscale
+
 cd ${examples}
 go test -v ./...

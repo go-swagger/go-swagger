@@ -14,17 +14,49 @@ import (
 )
 
 func TestGenerateClient(t *testing.T) {
-	specs := []string{
-		"tasklist.basic.yml",
-		"todolist.simplequery.yml",
-	}
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
-	for i, spec := range specs {
-		_ = t.Run(spec, func(t *testing.T) {
-			path := filepath.Join(base, "fixtures/codegen", spec)
+
+	tests := []struct {
+		name      string
+		spec      string
+		template  string
+		wantError bool
+		prepare   func(c *generate.Client)
+	}{
+		{
+			name:      "tasklist_basic",
+			spec:      "tasklist.basic.yml",
+			wantError: false,
+		},
+		{
+			name:      "tasklist_simplequery",
+			spec:      "todolist.simplequery.yml",
+			wantError: false,
+			prepare: func(c *generate.Client) {
+				c.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+			},
+		},
+		{
+			name:      "generate_client_with_invalid_template",
+			spec:      "todolist.simplequery.yml",
+			template:  "NonExistingContributorTemplate",
+			wantError: true,
+		},
+		{
+			name:      "Existing_contributor",
+			spec:      "todolist.simplequery.yml",
+			template:  "stratoscale",
+			wantError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			path := filepath.Join(base, "fixtures/codegen", tt.spec)
 			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
@@ -34,14 +66,19 @@ func TestGenerateClient(t *testing.T) {
 			}()
 			m := &generate.Client{}
 			_, _ = flags.Parse(m)
-			if i == 0 {
-				m.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
-			}
 			m.Spec = flags.Filename(path)
 			m.Target = flags.Filename(generated)
+			m.Template = tt.template
 
-			if err := m.Execute([]string{}); err != nil {
-				t.Error(err)
+			if tt.prepare != nil {
+				tt.prepare(m)
+			}
+
+			err = m.Execute([]string{})
+			if tt.wantError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
