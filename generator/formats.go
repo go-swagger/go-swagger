@@ -92,59 +92,82 @@ var stringFormatters = map[string]string{
 	"uint64":  "swag.FormatUint64",
 }
 
-// typeMapping contains a mapping of format (or type name) to go type
+// typeMapping contains a mapping of type name to go type
 var typeMapping = map[string]string{
 	// Standard formats with native, straightforward, mapping
-	"binary":  "io.ReadCloser",
+	"string":  "string",
 	"boolean": "bool",
-	"char":    "rune",
-	"double":  "float64",
-	"float":   "float32",
-	"int":     "int64",
-	"int8":    "int8",
-	"int16":   "int16",
-	"int32":   "int32",
-	"int64":   "int64",
 	"integer": "int64",
 	"number":  "float64",
-	"uint":    "uint64",
-	"uint8":   "uint8",
-	"uint16":  "uint16",
-	"uint32":  "uint32",
-	"uint64":  "uint64",
-	// Extended format registry from go-openapi/strfmt.
-	// Currently, 23 such formats are supported (default strftm registry),
-	// plus the following aliases:
-	//  - "datetime" alias for the more official "date-time"
-	//  - "objectid" and "ObjectId" aliases for "bsonobjectid"
-	"byte":         "strfmt.Base64",
-	"creditcard":   "strfmt.CreditCard",
-	"date":         "strfmt.Date",
-	"date-time":    "strfmt.DateTime",
-	"datetime":     "strfmt.DateTime",
-	"duration":     "strfmt.Duration",
-	"email":        "strfmt.Email",
-	"hexcolor":     "strfmt.HexColor",
-	"hostname":     "strfmt.Hostname",
-	"ipv4":         "strfmt.IPv4",
-	"ipv6":         "strfmt.IPv6",
-	"isbn":         "strfmt.ISBN",
-	"isbn10":       "strfmt.ISBN10",
-	"isbn13":       "strfmt.ISBN13",
-	"mac":          "strfmt.MAC",
-	"bsonobjectid": "strfmt.ObjectId",
-	"objectid":     "strfmt.ObjectId",
-	"ObjectId":     "strfmt.ObjectId", // NOTE: does it work with uppercase?
-	"password":     "strfmt.Password",
-	"rgbcolor":     "strfmt.RGBColor",
-	"ssn":          "strfmt.SSN",
-	"uri":          "strfmt.URI",
-	"uuid":         "strfmt.UUID",
-	"uuid3":        "strfmt.UUID3",
-	"uuid4":        "strfmt.UUID4",
-	"uuid5":        "strfmt.UUID5",
 	// For file producers
 	"file": "runtime.File",
+}
+
+// formatMapping contains a type-specific version of mapping of format to go type
+var formatMapping = map[string]map[string]string{
+	"number": {
+		"double": "float64",
+		"float":  "float32",
+		"int":    "int64",
+		"int8":   "int8",
+		"int16":  "int16",
+		"int32":  "int32",
+		"int64":  "int64",
+		"uint":   "uint64",
+		"uint8":  "uint8",
+		"uint16": "uint16",
+		"uint32": "uint32",
+		"uint64": "uint64",
+	},
+	"integer": {
+		"int":    "int64",
+		"int8":   "int8",
+		"int16":  "int16",
+		"int32":  "int32",
+		"int64":  "int64",
+		"uint":   "uint64",
+		"uint8":  "uint8",
+		"uint16": "uint16",
+		"uint32": "uint32",
+		"uint64": "uint64",
+	},
+	"string": {
+		"char": "rune",
+		// Extended format registry from go-openapi/strfmt.
+		// Currently, 23 such formats are supported (default strftm registry),
+		// plus the following aliases:
+		//  - "datetime" alias for the more official "date-time"
+		//  - "objectid" and "ObjectId" aliases for "bsonobjectid"
+		"binary":       "io.ReadCloser",
+		"byte":         "strfmt.Base64",
+		"creditcard":   "strfmt.CreditCard",
+		"date":         "strfmt.Date",
+		"date-time":    "strfmt.DateTime",
+		"datetime":     "strfmt.DateTime",
+		"duration":     "strfmt.Duration",
+		"email":        "strfmt.Email",
+		"hexcolor":     "strfmt.HexColor",
+		"hostname":     "strfmt.Hostname",
+		"ipv4":         "strfmt.IPv4",
+		"ipv6":         "strfmt.IPv6",
+		"isbn":         "strfmt.ISBN",
+		"isbn10":       "strfmt.ISBN10",
+		"isbn13":       "strfmt.ISBN13",
+		"mac":          "strfmt.MAC",
+		"bsonobjectid": "strfmt.ObjectId",
+		"objectid":     "strfmt.ObjectId",
+		"ObjectId":     "strfmt.ObjectId", // NOTE: does it work with uppercase?
+		"password":     "strfmt.Password",
+		"rgbcolor":     "strfmt.RGBColor",
+		"ssn":          "strfmt.SSN",
+		"uri":          "strfmt.URI",
+		"uuid":         "strfmt.UUID",
+		"uuid3":        "strfmt.UUID3",
+		"uuid4":        "strfmt.UUID4",
+		"uuid5":        "strfmt.UUID5",
+		// For file producers
+		"file": "runtime.File",
+	},
 }
 
 // go primitive types
