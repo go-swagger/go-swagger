@@ -70,21 +70,23 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	if tn == file {
 		// special case of swagger type "file", rendered as io.ReadCloser interface
 		result.IsPrimitive = true
-		result.GoType = typeMapping[binary]
+		result.GoType = formatMapping[str][binary]
 		result.IsStream = true
 		return
 	}
 
 	if fmt != "" {
 		fmtn := strings.Replace(fmt, "-", "", -1)
-		if tpe, ok := typeMapping[fmtn]; ok {
-			result.GoType = tpe
-			result.IsPrimitive = true
-			_, result.IsCustomFormatter = customFormatters[tpe]
-			// special case of swagger format "binary", rendered as io.ReadCloser interface
-			// TODO(fredbi): should set IsCustomFormatter=false when binary
-			result.IsStream = fmt == binary
-			return
+		if fmm, ok := formatMapping[tn]; ok {
+			if tpe, ok := fmm[fmtn]; ok {
+				result.GoType = tpe
+				result.IsPrimitive = true
+				_, result.IsCustomFormatter = customFormatters[tpe]
+				// special case of swagger format "binary", rendered as io.ReadCloser interface
+				// TODO(fredbi): should set IsCustomFormatter=false when binary
+				result.IsStream = fmt == binary
+				return
+			}
 		}
 	}
 
@@ -257,34 +259,43 @@ func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, 
 func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRequired bool) (returns bool, result resolvedType, err error) {
 
 	if schema.Format != "" {
+		tn := schema.Type[0]
+
 		debugLog("resolving format (anon: %t, req: %t)", isAnonymous, isRequired)
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
-		if tpe, ok := typeMapping[schFmt]; ok {
+		if fmm, ok := formatMapping[tn]; ok {
+			if tpe, ok := fmm[schFmt]; ok {
+				returns = true
+				result.GoType = tpe
+				_, result.IsCustomFormatter = customFormatters[tpe]
+			}
+		}
+		if tpe, ok := typeMapping[schFmt]; !returns && ok {
 			returns = true
-			result.SwaggerType = str
-			if len(schema.Type) > 0 {
-				result.SwaggerType = schema.Type[0]
-			}
-			result.SwaggerFormat = schema.Format
 			result.GoType = tpe
-			t.inferAliasing(&result, schema, isAnonymous, isRequired)
-			// special case of swagger format "binary", rendered as io.ReadCloser interface and is therefore not a primitive type
-			// TODO: should set IsCustomFormatter=false in this case.
-			result.IsPrimitive = schFmt != binary
-			result.IsStream = schFmt == binary
 			_, result.IsCustomFormatter = customFormatters[tpe]
-			// propagate extensions in resolvedType
-			result.Extensions = schema.Extensions
+		}
 
-			switch result.SwaggerType {
-			case str:
-				result.IsNullable = nullableStrfmt(schema, isRequired)
-			case number, integer:
-				result.IsNullable = nullableNumber(schema, isRequired)
-			default:
-				result.IsNullable = t.IsNullable(schema)
-			}
-			return
+		result.SwaggerType = str
+		if len(schema.Type) > 0 {
+			result.SwaggerType = schema.Type[0]
+		}
+		result.SwaggerFormat = schema.Format
+		t.inferAliasing(&result, schema, isAnonymous, isRequired)
+		// special case of swagger format "binary", rendered as io.ReadCloser interface and is therefore not a primitive type
+		// TODO: should set IsCustomFormatter=false in this case.
+		result.IsPrimitive = schFmt != binary
+		result.IsStream = schFmt == binary
+		// propagate extensions in resolvedType
+		result.Extensions = schema.Extensions
+
+		switch result.SwaggerType {
+		case str:
+			result.IsNullable = nullableStrfmt(schema, isRequired)
+		case number, integer:
+			result.IsNullable = nullableNumber(schema, isRequired)
+		default:
+			result.IsNullable = t.IsNullable(schema)
 		}
 	}
 	return
@@ -625,7 +636,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		result.SwaggerType = file
 		result.IsPrimitive = true
 		result.IsNullable = false
-		result.GoType = typeMapping[binary]
+		result.GoType = formatMapping[str][binary]
 		result.IsStream = true
 		return
 	}

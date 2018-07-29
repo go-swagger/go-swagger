@@ -61,6 +61,14 @@ var schTypeVals = []struct{ Type, Format, Expected string }{
 	{"string", "duration", "strfmt.Duration"},
 	{"string", "ObjectId", "strfmt.ObjectId"},
 	{"string", "password", "strfmt.Password"},
+	{"string", "uint8", "string"},
+	{"string", "uint16", "string"},
+	{"string", "uint32", "string"},
+	{"string", "uint64", "string"},
+	{"string", "int8", "string"},
+	{"string", "int16", "string"},
+	{"string", "int32", "string"},
+	{"string", "int64", "string"},
 	{"file", "", "io.ReadCloser"},
 }
 
