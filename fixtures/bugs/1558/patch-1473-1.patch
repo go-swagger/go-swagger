@@ -1,0 +1,14 @@
+11a12
+> 	"github.com/go-openapi/swag"
+20c21,29
+< 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+---
+> 	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
+> 		swag.CommandLineOptionsGroup{
+> 			ShortDescription: "Netrounds",
+> 			LongDescription:  "NetRounds long",
+> 			Options: struct {
+> 				Example1 string `long:"example1" description:"Sample option"`
+> 			}{},
+> 		},
+> 	}
