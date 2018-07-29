@@ -43,6 +43,9 @@ PadSurround1={{ padSurround "padme" "-" 3 12}}
 PadSurround2={{ padSurround "padme" "-" 0 12}}
 Json={{ json .DefaultImports }}
 PrettyJson={{ prettyjson . }}
+Snakize1={{ snakize "endingInOsNameLinux" }}
+Snakize2={{ snakize "endingInArchNameLinuxAmd64" }}
+Snakize3={{ snakize "endingInTest" }}
 `
 )
 
@@ -399,6 +402,9 @@ func TestTemplates_FuncMap(t *testing.T) {
 					assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
 					assert.Contains(t, rendered.String(), "Json=[\"github.com/go-openapi/errors\",\"github.com/go-openapi/runtime\",\"github.com/go-openapi/swag\",\"github.com/go-openapi/validate\"]")
 					assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
+					assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
+					assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
+					assert.Contains(t, rendered.String(), "Snakize3=ending_in_test_swagger\n")
 					//fmt.Println(rendered.String())
 				}
 			}

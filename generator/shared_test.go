@@ -439,3 +439,19 @@ func TestShared_Issue1429(t *testing.T) {
 	err = analysis.Flatten(*opts.FlattenOpts)
 	assert.NoError(t, err)
 }
+
+func TestShared_MangleFileName(t *testing.T) {
+	// standard : swag.ToFileName()
+	o := LanguageOpts{}
+	o.Init()
+	res := o.MangleFileName("aFileEndingInOsNameWindows")
+	t.Log(res)
+
+	// golang specific
+	res = golang.MangleFileName("aFileEndingInOsNameWindows")
+	t.Log(res)
+	res = golang.MangleFileName("aFileEndingInOsNameWindowsAmd64")
+	t.Log(res)
+	res = golang.MangleFileName("aFileEndingInTest")
+	t.Log(res)
+}

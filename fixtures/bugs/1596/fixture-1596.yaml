@@ -1,0 +1,21 @@
+swagger: '2.0'
+
+info:
+  version: 1.0.0
+  title: MyApp
+  description: (Description pending)
+  
+paths:
+  /hello:
+    get:
+      summary: Simple Hello World endpoint
+      tags: ['Hello']
+      responses:
+        '200':
+          description: service is saying hello
+          schema:
+            $ref: '#/definitions/somethingEndingInWindows'
+
+definitions:
+  somethingEndingInWindows:
+    type: object

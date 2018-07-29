@@ -48,6 +48,7 @@ type LanguageOpts struct {
 	reservedWordsSet map[string]struct{}
 	initialized      bool
 	formatFunc       func(string, []byte) ([]byte, error)
+	fileNameFunc     func(string) string
 }
 
 // Init the language option
@@ -78,6 +79,14 @@ func (l *LanguageOpts) MangleVarName(name string) string {
 	return nm + "Var"
 }
 
+// MangleFileName makes sure a file name gets a safe name
+func (l *LanguageOpts) MangleFileName(name string) string {
+	if l.fileNameFunc != nil {
+		return l.fileNameFunc(name)
+	}
+	return swag.ToFileName(name)
+}
+
 // FormatContent formats a file with a language specific formatter
 func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error) {
 	if l.formatFunc != nil {
@@ -97,6 +106,49 @@ var golang = GoLangOpts()
 
 // GoLangOpts for rendering items as golang code
 func GoLangOpts() *LanguageOpts {
+	var goOtherReservedSuffixes = map[string]bool{
+		// see:
+		// https://golang.org/src/go/build/syslist.go
+		// https://golang.org/doc/install/source#environment
+
+		// goos
+		"android":   true,
+		"darwin":    true,
+		"dragonfly": true,
+		"freebsd":   true,
+		"linux":     true,
+		"nacl":      true,
+		"netbsd":    true,
+		"openbsd":   true,
+		"plan9":     true,
+		"solaris":   true,
+		"windows":   true,
+		"zos":       true,
+
+		// arch
+		"386":         true,
+		"amd64":       true,
+		"amd64p32":    true,
+		"arm":         true,
+		"armbe":       true,
+		"arm64":       true,
+		"arm64be":     true,
+		"mips":        true,
+		"mipsle":      true,
+		"mips64":      true,
+		"mips64le":    true,
+		"mips64p32":   true,
+		"mips64p32le": true,
+		"ppc":         true,
+		"s390":        true,
+		"s390x":       true,
+		"sparc":       true,
+		"sparc64":     true,
+
+		// other reserved suffixes
+		"test": true,
+	}
+
 	opts := new(LanguageOpts)
 	opts.ReservedWords = []string{
 		"break", "default", "func", "interface", "select",
@@ -113,6 +165,19 @@ func GoLangOpts() *LanguageOpts {
 		opts.Comments = true
 		return imports.Process(ffn, content, opts)
 	}
+	opts.fileNameFunc = func(name string) string {
+		// whenever a generated file name ends with a suffix
+		// that is meaningful to go build, adds a "swagger"
+		// suffix
+		parts := strings.Split(swag.ToFileName(name), "_")
+		if goOtherReservedSuffixes[parts[len(parts)-1]] {
+			// file name ending with a reserved arch or os name
+			// are appended an innocuous suffix "swagger"
+			parts = append(parts, "swagger")
+		}
+		return strings.Join(parts, "_")
+	}
+
 	opts.BaseImportFunc = func(tgt string) string {
 		// On Windows, filepath.Abs("") behaves differently than on Unix.
 		// Windows: yields an error, since Abs() does not know the volume.
