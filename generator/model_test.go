@@ -2436,6 +2436,32 @@ func TestGenModel_Issue910(t *testing.T) {
 	}
 }
 
+// This tests that additionalProperties with validation is generated properly.
+func TestGenModel_Issue1632(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1632/fixture-1632.yaml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "pet"
+		schema := definitions[k]
+		opts := opts()
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					// Just verify that the validation call is generated with proper format
+					assertInCode(t, `toadd := &PetReference{}`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestGenerateModel_Xorder(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/x-order.yml")
 	if assert.NoError(t, err) {
