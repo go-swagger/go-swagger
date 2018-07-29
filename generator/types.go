@@ -70,7 +70,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	if tn == file {
 		// special case of swagger type "file", rendered as io.ReadCloser interface
 		result.IsPrimitive = true
-		result.GoType = typeMapping[binary]
+		result.GoType = formatMapping[str][binary]
 		result.IsStream = true
 		return
 	}
