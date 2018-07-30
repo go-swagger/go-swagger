@@ -23,7 +23,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -36,6 +35,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
+	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/imports"
 )
 
@@ -114,115 +114,19 @@ func GoLangOpts() *LanguageOpts {
 		return imports.Process(ffn, content, opts)
 	}
 	opts.BaseImportFunc = func(tgt string) string {
-		// On Windows, filepath.Abs("") behaves differently than on Unix.
-		// Windows: yields an error, since Abs() does not know the volume.
-		// UNIX: returns current working directory
-		if tgt == "" {
-			tgt = "."
-		}
-		tgtAbsPath, err := filepath.Abs(tgt)
+		pkgs, err := packages.Load(nil, tgt)
 		if err != nil {
 			log.Fatalf("could not evaluate base import path with target \"%s\": %v", tgt, err)
 		}
 
-		var tgtAbsPathExtended string
-		tgtAbsPathExtended, err = filepath.EvalSymlinks(tgtAbsPath)
-		if err != nil {
-			log.Fatalf("could not evaluate base import path with target \"%s\" (with symlink resolution): %v", tgtAbsPath, err)
+		if len(pkgs) != 1 {
+			log.Fatalf("unexpected number of packages")
 		}
 
-		gopath := os.Getenv("GOPATH")
-		if gopath == "" {
-			gopath = filepath.Join(os.Getenv("HOME"), "go")
-		}
-
-		var pth string
-		for _, gp := range filepath.SplitList(gopath) {
-			// EvalSymLinks also calls the Clean
-			gopathExtended, err := filepath.EvalSymlinks(gp)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			gopathExtended = filepath.Join(gopathExtended, "src")
-			gp = filepath.Join(gp, "src")
-
-			// At this stage we have expanded and unexpanded target path. GOPATH is fully expanded.
-			// Expanded means symlink free.
-			// We compare both types of targetpath<s> with gopath.
-			// If any one of them coincides with gopath , it is imperative that
-			// target path lies inside gopath. How?
-			// 		- Case 1: Irrespective of symlinks paths coincide. Both non-expanded paths.
-			// 		- Case 2: Symlink in target path points to location inside GOPATH. (Expanded Target Path)
-			//    - Case 3: Symlink in target path points to directory outside GOPATH (Unexpanded target path)
-
-			// Case 1: - Do nothing case. If non-expanded paths match just genrate base import path as if
-			//				   there are no symlinks.
-
-			// Case 2: - Symlink in target path points to location inside GOPATH. (Expanded Target Path)
-			//					 First if will fail. Second if will succeed.
-
-			// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
-			// 					 First if will succeed and break.
-
-			//compares non expanded path for both
-			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
-				pth = relativepath
-				break
-			}
-
-			// Compares non-expanded target path
-			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gopathExtended); ok {
-				pth = relativepath
-				break
-			}
-
-			// Compares expanded target path.
-			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPathExtended, gopathExtended); ok {
-				pth = relativepath
-				break
-			}
-
-		}
-
-		mod, err := tryResolveModule(filepath.Join(tgtAbsPath, "go.mod"))
-		switch {
-		case err != nil:
-			log.Fatalf("Failed to resolve module using go.mod file: %s", err)
-		case mod != "":
-			return mod
-		}
-
-		if pth == "" {
-			log.Fatalln("target must reside inside a location in the $GOPATH/src or be a module")
-		}
-		return pth
+		return pkgs[0].ID
 	}
 	opts.Init()
 	return opts
-}
-
-var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
-
-func tryResolveModule(path string) (string, error) {
-	f, err := os.Open(path)
-	switch {
-	case os.IsNotExist(err):
-		return "", nil
-	case err != nil:
-		return "", err
-	}
-
-	src, err := ioutil.ReadAll(f)
-	if err != nil {
-		return "", err
-	}
-
-	match := moduleRe.FindSubmatch(src)
-	if len(match) != 2 {
-		return "", nil
-	}
-
-	return string(match[1]), nil
 }
 
 func findSwaggerSpec(nm string) (string, error) {
