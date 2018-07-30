@@ -16,6 +16,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"html"
 	"html/template"
 	"io"
 	"net/http"
@@ -40,7 +41,7 @@ const (
 )
 
 func RegisterHandlers(mux *http.ServeMux) {
-	mux.Handle("/dl", http.RedirectHandler("/dl/", http.StatusFound))
+	mux.HandleFunc("/dl", getHandler)
 	mux.HandleFunc("/dl/", getHandler) // also serves listHandler
 	mux.HandleFunc("/dl/upload", uploadHandler)
 	mux.HandleFunc("/dl/init", initHandler)
@@ -427,16 +428,54 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getHandler(w http.ResponseWriter, r *http.Request) {
+	// For go get golang.org/dl/go1.x.y, we need to serve the
+	// same meta tags at /dl for cmd/go to validate against /dl/go1.x.y:
+	if r.URL.Path == "/dl" && (r.Method == "GET" || r.Method == "HEAD") && r.FormValue("go-get") == "1" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		fmt.Fprintf(w, `<!DOCTYPE html><html><head>
+<meta name="go-import" content="golang.org/dl git https://go.googlesource.com/dl">
+</head></html>`)
+		return
+	}
+	if r.URL.Path == "/dl" {
+		http.Redirect(w, r, "/dl/", http.StatusFound)
+		return
+	}
+
 	name := strings.TrimPrefix(r.URL.Path, "/dl/")
 	if name == "" {
 		listHandler(w, r)
 		return
 	}
-	if !fileRe.MatchString(name) {
-		http.NotFound(w, r)
+	if fileRe.MatchString(name) {
+		http.Redirect(w, r, downloadBaseURL+name, http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, downloadBaseURL+name, http.StatusFound)
+	if goGetRe.MatchString(name) {
+		var isGoGet bool
+		if r.Method == "GET" || r.Method == "HEAD" {
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			isGoGet = r.FormValue("go-get") == "1"
+		}
+		if !isGoGet {
+			w.Header().Set("Location", "https://golang.org/dl/#"+name)
+			w.WriteHeader(http.StatusFound)
+		}
+		fmt.Fprintf(w, `<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="go-import" content="golang.org/dl git https://go.googlesource.com/dl">
+<meta http-equiv="refresh" content="0; url=https://golang.org/dl/#%s">
+</head>
+<body>
+Nothing to see here; <a href="https://golang.org/dl/#%s">move along</a>.
+</body>
+</html>
+`, html.EscapeString(name), html.EscapeString(name))
+		return
+	}
+	http.NotFound(w, r)
 }
 
 func validUser(user string) bool {
@@ -453,7 +492,10 @@ func userKey(c context.Context, user string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-var fileRe = regexp.MustCompile(`^go[0-9a-z.]+\.[0-9a-z.-]+\.(tar\.gz|pkg|msi|zip)$`)
+var (
+	fileRe  = regexp.MustCompile(`^go[0-9a-z.]+\.[0-9a-z.-]+\.(tar\.gz|pkg|msi|zip)$`)
+	goGetRe = regexp.MustCompile(`^go[0-9a-z.]+\.[0-9a-z.-]+$`)
+)
 
 func initHandler(w http.ResponseWriter, r *http.Request) {
 	var fileRoot struct {

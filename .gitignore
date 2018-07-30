@@ -58,3 +58,6 @@ _book
 tmp/
 cover/
 bin/
+
+# binary
+/swagger
