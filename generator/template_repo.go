@@ -28,7 +28,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"camelize":  swag.ToJSONName,
 	"varname":   golang.MangleVarName,
 	"humanize":  swag.ToHumanNameLower,
-	"snakize":   swag.ToFileName,
+	"snakize":   golang.MangleFileName,
 	"dasherize": swag.ToCommandName,
 	"pluralizeFirstWord": func(arg string) string {
 		sentence := strings.Split(arg, " ")
