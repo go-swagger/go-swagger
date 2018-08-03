@@ -1398,9 +1398,6 @@ func (sg *schemaGenContext) buildArray() error {
 
 	sg.GenSchema.IsArray = true
 
-	// all types are exported but the ones based on discriminator
-	sg.GenSchema.IsExported = !sg.GenSchema.ElemType.HasDiscriminator
-
 	schemaCopy := elProp.GenSchema
 
 	schemaCopy.Required = false

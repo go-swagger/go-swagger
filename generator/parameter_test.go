@@ -4251,3 +4251,23 @@ func TestGenParameter_1572(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "1572", "fixture-1572.yaml"), true, false)
 }
+
+func TestGenParameter_1637(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1637.yaml with minimal flatten
+	// slice of polymorphic type in body param
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"test": { // fixture index
+			"serverParameter": { // executed template
+				`body, err := models.UnmarshalValueSlice(r.Body, route.Consumer)`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1637", "fixture-1637.yaml"), true, false)
+}
