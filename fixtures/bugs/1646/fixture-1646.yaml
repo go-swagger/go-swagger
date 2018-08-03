@@ -1,0 +1,24 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: ordering mimetypes
+  description: verify that generated code keeps a stable order of mimetypes
+produces:
+  - application/json
+  - application/geo+json
+  - application/vnd.geo+json
+  - application/vnd.github+json
+consumes:
+  - application/json
+  - application/geo+json
+  - application/vnd.geo+json
+  - application/vnd.github+json
+paths:
+  /amimetypes:
+    get:
+      operationId: mimetypes
+      description: no description
+      responses:
+        default:
+          description: Generic Out

@@ -1281,3 +1281,45 @@ func TestGenerateServerOperation(t *testing.T) {
 	_, err = os.Stat(filepath.Join(tgt, "stdout"))
 	assert.NoError(t, err)
 }
+
+// This tests that mimetypes generate stable code
+func TestBuilder_Issue1646(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+		IsClient:          false,
+	}
+	err := opts.EnsureDefaults()
+	assert.NoError(t, err)
+	appGen, err := newAppGenerator("fixture-1646", nil, nil, opts)
+
+	if assert.NoError(t, err) {
+		preCons, preConj := appGen.makeConsumes()
+		preProds, preProdj := appGen.makeProduces()
+		assert.True(t, preConj)
+		assert.True(t, preProdj)
+		for i := 0; i < 5; i++ {
+			cons, conj := appGen.makeConsumes()
+			prods, prodj := appGen.makeProduces()
+			assert.True(t, conj)
+			assert.True(t, prodj)
+			assert.Equal(t, preConj, conj)
+			assert.Equal(t, preProdj, prodj)
+			assert.Equal(t, preCons, cons)
+			assert.Equal(t, preProds, prods)
+		}
+	}
+}

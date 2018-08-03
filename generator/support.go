@@ -337,7 +337,9 @@ func mediaTypeName(tn string) (string, bool) {
 }
 
 func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool) {
-	for _, cons := range a.Analyzed.RequiredConsumes() {
+	reqCons := a.Analyzed.RequiredConsumes()
+	sort.Strings(reqCons)
+	for _, cons := range reqCons {
 		cn, ok := mediaTypeName(cons)
 		if !ok {
 			nm := swag.ToJSONName(cons)
@@ -415,7 +417,9 @@ func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool)
 }
 
 func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool) {
-	for _, prod := range a.Analyzed.RequiredProduces() {
+	reqProds := a.Analyzed.RequiredProduces()
+	sort.Strings(reqProds)
+	for _, prod := range reqProds {
 		pn, ok := mediaTypeName(prod)
 		if !ok {
 			nm := swag.ToJSONName(prod)

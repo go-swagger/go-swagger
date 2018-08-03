@@ -1,0 +1,33 @@
+swagger: '2.0'
+info:
+  title: Multi tag API
+  description: multi tag api
+  version: '0.0.1'
+
+# the domain of the service
+host: api.multi.tags
+schemes: [ https ]
+produces: [ application/json ]
+consumes: [ application/json ]
+
+basePath: /v1 # Prefixed to all paths
+paths:
+  /multi:
+    get:
+      summary: A multitag route
+      tags:
+        - onetag
+        - twotag
+      responses:
+        default:
+          description: Unexpected error
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The error type
+              message:
+                type: array
+                description: Explanation of the errors
+                items: { type: string }
