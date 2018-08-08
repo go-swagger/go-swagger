@@ -259,11 +259,15 @@ func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, 
 func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRequired bool) (returns bool, result resolvedType, err error) {
 
 	if schema.Format != "" {
-		tn := schema.Type[0]
+		// defaults to string
+		result.SwaggerType = str
+		if len(schema.Type) > 0 {
+			result.SwaggerType = schema.Type[0]
+		}
 
 		debugLog("resolving format (anon: %t, req: %t)", isAnonymous, isRequired)
 		schFmt := strings.Replace(schema.Format, "-", "", -1)
-		if fmm, ok := formatMapping[tn]; ok {
+		if fmm, ok := formatMapping[result.SwaggerType]; ok {
 			if tpe, ok := fmm[schFmt]; ok {
 				returns = true
 				result.GoType = tpe
@@ -276,10 +280,6 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 			_, result.IsCustomFormatter = customFormatters[tpe]
 		}
 
-		result.SwaggerType = str
-		if len(schema.Type) > 0 {
-			result.SwaggerType = schema.Type[0]
-		}
 		result.SwaggerFormat = schema.Format
 		t.inferAliasing(&result, schema, isAnonymous, isRequired)
 		// special case of swagger format "binary", rendered as io.ReadCloser interface and is therefore not a primitive type
