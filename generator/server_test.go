@@ -400,3 +400,13 @@ func TestServer_Issue1557(t *testing.T) {
 		}
 	}
 }
+
+func TestServer_Issue1648(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/bugs/1648/fixture-1648.yaml", "generate format with missing type in model")
+	if assert.NoError(t, err) {
+		_, err := gen.makeCodegenApp()
+		assert.NoError(t, err)
+	}
+}
