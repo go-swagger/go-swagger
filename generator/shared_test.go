@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/analysis"
@@ -445,13 +446,13 @@ func TestShared_MangleFileName(t *testing.T) {
 	o := LanguageOpts{}
 	o.Init()
 	res := o.MangleFileName("aFileEndingInOsNameWindows")
-	t.Log(res)
+	assert.True(t, strings.HasSuffix(res, "_windows"))
 
 	// golang specific
 	res = golang.MangleFileName("aFileEndingInOsNameWindows")
-	t.Log(res)
+	assert.True(t, strings.HasSuffix(res, "_windows_swagger"))
 	res = golang.MangleFileName("aFileEndingInOsNameWindowsAmd64")
-	t.Log(res)
+	assert.True(t, strings.HasSuffix(res, "_windows_amd64_swagger"))
 	res = golang.MangleFileName("aFileEndingInTest")
-	t.Log(res)
+	assert.True(t, strings.HasSuffix(res, "_test_swagger"))
 }
