@@ -1,6 +1,6 @@
 language: go
 go:
-- 1.7.1
+- 1.10
 install:
 - go get -u github.com/stretchr/testify/assert
 - go get -u github.com/pborman/uuid
