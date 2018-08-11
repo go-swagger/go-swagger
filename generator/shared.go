@@ -1057,7 +1057,7 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	//  - name duplicates may occur and result in compilation failures
 	// The right place to fix these shortcomings is go-openapi/analysis.
 
-	opts.FlattenOpts.BasePath = absBasePath // BasePath must be absolute. This is guaranteed as opts.Spec is absolute
+	opts.FlattenOpts.BasePath = absBasePath // BasePath must be absolute
 	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
 
 	var preprocessingOption string

@@ -158,6 +158,9 @@ gendir=./tmp-gen
 rm -rf ${gendir}
 
 check_list=`for d in ${specdir}; do ls $d/*.yml;ls $d/*.json;ls $d/*.yaml;done 2>/dev/null`
+# there are several subspecs there: we just want the master
+check_list=${check_list}" ../fixtures/bugs/1621/fixture-1621.yaml"
+
 list=( $check_list )
 fixtures_count=${#list[@]}
 okcr "Running codegen for ${fixtures_count} specs"
