@@ -1,0 +1,61 @@
+parameters:
+
+  RequiredGiantSwarmAuthorizationHeader:
+    name: Authorization
+    type: string
+    in: header
+    required: true
+    description: As described in the [authentication](#section/Authentication) section
+
+  ClusterIdPathParameter:
+    name: cluster_id
+    in: path
+    required: true
+    type: string
+    description: Cluster ID
+
+  UserEmailPathParameter:
+    name: email
+    in: path
+    required: true
+    type: string
+    description: The user's email address
+
+  OrganizationIdPathParameter:
+    name: organization_id
+    in: path
+    required: true
+    type: string
+    description: |
+        An ID for the organization.
+        This ID must be unique and match this regular
+        expression: ^[a-z0-9_]{4,30}$
+
+  XRequestIDHeader:
+    name: X-Request-ID
+    in: header
+    type: string
+    required: false
+    description: |
+      A randomly generated key that can be used to track a request throughout
+      services of Giant Swarm.
+
+  XGiantSwarmActivityHeader:
+    name: X-Giant-Swarm-Activity
+    in: header
+    type: string
+    required: false
+    description: |
+      Name of an activity to track, like "list-clusters". This allows to
+      analyze several API requests sent in context and gives an idea on
+      the purpose.
+
+  XGiantSwarmCmdLineHeader:
+    name: X-Giant-Swarm-CmdLine
+    in: header
+    type: string
+    required: false
+    description: |
+      If activity has been issued by a CLI, this header can contain the
+      command line
+
