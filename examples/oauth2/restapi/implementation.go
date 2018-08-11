@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	oidc "github.com/coreos/go-oidc"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
@@ -51,12 +53,12 @@ var (
 	}
 )
 
-func login(r *http.Request) string {
-	// implements the login with a redirection and an access token
-	var accessToken string
-	wG := r.Context().Value(ctxResponseWriter).(http.ResponseWriter)
-	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
-	return accessToken
+func login(r *http.Request) middleware.Responder {
+	// implements the login with a redirection
+	return middleware.ResponderFunc(
+		func(w http.ResponseWriter, pr runtime.Producer) {
+			http.Redirect(w, r, config.AuthCodeURL(state), http.StatusFound)
+		})
 }
 
 func callback(r *http.Request) (string, error) {

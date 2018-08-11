@@ -66,8 +66,7 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 		return operations.NewGetAuthCallbackDefault(500).WithPayload(&models.Error{Code: 500, Message: swag.String(token)})
 	})
 	api.GetLoginHandler = operations.GetLoginHandlerFunc(func(params operations.GetLoginParams) middleware.Responder {
-		login(params.HTTPRequest)
-		return middleware.NotImplemented("operation .GetLogin has not yet been implemented")
+		return login(params.HTTPRequest)
 	})
 	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 		return middleware.NotImplemented("operation customers.Create has not yet been implemented")

@@ -182,9 +182,7 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 	})
 
 	api.GetLoginHandler = operations.GetLoginHandlerFunc(func(params operations.GetLoginParams) middleware.Responder {
-        // implements the login operation
-		login(params.HTTPRequest)
-		return middleware.NotImplemented("operation .GetLogin has not yet been implemented")
+		return  login(params.HTTPRequest)
 	})
 
 	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
@@ -210,12 +208,12 @@ We set the following implementation for authentication in `restapi/implementatio
 - Redirecting to the login page
 
 ```go
-func login(r *http.Request) string {
-	// implements the login with a redirection and an access token
-	var accessToken string
-	wG := r.Context().Value(ctxResponseWriter).(http.ResponseWriter)
-	http.Redirect(wG, r, config.AuthCodeURL(state), http.StatusFound)
-	return accessToken
+func login(r *http.Request) middleware.Responder {
+	// implements the login with a redirection
+	return middleware.ResponderFunc(
+		func(w http.ResponseWriter, pr runtime.Producer) {
+			http.Redirect(w, r, config.AuthCodeURL(state), http.StatusFound)
+		})
 }
 ```
 - Retrieving the access token
