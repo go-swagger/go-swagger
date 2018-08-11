@@ -174,6 +174,34 @@ func testSetRecoveryActions(t *testing.T, s *mgr.Service) {
 	testResetPeriod(t, s, 0)
 }
 
+func testRebootMessage(t *testing.T, s *mgr.Service, should string) {
+	err := s.SetRebootMessage(should)
+	if err != nil {
+		t.Fatalf("SetRebootMessage failed: %v", err)
+	}
+	is, err := s.RebootMessage()
+	if err != nil {
+		t.Fatalf("RebootMessage failed: %v", err)
+	}
+	if should != is {
+		t.Errorf("reboot message mismatch: message is %q, but should have %q", is, should)
+	}
+}
+
+func testRecoveryCommand(t *testing.T, s *mgr.Service, should string) {
+	err := s.SetRecoveryCommand(should)
+	if err != nil {
+		t.Fatalf("SetRecoveryCommand failed: %v", err)
+	}
+	is, err := s.RecoveryCommand()
+	if err != nil {
+		t.Fatalf("RecoveryCommand failed: %v", err)
+	}
+	if should != is {
+		t.Errorf("recovery command mismatch: command is %q, but should have %q", is, should)
+	}
+}
+
 func remove(t *testing.T, s *mgr.Service) {
 	err := s.Delete()
 	if err != nil {
@@ -245,6 +273,10 @@ func TestMyService(t *testing.T) {
 	}
 
 	testSetRecoveryActions(t, s)
+	testRebootMessage(t, s, "myservice failed")
+	testRebootMessage(t, s, "") // delete reboot message
+	testRecoveryCommand(t, s, "sc query myservice")
+	testRecoveryCommand(t, s, "") // delete recovery command
 
 	remove(t, s)
 }

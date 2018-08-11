@@ -175,6 +175,7 @@ struct ltchars {
 #include <linux/magic.h>
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netlink.h>
+#include <linux/net_namespace.h>
 #include <linux/perf_event.h>
 #include <linux/random.h>
 #include <linux/reboot.h>
@@ -229,6 +230,7 @@ includes_NetBSD='
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/event.h>
+#include <sys/extattr.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
@@ -257,9 +259,11 @@ includes_OpenBSD='
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
+#include <sys/stat.h>
 #include <sys/sysctl.h>
 #include <sys/termios.h>
 #include <sys/ttycom.h>
+#include <sys/unistd.h>
 #include <sys/wait.h>
 #include <net/bpf.h>
 #include <net/if.h>
@@ -405,7 +409,7 @@ ccflags="$@"
 		$2 ~ /^LINUX_REBOOT_CMD_/ ||
 		$2 ~ /^LINUX_REBOOT_MAGIC[12]$/ ||
 		$2 !~ "NLA_TYPE_MASK" &&
-		$2 ~ /^(NETLINK|NLM|NLMSG|NLA|IFA|IFAN|RT|RTC|RTCF|RTN|RTPROT|RTNH|ARPHRD|ETH_P)_/ ||
+		$2 ~ /^(NETLINK|NLM|NLMSG|NLA|IFA|IFAN|RT|RTC|RTCF|RTN|RTPROT|RTNH|ARPHRD|ETH_P|NETNSA)_/ ||
 		$2 ~ /^SIOC/ ||
 		$2 ~ /^TIOC/ ||
 		$2 ~ /^TCGET/ ||
@@ -439,6 +443,7 @@ ccflags="$@"
 		$2 ~ /^CGROUPSTATS_/ ||
 		$2 ~ /^GENL_/ ||
 		$2 ~ /^STATX_/ ||
+		$2 ~ /^RENAME/ ||
 		$2 ~ /^UTIME_/ ||
 		$2 ~ /^XATTR_(CREATE|REPLACE|NO(DEFAULT|FOLLOW|SECURITY)|SHOWCOMPRESSION)/ ||
 		$2 ~ /^ATTR_(BIT_MAP_COUNT|(CMN|VOL|FILE)_)/ ||

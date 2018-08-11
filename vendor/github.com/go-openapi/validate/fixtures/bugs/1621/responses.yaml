@@ -1,0 +1,13 @@
+responses:
+
+  V4Generic401Response:
+    description: Permission denied
+    schema:
+      $ref: "./definitions.yaml#/definitions/V4GenericResponse"
+    examples:
+      application/json:
+        {
+          "code": "PERMISSION_DENIED",
+          "message": "The requested resource cannot be accessed using the provided authentication details."
+        }
+

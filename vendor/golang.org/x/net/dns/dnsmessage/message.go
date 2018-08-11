@@ -493,7 +493,7 @@ func (r *Resource) pack(msg []byte, compression map[string]int, compressionOff i
 	}
 	oldMsg := msg
 	r.Header.Type = r.Body.realType()
-	msg, length, err := r.Header.pack(msg, compression, compressionOff)
+	msg, lenOff, err := r.Header.pack(msg, compression, compressionOff)
 	if err != nil {
 		return msg, &nestedError{"ResourceHeader", err}
 	}
@@ -502,7 +502,7 @@ func (r *Resource) pack(msg []byte, compression map[string]int, compressionOff i
 	if err != nil {
 		return msg, &nestedError{"content", err}
 	}
-	if err := r.Header.fixLen(msg, length, preLen); err != nil {
+	if err := r.Header.fixLen(msg, lenOff, preLen); err != nil {
 		return oldMsg, err
 	}
 	return msg, nil
@@ -1323,7 +1323,7 @@ func (b *Builder) CNAMEResource(h ResourceHeader, r CNAMEResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1331,7 +1331,7 @@ func (b *Builder) CNAMEResource(h ResourceHeader, r CNAMEResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"CNAMEResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1347,7 +1347,7 @@ func (b *Builder) MXResource(h ResourceHeader, r MXResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1355,7 +1355,7 @@ func (b *Builder) MXResource(h ResourceHeader, r MXResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"MXResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1371,7 +1371,7 @@ func (b *Builder) NSResource(h ResourceHeader, r NSResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1379,7 +1379,7 @@ func (b *Builder) NSResource(h ResourceHeader, r NSResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"NSResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1395,7 +1395,7 @@ func (b *Builder) PTRResource(h ResourceHeader, r PTRResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1403,7 +1403,7 @@ func (b *Builder) PTRResource(h ResourceHeader, r PTRResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"PTRResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1419,7 +1419,7 @@ func (b *Builder) SOAResource(h ResourceHeader, r SOAResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1427,7 +1427,7 @@ func (b *Builder) SOAResource(h ResourceHeader, r SOAResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"SOAResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1443,7 +1443,7 @@ func (b *Builder) TXTResource(h ResourceHeader, r TXTResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1451,7 +1451,7 @@ func (b *Builder) TXTResource(h ResourceHeader, r TXTResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"TXTResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1467,7 +1467,7 @@ func (b *Builder) SRVResource(h ResourceHeader, r SRVResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1475,7 +1475,7 @@ func (b *Builder) SRVResource(h ResourceHeader, r SRVResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"SRVResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1491,7 +1491,7 @@ func (b *Builder) AResource(h ResourceHeader, r AResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1499,7 +1499,7 @@ func (b *Builder) AResource(h ResourceHeader, r AResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"AResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1515,7 +1515,7 @@ func (b *Builder) AAAAResource(h ResourceHeader, r AAAAResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1523,7 +1523,7 @@ func (b *Builder) AAAAResource(h ResourceHeader, r AAAAResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"AAAAResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1539,7 +1539,7 @@ func (b *Builder) OPTResource(h ResourceHeader, r OPTResource) error {
 		return err
 	}
 	h.Type = r.realType()
-	msg, length, err := h.pack(b.msg, b.compression, b.start)
+	msg, lenOff, err := h.pack(b.msg, b.compression, b.start)
 	if err != nil {
 		return &nestedError{"ResourceHeader", err}
 	}
@@ -1547,7 +1547,7 @@ func (b *Builder) OPTResource(h ResourceHeader, r OPTResource) error {
 	if msg, err = r.pack(msg, b.compression, b.start); err != nil {
 		return &nestedError{"OPTResource body", err}
 	}
-	if err := h.fixLen(msg, length, preLen); err != nil {
+	if err := h.fixLen(msg, lenOff, preLen); err != nil {
 		return err
 	}
 	if err := b.incrementSectionCount(); err != nil {
@@ -1606,19 +1606,18 @@ func (h *ResourceHeader) GoString() string {
 
 // pack appends the wire format of the ResourceHeader to oldMsg.
 //
-// The bytes where length was packed are returned as a slice so they can be
-// updated after the rest of the Resource has been packed.
-func (h *ResourceHeader) pack(oldMsg []byte, compression map[string]int, compressionOff int) (msg []byte, length []byte, err error) {
+// lenOff is the offset in msg where the Length field was packed.
+func (h *ResourceHeader) pack(oldMsg []byte, compression map[string]int, compressionOff int) (msg []byte, lenOff int, err error) {
 	msg = oldMsg
 	if msg, err = h.Name.pack(msg, compression, compressionOff); err != nil {
-		return oldMsg, nil, &nestedError{"Name", err}
+		return oldMsg, 0, &nestedError{"Name", err}
 	}
 	msg = packType(msg, h.Type)
 	msg = packClass(msg, h.Class)
 	msg = packUint32(msg, h.TTL)
-	lenBegin := len(msg)
+	lenOff = len(msg)
 	msg = packUint16(msg, h.Length)
-	return msg, msg[lenBegin : lenBegin+uint16Len], nil
+	return msg, lenOff, nil
 }
 
 func (h *ResourceHeader) unpack(msg []byte, off int) (int, error) {
@@ -1642,14 +1641,20 @@ func (h *ResourceHeader) unpack(msg []byte, off int) (int, error) {
 	return newOff, nil
 }
 
-func (h *ResourceHeader) fixLen(msg []byte, length []byte, preLen int) error {
+// fixLen updates a packed ResourceHeader to include the length of the
+// ResourceBody.
+//
+// lenOff is the offset of the ResourceHeader.Length field in msg.
+//
+// preLen is the length that msg was before the ResourceBody was packed.
+func (h *ResourceHeader) fixLen(msg []byte, lenOff int, preLen int) error {
 	conLen := len(msg) - preLen
 	if conLen > int(^uint16(0)) {
 		return errResTooLong
 	}
 
 	// Fill in the length now that we know how long the content is.
-	packUint16(length[:0], uint16(conLen))
+	packUint16(msg[lenOff:lenOff], uint16(conLen))
 	h.Length = uint16(conLen)
 
 	return nil

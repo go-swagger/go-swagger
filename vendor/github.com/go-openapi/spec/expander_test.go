@@ -32,6 +32,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	rex = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
+)
+
 func jsonDoc(path string) (json.RawMessage, error) {
 	data, err := swag.LoadFromFileOrHTTP(path)
 	if err != nil {
@@ -286,6 +290,39 @@ func TestExportedResponseExpansion(t *testing.T) {
 	// assert.Equal(t, expected, resp)
 }
 
+func TestExpandResponseAndParamWithRoot(t *testing.T) {
+	specDoc, err := jsonDoc("fixtures/bugs/1614/gitea.json")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	var spec Swagger
+	_ = json.Unmarshal(specDoc, &spec)
+
+	// check responses with $ref
+	resp := spec.Paths.Paths["/admin/users"].Post.Responses.StatusCodeResponses[201]
+	err = ExpandResponseWithRoot(&resp, spec, nil)
+	assert.NoError(t, err)
+	jazon, _ := json.MarshalIndent(resp, "", " ")
+	m := rex.FindAllStringSubmatch(string(jazon), -1)
+	assert.Nil(t, m)
+
+	resp = spec.Paths.Paths["/admin/users"].Post.Responses.StatusCodeResponses[403]
+	err = ExpandResponseWithRoot(&resp, spec, nil)
+	assert.NoError(t, err)
+	jazon, _ = json.MarshalIndent(resp, "", " ")
+	m = rex.FindAllStringSubmatch(string(jazon), -1)
+	assert.Nil(t, m)
+
+	// check param with $ref
+	param := spec.Paths.Paths["/admin/users"].Post.Parameters[0]
+	err = ExpandParameterWithRoot(&param, spec, nil)
+	assert.NoError(t, err)
+	jazon, _ = json.MarshalIndent(param, "", " ")
+	m = rex.FindAllStringSubmatch(string(jazon), -1)
+	assert.Nil(t, m)
+}
+
 func TestIssue3(t *testing.T) {
 	spec := new(Swagger)
 	specDoc, err := jsonDoc("fixtures/expansion/overflow.json")
@@ -428,7 +465,6 @@ func Test_MoreCircular(t *testing.T) {
 
 	fixturePath := "fixtures/more_circulars/spec.json"
 	jazon := expandThisOrDieTrying(t, fixturePath)
-	rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m := rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -440,7 +476,6 @@ func Test_MoreCircular(t *testing.T) {
 
 	fixturePath = "fixtures/more_circulars/spec2.json"
 	jazon = expandThisOrDieTrying(t, fixturePath)
-	rex = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m = rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -452,7 +487,6 @@ func Test_MoreCircular(t *testing.T) {
 
 	fixturePath = "fixtures/more_circulars/spec3.json"
 	jazon = expandThisOrDieTrying(t, fixturePath)
-	rex = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m = rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -464,7 +498,6 @@ func Test_MoreCircular(t *testing.T) {
 
 	fixturePath = "fixtures/more_circulars/spec4.json"
 	jazon = expandThisOrDieTrying(t, fixturePath)
-	rex = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m = rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -481,7 +514,6 @@ func Test_Issue957(t *testing.T) {
 	if assert.NotEmpty(t, jazon) {
 		assert.NotContainsf(t, jazon, "fixture-957.json#/",
 			"expected %s to be expanded with stripped circular $ref", fixturePath)
-		rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 		m := rex.FindAllStringSubmatch(jazon, -1)
 		if assert.NotNil(t, m) {
 			for _, matched := range m {
@@ -499,7 +531,6 @@ func Test_Bitbucket(t *testing.T) {
 
 	fixturePath := "fixtures/more_circulars/bitbucket.json"
 	jazon := expandThisOrDieTrying(t, fixturePath)
-	rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m := rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -514,7 +545,6 @@ func Test_ExpandJSONSchemaDraft4(t *testing.T) {
 	fixturePath := filepath.Join("schemas", "jsonschema-draft-04.json")
 	jazon := expandThisSchemaOrDieTrying(t, fixturePath)
 	// assert all $ref maches  "$ref": "http://json-schema.org/draft-04/something"
-	rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m := rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -529,7 +559,6 @@ func Test_ExpandSwaggerSchema(t *testing.T) {
 	fixturePath := filepath.Join("schemas", "v2", "schema.json")
 	jazon := expandThisSchemaOrDieTrying(t, fixturePath)
 	// assert all $ref maches  "$ref": "#/definitions/something"
-	rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m := rex.FindAllStringSubmatch(jazon, -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
@@ -1410,6 +1439,77 @@ func TestResolveForTransitiveRefs(t *testing.T) {
 
 	err = ExpandSpec(spec, opts)
 	assert.NoError(t, err)
+}
+
+const (
+	withoutSchemaID = "removed"
+	withSchemaID    = "schema"
+)
+
+func TestExpandSchemaWithRoot(t *testing.T) {
+	root := new(Swagger)
+	_ = json.Unmarshal(PetStoreJSONMessage, root)
+
+	// 1. remove ID from root definition
+	origPet := root.Definitions["Pet"]
+	newPet := origPet
+	newPet.ID = ""
+	root.Definitions["Pet"] = newPet
+	expandRootWithID(t, root, withoutSchemaID)
+
+	// 2. put back ID in Pet definition
+	// nested $ref should fail
+	//Debug = true
+	root.Definitions["Pet"] = origPet
+	expandRootWithID(t, root, withSchemaID)
+}
+
+func expandRootWithID(t *testing.T, root *Swagger, testcase string) {
+	t.Logf("case: expanding $ref to schema without ID, with nested $ref with %s ID", testcase)
+	sch := &Schema{
+		SchemaProps: SchemaProps{
+			Ref: MustCreateRef("#/definitions/newPet"),
+		},
+	}
+	err := ExpandSchema(sch, root, nil)
+	if testcase == withSchemaID {
+		assert.Errorf(t, err, "expected %s NOT to expand properly because of the ID in the parent schema", sch.Ref.String())
+	} else {
+		assert.NoErrorf(t, err, "expected %s to expand properly", sch.Ref.String())
+	}
+	if Debug {
+		bbb, _ := json.MarshalIndent(sch, "", " ")
+		t.Log(string(bbb))
+	}
+
+	t.Log("case: expanding $ref to schema without nested $ref")
+	sch = &Schema{
+		SchemaProps: SchemaProps{
+			Ref: MustCreateRef("#/definitions/Category"),
+		},
+	}
+	err = ExpandSchema(sch, root, nil)
+	assert.NoErrorf(t, err, "expected %s to expand properly", sch.Ref.String())
+	if Debug {
+		bbb, _ := json.MarshalIndent(sch, "", " ")
+		t.Log(string(bbb))
+	}
+	t.Logf("case: expanding $ref to schema with %s ID and nested $ref", testcase)
+	sch = &Schema{
+		SchemaProps: SchemaProps{
+			Ref: MustCreateRef("#/definitions/Pet"),
+		},
+	}
+	err = ExpandSchema(sch, root, nil)
+	if testcase == withSchemaID {
+		assert.Errorf(t, err, "expected %s NOT to expand properly because of the ID in the parent schema", sch.Ref.String())
+	} else {
+		assert.NoErrorf(t, err, "expected %s to expand properly", sch.Ref.String())
+	}
+	if Debug {
+		bbb, _ := json.MarshalIndent(sch, "", " ")
+		t.Log(string(bbb))
+	}
 }
 
 // PetStoreJSONMessage json raw message for Petstore20

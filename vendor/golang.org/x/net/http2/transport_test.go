@@ -18,6 +18,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"net/url"
 	"os"
 	"reflect"
@@ -1190,6 +1191,77 @@ func testTransportResPattern(t *testing.T, expect100Continue, resHeader headerTy
 		}
 	}
 	ct.run()
+}
+
+// Issue 26189, Issue 17739: ignore unknown 1xx responses
+func TestTransportUnknown1xx(t *testing.T) {
+	var buf bytes.Buffer
+	defer func() { got1xxFuncForTests = nil }()
+	got1xxFuncForTests = func(code int, header textproto.MIMEHeader) error {
+		fmt.Fprintf(&buf, "code=%d header=%v\n", code, header)
+		return nil
+	}
+
+	ct := newClientTester(t)
+	ct.client = func() error {
+		req, _ := http.NewRequest("GET", "https://dummy.tld/", nil)
+		res, err := ct.tr.RoundTrip(req)
+		if err != nil {
+			return fmt.Errorf("RoundTrip: %v", err)
+		}
+		defer res.Body.Close()
+		if res.StatusCode != 204 {
+			return fmt.Errorf("status code = %v; want 204", res.StatusCode)
+		}
+		want := `code=110 header=map[Foo-Bar:[110]]
+code=111 header=map[Foo-Bar:[111]]
+code=112 header=map[Foo-Bar:[112]]
+code=113 header=map[Foo-Bar:[113]]
+code=114 header=map[Foo-Bar:[114]]
+`
+		if got := buf.String(); got != want {
+			t.Errorf("Got trace:\n%s\nWant:\n%s", got, want)
+		}
+		return nil
+	}
+	ct.server = func() error {
+		ct.greet()
+		var buf bytes.Buffer
+		enc := hpack.NewEncoder(&buf)
+
+		for {
+			f, err := ct.fr.ReadFrame()
+			if err != nil {
+				return err
+			}
+			switch f := f.(type) {
+			case *WindowUpdateFrame, *SettingsFrame:
+			case *HeadersFrame:
+				for i := 110; i <= 114; i++ {
+					buf.Reset()
+					enc.WriteField(hpack.HeaderField{Name: ":status", Value: fmt.Sprint(i)})
+					enc.WriteField(hpack.HeaderField{Name: "foo-bar", Value: fmt.Sprint(i)})
+					ct.fr.WriteHeaders(HeadersFrameParam{
+						StreamID:      f.StreamID,
+						EndHeaders:    true,
+						EndStream:     false,
+						BlockFragment: buf.Bytes(),
+					})
+				}
+				buf.Reset()
+				enc.WriteField(hpack.HeaderField{Name: ":status", Value: "204"})
+				ct.fr.WriteHeaders(HeadersFrameParam{
+					StreamID:      f.StreamID,
+					EndHeaders:    true,
+					EndStream:     false,
+					BlockFragment: buf.Bytes(),
+				})
+				return nil
+			}
+		}
+	}
+	ct.run()
+
 }
 
 func TestTransportReceiveUndeclaredTrailer(t *testing.T) {
@@ -4045,4 +4117,69 @@ func TestClientConnShutdown(t *testing.T) {
 // behavior is the client closing the connection after the context is canceled.
 func TestClientConnShutdownCancel(t *testing.T) {
 	testClientConnClose(t, shutdownCancel)
+}
+
+// Issue 25009: use Request.GetBody if present, even if it seems like
+// we might not need it. Apparently something else can still read from
+// the original request body. Data race? In any case, rewinding
+// unconditionally on retry is a nicer model anyway and should
+// simplify code in the future (after the Go 1.11 freeze)
+func TestTransportUsesGetBodyWhenPresent(t *testing.T) {
+	calls := 0
+	someBody := func() io.ReadCloser {
+		return struct{ io.ReadCloser }{ioutil.NopCloser(bytes.NewReader(nil))}
+	}
+	req := &http.Request{
+		Body: someBody(),
+		GetBody: func() (io.ReadCloser, error) {
+			calls++
+			return someBody(), nil
+		},
+	}
+
+	afterBodyWrite := false // pretend we haven't read+written the body yet
+	req2, err := shouldRetryRequest(req, errClientConnUnusable, afterBodyWrite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls != 1 {
+		t.Errorf("Calls = %d; want 1", calls)
+	}
+	if req2 == req {
+		t.Error("req2 changed")
+	}
+	if req2 == nil {
+		t.Fatal("req2 is nil")
+	}
+	if req2.Body == nil {
+		t.Fatal("req2.Body is nil")
+	}
+	if req2.GetBody == nil {
+		t.Fatal("req2.GetBody is nil")
+	}
+	if req2.Body == req.Body {
+		t.Error("req2.Body unchanged")
+	}
+}
+
+// Issue 22891: verify that the "https" altproto we register with net/http
+// is a certain type: a struct with one field with our *http2.Transport in it.
+func TestNoDialH2RoundTripperType(t *testing.T) {
+	t1 := new(http.Transport)
+	t2 := new(Transport)
+	rt := noDialH2RoundTripper{t2}
+	if err := registerHTTPSProtocol(t1, rt); err != nil {
+		t.Fatal(err)
+	}
+	rv := reflect.ValueOf(rt)
+	if rv.Type().Kind() != reflect.Struct {
+		t.Fatalf("kind = %v; net/http expects struct", rv.Type().Kind())
+	}
+	if n := rv.Type().NumField(); n != 1 {
+		t.Fatalf("fields = %d; net/http expects 1", n)
+	}
+	v := rv.Field(0)
+	if _, ok := v.Interface().(*Transport); !ok {
+		t.Fatalf("wrong kind %T; want *Transport", v.Interface())
+	}
 }

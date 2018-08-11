@@ -16,6 +16,7 @@ package spec_test
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -27,7 +28,10 @@ import (
 )
 
 // mimics what the go-openapi/load does
-var yamlLoader = swag.YAMLDoc
+var (
+	yamlLoader = swag.YAMLDoc
+	rex        = regexp.MustCompile(`"\$ref":\s*"(.+)"`)
+)
 
 func loadOrFail(t *testing.T, path string) *spec.Swagger {
 	raw, erl := yamlLoader(path)
@@ -60,8 +64,6 @@ func Test_Issue1429(t *testing.T) {
 		t.FailNow()
 		return
 	}
-	//bbb, _ := json.MarshalIndent(sp, "", " ")
-	//t.Log(string(bbb))
 
 	// assert well expanded
 	if !assert.Truef(t, (sp.Paths != nil && sp.Paths.Paths != nil), "expected paths to be available in fixture") {
@@ -185,12 +187,82 @@ func Test_Issue69(t *testing.T) {
 	jazon, _ := json.MarshalIndent(sp, "", " ")
 
 	// assert all $ref maches  "$ref": "#/definitions/something"
-	rex := regexp.MustCompile(`"\$ref":\s*"(.+)"`)
 	m := rex.FindAllStringSubmatch(string(jazon), -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {
 			subMatch := matched[1]
 			assert.True(t, strings.HasPrefix(subMatch, "#/definitions/"),
+				"expected $ref to be inlined, got: %s", matched[0])
+		}
+	}
+}
+
+func Test_Issue1621(t *testing.T) {
+	prevPathLoader := spec.PathLoader
+	defer func() {
+		spec.PathLoader = prevPathLoader
+	}()
+	spec.PathLoader = yamlLoader
+	path := filepath.Join("fixtures", "bugs", "1621", "fixture-1621.yaml")
+
+	// expand with relative path
+	// load and expand
+	sp := loadOrFail(t, path)
+
+	err := spec.ExpandSpec(sp, &spec.ExpandOptions{RelativeBase: path, SkipSchemas: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	// asserts all $ref expanded
+	jazon, _ := json.MarshalIndent(sp, "", " ")
+	m := rex.FindAllStringSubmatch(string(jazon), -1)
+	assert.Nil(t, m)
+}
+
+func Test_Issue1614(t *testing.T) {
+
+	path := filepath.Join("fixtures", "bugs", "1614", "gitea.json")
+
+	// expand with relative path
+	// load and expand
+	sp := loadOrFail(t, path)
+	err := spec.ExpandSpec(sp, &spec.ExpandOptions{RelativeBase: path, SkipSchemas: false})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	// asserts all $ref expanded
+	jazon, _ := json.MarshalIndent(sp, "", " ")
+
+	// assert all $ref maches  "$ref": "#/definitions/something"
+	m := rex.FindAllStringSubmatch(string(jazon), -1)
+	if assert.NotNil(t, m) {
+		for _, matched := range m {
+			subMatch := matched[1]
+			assert.True(t, strings.HasPrefix(subMatch, "#/definitions/"),
+				"expected $ref to be inlined, got: %s", matched[0])
+		}
+	}
+
+	// now with option CircularRefAbsolute
+	sp = loadOrFail(t, path)
+	err = spec.ExpandSpec(sp, &spec.ExpandOptions{RelativeBase: path, SkipSchemas: false, AbsoluteCircularRef: true})
+	if !assert.NoError(t, err) {
+		t.FailNow()
+		return
+	}
+	// asserts all $ref expanded
+	jazon, _ = json.MarshalIndent(sp, "", " ")
+
+	// assert all $ref maches  "$ref": "{file path}#/definitions/something"
+	refPath, _ := os.Getwd()
+	refPath = filepath.Join(refPath, path)
+	m = rex.FindAllStringSubmatch(string(jazon), -1)
+	if assert.NotNil(t, m) {
+		for _, matched := range m {
+			subMatch := matched[1]
+			assert.True(t, strings.HasPrefix(subMatch, refPath+"#/definitions/"),
 				"expected $ref to be inlined, got: %s", matched[0])
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
@@ -260,33 +261,40 @@ func (s *Server) Serve() (err error) {
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
 			},
 		}
 
+		// build standard config from server options
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
 			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(string(s.TLSCertificate), string(s.TLSCertificateKey))
+			if err != nil {
+				return err
+			}
 		}
 
 		if s.TLSCACertificate != "" {
+			// include specified CA certificate
 			caCert, caCertErr := ioutil.ReadFile(string(s.TLSCACertificate))
 			if caCertErr != nil {
-				log.Fatal(caCertErr)
+				return caCertErr
 			}
 			caCertPool := x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(caCert)
+			ok := caCertPool.AppendCertsFromPEM(caCert)
+			if !ok {
+				return fmt.Errorf("cannot parse CA certificate")
+			}
 			httpsServer.TLSConfig.ClientCAs = caCertPool
 			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		}
 
+		// call custom TLS configurator
 		configureTLS(httpsServer.TLSConfig)
-		httpsServer.TLSConfig.BuildNameToCertificate()
-
-		if err != nil {
-			return err
-		}
 
 		if len(httpsServer.TLSConfig.Certificates) == 0 {
+			// after standard and custom config are passed, this ends up with no certificate
 			if s.TLSCertificate == "" {
 				if s.TLSCertificateKey == "" {
 					s.Fatalf("the required flags `--tls-certificate` and `--tls-key` were not specified")
@@ -296,7 +304,12 @@ func (s *Server) Serve() (err error) {
 			if s.TLSCertificateKey == "" {
 				s.Fatalf("the required flag `--tls-key` was not specified")
 			}
+			// this happens with a wrong custom TLS configurator
+			s.Fatalf("no certificate was configured for TLS")
 		}
+
+		// must have at least one certificate or panics
+		httpsServer.TLSConfig.BuildNameToCertificate()
 
 		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 

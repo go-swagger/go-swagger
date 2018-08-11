@@ -1,10 +1,13 @@
 language: go
 go:
-- 1.7
 - 1.8
 - 1.9
 - 1.10.x
 install:
+- go get -u github.com/axw/gocov/gocov
+- go get -u gopkg.in/matm/v1/gocov-html
+- go get -u github.com/cee-dub/go-junit-report
+- go get -u github.com/docker/go-units
 - go get -u github.com/stretchr/testify/assert
 - go get -u gopkg.in/yaml.v2
 - go get -u github.com/go-openapi/swag
@@ -13,7 +16,7 @@ install:
 - go get -u github.com/go-openapi/strfmt
 - go get -u github.com/go-openapi/loads/fmts
 script:
-- go test -v -race -cover -coverprofile=coverage.txt -covermode=atomic ./...
+- hack/coverage
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 notifications:
