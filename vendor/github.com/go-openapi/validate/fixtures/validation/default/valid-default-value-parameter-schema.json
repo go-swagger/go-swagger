@@ -27,7 +27,7 @@
             "parameters": [
               {
                 "name": "limit",
-                "in": "query",
+                "in": "body",
                 "description": "number of items to return in the result",
                 "schema": {
                   "type": "integer",

@@ -23,7 +23,7 @@ message, but it's possible to get the full serialization by supplying the
 
 Keys are specified via the `--key` flag. Supported key types are naked RSA/EC
 keys and X.509 certificates with embedded RSA/EC keys. Keys must be in PEM
-or DER formats. JWK format produced by `jwk-keygen` is also supported.
+or DER formats.
 
 ## Examples
 
@@ -31,7 +31,7 @@ or DER formats. JWK format produced by `jwk-keygen` is also supported.
 
 Takes a plaintext as input, encrypts, and prints the encrypted message.
 
-    jose-util encrypt --key public-key.pem --alg RSA-OAEP --enc A128GCM
+    echo 'test message' | jose-util encrypt --key public-key.pem --alg RSA-OAEP --enc A128GCM
 
 ### Decrypt
 
@@ -49,7 +49,7 @@ Takes a payload as input, signs it, and prints the signed message with the embed
 
 Reads a signed message (JWS), verifies it, and extracts the payload.
 
-    jose-util verify -k public-key.pem
+    jose-util verify --key public-key.pem
 
 ### Expand
 

@@ -23,6 +23,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"math/big"
+	"regexp"
 	"testing"
 )
 
@@ -302,6 +303,13 @@ func TestVectorsJWE(t *testing.T) {
 	}
 }
 
+func TestJWENilProtected(t *testing.T) {
+	key := []byte("1234567890123456")
+	serialized := `{"unprotected":{"alg":"dir","enc":"A128GCM"}}`
+	jwe, _ := ParseEncrypted(serialized)
+	jwe.Decrypt(key)
+}
+
 func TestVectorsJWECorrupt(t *testing.T) {
 	priv := &rsa.PrivateKey{
 		PublicKey: rsa.PublicKey{
@@ -540,4 +548,33 @@ func TestSampleJose4jJWEMessagesECDH(t *testing.T) {
 			t.Error("plaintext is not what we expected for msg", msg)
 		}
 	}
+}
+
+func TestTamperedJWE(t *testing.T) {
+	key := []byte("1234567890123456")
+
+	encrypter, _ := NewEncrypter(A128GCM,
+		Recipient{Algorithm: DIRECT, Key: key}, nil)
+
+	var plaintext = []byte("Lorem ipsum dolor sit amet")
+	object, _ := encrypter.Encrypt(plaintext)
+
+	serialized := object.FullSerialize()
+
+	// Inject a longer iv
+	serialized = regexp.MustCompile(`"iv":"[^"]+"`).
+		ReplaceAllString(serialized, `"iv":"UotNnfiavtNOOSZAcfI03i"`)
+
+	object, _ = ParseEncrypted(serialized)
+
+	_, err := object.Decrypt(key)
+	if err == nil {
+		t.Error("Decrypt() on invalid object should fail")
+	}
+}
+
+func TestJWEWithNullAlg(t *testing.T) {
+	// {"alg":null,"enc":"A128GCM"}
+	serialized := `{"protected":"eyJhbGciOm51bGwsImVuYyI6IkExMjhHQ00ifQ"}`
+	ParseEncrypted(serialized)
 }

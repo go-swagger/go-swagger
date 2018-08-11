@@ -18,3 +18,4 @@ linters:
   disable:
     - maligned
     - unparam
+    - lll

@@ -846,6 +846,36 @@ func TestResourcePack(t *testing.T) {
 	}
 }
 
+func TestResourcePackLength(t *testing.T) {
+	r := Resource{
+		ResourceHeader{
+			Name:  MustNewName("."),
+			Type:  TypeA,
+			Class: ClassINET,
+		},
+		&AResource{[4]byte{127, 0, 0, 2}},
+	}
+
+	hb, _, err := r.Header.pack(nil, nil, 0)
+	if err != nil {
+		t.Fatal("ResourceHeader.pack() =", err)
+	}
+	buf := make([]byte, 0, len(hb))
+	buf, err = r.pack(buf, nil, 0)
+	if err != nil {
+		t.Fatal("Resource.pack() =", err)
+	}
+
+	var hdr ResourceHeader
+	if _, err := hdr.unpack(buf, 0); err != nil {
+		t.Fatal("ResourceHeader.unpack() =", err)
+	}
+
+	if got, want := int(hdr.Length), len(buf)-len(hb); got != want {
+		t.Errorf("got hdr.Length = %d, want = %d", got, want)
+	}
+}
+
 func TestOptionPackUnpack(t *testing.T) {
 	for _, tt := range []struct {
 		name     string

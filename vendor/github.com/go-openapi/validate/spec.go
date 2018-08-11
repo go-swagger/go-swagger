@@ -88,6 +88,7 @@ func (s *SpecValidator) Validate(data interface{}) (errs *Result, warnings *Resu
 
 	warnings = new(Result)
 
+	// Swagger schema validator
 	schv := NewSchemaValidator(s.schema, nil, "", s.KnownFormats)
 	var obj interface{}
 

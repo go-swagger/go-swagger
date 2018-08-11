@@ -1139,6 +1139,37 @@ func TestSliceOfStruct(t *testing.T) {
 	}
 }
 
+func TestSliceCornerCases(t *testing.T) {
+	t.Parallel()
+
+	// Input with a map with zero values
+	input := map[string]interface{}{}
+	var resultWeak []Basic
+
+	err := WeakDecode(input, &resultWeak)
+	if err != nil {
+		t.Fatalf("got unexpected error: %s", err)
+	}
+
+	if len(resultWeak) != 0 {
+		t.Errorf("length should be 0")
+	}
+	// Input with more values
+	input = map[string]interface{}{
+		"Vstring": "foo",
+	}
+
+	resultWeak = nil
+	err = WeakDecode(input, &resultWeak)
+	if err != nil {
+		t.Fatalf("got unexpected error: %s", err)
+	}
+
+	if resultWeak[0].Vstring != "foo" {
+		t.Errorf("value does not match")
+	}
+}
+
 func TestSliceToMap(t *testing.T) {
 	t.Parallel()
 

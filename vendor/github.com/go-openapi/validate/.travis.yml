@@ -13,6 +13,7 @@ install:
 - go get -u github.com/stretchr/testify/assert
 - go get -u github.com/kr/pretty
 - go get -u gopkg.in/yaml.v2
+- go get -u github.com/go-openapi/spec
 - go get -u github.com/go-openapi/analysis
 - go get -u github.com/go-openapi/errors
 - go get -u github.com/go-openapi/loads

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +32,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/acme"
+	"golang.org/x/crypto/acme/autocert/internal/acmetest"
 )
 
 var (
@@ -440,6 +442,7 @@ func getCertificateFromManager(man *Manager, ecdsaSupport bool) func(string) err
 
 // startACMEServerStub runs an ACME server
 // The domain argument is the expected domain name of a certificate request.
+// TODO: Drop this in favour of x/crypto/acme/autocert/internal/acmetest.
 func startACMEServerStub(t *testing.T, getCertificate func(string) error, domain string) (url string, finish func()) {
 	// echo token-02 | shasum -a 256
 	// then divide result in 2 parts separated by dot
@@ -607,7 +610,7 @@ func TestVerifyHTTP01(t *testing.T) {
 	}
 
 	// ACME CA server stub, only the needed bits.
-	// TODO: Merge this with startACMEServerStub, making it a configurable CA for testing.
+	// TODO: Replace this with x/crypto/acme/autocert/internal/acmetest.
 	var ca *httptest.Server
 	ca = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Replay-Nonce", "nonce")
@@ -701,7 +704,7 @@ func TestRevokeFailedAuthz(t *testing.T) {
 	done := make(chan struct{}) // closed when revokeCount is 3
 
 	// ACME CA server stub, only the needed bits.
-	// TODO: Merge this with startACMEServerStub, making it a configurable CA for testing.
+	// TODO: Replace this with x/crypto/acme/autocert/internal/acmetest.
 	var ca *httptest.Server
 	ca = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Replay-Nonce", "nonce")
@@ -983,7 +986,7 @@ func TestValidCert(t *testing.T) {
 		{certKey{domain: "example.org"}, key3, [][]byte{cert3}, false},
 	}
 	for i, test := range tt {
-		leaf, err := validCert(test.ck, test.cert, test.key)
+		leaf, err := validCert(test.ck, test.cert, test.key, now)
 		if err != nil && test.ok {
 			t.Errorf("%d: err = %v", i, err)
 		}
@@ -1126,5 +1129,61 @@ func TestSupportsECDSA(t *testing.T) {
 		if result != tt.ecdsaOk {
 			t.Errorf("%d: supportsECDSA = %v; want %v", i, result, tt.ecdsaOk)
 		}
+	}
+}
+
+// TODO: add same end-to-end for http-01 challenge type.
+func TestEndToEnd(t *testing.T) {
+	const domain = "example.org"
+
+	// ACME CA server
+	ca := acmetest.NewCAServer([]string{"tls-alpn-01"}, []string{domain})
+	defer ca.Close()
+
+	// User dummy server.
+	m := &Manager{
+		Prompt: AcceptTOS,
+		Client: &acme.Client{DirectoryURL: ca.URL},
+	}
+	us := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	}))
+	us.TLS = &tls.Config{
+		NextProtos: []string{"http/1.1", acme.ALPNProto},
+		GetCertificate: func(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			cert, err := m.GetCertificate(hello)
+			if err != nil {
+				t.Errorf("m.GetCertificate: %v", err)
+			}
+			return cert, err
+		},
+	}
+	us.StartTLS()
+	defer us.Close()
+	// In TLS-ALPN challenge verification, CA connects to the domain:443 in question.
+	// Because the domain won't resolve in tests, we need to tell the CA
+	// where to dial to instead.
+	ca.Resolve(domain, strings.TrimPrefix(us.URL, "https://"))
+
+	// A client visiting user dummy server.
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs:    ca.Roots,
+			ServerName: domain,
+		},
+	}
+	client := &http.Client{Transport: tr}
+	res, err := client.Get(us.URL)
+	if err != nil {
+		t.Logf("CA errors: %v", ca.Errors())
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := string(b); v != "OK" {
+		t.Errorf("user server response: %q; want 'OK'", v)
 	}
 }

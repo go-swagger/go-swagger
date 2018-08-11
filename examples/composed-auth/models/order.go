@@ -108,7 +108,7 @@ type OrderLine struct {
 	// quantity
 	// Required: true
 	// Minimum: 1
-	Quantity *uint32 `json:"quantity"`
+	Quantity *int32 `json:"quantity"`
 }
 
 // Validate validates this order line
@@ -147,7 +147,7 @@ func (m *OrderLine) validateQuantity(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.Minimum("quantity", "body", float64(*m.Quantity), 1, false); err != nil {
+	if err := validate.MinimumInt("quantity", "body", int64(*m.Quantity), 1, false); err != nil {
 		return err
 	}
 

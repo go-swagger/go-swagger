@@ -18,9 +18,11 @@
 package jwt
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/square/go-jose.v2"
 )
 
 var (
@@ -38,6 +40,31 @@ var (
 
 type customClaims struct {
 	Scopes []string `json:"scopes,omitempty"`
+}
+
+func TestGetClaimsWithoutVerification(t *testing.T) {
+	tok, err := ParseSigned(hmacSignedToken)
+	if assert.NoError(t, err, "Error parsing signed token.") {
+		c := &Claims{}
+		c2 := &customClaims{}
+
+		err := tok.UnsafeClaimsWithoutVerification(c, c2)
+		if err != nil {
+			t.Errorf("Error not expected: %s", err)
+		}
+		assert.Equal(t, "subject", c.Subject)
+		assert.Equal(t, "issuer", c.Issuer)
+		assert.Equal(t, []string{"s1", "s2"}, c2.Scopes)
+
+	}
+	tok, err = ParseEncrypted(hmacEncryptedToken)
+	if assert.NoError(t, err, "Error parsing encrypted token.") {
+		c := Claims{}
+		err := tok.UnsafeClaimsWithoutVerification(c)
+		if err == nil {
+			t.Errorf("Error expected")
+		}
+	}
 }
 
 func TestDecodeToken(t *testing.T) {
@@ -122,6 +149,35 @@ func TestDecodeToken(t *testing.T) {
 
 	_, err = ParseSignedAndEncrypted(invalidSignedAndEncryptedToken)
 	assert.EqualError(t, err, "square/go-jose/jwt: expected content type to be JWT (cty header)")
+}
+
+func TestTamperedJWT(t *testing.T) {
+	key := []byte("1234567890123456")
+
+	sig, _ := jose.NewEncrypter(
+		jose.A128GCM,
+		jose.Recipient{Algorithm: jose.DIRECT, Key: key},
+		(&jose.EncrypterOptions{}).WithType("JWT"))
+
+	cl := Claims{
+		Subject: "foo",
+		Issuer:  "bar",
+	}
+
+	raw, _ := Encrypted(sig).Claims(cl).CompactSerialize()
+
+	// Modify with valid base64 junk
+	r := strings.Split(raw, ".")
+	r[2] = "b3RoZXJ0aGluZw"
+	raw = strings.Join(r, ".")
+
+	tok, _ := ParseEncrypted(raw)
+
+	cl = Claims{}
+	err := tok.Claims(key, &cl)
+	if err == nil {
+		t.Error("Claims() on invalid token should fail")
+	}
 }
 
 func BenchmarkDecodeSignedToken(b *testing.B) {

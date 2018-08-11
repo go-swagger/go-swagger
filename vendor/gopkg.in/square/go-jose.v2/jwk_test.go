@@ -713,3 +713,17 @@ func TestJWKValid(t *testing.T) {
 		}
 	}
 }
+
+func TestJWKBufferSizeCheck(t *testing.T) {
+	key := `{
+		"kty":"EC",
+		"crv":"P-256",
+		"x":"m9GSmJ5iGmAYlMlaOJGSFN_CjN9cIn8GGYExP-C0FBiIXlWTNvGN38R9WdrHcppfsKF0FXMOMyutpHIRaiMxYSA",
+		"y":"ZaPcRZ3q_7T3h-Gwz2i-T2JjJXfj6YVGgKHcFz5zqmg"}`
+	var jwk JSONWebKey
+	jwk.UnmarshalJSON([]byte(key))
+	jwk.Valid() // true
+	// panic: square/go-jose: invalid call to newFixedSizeBuffer (len(data) > length)
+	// github.com/square/go-jose.newFixedSizeBuffer(0xc420014557, 0x41, 0x41, 0x20, 0x0)
+	jwk.Thumbprint(crypto.SHA256)
+}

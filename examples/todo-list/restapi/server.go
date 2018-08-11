@@ -87,9 +87,9 @@ func init() {
 
 	flag.StringVar(&tlsHost, "tls-host", "localhost", "the IP to listen on")
 	flag.IntVar(&tlsPort, "tls-port", 0, "the port to listen on for secure connections, defaults to a random value")
-	flag.StringVar(&tlsCertificate, "tls-certificate", "", "the certificate to use for secure connections")
-	flag.StringVar(&tlsCertificateKey, "tls-key", "", "the private key to use for secure conections")
-	flag.StringVar(&tlsCACertificate, "tls-ca", "", "the certificate authority file to be used with mutual tls auth")
+	flag.StringVar(&tlsCertificate, "tls-certificate", "", "the certificate file to use for secure connections")
+	flag.StringVar(&tlsCertificateKey, "tls-key", "", "the private key file to use for secure connections (without passphrase)")
+	flag.StringVar(&tlsCACertificate, "tls-ca", "", "the certificate authority certificate file to be used with mutual tls auth")
 	flag.IntVar(&tlsListenLimit, "tls-listen-limit", 0, "limit the number of outstanding requests")
 	flag.DurationVar(&tlsKeepAlive, "tls-keep-alive", 3*time.Minute, "sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)")
 	flag.DurationVar(&tlsReadTimeout, "tls-read-timeout", 30*time.Second, "maximum duration before timing out read of the request")
@@ -363,33 +363,40 @@ func (s *Server) Serve() (err error) {
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
 			},
 		}
 
+		// build standard config from server options
 		if s.TLSCertificate != "" && s.TLSCertificateKey != "" {
 			httpsServer.TLSConfig.Certificates = make([]tls.Certificate, 1)
 			httpsServer.TLSConfig.Certificates[0], err = tls.LoadX509KeyPair(s.TLSCertificate, s.TLSCertificateKey)
+			if err != nil {
+				return err
+			}
 		}
 
 		if s.TLSCACertificate != "" {
+			// include specified CA certificate
 			caCert, caCertErr := ioutil.ReadFile(s.TLSCACertificate)
 			if caCertErr != nil {
-				log.Fatal(caCertErr)
+				return caCertErr
 			}
 			caCertPool := x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(caCert)
+			ok := caCertPool.AppendCertsFromPEM(caCert)
+			if !ok {
+				return fmt.Errorf("cannot parse CA certificate")
+			}
 			httpsServer.TLSConfig.ClientCAs = caCertPool
 			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		}
 
+		// call custom TLS configurator
 		configureTLS(httpsServer.TLSConfig)
-		httpsServer.TLSConfig.BuildNameToCertificate()
-
-		if err != nil {
-			return err
-		}
 
 		if len(httpsServer.TLSConfig.Certificates) == 0 {
+			// after standard and custom config are passed, this ends up with no certificate
 			if s.TLSCertificate == "" {
 				if s.TLSCertificateKey == "" {
 					s.Fatalf("the required flags `--tls-certificate` and `--tls-key` were not specified")
@@ -399,7 +406,12 @@ func (s *Server) Serve() (err error) {
 			if s.TLSCertificateKey == "" {
 				s.Fatalf("the required flag `--tls-key` was not specified")
 			}
+			// this happens with a wrong custom TLS configurator
+			s.Fatalf("no certificate was configured for TLS")
 		}
+
+		// must have at least one certificate or panics
+		httpsServer.TLSConfig.BuildNameToCertificate()
 
 		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 

@@ -27,7 +27,7 @@ func getPkgPath(fname string, isDir bool) (string, error) {
 		}
 	}
 
-	for _, p := range strings.Split(os.Getenv("GOPATH"), ":") {
+	for _, p := range strings.Split(gopath, ":") {
 		prefix := path.Join(p, "src") + "/"
 		if rel := strings.TrimPrefix(fname, prefix); rel != fname {
 			if !isDir {

@@ -93,5 +93,5 @@ func (p *Parser) Parse(fname string, isDir bool) error {
 
 func getDefaultGoPath() (string, error) {
 	output, err := exec.Command("go", "env", "GOPATH").Output()
-	return string(output), err
+	return strings.TrimSpace(string(output)), err
 }

@@ -207,6 +207,7 @@ func TestIsFloat64AJSONInteger(t *testing.T) {
 	assert.True(t, IsFloat64AJSONInteger(1.0))
 	assert.True(t, IsFloat64AJSONInteger(maxJSONFloat))
 	assert.True(t, IsFloat64AJSONInteger(minJSONFloat))
+	assert.True(t, IsFloat64AJSONInteger(1/0.01*67.15000001))
 }
 
 func TestFormatBool(t *testing.T) {

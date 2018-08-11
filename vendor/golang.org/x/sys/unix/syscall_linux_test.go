@@ -394,19 +394,19 @@ func TestFaccessat(t *testing.T) {
 	defer chtmpdir(t)()
 	touch(t, "file1")
 
-	err := unix.Faccessat(unix.AT_FDCWD, "file1", unix.O_RDONLY, 0)
+	err := unix.Faccessat(unix.AT_FDCWD, "file1", unix.R_OK, 0)
 	if err != nil {
 		t.Errorf("Faccessat: unexpected error: %v", err)
 	}
 
-	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.O_RDONLY, 2)
+	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.R_OK, 2)
 	if err != unix.EINVAL {
 		t.Errorf("Faccessat: unexpected error: %v, want EINVAL", err)
 	}
 
-	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.O_RDONLY, unix.AT_EACCESS)
-	if err != unix.EOPNOTSUPP {
-		t.Errorf("Faccessat: unexpected error: %v, want EOPNOTSUPP", err)
+	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.R_OK, unix.AT_EACCESS)
+	if err != nil {
+		t.Errorf("Faccessat: unexpected error: %v", err)
 	}
 
 	err = os.Symlink("file1", "symlink1")
@@ -414,8 +414,30 @@ func TestFaccessat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = unix.Faccessat(unix.AT_FDCWD, "symlink1", unix.O_RDONLY, unix.AT_SYMLINK_NOFOLLOW)
-	if err != unix.EOPNOTSUPP {
-		t.Errorf("Faccessat: unexpected error: %v, want EOPNOTSUPP", err)
+	err = unix.Faccessat(unix.AT_FDCWD, "symlink1", unix.R_OK, unix.AT_SYMLINK_NOFOLLOW)
+	if err != nil {
+		t.Errorf("Faccessat SYMLINK_NOFOLLOW: unexpected error %v", err)
+	}
+
+	// We can't really test AT_SYMLINK_NOFOLLOW, because there
+	// doesn't seem to be any way to change the mode of a symlink.
+	// We don't test AT_EACCESS because such tests are only
+	// meaningful if run as root.
+
+	err = unix.Fchmodat(unix.AT_FDCWD, "file1", 0, 0)
+	if err != nil {
+		t.Errorf("Fchmodat: unexpected error %v", err)
+	}
+
+	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.F_OK, unix.AT_SYMLINK_NOFOLLOW)
+	if err != nil {
+		t.Errorf("Faccessat: unexpected error: %v", err)
+	}
+
+	err = unix.Faccessat(unix.AT_FDCWD, "file1", unix.R_OK, unix.AT_SYMLINK_NOFOLLOW)
+	if err != unix.EACCES {
+		if unix.Getuid() != 0 {
+			t.Errorf("Faccessat: unexpected error: %v, want EACCES", err)
+		}
 	}
 }

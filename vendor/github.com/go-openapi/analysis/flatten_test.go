@@ -1683,73 +1683,165 @@ func TestFlatten_Bitbucket(t *testing.T) {
 	assert.True(t, ok)
 	_, ok = sp.Definitions["repository"]
 	assert.True(t, ok)
-	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
-	//log.Printf(string(bbb))
 }
 
 func TestFlatten_Issue_1602(t *testing.T) {
-	// $ref in #/responses or #/parameters
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// $ref as schema to #/responses or #/parameters
 
 	// minimal repro test case
 	bp := filepath.Join("fixtures", "bugs", "1602", "fixture-1602-1.yaml")
 	sp := loadOrFail(t, bp)
 	an := New(sp)
-	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	// reload spec
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	// reload spec
 	// with  prior expansion, a pseudo schema is produced
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: true, RemoveUnused: false})
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: false, Expand: true,
+		RemoveUnused: false})
 	assert.NoError(t, err)
 
 	// full testcase
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-full.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: false, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-1.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-2.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-3.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-4.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
 
 	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-5.yaml")
 	sp = loadOrFail(t, bp)
 	an = New(sp)
-	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false, RemoveUnused: false})
-	assert.Error(t, err)
-	//t.Logf("%s: %v", bp, err)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+
+	bp = filepath.Join("fixtures", "bugs", "1602", "fixture-1602-6.yaml")
+	sp = loadOrFail(t, bp)
+	an = New(sp)
+	err = Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+}
+
+func TestFlatten_Issue_1614(t *testing.T) {
+	var logCapture bytes.Buffer
+	log.SetOutput(&logCapture)
+	defer log.SetOutput(os.Stdout)
+
+	// $ref as schema to #/responses or #/parameters
+	// test warnings
+
+	bp := filepath.Join("fixtures", "bugs", "1614", "gitea.yaml")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+	msg := logCapture.String()
+	if !assert.Containsf(t, msg, `warning: found $ref "#/responses/empty" (response) interpreted as schema`,
+		"Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+	if !assert.Containsf(t, msg, `warning: found $ref "#/responses/forbidden" (response) interpreted as schema`,
+		"Expected log message") {
+		t.Logf("Captured log: %s", msg)
+	}
+
+	// check responses subject to warning have been expanded
+	bbb, _ := json.Marshal(sp)
+	assert.NotContains(t, string(bbb), `#/responses/forbidden`)
+	assert.NotContains(t, string(bbb), `#/responses/empty`)
+	//t.Logf("%v", string(bbb))
+}
+
+func TestFlatten_Issue_1621(t *testing.T) {
+	// repeated remote refs
+
+	// minimal repro test case
+	bp := filepath.Join("fixtures", "bugs", "1621", "fixture-1621.yaml")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+
+	sch1 := sp.Paths.Paths["/v4/users/"].Get.Responses.StatusCodeResponses[200].Schema
+	bbb, _ := json.Marshal(sch1)
+	assert.JSONEq(t, `{
+			 "type": "array",
+			 "items": {
+			  "$ref": "#/definitions/v4UserListItem"
+			 }
+		 }`, string(bbb))
+
+	sch2 := sp.Paths.Paths["/v4/user/"].Get.Responses.StatusCodeResponses[200].Schema
+	bbb, _ = json.Marshal(sch2)
+	assert.JSONEq(t, `{
+			 "$ref": "#/definitions/v4UserListItem"
+			 }`, string(bbb))
+
+	sch3 := sp.Paths.Paths["/v4/users/{email}/"].Get.Responses.StatusCodeResponses[200].Schema
+	bbb, _ = json.Marshal(sch3)
+	assert.JSONEq(t, `{
+			 "$ref": "#/definitions/v4UserListItem"
+			 }`, string(bbb))
+}
+
+func Test_NormalizePath(t *testing.T) {
+	values := []struct{ Source, Expected string }{
+		{"#/definitions/A", "#/definitions/A"},
+		{"http://somewhere.com/definitions/A", "http://somewhere.com/definitions/A"},
+		{"/definitions/A", "/definitions/A"},
+		{"/definitions/errorModel.json#/definitions/A", "/definitions/errorModel.json#/definitions/A"},
+		{"http://somewhere.com", "http://somewhere.com"},
+		{"./definitions/definitions.yaml#/definitions/A", "/abs/to/spec/definitions/definitions.yaml#/definitions/A"},
+		{"#", "/abs/to/spec"},
+	}
+
+	for _, v := range values {
+		assert.Equal(t, v.Expected, normalizePath(spec.MustCreateRef(v.Source),
+			&FlattenOpts{BasePath: "/abs/to/spec/spec.json"}))
+	}
 }

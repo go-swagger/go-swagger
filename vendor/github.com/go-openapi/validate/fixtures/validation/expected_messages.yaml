@@ -278,6 +278,19 @@ fixture-patternProperties.json:
   - message: 'definitions.TagInvalidDefault.default.nb-2 in body must be of type integer: "string"'
     withContinueOnErrors: true
     isRegexp: false
+  # with systematic response expansion we get more messages
+  - message: '200.items.default.invalidDefault.default.id in body must be of type integer: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.items.default.invalidDefault.default.nb-1 in body must be of type integer: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.items.default.invalidDefault.default.nb-2 in body must be of type integer: "string"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'in operation "getPets", default value in response 200 does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings:
   - message: 'definition "#/definitions/Parent" is not used anywhere'
     withContinueOnErrors: true
@@ -387,9 +400,6 @@ fixture-342.yaml:
   - message: 'invalid definition for parameter  in  in operation ""'
     withContinueOnErrors: true
     isRegexp: false
-  - message: 'could not resolve reference in "/get_main_object".GET to $ref nowhere.yaml#/definitions/sample_info/properties/sid: open fixtures/validation/nowhere.yaml: no such file or directory'
-    withContinueOnErrors: true
-    isRegexp: false
   - message: '"parameters.wrong" must validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
@@ -432,6 +442,9 @@ fixture-342.yaml:
   - message: 'parameters.stillnogood.in in body is required'
     withContinueOnErrors: false
     isRegexp: false
+  - message: 'could not resolve reference in "\/get_main_object"\.GET to \$ref nowhere\.yaml#\/definitions\/sample_info\/properties\/sid: open .+nowhere\.yaml: no such file or directory'
+    withContinueOnErrors: true
+    isRegexp: true
   expectedWarnings:
   - message: 'definition "#/definitions/sample_info" is not used anywhere'
     withContinueOnErrors: true
@@ -534,6 +547,18 @@ fixture-581-inline-param-format.yaml:
   - message: inlineInfiniteInt2 in query should be greater than or equal to 0
     withContinueOnErrors: true
     isRegexp: false
+  - message: 'default value for myid in query does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition as Schema for parameter myid in query in operation "op1"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: myid.uint64.default in body should be less than or equal to 0
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: myid.uint8.default in body should be less than or equal to 255
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings:
   - message: definition "#/definitions/myId" is not used anywhere
     withContinueOnErrors: true
@@ -593,13 +618,25 @@ fixture-581-inline-param.yaml:
   - message: definitions.myId.uint8.default in body should be less than or equal to 255
     withContinueOnErrors: true
     isRegexp: false
+  - message: default value for myid in query does not validate its schema
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition as Schema for parameter myid in query in operation "op1"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: myid.uint64.default in body should be less than or equal to 0
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: myid.uint8.default in body should be less than or equal to 255
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings:
   - message: definition "#/definitions/myId" is not used anywhere
     withContinueOnErrors: true
     isRegexp: false
 fixture-581.yaml:
   comment: 'Issue#581 : value and type checking in constraints'
-  todo: issue#581 not solved since only inline params are subject to this validation
+  todo: 'issue#581 error reporting solved: not only inline params are subject to this validation'
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
@@ -609,11 +646,20 @@ fixture-581.yaml:
   - message: '"paths./fixture.get.parameters" must validate one and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
     isRegexp: false
-  - message: definitions.myId.uint8.default in body should be less than or equal to 255
+  - message: 'definitions.myId.uint8.default in body should be less than or equal to 255'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'default value for myid in query does not validate its schema'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition as Schema for parameter myid in query in operation "op1"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'myid.uint8.default in body should be less than or equal to 255'
     withContinueOnErrors: true
     isRegexp: false
   expectedWarnings:
-  - message: definition "#/definitions/myId" is not used anywhere
+  - message: 'definition "#/definitions/myId" is not used anywhere'
     withContinueOnErrors: true
     isRegexp: false
 fixture-859-2.yaml:
@@ -626,6 +672,9 @@ fixture-859-2.yaml:
   - message: 'some references could not be resolved in spec\. First found: object has no key ".*"'
     withContinueOnErrors: false
     isRegexp: true
+  - message: 'could not resolve reference in / to $ref : object has no key "myitem"'
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings:
   - message: definition "#/definitions/myoutput" is not used anywhere
     withContinueOnErrors: true
@@ -674,6 +723,9 @@ fixture-859.yaml:
   - message: 'could not resolve reference in "/".POST to $ref #/parameters/rateLimit: object has no key "rateLimit"'
     withContinueOnErrors: true
     isRegexp: false
+  - message: 'could not resolve reference in "/".GET to $ref : object has no key "myparam"'
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings:
   - message: definition "#/definitions/myoutputs" is not used anywhere
     withContinueOnErrors: true
@@ -700,6 +752,12 @@ fixture-1171.yaml:
   expectedLoadError: false
   expectedValid: false
   expectedMessages:
+  - message: 'invalid definition as Schema for parameter other_server_id in path in operation "listZones"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition for parameter  in body in operation "getBody"'
+    withContinueOnErrors: true
+    isRegexp: false
   - message: '"paths./servers/{server_id}/zones.get.parameters" must validate one
       and only one schema (oneOf). Found none valid'
     withContinueOnErrors: false
@@ -815,6 +873,24 @@ fixture-1231.yaml:
     withContinueOnErrors: true
     isRegexp: false
   - message: 'customer_id in path must be of type uuid: "xyz"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.email.example in body must be of type email: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.example.create_date in body must be of type date-time: "bad-date"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.example.id in body must be of type uuid: "mycustomer"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.create_date.example in body must be of type date-time: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: '200.id.example in body must be of type uuid: "float64"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'in operation "", example value in response 200 does not validate its schema'
     withContinueOnErrors: true
     isRegexp: false
 fixture-1238.yaml:
@@ -1095,6 +1171,13 @@ fixture-collisions.yaml:
       must be unique: "{loadBalancerId}" conflicts with "{loadBalancerId}"'
     withContinueOnErrors: true
     isRegexp: false
+    # with systematic param resolution, we get more errors like this one (body and type: string)
+  - message: 'invalid definition for parameter loadBalancerId2 in body in operation "ope2"'
+    withContinueOnErrors: true
+    isRegexp: false
+  - message: 'invalid definition for parameter loadBalancerId3 in body in operation "ope2"'
+    withContinueOnErrors: true
+    isRegexp: false
   expectedWarnings: []
 fixture-constraints-on-numbers.yaml:
   comment: A supplement scenario for native vs float-based constraint verifications
@@ -1206,6 +1289,10 @@ petstore-expanded.json:
     isRegexp: false
   # this one is a regexp since the full absolute path of the ref is reported
   - message: 'could not resolve reference in newPet to \$ref pet: open .*\/pet: no such file or directory'
+    withContinueOnErrors: true
+    isRegexp: true
+  # with systematic response expansion, get more errors
+  - message: 'could not resolve reference in "\/pets".POST to \$ref .*: open .*: no such file or directory'
     withContinueOnErrors: true
     isRegexp: true
   expectedWarnings: []
@@ -1338,6 +1425,36 @@ fixture-all-formats.yaml:
   - message: 'definitions.allformats-bad.propn04.default in body must be of type int64: "float64"'
   - message: 'definitions.allformats-bad.propn05.default in body must be of type uint32: "float64"'
   - message: 'definitions.allformats-bad.propn06.default in body must be of type uint64: "float64"'
+  # More messages with systematic response expansion
+  - message: '200.prop01.default in body must be of type byte: "ZWxpemFiZXRocG9zZXk"'
+  - message: '200.prop02.default in body must be of type creditcard: "4111-1111-1111-111K"'
+  - message: '200.prop03.default in body must be of type date: "1970-01-32"'
+  - message: '200.prop04.default in body must be of type date-time: "1963-06-19T99:30:06.283185Z"'
+  - message: '200.prop05.default in body must be of type duration: "weeks"'
+  - message: '200.prop06.default in body must be of type email: "joe.bloggs-example.com"'
+  - message: '200.prop07.default in body must be of type hexcolor: "float64"'
+  - message: '200.prop08.default in body must be of type hostname: "---invalid-hostname---"'
+  - message: '200.prop09.default in body must be of type ipv4: "192.2.0.1.45"'
+  - message: '200.prop10.default in body must be of type ipv6: "x::1"'
+  - message: '200.prop11.default in body must be of type isbn: "X0321751043"'
+  - message: '200.prop12.default in body must be of type isbn10: "X0321751043"'
+  - message: '200.prop13.default in body must be of type isbn13: "X978 3401013190"'
+  - message: '200.prop14.default in body must be of type mac: "X1:02:03:04:05:06"'
+  - message: '200.prop15.default in body must be of type bsonobjectid: "X507f1f77bcf86cd799439011"'
+  - message: '200.prop16.default in body must be of type password: "float64"'
+  - message: '200.prop17.default in body must be of type rgbcolor: "gb(100,100,100)"'
+  - message: '200.prop18.default in body must be of type ssn: "Z111-11-1111"'
+  - message: '200.prop20.default in body must be of type uuid: "a8098c1a+f86e+11da+bd1a+00112444be1e"'
+  - message: '200.prop21.default in body must be of type uuid3: "bcd02e22+68f0+3046+a512+327cca9def8f"'
+  - message: '200.prop22.default in body must be of type uuid4: "025b0d74+00a2+4048+bf57+227c5111bb34"'
+  - message: '200.prop23.default in body must be of type uuid5: "886313e1+3b8a+5372+9b90+0c9aee199e5d"'
+  - message: '200.propn01.default in body must be of type number: "string"'
+  - message: '200.propn02.default in body must be of type number: "string"'
+  - message: '200.propn03.default in body must be of type int32: "float64"'
+  - message: '200.propn04.default in body must be of type int64: "float64"'
+  - message: '200.propn05.default in body must be of type uint32: "float64"'
+  - message: '200.propn06.default in body must be of type uint64: "float64"'
+  - message: 'in operation "op2", default value in response 200 does not validate its schema'
   expectedWarnings: []
 fixture-bad-response.yaml:
   comment: $ref sibling in response

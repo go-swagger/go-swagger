@@ -24,7 +24,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io"
+	"math/big"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"golang.org/x/crypto/ed25519"
@@ -40,7 +42,15 @@ var ecTestKey521, _ = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 var ed25519PublicKey, ed25519PrivateKey, _ = ed25519.GenerateKey(rand.Reader)
 
 func RoundtripJWE(keyAlg KeyAlgorithm, encAlg ContentEncryption, compressionAlg CompressionAlgorithm, serializer func(*JSONWebEncryption) (string, error), corrupter func(*JSONWebEncryption) bool, aad []byte, encryptionKey interface{}, decryptionKey interface{}) error {
-	enc, err := NewEncrypter(encAlg, Recipient{Algorithm: keyAlg, Key: encryptionKey}, &EncrypterOptions{Compression: compressionAlg})
+	var rcpt Recipient
+	switch keyAlg {
+	case PBES2_HS256_A128KW, PBES2_HS384_A192KW, PBES2_HS512_A256KW:
+		// use 1k iterations instead of 100k to reduce computational cost
+		rcpt = Recipient{Algorithm: keyAlg, Key: encryptionKey, PBES2Count: 1000}
+	default:
+		rcpt = Recipient{Algorithm: keyAlg, Key: encryptionKey}
+	}
+	enc, err := NewEncrypter(encAlg, rcpt, &EncrypterOptions{Compression: compressionAlg})
 	if err != nil {
 		return fmt.Errorf("error on new encrypter: %s", err)
 	}
@@ -87,7 +97,9 @@ func TestRoundtripsJWE(t *testing.T) {
 	// Test matrix
 	keyAlgs := []KeyAlgorithm{
 		DIRECT, ECDH_ES, ECDH_ES_A128KW, ECDH_ES_A192KW, ECDH_ES_A256KW, A128KW, A192KW, A256KW,
-		RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW, A192GCMKW, A256GCMKW}
+		RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW, A192GCMKW, A256GCMKW,
+		PBES2_HS256_A128KW, PBES2_HS384_A192KW, PBES2_HS512_A256KW,
+	}
 	encAlgs := []ContentEncryption{A128GCM, A192GCM, A256GCM, A128CBC_HS256, A192CBC_HS384, A256CBC_HS512}
 	zipAlgs := []CompressionAlgorithm{NONE, DEFLATE}
 
@@ -123,7 +135,7 @@ func TestRoundtripsJWE(t *testing.T) {
 
 func TestRoundtripsJWECorrupted(t *testing.T) {
 	// Test matrix
-	keyAlgs := []KeyAlgorithm{DIRECT, ECDH_ES, ECDH_ES_A128KW, A128KW, RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW}
+	keyAlgs := []KeyAlgorithm{DIRECT, ECDH_ES, ECDH_ES_A128KW, A128KW, RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW, PBES2_HS256_A128KW}
 	encAlgs := []ContentEncryption{A128GCM, A192GCM, A256GCM, A128CBC_HS256, A192CBC_HS384, A256CBC_HS512}
 	zipAlgs := []CompressionAlgorithm{NONE, DEFLATE}
 
@@ -220,7 +232,7 @@ func TestEncrypterWithJWKAndKeyID(t *testing.T) {
 }
 
 func TestEncrypterWithBrokenRand(t *testing.T) {
-	keyAlgs := []KeyAlgorithm{ECDH_ES_A128KW, A128KW, RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW}
+	keyAlgs := []KeyAlgorithm{ECDH_ES_A128KW, A128KW, RSA1_5, RSA_OAEP, RSA_OAEP_256, A128GCMKW, PBES2_HS256_A128KW}
 	encAlgs := []ContentEncryption{A128GCM, A192GCM, A256GCM, A128CBC_HS256, A192CBC_HS384, A256CBC_HS512}
 
 	serializer := func(obj *JSONWebEncryption) (string, error) { return obj.CompactSerialize() }
@@ -406,6 +418,197 @@ func TestEncrypterExtraHeaderInclusion(t *testing.T) {
 	}
 }
 
+// TestPBES2JWKEncryption uses the plaintext and serialization reference of
+// JWK RFC https://tools.ietf.org/html/rfc7517#appendix-C.4
+func TestPBES2JWKEncryption(t *testing.T) {
+	passphrase := []byte("Thus from my lips, by yours, my sin is purged.")
+
+	plaintext := []byte(`{
+      "kty":"RSA",
+      "kid":"juliet@capulet.lit",
+      "use":"enc",
+      "n":"t6Q8PWSi1dkJj9hTP8hNYFlvadM7DflW9mWepOJhJ66w7nyoK1gPNqFMSQRy
+           O125Gp-TEkodhWr0iujjHVx7BcV0llS4w5ACGgPrcAd6ZcSR0-Iqom-QFcNP
+           8Sjg086MwoqQU_LYywlAGZ21WSdS_PERyGFiNnj3QQlO8Yns5jCtLCRwLHL0
+           Pb1fEv45AuRIuUfVcPySBWYnDyGxvjYGDSM-AqWS9zIQ2ZilgT-GqUmipg0X
+           OC0Cc20rgLe2ymLHjpHciCKVAbY5-L32-lSeZO-Os6U15_aXrk9Gw8cPUaX1
+           _I8sLGuSiVdt3C_Fn2PZ3Z8i744FPFGGcG1qs2Wz-Q",
+      "e":"AQAB",
+      "d":"GRtbIQmhOZtyszfgKdg4u_N-R_mZGU_9k7JQ_jn1DnfTuMdSNprTeaSTyWfS
+           NkuaAwnOEbIQVy1IQbWVV25NY3ybc_IhUJtfri7bAXYEReWaCl3hdlPKXy9U
+           vqPYGR0kIXTQRqns-dVJ7jahlI7LyckrpTmrM8dWBo4_PMaenNnPiQgO0xnu
+           ToxutRZJfJvG4Ox4ka3GORQd9CsCZ2vsUDmsXOfUENOyMqADC6p1M3h33tsu
+           rY15k9qMSpG9OX_IJAXmxzAh_tWiZOwk2K4yxH9tS3Lq1yX8C1EWmeRDkK2a
+           hecG85-oLKQt5VEpWHKmjOi_gJSdSgqcN96X52esAQ",
+      "p":"2rnSOV4hKSN8sS4CgcQHFbs08XboFDqKum3sc4h3GRxrTmQdl1ZK9uw-PIHf
+           QP0FkxXVrx-WE-ZEbrqivH_2iCLUS7wAl6XvARt1KkIaUxPPSYB9yk31s0Q8
+           UK96E3_OrADAYtAJs-M3JxCLfNgqh56HDnETTQhH3rCT5T3yJws",
+      "q":"1u_RiFDP7LBYh3N4GXLT9OpSKYP0uQZyiaZwBtOCBNJgQxaj10RWjsZu0c6I
+           edis4S7B_coSKB0Kj9PaPaBzg-IySRvvcQuPamQu66riMhjVtG6TlV8CLCYK
+           rYl52ziqK0E_ym2QnkwsUX7eYTB7LbAHRK9GqocDE5B0f808I4s",
+      "dp":"KkMTWqBUefVwZ2_Dbj1pPQqyHSHjj90L5x_MOzqYAJMcLMZtbUtwKqvVDq3
+           tbEo3ZIcohbDtt6SbfmWzggabpQxNxuBpoOOf_a_HgMXK_lhqigI4y_kqS1w
+           Y52IwjUn5rgRrJ-yYo1h41KR-vz2pYhEAeYrhttWtxVqLCRViD6c",
+      "dq":"AvfS0-gRxvn0bwJoMSnFxYcK1WnuEjQFluMGfwGitQBWtfZ1Er7t1xDkbN9
+           GQTB9yqpDoYaN06H7CFtrkxhJIBQaj6nkF5KKS3TQtQ5qCzkOkmxIe3KRbBy
+           mXxkb5qwUpX5ELD5xFc6FeiafWYY63TmmEAu_lRFCOJ3xDea-ots",
+      "qi":"lSQi-w9CpyUReMErP1RsBLk7wNtOvs5EQpPqmuMvqW57NBUczScEoPwmUqq
+           abu9V0-Py4dQ57_bapoKRu1R90bvuFnU63SHWEFglZQvJDMeAvmj4sm-Fp0o
+           Yu_neotgQ0hzbI5gry7ajdYy9-2lNx_76aBZoOUu9HCJ-UsfSOI8"
+     }`)
+
+	serializationReference := `
+	  eyJhbGciOiJQQkVTMi1IUzI1NitBMTI4S1ciLCJwMnMiOiIyV0NUY0paMVJ2ZF9DSn
+	  VKcmlwUTF3IiwicDJjIjo0MDk2LCJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiY3R5Ijoi
+	  andrK2pzb24ifQ.
+	  TrqXOwuNUfDV9VPTNbyGvEJ9JMjefAVn-TR1uIxR9p6hsRQh9Tk7BA.
+	  Ye9j1qs22DmRSAddIh-VnA.
+	  AwhB8lxrlKjFn02LGWEqg27H4Tg9fyZAbFv3p5ZicHpj64QyHC44qqlZ3JEmnZTgQo
+	  wIqZJ13jbyHB8LgePiqUJ1hf6M2HPLgzw8L-mEeQ0jvDUTrE07NtOerBk8bwBQyZ6g
+	  0kQ3DEOIglfYxV8-FJvNBYwbqN1Bck6d_i7OtjSHV-8DIrp-3JcRIe05YKy3Oi34Z_
+	  GOiAc1EK21B11c_AE11PII_wvvtRiUiG8YofQXakWd1_O98Kap-UgmyWPfreUJ3lJP
+	  nbD4Ve95owEfMGLOPflo2MnjaTDCwQokoJ_xplQ2vNPz8iguLcHBoKllyQFJL2mOWB
+	  wqhBo9Oj-O800as5mmLsvQMTflIrIEbbTMzHMBZ8EFW9fWwwFu0DWQJGkMNhmBZQ-3
+	  lvqTc-M6-gWA6D8PDhONfP2Oib2HGizwG1iEaX8GRyUpfLuljCLIe1DkGOewhKuKkZ
+	  h04DKNM5Nbugf2atmU9OP0Ldx5peCUtRG1gMVl7Qup5ZXHTjgPDr5b2N731UooCGAU
+	  qHdgGhg0JVJ_ObCTdjsH4CF1SJsdUhrXvYx3HJh2Xd7CwJRzU_3Y1GxYU6-s3GFPbi
+	  rfqqEipJDBTHpcoCmyrwYjYHFgnlqBZRotRrS95g8F95bRXqsaDY7UgQGwBQBwy665
+	  d0zpvTasvfXf_c0MWAl-neFaKOW_Px6g4EUDjG1GWSXV9cLStLw_0ovdApDIFLHYHe
+	  PyagyHjouQUuGiq7BsYwYrwaF06tgB8hV8omLNfMEmDPJaZUzMuHw6tBDwGkzD-tS_
+	  ub9hxrpJ4UsOWnt5rGUyoN2N_c1-TQlXxm5oto14MxnoAyBQBpwIEgSH3Y4ZhwKBhH
+	  PjSo0cdwuNdYbGPpb-YUvF-2NZzODiQ1OvWQBRHSbPWYz_xbGkgD504LRtqRwCO7CC
+	  _CyyURi1sEssPVsMJRX_U4LFEOc82TiDdqjKOjRUfKK5rqLi8nBE9soQ0DSaOoFQZi
+	  GrBrqxDsNYiAYAmxxkos-i3nX4qtByVx85sCE5U_0MqG7COxZWMOPEFrDaepUV-cOy
+	  rvoUIng8i8ljKBKxETY2BgPegKBYCxsAUcAkKamSCC9AiBxA0UOHyhTqtlvMksO7AE
+	  hNC2-YzPyx1FkhMoS4LLe6E_pFsMlmjA6P1NSge9C5G5tETYXGAn6b1xZbHtmwrPSc
+	  ro9LWhVmAaA7_bxYObnFUxgWtK4vzzQBjZJ36UTk4OTB-JvKWgfVWCFsaw5WCHj6Oo
+	  4jpO7d2yN7WMfAj2hTEabz9wumQ0TMhBduZ-QON3pYObSy7TSC1vVme0NJrwF_cJRe
+	  hKTFmdlXGVldPxZCplr7ZQqRQhF8JP-l4mEQVnCaWGn9ONHlemczGOS-A-wwtnmwjI
+	  B1V_vgJRf4FdpV-4hUk4-QLpu3-1lWFxrtZKcggq3tWTduRo5_QebQbUUT_VSCgsFc
+	  OmyWKoj56lbxthN19hq1XGWbLGfrrR6MWh23vk01zn8FVwi7uFwEnRYSafsnWLa1Z5
+	  TpBj9GvAdl2H9NHwzpB5NqHpZNkQ3NMDj13Fn8fzO0JB83Etbm_tnFQfcb13X3bJ15
+	  Cz-Ww1MGhvIpGGnMBT_ADp9xSIyAM9dQ1yeVXk-AIgWBUlN5uyWSGyCxp0cJwx7HxM
+	  38z0UIeBu-MytL-eqndM7LxytsVzCbjOTSVRmhYEMIzUAnS1gs7uMQAGRdgRIElTJE
+	  SGMjb_4bZq9s6Ve1LKkSi0_QDsrABaLe55UY0zF4ZSfOV5PMyPtocwV_dcNPlxLgNA
+	  D1BFX_Z9kAdMZQW6fAmsfFle0zAoMe4l9pMESH0JB4sJGdCKtQXj1cXNydDYozF7l8
+	  H00BV_Er7zd6VtIw0MxwkFCTatsv_R-GsBCH218RgVPsfYhwVuT8R4HarpzsDBufC4
+	  r8_c8fc9Z278sQ081jFjOja6L2x0N_ImzFNXU6xwO-Ska-QeuvYZ3X_L31ZOX4Llp-
+	  7QSfgDoHnOxFv1Xws-D5mDHD3zxOup2b2TppdKTZb9eW2vxUVviM8OI9atBfPKMGAO
+	  v9omA-6vv5IxUH0-lWMiHLQ_g8vnswp-Jav0c4t6URVUzujNOoNd_CBGGVnHiJTCHl
+	  88LQxsqLHHIu4Fz-U2SGnlxGTj0-ihit2ELGRv4vO8E1BosTmf0cx3qgG0Pq0eOLBD
+	  IHsrdZ_CCAiTc0HVkMbyq1M6qEhM-q5P6y1QCIrwg.
+	  0HFmhOzsQ98nNWJjIHkR7A`
+
+	// remove white spaces and line breaks
+	r := regexp.MustCompile(`\s`)
+	plaintext = r.ReplaceAll(plaintext, []byte(""))
+	serializationReference = r.ReplaceAllString(serializationReference, "")
+
+	rcpt := Recipient{
+		Algorithm:  PBES2_HS256_A128KW,
+		Key:        passphrase,
+		PBES2Count: 4096,
+		PBES2Salt: []byte{
+			217, 96, 147, 112, 150, 117, 70,
+			247, 127, 8, 155, 137, 174, 42, 80, 215,
+		},
+	}
+
+	enc, err := NewEncrypter(A128CBC_HS256, rcpt, nil)
+	if err != nil {
+		t.Fatal("error on NewEncrypter:", err)
+	}
+
+	obj, err := enc.Encrypt(plaintext)
+	if err != nil {
+		t.Fatal("error on new Encrypt:", err)
+	}
+
+	serialized, err := obj.CompactSerialize()
+	if err != nil {
+		t.Fatal("error on CompactSerialize")
+	}
+
+	jwe1, err := ParseEncrypted(serialized)
+	if err != nil {
+		t.Fatal("error in ParseEncrypted")
+	}
+
+	jwe2, err := ParseEncrypted(serializationReference)
+	if err != nil {
+		t.Fatal("error in ParseEncrypted")
+	}
+
+	original1, err := jwe1.Decrypt(passphrase)
+	if err != nil {
+		t.Fatal("error in Decrypt:", err)
+	}
+
+	original2, err := jwe2.Decrypt(passphrase)
+	if err != nil {
+		t.Fatal("error in Decrypt reference:", err)
+	}
+
+	if bytes.Compare(original1, original2) != 0 {
+		t.Error("decryption does not match reference decryption")
+	}
+
+	if bytes.Compare(plaintext, original1) != 0 {
+		t.Error("decryption does not match plaintext")
+	}
+
+	if bytes.Compare(plaintext, original2) != 0 {
+		t.Error("reference decryption does not match plaintext")
+	}
+}
+
+func TestEncrypterWithPBES2(t *testing.T) {
+	expected := []byte("Lorem ipsum dolor sit amet")
+	algs := []KeyAlgorithm{
+		PBES2_HS256_A128KW, PBES2_HS384_A192KW, PBES2_HS512_A256KW,
+	}
+
+	// Check with both strings and []byte
+	recipientKeys := []interface{}{"password", []byte("password")}
+	for _, key := range recipientKeys {
+		for _, alg := range algs {
+			enc, err := NewEncrypter(A128GCM, Recipient{Algorithm: alg, Key: &JSONWebKey{
+				KeyID: "test-id",
+				Key:   key,
+			}}, nil)
+			if err != nil {
+				t.Error(err)
+			}
+
+			ciphertext, _ := enc.Encrypt(expected)
+
+			serialized1, _ := ciphertext.CompactSerialize()
+			serialized2 := ciphertext.FullSerialize()
+
+			parsed1, _ := ParseEncrypted(serialized1)
+			parsed2, _ := ParseEncrypted(serialized2)
+
+			actual1, err := parsed1.Decrypt("password")
+			if err != nil {
+				t.Fatal("error on Decrypt:", err)
+			}
+
+			actual2, err := parsed2.Decrypt([]byte("password"))
+			if err != nil {
+				t.Fatal("error on Decrypt:", err)
+			}
+
+			if bytes.Compare(actual1, expected) != 0 {
+				t.Errorf("error comparing decrypted message (%s) and expected (%s)", actual1, expected)
+			}
+
+			if bytes.Compare(actual2, expected) != 0 {
+				t.Errorf("error comparing decrypted message (%s) and expected (%s)", actual2, expected)
+			}
+		}
+	}
+}
+
 type testKey struct {
 	enc, dec interface{}
 }
@@ -459,6 +662,13 @@ func generateTestKeys(keyAlg KeyAlgorithm, encAlg ContentEncryption) []testKey {
 			dec: rsaTestKey,
 			enc: &rsaTestKey.PublicKey,
 		}}
+	case PBES2_HS256_A128KW, PBES2_HS384_A192KW, PBES2_HS512_A256KW:
+		// size does not matter, use random integer
+		i, err := rand.Int(rand.Reader, big.NewInt(64))
+		if err != nil {
+			panic(err)
+		}
+		return symmetricTestKey(int(i.Int64()))
 	}
 
 	panic("Must update test case")

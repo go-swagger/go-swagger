@@ -312,3 +312,22 @@ func TestJsonNumber(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchStringUnterminatedString(t *testing.T) {
+	for _, test := range []struct {
+		data []byte
+	}{
+		{data: []byte(`"sting without trailing quote`)},
+		{data: []byte(`"\"`)},
+		{data: []byte{'"'}},
+	} {
+		l := Lexer{Data: test.data}
+		l.fetchString()
+		if l.pos > len(l.Data) {
+			t.Errorf("fetchString(%s): pos should not be greater than length of Data", test.data)
+		}
+		if l.Error() == nil {
+			t.Errorf("fetchString(%s): should add parsing error", test.data)
+		}
+	}
+}
