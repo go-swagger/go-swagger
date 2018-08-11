@@ -680,9 +680,6 @@ func inHeadIM(p *parser) bool {
 				return true
 			}
 			p.generateAllImpliedEndTags()
-			if n := p.oe.top(); n.DataAtom != a.Template {
-				return true
-			}
 			p.popUntil(defaultScope, a.Template)
 			p.clearActiveFormattingElements()
 			p.templateStack.pop()
