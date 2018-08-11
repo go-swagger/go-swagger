@@ -290,7 +290,8 @@ func TestMoreModelValidations(t *testing.T) {
 	dassert := assert.New(t)
 
 	t.Logf("INFO: model specs tested: %d", len(testedModels))
-	for _, fixture := range testedModels {
+	for _, fixt := range testedModels {
+		fixture := fixt
 		if fixture.SpecFile == "" {
 			continue
 		}
@@ -298,6 +299,7 @@ func TestMoreModelValidations(t *testing.T) {
 		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
 		t.Run(runTitle, func(t *testing.T) {
 			t.Parallel()
+			log.SetOutput(ioutil.Discard)
 			specDoc, err := loads.Spec(fixtureSpec)
 			if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
 				t.FailNow()
@@ -305,19 +307,15 @@ func TestMoreModelValidations(t *testing.T) {
 			}
 			for _, fixtureRun := range fixture.Runs {
 				opts := fixtureRun.FixtureOpts
-				//t.Logf("codegen for  %s (%s) - run with Expand=%t, MinimalFlatten=%t", fixtureSpec, fixture.Description, opts.FlattenOpts.Expand, opts.FlattenOpts.Minimal)
-
 				// workaround race condition with underlying pkg
 				modelTestMutex.Lock()
 				// this is the expanded or flattened spec
-				log.SetOutput(ioutil.Discard)
 				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
 				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
 					modelTestMutex.Unlock()
 					t.FailNow()
 					return
 				}
-				log.SetOutput(os.Stdout)
 				modelTestMutex.Unlock()
 				definitions := newSpecDoc.Spec().Definitions
 				for k, fixtureExpectations := range fixtureRun.Definitions {
@@ -356,15 +354,21 @@ func checkContinue(t *testing.T, continueOnErrors bool) {
 func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations, continueOnErrors bool) {
 	// prepare assertions on log output (e.g. generation warnings)
 	var logCapture bytes.Buffer
+	var msg string
 	dassert := assert.New(t)
 	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+		// lock when capturing shared log resource (hopefully not for all testcases)
+		modelTestMutex.Lock()
 		log.SetOutput(&logCapture)
-	} else {
-		log.SetOutput(ioutil.Discard)
 	}
 
 	// generate the schema for this definition
 	genModel, er1 := makeGenDefinition(definitionName, "models", *schema, specDoc, opts)
+	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+		msg = logCapture.String()
+		log.SetOutput(ioutil.Discard)
+		modelTestMutex.Unlock()
+	}
 
 	if fixtureExpectations.ExpectFailure && !dassert.Errorf(er1, "Expected an error during generation of definition %q from spec fixture %s", definitionName, fixtureSpec) {
 		// expected an error here, and it has not happened
@@ -378,14 +382,13 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 	}
 	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
 		// assert logged output
-		res := logCapture.String()
 		for line, logLine := range fixtureExpectations.ExpectedLogs {
-			if !assertInCode(t, strings.TrimSpace(logLine), res) {
+			if !assertInCode(t, strings.TrimSpace(logLine), msg) {
 				t.Logf("log expected did not match for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
 			}
 		}
 		for line, logLine := range fixtureExpectations.NotExpectedLogs {
-			if !assertNotInCode(t, strings.TrimSpace(logLine), res) {
+			if !assertNotInCode(t, strings.TrimSpace(logLine), msg) {
 				t.Logf("log unexpectedly matched for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
 			}
 		}
@@ -393,7 +396,6 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 			t.FailNow()
 			return
 		}
-		log.SetOutput(ioutil.Discard)
 	}
 
 	// execute the model template with this schema
