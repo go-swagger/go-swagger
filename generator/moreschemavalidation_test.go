@@ -194,6 +194,9 @@ func initModelFixtures() {
 
 	// more tuples
 	initFixtureSimpleTuple()
+
+	// allOf with properties
+	initFixture1617()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

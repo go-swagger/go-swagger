@@ -1,0 +1,80 @@
+swagger: '2.0'
+info:
+  title: aaa
+  version: 0.0.1
+  description: >-
+host: 'localhost:8088'
+basePath: /
+schemes:
+  - http
+paths:
+  /:
+    get:
+      summary: tbd
+      operationId: tbd
+      description: tbd
+      responses:
+        '204':
+          description: 204 No Content
+        '500':
+          $ref: '#/responses/InternalServer'
+responses:
+  InternalServer:
+    description: 500 Internal Server error
+    schema:
+      $ref: '#/definitions/ErrResponse'
+definitions:
+  JobID:
+    type: integer
+    format: uint64
+  ArtifactType:
+    type: string
+    enum:
+      - IMAGE
+      - RESULT
+      - TEST
+      - YAML
+  ArtifactPath:
+    type: string
+  ArtifactStatus:
+    type: string
+    enum:
+      - DOWNLOADING
+      - READY
+      - FAILED
+      - PENDING
+  ArtifactURI:
+    type: string
+    format: uri
+  ArtifactAlias:
+    type: string
+  ArtifactDescription:
+    type: object
+    properties:
+      JobID:
+        $ref: '#/definitions/JobID'
+      Type:
+        $ref: '#/definitions/ArtifactType'
+      Alias:
+        $ref: '#/definitions/ArtifactAlias'
+      URI:
+        $ref: '#/definitions/ArtifactURI'
+  ArtifactInfo:
+    type: object
+    allOf:
+     - $ref: '#/definitions/ArtifactDescription'
+    properties:
+      Path:
+        $ref: '#/definitions/ArtifactPath'
+      Status:
+        $ref: '#/definitions/ArtifactStatus'
+      Timestamp:
+        type: string
+        format: date-time
+  ErrResponse:
+    type: object
+    properties:
+      type:
+        type: string
+      message:
+        type: string

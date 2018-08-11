@@ -10189,3 +10189,82 @@ func initFixtureDeepMaps() {
 		noLines,
 		noLines)
 }
+
+func initFixture1617() {
+	// testing fixture-1617.yaml with flatten and expand (--skip-flatten)
+
+	f := newModelFixture("../fixtures/bugs/1617/fixture-1617.yaml", "aaa")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// load expectations for model: artifact_info.go
+	thisRun.AddExpectations("artifact_info.go", []string{
+		`type ArtifactInfo struct {`,
+		`	ArtifactDescription`,
+		"	Path ArtifactPath `json:\"Path,omitempty\"`",
+		"	Status ArtifactStatus `json:\"Status,omitempty\"`",
+		"	Timestamp strfmt.DateTime `json:\"Timestamp,omitempty\"`",
+		`func (m *ArtifactInfo) UnmarshalJSON(raw []byte) error {`,
+		`	var aO0 ArtifactDescription`,
+		`	if err := swag.ReadJSON(raw, &aO0); err != nil {`,
+		`	m.ArtifactDescription = aO0`,
+		`	var propsArtifactInfo struct {`,
+		"		Path ArtifactPath `json:\"Path,omitempty\"`",
+		"		Status ArtifactStatus `json:\"Status,omitempty\"`",
+		"		Timestamp strfmt.DateTime `json:\"Timestamp,omitempty\"`",
+		`	if err := swag.ReadJSON(raw, &propsArtifactInfo); err != nil {`,
+		`	m.Path = propsArtifactInfo.Path`,
+		`	m.Status = propsArtifactInfo.Status`,
+		`	m.Timestamp = propsArtifactInfo.Timestamp`,
+		`func (m ArtifactInfo) MarshalJSON() ([]byte, error) {`,
+		`	_parts := make([][]byte, 0, 1`,
+		`	aO0, err := swag.WriteJSON(m.ArtifactDescription`,
+		`	if err != nil {`,
+		`		return nil, err`,
+		`	_parts = append(_parts, aO0`,
+		`	var propsArtifactInfo struct {`,
+		"		Path ArtifactPath `json:\"Path,omitempty\"`",
+		"		Status ArtifactStatus `json:\"Status,omitempty\"`",
+		"		Timestamp strfmt.DateTime `json:\"Timestamp,omitempty\"`",
+		`	propsArtifactInfo.Path = m.Path`,
+		`	propsArtifactInfo.Status = m.Status`,
+		`	propsArtifactInfo.Timestamp = m.Timestamp`,
+		`	jsonDataPropsArtifactInfo, errArtifactInfo := swag.WriteJSON(propsArtifactInfo`,
+		`	if errArtifactInfo != nil {`,
+		`		return nil, errArtifactInfo`,
+		`	_parts = append(_parts, jsonDataPropsArtifactInfo`,
+		`	return swag.ConcatJSON(_parts...), nil`,
+		`func (m *ArtifactInfo) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.ArtifactDescription.Validate(formats); err != nil {`,
+		`	if err := m.validatePath(formats); err != nil {`,
+		`	if err := m.validateStatus(formats); err != nil {`,
+		`	if err := m.validateTimestamp(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+		`func (m *ArtifactInfo) validatePath(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Path) {`,
+		`	if err := m.Path.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("Path"`,
+		`func (m *ArtifactInfo) validateStatus(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Status) {`,
+		`	if err := m.Status.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("Status"`,
+		`func (m *ArtifactInfo) validateTimestamp(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.Timestamp) {`,
+		`	if err := validate.FormatOf("Timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {`,
+		`func (m *ArtifactInfo) MarshalBinary() ([]byte, error) {`,
+		`	if m == nil {`,
+		`		return nil, nil`,
+		`	return swag.WriteJSON(m`,
+		`func (m *ArtifactInfo) UnmarshalBinary(b []byte) error {`,
+		`	var res ArtifactInfo`,
+		`	if err := swag.ReadJSON(b, &res); err != nil {`,
+		`	*m = res`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+}

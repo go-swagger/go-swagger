@@ -244,12 +244,12 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
           {{ end }}
         {{ end }}
       {{- end }}
-      {{ if .HasAdditionalProperties }}
+      {{- if .HasAdditionalProperties }}
         {{ pascalize .AdditionalProperties.Name }}{{ if not .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-      {{ end }}
-      {{ if .AdditionalItems }}
+      {{- end }}
+      {{- if .AdditionalItems }}
         {{ pascalize .AdditionalItems.Name }}{{ if or (not .IsExported) .IsSubType }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-      {{ end }}
+      {{- end }}
   }
   if err := swag.ReadJSON(raw, &data{{ $part }}); err != nil {
     return err
@@ -272,6 +272,39 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ .ReceiverName }}.{{ stripPackage .GoType "" }} = {{ varname .Name }}
     {{ end }}
   {{ end }}
+  {{- if .Properties }}
+    // now for regular properties
+    {{- $part :=  pascalize .Name }}
+    var props{{ $part }} struct {
+    {{- range .Properties }}
+      {{- if not .IsBaseType }}
+        {{- if not $.IsExported }}
+          {{ template "privstructfield" . }}
+        {{- else }}
+          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
+        {{- end }}
+      {{- else }}
+        {{- if not $.IsExported }}
+          {{ template "privstructfield" . }}
+        {{- else }}
+          {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
+        {{- end }}
+      {{- end }}
+    {{ end }}
+    }
+    if err := swag.ReadJSON(raw, &props{{ $part }}); err != nil {
+       return err
+    }
+    {{- range .Properties }}
+      {{ $receiverName }}.{{ pascalize .Name }} = props{{ $part }}.{{ pascalize .Name }}
+    {{ end }}
+  {{- end }}
+  {{ if .HasAdditionalProperties }}
+  // TODO: AdditionalProperties
+  {{- end }}
+  {{- if .AdditionalItems }}
+  // TODO: AdditionalItems
+  {{- end }}
   return nil
 }
 
@@ -329,6 +362,39 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   _parts = append(_parts, {{ varname .Name }})
     {{ end }}
   {{ end }}
+  {{- if .Properties }}
+    // now for regular properties
+    {{- $part :=  pascalize .Name }}
+    var props{{ $part }} struct {
+    {{- range .Properties }}
+      {{- if not .IsBaseType }}
+        {{- if not $.IsExported }}
+          {{ template "privstructfield" . }}
+        {{- else }}
+          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
+        {{- end }}
+      {{- else }}
+        {{- if not $.IsExported }}
+          {{ template "privstructfield" . }}
+        {{- else }}
+          {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
+        {{- end }}
+      {{- end }}
+    {{ end }}
+    }
+    {{- range .Properties }}
+    props{{ $part }}.{{ pascalize .Name }} = {{ $receiverName }}.{{ pascalize .Name }}
+    {{ end }}
+    jsonDataProps{{ $part }}, err{{ $part }} := swag.WriteJSON(props{{ $part }})
+    if err{{ $part }} != nil {
+        return nil, err{{ $part }}
+    }
+    _parts = append(_parts, jsonDataProps{{ $part }})
+  {{- end }}
+  {{- if .HasAdditionalProperties }}
+  {{- end }}
+  {{- if .HasAdditionalItems }}
+  {{- end }}
   return swag.ConcatJSON(_parts...), nil
 }
 {{ end }}
