@@ -407,6 +407,7 @@ func TestShared_LoadTemplate(t *testing.T) {
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
 }
+
 func TestShared_Issue1429(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
@@ -454,4 +455,38 @@ func TestShared_MangleFileName(t *testing.T) {
 	t.Log(res)
 	res = golang.MangleFileName("aFileEndingInTest")
 	t.Log(res)
+}
+
+func TestShared_Issue1621(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// acknowledge fix in go-openapi/spec
+	specPath := filepath.Join("..", "fixtures", "bugs", "1621", "fixture-1621.yaml")
+	specDoc, err := loads.Spec(specPath)
+	assert.NoError(t, err)
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	opts.ValidateSpec = true
+	t.Logf("path: %s", specDoc.SpecFilePath())
+	_, err = validateAndFlattenSpec(&opts, specDoc)
+	assert.NoError(t, err)
+}
+
+func TestShared_Issue1614(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// acknowledge fix in go-openapi/spec
+	specPath := filepath.Join("..", "fixtures", "bugs", "1614", "gitea.json")
+	specDoc, err := loads.Spec(specPath)
+	assert.NoError(t, err)
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	opts.ValidateSpec = true
+	t.Logf("path: %s", specDoc.SpecFilePath())
+	_, err = validateAndFlattenSpec(&opts, specDoc)
+	assert.NoError(t, err)
 }

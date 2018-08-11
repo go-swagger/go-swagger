@@ -58,7 +58,6 @@ func (c *ValidateSpec) Execute(args []string) error {
 
 	v := validate.NewSpecValidator(specDoc.Schema(), strfmt.Default)
 	result, _ := v.Validate(specDoc) // returns fully detailed result with errors and warnings
-	//result := validate.Spec(specDoc, strfmt.Default)		// returns single error
 
 	if result.IsValid() {
 		log.Printf(validSpecMsg, swaggerDoc, specDoc.Version())

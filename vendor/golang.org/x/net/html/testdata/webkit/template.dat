@@ -860,6 +860,22 @@
 |         <tfoot>
 
 #data
+<body><template><template><b><template></template></template>text</template>
+#errors
+#document
+| <html>
+|   <head>
+|   <body>
+|     <template>
+|       content
+|         <template>
+|           content
+|             <b>
+|               <template>
+|                 content
+|         "text"
+
+#data
 <body><template><col><colgroup>
 #errors
 #document
