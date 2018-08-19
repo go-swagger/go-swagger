@@ -179,6 +179,7 @@ func GoLangOpts() *LanguageOpts {
 	}
 
 	opts.BaseImportFunc = func(tgt string) string {
+		tgt = filepath.Clean(tgt)
 		// On Windows, filepath.Abs("") behaves differently than on Unix.
 		// Windows: yields an error, since Abs() does not know the volume.
 		// UNIX: returns current working directory
@@ -249,11 +250,15 @@ func GoLangOpts() *LanguageOpts {
 
 		}
 
-		mod, err := tryResolveModule(filepath.Join(tgtAbsPath, "go.mod"))
+		mod, err := tryResolveModule(tgtAbsPath)
 		switch {
 		case err != nil:
 			log.Fatalf("Failed to resolve module using go.mod file: %s", err)
 		case mod != "":
+			relTgt := relPathToRelGoPath(tgt)
+			if !strings.HasSuffix(mod, relTgt) {
+				return mod + "/" + relTgt
+			}
 			return mod
 		}
 
@@ -268,8 +273,34 @@ func GoLangOpts() *LanguageOpts {
 
 var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
 
-func tryResolveModule(path string) (string, error) {
-	f, err := os.Open(path)
+// resolveGoModFile walks up the directory tree starting from 'dir' until it
+// finds a go.mod file. If go.mod is found it will return the related file
+// object. If no go.mod file is found it will return an error.
+func resolveGoModFile(dir string) (*os.File, error) {
+	goModPath := filepath.Join(dir, "go.mod")
+	f, err := os.Open(goModPath)
+	if err != nil {
+		if os.IsNotExist(err) && dir != filepath.Dir(dir) {
+			return resolveGoModFile(filepath.Dir(dir))
+		}
+		return nil, err
+	}
+	return f, nil
+}
+
+// relPathToRelGoPath takes a relative os path and returns the relative go
+// package path. For unix nothing will change but for windows \ will be
+// converted to /.
+func relPathToRelGoPath(path string) string {
+	if path == "." {
+		return ""
+	}
+	pathItems := strings.Split(path, string(filepath.Separator))
+	return strings.Join(pathItems, "/")
+}
+
+func tryResolveModule(baseTargetPath string) (string, error) {
+	f, err := resolveGoModFile(baseTargetPath)
 	switch {
 	case os.IsNotExist(err):
 		return "", nil
