@@ -298,7 +298,7 @@ func TestMoreModelValidations(t *testing.T) {
 		fixtureSpec := fixture.SpecFile
 		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
 		t.Run(runTitle, func(t *testing.T) {
-			t.Parallel()
+			//t.Parallel()
 			log.SetOutput(ioutil.Discard)
 			specDoc, err := loads.Spec(fixtureSpec)
 			if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
