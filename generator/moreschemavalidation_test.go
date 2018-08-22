@@ -298,17 +298,19 @@ func TestMoreModelValidations(t *testing.T) {
 		fixtureSpec := fixture.SpecFile
 		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
 		t.Run(runTitle, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 			log.SetOutput(ioutil.Discard)
-			specDoc, err := loads.Spec(fixtureSpec)
-			if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-				t.FailNow()
-				return
-			}
 			for _, fixtureRun := range fixture.Runs {
-				opts := fixtureRun.FixtureOpts
-				// workaround race condition with underlying pkg
+				// workaround race condition with underlying pkg: go-openapi/spec works with a global cache
+				// which does not support concurrent use for different specs.
 				modelTestMutex.Lock()
+				specDoc, err := loads.Spec(fixtureSpec)
+				if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
+					modelTestMutex.Unlock()
+					t.FailNow()
+					return
+				}
+				opts := fixtureRun.FixtureOpts
 				// this is the expanded or flattened spec
 				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
 				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
@@ -432,5 +434,70 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 	if t.Failed() && !continueOnErrors {
 		t.FailNow()
 		return
+	}
+}
+
+// TestModelRace verifies how much of the load/expand/flatten process may be parallelized:
+// by placing proper locks, global cache pollution in go-openapi/spec may be avoided.
+func TestModelRace(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	initModelFixtures()
+
+	dassert := assert.New(t)
+
+	for i := 0; i < 10; i++ {
+		t.Logf("Iteration: %d", i)
+
+		for _, fixt := range testedModels {
+			fixture := fixt
+			if fixture.SpecFile == "" {
+				continue
+			}
+			fixtureSpec := fixture.SpecFile
+			runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
+			t.Run(runTitle, func(t *testing.T) {
+				t.Parallel()
+				log.SetOutput(ioutil.Discard)
+				for _, fixtureRun := range fixture.Runs {
+
+					// loads defines the start of the critical section because it comes with the global cache initialized
+					// TODO: should make this cache more manageable in go-openapi/spec
+					modelTestMutex.Lock()
+					specDoc, err := loads.Spec(fixtureSpec)
+					if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
+						modelTestMutex.Unlock()
+						t.FailNow()
+						return
+					}
+					opts := fixtureRun.FixtureOpts
+					// this is the expanded or flattened spec
+					newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
+					if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
+						modelTestMutex.Unlock()
+						t.FailNow()
+						return
+					}
+					modelTestMutex.Unlock()
+					definitions := newSpecDoc.Spec().Definitions
+					for k := range fixtureRun.Definitions {
+						// pick definition to test
+						var schema *spec.Schema
+						for def, s := range definitions {
+							if strings.EqualFold(def, k) {
+								schema = &s
+								break
+							}
+						}
+						if !dassert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
+							t.FailNow()
+							return
+						}
+					}
+				}
+			})
+		}
 	}
 }
