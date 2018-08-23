@@ -169,7 +169,7 @@ _Similar use-case_: dependency injection
 
 Wouldn't it be better to have all the handlers automatically be part of a default struct that simply has a Context member variable or empty interface? 
 
->That would save everyone a lot of copy/pasta when we need to inject some info.
+>That would save everyone a lot of copy/paste when we need to inject some info.
 >I mean, a different context than the one available on params.HTTPRequest.Context(),
 >more like an application level context, e.g. something I can stuff a database reference or other business state into.
 
