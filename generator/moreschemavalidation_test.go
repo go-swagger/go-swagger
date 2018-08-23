@@ -298,15 +298,16 @@ func TestMoreModelValidations(t *testing.T) {
 		fixtureSpec := fixture.SpecFile
 		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
 		t.Run(runTitle, func(t *testing.T) {
-			t.Parallel()
+			// gave up with parallel testing: when $ref analysis is involved, it is not possible to to parallelize
+			//t.Parallel()
 			log.SetOutput(ioutil.Discard)
 			for _, fixtureRun := range fixture.Runs {
 				// workaround race condition with underlying pkg: go-openapi/spec works with a global cache
 				// which does not support concurrent use for different specs.
-				modelTestMutex.Lock()
+				//modelTestMutex.Lock()
 				specDoc, err := loads.Spec(fixtureSpec)
 				if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-					modelTestMutex.Unlock()
+					//modelTestMutex.Unlock()
 					t.FailNow()
 					return
 				}
@@ -314,11 +315,11 @@ func TestMoreModelValidations(t *testing.T) {
 				// this is the expanded or flattened spec
 				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
 				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
-					modelTestMutex.Unlock()
+					//modelTestMutex.Unlock()
 					t.FailNow()
 					return
 				}
-				modelTestMutex.Unlock()
+				//modelTestMutex.Unlock()
 				definitions := newSpecDoc.Spec().Definitions
 				for k, fixtureExpectations := range fixtureRun.Definitions {
 					// pick definition to test
@@ -335,6 +336,7 @@ func TestMoreModelValidations(t *testing.T) {
 						}
 					}
 					if !dassert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
+						//modelTestMutex.Unlock()
 						t.FailNow()
 						return
 					}
@@ -437,6 +439,8 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 	}
 }
 
+/*
+// Gave up with parallel testing
 // TestModelRace verifies how much of the load/expand/flatten process may be parallelized:
 // by placing proper locks, global cache pollution in go-openapi/spec may be avoided.
 func TestModelRace(t *testing.T) {
@@ -501,3 +505,4 @@ func TestModelRace(t *testing.T) {
 		}
 	}
 }
+*/
