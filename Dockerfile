@@ -1,5 +1,6 @@
 FROM golang:alpine
-MAINTAINER Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)
+
+LABEL maintainer="Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)"
 
 RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base &&\
   go get -u github.com/go-openapi/runtime &&\
