@@ -458,6 +458,28 @@ func TestShared_MangleFileName(t *testing.T) {
 	assert.True(t, strings.HasSuffix(res, "_test_swagger"))
 }
 
+func TestShared_ManglePackage(t *testing.T) {
+	o := GoLangOpts()
+	o.Init()
+
+	for _, v := range []struct {
+		tested       string
+		expectedPath string
+		expectedName string
+	}{
+		{tested: "", expectedPath: "default", expectedName: "default"},
+		{tested: "select", expectedPath: "select_default", expectedName: "select_default"},
+		{tested: "x", expectedPath: "x", expectedName: "x"},
+		{tested: "a/b/c-d/e_f/g", expectedPath: "a/b/c-d/e_f/g", expectedName: "g"},
+		{tested: "a/b/c-d/e_f/g-h", expectedPath: "a/b/c-d/e_f/g_h", expectedName: "g_h"},
+	} {
+		res := o.ManglePackagePath(v.tested, "default")
+		assert.Equal(t, v.expectedPath, res)
+		res = o.ManglePackageName(v.tested, "default")
+		assert.Equal(t, v.expectedName, res)
+	}
+}
+
 func TestShared_Issue1621(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)

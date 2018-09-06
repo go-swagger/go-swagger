@@ -82,7 +82,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 			Name:    modelName,
 			Model:   model,
 			SpecDoc: specDoc,
-			Target:  filepath.Join(opts.Target, opts.ModelPackage),
+			Target:  filepath.Join(opts.Target, opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "")),
 			opts:    opts,
 		}
 
@@ -334,7 +334,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			Copyright:        opts.Copyright,
 			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
 		},
-		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
+		Package:        opts.LanguageOpts.ManglePackageName(filepath.Base(pkg), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,

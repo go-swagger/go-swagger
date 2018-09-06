@@ -16,6 +16,13 @@ import (
 	flags "github.com/jessevdk/go-flags"
 )
 
+const (
+	defaultAPIPackage    = "operations"
+	defaultClientPackage = "client"
+	defaultModelPackage  = "models"
+	defaultServerPackage = "restapi"
+)
+
 func TestGenerateAndBuild(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stdout)
@@ -76,9 +83,9 @@ func newTestClient(input, output string) *generate.Client {
 	}
 	c.Spec = flags.Filename(input)
 	c.Target = flags.Filename(output)
-	c.APIPackage = "operations"
-	c.ModelPackage = "models"
-	c.ServerPackage = "restapi"
-	c.ClientPackage = "client"
+	c.APIPackage = defaultAPIPackage
+	c.ModelPackage = defaultModelPackage
+	c.ServerPackage = defaultServerPackage
+	c.ClientPackage = defaultClientPackage
 	return c
 }
