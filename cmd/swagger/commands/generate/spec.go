@@ -96,9 +96,8 @@ func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {
 	if pretty {
 		return json.MarshalIndent(swspec, "", "  ")
-	} else {
-		return json.Marshal(swspec)
 	}
+	return json.Marshal(swspec)
 }
 
 func marshalToYAMLFormat(swspec *spec.Swagger) ([]byte, error) {
@@ -112,5 +111,5 @@ func marshalToYAMLFormat(swspec *spec.Swagger) ([]byte, error) {
 		return nil, err
 	}
 
-  return yaml.Marshal(jsonObj);
+	return yaml.Marshal(jsonObj)
 }
