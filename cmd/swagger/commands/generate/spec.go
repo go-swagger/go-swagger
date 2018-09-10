@@ -73,13 +73,13 @@ func loadSpec(input string) (*spec.Swagger, error) {
 }
 
 func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
-	var data []byte
+	var b []byte
 	var err error
 
 	if strings.HasSuffix(output, "yml") || strings.HasSuffix(output, "yaml") {
-		data, err = marshalToYAMLFormat(swspec)
+		b, err = marshalToYAMLFormat(swspec)
 	} else {
-		data, err = marshalToJSONFormat(swspec, pretty)
+		b, err = marshalToJSONFormat(swspec, pretty)
 	}
 
 	if err != nil {
@@ -87,10 +87,10 @@ func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 	}
 
 	if output == "" {
-		fmt.Println(string(data))
+		fmt.Println(string(b))
 		return nil
 	}
-	return ioutil.WriteFile(output, data, 0644)
+	return ioutil.WriteFile(output, b, 0644)
 }
 
 func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {
