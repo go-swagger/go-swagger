@@ -168,8 +168,8 @@ func (sd *responseDecl) inferNames() (goName string, name string) {
 	return
 }
 
-func newResponseParser(prog *loader.Program) *responseParser {
-	return &responseParser{prog, nil, newSchemaParser(prog)}
+func newResponseParser(prog *loader.Program, generateExtension bool) *responseParser {
+	return &responseParser{prog, nil, newSchemaParser(prog, generateExtension)}
 }
 
 type responseParser struct {

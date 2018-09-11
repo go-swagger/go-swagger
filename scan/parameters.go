@@ -189,10 +189,10 @@ func (sd *paramDecl) inferOperationIDs() (opids []string) {
 	return
 }
 
-func newParameterParser(prog *loader.Program) *paramStructParser {
+func newParameterParser(prog *loader.Program, generateExtension bool) *paramStructParser {
 	scp := new(paramStructParser)
 	scp.program = prog
-	scp.scp = newSchemaParser(prog)
+	scp.scp = newSchemaParser(prog, generateExtension)
 	return scp
 }
 
@@ -482,7 +482,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 					ps.Name = nm
 				}
 
-				if nm != gnm {
+				if nm != gnm && pp.scp.genereateExtension {
 					ps.AddExtension("x-go-name", gnm)
 				}
 				pt[nm] = ps

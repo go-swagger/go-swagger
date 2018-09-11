@@ -29,7 +29,7 @@ func TestScanFileParam(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sp := newParameterParser(classificationProg)
+	sp := newParameterParser(classificationProg, true)
 	noParamOps := make(map[string]*spec.Operation)
 	err = sp.Parse(fileTree, noParamOps)
 	if err != nil {
@@ -76,7 +76,7 @@ func TestParamsParser(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sp := newParameterParser(classificationProg)
+	sp := newParameterParser(classificationProg, true)
 	noParamOps := make(map[string]*spec.Operation)
 	err = sp.Parse(fileTree, noParamOps)
 	if err != nil {

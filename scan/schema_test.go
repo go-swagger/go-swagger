@@ -194,7 +194,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.Equal(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
 
 	definitions := make(map[string]spec.Schema)
-	sp := newSchemaParser(classificationProg)
+	sp := newSchemaParser(classificationProg, true)
 	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
 	// pnr := "../fixtures/goparsing/classification/models"
 	pkg := classificationProg.Package(pn)

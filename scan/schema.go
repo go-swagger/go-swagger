@@ -158,12 +158,15 @@ type schemaParser struct {
 	postDecls  []schemaDecl
 	known      map[string]spec.Schema
 	discovered *schemaDecl
+
+	genereateExtension bool
 }
 
-func newSchemaParser(prog *loader.Program) *schemaParser {
+func newSchemaParser(prog *loader.Program, generateExtension bool) *schemaParser {
 	scp := new(schemaParser)
 	scp.program = prog
 	scp.known = make(map[string]spec.Schema)
+	scp.genereateExtension = generateExtension
 	return scp
 }
 
@@ -276,7 +279,7 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		return nil
 	}
 
-	if schPtr.Ref.String() == "" {
+	if schPtr.Ref.String() == "" && scp.genereateExtension {
 		if decl.Name != decl.GoName {
 			schPtr.AddExtension("x-go-name", decl.GoName)
 		}
@@ -500,7 +503,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 					return err
 				}
 
-				if fld.Doc != nil {
+				if fld.Doc != nil && scp.genereateExtension {
 					for _, cmt := range fld.Doc.List {
 						for _, ln := range strings.Split(cmt.Text, "\n") {
 							matches := rxAllOf.FindStringSubmatch(ln)
@@ -563,7 +566,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 				return err
 			}
 
-			if ps.Ref.String() == "" && nm != gnm {
+			if ps.Ref.String() == "" && nm != gnm && scp.genereateExtension {
 				ps.AddExtension("x-go-name", gnm)
 			}
 			seenProperties[nm] = gnm
@@ -621,7 +624,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 					return err
 				}
 
-				if fld.Doc != nil {
+				if fld.Doc != nil && scp.genereateExtension {
 					for _, cmt := range fld.Doc.List {
 						for _, ln := range strings.Split(cmt.Text, "\n") {
 							matches := rxAllOf.FindStringSubmatch(ln)
@@ -698,7 +701,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				return err
 			}
 
-			if ps.Ref.String() == "" && nm != gnm {
+			if ps.Ref.String() == "" && nm != gnm && scp.genereateExtension {
 				ps.AddExtension("x-go-name", gnm)
 			}
 			// we have 2 cases:
