@@ -483,7 +483,7 @@ func (pp *paramStructParser) parseStructType(gofile *ast.File, operation *spec.O
 				}
 
 				if nm != gnm {
-					ps.AddExtension("x-go-name", gnm)
+					addExtension(&ps.VendorExtensible, "x-go-name", gnm)
 				}
 				pt[nm] = ps
 				sequence = append(sequence, nm)
