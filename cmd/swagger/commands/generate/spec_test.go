@@ -3,18 +3,36 @@ package generate
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/go-swagger/go-swagger/scan"
+	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
 const (
 	basePath       = "../../../../fixtures/goparsing/spec"
-	jsonResultFile = "../../../../fixtures/goparsing/spec/api_spec.json"
-	yamlResultFile = "../../../../fixtures/goparsing/spec/api_spec.yml"
+	jsonResultFile = basePath + "/api_spec.json"
+	yamlResultFile = basePath + "/api_spec.yml"
 )
+
+func TestSpecFileExecute(t *testing.T) {
+	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
+	for _, outputFile := range files {
+		spec := &SpecFile{
+			BasePath: basePath,
+			Output:   flags.Filename(outputFile),
+		}
+
+		err := spec.Execute(nil)
+		assert.NoError(t, err)
+		if outputFile != "" {
+			os.Remove(outputFile)
+		}
+	}
+}
 
 func TestGenerateJSONSpec(t *testing.T) {
 	opts := scan.Opts{
