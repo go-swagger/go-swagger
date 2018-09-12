@@ -50,7 +50,6 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.Input = input
 	opts.ScanModels = s.ScanModels
 	opts.BuildTags = s.BuildTags
-
 	swspec, err := scan.Application(opts)
 	if err != nil {
 		return err
