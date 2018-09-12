@@ -15,6 +15,7 @@
 package scan
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -778,4 +779,27 @@ func assertRefDefinition(t testing.TB, defs map[string]spec.Schema, defName, ref
 			}
 		}
 	}
+}
+
+func TestAddExtension(t *testing.T) {
+	ve := &spec.VendorExtensible{
+		Extensions: make(spec.Extensions),
+	}
+
+	key := "x-go-name"
+	value := "Name"
+	addExtension(ve, key, value)
+	assert.Equal(t, value, ve.Extensions[key].(string))
+
+	key2 := "x-go-package"
+	value2 := "schema"
+	os.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
+	addExtension(ve, key2, value2)
+	assert.Equal(t, value2, ve.Extensions[key2].(string))
+
+	key3 := "x-go-class"
+	value3 := "Spec"
+	os.Setenv("SWAGGER_GENERATE_EXTENSION", "false")
+	addExtension(ve, key3, value3)
+	assert.Equal(t, nil, ve.Extensions[key3])
 }

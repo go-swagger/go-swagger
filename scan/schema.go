@@ -30,6 +30,14 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+func addExtension(ve *spec.VendorExtensible, key string, value interface{}) {
+	if os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false" {
+		return
+	}
+
+	ve.AddExtension(key, value)
+}
+
 type schemaTypable struct {
 	schema *spec.Schema
 	level  int
@@ -278,13 +286,13 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 
 	if schPtr.Ref.String() == "" {
 		if decl.Name != decl.GoName {
-			schPtr.AddExtension("x-go-name", decl.GoName)
+			addExtension(&schPtr.VendorExtensible, "x-go-name", decl.GoName)
 		}
 		for _, pkgInfo := range scp.program.AllPackages {
 			if pkgInfo.Importable {
 				for _, fil := range pkgInfo.Files {
 					if fil.Pos() == decl.File.Pos() {
-						schPtr.AddExtension("x-go-package", pkgInfo.Pkg.Path())
+						addExtension(&schPtr.VendorExtensible, "x-go-package", pkgInfo.Pkg.Path())
 					}
 				}
 			}
@@ -508,7 +516,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 							if ml > 1 {
 								mv := matches[ml-1]
 								if mv != "" {
-									bschema.AddExtension("x-class", mv)
+									addExtension(&bschema.VendorExtensible, "x-class", mv)
 								}
 							}
 						}
@@ -564,7 +572,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 			}
 
 			if ps.Ref.String() == "" && nm != gnm {
-				ps.AddExtension("x-go-name", gnm)
+				addExtension(&ps.VendorExtensible, "x-go-name", gnm)
 			}
 			seenProperties[nm] = gnm
 			schema.Properties[nm] = ps
@@ -629,7 +637,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 							if ml > 1 {
 								mv := matches[ml-1]
 								if mv != "" {
-									bschema.AddExtension("x-class", mv)
+									addExtension(&bschema.VendorExtensible, "x-class", mv)
 								}
 							}
 						}
@@ -699,7 +707,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 			}
 
 			if ps.Ref.String() == "" && nm != gnm {
-				ps.AddExtension("x-go-name", gnm)
+				addExtension(&ps.VendorExtensible, "x-go-name", gnm)
 			}
 			// we have 2 cases:
 			// 1. field with different name override tag
