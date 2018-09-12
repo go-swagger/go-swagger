@@ -1,0 +1,82 @@
+consumes:
+- application/json
+produces:
+- application/json
+schemes:
+- https
+swagger: '2.0'
+info:
+  description: |-
+    the purpose of this application is to provide an application
+    that is using plain go code to define an API
+  title: API.
+  version: 0.0.1
+host: localhost
+paths:
+  "/admin/bookings/":
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      schemes:
+      - http
+      - https
+      tags:
+      - booking
+      summary: Bookings lists all the appointments that have been made on the site.
+      operationId: Bookings
+      responses:
+        '200':
+          "$ref": "#/responses/BookingResponse"
+definitions:
+  Booking:
+    description: A Booking in the system
+    type: object
+    required:
+    - id
+    - Subject
+    properties:
+      Subject:
+        description: Subject the subject of this booking
+        type: string
+      id:
+        description: ID the id of the booking
+        type: integer
+        format: int64
+        x-go-name: ID
+        readOnly: true
+    x-go-package: github.com/go-swagger/go-swagger/vendor/github.com/go-swagger/scan-repo-boundary/makeplans
+  Customer:
+    type: object
+    title: Customer of the site.
+    properties:
+      name:
+        type: string
+        x-go-name: Name
+    x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+  DateRange:
+    description: |-
+      DateRange represents a scheduled appointments time
+      DateRange should be in definitions since it's being used in a response
+    type: object
+    properties:
+      end:
+        type: string
+        x-go-name: End
+      start:
+        type: string
+        x-go-name: Start
+    x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+responses:
+  BookingResponse:
+    description: BookingResponse represents a scheduled appointment
+    schema:
+      type: object
+      properties:
+        booking:
+          "$ref": "#/definitions/Booking"
+        customer:
+          "$ref": "#/definitions/Customer"
+        dates:
+          "$ref": "#/definitions/DateRange"

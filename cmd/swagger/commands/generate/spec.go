@@ -19,11 +19,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/scan"
 	"github.com/jessevdk/go-flags"
+	"gopkg.in/yaml.v2"
 )
 
 // SpecFile command to generate a swagger spec from a go application
@@ -73,17 +75,41 @@ func loadSpec(input string) (*spec.Swagger, error) {
 func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 	var b []byte
 	var err error
-	if pretty {
-		b, err = json.MarshalIndent(swspec, "", "  ")
+
+	if strings.HasSuffix(output, "yml") || strings.HasSuffix(output, "yaml") {
+		b, err = marshalToYAMLFormat(swspec)
 	} else {
-		b, err = json.Marshal(swspec)
+		b, err = marshalToJSONFormat(swspec, pretty)
 	}
+
 	if err != nil {
 		return err
 	}
+
 	if output == "" {
 		fmt.Println(string(b))
 		return nil
 	}
 	return ioutil.WriteFile(output, b, 0644)
+}
+
+func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {
+	if pretty {
+		return json.MarshalIndent(swspec, "", "  ")
+	}
+	return json.Marshal(swspec)
+}
+
+func marshalToYAMLFormat(swspec *spec.Swagger) ([]byte, error) {
+	b, err := json.Marshal(swspec)
+	if err != nil {
+		return nil, err
+	}
+
+	var jsonObj interface{}
+	if err := yaml.Unmarshal(b, &jsonObj); err != nil {
+		return nil, err
+	}
+
+	return yaml.Marshal(jsonObj)
 }
