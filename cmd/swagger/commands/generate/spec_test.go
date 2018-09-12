@@ -48,7 +48,7 @@ func TestGenerateJSONSpec(t *testing.T) {
 	expected, err := ioutil.ReadFile(jsonResultFile)
 	assert.NoError(t, err)
 
-	varifyJSONData(t, data, expected)
+	verifyJSONData(t, data, expected)
 }
 
 func TestGenerateYAMLSpec(t *testing.T) {
@@ -65,10 +65,10 @@ func TestGenerateYAMLSpec(t *testing.T) {
 	expected, err := ioutil.ReadFile(yamlResultFile)
 	assert.NoError(t, err)
 
-	varifyYAMLData(t, data, expected)
+	verifyYAMLData(t, data, expected)
 }
 
-func varifyJSONData(t *testing.T, data, expectedJSON []byte) {
+func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
 	var got interface{}
 	var expected interface{}
 
@@ -83,7 +83,7 @@ func varifyJSONData(t *testing.T, data, expectedJSON []byte) {
 	}
 }
 
-func varifyYAMLData(t *testing.T, data, expectedYAML []byte) {
+func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
 	var got interface{}
 	var expected interface{}
 
