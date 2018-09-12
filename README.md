@@ -156,7 +156,7 @@ Resolve and expand $ref's in your spec as inline definitions:
 swagger expand {spec}
 ```
 
-Flatten you spec: all external $ref's are imported into the main document and inline schemas reorganized as definitions.
+Flatten your spec: all external $ref's are imported into the main document and inline schemas reorganized as definitions.
 ```
 swagger flatten {spec}
 ```
