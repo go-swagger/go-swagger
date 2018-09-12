@@ -57,7 +57,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sp := newSchemaParser(classificationProg, true)
+	sp := newSchemaParser(classificationProg)
 	noModelDefs = make(map[string]spec.Schema)
 	err = sp.Parse(fileTree, noModelDefs)
 	if err != nil {
@@ -104,7 +104,7 @@ func extraModelsClassifier(t testing.TB) (*loader.Program, map[string]spec.Schem
 	if err != nil {
 		t.Fatal(err)
 	}
-	sp := newSchemaParser(prog, true)
+	sp := newSchemaParser(prog)
 	defs := make(map[string]spec.Schema)
 	err = sp.Parse(fileTree, defs)
 	if err != nil {

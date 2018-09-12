@@ -30,6 +30,14 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+func addExtension(ve *spec.VendorExtensible, key string, value interface{}) {
+	if os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false" {
+		return
+	}
+
+	ve.AddExtension(key, value)
+}
+
 type schemaTypable struct {
 	schema *spec.Schema
 	level  int
@@ -158,15 +166,12 @@ type schemaParser struct {
 	postDecls  []schemaDecl
 	known      map[string]spec.Schema
 	discovered *schemaDecl
-
-	genereateExtension bool
 }
 
-func newSchemaParser(prog *loader.Program, generateExtension bool) *schemaParser {
+func newSchemaParser(prog *loader.Program) *schemaParser {
 	scp := new(schemaParser)
 	scp.program = prog
 	scp.known = make(map[string]spec.Schema)
-	scp.genereateExtension = generateExtension
 	return scp
 }
 
@@ -279,15 +284,15 @@ func (scp *schemaParser) parseDecl(definitions map[string]spec.Schema, decl *sch
 		return nil
 	}
 
-	if schPtr.Ref.String() == "" && scp.genereateExtension {
+	if schPtr.Ref.String() == "" {
 		if decl.Name != decl.GoName {
-			schPtr.AddExtension("x-go-name", decl.GoName)
+			addExtension(&schPtr.VendorExtensible, "x-go-name", decl.GoName)
 		}
 		for _, pkgInfo := range scp.program.AllPackages {
 			if pkgInfo.Importable {
 				for _, fil := range pkgInfo.Files {
 					if fil.Pos() == decl.File.Pos() {
-						schPtr.AddExtension("x-go-package", pkgInfo.Pkg.Path())
+						addExtension(&schPtr.VendorExtensible, "x-go-package", pkgInfo.Pkg.Path())
 					}
 				}
 			}
@@ -503,7 +508,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 					return err
 				}
 
-				if fld.Doc != nil && scp.genereateExtension {
+				if fld.Doc != nil {
 					for _, cmt := range fld.Doc.List {
 						for _, ln := range strings.Split(cmt.Text, "\n") {
 							matches := rxAllOf.FindStringSubmatch(ln)
@@ -511,7 +516,7 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 							if ml > 1 {
 								mv := matches[ml-1]
 								if mv != "" {
-									bschema.AddExtension("x-class", mv)
+									addExtension(&bschema.VendorExtensible, "x-class", mv)
 								}
 							}
 						}
@@ -566,8 +571,8 @@ func (scp *schemaParser) parseInterfaceType(gofile *ast.File, bschema *spec.Sche
 				return err
 			}
 
-			if ps.Ref.String() == "" && nm != gnm && scp.genereateExtension {
-				ps.AddExtension("x-go-name", gnm)
+			if ps.Ref.String() == "" && nm != gnm {
+				addExtension(&ps.VendorExtensible, "x-go-name", gnm)
 			}
 			seenProperties[nm] = gnm
 			schema.Properties[nm] = ps
@@ -624,7 +629,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 					return err
 				}
 
-				if fld.Doc != nil && scp.genereateExtension {
+				if fld.Doc != nil {
 					for _, cmt := range fld.Doc.List {
 						for _, ln := range strings.Split(cmt.Text, "\n") {
 							matches := rxAllOf.FindStringSubmatch(ln)
@@ -632,7 +637,7 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 							if ml > 1 {
 								mv := matches[ml-1]
 								if mv != "" {
-									bschema.AddExtension("x-class", mv)
+									addExtension(&bschema.VendorExtensible, "x-class", mv)
 								}
 							}
 						}
@@ -701,8 +706,8 @@ func (scp *schemaParser) parseStructType(gofile *ast.File, bschema *spec.Schema,
 				return err
 			}
 
-			if ps.Ref.String() == "" && nm != gnm && scp.genereateExtension {
-				ps.AddExtension("x-go-name", gnm)
+			if ps.Ref.String() == "" && nm != gnm {
+				addExtension(&ps.VendorExtensible, "x-go-name", gnm)
 			}
 			// we have 2 cases:
 			// 1. field with different name override tag

@@ -155,8 +155,6 @@ type Opts struct {
 	Input      *spec.Swagger
 	ScanModels bool
 	BuildTags  string
-
-	GenerateExtension bool
 }
 
 func safeConvert(str string) bool {
@@ -198,9 +196,6 @@ type appScanner struct {
 
 	// MainPackage the path to find the main class in
 	MainPackage string
-
-	// if generate Go extension in spec
-	generateExtension bool
 }
 
 // newAppScanner creates a new api parser
@@ -253,7 +248,6 @@ func newAppScanner(opts *Opts, includes, excludes packageFilters) (*appScanner, 
 			Includes: includes,
 			Excludes: excludes,
 		},
-		generateExtension: opts.GenerateExtension,
 	}, nil
 }
 
@@ -372,7 +366,7 @@ func (a *appScanner) processDiscovered() error {
 }
 
 func (a *appScanner) parseSchema(file *ast.File) error {
-	sp := newSchemaParser(a.prog, a.generateExtension)
+	sp := newSchemaParser(a.prog)
 	if err := sp.Parse(file, a.definitions); err != nil {
 		return err
 	}
@@ -381,7 +375,7 @@ func (a *appScanner) parseSchema(file *ast.File) error {
 }
 
 func (a *appScanner) parseDiscoveredSchema(sd schemaDecl) error {
-	sp := newSchemaParser(a.prog, a.generateExtension)
+	sp := newSchemaParser(a.prog)
 	sp.discovered = &sd
 
 	if err := sp.Parse(sd.File, a.definitions); err != nil {
@@ -408,7 +402,7 @@ func (a *appScanner) parseOperations(file *ast.File) error {
 }
 
 func (a *appScanner) parseParameters(file *ast.File) error {
-	rp := newParameterParser(a.prog, a.generateExtension)
+	rp := newParameterParser(a.prog)
 	if err := rp.Parse(file, a.operations); err != nil {
 		return err
 	}
@@ -418,7 +412,7 @@ func (a *appScanner) parseParameters(file *ast.File) error {
 }
 
 func (a *appScanner) parseResponses(file *ast.File) error {
-	rp := newResponseParser(a.prog, a.generateExtension)
+	rp := newResponseParser(a.prog)
 	if err := rp.Parse(file, a.responses); err != nil {
 		return err
 	}

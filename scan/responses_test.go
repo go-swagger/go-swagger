@@ -30,7 +30,7 @@ func TestParseResponses(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	rp := newResponseParser(classificationProg, true)
+	rp := newResponseParser(classificationProg)
 	responses := make(map[string]spec.Response)
 	err = rp.Parse(fileTree, responses)
 	if err != nil {
