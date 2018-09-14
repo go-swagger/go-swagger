@@ -114,7 +114,7 @@ func extraModelsClassifier(t testing.TB) (*loader.Program, map[string]spec.Schem
 }
 
 func TestAppScanner_NewSpec(t *testing.T) {
-	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/petstore/petstore-fixture"}, nil, nil)
+	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/petstore/petstore-fixture"})
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
@@ -125,7 +125,7 @@ func TestAppScanner_NewSpec(t *testing.T) {
 }
 
 func TestAppScanner_Definitions(t *testing.T) {
-	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/bookings"}, nil, nil)
+	scanner, err := newAppScanner(&Opts{BasePath: "../fixtures/goparsing/bookings"})
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()
@@ -1066,7 +1066,7 @@ func TestEnhancement793(t *testing.T) {
 	scanner, err := newAppScanner(&Opts{
 		BasePath:   "../fixtures/enhancements/793",
 		ScanModels: true,
-	}, nil, nil)
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, scanner)
 	doc, err := scanner.Parse()

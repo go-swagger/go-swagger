@@ -36,6 +36,8 @@ type SpecFile struct {
 	Compact    bool           `long:"compact" description:"when present, doesn't prettify the json"`
 	Output     flags.Filename `long:"output" short:"o" description:"the file to write to"`
 	Input      flags.Filename `long:"input" short:"i" description:"the file to use as input"`
+	Include    []string       `long:"include" short:"c" description:"include packages matching pattern"`
+	Exclude    []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
 }
 
 // Execute runs this command
@@ -50,6 +52,8 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.Input = input
 	opts.ScanModels = s.ScanModels
 	opts.BuildTags = s.BuildTags
+	opts.Include = s.Include
+	opts.Exclude = s.Exclude
 	swspec, err := scan.Application(opts)
 	if err != nil {
 		return err

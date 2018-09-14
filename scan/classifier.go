@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"go/ast"
 	"log"
+	"regexp"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -27,7 +28,11 @@ type packageFilter struct {
 }
 
 func (pf *packageFilter) Matches(path string) bool {
-	return path == pf.Name
+	matched, err := regexp.MatchString(pf.Name, path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return matched
 }
 
 type packageFilters []packageFilter
