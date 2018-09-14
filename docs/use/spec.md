@@ -43,11 +43,23 @@ If an annotation is not yet supported or you want to merge with a pre-existing s
 swagger generate spec -i ./swagger.yml -o ./swagger.json
 ```
 
-The idea is that there are certain things that are more easily expressed by just using yaml, to
+The idea is that there are certain things that are more easily expressed by just using yaml
+
+To generate sepc in yaml format, just name the output file with ".yml" or ".yaml" extension. For example:
+
+```
+swagger generate spec -o ./swagger.yml
+```
+
+If you don't want to generate Go language specific extensions in the spec file, you can disable them by doing
+
+```
+SWAGGER_GENERATE_EXTENSION=false && swagger generate spec -o ./swagger.yml
+```
 
 #### Parsing rules
 
-![warning](../warning.png)This command relies heavily on the way godoc works. 
+![warning](../warning.png)This command relies heavily on the way godoc works.
 
 ![warning](../warning.png)This means you should be very aware of all the things godoc supports.
 
