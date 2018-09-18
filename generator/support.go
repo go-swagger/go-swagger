@@ -523,14 +523,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	sort.Sort(produces)
 	security := a.makeSecuritySchemes()
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
-	var imports map[string]string
+	var imports = make(map[string]string)
 
 	var genMods GenDefinitions
 	importPath := a.GenOpts.ExistingModels
 	if a.GenOpts.ExistingModels == "" {
-		if imports == nil {
-			imports = make(map[string]string)
-		}
 		imports[a.ModelsPackage] = filepath.ToSlash(filepath.Join(baseImport, manglePackageName(a.GenOpts, a.GenOpts.ModelPackage, "models")))
 	}
 	if importPath != "" {
