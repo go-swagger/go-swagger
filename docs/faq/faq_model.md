@@ -32,7 +32,7 @@ Another way is to use the `x-go-type extension`, to replace type generation with
 
 There is the opportunity to get go-swagger to reuse a predefined type to satisfy the definition in the swagger spec.
 Imported package and type alias may be specified as options, as shown in this example: 
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L84-L88
+https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-L103
 
 That example reuses a type provided by a library with a package alias and type name. The code generator will respect this.
 

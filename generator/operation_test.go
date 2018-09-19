@@ -557,6 +557,49 @@ func TestDateFormat_Spec2(t *testing.T) {
 	}
 }
 
+func TestBuilder_Issue1703(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, err := os.Getwd()
+	assert.NoError(t, err)
+
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+	}
+	err = opts.EnsureDefaults()
+	assert.NoError(t, err)
+	appGen, err := newAppGenerator("x-go-type-import-bug", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			for _, o := range op.Operations {
+				buf := bytes.NewBuffer(nil)
+				err := templates.MustGet("serverResponses").Execute(buf, o)
+				if assert.NoError(t, err) {
+					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						assertInCode(t, "jwk \"github.com/user/package\"", res)
+					} else {
+						fmt.Println(buf.String())
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestBuilder_Issue287(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)

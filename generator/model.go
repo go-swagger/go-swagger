@@ -203,11 +203,6 @@ func shallowValidationLookup(sch GenSchema) bool {
 }
 
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
-	_, ok := schema.Extensions[xGoType]
-	if ok {
-		return nil, nil
-	}
-
 	receiver := "m"
 	// models are resolved in the current package
 	resolver := newTypeResolver("", specDoc)
