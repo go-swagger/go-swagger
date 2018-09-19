@@ -37,7 +37,7 @@ func TestRoutesParser(t *testing.T) {
 
 	rp := newRoutesParser(classificationProg)
 	var ops spec.Paths
-	err = rp.Parse(fileTree, &ops)
+	err = rp.Parse(fileTree, &ops, nil, nil)
 	assert.NoError(t, err)
 
 	assert.Len(t, ops.Paths, 3)
@@ -122,7 +122,7 @@ func TestRoutesParserBody(t *testing.T) {
 
 	rp := newRoutesParser(classificationProg)
 	var ops spec.Paths
-	err = rp.Parse(fileTree, &ops)
+	err = rp.Parse(fileTree, &ops, nil, nil)
 	assert.NoError(t, err)
 
 	assert.Len(t, ops.Paths, 4)
