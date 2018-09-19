@@ -1129,11 +1129,5 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.GoType = iface
 		}
 	}
-
-	// Add x-go-type imports if available
-	if schema.Pkg != "" {
-		b.Imports[schema.PkgAlias] = schema.Pkg
-	}
-
 	return schema, nil
 }

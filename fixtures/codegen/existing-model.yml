@@ -49,6 +49,21 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/JsonWebKey"
+    x-go-type:
+      import:
+        package: "github.com/user/package"
+        alias: "jwk"
+      type: "KeysObject"
+  JsonWebKeySetArray:
+    title: "JSON Web Key Set Array"
+    type: "array"
+    items:
+      $ref: "#/definitions/JsonWebKey"
+    x-go-type:
+      import:
+        package: "github.com/user/package"
+        alias: "jwk"
+      type: "KeysArray"
   JsonWebKey:
     title: "JSON Web Key"
     type: "object"

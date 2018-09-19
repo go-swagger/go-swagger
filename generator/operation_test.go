@@ -564,7 +564,7 @@ func TestBuilder_Issue1703(t *testing.T) {
 	assert.NoError(t, err)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/1703/swagger.yml"),
+		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
 		IncludeModel:      true,
 		IncludeValidator:  true,
 		IncludeHandler:    true,
@@ -583,15 +583,17 @@ func TestBuilder_Issue1703(t *testing.T) {
 	if assert.NoError(t, err) {
 		op, err := appGen.makeCodegenApp()
 		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverResponses").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+			for _, o := range op.Operations {
+				buf := bytes.NewBuffer(nil)
+				err := templates.MustGet("serverResponses").Execute(buf, o)
 				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "my_pkg \"github.com/user/external_repo/my_pkg\"", res)
-				} else {
-					fmt.Println(buf.String())
+					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						assertInCode(t, "jwk \"github.com/user/package\"", res)
+					} else {
+						fmt.Println(buf.String())
+					}
 				}
 			}
 		}

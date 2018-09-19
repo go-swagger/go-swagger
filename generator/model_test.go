@@ -2023,7 +2023,9 @@ func TestImports_ExistingModel(t *testing.T) {
 		k = "JsonWebKey"
 		genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 		if assert.NoError(t, err) {
-			assert.Nil(t, genModel)
+			assert.NotNil(t, genModel)
+			assert.NotNil(t, genModel.Imports)
+			assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
 		}
 	}
 }

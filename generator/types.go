@@ -341,6 +341,14 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	result.IsArray = true
 	result.IsNullable = false
 	result.IsEmptyOmitted = t.IsEmptyOmitted(schema)
+
+	if !isAnonymous {
+		tpe, pkg, alias := knownDefGoType(t.ModelName, *schema, t.goTypeName)
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
+	}
+
 	if schema.AdditionalItems != nil {
 		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
 	}
