@@ -71,13 +71,20 @@ type routesParser struct {
 	parameters  []*spec.Parameter
 }
 
-func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
+func (rp *routesParser) Parse(gofile *ast.File, target interface{}, includeTags map[string]bool, excludeTags map[string]bool) error {
 	tgt := target.(*spec.Paths)
 	for _, comsec := range gofile.Comments {
 		content := parsePathAnnotation(rxRoute, comsec.List)
 
 		if content.Method == "" {
 			continue // it's not, next!
+		}
+
+		if !rp.shouldAcceptTag(content.Tags, includeTags, excludeTags) {
+			if Debug {
+				fmt.Printf("route %s %s is ignored due to tag rules\n", content.Method, content.Path)
+			}
+			continue
 		}
 
 		pthObj := tgt.Paths[content.Path]
@@ -111,4 +118,19 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}) error {
 	}
 
 	return nil
+}
+
+func (rp *routesParser) shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {
+	for _, tag := range tags {
+		if len(includeTags) > 0 {
+			if includeTags[tag] {
+				return true
+			}
+		} else if len(excludeTags) > 0 {
+			if excludeTags[tag] {
+				return false
+			}
+		}
+	}
+	return len(includeTags) <= 0
 }

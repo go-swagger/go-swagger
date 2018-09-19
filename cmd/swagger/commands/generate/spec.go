@@ -30,14 +30,16 @@ import (
 
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
-	BasePath   string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
-	BuildTags  string         `long:"tags" short:"t" description:"build tags" default:""`
-	ScanModels bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
-	Compact    bool           `long:"compact" description:"when present, doesn't prettify the json"`
-	Output     flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	Input      flags.Filename `long:"input" short:"i" description:"the file to use as input"`
-	Include    []string       `long:"include" short:"c" description:"include packages matching pattern"`
-	Exclude    []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
+	BasePath    string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
+	BuildTags   string         `long:"tags" short:"t" description:"build tags" default:""`
+	ScanModels  bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
+	Compact     bool           `long:"compact" description:"when present, doesn't prettify the json"`
+	Output      flags.Filename `long:"output" short:"o" description:"the file to write to"`
+	Input       flags.Filename `long:"input" short:"i" description:"the file to use as input"`
+	Include     []string       `long:"include" short:"c" description:"include packages matching pattern"`
+	Exclude     []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
+	IncludeTags []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
+	ExcludeTags []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
 }
 
 // Execute runs this command
@@ -54,6 +56,8 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.BuildTags = s.BuildTags
 	opts.Include = s.Include
 	opts.Exclude = s.Exclude
+	opts.IncludeTags = s.IncludeTags
+	opts.ExcludeTags = s.ExcludeTags
 	swspec, err := scan.Application(opts)
 	if err != nil {
 		return err

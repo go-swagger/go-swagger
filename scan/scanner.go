@@ -157,6 +157,8 @@ type Opts struct {
 	BuildTags  string
 	Include    []string
 	Exclude    []string
+	IncludeTags []string
+	ExcludeTags []string
 }
 
 func safeConvert(str string) bool {
@@ -196,6 +198,8 @@ type appScanner struct {
 	responses   map[string]spec.Response
 	operations  map[string]*spec.Operation
 	scanModels  bool
+	includeTags map[string]bool
+	excludeTas  map[string]bool
 
 	// MainPackage the path to find the main class in
 	MainPackage string
@@ -230,6 +234,14 @@ func newAppScanner(opts *Opts) (*appScanner, error) {
 			excludes = append(excludes, packageFilter{Name: exclude})
 		}
 	}
+	includeTags := make(map[string]bool)
+	for _, includeTag := range opts.IncludeTags {
+		includeTags[includeTag] = true
+	}
+	excludeTags := make(map[string]bool)
+	for _, excludeTag := range opts.ExcludeTags {
+		excludeTags[excludeTag] = true
+	}
 
 	input := opts.Input
 	if input == nil {
@@ -263,6 +275,8 @@ func newAppScanner(opts *Opts) (*appScanner, error) {
 			Includes: includes,
 			Excludes: excludes,
 		},
+		includeTags: includeTags,
+		excludeTas:  excludeTags,
 	}, nil
 }
 
@@ -405,7 +419,8 @@ func (a *appScanner) parseRoutes(file *ast.File) error {
 	rp.operations = a.operations
 	rp.definitions = a.definitions
 	rp.responses = a.responses
-	return rp.Parse(file, a.input.Paths)
+
+	return rp.Parse(file, a.input.Paths, a.includeTags, a.excludeTas)
 }
 
 func (a *appScanner) parseOperations(file *ast.File) error {
