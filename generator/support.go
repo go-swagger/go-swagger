@@ -548,7 +548,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		}
 		if mod != nil {
 			//mod.ReceiverName = receiver
-			genMods = append(genMods, *mod)
+			if !mod.External {
+				genMods = append(genMods, *mod)
+			}
 
 			// Copy model imports to operation imports
 			for alias, pkg := range mod.Imports {
