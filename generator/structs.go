@@ -31,6 +31,7 @@ type GenDefinition struct {
 	DefaultImports []string
 	ExtraSchemas   GenSchemaList
 	DependsOn      []string
+	External       bool
 }
 
 // GenDefinitions represents a list of operations to generate
