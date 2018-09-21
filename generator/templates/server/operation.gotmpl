@@ -10,11 +10,10 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+  "context"
   "net/http"
   "strings"
   "fmt"
-
-  context "golang.org/x/net/context"
 
   errors "github.com/go-openapi/errors"
   middleware "github.com/go-openapi/runtime/middleware"

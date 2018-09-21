@@ -7,6 +7,7 @@
 package {{ .APIPackage }}
 
 import (
+  "context"
   "crypto/tls"
   "net/http"
   "log"
@@ -15,7 +16,6 @@ import (
   runtime "github.com/go-openapi/runtime"
   middleware "github.com/go-openapi/runtime/middleware"
   security "github.com/go-openapi/runtime/security"
-  "golang.org/x/net/context"
 
   {{range .DefaultImports}}{{printf "%q" .}}
   {{end}}
