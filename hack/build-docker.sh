@@ -3,7 +3,7 @@
 # Bails on any command failure
 set -e -o pipefail -x
 
-cd `git rev-parse --show-toplevel`
+cd $(git rev-parse --show-toplevel)
 echo "Building swagger from $(pwd)..."
 
 if [[ ${1} == "--circleci" ]] ; then

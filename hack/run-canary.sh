@@ -6,31 +6,31 @@
 # Bails on any command failure
 set -e -o pipefail
 
-basedir=`cd ${0%/*};pwd`
-FIXTURES=${basedir}/../fixtures/canary
+cd $(git rev-parse --show-toplevel)
 
 if [[ "${SWAGGER_BIN}" ]]; then
   cp "${SWAGGER_BIN}" /go/bin/
 fi
 
-if [ ! -f `which swagger` ]; then
+if ! command -v swagger >/dev/null 2>&1; then
   echo "can't find swagger in the PATH"
   exit 1
 fi
 
-for dir in $(ls "${FIXTURES}")
+for dir in fixtures/canary/*
 do
-    echo $dir
-    pushd "${FIXTURES}/$dir"
+    [ ! -d "$dir" ] && continue
+    echo "validating '$dir'"
+    pushd "$dir" > /dev/null
 
     case $dir in
-    "bitbucket.org")          
-        # bitbucket.org generates wrong model 
+    "fixtures/canary/bitbucket.org")
+        # bitbucket.org generates wrong model
         client=false
         server=false
         echo "$dir is disabled for now"
         ;;
-    kubernetes|docker)
+    "fixtures/canary/kubernetes"|"fixtures/canary/docker")
         # docker has an invalid spec with duplicate operationIds. Generates on docker-fixed
         # kubernetes uses unsupported media type options (issue#1377)
         client=true
@@ -42,17 +42,19 @@ do
         server=true
         ;;
     esac
-    if [[ ${client} == "true" ]] ; then
+    if [[ "${client}" == "true" ]] ; then
         rm -rf client models restapi cmd
         echo "generating client for $dir..."
         swagger generate client --skip-validation --quiet
-        go test ./...
+        go test -vet off ./...
     fi
 
-    if [[ ${server} == "true" ]] ; then
+    if [[ "${server}" == "true" ]] ; then
         echo "generating server for $dir..."
         swagger generate server --skip-validation --quiet
-        go test ./...
+        go test -vet off ./...
     fi
-    popd
+    set +e
+    popd > /dev/null || true
+    set -e
 done

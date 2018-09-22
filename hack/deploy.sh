@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-prjdir=`git rev-parse --show-toplevel`
+prjdir=$(git rev-parse --show-toplevel)
 
 build_binary() {
   LDFLAGS="-s -w -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
@@ -32,7 +32,7 @@ upload_to_github() {
   sha256sum * > sha256sum.txt
 
   github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -d "$(cat $prjdir/notes/v${CIRCLE_TAG}.md)"
-  for f in $(ls .); do
+  for f in *; do
     github-release upload -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -n $f -f $f
   done
 }
