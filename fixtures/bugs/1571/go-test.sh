@@ -1,2 +1,2 @@
 #! /bin/bash
-go test -v -tags integration
+go test -vet off -v -tags integration

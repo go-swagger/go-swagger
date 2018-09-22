@@ -3,8 +3,8 @@
 # for non regression testing of codegen
 shopt -s extglob
 
-function initColors() {
-if [[ -z ${MONO} ]]; then
+# function initColors() {
+if [[ -z "${MONO}" ]]; then
     normal=$(tput sgr0)
     red=$(tput setaf 1)
     green=$(tput setaf 2)
@@ -19,7 +19,7 @@ else
     blue=""
     bold=""
 fi
-}
+# }
 
 function okcr() {
     ok "$*"; printf "\n"
@@ -57,8 +57,8 @@ if [ ! -f `which swagger` ]; then
   exit 1
 fi
 
-# NOTE(fredbi): 
-# The following ones fail generation: 
+# NOTE(fredbi):
+# The following ones fail generation:
 # - existing-model.yml requires pregeneration (not supported yet by this script)
 # - issue72: model works with --skip-validation. Invalid spec (duplicate operationID)
 # - todolist.simple.yml: invalid default values put on purpose for UT (provided fixed version for testing)
@@ -141,33 +141,33 @@ else
 fi
 
 # A little chrome does not hurt...
-initColors
+# initColors
 
 # All fixtures in ./fixtures/codegen + some others
-cd ${0%/*}
-specdir="../fixtures/codegen ../fixtures/bugs/909 ../fixtures/bugs/1437 ../fixtures/bugs/1314 ../fixtures/bugs/1062/eve-online-esi.json"
-specdir=${specdir}" ../fixtures/bugs/1392"
-specdir=${specdir}" ../fixtures/bugs/1277"
-specdir=${specdir}" ../fixtures/bugs/1536"
-specdir=${specdir}" ../fixtures/bugs/1487"
-specdir=${specdir}" ../fixtures/bugs/1571"
-specdir=${specdir}" ../fixtures/bugs/957"
-specdir=${specdir}" ../fixtures/bugs/1614"
-specdir=${specdir}" ../fixtures/bugs/931"
+cd $(git rev-parse --show-toplevel)
+specdir="fixtures/codegen fixtures/bugs/909 fixtures/bugs/1437 fixtures/bugs/1314 fixtures/bugs/1062/eve-online-esi.json"
+specdir=${specdir}" fixtures/bugs/1392"
+specdir=${specdir}" fixtures/bugs/1277"
+specdir=${specdir}" fixtures/bugs/1536"
+specdir=${specdir}" fixtures/bugs/1487"
+specdir=${specdir}" fixtures/bugs/1571"
+specdir=${specdir}" fixtures/bugs/957"
+specdir=${specdir}" fixtures/bugs/1614"
+specdir=${specdir}" fixtures/bugs/931"
 gendir=./tmp-gen
 rm -rf ${gendir}
 
 check_list=`for d in ${specdir}; do ls $d/*.yml;ls $d/*.json;ls $d/*.yaml;done 2>/dev/null`
 # there are several subspecs there: we just want the master
-check_list=${check_list}" ../fixtures/bugs/1621/fixture-1621.yaml"
+check_list=${check_list}" fixtures/bugs/1621/fixture-1621.yaml"
 
 list=( $check_list )
 fixtures_count=${#list[@]}
 okcr "Running codegen for ${fixtures_count} specs"
 
-for spec in ${check_list}; do 
+for spec in ${check_list}; do
     testcase=${spec##*/}
-    case ${testcase} in 
+    case ${testcase} in
     ${known_failed})
         warncr "[`date +%T`]${spec}: not tested against full build because of known issues."
         run="false"
@@ -210,7 +210,7 @@ for spec in ${check_list}; do
         for preprocessingOpts in ${OPTS} ; do
             index+=1
             infocr "Generation with options: ${preprocessingOpts} ${opts}"
-	
+
             # Do not attempt to generate on expanded specs when there is a discriminator specified
 	        grep -q discriminator ${spec}
 	        discriminated=$?
@@ -221,69 +221,66 @@ for spec in ${check_list}; do
             if [[ ${noexpand} != "true" && ${preprocessingOpts} == "--with-flatten=expand" ]] ; then
                 continue
             fi
-	
+
 	        target=${gendir}/gen-${testcase%.*}${index}
 	        target_client=${gendir}/gen-${testcase%.*}${index}"-client"
 
 	        server_name="nrcodegen"
 	        client_name="nrcodegen"
 	        errlog=${gendir}/stderr.log
-	
+
 	        rm -rf ${target} ${target_client}
 	        mkdir -p ${target} ${target_client}
 	        rm -f ${errlog}
-	
+
 	        # Gen server
-	        swagger generate server --spec ${spec} --target ${target} --name=${server_name} --quiet ${opts} ${preprocessingOpts} 2>${errlog}
-	        if [[ $? != 0 ]] ; then
+	        if ! swagger generate server --spec ${spec} --target ${target} --name=${server_name} --quiet ${opts} ${preprocessingOpts} 2>${errlog} ; then
 	            errcr "Generation Failed"
-	            if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
+	            if [[ -f ${errlog} ]] ; then errcr "$(cat ${errlog})" ; rm ${errlog};fi
 	            exit 1
 	        fi
-	        ok `printf " %s..."  "Generation server OK"`
+	        okcr "Generation server OK"
 	        rm -f ${errlog}
 	        # Gen client
-	        swagger generate client --spec ${spec} --target ${target_client} --name=${client_name} --quiet ${opts} ${preprocessingOpts} 2>${errlog}
-	        if [[ $? != 0 ]] ; then
+
+	        if ! swagger generate client --spec "${spec}" --target "${target_client}" --name "${client_name}" --quiet ${opts} "${preprocessingOpts}" 2>${errlog}; then
 	            errcr "Generation Failed"
 	            if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
 	            exit 1
 	        fi
-	        ok `printf " %s..."  "Generation client OK"`
+	        okcr "Generation client OK"
 
             #
             # Check build on generated artifacts
             #
 
 	        # Build server
-	        (cd ${target}/cmd/${server_name}"-server"; go build) 2>${errlog}
-	        if [[ $? != 0 ]] ; then
+	        if ! (cd ${target}/cmd/${server_name}"-server"; go build) 2>${errlog} ; then
 	            errcr "Server build Failed"
 	            if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
 	            exit 1
 	        fi
-	        ok `printf " %s..."  "Server build OK"`
-	        # Build models if any produced 
-	        if [[ -d ${target}/models ]] ; then 
-	            (cd ${target}/models ; go build) 2>${errlog}
-	            if [[ $? != 0 ]] ; then
+	        okcr "Server build OK"
+	        # Build models if any produced
+	        if [[ -d ${target}/models ]] ; then
+
+	            if ! (cd ${target}/models ; go build) 2>${errlog}; then
 	                errcr "Model build Failed"
 	                if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
 	                exit 1
 	            fi
 	        fi
-	        ok `printf " %s..."  "Models build OK"`
+	        okcr "Models build OK"
 	        # Build client
 	        if [[ ${buildClient} == "false" ]] ; then
-	            warn "(no client built)"
+	            warncr "(no client built)"
 	        else
-	            (cd ${target_client}/client ; go build) 2>${errlog}
-	            if [[ $? != 0 ]] ; then
+	            if ! (cd ${target_client}/client ; go build) 2>${errlog} ; then
 	                errcr "Client build Failed"
 	                if [[ -f ${errlog} ]] ; then errcr `cat ${errlog}` ; rm ${errlog};fi
 	                exit 1
 	            fi
-	            ok `printf " %s..."  "Client build OK"`
+	            okcr "Client build OK"
 	        fi
 	        successcr " [All builds for ${spec}:  OK]"
 	        rm -f ${errlog}

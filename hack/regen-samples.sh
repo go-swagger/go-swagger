@@ -1,6 +1,6 @@
 #!/bin/sh
 
-examples=`git rev-parse --show-toplevel`/examples
+examples=$(git rev-parse --show-toplevel)/examples
 
 # go to project root
 cd "${examples}/generated"
@@ -62,4 +62,4 @@ swagger generate client -A Petstore --template stratoscale
 swagger generate server -A Petstore --template stratoscale
 
 cd ${examples}
-go test -v ./...
+go test -vet off -v ./...

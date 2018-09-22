@@ -13,7 +13,7 @@ echo "mode: $mode" > "$profile"
 for dir in $(go list ./... | grep -v -E 'vendor|fixtures|examples')
 do
   f="$workdir/$(echo "$dir" | tr / -).cover"
-  go test -tags netgo -installsuffix netgo -covermode="$mode" -coverprofile="$f" "$dir"
+  go test -vet off -tags netgo -installsuffix netgo -covermode="$mode" -coverprofile="$f" "$dir"
   if [ -f "$f" ]
   then
     cat "$f" | tail -n +2 >> "$profile"

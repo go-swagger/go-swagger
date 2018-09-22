@@ -82,7 +82,7 @@ func TestCmd_Validate_Issue342_CannotUnmarshal(t *testing.T) {
 	result := v.Execute([]string{specDoc})
 	if assert.Error(t, result, "This spec should not pass validation") {
 		// assert.Contains(t, result.Error(), "is invalid against swagger specification 2.0")
-		assert.Contains(t, result.Error(), "json: cannot unmarshal object into Go struct field SwaggerProps.paths of type []spec.Parameter")
+		assert.Contains(t, result.Error(), "json: cannot unmarshal object into Go struct field OperationProps.parameters of type []spec.Parameter")
 	}
 }
 
