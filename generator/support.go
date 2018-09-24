@@ -705,7 +705,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	var serverPackageName string
 	if strings.Contains(a.Server, "/") {
-		serverPackageName = a.Server[strings.LastIndex(a.Server, "/")+1:]
+		serverPackageName = a.GenOpts.LanguageOpts.MangleName(a.Server[strings.LastIndex(a.Server, "/")+1:], "server")
 	} else {
 		serverPackageName = a.Server
 	}
