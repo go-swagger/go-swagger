@@ -123,7 +123,10 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 
 	opts.Name = appNameOrDefault(specDoc, name, "swagger")
 	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
+
+	server := opts.LanguageOpts.MangleName(opts.ServerPackage, "server")
 	serverPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server")
+
 	return &appGenerator{
 		Name:       opts.Name,
 		Receiver:   "o",
@@ -137,9 +140,10 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Package:           apiPackage,
 		APIPackage:        apiPackage,
 		ModelsPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		Server:            server,
 		ServerPackage:     serverPackage,
 		ClientPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		OperationsPackage: filepath.Join(serverPackage, apiPackage),
+		OperationsPackage: filepath.Join(server, apiPackage),
 		Principal:         opts.Principal,
 		DefaultScheme:     defaultScheme,
 		DefaultProduces:   defaultProduces,
@@ -156,6 +160,7 @@ type appGenerator struct {
 	Package           string
 	APIPackage        string
 	ModelsPackage     string
+	Server            string
 	ServerPackage     string
 	ClientPackage     string
 	OperationsPackage string
@@ -264,11 +269,12 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		}
 		app = &ca
 	}
+
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	importPath := filepath.ToSlash(filepath.Join(baseImport, a.OperationsPackage))
 	app.DefaultImports = append(
 		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(baseImport, a.ServerPackage)),
+		filepath.ToSlash(filepath.Join(baseImport, a.Server)),
 		importPath,
 	)
 
@@ -697,12 +703,19 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		basePath = sw.BasePath
 	}
 
+	var serverPackageName string
+	if strings.Contains(a.Server, "/") {
+		serverPackageName = a.Server[strings.LastIndex(a.Server, "/")+1:]
+	} else {
+		serverPackageName = a.Server
+	}
+
 	return GenApp{
 		GenCommon: GenCommon{
 			Copyright:        a.GenOpts.Copyright,
 			TargetImportPath: filepath.ToSlash(baseImport),
 		},
-		APIPackage:          a.ServerPackage,
+		APIPackage:          serverPackageName,
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
