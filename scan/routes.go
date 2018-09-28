@@ -80,7 +80,7 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}, includeTags 
 			continue // it's not, next!
 		}
 
-		if !rp.shouldAcceptTag(content.Tags, includeTags, excludeTags) {
+		if !shouldAcceptTag(content.Tags, includeTags, excludeTags) {
 			if Debug {
 				fmt.Printf("route %s %s is ignored due to tag rules\n", content.Method, content.Path)
 			}
@@ -120,7 +120,7 @@ func (rp *routesParser) Parse(gofile *ast.File, target interface{}, includeTags 
 	return nil
 }
 
-func (rp *routesParser) shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {
+func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {
 	for _, tag := range tags {
 		if len(includeTags) > 0 {
 			if includeTags[tag] {

@@ -36,13 +36,20 @@ type operationsParser struct {
 	responses   map[string]spec.Response
 }
 
-func (op *operationsParser) Parse(gofile *ast.File, target interface{}) error {
+func (op *operationsParser) Parse(gofile *ast.File, target interface{}, includeTags map[string]bool, excludeTags map[string]bool) error {
 	tgt := target.(*spec.Paths)
 	for _, comsec := range gofile.Comments {
 		content := parsePathAnnotation(rxOperation, comsec.List)
 
 		if content.Method == "" {
 			continue // it's not, next!
+		}
+
+		if !shouldAcceptTag(content.Tags, includeTags, excludeTags) {
+			if Debug {
+				fmt.Printf("operation %s %s is ignored due to tag rules\n", content.Method, content.Path)
+			}
+			continue
 		}
 
 		pthObj := tgt.Paths[content.Path]

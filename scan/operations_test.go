@@ -37,7 +37,7 @@ func TestOperationsParser(t *testing.T) {
 
 	op := newOperationsParser(classificationProg)
 	var ops spec.Paths
-	err = op.Parse(fileTree, &ops)
+	err = op.Parse(fileTree, &ops, nil, nil)
 	assert.NoError(t, err)
 
 	assert.Len(t, ops.Paths, 2)
