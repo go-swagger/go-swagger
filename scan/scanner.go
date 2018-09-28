@@ -428,7 +428,7 @@ func (a *appScanner) parseOperations(file *ast.File) error {
 	op.operations = a.operations
 	op.definitions = a.definitions
 	op.responses = a.responses
-	return op.Parse(file, a.input.Paths)
+	return op.Parse(file, a.input.Paths, a.includeTags, a.excludeTas)
 }
 
 func (a *appScanner) parseParameters(file *ast.File) error {
