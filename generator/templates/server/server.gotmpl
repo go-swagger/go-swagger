@@ -542,7 +542,7 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, serversPtr *[]*http.Server) 
 
 	servers := *serversPtr
 
-	ctx, cancel := context.WithTimeout(context.TODO(), s.GracefulTimeout*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), s.GracefulTimeout)
 	defer cancel()
 
 	shutdownChan := make(chan bool)
