@@ -84,7 +84,7 @@ deploy_docker() {
 # build_linuxpkg rpm
 
 # # upload binary packages
-upload_to_github
-upload_to_bintray
+# upload_to_github
+# upload_to_bintray
 
-deploy_docker
+# deploy_docker
