@@ -180,6 +180,44 @@ func TestKeyRevocation(t *testing.T) {
 	}
 }
 
+func TestKeyWithRevokedSubKey(t *testing.T) {
+	// This key contains a revoked sub key:
+	//  pub   rsa1024/0x4CBD826C39074E38 2018-06-14 [SC]
+	//        Key fingerprint = 3F95 169F 3FFA 7D3F 2B47  6F0C 4CBD 826C 3907 4E38
+	//  uid   Golang Gopher <no-reply@golang.com>
+	//  sub   rsa1024/0x945DB1AF61D85727 2018-06-14 [S] [revoked: 2018-06-14]
+
+	keys, err := ReadArmoredKeyRing(bytes.NewBufferString(keyWithSubKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(keys) != 1 {
+		t.Fatal("Failed to read key with a sub key")
+	}
+
+	identity := keys[0].Identities["Golang Gopher <no-reply@golang.com>"]
+
+	// Test for an issue where Subkey Binding Signatures (RFC 4880 5.2.1) were added to the identity
+	// preceding the Subkey Packet if the Subkey Packet was followed by more than one signature.
+	// For example, the current key has the following layout:
+	//    PUBKEY UID SELFSIG SUBKEY REV SELFSIG
+	// The last SELFSIG would be added to the UID's signatures. This is wrong.
+	if numIdentitySigs, numExpected := len(identity.Signatures), 0; numIdentitySigs != numExpected {
+		t.Fatalf("got %d identity signatures, expected %d", numIdentitySigs, numExpected)
+	}
+
+	if numSubKeys, numExpected := len(keys[0].Subkeys), 1; numSubKeys != numExpected {
+		t.Fatalf("got %d subkeys, expected %d", numSubKeys, numExpected)
+	}
+
+	subKey := keys[0].Subkeys[0]
+	if subKey.Sig == nil {
+		t.Fatalf("subkey signature is nil")
+	}
+
+}
+
 func TestSubkeyRevocation(t *testing.T) {
 	kring, err := ReadKeyRing(readerFromHex(revokedSubkeyHex))
 	if err != nil {
@@ -214,6 +252,51 @@ func TestSubkeyRevocation(t *testing.T) {
 	if len(keys) != 0 {
 		t.Errorf("Expected KeysByIdUsage to filter out revoked key %X, but got %d matches", revokedKey, len(keys))
 	}
+}
+
+func TestKeyWithSubKeyAndBadSelfSigOrder(t *testing.T) {
+	// This key was altered so that the self signatures following the
+	// subkey are in a sub-optimal order.
+	//
+	// Note: Should someone have to create a similar key again, look into
+	//       gpgsplit, gpg --dearmor, and gpg --enarmor.
+	//
+	// The packet ordering is the following:
+	//    PUBKEY UID UIDSELFSIG SUBKEY SELFSIG1 SELFSIG2
+	//
+	// Where:
+	//    SELFSIG1 expires on 2018-06-14 and was created first
+	//    SELFSIG2 does not expire and was created after SELFSIG1
+	//
+	// Test for RFC 4880 5.2.3.3:
+	// > An implementation that encounters multiple self-signatures on the
+	// > same object may resolve the ambiguity in any way it sees fit, but it
+	// > is RECOMMENDED that priority be given to the most recent self-
+	// > signature.
+	//
+	// This means that we should keep SELFSIG2.
+
+	keys, err := ReadArmoredKeyRing(bytes.NewBufferString(keyWithSubKeyAndBadSelfSigOrder))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(keys) != 1 {
+		t.Fatal("Failed to read key with a sub key and a bad selfsig packet order")
+	}
+
+	key := keys[0]
+
+	if numKeys, expected := len(key.Subkeys), 1; numKeys != expected {
+		t.Fatalf("Read %d subkeys, expected %d", numKeys, expected)
+	}
+
+	subKey := key.Subkeys[0]
+
+	if lifetime := subKey.Sig.KeyLifetimeSecs; lifetime != nil {
+		t.Errorf("The signature has a key lifetime (%d), but it should be nil", *lifetime)
+	}
+
 }
 
 func TestKeyUsage(t *testing.T) {
@@ -547,3 +630,64 @@ heiQvzkApQup5c+BhH5zFDFdKJ2CBByxw9+7QjMFI/wgLixKuE0Ob2kAokXf7RlB
 7qTZOahrETw=
 =IKnw
 -----END PGP PUBLIC KEY BLOCK-----`
+
+const keyWithSubKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mI0EWyKwKQEEALwXhKBnyaaNFeK3ljfc/qn9X/QFw+28EUfgZPHjRmHubuXLE2uR
+s3ZoSXY2z7Dkv+NyHYMt8p+X8q5fR7JvUjK2XbPyKoiJVnHINll83yl67DaWfKNL
+EjNoO0kIfbXfCkZ7EG6DL+iKtuxniGTcnGT47e+HJSqb/STpLMnWwXjBABEBAAG0
+I0dvbGFuZyBHb3BoZXIgPG5vLXJlcGx5QGdvbGFuZy5jb20+iM4EEwEKADgWIQQ/
+lRafP/p9PytHbwxMvYJsOQdOOAUCWyKwKQIbAwULCQgHAwUVCgkICwUWAgMBAAIe
+AQIXgAAKCRBMvYJsOQdOOOsFBAC62mXww8XuqvYLcVOvHkWLT6mhxrQOJXnlfpn7
+2uBV9CMhoG/Ycd43NONsJrB95Apr9TDIqWnVszNbqPCuBhZQSGLdbiDKjxnCWBk0
+69qv4RNtkpOhYB7jK4s8F5oQZqId6JasT/PmJTH92mhBYhhTQr0GYFuPX2UJdkw9
+Sn9C67iNBFsisDUBBAC3A+Yo9lgCnxi/pfskyLrweYif6kIXWLAtLTsM6g/6jt7b
+wTrknuCPyTv0QKGXsAEe/cK/Xq3HvX9WfXPGIHc/X56ZIsHQ+RLowbZV/Lhok1IW
+FAuQm8axr/by80cRwFnzhfPc/ukkAq2Qyj4hLsGblu6mxeAhzcp8aqmWOO2H9QAR
+AQABiLYEKAEKACAWIQQ/lRafP/p9PytHbwxMvYJsOQdOOAUCWyK16gIdAAAKCRBM
+vYJsOQdOOB1vA/4u4uLONsE+2GVOyBsHyy7uTdkuxaR9b54A/cz6jT/tzUbeIzgx
+22neWhgvIEghnUZd0vEyK9k1wy5vbDlEo6nKzHso32N1QExGr5upRERAxweDxGOj
+7luDwNypI7QcifE64lS/JmlnunwRCdRWMKc0Fp+7jtRc5mpwyHN/Suf5RokBagQY
+AQoAIBYhBD+VFp8/+n0/K0dvDEy9gmw5B044BQJbIrA1AhsCAL8JEEy9gmw5B044
+tCAEGQEKAB0WIQSNdnkaWY6t62iX336UXbGvYdhXJwUCWyKwNQAKCRCUXbGvYdhX
+JxJSA/9fCPHP6sUtGF1o3G1a3yvOUDGr1JWcct9U+QpbCt1mZoNopCNDDQAJvDWl
+mvDgHfuogmgNJRjOMznvahbF+wpTXmB7LS0SK412gJzl1fFIpK4bgnhu0TwxNsO1
+8UkCZWqxRMgcNUn9z6XWONK8dgt5JNvHSHrwF4CxxwjL23AAtK+FA/UUoi3U4kbC
+0XnSr1Sl+mrzQi1+H7xyMe7zjqe+gGANtskqexHzwWPUJCPZ5qpIa2l8ghiUim6b
+4ymJ+N8/T8Yva1FaPEqfMzzqJr8McYFm0URioXJPvOAlRxdHPteZ0qUopt/Jawxl
+Xt6B9h1YpeLoJwjwsvbi98UTRs0jXwoY
+=3fWu
+-----END PGP PUBLIC KEY BLOCK-----`
+
+const keyWithSubKeyAndBadSelfSigOrder = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mI0EWyLLDQEEAOqIOpJ/ha1OYAGduu9tS3rBz5vyjbNgJO4sFveEM0mgsHQ0X9/L
+plonW+d0gRoO1dhJ8QICjDAc6+cna1DE3tEb5m6JtQ30teLZuqrR398Cf6w7NNVz
+r3lrlmnH9JaKRuXl7tZciwyovneBfZVCdtsRZjaLI1uMQCz/BToiYe3DABEBAAG0
+I0dvbGFuZyBHb3BoZXIgPG5vLXJlcGx5QGdvbGFuZy5jb20+iM4EEwEKADgWIQRZ
+sixZOfQcZdW0wUqmgmdsv1O9xgUCWyLLDQIbAwULCQgHAwUVCgkICwUWAgMBAAIe
+AQIXgAAKCRCmgmdsv1O9xql2A/4pix98NxjhdsXtazA9agpAKeADf9tG4Za27Gj+
+3DCww/E4iP2X35jZimSm/30QRB6j08uGCqd9vXkkJxtOt63y/IpVOtWX6vMWSTUm
+k8xKkaYMP0/IzKNJ1qC/qYEUYpwERBKg9Z+k99E2Ql4kRHdxXUHq6OzY79H18Y+s
+GdeM/riNBFsiyxsBBAC54Pxg/8ZWaZX1phGdwfe5mek27SOYpC0AxIDCSOdMeQ6G
+HPk38pywl1d+S+KmF/F4Tdi+kWro62O4eG2uc/T8JQuRDUhSjX0Qa51gPzJrUOVT
+CFyUkiZ/3ZDhtXkgfuso8ua2ChBgR9Ngr4v43tSqa9y6AK7v0qjxD1x+xMrjXQAR
+AQABiQFxBBgBCgAmAhsCFiEEWbIsWTn0HGXVtMFKpoJnbL9TvcYFAlsizTIFCQAN
+MRcAv7QgBBkBCgAdFiEEJcoVUVJIk5RWj1c/o62jUpRPICQFAlsiyxsACgkQo62j
+UpRPICQq5gQApoWIigZxXFoM0uw4uJBS5JFZtirTANvirZV5RhndwHeMN6JttaBS
+YnjyA4+n1D+zB2VqliD2QrsX12KJN6rGOehCtEIClQ1Hodo9nC6kMzzAwW1O8bZs
+nRJmXV+bsvD4sidLZLjdwOVa3Cxh6pvq4Uur6a7/UYx121hEY0Qx0s8JEKaCZ2y/
+U73GGi0D/i20VW8AWYAPACm2zMlzExKTOAV01YTQH/3vW0WLrOse53WcIVZga6es
+HuO4So0SOEAvxKMe5HpRIu2dJxTvd99Bo9xk9xJU0AoFrO0vNCRnL+5y68xMlODK
+lEw5/kl0jeaTBp6xX0HDQOEVOpPGUwWV4Ij2EnvfNDXaE1vK1kffiQFrBBgBCgAg
+AhsCFiEEWbIsWTn0HGXVtMFKpoJnbL9TvcYFAlsi0AYAv7QgBBkBCgAdFiEEJcoV
+UVJIk5RWj1c/o62jUpRPICQFAlsiyxsACgkQo62jUpRPICQq5gQApoWIigZxXFoM
+0uw4uJBS5JFZtirTANvirZV5RhndwHeMN6JttaBSYnjyA4+n1D+zB2VqliD2QrsX
+12KJN6rGOehCtEIClQ1Hodo9nC6kMzzAwW1O8bZsnRJmXV+bsvD4sidLZLjdwOVa
+3Cxh6pvq4Uur6a7/UYx121hEY0Qx0s8JEKaCZ2y/U73GRl0EAJokkXmy4zKDHWWi
+wvK9gi2gQgRkVnu2AiONxJb5vjeLhM/07BRmH6K1o+w3fOeEQp4FjXj1eQ5fPSM6
+Hhwx2CTl9SDnPSBMiKXsEFRkmwQ2AAsQZLmQZvKBkLZYeBiwf+IY621eYDhZfo+G
+1dh1WoUCyREZsJQg2YoIpWIcvw+a
+=bNRo
+-----END PGP PUBLIC KEY BLOCK-----
+`

@@ -86,7 +86,7 @@ func doMain() error {
 	case "386", "arm":
 		wordSize = 4
 	}
-	cfg.TypeChecker.Sizes = &types.StdSizes{
+	sizes := &types.StdSizes{
 		MaxAlign: 8,
 		WordSize: wordSize,
 	}
@@ -126,6 +126,9 @@ func doMain() error {
 	if len(initial) == 0 {
 		return fmt.Errorf("no packages")
 	}
+	if packages.PrintErrors(initial) > 0 {
+		return fmt.Errorf("packages contain errors")
+	}
 
 	// Create SSA-form program representation.
 	prog, pkgs := ssautil.Packages(initial, mode)
@@ -164,7 +167,7 @@ func doMain() error {
 		// Run first main package.
 		for _, main := range ssautil.MainPackages(pkgs) {
 			fmt.Fprintf(os.Stderr, "Running: %s\n", main.Pkg.Path())
-			os.Exit(interp.Interpret(main, interpMode, cfg.TypeChecker.Sizes, main.Pkg.Path(), args))
+			os.Exit(interp.Interpret(main, interpMode, sizes, main.Pkg.Path(), args))
 		}
 		return fmt.Errorf("no main package")
 	}

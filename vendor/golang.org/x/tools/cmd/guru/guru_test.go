@@ -35,6 +35,7 @@ import (
 	"go/token"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -48,6 +49,18 @@ import (
 
 	guru "golang.org/x/tools/cmd/guru"
 )
+
+func init() {
+	// This test currently requires GOPATH mode.
+	// Explicitly disabling module mode should suffix, but
+	// we'll also turn off GOPROXY just for good measure.
+	if err := os.Setenv("GO111MODULE", "off"); err != nil {
+		log.Fatal(err)
+	}
+	if err := os.Setenv("GOPROXY", "off"); err != nil {
+		log.Fatal(err)
+	}
+}
 
 var updateFlag = flag.Bool("update", false, "Update the golden files.")
 
@@ -266,11 +279,6 @@ func TestGuru(t *testing.T) {
 			if strings.HasSuffix(filename, "19.go") && !contains(build.Default.ReleaseTags, "go1.9") {
 				// TODO(adonovan): recombine the 'describe' and 'definition'
 				// tests once we drop support for go1.8.
-				t.Skip()
-			}
-			if filename == "testdata/src/referrers/main.go" && !contains(build.Default.ReleaseTags, "go1.11") {
-				// Disabling broken test on Go 1.9 and Go 1.10. https://golang.org/issue/24421
-				// TODO(gri,adonovan): fix this test.
 				t.Skip()
 			}
 

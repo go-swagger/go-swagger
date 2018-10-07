@@ -169,9 +169,10 @@ func (g *Generator) Run() error {
 		defer os.Remove(f.Name()) // will not remove after rename
 	}
 
-	cmd := exec.Command("go", "run", "-tags", g.BuildTags, path)
+	cmd := exec.Command("go", "run", "-tags", g.BuildTags, filepath.Base(path))
 	cmd.Stdout = f
 	cmd.Stderr = os.Stderr
+	cmd.Dir = filepath.Dir(path)
 	if err = cmd.Run(); err != nil {
 		return err
 	}

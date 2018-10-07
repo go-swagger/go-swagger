@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func makeDirStructure(t *testing.T, tgt string) (string, string, error) {
+func makeDirStructure(tgt string) (string, string, error) {
 	if tgt == "" {
 		tgt = "pkgpaths"
 	}
@@ -66,7 +66,7 @@ func makeDirStructure(t *testing.T, tgt string) (string, string, error) {
 }
 
 func TestFindPackage(t *testing.T) {
-	pth, pth2, err := makeDirStructure(t, "")
+	pth, pth2, err := makeDirStructure("")
 	if err != nil {
 		t.Fatal(err)
 	}

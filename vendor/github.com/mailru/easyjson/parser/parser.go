@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bytes"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -93,5 +94,5 @@ func (p *Parser) Parse(fname string, isDir bool) error {
 
 func getDefaultGoPath() (string, error) {
 	output, err := exec.Command("go", "env", "GOPATH").Output()
-	return strings.TrimSpace(string(output)), err
+	return string(bytes.TrimSpace(output)), err
 }

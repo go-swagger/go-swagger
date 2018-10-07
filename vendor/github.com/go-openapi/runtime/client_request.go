@@ -60,6 +60,10 @@ type ClientRequest interface {
 	GetPath() string
 
 	GetBody() []byte
+
+	GetBodyParam() interface{}
+
+	GetFileParam() map[string][]NamedReadCloser
 }
 
 // NamedReadCloser represents a named ReadCloser interface

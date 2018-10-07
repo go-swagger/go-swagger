@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. ../.env
+
+exec mongod $COMMONCOPTS \
+	--port 40103 \
+	--configsvr \
+	$CFG3OPTS \
+	--auth \
+	--keyFile=../../certs/keyfile

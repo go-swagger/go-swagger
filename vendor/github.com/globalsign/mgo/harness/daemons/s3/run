@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. ../.env
+
+exec mongos $COMMONSOPTS \
+	--port 40203 \
+	$MONGOS3OPTS \
+	--keyFile=../../certs/keyfile

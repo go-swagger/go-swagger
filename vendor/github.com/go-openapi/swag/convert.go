@@ -50,17 +50,21 @@ func IsFloat64AJSONInteger(f float64) bool {
 	return diff/math.Min(fa+ga, math.MaxFloat64) < epsilon
 }
 
-var evaluatesAsTrue = map[string]struct{}{
-	"true":     {},
-	"1":        {},
-	"yes":      {},
-	"ok":       {},
-	"y":        {},
-	"on":       {},
-	"selected": {},
-	"checked":  {},
-	"t":        {},
-	"enabled":  {},
+var evaluatesAsTrue map[string]struct{}
+
+func init() {
+	evaluatesAsTrue = map[string]struct{}{
+		"true":     {},
+		"1":        {},
+		"yes":      {},
+		"ok":       {},
+		"y":        {},
+		"on":       {},
+		"selected": {},
+		"checked":  {},
+		"t":        {},
+		"enabled":  {},
+	}
 }
 
 // ConvertBool turn a string into a boolean

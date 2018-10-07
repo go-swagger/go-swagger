@@ -431,6 +431,11 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"--unknown8=unknown8value",
 		"--boole",
 		"--unknown6",
+		"",
+		"-uuuuu",
+		"",
+		"--unknown10",
+		"--unknown11",
 	}
 	want := []string{
 		"boola", "true",

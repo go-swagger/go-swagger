@@ -19,7 +19,6 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-	"sync"
 	"testing"
 
 	"golang.org/x/tools/go/packages"
@@ -89,7 +88,7 @@ func TestLoadImportsGraph(t *testing.T) {
 
 	cfg := &packages.Config{
 		Mode: packages.LoadImports,
-		Env:  append(os.Environ(), "GOPATH="+tmp),
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "c", "subdir/d", "e")
 	if err != nil {
@@ -153,32 +152,8 @@ func TestLoadImportsGraph(t *testing.T) {
   subdir/d_test [subdir/d.test] -> subdir/d [subdir/d.test]
 `[1:]
 
-	// Legacy go list support does not create test main package.
-	wantOldGraph := `
-  a
-  b
-* c
-* e
-  errors
-  math/bits
-* subdir/d
-* subdir/d [subdir/d.test]
-* subdir/d_test [subdir/d.test]
-  unsafe
-  b -> a
-  b -> errors
-  c -> b
-  c -> unsafe
-  e -> b
-  e -> c
-  subdir/d [subdir/d.test] -> math/bits
-  subdir/d_test [subdir/d.test] -> subdir/d [subdir/d.test]
-`[1:]
-
-	if graph != wantGraph && !usesOldGolist {
+	if graph != wantGraph {
 		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
-	} else if graph != wantOldGraph && usesOldGolist {
-		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantOldGraph)
 	}
 
 	// Check node information: kind, name, srcs.
@@ -197,10 +172,6 @@ func TestLoadImportsGraph(t *testing.T) {
 		{"subdir/d.test", "main", "command", "0.go"},
 		{"unsafe", "unsafe", "package", ""},
 	} {
-		if usesOldGolist && test.id == "subdir/d.test" {
-			// Legacy go list support does not create test main package.
-			continue
-		}
 		p, ok := all[test.id]
 		if !ok {
 			t.Errorf("no package %s", test.id)
@@ -231,7 +202,7 @@ func TestLoadImportsGraph(t *testing.T) {
 		t.Errorf("failed to obtain metadata for ad-hoc package: %s", err)
 	} else {
 		got := fmt.Sprintf("%s %s", initial[0].ID, srcs(initial[0]))
-		if want := "command-line-arguments [c.go]"; got != want && !usesOldGolist {
+		if want := "command-line-arguments [c.go]"; got != want {
 			t.Errorf("oops: got %s, want %s", got, want)
 		}
 	}
@@ -262,29 +233,13 @@ func TestLoadImportsGraph(t *testing.T) {
   subdir/d_test [subdir/d.test] -> subdir/d [subdir/d.test]
 `[1:]
 
-		// Legacy go list support does not create test main package.
-		wantOldGraph = `
-  math/bits
-* subdir/d
-* subdir/d [subdir/d.test]
-* subdir/d_test [subdir/d.test]
-* subdir/e
-  subdir/d [subdir/d.test] -> math/bits
-  subdir/d_test [subdir/d.test] -> subdir/d [subdir/d.test]
-`[1:]
-		if graph != wantGraph && !usesOldGolist {
+		if graph != wantGraph {
 			t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
-		} else if graph != wantOldGraph && usesOldGolist {
-			t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantOldGraph)
 		}
 	}
 }
 
 func TestLoadImportsTestVariants(t *testing.T) {
-	if usesOldGolist {
-		t.Skip("not yet supported in pre-Go 1.10.4 golist fallback implementation")
-	}
-
 	tmp, cleanup := makeTree(t, map[string]string{
 		"src/a/a.go":       `package a; import _ "b"`,
 		"src/b/b.go":       `package b`,
@@ -295,7 +250,7 @@ func TestLoadImportsTestVariants(t *testing.T) {
 
 	cfg := &packages.Config{
 		Mode:  packages.LoadImports,
-		Env:   append(os.Environ(), "GOPATH="+tmp),
+		Env:   append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 		Tests: true,
 	}
 	initial, err := packages.Load(cfg, "a", "b")
@@ -327,48 +282,30 @@ func TestLoadImportsTestVariants(t *testing.T) {
 	}
 }
 
-func TestLoadImportsC(t *testing.T) {
-	// This test checks that when a package depends on the
-	// test variant of "syscall", "unsafe", or "runtime/cgo", that dependency
-	// is not removed when those packages are added when it imports "C".
-	//
-	// For this test to work, the external test of syscall must have a dependency
-	// on net, and net must import "syscall" and "C".
-	if runtime.GOOS == "windows" {
-		t.Skipf("skipping on windows; packages on windows do not satisfy conditions for test.")
-	}
-
-	if usesOldGolist {
-		t.Skip("not yet supported in pre-Go 1.10.4 golist fallback implementation")
-	}
+func TestLoadAbsolutePath(t *testing.T) {
+	tmp, cleanup := makeTree(t, map[string]string{
+		"gopatha/src/a/a.go": `package a`,
+		"gopathb/src/b/b.go": `package b`,
+	})
+	defer cleanup()
 
 	cfg := &packages.Config{
-		Mode:  packages.LoadImports,
-		Tests: true,
+		Mode: packages.LoadImports,
+		Env: append(os.Environ(),
+			"GOPATH="+filepath.Join(tmp, "gopatha")+string(filepath.ListSeparator)+filepath.Join(tmp, "gopathb"),
+			"GO111MODULE=off"),
 	}
-	initial, err := packages.Load(cfg, "syscall", "net")
+	initial, err := packages.Load(cfg, filepath.Join(tmp, "gopatha", "src", "a"), filepath.Join(tmp, "gopathb", "src", "b"))
 	if err != nil {
 		t.Fatalf("failed to load imports: %v", err)
 	}
 
-	_, all := importGraph(initial)
-
-	for _, test := range []struct {
-		pattern    string
-		wantImport string // an import to check for
-	}{
-		{"net", "syscall:syscall"},
-		{"net [syscall.test]", "syscall:syscall [syscall.test]"},
-		{"syscall_test [syscall.test]", "net:net [syscall.test]"},
-	} {
-		// Test the import paths.
-		pkg := all[test.pattern]
-		if pkg == nil {
-			t.Errorf("package %q not loaded", test.pattern)
-		}
-		if imports := strings.Join(imports(pkg), " "); !strings.Contains(imports, test.wantImport) {
-			t.Errorf("package %q: got \n%s, \nwant to have %s", test.pattern, imports, test.wantImport)
-		}
+	got := []string{}
+	for _, p := range initial {
+		got = append(got, p.ID)
+	}
+	if !reflect.DeepEqual(got, []string{"a", "b"}) {
+		t.Fatalf("initial packages loaded: got [%s], want [a b]", got)
 	}
 }
 
@@ -383,7 +320,7 @@ func TestVendorImports(t *testing.T) {
 
 	cfg := &packages.Config{
 		Mode: packages.LoadImports,
-		Env:  append(os.Environ(), "GOPATH="+tmp),
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "a", "c")
 	if err != nil {
@@ -443,39 +380,48 @@ func TestConfigDir(t *testing.T) {
 	defer cleanup()
 
 	for _, test := range []struct {
-		dir     string
-		pattern string
-		want    string // value of Name constant, or error
+		dir         string
+		pattern     string
+		want        string // value of Name constant
+		errContains string
 	}{
-		{"", "a", `"a"`},
-		{"", "b", `"b"`},
-		{"", "./a", "packages not found"},
-		{"", "./b", "packages not found"},
-		{filepath.Join(tmp, "/src"), "a", `"a"`},
-		{filepath.Join(tmp, "/src"), "b", `"b"`},
-		{filepath.Join(tmp, "/src"), "./a", `"a"`},
-		{filepath.Join(tmp, "/src"), "./b", `"b"`},
-		{filepath.Join(tmp, "/src/a"), "a", `"a"`},
-		{filepath.Join(tmp, "/src/a"), "b", `"b"`},
-		{filepath.Join(tmp, "/src/a"), "./a", "packages not found"},
-		{filepath.Join(tmp, "/src/a"), "./b", `"a/b"`},
+		{pattern: "a", want: `"a"`},
+		{pattern: "b", want: `"b"`},
+		{pattern: "./a", errContains: "cannot find"},
+		{pattern: "./b", errContains: "cannot find"},
+		{dir: filepath.Join(tmp, "/src"), pattern: "a", want: `"a"`},
+		{dir: filepath.Join(tmp, "/src"), pattern: "b", want: `"b"`},
+		{dir: filepath.Join(tmp, "/src"), pattern: "./a", want: `"a"`},
+		{dir: filepath.Join(tmp, "/src"), pattern: "./b", want: `"b"`},
+		{dir: filepath.Join(tmp, "/src/a"), pattern: "a", want: `"a"`},
+		{dir: filepath.Join(tmp, "/src/a"), pattern: "b", want: `"b"`},
+		{dir: filepath.Join(tmp, "/src/a"), pattern: "./a", errContains: "cannot find"},
+		{dir: filepath.Join(tmp, "/src/a"), pattern: "./b", want: `"a/b"`},
 	} {
 		cfg := &packages.Config{
 			Mode: packages.LoadSyntax, // Use LoadSyntax to ensure that files can be opened.
 			Dir:  test.dir,
-			Env:  append(os.Environ(), "GOPATH="+tmp),
+			Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 		}
 
 		initial, err := packages.Load(cfg, test.pattern)
-		var got string
+		var got, errMsg string
 		if err != nil {
-			got = err.Error()
-		} else {
-			got = constant(initial[0], "Name").Val().String()
+			errMsg = err.Error()
+		} else if len(initial) > 0 {
+			if len(initial[0].Errors) > 0 {
+				errMsg = initial[0].Errors[0].Error()
+			} else if c := constant(initial[0], "Name"); c != nil {
+				got = c.Val().String()
+			}
 		}
 		if got != test.want {
 			t.Errorf("dir %q, pattern %q: got %s, want %s",
 				test.dir, test.pattern, got, test.want)
+		}
+		if !strings.Contains(errMsg, test.errContains) {
+			t.Errorf("dir %q, pattern %q: error %s, want %s",
+				test.dir, test.pattern, errMsg, test.errContains)
 		}
 	}
 
@@ -515,9 +461,9 @@ package b`,
 		{`a`, []string{`-tags=tag tag2`}, "a.go b.go c.go d.go", "a.go b.go"},
 	} {
 		cfg := &packages.Config{
-			Mode:  packages.LoadImports,
-			Flags: test.tags,
-			Env:   append(os.Environ(), "GOPATH="+tmp),
+			Mode:       packages.LoadImports,
+			BuildFlags: test.tags,
+			Env:        append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 		}
 
 		initial, err := packages.Load(cfg, test.pattern)
@@ -542,17 +488,6 @@ package b`,
 	}
 }
 
-type errCollector struct {
-	mu     sync.Mutex
-	errors []error
-}
-
-func (ec *errCollector) add(err error) {
-	ec.mu.Lock()
-	ec.errors = append(ec.errors, err)
-	ec.mu.Unlock()
-}
-
 func TestLoadTypes(t *testing.T) {
 	// In LoadTypes and LoadSyntax modes, the compiler will
 	// fail to generate an export data file for c, because it has
@@ -567,9 +502,8 @@ func TestLoadTypes(t *testing.T) {
 	defer cleanup()
 
 	cfg := &packages.Config{
-		Mode:  packages.LoadTypes,
-		Env:   append(os.Environ(), "GOPATH="+tmp),
-		Error: func(error) {},
+		Mode: packages.LoadTypes,
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "a")
 	if err != nil {
@@ -634,9 +568,8 @@ func TestLoadSyntaxOK(t *testing.T) {
 	defer cleanup()
 
 	cfg := &packages.Config{
-		Mode:  packages.LoadSyntax,
-		Env:   append(os.Environ(), "GOPATH="+tmp),
-		Error: func(error) {},
+		Mode: packages.LoadSyntax,
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "a", "c")
 	if err != nil {
@@ -661,23 +594,24 @@ func TestLoadSyntaxOK(t *testing.T) {
 		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
 	}
 
-	// TODO(matloob): The legacy go list based support loads everything from source
-	// because it doesn't do a build and the .a files don't exist.
-	// Can we simulate its existence?
-
 	for _, test := range []struct {
-		id         string
-		wantSyntax bool
+		id           string
+		wantSyntax   bool
+		wantComplete bool
 	}{
-		{"a", true},  // source package
-		{"b", true},  // source package
-		{"c", true},  // source package
-		{"d", false}, // export data package
-		{"e", false}, // export data package
-		{"f", false}, // export data package
+		{"a", true, true},   // source package
+		{"b", true, true},   // source package
+		{"c", true, true},   // source package
+		{"d", false, true},  // export data package
+		{"e", false, false}, // export data package
+		{"f", false, false}, // export data package
 	} {
-		if usesOldGolist && !test.wantSyntax {
-			// legacy go list always upgrades to LoadAllSyntax, syntax will be filled in.
+		// TODO(matloob): The legacy go list based support loads
+		// everything from source because it doesn't do a build
+		// and the .a files don't exist.
+		// Can we simulate its existence?
+		if usesOldGolist {
+			test.wantComplete = true
 			test.wantSyntax = true
 		}
 		p := all[test.id]
@@ -688,8 +622,12 @@ func TestLoadSyntaxOK(t *testing.T) {
 		if p.Types == nil {
 			t.Errorf("missing types.Package for %s", p)
 			continue
-		} else if !p.Types.Complete() {
-			t.Errorf("incomplete types.Package for %s", p)
+		} else if p.Types.Complete() != test.wantComplete {
+			if test.wantComplete {
+				t.Errorf("incomplete types.Package for %s", p)
+			} else {
+				t.Errorf("unexpected complete types.Package for %s", p)
+			}
 		}
 		if (p.Syntax != nil) != test.wantSyntax {
 			if test.wantSyntax {
@@ -710,6 +648,46 @@ func TestLoadSyntaxOK(t *testing.T) {
 	}
 }
 
+func TestLoadDiamondTypes(t *testing.T) {
+	// We make a diamond dependency and check the type d.D is the same through both paths
+	tmp, cleanup := makeTree(t, map[string]string{
+		"src/a/a.go": `package a; import ("b"; "c"); var _ = b.B == c.C`,
+		"src/b/b.go": `package b; import "d"; var B d.D`,
+		"src/c/c.go": `package c; import "d"; var C d.D`,
+		"src/d/d.go": `package d; type D int`,
+	})
+	defer cleanup()
+
+	cfg := &packages.Config{
+		Mode: packages.LoadSyntax,
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
+	}
+	initial, err := packages.Load(cfg, "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	packages.Visit(initial, nil, func(pkg *packages.Package) {
+		for _, err := range pkg.Errors {
+			t.Errorf("package %s: %v", pkg.ID, err)
+		}
+	})
+
+	graph, _ := importGraph(initial)
+	wantGraph := `
+* a
+  b
+  c
+  d
+  a -> b
+  a -> c
+  b -> d
+  c -> d
+`[1:]
+	if graph != wantGraph {
+		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
+	}
+}
+
 func TestLoadSyntaxError(t *testing.T) {
 	// A type error in a lower-level package (e) prevents go list
 	// from producing export data for all packages that depend on it
@@ -726,9 +704,8 @@ func TestLoadSyntaxError(t *testing.T) {
 	defer cleanup()
 
 	cfg := &packages.Config{
-		Mode:  packages.LoadSyntax,
-		Env:   append(os.Environ(), "GOPATH="+tmp),
-		Error: func(error) {},
+		Mode: packages.LoadSyntax,
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "a", "c")
 	if err != nil {
@@ -736,18 +713,9 @@ func TestLoadSyntaxError(t *testing.T) {
 	}
 
 	all := make(map[string]*packages.Package)
-	var visit func(p *packages.Package)
-	visit = func(p *packages.Package) {
-		if all[p.ID] == nil {
-			all[p.ID] = p
-			for _, imp := range p.Imports {
-				visit(imp)
-			}
-		}
-	}
-	for _, p := range initial {
-		visit(p)
-	}
+	packages.Visit(initial, nil, func(p *packages.Package) {
+		all[p.ID] = p
+	})
 
 	for _, test := range []struct {
 		id           string
@@ -831,11 +799,9 @@ func TestLoadAllSyntaxOverlay(t *testing.T) {
 				return parser.ParseFile(fset, filename, src, mode)
 			}
 		}
-		var errs errCollector
 		cfg := &packages.Config{
 			Mode:      packages.LoadAllSyntax,
-			Env:       append(os.Environ(), "GOPATH="+tmp),
-			Error:     errs.add,
+			Env:       append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 			ParseFile: parseFile,
 		}
 		initial, err := packages.Load(cfg, "a")
@@ -851,7 +817,12 @@ func TestLoadAllSyntaxOverlay(t *testing.T) {
 			t.Errorf("%d. a.A: got %s, want %s", i, got, test.want)
 		}
 
-		if errs := errorMessages(errs.errors); !reflect.DeepEqual(errs, test.wantErrs) {
+		// Check errors.
+		var errors []packages.Error
+		packages.Visit(initial, nil, func(pkg *packages.Package) {
+			errors = append(errors, pkg.Errors...)
+		})
+		if errs := errorMessages(errors); !reflect.DeepEqual(errs, test.wantErrs) {
 			t.Errorf("%d. got errors %s, want %s", i, errs, test.wantErrs)
 		}
 	}
@@ -860,10 +831,6 @@ func TestLoadAllSyntaxOverlay(t *testing.T) {
 func TestLoadAllSyntaxImportErrors(t *testing.T) {
 	// TODO(matloob): Remove this once go list -e -compiled is fixed. See golang.org/issue/26755
 	t.Skip("go list -compiled -e fails with non-zero exit status for empty packages")
-
-	if usesOldGolist {
-		t.Skip("not yet supported in pre-Go 1.10.4 golist fallback implementation")
-	}
 
 	tmp, cleanup := makeTree(t, map[string]string{
 		"src/unicycle/unicycle.go": `package unicycle; import _ "unicycle"`,
@@ -883,11 +850,9 @@ import (
 
 	os.Mkdir(filepath.Join(tmp, "src/empty"), 0777) // create an existing but empty package
 
-	var errs2 errCollector
 	cfg := &packages.Config{
-		Mode:  packages.LoadAllSyntax,
-		Env:   append(os.Environ(), "GOPATH="+tmp),
-		Error: errs2.add,
+		Mode: packages.LoadAllSyntax,
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "root")
 	if err != nil {
@@ -998,7 +963,7 @@ func TestAbsoluteFilenames(t *testing.T) {
 		cfg := &packages.Config{
 			Mode: packages.LoadFiles,
 			Dir:  filepath.Join(tmp, "src"),
-			Env:  append(os.Environ(), "GOPATH="+tmp),
+			Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 		}
 		pkgs, err := packages.Load(cfg, test.pattern)
 		if err != nil {
@@ -1034,7 +999,7 @@ func TestContains(t *testing.T) {
 	cfg := &packages.Config{
 		Mode: packages.LoadImports,
 		Dir:  tmp,
-		Env:  append(os.Environ(), "GOPATH="+tmp),
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "contains:src/b/b.go")
 	if err != nil {
@@ -1066,7 +1031,7 @@ func TestContains_FallbackSticks(t *testing.T) {
 	cfg := &packages.Config{
 		Mode: packages.LoadImports,
 		Dir:  tmp,
-		Env:  append(os.Environ(), "GOPATH="+tmp),
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "a", "contains:src/b/b.go")
 	if err != nil {
@@ -1098,36 +1063,27 @@ func TestJSON(t *testing.T) {
 
 	cfg := &packages.Config{
 		Mode: packages.LoadImports,
-		Env:  append(os.Environ(), "GOPATH="+tmp),
+		Env:  append(os.Environ(), "GOPATH="+tmp, "GO111MODULE=off"),
 	}
 	initial, err := packages.Load(cfg, "c", "d")
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Visit and print all packages.
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	enc.SetIndent("", "\t")
-	seen := make(map[string]bool)
-	var visit func(*packages.Package)
-	visit = func(pkg *packages.Package) {
-		if seen[pkg.ID] {
-			return
-		}
-		seen[pkg.ID] = true
+	packages.Visit(initial, nil, func(pkg *packages.Package) {
 		// trim the source lists for stable results
 		pkg.GoFiles = cleanPaths(pkg.GoFiles)
 		pkg.CompiledGoFiles = cleanPaths(pkg.CompiledGoFiles)
 		pkg.OtherFiles = cleanPaths(pkg.OtherFiles)
-		for _, ipkg := range pkg.Imports {
-			visit(ipkg)
-		}
 		if err := enc.Encode(pkg); err != nil {
 			t.Fatal(err)
 		}
-	}
-	for _, pkg := range initial {
-		visit(pkg)
-	}
+	})
+
 	wantJSON := `
 {
 	"ID": "a",
@@ -1245,17 +1201,93 @@ func TestJSON(t *testing.T) {
 	}
 }
 
-func errorMessages(errors []error) []string {
+func TestConfigDefaultEnv(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// TODO(jayconrod): write an equivalent batch script for windows.
+		// Hint: "type" can be used to read a file to stdout.
+		t.Skip("test requires sh")
+	}
+	tmp, cleanup := makeTree(t, map[string]string{
+		"bin/gopackagesdriver": `#!/bin/sh
+
+cat - <<'EOF'
+{
+  "Roots": ["gopackagesdriver"],
+  "Packages": [{"ID": "gopackagesdriver", "Name": "gopackagesdriver"}]
+}
+EOF
+`,
+		"src/golist/golist.go": "package golist",
+	})
+	defer cleanup()
+	if err := os.Chmod(filepath.Join(tmp, "bin", "gopackagesdriver"), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	path, ok := os.LookupEnv("PATH")
+	var pathWithDriver string
+	if ok {
+		pathWithDriver = filepath.Join(tmp, "bin") + string(os.PathListSeparator) + path
+	} else {
+		pathWithDriver = filepath.Join(tmp, "bin")
+	}
+
+	for _, test := range []struct {
+		desc    string
+		env     []string
+		wantIDs string
+	}{
+		{
+			desc:    "driver_off",
+			env:     []string{"PATH", pathWithDriver, "GOPATH", tmp, "GOPACKAGESDRIVER", "off"},
+			wantIDs: "[golist]",
+		}, {
+			desc:    "driver_unset",
+			env:     []string{"PATH", pathWithDriver, "GOPATH", "", "GOPACKAGESDRIVER", ""},
+			wantIDs: "[gopackagesdriver]",
+		}, {
+			desc:    "driver_set",
+			env:     []string{"GOPACKAGESDRIVER", filepath.Join(tmp, "bin", "gopackagesdriver")},
+			wantIDs: "[gopackagesdriver]",
+		},
+	} {
+		t.Run(test.desc, func(t *testing.T) {
+			for i := 0; i < len(test.env); i += 2 {
+				key, value := test.env[i], test.env[i+1]
+				old, ok := os.LookupEnv(key)
+				if value == "" {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+				if ok {
+					defer os.Setenv(key, old)
+				} else {
+					defer os.Unsetenv(key)
+				}
+			}
+
+			pkgs, err := packages.Load(nil, "golist")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			gotIds := make([]string, len(pkgs))
+			for i, pkg := range pkgs {
+				gotIds[i] = pkg.ID
+			}
+			if fmt.Sprint(pkgs) != test.wantIDs {
+				t.Errorf("got %v; want %v", gotIds, test.wantIDs)
+			}
+		})
+	}
+}
+
+func errorMessages(errors []packages.Error) []string {
 	var msgs []string
 	for _, err := range errors {
-		msg := err.Error()
-		// Strip off /tmp filename.
-		if i := strings.Index(msg, ": "); i >= 0 {
-			msg = msg[i+len(": "):]
-		}
-		msgs = append(msgs, msg)
+		msgs = append(msgs, err.Msg)
 	}
-	sort.Strings(msgs)
 	return msgs
 }
 
@@ -1288,8 +1320,8 @@ func importGraph(initial []*packages.Package) (string, map[string]*packages.Pack
 		initialSet[p] = true
 	}
 
-	// We can't use packages.All because
-	// we need to prune the traversal.
+	// We can't use Visit because we need to prune
+	// the traversal of specific edges, not just nodes.
 	var nodes, edges []string
 	res := make(map[string]*packages.Package)
 	seen := make(map[*packages.Package]bool)
@@ -1378,5 +1410,9 @@ func makeTree(t *testing.T, tree map[string]string) (dir string, cleanup func())
 }
 
 func constant(p *packages.Package, name string) *types.Const {
-	return p.Types.Scope().Lookup(name).(*types.Const)
+	c := p.Types.Scope().Lookup(name)
+	if c == nil {
+		return nil
+	}
+	return c.(*types.Const)
 }

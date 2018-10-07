@@ -23,7 +23,7 @@
 //	godoc crypto/block Cipher NewCMAC
 //		- prints doc for Cipher and NewCMAC in package crypto/block
 
-// +build !appengine
+// +build !golangorg
 
 package main
 
@@ -182,6 +182,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "missing args.")
 		usage()
 	}
+
+	// Setting the resolved goroot.
+	vfs.GOROOT = *goroot
 
 	var fsGate chan bool
 	fsGate = make(chan bool, 20)

@@ -21,6 +21,7 @@ import (
 	"text/template"
 
 	"golang.org/x/tools/godoc"
+	"golang.org/x/tools/godoc/env"
 	"golang.org/x/tools/godoc/redirect"
 	"golang.org/x/tools/godoc/vfs"
 )
@@ -29,8 +30,6 @@ var (
 	pres *godoc.Presentation
 	fs   = vfs.NameSpace{}
 )
-
-var enforceHosts = false // set true in production on app engine
 
 // hostEnforcerHandler redirects requests to "http://foo.golang.org/bar"
 // to "https://golang.org/bar".
@@ -41,11 +40,11 @@ type hostEnforcerHandler struct {
 }
 
 func (h hostEnforcerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if !enforceHosts {
+	if !env.EnforceHosts() {
 		h.h.ServeHTTP(w, r)
 		return
 	}
-	if r.TLS == nil || !h.validHost(r.Host) {
+	if !h.isHTTPS(r) || !h.validHost(r.Host) {
 		r.URL.Scheme = "https"
 		if h.validHost(r.Host) {
 			r.URL.Host = r.Host
@@ -59,9 +58,17 @@ func (h hostEnforcerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.h.ServeHTTP(w, r)
 }
 
+func (h hostEnforcerHandler) isHTTPS(r *http.Request) bool {
+	return r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
+}
+
 func (h hostEnforcerHandler) validHost(host string) bool {
 	switch strings.ToLower(host) {
-	case "golang.org", "godoc-test.golang.org", "golang.google.cn":
+	case "golang.org", "golang.google.cn":
+		return true
+	}
+	if strings.HasSuffix(host, "-dot-golang-org.appspot.com") {
+		// staging/test
 		return true
 	}
 	return false

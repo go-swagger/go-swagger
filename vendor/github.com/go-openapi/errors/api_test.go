@@ -23,6 +23,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type customError struct {
+	apiError
+}
+
 func TestServeError(t *testing.T) {
 	// method not allowed wins
 	// err abides by the Error interface
@@ -49,6 +53,20 @@ func TestServeError(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
 	// assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
 	assert.Equal(t, `{"code":601,"message":"someType is an invalid type name"}`, recorder.Body.String())
+
+	// same, but override DefaultHTTPCode
+	func() {
+		oldDefaultHTTPCode := DefaultHTTPCode
+		defer func() { DefaultHTTPCode = oldDefaultHTTPCode }()
+		DefaultHTTPCode = http.StatusBadRequest
+
+		err = InvalidTypeName("someType")
+		recorder = httptest.NewRecorder()
+		ServeError(recorder, nil, err)
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+		// assert.Equal(t, "application/json", recorder.Header().Get("content-type"))
+		assert.Equal(t, `{"code":601,"message":"someType is an invalid type name"}`, recorder.Body.String())
+	}()
 
 	// defaults to internal server error
 	simpleErr := fmt.Errorf("some error")
@@ -116,6 +134,12 @@ func TestServeError(t *testing.T) {
 	// check guard against nil type
 	recorder = httptest.NewRecorder()
 	ServeError(recorder, nil, nil)
+	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	assert.Equal(t, `{"code":500,"message":"Unknown error"}`, recorder.Body.String())
+
+	recorder = httptest.NewRecorder()
+	var z *customError
+	ServeError(recorder, nil, z)
 	assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 	assert.Equal(t, `{"code":500,"message":"Unknown error"}`, recorder.Body.String())
 }

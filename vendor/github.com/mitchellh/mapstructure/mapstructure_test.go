@@ -23,6 +23,20 @@ type Basic struct {
 	VjsonNumber json.Number
 }
 
+type BasicPointer struct {
+	Vstring     *string
+	Vint        *int
+	Vuint       *uint
+	Vbool       *bool
+	Vfloat      *float64
+	Vextra      *string
+	vsilent     *bool
+	Vdata       *interface{}
+	VjsonInt    *int
+	VjsonFloat  *float64
+	VjsonNumber *json.Number
+}
+
 type BasicSquash struct {
 	Test Basic `mapstructure:",squash"`
 }
@@ -83,13 +97,26 @@ type NilInterface struct {
 	W io.Writer
 }
 
+type NilPointer struct {
+	Value *string
+}
+
 type Slice struct {
 	Vfoo string
 	Vbar []string
 }
 
+type SliceOfAlias struct {
+	Vfoo string
+	Vbar SliceAlias
+}
+
 type SliceOfStruct struct {
 	Value []Basic
+}
+
+type SlicePointer struct {
+	Vbar *[]string
 }
 
 type Array struct {
@@ -624,6 +651,43 @@ func TestDecode_NilInterfaceHook(t *testing.T) {
 
 	if result.W != nil {
 		t.Errorf("W should be nil: %#v", result.W)
+	}
+}
+
+func TestDecode_NilPointerHook(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"value": "",
+	}
+
+	decodeHook := func(f, t reflect.Type, v interface{}) (interface{}, error) {
+		if typed, ok := v.(string); ok {
+			if typed == "" {
+				return nil, nil
+			}
+		}
+		return v, nil
+	}
+
+	var result NilPointer
+	config := &DecoderConfig{
+		DecodeHook: decodeHook,
+		Result:     &result,
+	}
+
+	decoder, err := NewDecoder(config)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	err = decoder.Decode(input)
+	if err != nil {
+		t.Fatalf("got an err: %s", err)
+	}
+
+	if result.Value != nil {
+		t.Errorf("W should be nil: %#v", result.Value)
 	}
 }
 
@@ -1290,8 +1354,14 @@ func TestArrayToMap(t *testing.T) {
 	}
 }
 
-func TestMapOutputForStructuredInputs(t *testing.T) {
+func TestDecodeTable(t *testing.T) {
 	t.Parallel()
+
+	// We need to make new types so that we don't get the short-circuit
+	// copy functionality. We want to test the deep copying functionality.
+	type BasicCopy Basic
+	type NestedPointerCopy NestedPointer
+	type MapCopy Map
 
 	tests := []struct {
 		name    string
@@ -1360,6 +1430,101 @@ func TestMapOutputForStructuredInputs(t *testing.T) {
 			},
 			false,
 		},
+		{
+			"struct => struct",
+			&Basic{
+				Vstring: "vstring",
+				Vint:    2,
+				Vuint:   3,
+				Vbool:   true,
+				Vfloat:  4.56,
+				Vextra:  "vextra",
+				Vdata:   []byte("data"),
+				vsilent: true,
+			},
+			&BasicCopy{},
+			&BasicCopy{
+				Vstring: "vstring",
+				Vint:    2,
+				Vuint:   3,
+				Vbool:   true,
+				Vfloat:  4.56,
+				Vextra:  "vextra",
+				Vdata:   []byte("data"),
+			},
+			false,
+		},
+		{
+			"struct => struct with pointers",
+			&NestedPointer{
+				Vfoo: "hello",
+				Vbar: nil,
+			},
+			&NestedPointerCopy{},
+			&NestedPointerCopy{
+				Vfoo: "hello",
+			},
+			false,
+		},
+		{
+			"basic pointer to non-pointer",
+			&BasicPointer{
+				Vstring: stringPtr("vstring"),
+				Vint:    intPtr(2),
+				Vuint:   uintPtr(3),
+				Vbool:   boolPtr(true),
+				Vfloat:  floatPtr(4.56),
+				Vdata:   interfacePtr([]byte("data")),
+			},
+			&Basic{},
+			&Basic{
+				Vstring: "vstring",
+				Vint:    2,
+				Vuint:   3,
+				Vbool:   true,
+				Vfloat:  4.56,
+				Vdata:   []byte("data"),
+			},
+			false,
+		},
+		{
+			"slice non-pointer to pointer",
+			&Slice{},
+			&SlicePointer{},
+			&SlicePointer{},
+			false,
+		},
+		{
+			"slice non-pointer to pointer, zero field",
+			&Slice{},
+			&SlicePointer{
+				Vbar: &[]string{"yo"},
+			},
+			&SlicePointer{},
+			false,
+		},
+		{
+			"slice to slice alias",
+			&Slice{},
+			&SliceOfAlias{},
+			&SliceOfAlias{},
+			false,
+		},
+		{
+			"nil map to map",
+			&Map{},
+			&MapCopy{},
+			&MapCopy{},
+			false,
+		},
+		{
+			"nil map to non-empty map",
+			&Map{},
+			&MapCopy{Vother: map[string]string{"foo": "bar"}},
+			&MapCopy{},
+			false,
+		},
+
 		{
 			"slice input - should error",
 			[]string{"foo", "bar"},
@@ -1805,3 +1970,10 @@ func testArrayInput(t *testing.T, input map[string]interface{}, expected *Array)
 		}
 	}
 }
+
+func stringPtr(v string) *string              { return &v }
+func intPtr(v int) *int                       { return &v }
+func uintPtr(v uint) *uint                    { return &v }
+func boolPtr(v bool) *bool                    { return &v }
+func floatPtr(v float64) *float64             { return &v }
+func interfacePtr(v interface{}) *interface{} { return &v }

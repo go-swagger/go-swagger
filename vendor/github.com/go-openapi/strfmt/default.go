@@ -23,10 +23,9 @@ import (
 	"strings"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/globalsign/mgo/bson"
 	"github.com/mailru/easyjson/jlexer"
 	"github.com/mailru/easyjson/jwriter"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (

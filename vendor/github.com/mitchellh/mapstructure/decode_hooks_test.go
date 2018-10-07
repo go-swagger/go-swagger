@@ -2,6 +2,7 @@ package mapstructure
 
 import (
 	"errors"
+	"net"
 	"reflect"
 	"testing"
 	"time"
@@ -171,6 +172,69 @@ func TestStringToTimeHookFunc(t *testing.T) {
 
 	for i, tc := range cases {
 		f := StringToTimeHookFunc(tc.layout)
+		actual, err := DecodeHookExec(f, tc.f, tc.t, tc.data)
+		if tc.err != (err != nil) {
+			t.Fatalf("case %d: expected err %#v", i, tc.err)
+		}
+		if !reflect.DeepEqual(actual, tc.result) {
+			t.Fatalf(
+				"case %d: expected %#v, got %#v",
+				i, tc.result, actual)
+		}
+	}
+}
+
+func TestStringToIPHookFunc(t *testing.T) {
+	strType := reflect.TypeOf("")
+	ipType := reflect.TypeOf(net.IP{})
+	cases := []struct {
+		f, t   reflect.Type
+		data   interface{}
+		result interface{}
+		err    bool
+	}{
+		{strType, ipType, "1.2.3.4",
+			net.IPv4(0x01, 0x02, 0x03, 0x04), false},
+		{strType, ipType, "5", net.IP{}, true},
+		{strType, strType, "5", "5", false},
+	}
+
+	for i, tc := range cases {
+		f := StringToIPHookFunc()
+		actual, err := DecodeHookExec(f, tc.f, tc.t, tc.data)
+		if tc.err != (err != nil) {
+			t.Fatalf("case %d: expected err %#v", i, tc.err)
+		}
+		if !reflect.DeepEqual(actual, tc.result) {
+			t.Fatalf(
+				"case %d: expected %#v, got %#v",
+				i, tc.result, actual)
+		}
+	}
+}
+
+func TestStringToIPNetHookFunc(t *testing.T) {
+	strType := reflect.TypeOf("")
+	ipNetType := reflect.TypeOf(net.IPNet{})
+	var nilNet *net.IPNet = nil
+
+	cases := []struct {
+		f, t   reflect.Type
+		data   interface{}
+		result interface{}
+		err    bool
+	}{
+		{strType, ipNetType, "1.2.3.4/24",
+			&net.IPNet{
+				IP:   net.IP{0x01, 0x02, 0x03, 0x00},
+				Mask: net.IPv4Mask(0xff, 0xff, 0xff, 0x00),
+			}, false},
+		{strType, ipNetType, "5", nilNet, true},
+		{strType, strType, "5", "5", false},
+	}
+
+	for i, tc := range cases {
+		f := StringToIPNetHookFunc()
 		actual, err := DecodeHookExec(f, tc.f, tc.t, tc.data)
 		if tc.err != (err != nil) {
 			t.Fatalf("case %d: expected err %#v", i, tc.err)

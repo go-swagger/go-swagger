@@ -17,9 +17,9 @@ package strfmt
 import (
 	"testing"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func testValid(t *testing.T, name, value string) {

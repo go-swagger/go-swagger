@@ -28,8 +28,6 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"crypto/x509"
 	"encoding/pem"
 
@@ -607,7 +605,6 @@ func TestRuntime_ContentTypeCanary(t *testing.T) {
 
 	hu, _ := url.Parse(server.URL)
 	rt := New(hu.Host, "/", []string{"http"})
-	rt.do = nil
 	res, err := rt.Submit(&runtime.ClientOperation{
 		ID:          "getTasks",
 		Method:      "GET",
@@ -730,6 +727,18 @@ func TestRuntime_OverrideClient(t *testing.T) {
 	assert.Equal(t, 0, i)
 }
 
+type overrideRoundTripper struct {
+	overriden bool
+}
+
+func (o *overrideRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	o.overriden = true
+	res := new(http.Response)
+	res.StatusCode = 200
+	res.Body = ioutil.NopCloser(bytes.NewBufferString("OK"))
+	return res, nil
+}
+
 func TestRuntime_OverrideClientOperation(t *testing.T) {
 	client := &http.Client{}
 	rt := NewWithClient("", "/", []string{"https"}, client)
@@ -738,17 +747,9 @@ func TestRuntime_OverrideClientOperation(t *testing.T) {
 	assert.Equal(t, client, rt.client)
 	assert.Equal(t, 0, i)
 
-	var seen *http.Client
-	rt.do = func(_ context.Context, cl *http.Client, _ *http.Request) (*http.Response, error) {
-		seen = cl
-		res := new(http.Response)
-		res.StatusCode = 200
-		res.Body = ioutil.NopCloser(bytes.NewBufferString("OK"))
-		return res, nil
-	}
-
 	client2 := new(http.Client)
-	client2.Timeout = 3 * time.Second
+	var transport = &overrideRoundTripper{}
+	client2.Transport = transport
 	if assert.NotEqual(t, client, client2) {
 		_, err := rt.Submit(&runtime.ClientOperation{
 			Client: client2,
@@ -760,8 +761,7 @@ func TestRuntime_OverrideClientOperation(t *testing.T) {
 			}),
 		})
 		if assert.NoError(t, err) {
-
-			assert.Equal(t, client2, seen)
+			assert.True(t, transport.overriden)
 		}
 	}
 }

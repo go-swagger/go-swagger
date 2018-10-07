@@ -370,3 +370,91 @@ func TestNextSquashMapstructure(t *testing.T) {
 		t.Fatal("value should be baz")
 	}
 }
+
+type ImplementsInterfacePointerReceiver struct {
+	Name string
+}
+
+func (i *ImplementsInterfacePointerReceiver) DoStuff() {}
+
+type ImplementsInterfaceValueReceiver string
+
+func (i ImplementsInterfaceValueReceiver) DoStuff() {}
+
+// GH-140 Type error when using DecodeHook to decode into interface
+func TestDecode_DecodeHookInterface(t *testing.T) {
+	t.Parallel()
+
+	type Interface interface {
+		DoStuff()
+	}
+	type DecodeIntoInterface struct {
+		Test Interface
+	}
+
+	testData := map[string]string{"test": "test"}
+
+	stringToPointerInterfaceDecodeHook := func(from, to reflect.Type, data interface{}) (interface{}, error) {
+		if from.Kind() != reflect.String {
+			return data, nil
+		}
+
+		if to != reflect.TypeOf((*Interface)(nil)).Elem() {
+			return data, nil
+		}
+		// Ensure interface is satisfied
+		var impl Interface = &ImplementsInterfacePointerReceiver{data.(string)}
+		return impl, nil
+	}
+
+	stringToValueInterfaceDecodeHook := func(from, to reflect.Type, data interface{}) (interface{}, error) {
+		if from.Kind() != reflect.String {
+			return data, nil
+		}
+
+		if to != reflect.TypeOf((*Interface)(nil)).Elem() {
+			return data, nil
+		}
+		// Ensure interface is satisfied
+		var impl Interface = ImplementsInterfaceValueReceiver(data.(string))
+		return impl, nil
+	}
+
+	{
+		decodeInto := new(DecodeIntoInterface)
+
+		decoder, _ := NewDecoder(&DecoderConfig{
+			DecodeHook: stringToPointerInterfaceDecodeHook,
+			Result:     decodeInto,
+		})
+
+		err := decoder.Decode(testData)
+		if err != nil {
+			t.Fatalf("Decode returned error: %s", err)
+		}
+
+		expected := &ImplementsInterfacePointerReceiver{"test"}
+		if !reflect.DeepEqual(decodeInto.Test, expected) {
+			t.Fatalf("expected: %#v (%T), got: %#v (%T)", decodeInto.Test, decodeInto.Test, expected, expected)
+		}
+	}
+
+	{
+		decodeInto := new(DecodeIntoInterface)
+
+		decoder, _ := NewDecoder(&DecoderConfig{
+			DecodeHook: stringToValueInterfaceDecodeHook,
+			Result:     decodeInto,
+		})
+
+		err := decoder.Decode(testData)
+		if err != nil {
+			t.Fatalf("Decode returned error: %s", err)
+		}
+
+		expected := ImplementsInterfaceValueReceiver("test")
+		if !reflect.DeepEqual(decodeInto.Test, expected) {
+			t.Fatalf("expected: %#v (%T), got: %#v (%T)", decodeInto.Test, decodeInto.Test, expected, expected)
+		}
+	}
+}

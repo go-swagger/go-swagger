@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// findExternalTool returns the file path of a tool that supplies supplies
+// findExternalTool returns the file path of a tool that supplies
 // the build system package structure, or "" if not found."
 // If GOPACKAGESDRIVER is set in the environment findExternalTool returns its
 // value, otherwise it searches for a binary named gopackagesdriver on the PATH.
@@ -46,8 +46,8 @@ func findExternalDriver(cfg *Config) driver {
 			fmt.Sprintf("-export=%t", usesExportData(cfg)),
 			fmt.Sprintf("-deps=%t", cfg.Mode >= LoadImports),
 		}
-		for _, f := range cfg.Flags {
-			fullargs = append(fullargs, fmt.Sprintf("-flags=%v", f))
+		for _, f := range cfg.BuildFlags {
+			fullargs = append(fullargs, fmt.Sprintf("-buildflag=%v", f))
 		}
 		fullargs = append(fullargs, "--")
 		fullargs = append(fullargs, words...)

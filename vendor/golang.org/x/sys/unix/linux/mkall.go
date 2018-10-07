@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // linux/mkall.go - Generates all Linux zsysnum, zsyscall, zerror, and ztype
-// files for all 11 linux architectures supported by the go compiler. See
+// files for all Linux architectures supported by the go compiler. See
 // README.md for more information about the build system.
 
 // To run it you must have a git checkout of the Linux kernel and glibc. Once
@@ -52,7 +52,7 @@ type target struct {
 	Bits       int
 }
 
-// List of the 11 Linux targets supported by the go compiler. sparc64 is not
+// List of all Linux targets supported by the go compiler. sparc64 is not
 // currently supported, though a port is in progress.
 var targets = []target{
 	{
@@ -117,6 +117,12 @@ var targets = []target{
 		GoArch:    "ppc64le",
 		LinuxArch: "powerpc",
 		GNUArch:   "powerpc64le-linux-gnu",
+		Bits:      64,
+	},
+	{
+		GoArch:    "riscv64",
+		LinuxArch: "riscv",
+		GNUArch:   "riscv64-linux-gnu",
 		Bits:      64,
 	},
 	{
@@ -255,6 +261,10 @@ func (t *target) generateFiles() error {
 		qemuArchName := t.GNUArch[:strings.Index(t.GNUArch, "-")]
 		if t.LinuxArch == "powerpc" {
 			qemuArchName = t.GoArch
+		}
+		// Fake uname for QEMU to allow running on Host kernel version < 4.15
+		if t.LinuxArch == "riscv" {
+			os.Setenv("QEMU_UNAME", "4.15")
 		}
 		os.Setenv("GORUN", "qemu-"+qemuArchName)
 	} else {

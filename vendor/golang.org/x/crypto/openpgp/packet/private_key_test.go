@@ -14,7 +14,6 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"hash"
-	"io"
 	"testing"
 	"time"
 )
@@ -162,15 +161,7 @@ func TestECDSAPrivateKey(t *testing.T) {
 }
 
 type rsaSigner struct {
-	priv *rsa.PrivateKey
-}
-
-func (s *rsaSigner) Public() crypto.PublicKey {
-	return s.priv.PublicKey
-}
-
-func (s *rsaSigner) Sign(rand io.Reader, msg []byte, opts crypto.SignerOpts) ([]byte, error) {
-	return s.priv.Sign(rand, msg, opts)
+	*rsa.PrivateKey
 }
 
 func TestRSASignerPrivateKey(t *testing.T) {
@@ -208,15 +199,7 @@ func TestRSASignerPrivateKey(t *testing.T) {
 }
 
 type ecdsaSigner struct {
-	priv *ecdsa.PrivateKey
-}
-
-func (s *ecdsaSigner) Public() crypto.PublicKey {
-	return s.priv.PublicKey
-}
-
-func (s *ecdsaSigner) Sign(rand io.Reader, msg []byte, opts crypto.SignerOpts) ([]byte, error) {
-	return s.priv.Sign(rand, msg, opts)
+	*ecdsa.PrivateKey
 }
 
 func TestECDSASignerPrivateKey(t *testing.T) {
