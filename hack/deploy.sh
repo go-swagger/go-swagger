@@ -31,7 +31,7 @@ upload_to_github() {
   sha1sum * > sha1sum.txt
   sha256sum * > sha256sum.txt
 
-  github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -d "$(cat $prjdir/notes/v${CIRCLE_TAG}.md)"
+  github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -d "$(cat $prjdir/notes/${CIRCLE_TAG}.md)"
   for f in *; do
     github-release upload -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -n $f -f $f
   done
@@ -66,10 +66,10 @@ deploy_docker() {
   go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
   mkdir -p deploybuild
   cp Dockerfile ./dist/swagger-musl ./deploybuild
-  docker build -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
+  docker build --pull -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
   docker tag quay.io/goswagger/swagger:$CIRCLE_TAG quay.io/goswagger/swagger:latest
   docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
-  docker push quay.io/goswagger/swagger
+  docker push quay.io/goswagger/swagger:$CIRCLE_TAG
 }
 
 # prepare
@@ -84,7 +84,7 @@ deploy_docker() {
 # build_linuxpkg rpm
 
 # # upload binary packages
-# upload_to_github
-# upload_to_bintray
+upload_to_github
+upload_to_bintray
 
-# deploy_docker
+deploy_docker

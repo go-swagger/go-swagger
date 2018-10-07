@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: /go/src/github.com/go-swagger/go-swagger
     docker:
-      - image: goswagger/builder:20180921
+      - image: goswagger/builder:20181006
     steps:
       - checkout
 

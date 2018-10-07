@@ -4,7 +4,7 @@ set -e -o pipefail
 
 # Run test coverage on each subdirectories and merge the coverage profile.
 echo "mode: ${GOCOVMODE-atomic}" > coverage.txt
-repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}/"
+repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename "$(pwd)")"}/${CIRCLE_PROJECT_REPONAME-"$(basename "$(pwd)")"}/"
 # Standard go tooling behavior is to ignore dirs with leading underscores
 for dir in $(go list ./... | grep -v -E 'vendor|fixtures|examples')
 do
