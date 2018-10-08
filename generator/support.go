@@ -121,10 +121,11 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		defaultConsumes = runtime.JSONMime
 	}
 
+	opts.Name = appNameOrDefault(specDoc, name, "swagger")
 	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
 	serverPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server")
 	return &appGenerator{
-		Name:       appNameOrDefault(specDoc, name, "swagger"),
+		Name:       opts.Name,
 		Receiver:   "o",
 		SpecDoc:    specDoc,
 		Analyzed:   analyzed,
