@@ -6,14 +6,23 @@ A quick guide on how to contribute to `go-swagger` and the other `go-openapi` re
 
 Repos follow standard go building and testing rules.
 
+Cloning `go-swagger`:
+```bash
+mkdir -p $GOPATH/src/github.com/go-swagger
+cd $GOPATH/src/github.com/go-swagger
+git clone https://github.com/go-swagger/go-swagger
+```
+
+All dependencies are available in the checked out `vendor` directory.
+
 Building and installing go-swagger from source on your system:
 ```
 go install github.com/go-swagger/go-swagger/cmd/swagger
 ```
 
 Running standard unit tests:
-```
- go test ./...
+```bash
+go test ./...
 ``` 
 
 More advanced tests are run by CI. See [below](#continuous-integration).
@@ -23,16 +32,17 @@ More advanced tests are run by CI. See [below](#continuous-integration).
 All PR's are welcome and generally accepted (so far, 95% were accepted...).
 There are just a few common sense rules to be followed.
 
-1. PRs which are not ready to merge should be prefixed with "WIP:"
-2. Generally, contributors should squash their commits (use `git rebase -i ...`)
+1. PRs which are not ready to merge should be prefixed with `WIP:`
+2. Generally, contributors should squash their commits (use `git rebase -i master`)
 3. Provide sufficient test coverage with changes
-4. Do not bring in uncontrolled dependencies, including from fixtures or examples.
-Adding dependencies is possible with a vendor update (`dep ensure -update`).
-5. Use the "fixes #xxx" feature in PR to automate issue closing
+4. Do not bring in uncontrolled dependencies, including from fixtures or examples
+Adding dependencies is possible with a vendor update (`dep ensure -update`)
+5. Use the `fixes #xxx` github feature in PR to automate issue closing
+6. Sign-off commits with `git commit -s`. PGP-signed commits with verified signatures are not mandatory (but much appreciated)
 
 ### Go environment
 
-We want to always support the two most recent go versions.
+We want to always support the **two most recent go versions**.
 
 However, we try to avoid introducing breaking changes, especially on the more
 stable `go-openapi` repos. We manage this with build tags. Notice the very
@@ -51,7 +61,8 @@ func pathUnescape(path string) (string, error) {
 }
 ```
 
-All repos should remain go-gettable and testable with `go test ./...`
+All repos should remain go-gettable (i.e. available with the `go get ...` command) 
+and testable with `go test ./...`
 
 ### Continuous integration
 
@@ -59,11 +70,13 @@ All PR's require a review by a team member, whatever the CI engines tell.
 
 ##### go-swagger/go-swagger
 
-Enabled CI engines:
+Enabled CI engines and bots:
 - CircleCI (linux)
 - Appveyor (windows)
 - GolangCI
 - Codecov
+- DCO (enfore signed-off commits)
+- WIP (blocks PRs wih title WIP/do not merge, etc...)
 
 Codecov results are not blocking.
 
@@ -77,6 +90,8 @@ CI runs description/configuration:
 | Appveyor  | unit test     | appveyor.yml              | `go test -v ./...` |
 | GolangCI  | linting       | .golangci.yml             | equ. `golangci-lint run` |
 | Codecov   | test coverage | -                         | project test coverage and PR diff coverage|
+| DCO       | commit signed | -                         | https://probot.github.io/apps/dco|
+| WIP       | PR title      | -                         | https://github.com/apps/wip|
 
 Deprecated engines:
 - hound (`.hound.yml`): previous linting checker before we moved to golangCI
@@ -89,7 +104,7 @@ Deprecated engines:
 > Therefore, please make sure your UT remain mute on stderr or capture the
 > output if you need to assert something from the output.
 
-The `./hackcodegen-nonreg.sh` runs on CI with a single generation option.
+The script `./hack/codegen-nonreg.sh` runs on CI with a single generation option.
 You may run it manually to explore more generation options (expand spec, flatten, etc...).
 
 CircleCI has a separate CI workflow to build releases, baking and checking newly released docker 
@@ -152,6 +167,8 @@ using `bindata.go` generated in debug mode (use script: `./generator/gen-debug.s
 
 There is a `.githook` script configured as pre-commit: every time you commit to the repo, `generator/bindata.go`
 is regenerated and added to the current commit (without debug mode).
+
+For `bindata` please use the fork found at: `github.com/kevinburke/go-bindata`.
 
 > **NOTE**: we are carrying out unit tests on codegen mostly by asserting lines in generated code.
 > There is a bunch of test utility functions for this. See `generator/*_test.go`.
