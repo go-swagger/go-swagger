@@ -1,0 +1,110 @@
+swagger: "2.0"
+info:
+    description: "Documentation for Example Swagger Server."
+    version: "1.0.0"
+    title: "Example Swagger Server"
+schemes:
+- "http"
+paths:
+  /{snippetID}/{left}/{right}:
+    get:
+      summary: Get Snippet with snippetID between left and right
+      operationId: getSnippet
+      produces:
+      - "application/octet-stream"
+      parameters:
+      - name: snippetID
+        in: path
+        description: "Snippet ID"
+        type: string
+        required: true
+      - name: left
+        in: path
+        description: "time (in sec since epoch) start"
+        type: string
+        required: true
+      - name: right
+        in: path
+        description: "time (in sec since epoch) end"
+        type: string
+        required: true
+      - name: format
+        in: query
+        description: "Requested format of the output"
+        type: string
+        enum: [foo]
+        required: true
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: string
+            format: binary
+        404:
+          description: "No such snippet"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      summary: The caller declares that it is in posession of a (brand new) snippet and ready to upload
+      operationId: putSnippet
+      produces:
+      - "application/json"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: snippetID
+        in: path
+        description: "Snippet ID"
+        type: string
+        required: true
+      - name: left
+        in: path
+        description: "time (in sec since epoch) start"
+        type: string
+        required: true
+      - name: right
+        in: path
+        description: "time (in sec since epoch) end"
+        type: string
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/NewSnippetRequest"
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: "#/definitions/NewSnippetResponse"
+        409:
+          description: "Snippet already exists"
+        default:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  NewSnippetRequest:
+    type: object
+  NewSnippetResponse:
+    type: object
+    required:
+      - welcome
+      - upload_url
+    properties:
+      welcome:
+        type: string
+      upload_url:
+        type: string
+  Error:
+    type: object
+    required:
+      - message
+      - errorID
+    properties:
+      errorID:
+        type: string
+      message:
+        type: string

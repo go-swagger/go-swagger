@@ -410,3 +410,34 @@ func TestServer_Issue1648(t *testing.T) {
 		assert.NoError(t, err)
 	}
 }
+
+func TestServer_Issue1746(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	targetdir, err := ioutil.TempDir(".", "swagger_server")
+	if err != nil {
+		t.Fatalf("failed to create a test target directory: %v", err)
+	}
+	err = os.Chdir(targetdir)
+	if err != nil {
+		t.Fatalf("failed to create a test target directory: %v", err)
+	}
+	defer func() {
+		if err = os.Chdir(".."); err != nil {
+			t.Log("failed test exist: ", err)
+		}
+		log.SetOutput(os.Stdout)
+		if err = os.RemoveAll(targetdir); err != nil {
+			t.Log("failed test exist: ", err)
+		}
+	}()
+	opts := testGenOpts()
+	// NOTE: test fails when target != "."
+	opts.Target = "."
+	opts.Spec = "../../fixtures/bugs/1746/fixture-1746.yaml"
+
+	err = GenerateServer("", nil, nil, &opts)
+	assert.NoError(t, err)
+	gulp, err := ioutil.ReadFile(filepath.Join("restapi", "configure_example_swagger_server.go"))
+	assert.NoError(t, err)
+	assertInCode(t, `//go:generate swagger generate server --target .. --name ExampleSwaggerServer`, string(gulp))
+}
