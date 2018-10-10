@@ -129,6 +129,42 @@ func ServeAPI(host, basePath string, schemes []string) (err error) {
 	//       - "read:pets"
 	mountItem("PUT", basePath+"/pets/{id}", nil)
 
+	// swagger:operation GET /v1/events Events getEvents
+	//
+	// Events
+	//
+	// Mitigation Events
+	//
+	// ---
+	// consumes:
+	//   - "application/json"
+	//   - "application/xml"
+	// produces:
+	//   - "application/xml"
+	//   - "application/json"
+	// parameters:
+	// - name: running
+	//   in: query
+	//   description: (boolean) Filters
+	//   required: false
+	//   type: boolean
+	//
+	// responses:
+	//  '200':
+	//    description: '200'
+	//    schema:
+	//	    "$ref": "#/definitions/ListResponse"
+	//  '400':
+	//    description: '400'
+	//    schema:
+	//      "$ref": "#/definitions/ErrorResponse"
+	// security:
+	//   -
+	//     petstore_auth:
+	//       - "write:pets"
+	//       - "read:pets"
+	mountItem("GET", basePath+"/events", nil)
+
 	// no errors to return, all good
 	return
 }

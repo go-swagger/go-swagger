@@ -40,7 +40,7 @@ func TestOperationsParser(t *testing.T) {
 	err = op.Parse(fileTree, &ops, nil, nil)
 	assert.NoError(t, err)
 
-	assert.Len(t, ops.Paths, 2)
+	assert.Len(t, ops.Paths, 3)
 
 	po, ok := ops.Paths["/pets"]
 	assert.True(t, ok)
@@ -84,6 +84,29 @@ func TestOperationsParser(t *testing.T) {
 		rsp, k = po.Put.Responses.StatusCodeResponses[405]
 		if assert.True(t, k) {
 			assert.Equal(t, "Validation exception", rsp.Description)
+		}
+	}
+
+	po, ok = ops.Paths["/v1/events"]
+	assert.True(t, ok)
+	assert.NotNil(t, po.Get)
+	assertAnnotationOperation(t,
+		po.Get,
+		"getEvents",
+		"Events",
+		"Mitigation Events",
+		[]string{"Events"},
+	)
+	if po.Get != nil {
+		rsp, k := po.Get.Responses.StatusCodeResponses[200]
+		if assert.True(t, k) {
+			assert.Equal(t, "#/definitions/ListResponse", rsp.Schema.Ref.String())
+			assert.Equal(t, "200", rsp.Description)
+		}
+		rsp, k = po.Get.Responses.StatusCodeResponses[400]
+		if assert.True(t, k) {
+			assert.Equal(t, "#/definitions/ErrorResponse", rsp.Schema.Ref.String())
+			assert.Equal(t, "400", rsp.Description)
 		}
 	}
 }
