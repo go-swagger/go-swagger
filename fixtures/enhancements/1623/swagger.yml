@@ -9,6 +9,7 @@ paths:
       operationId: getFoo
       responses:
         200:
+          description: 'ok'
           schema:
             type: array
             items:
@@ -17,7 +18,7 @@ definitions:
   Foo:
     type: object
     properties:
-      hasOmitEmptyTrue:
+      arrayHasOmitEmptyTrue:
         type: array
         x-omitempty: true
         items:
@@ -25,7 +26,7 @@ definitions:
           enum:
           - some
           - values
-      hasOmitEmptyFalse:
+      arrayHasOmitEmptyFalse:
         type: array
         x-omitempty: false
         items:
@@ -33,10 +34,32 @@ definitions:
           enum:
           - some
           - values
-      noOmitEmpty:
+      arrayNoOmitEmpty:
         type: array
         items:
           type: string
           enum:
           - some
           - values
+      generalHasOmitEmptyTrue:
+        type: string
+        x-omitempty: true
+      generalHasOmitEmptyFalse:
+        type: string
+        x-omitempty: false
+      generalNoOmitEmpty:
+        type: string
+      refHasOmitEmptyTrue:
+        x-omitempty: true
+        $ref: '#/definitions/bar'
+      refHasOmitEmptyFalse:
+        x-omitempty: false
+        $ref: '#/definitions/bar'
+      refNoOmitEmpty:
+        $ref: '#/definitions/bar'
+  bar:
+    type: object
+    x-nullable: false
+    properties:
+      prop:
+        type: string

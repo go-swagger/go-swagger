@@ -317,10 +317,19 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	return len(schema.Properties) > 0
 }
 
-func (t *typeResolver) IsEmptyOmitted(schema *spec.Schema) bool {
+func setIsEmptyOmitted(result *resolvedType, schema *spec.Schema, tpe string) {
+	defaultValue := true
+	if tpe == array {
+		defaultValue = false
+	}
 	v, found := schema.Extensions[xOmitEmpty]
+	if !found {
+		result.IsEmptyOmitted = defaultValue
+		return
+	}
+
 	omitted, cast := v.(bool)
-	return found && cast && omitted
+	result.IsEmptyOmitted = omitted && cast
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -340,7 +349,6 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 
 	result.IsArray = true
 	result.IsNullable = false
-	result.IsEmptyOmitted = t.IsEmptyOmitted(schema)
 
 	if schema.AdditionalItems != nil {
 		result.HasAdditionalItems = (schema.AdditionalItems.Allows || schema.AdditionalItems.Schema != nil)
@@ -620,6 +628,9 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
+	tpe := t.firstType(schema)
+	defer setIsEmptyOmitted(&result, schema, tpe)
+
 	var returns bool
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
@@ -649,10 +660,11 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	result.IsNullable = t.isNullable(schema) || isRequired
-	tpe := t.firstType(schema)
+
 	switch tpe {
 	case array:
-		return t.resolveArray(schema, isAnonymous, false)
+		result, err = t.resolveArray(schema, isAnonymous, false)
+		return
 
 	case file, number, integer, boolean:
 		result.Extensions = schema.Extensions
@@ -681,15 +693,14 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		result.IsPrimitive = true
 		result.IsNullable = nullableString(schema, isRequired)
 		result.Extensions = schema.Extensions
-		return
 
 	case object:
-		rt, err2 := t.resolveObject(schema, isAnonymous)
-		if err2 != nil {
-			return resolvedType{}, err2
+		result, err = t.resolveObject(schema, isAnonymous)
+		if err != nil {
+			return resolvedType{}, err
 		}
-		rt.HasDiscriminator = schema.Discriminator != ""
-		return rt, nil
+		result.HasDiscriminator = schema.Discriminator != ""
+		return
 
 	case "null":
 		result.GoType = iface
@@ -702,6 +713,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
 		return
 	}
+	return result, err
 }
 
 // resolvedType is a swagger type that has been resolved and analyzed for usage

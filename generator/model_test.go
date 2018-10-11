@@ -157,7 +157,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	var gmp GenSchema
 	gmp.Name = "some name"
 	gmp.OriginalName = "some name"
-	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true}
+	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true, IsEmptyOmitted: true}
 	gmp.Title = "The title of the property"
 	gmp.CustomTag = "mytag:\"foobar,foobaz\""
 
@@ -2108,33 +2108,6 @@ func TestGenModel_Issue981(t *testing.T) {
 
 }
 
-func TestGenModel_Issue774(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/774/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Foo"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					//fmt.Println(res)
-					assertInCode(t, "HasOmitEmptyFalse []string `json:\"hasOmitEmptyFalse\"`", res)
-					assertInCode(t, "HasOmitEmptyTrue []string `json:\"hasOmitEmptyTrue,omitempty\"`", res)
-					assertInCode(t, "NoOmitEmpty []string `json:\"noOmitEmpty\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
-}
-
 func TestGenModel_Issue1341(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1341/swagger.yaml")
 	if assert.NoError(t, err) {
@@ -2471,4 +2444,43 @@ func TestGenerateModel_Xorder(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestGenModel_Issue1623(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/enhancements/1623/swagger.yml")
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	definitions := specDoc.Spec().Definitions
+	k := "Foo"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("model").Execute(buf, genModel)
+	if !assert.NoError(t, err) {
+		fmt.Println(buf.String())
+		return
+	}
+
+	ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	res := string(ff)
+	assertInCode(t, "ArrayHasOmitEmptyFalse []string `json:\"arrayHasOmitEmptyFalse\"`", res)
+	assertInCode(t, "ArrayHasOmitEmptyTrue []string `json:\"arrayHasOmitEmptyTrue,omitempty\"`", res)
+	assertInCode(t, "ArrayNoOmitEmpty []string `json:\"arrayNoOmitEmpty\"`", res)
+	assertInCode(t, "GeneralHasOmitEmptyFalse string `json:\"generalHasOmitEmptyFalse\"`", res)
+	assertInCode(t, "GeneralHasOmitEmptyTrue string `json:\"generalHasOmitEmptyTrue,omitempty\"`", res)
+	assertInCode(t, "GeneralNoOmitEmpty string `json:\"generalNoOmitEmpty,omitempty\"`", res)
+	assertInCode(t, "RefHasOmitEmptyFalse Bar `json:\"refHasOmitEmptyFalse\"`", res)
+	assertInCode(t, "RefHasOmitEmptyTrue Bar `json:\"refHasOmitEmptyTrue,omitempty\"`", res)
+	assertInCode(t, "RefNoOmitEmpty Bar `json:\"refNoOmitEmpty,omitempty\"`", res)
 }

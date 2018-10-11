@@ -117,4 +117,4 @@ Vendor extension | Description
 `x-go-name`      | the go name of a type
 `x-go-package`   | the go package of a type
 `x-class`        | this is used in conjunction with discriminators to give a full type name
-`x-omitempty`    | this is used with arrays to control presence of omitempty tag to be used by JSON Marshaler
+`x-omitempty`    | this is used to control presence of omitempty tag to be used by JSON Marshaler. if the field is required, this extension doesn't take effect
