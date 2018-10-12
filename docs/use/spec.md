@@ -45,7 +45,7 @@ swagger generate spec -i ./swagger.yml -o ./swagger.json
 
 The idea is that there are certain things that are more easily expressed by just using yaml
 
-To generate sepc in yaml format, just name the output file with ".yml" or ".yaml" extension. For example:
+To generate spec in yaml format, just name the output file with ".yml" or ".yaml" extension. For example:
 
 ```
 swagger generate spec -o ./swagger.yml
