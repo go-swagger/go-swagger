@@ -513,7 +513,7 @@ paths:
             $ref: "#/definitions/error"
 ```
 
-This time you're you're defining a parameter that is part of the `path`. This operation will look in the URI templated path for an id. Since there's nothing to return after a delete, the success response  is `204 No Content`.
+This time you're defining a parameter that is part of the `path`. This operation will look in the URI templated path for an id. Since there's nothing to return after a delete, the success response  is `204 No Content`.
 
 Finally, you need to define a way to update an existing item:
 
