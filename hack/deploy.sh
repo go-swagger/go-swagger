@@ -22,7 +22,7 @@ prepare_linuxpkg() {
 }
 
 build_linuxpkg() {
-  fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v $CIRCLE_TAG -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
+  fpm -t $1 -p ./dist/build -s dir -C ./dist/linux/amd64 -v ${CIRCLE_TAG:1} -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
 }
 
 upload_to_github() {
@@ -42,20 +42,20 @@ upload_to_bintray() {
   curl \
     --retry 10 \
     --retry-delay 5 \
-    -T ./dist/build/swagger-${CIRCLE_TAG//-/_}-1.x86_64.rpm \
+    -T ./dist/build/swagger-${${CIRCLE_TAG:1}//-/_}-1.x86_64.rpm \
     -u${API_USERNAME}:${BINTRAY_TOKEN} \
-    https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG}/swagger-${CIRCLE_TAG//-/_}-1.x86_64.rpm
+    https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG:1}/swagger-${${CIRCLE_TAG:1}//-/_}-1.x86_64.rpm
 
-  curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG}/publish
+  curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${CIRCLE_TAG:1}/publish
 
   curl \
     --retry 10 \
     --retry-delay 5 \
-    -T ./dist/build/swagger_${CIRCLE_TAG}_amd64.deb \
+    -T ./dist/build/swagger_${CIRCLE_TAG:1}_amd64.deb \
     -u${API_USERNAME}:${BINTRAY_TOKEN} \
-    "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG}/swagger_${CIRCLE_TAG}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
+    "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG:1}/swagger_${CIRCLE_TAG:1}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
 
-    curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG}/publish
+    curl --retry 10 --retry-delay 5 -XPOST -u${API_USERNAME}:${BINTRAY_TOKEN} https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${CIRCLE_TAG:1}/publish
 }
 
 deploy_docker() {

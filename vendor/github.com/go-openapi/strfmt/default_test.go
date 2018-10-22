@@ -102,6 +102,31 @@ func TestFormatEmail(t *testing.T) {
 
 	testValid(t, "email", str)
 	testInvalid(t, "email", "somebody@somewhere@com")
+
+	validEmails := []string{
+		"blah@gmail.com",
+		"test@d.verylongtoplevel",
+		"email+tag@gmail.com",
+		`" "@example.com`,
+		`"Abc\@def"@example.com`,
+		`"Fred Bloggs"@example.com`,
+		`"Joe\\Blow"@example.com`,
+		`"Abc@def"@example.com`,
+		"customer/department=shipping@example.com",
+		"$A12345@example.com",
+		"!def!xyz%abc@example.com",
+		"_somename@example.com",
+		"!#$%&'*+-/=?^_`{}|~@example.com",
+		"Miles.O'Brian@example.com",
+		"postmaster@☁→❄→☃→☀→☺→☂→☹→✝.ws",
+		"root@localhost",
+		"john@com",
+		"api@piston.ninja",
+	}
+
+	for _, eml := range validEmails {
+		testValid(t, "email", eml)
+	}
 }
 
 func TestFormatHostname(t *testing.T) {

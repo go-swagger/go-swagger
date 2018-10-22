@@ -60,10 +60,11 @@ type Testing interface {
 	Errorf(format string, args ...interface{})
 }
 
-// Run applies an analysis to the named package.
-// It loads the package from the specified GOPATH-style project
+// Run applies an analysis to the packages denoted by the "go list" patterns.
+//
+// It loads the packages from the specified GOPATH-style project
 // directory using golang.org/x/tools/go/packages, runs the analysis on
-// it, and checks that each the analysis emits the expected diagnostics
+// them, and checks that each analysis emits the expected diagnostics
 // and facts specified by the contents of '// want ...' comments in the
 // package's source files.
 //
@@ -92,32 +93,36 @@ type Testing interface {
 // Unexpected diagnostics and facts, and unmatched expectations, are
 // reported as errors to the Testing.
 //
-// You may wish to call this function from within a (*testing.T).Run
-// subtest to ensure that errors have adequate contextual description.
-//
-// Run returns the pass and the result of the Analyzer's Run function,
-// or (nil, nil) if loading or analysis failed.
-func Run(t Testing, dir string, a *analysis.Analyzer, pkgname string) (*analysis.Pass, interface{}) {
-	pkg, err := loadPackage(dir, pkgname)
+// Run reports an error to the Testing if loading or analysis failed.
+// Run also returns a Result for each package for which analysis was
+// attempted, even if unsuccessful. It is safe for a test to ignore all
+// the results, but a test may use it to perform additional checks.
+func Run(t Testing, dir string, a *analysis.Analyzer, patterns ...string) []*Result {
+	pkgs, err := loadPackages(dir, patterns...)
 	if err != nil {
-		t.Errorf("loading %s: %v", pkgname, err)
-		return nil, nil
+		t.Errorf("loading %s: %v", patterns, err)
+		return nil
 	}
 
-	pass, diagnostics, facts, result, err := checker.Analyze(pkg, a)
-	if err != nil {
-		t.Errorf("analyzing %s: %v", pkgname, err)
-		return nil, nil
+	results := checker.TestAnalyzer(a, pkgs)
+	for _, result := range results {
+		if result.Err != nil {
+			t.Errorf("error analyzing %s: %v", result.Pass, result.Err)
+		} else {
+			check(t, dir, result.Pass, result.Diagnostics, result.Facts)
+		}
 	}
-
-	check(t, dir, pass, diagnostics, facts)
-
-	return pass, result
+	return results
 }
 
-// loadPackage loads the specified package (from source, with
-// dependencies) from dir, which is the root of a GOPATH-style project tree.
-func loadPackage(dir, pkgpath string) (*packages.Package, error) {
+// A Result holds the result of applying an analyzer to a package.
+type Result = checker.TestAnalyzerResult
+
+// loadPackages uses go/packages to load a specified packages (from source, with
+// dependencies) from dir, which is the root of a GOPATH-style project
+// tree. It returns an error if any package had an error, or the pattern
+// matched no packages.
+func loadPackages(dir string, patterns ...string) ([]*packages.Package, error) {
 	// packages.Load loads the real standard library, not a minimal
 	// fake version, which would be more efficient, especially if we
 	// have many small tests that import, say, net/http.
@@ -131,19 +136,19 @@ func loadPackage(dir, pkgpath string) (*packages.Package, error) {
 		Tests: true,
 		Env:   append(os.Environ(), "GOPATH="+dir, "GO111MODULE=off", "GOPROXY=off"),
 	}
-	pkgs, err := packages.Load(cfg, pkgpath)
+	pkgs, err := packages.Load(cfg, patterns...)
 	if err != nil {
 		return nil, err
 	}
-	if packages.PrintErrors(pkgs) > 0 {
-		return nil, fmt.Errorf("loading %s failed", pkgpath)
-	}
-	if len(pkgs) != 1 {
-		return nil, fmt.Errorf("pattern %q expanded to %d packages, want 1",
-			pkgpath, len(pkgs))
-	}
 
-	return pkgs[0], nil
+	// Print errors but do not stop:
+	// some Analyzers may be disposed to RunDespiteErrors.
+	packages.PrintErrors(pkgs)
+
+	if len(pkgs) == 0 {
+		return nil, fmt.Errorf("no packages matched %s", patterns)
+	}
+	return pkgs, nil
 }
 
 // check inspects an analysis pass on which the analysis has already
@@ -152,36 +157,81 @@ func loadPackage(dir, pkgpath string) (*packages.Package, error) {
 // source files, which must have been parsed with comments enabled.
 func check(t Testing, gopath string, pass *analysis.Pass, diagnostics []analysis.Diagnostic, facts map[types.Object][]analysis.Fact) {
 
-	// Read expectations out of comments.
 	type key struct {
 		file string
 		line int
 	}
-	want := make(map[key][]expectation)
-	for _, f := range pass.Files {
-		for _, c := range f.Comments {
-			posn := pass.Fset.Position(c.Pos())
-			sanitize(gopath, &posn)
-			text := strings.TrimSpace(c.Text())
 
-			// Any comment starting with "want" is treated
-			// as an expectation, even without following whitespace.
-			if rest := strings.TrimPrefix(text, "want"); rest != text {
-				expects, err := parseExpectations(rest)
-				if err != nil {
-					t.Errorf("%s: in 'want' comment: %s", posn, err)
-					continue
+	want := make(map[key][]expectation)
+
+	// processComment parses expectations out of comments.
+	processComment := func(filename string, linenum int, text string) {
+		text = strings.TrimSpace(text)
+
+		// Any comment starting with "want" is treated
+		// as an expectation, even without following whitespace.
+		if rest := strings.TrimPrefix(text, "want"); rest != text {
+			expects, err := parseExpectations(rest)
+			if err != nil {
+				t.Errorf("%s:%d: in 'want' comment: %s", filename, linenum, err)
+				return
+			}
+			if expects != nil {
+				want[key{filename, linenum}] = expects
+			}
+		}
+	}
+
+	// Extract 'want' comments from Go files.
+	for _, f := range pass.Files {
+		for _, cgroup := range f.Comments {
+			for _, c := range cgroup.List {
+
+				text := strings.TrimPrefix(c.Text, "//")
+				if text == c.Text {
+					continue // not a //-comment
 				}
-				if false {
-					log.Printf("%s: %v", posn, expects)
+
+				// Hack: treat a comment of the form "//...// want..."
+				// as if it starts at 'want'.
+				// This allows us to add comments on comments,
+				// as required when testing the buildtag analyzer.
+				if i := strings.Index(text, "// want"); i >= 0 {
+					text = text[i+len("// "):]
 				}
-				want[key{posn.Filename, posn.Line}] = expects
+
+				// It's tempting to compute the filename
+				// once outside the loop, but it's
+				// incorrect because it can change due
+				// to //line directives.
+				posn := pass.Fset.Position(c.Pos())
+				filename := sanitize(gopath, posn.Filename)
+				processComment(filename, posn.Line, text)
+			}
+		}
+	}
+
+	// Extract 'want' comments from non-Go files.
+	// TODO(adonovan): we may need to handle //line directives.
+	for _, filename := range pass.OtherFiles {
+		data, err := ioutil.ReadFile(filename)
+		if err != nil {
+			t.Errorf("can't read '// want' comments from %s: %v", filename, err)
+			continue
+		}
+		filename := sanitize(gopath, filename)
+		linenum := 0
+		for _, line := range strings.Split(string(data), "\n") {
+			linenum++
+			if i := strings.Index(line, "//"); i >= 0 {
+				line = line[i+len("//"):]
+				processComment(filename, linenum, line)
 			}
 		}
 	}
 
 	checkMessage := func(posn token.Position, kind, name, message string) {
-		sanitize(gopath, &posn)
+		posn.Filename = sanitize(gopath, posn.Filename)
 		k := key{posn.Filename, posn.Line}
 		expects := want[k]
 		var unmatched []string
@@ -213,6 +263,9 @@ func check(t Testing, gopath string, pass *analysis.Pass, diagnostics []analysis
 
 	// Check the facts match expectations.
 	// Report errors in lexical order for determinism.
+	// (It's only deterministic within each file, not across files,
+	// because go/packages does not guarantee file.Pos is ascending
+	// across the files of a single compilation unit.)
 	var objects []types.Object
 	for obj := range facts {
 		objects = append(objects, obj)
@@ -240,6 +293,12 @@ func check(t Testing, gopath string, pass *analysis.Pass, diagnostics []analysis
 	}
 
 	// Reject surplus expectations.
+	//
+	// Sometimes an Analyzer reports two similar diagnostics on a
+	// line with only one expectation. The reader may be confused by
+	// the error message.
+	// TODO(adonovan): print a better error:
+	// "got 2 diagnostics here; each one needs its own expectation".
 	var surplus []string
 	for key, expects := range want {
 		for _, exp := range expects {
@@ -321,8 +380,8 @@ func parseExpectations(text string) ([]expectation, error) {
 }
 
 // sanitize removes the GOPATH portion of the filename,
-// typically a gnarly /tmp directory.
-func sanitize(gopath string, posn *token.Position) {
+// typically a gnarly /tmp directory, and returns the rest.
+func sanitize(gopath, filename string) string {
 	prefix := gopath + string(os.PathSeparator) + "src" + string(os.PathSeparator)
-	posn.Filename = filepath.ToSlash(strings.TrimPrefix(posn.Filename, prefix))
+	return filepath.ToSlash(strings.TrimPrefix(filename, prefix))
 }

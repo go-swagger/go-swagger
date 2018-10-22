@@ -28,6 +28,8 @@ func init() {
 func TestTheTest(t *testing.T) {
 	// We'll simulate a partly failing test of the findcall analysis,
 	// which (by default) reports calls to functions named 'println'.
+	findcall.Analyzer.Flags.Set("name", "println")
+
 	filemap := map[string]string{"a/b.go": `package main
 
 func main() {
@@ -68,10 +70,10 @@ func println(...interface{}) { println() } // want println:"found" "call of prin
 	analysistest.Run(t2, dir, findcall.Analyzer, "a")
 
 	want := []string{
-		`a/b.go:5:10: in 'want' comment: unexpected ":"`,
-		`a/b.go:6:10: in 'want' comment: got String after foo, want ':'`,
-		`a/b.go:7:10: in 'want' comment: got EOF, want regular expression`,
-		`a/b.go:8:10: in 'want' comment: illegal char escape`,
+		`a/b.go:5: in 'want' comment: unexpected ":"`,
+		`a/b.go:6: in 'want' comment: got String after foo, want ':'`,
+		`a/b.go:7: in 'want' comment: got EOF, want regular expression`,
+		`a/b.go:8: in 'want' comment: illegal char escape`,
 		`a/b.go:11:9: diagnostic "call of println(...)" does not match pattern "wrong expectation text"`,
 		`a/b.go:14:9: unexpected diagnostic: call of println(...)`,
 		`a/b.go:11: no diagnostic was reported matching "wrong expectation text"`,

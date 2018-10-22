@@ -1,3 +1,7 @@
+// Copyright 2018 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // Package multichecker defines the main function for an analysis driver
 // with several analyzers. This package makes it easy for anyone to build
 // an analysis tool containing just the analyzers they need.
@@ -8,64 +12,56 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
 	"golang.org/x/tools/go/analysis"
+	"golang.org/x/tools/go/analysis/internal/analysisflags"
 	"golang.org/x/tools/go/analysis/internal/checker"
 )
 
-const usage = `Analyze is a tool for static analysis of Go programs.
+// TODO(adonovan): document (and verify) the exit codes:
+// "Vet's exit code is 2 for erroneous invocation of the tool, 1 if a
+// problem was reported, and 0 otherwise. Note that the tool does not
+// check every possible problem and depends on unreliable heuristics
+// so it should be used as guidance only, not as a firm indicator of
+// program correctness."
 
-Usage: analyze [-flag] [package]
+const usage = `PROGNAME is a tool for static analysis of Go programs.
+
+PROGNAME examines Go source code and reports suspicious constructs, such as Printf
+calls whose arguments do not align with the format string. It uses heuristics
+that do not guarantee all reports are genuine problems, but it can find errors
+not caught by the compilers.
+
+Usage: PROGNAME [-flag] [package]
 `
 
 func Main(analyzers ...*analysis.Analyzer) {
+	progname := filepath.Base(os.Args[0])
+	log.SetFlags(0)
+	log.SetPrefix(progname + ": ")
+
 	if err := analysis.Validate(analyzers); err != nil {
 		log.Fatal(err)
 	}
 
 	checker.RegisterFlags()
 
-	// Connect each analysis flag to the command line as --analysis.flag.
-	enabled := make(map[*analysis.Analyzer]*bool)
-	for _, a := range analyzers {
-		prefix := a.Name + "."
-
-		// Add --foo.enable flag.
-		enable := new(bool)
-		flag.BoolVar(enable, prefix+"enable", false, "enable only "+a.Name+" analysis")
-		enabled[a] = enable
-
-		a.Flags.VisitAll(func(f *flag.Flag) {
-			flag.Var(f.Value, prefix+f.Name, f.Usage)
-		})
-	}
-
-	flag.Parse() // (ExitOnError)
-
-	// If any --foo.enable flag is set,
-	// run only those analyzers.
-	var keep []*analysis.Analyzer
-	for _, a := range analyzers {
-		if *enabled[a] {
-			keep = append(keep, a)
-		}
-	}
-	if keep != nil {
-		analyzers = keep
-	}
+	analyzers = analysisflags.Parse(analyzers, true)
 
 	args := flag.Args()
 	if len(args) == 0 {
-		fmt.Fprintln(os.Stderr, usage)
-		fmt.Fprintln(os.Stderr, `Run 'analyze help' for more detail,
- or 'analyze help name' for details and flags of a specific analyzer.`)
+		fmt.Fprintln(os.Stderr, strings.Replace(usage, "PROGNAME", progname, -1))
+		fmt.Fprintf(os.Stderr, "Run '%[1]s help' for more detail,\n"+
+			" or '%[1]s help name' for details and flags of a specific analyzer.\n",
+			progname)
 		os.Exit(1)
 	}
 
 	if args[0] == "help" {
-		help(analyzers, args[1:])
+		help(progname, analyzers, args[1:])
 		os.Exit(0)
 	}
 
@@ -74,10 +70,10 @@ func Main(analyzers ...*analysis.Analyzer) {
 	}
 }
 
-func help(analyzers []*analysis.Analyzer, args []string) {
+func help(progname string, analyzers []*analysis.Analyzer, args []string) {
 	// No args: show summary of all analyzers.
 	if len(args) == 0 {
-		fmt.Println(usage)
+		fmt.Println(strings.Replace(usage, "PROGNAME", progname, -1))
 		fmt.Println("Registered analyzers:")
 		fmt.Println()
 		sort.Slice(analyzers, func(i, j int) bool {
@@ -101,7 +97,7 @@ func help(analyzers []*analysis.Analyzer, args []string) {
 		})
 		fs.PrintDefaults()
 
-		fmt.Println("\nTo see details and flags of a specific analyzer, run 'analyze help name'.")
+		fmt.Printf("\nTo see details and flags of a specific analyzer, run '%s help name'.\n", progname)
 
 		return
 	}

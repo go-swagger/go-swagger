@@ -15,8 +15,12 @@ import (
 	"go/scanner"
 	"go/token"
 	"go/types"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"sync"
 
 	"golang.org/x/tools/go/gcexportdata"
@@ -96,12 +100,14 @@ type Config struct {
 	// It must be safe to call ParseFile simultaneously from multiple goroutines.
 	// If ParseFile is nil, the loader will uses parser.ParseFile.
 	//
-	// Setting ParseFile to a custom implementation can allow
-	// providing alternate file content in order to type-check
-	// unsaved text editor buffers, or to selectively eliminate
-	// unwanted function bodies to reduce the amount of work
-	// done by the type checker.
-	ParseFile func(fset *token.FileSet, filename string) (*ast.File, error)
+	// ParseFile should parse the source from src and use filename only for
+	// recording position information.
+	//
+	// An application may supply a custom implementation of ParseFile
+	// to change the effective file contents or the behavior of the parser,
+	// or to modify the syntax tree. For example, selectively eliminating
+	// unwanted function bodies can significantly accelerate type checking.
+	ParseFile func(fset *token.FileSet, filename string, src []byte) (*ast.File, error)
 
 	// If Tests is set, the loader includes not just the packages
 	// matching a particular pattern but also any related test packages,
@@ -116,6 +122,15 @@ type Config struct {
 	// In build systems with explicit names for tests,
 	// setting Tests may have no effect.
 	Tests bool
+
+	// Overlay provides a mapping of absolute file paths to file contents.
+	// If the file  with the given path already exists, the parser will use the
+	// alternative file contents provided by the map.
+	//
+	// The Package.Imports map may not include packages that are imported only
+	// by the alternative file contents provided by Overlay. This may cause
+	// type-checking to fail.
+	Overlay map[string][]byte
 }
 
 // driver is the type for functions that query the build system for the
@@ -380,9 +395,13 @@ func newLoader(cfg *Config) *loader {
 		// ParseFile is required even in LoadTypes mode
 		// because we load source if export data is missing.
 		if ld.ParseFile == nil {
-			ld.ParseFile = func(fset *token.FileSet, filename string) (*ast.File, error) {
+			ld.ParseFile = func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+				var isrc interface{}
+				if src != nil {
+					isrc = src
+				}
 				const mode = parser.AllErrors | parser.ParseComments
-				return parser.ParseFile(fset, filename, nil, mode)
+				return parser.ParseFile(fset, filename, isrc, mode)
 			}
 		}
 	}
@@ -664,6 +683,17 @@ func (ld *loader) loadPackage(lpkg *loaderPackage) {
 		panic("unreachable")
 	})
 
+	// This is only an approximation.
+	// TODO(adonovan): derive Sizes from the underlying build system.
+	goarch := runtime.GOARCH
+	const goarchPrefix = "GOARCH="
+	for _, e := range ld.Config.Env {
+		if strings.HasPrefix(e, goarchPrefix) {
+			goarch = e[len(goarchPrefix):]
+		}
+	}
+	sizes := types.SizesFor("gc", goarch)
+
 	// type-check
 	tc := &types.Config{
 		Importer: importer,
@@ -674,9 +704,7 @@ func (ld *loader) loadPackage(lpkg *loaderPackage) {
 		IgnoreFuncBodies: ld.Mode < LoadAllSyntax && !lpkg.initial,
 
 		Error: appendError,
-
-		// TODO(adonovan): derive Sizes from the underlying
-		// build system.
+		Sizes: sizes,
 	}
 	types.NewChecker(tc, ld.Fset, lpkg.Types, lpkg.TypesInfo).Files(lpkg.Syntax)
 
@@ -743,7 +771,21 @@ func (ld *loader) parseFiles(filenames []string) ([]*ast.File, []error) {
 		go func(i int, filename string) {
 			ioLimit <- true // wait
 			// ParseFile may return both an AST and an error.
-			parsed[i], errors[i] = ld.ParseFile(ld.Fset, filename)
+			var src []byte
+			for f, contents := range ld.Config.Overlay {
+				if sameFile(f, filename) {
+					src = contents
+				}
+			}
+			var err error
+			if src == nil {
+				src, err = ioutil.ReadFile(filename)
+			}
+			if err != nil {
+				parsed[i], errors[i] = nil, err
+			} else {
+				parsed[i], errors[i] = ld.ParseFile(ld.Fset, filename, src)
+			}
 			<-ioLimit // signal
 			wg.Done()
 		}(i, file)
@@ -770,6 +812,20 @@ func (ld *loader) parseFiles(filenames []string) ([]*ast.File, []error) {
 	errors = errors[:o]
 
 	return parsed, errors
+}
+
+// sameFile returns true if x and y have the same basename and denote
+// the same file.
+//
+func sameFile(x, y string) bool {
+	if filepath.Base(x) == filepath.Base(y) { // (optimisation)
+		if xi, err := os.Stat(x); err == nil {
+			if yi, err := os.Stat(y); err == nil {
+				return os.SameFile(xi, yi)
+			}
+		}
+	}
+	return false
 }
 
 // loadFromExportData returns type information for the specified
