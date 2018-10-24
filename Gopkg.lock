@@ -363,7 +363,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:78f41d38365ccef743e54ed854a2faf73313ba0750c621116a8eeb0395590bd0"
+  digest = "1:b4657db81437337ae70edb2175bd358d00cc14ec39330341a70d00f68cd6347a"
   name = "golang.org/x/crypto"
   packages = [
     "ed25519",
@@ -371,11 +371,11 @@
     "pbkdf2",
   ]
   pruneopts = ""
-  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
+  revision = "74cb1d3d52f4c01cbfb44c1b50d204462f3124c7"
 
 [[projects]]
   branch = "master"
-  digest = "1:6543c75ddc1efc0041202dd49378ee2e5711b7cc82c2845c0437eef6276cc984"
+  digest = "1:b001b57f383ecbebb54c3916ca6b8be129a6486d3dbf2dfc722cbb0a0b2a8679"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -384,7 +384,7 @@
     "netutil",
   ]
   pruneopts = ""
-  revision = "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e"
+  revision = "9b4f9f5ad5197c79fd623a3638e70d8b26cef344"
 
 [[projects]]
   branch = "master"
@@ -399,11 +399,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:85b8a4f6b2d788cb4ee22c2ffdb5e63e14e99fa5750264ca20fc3f7ea51c118c"
+  digest = "1:3bb377065822540748d69a5a9cb0de617cf997a9e4f757eceaac3075d1f07d50"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "eda9bb28ed513021f3e6a2a361031adc3d8a6301"
+  revision = "5cd93ef61a7c8f0f858690154eb6de2e69415fa1"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -431,7 +431,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4d2f516f773edcfe1b5454b75ce117f06ef8d6eb57f186f2509b7fbbcfbefe88"
+  digest = "1:d9f47d3af9482eea8b6f559fc709992cd8890ec615e855a61c2efdf5f1ca85ed"
   name = "golang.org/x/tools"
   packages = [
     "go/ast/astutil",
@@ -443,7 +443,7 @@
     "internal/gopathwalk",
   ]
   pruneopts = ""
-  revision = "3e7aa9e59977626dc60433e9aeadf1bb63d28295"
+  revision = "a2dc47679d30b6c496245bafc6a166b46c5fe318"
 
 [[projects]]
   digest = "1:8c432632a230496c35a15cfdf441436f04c90e724ad99c8463ef0c82bbe93edb"
