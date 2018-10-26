@@ -72,10 +72,12 @@ func (c *ValidateSpec) Execute(args []string) error {
 		}
 	}
 	if result.HasErrors() {
+		log.Printf("See errors below:\n")
 		str := fmt.Sprintf(invalidSpecMsg, swaggerDoc, specDoc.Version())
 		for _, desc := range result.Errors {
 			str += fmt.Sprintf("- %s\n", desc.Error())
 		}
+		log.Print(str)
 		return errors.New(str)
 	}
 
