@@ -139,7 +139,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) SetBasePath(bp string) {
 
 // Build a url path and query string
 func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
-  var result url.URL
+  var _result url.URL
 
   var _path = {{ printf "%q" .Path }}
   {{ range .PathParams }}{{ if .IsArray }}
@@ -159,17 +159,17 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
     _basePath = {{ printf "%q" .BasePath }}
   }
   {{ end -}}
-  result.Path = golangswaggerpaths.Join(_basePath, _path)
+  _result.Path = golangswaggerpaths.Join(_basePath, _path)
 
   {{ if gt (len .QueryParams) 0 -}}
   qs := make(url.Values)
   {{ range .QueryParams }}
   {{ template "queryparambuilder" . -}}
   {{- end }}
-  result.RawQuery = qs.Encode()
+  _result.RawQuery = qs.Encode()
   {{- end }}
 
-  return &result, nil
+  return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error
