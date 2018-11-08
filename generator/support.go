@@ -140,7 +140,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Package:           apiPackage,
 		APIPackage:        apiPackage,
 		ModelsPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		Server:            server,
+		ServerImport:      server,
 		ServerPackage:     serverPackage,
 		ClientPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		OperationsPackage: filepath.Join(server, apiPackage),
@@ -160,7 +160,7 @@ type appGenerator struct {
 	Package           string
 	APIPackage        string
 	ModelsPackage     string
-	Server            string
+	ServerImport      string
 	ServerPackage     string
 	ClientPackage     string
 	OperationsPackage string
@@ -274,7 +274,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	importPath := filepath.ToSlash(filepath.Join(baseImport, a.OperationsPackage))
 	app.DefaultImports = append(
 		app.DefaultImports,
-		filepath.ToSlash(filepath.Join(baseImport, a.Server)),
+		filepath.ToSlash(filepath.Join(baseImport, a.ServerImport)),
 		importPath,
 	)
 
@@ -704,10 +704,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	var serverPackageName string
-	if strings.Contains(a.Server, "/") {
-		serverPackageName = a.GenOpts.LanguageOpts.MangleName(a.Server[strings.LastIndex(a.Server, "/")+1:], "server")
+	if strings.Contains(a.ServerImport, "/") {
+		serverPackageName = a.GenOpts.LanguageOpts.MangleName(a.ServerImport[strings.LastIndex(a.ServerImport, "/")+1:], "server")
 	} else {
-		serverPackageName = a.Server
+		serverPackageName = a.ServerImport
 	}
 
 	return GenApp{

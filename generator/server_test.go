@@ -84,7 +84,7 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 		APIPackage:      apiPackage,
 		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		Server:          opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ServerImport:    opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
 		DefaultScheme:   "http",

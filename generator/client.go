@@ -111,7 +111,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		APIPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api"),
 		ModelsPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
 		ServerPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		Server:            opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ServerImport:      opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
 		ClientPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		OperationsPackage: opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
 		Principal:         opts.Principal,
