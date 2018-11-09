@@ -4,6 +4,7 @@ import (
 	"github.com/go-openapi/spec"
 	"strconv"
 	"strings"
+	"errors"
 )
 
 const (
@@ -98,6 +99,10 @@ func (s *setOpParams) Parse(lines []string) error {
 
 		key := strings.ToLower(strings.TrimSpace(kv[0]))
 		value := strings.TrimSpace(kv[1])
+
+		if current == nil {
+			return errors.New("invalid route/operation schema provided")
+		}
 
 		switch key {
 		case ParamDescriptionKey:
