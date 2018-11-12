@@ -169,7 +169,6 @@ func (sd *paramDecl) inferOperationIDs() (opids []string) {
 	}
 
 	if sd.Decl.Doc != nil {
-	DECLS:
 		for _, cmt := range sd.Decl.Doc.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
 				matches := rxParametersOverride.FindStringSubmatch(ln)
@@ -180,12 +179,11 @@ func (sd *paramDecl) inferOperationIDs() (opids []string) {
 							opids = append(opids, tr)
 						}
 					}
-					break DECLS
 				}
 			}
 		}
 	}
-	sd.OperationIDs = opids
+	sd.OperationIDs = append(sd.OperationIDs, opids...)
 	return
 }
 

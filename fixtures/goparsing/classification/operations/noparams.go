@@ -61,7 +61,8 @@ type EmbeddedFileParams struct {
 // An OrderBodyParams model.
 //
 // This is used for operations that want an Order as body of the request
-// swagger:parameters updateOrder createOrder
+// swagger:parameters updateOrder
+// swagger:parameters createOrder
 type OrderBodyParams struct {
 	// The order to submit.
 	//
@@ -105,7 +106,8 @@ type ComplexerOneParams struct {
 // but is not annotated with the swagger params annotations
 // so it should now show up in a test
 //
-// swagger:parameters someOperation anotherOperation
+// swagger:parameters someOperation
+// swagger:parameters anotherOperation
 type NoParams struct {
 	// ID of this no model instance.
 	// ids in this application start at 11 and are smaller than 1000
