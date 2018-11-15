@@ -58,3 +58,4 @@ _book
 tmp/
 cover/
 bin/
+enter-deploy-env.sh
