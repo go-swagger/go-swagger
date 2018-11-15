@@ -5397,7 +5397,7 @@ func initFixture1336() {
 		`		nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer()`,
 		`	if err != nil && err != io.EOF {`,
 		`	var result Graph`,
-		`	result.nodesField = nodes`,
+		`	result.nodesField = propNodes`,
 		`	*m = result`,
 		`func (m Graph) MarshalJSON() ([]byte, error) {`,
 		`	var b1, b2, b3 []byte`,
