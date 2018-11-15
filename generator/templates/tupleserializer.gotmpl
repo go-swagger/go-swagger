@@ -92,20 +92,42 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{ if not .IsBaseType }}
       {{ range .Properties }}
         {{ if or .IsBaseType (not .IsExported) }}
+          {{ if not .Required }}
+  var allOf{{ pascalize .Name }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
+  if string(data.{{ pascalize .Name }}) != "null" {
+    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+    if err != nil && err != io.EOF {
+      return err
+    }
+    allOf{{ pascalize .Name }} = {{ camelize .Name }}
+  }
+          {{else}}
   allOf{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
   if err != nil && err != io.EOF {
     return err
   }
+          {{ end }}
         {{ end }}
       {{ end }}
     {{ end }}
   {{ end }}
   {{ range .Properties }}
     {{ if or .IsBaseType (not .IsExported) }}
+      {{ if not .Required }}
+  var prop{{ pascalize .Name }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
+  if string(data.{{ pascalize .Name }}) != "null" {
+    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+    if err != nil && err != io.EOF {
+      return err
+    }
+    prop{{ pascalize .Name }} = {{ camelize .Name }}
+  }
+      {{else}}
   prop{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
   if err != nil && err != io.EOF {
     return err
   }
+      {{ end }}
     {{ end }}
   {{ end }}
 

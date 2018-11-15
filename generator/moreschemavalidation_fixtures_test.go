@@ -5394,7 +5394,7 @@ func initFixture1336() {
 		`	dec := json.NewDecoder(buf`,
 		`	dec.UseNumber(`,
 		`	if err := dec.Decode(&data); err != nil {`,
-		`	propNodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer()`,
+		`		nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer()`,
 		`	if err != nil && err != io.EOF {`,
 		`	var result Graph`,
 		`	result.nodesField = propNodes`,
