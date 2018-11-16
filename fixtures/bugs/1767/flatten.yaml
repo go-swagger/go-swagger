@@ -1,0 +1,156 @@
+schemes:
+- http
+swagger: "2.0"
+info:
+  description: |
+    #### FHIR API
+  title: FHIR API
+  version: 1.0.0
+host: fhir.test.lan
+basePath: /
+paths:
+  /Patient/{patientID}:
+    get:
+      consumes:
+      - application/fhir+json
+      produces:
+      - application/fhir+json
+      tags:
+      - fhir
+      responses:
+        "200":
+          description: Patient
+          schema:
+            allOf:
+            - $ref: '#/definitions/patient'
+    put:
+      consumes:
+      - application/fhir+json
+      produces:
+      - application/fhir+json
+      tags:
+      - fhir
+      responses:
+        "200":
+          description: Patient
+          schema:
+            allOf:
+            - $ref: '#/definitions/patient'
+    parameters:
+    - type: string
+      description: patient ID
+      name: patientID
+      in: path
+      required: true
+definitions:
+  identifier:
+    description: v3.1.0-12545
+    type: object
+    title: Identifier
+    required:
+    - use
+    properties:
+      assigner:
+        description: Organization
+        allOf:
+        - description: v3.1.0-12545
+          type: object
+          title: reference
+          properties:
+            display:
+              description: Text alternative for the resource
+              type: string
+            identifier:
+              description: Logical reference, when literal reference is not known
+              allOf:
+              - $ref: '#/definitions/identifier'
+            reference:
+              description: Literal reference, Relative, internal or absolute URL
+              type: string
+              example: literal reference
+      system:
+        type: string
+      use:
+        type: string
+        enum:
+        - usual
+        - official
+        - temp
+        - secondary
+        - old
+        example: usual
+      value:
+        description: Some unique value
+        type: string
+  patient:
+    type: object
+    title: Info about patient
+    required:
+    - name
+    properties:
+      active:
+        type: boolean
+      id:
+        type: string
+      identifier:
+        description: Identifier
+        type: array
+        items:
+          allOf:
+          - description: v3.1.0-12545
+            type: object
+            title: Identifier
+            required:
+            - use
+            properties:
+              assigner:
+                description: Organization
+                allOf:
+                - description: v3.1.0-12545
+                  type: object
+                  title: reference
+                  properties:
+                    display:
+                      description: Text alternative for the resource
+                      type: string
+                    identifier:
+                      description: Logical reference, when literal reference is not
+                        known
+                      allOf:
+                      - $ref: '#/definitions/identifier'
+                    reference:
+                      description: Literal reference, Relative, internal or absolute
+                        URL
+                      type: string
+                      example: literal reference
+              system:
+                type: string
+              use:
+                type: string
+                enum:
+                - usual
+                - official
+                - temp
+                - secondary
+                - old
+                example: usual
+              value:
+                description: Some unique value
+                type: string
+      name:
+        description: Name
+        type: string
+parameters:
+  patientID:
+    type: string
+    description: patient ID
+    name: patientID
+    in: path
+    required: true
+responses:
+  Patient:
+    description: Patient
+    schema:
+      allOf:
+      - $ref: '#/definitions/patient'
+

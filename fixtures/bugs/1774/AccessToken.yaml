@@ -1,0 +1,13 @@
+type: object
+properties:
+  value:
+    type: string
+  issuedAt:
+    type: string
+    format: datetime
+  signature:
+    type: string
+required:
+  - value
+  - issuedAt
+  - signature

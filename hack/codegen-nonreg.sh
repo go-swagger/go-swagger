@@ -117,12 +117,18 @@ fixture-1392-3.yaml|\
 )"
 
 # A list of known fixtures not supporting expand mode (not including the discriminator case).
-# Normally, this is because of duplicate names constructed during codegen of anonmyous structures.
+# Normally, this is because of duplicate names constructed during codegen of anonymous structures.
 # This should be solved with proper analysis of names before codegen.
 known_expand_failure="@(\
 todolist.enums.flattened.json|\
-fixture-1479.yaml\
+fixture-1479.yaml|\
 bitbucket.json|\
+)"
+
+# A list of known failures with minimal spec flattening. For those special cases, a full
+# flattening is required
+known_failed_minimal="@(\
+fixture-1767.yaml|\
 )"
 
 if [[ "$1" == "--circleci" ]] ; then
@@ -155,12 +161,15 @@ specdir=${specdir}" fixtures/bugs/957"
 specdir=${specdir}" fixtures/bugs/1614"
 specdir=${specdir}" fixtures/bugs/931"
 specdir=${specdir}" fixtures/bugs/1683"
+specdir=${specdir}" fixtures/bugs/1796"
 gendir=./tmp-gen
 rm -rf ${gendir}
 
 check_list=`for d in ${specdir}; do ls $d/*.yml;ls $d/*.json;ls $d/*.yaml;done 2>/dev/null`
 # there are several subspecs there: we just want the master
 check_list=${check_list}" fixtures/bugs/1621/fixture-1621.yaml"
+check_list=${check_list}" fixtures/bugs/1774/def_api.yaml"
+check_list=${check_list}" fixtures/bugs/1767/fixture-1767.yaml"
 
 list=( $check_list )
 fixtures_count=${#list[@]}
@@ -194,8 +203,15 @@ for spec in ${check_list}; do
         warncr "[`date +%T`]${spec}: will not attempt to build with expand mode because of known issues..."
         run="true"
         opts=""
-        buildClient="false"
+        buildClient="true"
         noexpand="true"
+        ;;
+    ${known_failed_minimal})
+        warncr "[`date +%T`]${spec}: will not attempt to build with flatten minimal mode because of known issues..."
+        run="true"
+        opts=""
+        buildClient="true"
+        noflatten="true"
         ;;
     *)
         infocr "[`date +%T`]${spec}: assumed valid and tested against build."
@@ -219,9 +235,16 @@ for spec in ${check_list}; do
 	            warncr "Skipped ${testcase} with ${preprocessingOpts}: discriminator not supported in this mode"
 	            continue
 	        fi
-            if [[ ${noexpand} != "true" && ${preprocessingOpts} == "--with-flatten=expand" ]] ; then
-                continue
+          if [[ ${noexpand} != "true" && ${preprocessingOpts} == "--with-flatten=expand" ]] ; then
+              continue
+          fi
+          if [[ ${noflatten} == "true" && ( ${preprocessingOpts} == "--with-flatten=minimal" || ${preprocessingOpts} == "" ) ]] ; then
+            if [[ ${OPTS} == "--with-flatten=minimal" ]] ; then
+              preprocessingOpts="--with-flatten=full"
+            else
+              continue
             fi
+          fi
 
 	        target=${gendir}/gen-${testcase%.*}${index}
 	        target_client=${gendir}/gen-${testcase%.*}${index}"-client"

@@ -1,0 +1,75 @@
+{
+    "Query": {
+       "description":
+         "Represents a search query using a boolean expression tree",
+       "type": "object",
+       "properties": {
+         "queryRoot": {
+           "$ref": "#/QueryNode"
+         },
+         "limit": {
+           "type": "integer",
+           "format": "int64"
+         },
+         "offset": {
+           "type": "integer",
+           "format": "int64"
+         }
+       },
+       "x-go-type": {
+           "import": {
+              "package": "bitbucket.di2e.net/scm/pir/ab-models.git",
+              "alias": "models"
+           },
+           "type": "Query"
+       }
+     },
+     "QueryNode": {
+      "description":
+        "Node in a boolean expression tree that represents a query",
+      "type": "object",
+      "properties": {
+        "and": {
+          "type": "array",
+          "items": {
+            "$ref": "#/QueryNode"
+          }
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "$ref": "#/QueryNode"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "$ref": "#/QueryNode"
+          }
+        },
+        "wildcards": {
+          "description":
+            "Array of key/value pairs representing wildcard term matches",
+          "type": "array",
+          "items": {
+            "$ref": "./pair.json#/Pair"
+          }
+        },
+        "exact": {
+          "description":
+            "Array of key/value pairs representing exact term matches",
+          "type": "array",
+          "items": {
+            "$ref": "./pair.json#/Pair"
+          }
+        }
+      },
+      "x-go-type": {
+          "import": {
+            "package": "bitbucket.di2e.net/scm/pir/ab-models.git",
+            "alias": "models"
+          },
+          "type": "QueryNode"
+      }
+    }
+ }

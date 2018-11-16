@@ -1,0 +1,51 @@
+---
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  title: FHIR API
+  description: |
+    #### FHIR API
+schemes:
+- http
+host: "fhir.test.lan"
+basePath: /
+
+parameters:
+  patientID:
+    name: patientID
+    in: path
+    description: "patient ID"
+    type: string
+    required: true
+
+paths:
+  /Patient/{patientID}:
+    parameters:
+    - $ref: "#/parameters/patientID"
+    get:
+      tags:
+      - fhir
+      produces:
+      - application/fhir+json
+      consumes:
+      - application/fhir+json
+      responses:
+        200:
+          $ref: "#/responses/Patient"
+    put:
+      tags:
+      - fhir
+      produces:
+      - application/fhir+json
+      consumes:
+      - application/fhir+json
+      responses:
+        200:
+          $ref: "#/responses/Patient"
+
+responses:
+  Patient:
+    description: "Patient"
+    schema:
+      allOf:
+      - $ref: 'Patient.yaml'

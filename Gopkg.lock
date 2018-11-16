@@ -78,14 +78,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1a3295dc941bb4b1eb160dc19766994d3b82c37deba34680000e93e44feb54e0"
+  digest = "1:48f9a43c330434d61098a65bdf4d8cbfbdc0eecf30ab35b1b88405868df6a42b"
   name = "github.com/go-openapi/analysis"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = ""
-  revision = "c701774f4e604d952e4e8c56dee260be696e33c3"
+  revision = "e2f3fdbb7ed0e56e070ccbfb6fc75b288a33c014"
 
 [[projects]]
   branch = "master"
