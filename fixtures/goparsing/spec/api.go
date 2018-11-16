@@ -55,6 +55,8 @@ type BookingResponse struct {
 		Booking  makeplans.Booking `json:"booking"`
 		Customer Customer          `json:"customer"`
 		Dates    DateRange         `json:"dates"`
+		// example: {"key": "value"}
+		Map map[string]string `json:"map"`
 	}
 }
 

@@ -80,3 +80,10 @@ responses:
           "$ref": "#/definitions/Customer"
         dates:
           "$ref": "#/definitions/DateRange"
+        map:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            key: value
+          x-go-name: Map

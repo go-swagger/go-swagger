@@ -15,6 +15,7 @@
 package scan
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -307,6 +308,12 @@ func parseValueFromSchema(s string, schema *spec.SimpleSchema) (interface{}, err
 			return strconv.ParseBool(s)
 		case "number", "float64", "float32":
 			return strconv.ParseFloat(s, 64)
+		case "object":
+			var obj map[string]interface{}
+			if err := json.Unmarshal([]byte(s), &obj); err != nil {
+				return nil, err
+			}
+			return obj, nil
 		default:
 			return s, nil
 		}
