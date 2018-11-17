@@ -51,14 +51,18 @@ func debugLog(frmt string, args ...interface{}) {
 // debugLogAsJSON unmarshals its last arg as pretty JSON
 func debugLogAsJSON(frmt string, args ...interface{}) {
 	if Debug {
+		var dfrmt string
 		_, file, pos, _ := runtime.Caller(1)
+		dargs := make([]interface{}, 0, len(args)+2)
+		dargs = append(dargs, filepath.Base(file), pos)
 		if len(args) > 0 {
+			dfrmt = "%s:%d: " + frmt + "\n%s"
 			bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ")
-			generatorLogger.Printf("%s:%d: %s\n%s", filepath.Base(file), pos,
-				fmt.Sprintf(frmt, args[0:len(args)-1]...), string(bbb))
+			dargs = append(dargs, args[0:len(args)-1]...)
+			dargs = append(dargs, string(bbb))
 		} else {
-			generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
-				fmt.Sprintf(frmt, args...))
+			dfrmt = "%s:%d: " + frmt
 		}
+		generatorLogger.Printf(dfrmt, dargs...)
 	}
 }

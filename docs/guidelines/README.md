@@ -23,7 +23,7 @@ go install github.com/go-swagger/go-swagger/cmd/swagger
 Running standard unit tests:
 ```bash
 go test ./...
-``` 
+```
 
 More advanced tests are run by CI. See [below](#continuous-integration).
 
@@ -49,7 +49,7 @@ stable `go-openapi` repos. We manage this with build tags. Notice the very
 important blank line after your build tag comment line.
 
 Example (from `go-openapi/swag`):
-```go 
+```go
 // +build !go1.8
 
 package swag
@@ -61,7 +61,7 @@ func pathUnescape(path string) (string, error) {
 }
 ```
 
-All repos should remain go-gettable (i.e. available with the `go get ...` command) 
+All repos should remain go-gettable (i.e. available with the `go get ...` command)
 and testable with `go test ./...`
 
 ### Continuous integration
@@ -107,7 +107,7 @@ Deprecated engines:
 The script `./hack/codegen-nonreg.sh` runs on CI with a single generation option.
 You may run it manually to explore more generation options (expand spec, flatten, etc...).
 
-CircleCI has a separate CI workflow to build releases, baking and checking newly released docker 
+CircleCI has a separate CI workflow to build releases, baking and checking newly released docker
 images.
 
 ##### go-openapi repos
@@ -152,13 +152,14 @@ With `go-swagger` (vendored):
 to get the proper version of the required dependency from the unmerged branch (e.g. from your fork)
 
 With `go-openapi` (non vendored):
-- for your "WIP" PR, temporarily alter the CI config script (e.g. `.travis.yml`) and 
+- for your "WIP" PR, temporarily alter the CI config script (e.g. `.travis.yml`) and
 replace the `go get` requirements to build your CI with the adequate `git clone`
 pointing to the required branches
 
 ### Update templates
 
 `go-swagger` is built with an in-memory image of templates.
+
 Binary encoded assets are auto-generated from the `generator/templates` directory using `bindata`
 (the result is `generator/bindata.go`).
 
@@ -172,13 +173,13 @@ For `bindata` please use the fork found at: `github.com/kevinburke/go-bindata`.
 
 > **NOTE**: we are carrying out unit tests on codegen mostly by asserting lines in generated code.
 > There is a bunch of test utility functions for this. See `generator/*_test.go`.
-> If you want to bring in more advanced testing go programs with your fixtures, please tag 
+> If you want to bring in more advanced testing go programs with your fixtures, please tag
 > those so they don't affect the `go ./...` command (e.g. with `// +build +integration`).
 
 ### Updating examples
 
 Whenever code generation rules change, we feel it is important to maintain
-consistency with the generated code provided as examples.  
+consistency with the generated code provided as examples.
 
 The script `./hack/regen-samples.sh` does just that.
 
