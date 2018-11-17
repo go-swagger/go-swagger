@@ -1,0 +1,127 @@
+swagger: "2.0"
+info:
+  title: fixture 1755
+  version: 0.1.0
+paths:
+  /assets:
+    post:
+      description: >-
+        Create a new ressource
+      operationId: registerAsset
+      tags:
+        - Assets
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          description: New Asset
+          required: true
+          name: assetProperties
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AssetProperties'
+            minItems: 1
+      responses:
+        '201':
+          description: Asset successfully created.
+  /assets2:
+    post:
+      operationId: registerAsset2
+      tags:
+        - Assets
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          required: true
+          name: assetProperties3
+          schema:
+            type: array
+            items:
+              type: array
+              maxItems: 10
+              items:
+                $ref: '#/definitions/AssetProperties'
+      responses:
+        '201':
+          description: Asset successfully created.
+  /assets3:
+    post:
+      operationId: registerAsset3
+      tags:
+        - Assets
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          required: true
+          name: assetProperties3
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/definitions/AssetProperties'
+      responses:
+        '201':
+          description: Asset successfully created.
+  /assets4:
+    post:
+      operationId: registerAsset4
+      tags:
+        - Assets
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          required: true
+          name: assetProperties4
+          schema:
+            type: array
+            items:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/definitions/AssetProperties'
+      responses:
+        '201':
+          description: Asset successfully created.
+  /assets5:
+    post:
+      operationId: registerAsset5
+      tags:
+        - Assets
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          required: true
+          name: assetProperties5
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              maxItems: 10
+              items:
+                type: object
+      responses:
+        '201':
+          description: Asset successfully created.
+definitions:
+  AssetProperties:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of Asset

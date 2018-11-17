@@ -1721,8 +1721,9 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`				if err := body[i].Validate(route.Formats); err != nil {`,
 				`					res = append(res, err)`,
 				`					break`,
-				`			if len(res) == 0 {`,
-				`				o.MyObject = body`,
+				// removed redundant assignment
+				//`			if len(res) == 0 {`,
+				//`				o.MyObject = body`,
 				`	if len(res) > 0 {`,
 				`		return errors.CompositeValidationError(res...)`,
 			},
@@ -4270,4 +4271,25 @@ func TestGenParameter_1637(t *testing.T) {
 		},
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1637", "fixture-1637.yaml"), true, false)
+}
+
+func TestGenParameter_1755(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1755.yaml with minimal flatten
+	// body param is array with slice validation (e.g. minItems)
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"registerAsset": { // fixture index
+			"serverParameter": { // executed template
+				`o.AssetProperties = body`,
+				`assetPropertiesSize := int64(len(o.AssetProperties))`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1755", "fixture-1755.yaml"), true, false)
 }
