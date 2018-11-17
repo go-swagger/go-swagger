@@ -470,7 +470,7 @@ func TestShared_Issue1621(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = specPath
 	opts.ValidateSpec = true
-	t.Logf("path: %s", specDoc.SpecFilePath())
+	//t.Logf("path: %s", specDoc.SpecFilePath())
 	_, err = validateAndFlattenSpec(&opts, specDoc)
 	assert.NoError(t, err)
 }
