@@ -4279,7 +4279,7 @@ func TestGenParameter_1755(t *testing.T) {
 		log.SetOutput(os.Stdout)
 	}()
 	// testing fixture-1755.yaml with minimal flatten
-	// body param is array with slice validation (e.g. minItems)
+	// body param is array with slice validation (e.g. minItems): initialize array with body
 
 	fixtureConfig := map[string]map[string][]string{
 
