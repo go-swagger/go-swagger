@@ -121,14 +121,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5cafc6762b1b7fe5ba5dd290c087bab2f88abb9c93dd1d5ae1bc259952c0387e"
+  digest = "1:40bdfd6462aa3addaa8d1a9c042503deffe5f4ff441224b258fe1376a12d9162"
   name = "github.com/go-openapi/loads"
   packages = [
     ".",
     "fmts",
   ]
   pruneopts = ""
-  revision = "150d36912387ec2f607be674c5be309ddccc0eed"
+  revision = "0362c6bf32fb5b266bde0f64fdc81092c7a599c7"
 
 [[projects]]
   branch = "master"
@@ -166,11 +166,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:062de20b7d299ae95c902a5c472c4bc87a2f3ae707751fe155ecf640d99074b4"
+  digest = "1:52e268f92bc7adac47ca908335bfd9f90e010c492c59797031cf99ec1caff4e2"
   name = "github.com/go-openapi/swag"
   packages = ["."]
   pruneopts = ""
-  revision = "5899d5c5e619fda5fa86e14795a835f473ca284c"
+  revision = "a0a2ec671c17745100b0116b950a1cd55fd22552"
 
 [[projects]]
   branch = "master"

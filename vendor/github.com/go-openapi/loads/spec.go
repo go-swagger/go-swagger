@@ -16,6 +16,7 @@ package loads
 
 import (
 	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -176,8 +177,8 @@ func Analyzed(data json.RawMessage, version string) (*Document, error) {
 		return nil, err
 	}
 
-	origsqspec := new(spec.Swagger)
-	if err := json.Unmarshal(raw, origsqspec); err != nil {
+	origsqspec, err := cloneSpec(swspec)
+	if err != nil {
 		return nil, err
 	}
 
@@ -276,4 +277,16 @@ func (d *Document) Pristine() *Document {
 // SpecFilePath returns the file path of the spec if one is defined
 func (d *Document) SpecFilePath() string {
 	return d.specFilePath
+}
+
+func cloneSpec(src *spec.Swagger) (*spec.Swagger, error) {
+	var b bytes.Buffer
+	if err := gob.NewEncoder(&b).Encode(src); err != nil {
+		return nil, err
+	}
+	var dst spec.Swagger
+	if err := gob.NewDecoder(&b).Decode(&dst); err != nil {
+		return nil, err
+	}
+	return &dst, nil
 }
