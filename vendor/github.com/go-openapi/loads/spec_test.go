@@ -1,3 +1,17 @@
+// Copyright 2015 go-swagger maintainers
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package loads
 
 import (
@@ -234,7 +248,7 @@ func BenchmarkAnalyzed(b *testing.B) {
     }`)...)
 	}
 
-  d = append(d, []byte(`
+	d = append(d, []byte(`
   },
   "definitions": {
     "Category": {
@@ -354,8 +368,8 @@ func BenchmarkAnalyzed(b *testing.B) {
   }
 }
 `)...)
-  rm := json.RawMessage(d)
-  b.ResetTimer()
+	rm := json.RawMessage(d)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, err := Analyzed(rm, "")
 		if err != nil {
@@ -364,7 +378,7 @@ func BenchmarkAnalyzed(b *testing.B) {
 	}
 }
 
-var YAMLSpec = `swagger: '2.0'
+const YAMLSpec = `swagger: '2.0'
 
 info:
   version: "1.0.0"
@@ -827,20 +841,20 @@ const PetStore20 = `{
 `
 
 const expectedExpanded = `
-{  
-   "produces":[  
+{
+   "produces":[
       "application/json",
       "plain/text"
    ],
-   "schemes":[  
+   "schemes":[
       "https",
       "http"
    ],
    "swagger":"2.0",
-   "info":{  
+   "info":{
       "description":"Something",
       "title":"Something",
-      "contact":{  
+      "contact":{
          "name":"Somebody",
          "url":"https://url.com",
          "email":"email@url.com"
@@ -849,49 +863,49 @@ const expectedExpanded = `
    },
    "host":"security.sonusnet.com",
    "basePath":"/api",
-   "paths":{  
-      "/whatnot":{  
-         "get":{  
+   "paths":{
+      "/whatnot":{
+         "get":{
             "description":"Get something",
-            "responses":{  
-               "200":{  
+            "responses":{
+               "200":{
                   "description":"The something",
-                  "schema":{  
+                  "schema":{
                      "description":"A collection of service events",
                      "type":"object",
-                     "properties":{  
-                        "page":{  
+                     "properties":{
+                        "page":{
                            "description":"A description of a paged result",
                            "type":"object",
-                           "properties":{  
-                              "page":{  
+                           "properties":{
+                              "page":{
                                  "description":"the page that was requested",
                                  "type":"integer"
                               },
-                              "page_items":{  
+                              "page_items":{
                                  "description":"the number of items per page requested",
                                  "type":"integer"
                               },
-                              "pages":{  
+                              "pages":{
                                  "description":"the total number of pages available",
                                  "type":"integer"
                               },
-                              "total_items":{  
+                              "total_items":{
                                  "description":"the total number of items available",
                                  "type":"integer",
                                  "format":"int64"
                               }
                            }
                         },
-                        "something":{  
+                        "something":{
                            "description":"Something",
                            "type":"object",
-                           "properties":{  
-                              "p1":{  
+                           "properties":{
+                              "p1":{
                                  "description":"A string",
                                  "type":"string"
                               },
-                              "p2":{  
+                              "p2":{
                                  "description":"An integer",
                                  "type":"integer"
                               }
@@ -900,50 +914,50 @@ const expectedExpanded = `
                      }
                   }
                },
-               "500":{  
+               "500":{
                   "description":"Oops"
                }
             }
          }
       }
    },
-   "definitions":{  
-      "Something":{  
+   "definitions":{
+      "Something":{
          "description":"A collection of service events",
          "type":"object",
-         "properties":{  
-            "page":{  
+         "properties":{
+            "page":{
                "description":"A description of a paged result",
                "type":"object",
-               "properties":{  
-                  "page":{  
+               "properties":{
+                  "page":{
                      "description":"the page that was requested",
                      "type":"integer"
                   },
-                  "page_items":{  
+                  "page_items":{
                      "description":"the number of items per page requested",
                      "type":"integer"
                   },
-                  "pages":{  
+                  "pages":{
                      "description":"the total number of pages available",
                      "type":"integer"
                   },
-                  "total_items":{  
+                  "total_items":{
                      "description":"the total number of items available",
                      "type":"integer",
                      "format":"int64"
                   }
                }
             },
-            "something":{  
+            "something":{
                "description":"Something",
                "type":"object",
-               "properties":{  
-                  "p1":{  
+               "properties":{
+                  "p1":{
                      "description":"A string",
                      "type":"string"
                   },
-                  "p2":{  
+                  "p2":{
                      "description":"An integer",
                      "type":"integer"
                   }
@@ -956,45 +970,45 @@ const expectedExpanded = `
 `
 
 const cascadeRefExpanded = `
-{ 
+{
   "swagger": "2.0",
-  "consumes":[  
+  "consumes":[
      "application/json"
   ],
-  "produces":[  
+  "produces":[
      "application/json"
   ],
-  "schemes":[  
+  "schemes":[
      "http"
   ],
-  "info":{  
+  "info":{
      "description":"recursively following JSON references",
      "title":"test 1",
-     "contact":{  
+     "contact":{
         "name":"Fred"
      },
      "version":"0.1.1"
   },
-  "paths":{  
-     "/getAll":{  
-        "get":{  
+  "paths":{
+     "/getAll":{
+        "get":{
            "operationId":"getAll",
-           "parameters":[  
-              {  
+           "parameters":[
+              {
                  "description":"max number of results",
                  "name":"a",
                  "in":"body",
-                 "schema":{  
+                 "schema":{
                     "type":"string"
                  }
               }
            ],
-           "responses":{  
-              "200":{  
+           "responses":{
+              "200":{
                  "description":"Success",
-                 "schema":{  
+                 "schema":{
                     "type":"array",
-                    "items":{  
+                    "items":{
                        "type":"string"
                     }
                  }
@@ -1003,13 +1017,13 @@ const cascadeRefExpanded = `
         }
      }
   },
-  "definitions":{  
-     "a":{  
+  "definitions":{
+     "a":{
         "type":"string"
      },
-     "b":{  
+     "b":{
         "type":"array",
-        "items":{  
+        "items":{
            "type":"string"
         }
      }

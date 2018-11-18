@@ -121,14 +121,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:40bdfd6462aa3addaa8d1a9c042503deffe5f4ff441224b258fe1376a12d9162"
+  digest = "1:abfbaaa212d1b2e50f62b9e546f4197bf2d2d97308db9b367d88c238a83774d9"
   name = "github.com/go-openapi/loads"
   packages = [
     ".",
     "fmts",
   ]
   pruneopts = ""
-  revision = "0362c6bf32fb5b266bde0f64fdc81092c7a599c7"
+  revision = "d72cd69e9468f55c6369c5481c3d011401728c72"
 
 [[projects]]
   branch = "master"
