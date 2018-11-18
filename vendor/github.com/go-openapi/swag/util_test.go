@@ -67,6 +67,25 @@ func TestToGoName(t *testing.T) {
 	}
 }
 
+func BenchmarkToGoName(b *testing.B) {
+	samples := []string{
+		"sample text",
+		"sample-text",
+		"sample_text",
+		"sampleText",
+		"sample 2 Text",
+		"findThingById",
+		"日本語sample 2 Text",
+		"日本語findThingById",
+		"findTHINGSbyID",
+	}
+	for i := 0; i < b.N; i++ {
+		for _, s := range samples {
+			ToGoName(s)
+		}
+	}
+}
+
 func TestContainsStringsCI(t *testing.T) {
 	list := []string{"hello", "world", "and", "such"}
 

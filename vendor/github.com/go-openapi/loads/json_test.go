@@ -32,7 +32,7 @@ func TestLoadJSON(t *testing.T) {
 
 	ts2 := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusNotFound)
-		rw.Write([]byte("{}"))
+		_, _ = rw.Write([]byte("{}"))
 	}))
 	defer ts2.Close()
 	_, err = JSONSpec(ts2.URL)
@@ -41,7 +41,7 @@ func TestLoadJSON(t *testing.T) {
 
 var jsonPestoreServer = func(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte(petstoreJSON))
+	_, _ = rw.Write([]byte(petstoreJSON))
 }
 
 const petstoreJSON = `{
