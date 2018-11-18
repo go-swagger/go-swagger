@@ -1,0 +1,200 @@
+---
+swagger: "2.0"
+info:
+  description: "Deterministic or pseudo-random data generator"
+  version: "1.0.0"
+  title: "Pseudo Service"
+  contact:
+    name: "https://github.com/bgadrian"
+  license:
+    name: "AGPL 2.0"
+host: "localhost"
+basePath: "/"
+schemes:
+- "http"
+#- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+parameters:
+  count:
+    name: "count"
+    in: "path"
+    description: "How many results to generate."
+    required: true
+    type: integer
+    format: "int32"
+    maximum: 500
+    minimum: 1
+  seed:
+    name: "seed"
+    format: "int64"
+    in: "query"
+    description: "The seed for the pseudo-random generator. For each unique value the same results will be given. If no seed is provided a pseudo-random one will be generated (rand.Int63)."
+    required: false
+    type: "integer"
+paths:
+  /health:
+    get:
+      description: "Get the health of the service"
+      responses:
+        200:
+          description: "Everything is fine"
+        default:
+          description: "Service is not available"
+  /custom/{count}:
+    get:
+      description: "Generate results based on a pattern/template."
+      parameters:
+      - $ref: "#/parameters/count"
+      - $ref: "#/parameters/seed"
+      - in: query
+        name: "template"
+        type: "string"
+        description: "The template used to generate the results, eg: 'My name is ~name~'"
+        required: true
+        minLength: 1
+        maxLength: 1024
+      responses:
+        200:
+          description: "The results were successfully generated"
+          schema:
+            $ref: "#/definitions/CustomResponseModel"
+        default:
+          description: "Error occurred"
+          schema:
+            $ref: "#/definitions/ErrorModel"
+      security:
+      - apikey: []
+  /users/{count}:
+    get:
+      description: "Get a random user"
+      parameters:
+      - $ref: "#/parameters/count"
+      - $ref: "#/parameters/seed"
+      responses:
+        200:
+          description: "The users were successfully generated"
+          schema:
+            $ref: "#/definitions/UserResponseModel"
+        default:
+          description: "Error occurred"
+          schema:
+            $ref: "#/definitions/ErrorModel"
+securityDefinitions:
+  apikey:
+    type: "apiKey"
+    name: "token"
+    in: "query"
+security: #apply the apikey to all endpoints
+- apikey: []
+definitions:
+  User:
+    type: "object"
+    required:
+    - "id"
+    - "name"
+    properties:
+      id:
+        type: "string"
+        format: "uuid"
+        example: "356b1896-ee58-4fd8-931d-4cfaee21158e"
+        description: "UUID for this user"
+      age:
+        type: "number"
+        format: "int32"
+        minimum: 0
+        maximum: 255
+      name:
+        type: "string"
+        example: "John Doe"
+        description: "First and Last name"
+      Company:
+        type: "string"
+        example: "De-engineered niches Group"
+      position:
+        type: "string"
+        example: "Central Branding Producer"
+      email:
+        type: "string"
+        example: "john@mambo.dot"
+      country:
+        type: "string"
+        example: "Romania"
+      friends:
+        type: "array"
+        example:
+        - "356b1896-ee58-4fd8-931d-4cfaee21158e"
+        - "3d813194-e9ed-4b09-a1ae-301b83bfdd9d"
+        description: "Random list of UUIDs from the same response. To increase the chance of having friends request for bigger batches."
+        items:
+          type: "string"
+          example: "356b1896-ee58-4fd8-931d-4cfaee21158e"
+          description: "UUID for this friend"
+    example:
+      id: "356b1896-ee58-4fd8-931d-4cfaee21158e"
+      age: 33
+      name: "John Doe"
+      company: "De-engineered niches Group"
+      position: "Central Branding Producer"
+      email: "john@mambo.dot"
+      country: "Romania"
+      friends:
+      - "3d813194-e9ed-4b09-a1ae-301b83bfdd9d"
+      - "356b1896-ee58-4fd8-931d-4cfaee21158e"
+  UserResponseModel:
+    type: "object"
+    properties:
+      seed:
+        type: "integer"
+        format: "int64"
+        description: "Number that was used to generate these users"
+      nextseed:
+        type: "integer"
+        format: "int64"
+        description: "Use this to get the next users from the deterministic series"
+      users:
+        type: "array"
+        items:
+          $ref: "#/definitions/User"
+    example:
+      nextseed: 6
+      seed: 0
+      users:
+      - id: "356b1896-ee58-4fd8-931d-4cfaee21158e"
+        age: 33
+        name: "John Doe"
+        company: "De-engineered niches Group"
+        position: "Central Branding Producer"
+        email: "john@mambo.dot"
+        country: "Romania"
+        friends:
+        - "3d813194-e9ed-4b09-a1ae-301b83bfdd9d"
+        - "356b1896-ee58-4fd8-931d-4cfaee21158e"
+  ErrorModel:
+    type: "object"
+    required:
+    - "code"
+    - "message"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+    example:
+      code: 42
+      message: "Something went wrong"
+  CustomResponseModel:
+    type: "object"
+    properties:
+      seed:
+        type: "integer"
+        format: "int64"
+        description: "Number that was used to generate these results"
+      results:
+        type: array
+        items:
+          type: string
+          description: "One result is one template with random data"
