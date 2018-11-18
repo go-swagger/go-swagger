@@ -45,7 +45,6 @@ func testGenOpts() (g GenOpts) {
 	g.IncludeSupport = true
 	g.ExcludeSpec = true
 	g.TemplateDir = ""
-	g.WithContext = false
 	g.DumpData = false
 	_ = g.EnsureDefaults()
 	return

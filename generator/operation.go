@@ -150,7 +150,6 @@ type operationGenerator struct {
 	IncludeResponses  bool
 	IncludeValidator  bool
 	DumpData          bool
-	WithContext       bool
 
 	Principal            string
 	Target               string
@@ -212,7 +211,6 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
 	bldr.RootAPIPackage = o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, "server")
-	bldr.WithContext = o.WithContext
 	bldr.GenOpts = o.GenOpts
 	bldr.DefaultConsumes = o.DefaultConsumes
 	bldr.IncludeValidator = o.IncludeValidator
@@ -259,7 +257,6 @@ func (o *operationGenerator) Generate() error {
 }
 
 type codeGenOpBuilder struct {
-	WithContext      bool
 	Authed           bool
 	IncludeValidator bool
 
@@ -524,7 +521,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ProducesMediaTypes:   produces,
 		ConsumesMediaTypes:   consumes,
 		ExtraSchemes:         extraSchemes,
-		WithContext:          b.WithContext,
 		TimeoutName:          timeoutName,
 		Extensions:           operation.Extensions,
 	}, nil

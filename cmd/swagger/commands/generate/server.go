@@ -44,6 +44,11 @@ type Server struct {
 }
 
 func (s *Server) getOpts() (*generator.GenOpts, error) {
+	// warning: deprecation
+	if s.WithContext {
+		log.Printf("warning: deprecated option --with-context is ignored")
+	}
+
 	return &generator.GenOpts{
 		Spec:                   string(s.Spec),
 		Target:                 string(s.Target),
@@ -66,7 +71,6 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		Template:               s.Template,
 		RegenerateConfigureAPI: s.RegenerateConfigureAPI,
 		TemplateDir:            string(s.TemplateDir),
-		WithContext:            s.WithContext,
 		DumpData:               s.DumpData,
 		Models:                 s.Models,
 		Operations:             s.Operations,

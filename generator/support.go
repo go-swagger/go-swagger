@@ -596,7 +596,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		bldr.Security = a.Analyzed.SecurityRequirementsFor(o)
 		bldr.SecurityDefinitions = a.Analyzed.SecurityDefinitionsFor(o)
 		bldr.RootAPIPackage = a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, "server")
-		bldr.WithContext = a.GenOpts != nil && a.GenOpts.WithContext
 		bldr.IncludeValidator = true
 
 		bldr.APIPackage = a.APIPackage
@@ -672,7 +671,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			DefaultImports: defaultImports,
 			Imports:        imports,
 			RootPackage:    a.APIPackage,
-			WithContext:    a.GenOpts != nil && a.GenOpts.WithContext,
 			GenOpts:        a.GenOpts,
 		}
 		opGroups = append(opGroups, opGroup)
@@ -736,7 +734,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		SwaggerJSON:         generateReadableSpec(jsonb),
 		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
-		WithContext:         a.GenOpts != nil && a.GenOpts.WithContext,
 		GenOpts:             a.GenOpts,
 	}, nil
 }
