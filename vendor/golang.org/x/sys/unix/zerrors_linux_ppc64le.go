@@ -1020,6 +1020,8 @@ const (
 	MNT_DETACH                           = 0x2
 	MNT_EXPIRE                           = 0x4
 	MNT_FORCE                            = 0x1
+	MODULE_INIT_IGNORE_MODVERSIONS       = 0x1
+	MODULE_INIT_IGNORE_VERMAGIC          = 0x2
 	MSDOS_SUPER_MAGIC                    = 0x4d44
 	MSG_BATCH                            = 0x40000
 	MSG_CMSG_CLOEXEC                     = 0x40000000

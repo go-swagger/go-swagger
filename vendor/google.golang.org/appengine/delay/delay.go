@@ -46,6 +46,7 @@ package delay // import "google.golang.org/appengine/delay"
 
 import (
 	"bytes"
+	stdctx "context"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -89,7 +90,13 @@ var (
 
 	// context keys
 	headersContextKey contextKey = 0
+	stdContextType               = reflect.TypeOf((*stdctx.Context)(nil)).Elem()
+	netContextType               = reflect.TypeOf((*context.Context)(nil)).Elem()
 )
+
+func isContext(t reflect.Type) bool {
+	return t == stdContextType || t == netContextType
+}
 
 // Func declares a new Function. The second argument must be a function with a
 // first argument of type context.Context.

@@ -7,10 +7,10 @@
 // using the golang.org/x/tools/go/packages API to load packages in any
 // build system.
 //
-// Each analysis flag name is preceded by the analysis name: --analysis.flag.
-// In addition, the --analysis.enabled flag controls whether the
-// diagnostics of that analysis are displayed. (A disabled analysis may yet
-// be run if it is required by some other analysis that is enabled.)
+// Each analyzer flag name is preceded by the analyzer name: -NAME.flag.
+// In addition, the -NAME flag itself controls whether the
+// diagnostics of that analyzer are displayed. (A disabled analyzer may yet
+// be run if it is required by some other analyzer that is enabled.)
 package main
 
 import (
@@ -25,24 +25,27 @@ import (
 	"golang.org/x/tools/go/analysis/passes/cgocall"
 	"golang.org/x/tools/go/analysis/passes/composite"
 	"golang.org/x/tools/go/analysis/passes/copylock"
-	"golang.org/x/tools/go/analysis/passes/findcall"
 	"golang.org/x/tools/go/analysis/passes/httpresponse"
 	"golang.org/x/tools/go/analysis/passes/loopclosure"
 	"golang.org/x/tools/go/analysis/passes/lostcancel"
 	"golang.org/x/tools/go/analysis/passes/nilfunc"
 	"golang.org/x/tools/go/analysis/passes/nilness"
-	"golang.org/x/tools/go/analysis/passes/pkgfact"
 	"golang.org/x/tools/go/analysis/passes/printf"
 	"golang.org/x/tools/go/analysis/passes/shift"
 	"golang.org/x/tools/go/analysis/passes/stdmethods"
 	"golang.org/x/tools/go/analysis/passes/structtag"
 	"golang.org/x/tools/go/analysis/passes/tests"
+	"golang.org/x/tools/go/analysis/passes/unmarshal"
 	"golang.org/x/tools/go/analysis/passes/unreachable"
 	"golang.org/x/tools/go/analysis/passes/unsafeptr"
 	"golang.org/x/tools/go/analysis/passes/unusedresult"
 )
 
 func main() {
+	// This suite of analyzers is applied to all code
+	// in GOROOT by GOROOT/src/cmd/vet/all. When adding
+	// a new analyzer, update the whitelist used by vet/all,
+	// or change its vet command to disable the new analyzer.
 	multichecker.Main(
 		// the traditional vet suite:
 		asmdecl.Analyzer,
@@ -57,25 +60,21 @@ func main() {
 		loopclosure.Analyzer,
 		lostcancel.Analyzer,
 		nilfunc.Analyzer,
-		pkgfact.Analyzer,
 		printf.Analyzer,
-		// shadow.Analyzer, // experimental; not enabled by default
 		shift.Analyzer,
 		stdmethods.Analyzer,
 		structtag.Analyzer,
 		tests.Analyzer,
+		unmarshal.Analyzer,
 		unreachable.Analyzer,
 		unsafeptr.Analyzer,
 		unusedresult.Analyzer,
 
 		// for debugging:
-		findcall.Analyzer,
+		// findcall.Analyzer,
+		// pkgfact.Analyzer,
 
-		// use SSA:
+		// uses SSA:
 		nilness.Analyzer,
-
-		// Work in progress:
-		// httpheader.Analyzer,
-		// deadcode.Analyzer,
 	)
 }

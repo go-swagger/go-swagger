@@ -237,7 +237,7 @@ func PrintfTests() {
 	Printf("%T", someFunction) // ok: maybe someone wants to see the type
 	// Bug: used to recur forever.
 	Printf("%p %x", recursiveStructV, recursiveStructV.next)
-	Printf("%p %x", recursiveStruct1V, recursiveStruct1V.next)
+	Printf("%p %x", recursiveStruct1V, recursiveStruct1V.next) // want `Printf format %x has arg recursiveStruct1V\.next of wrong type \*a\.RecursiveStruct2`
 	Printf("%p %x", recursiveSliceV, recursiveSliceV)
 	Printf("%p %x", recursiveMapV, recursiveMapV)
 	// Special handling for Log.
@@ -514,6 +514,19 @@ func (p *recursivePtrStringer) String() string {
 	return fmt.Sprintln(p) // want "Sprintln arg p causes recursive call to String method"
 }
 
+type cons struct {
+	car int
+	cdr *cons
+}
+
+func (cons *cons) String() string {
+	if cons == nil {
+		return "nil"
+	}
+	_ = fmt.Sprint(cons.cdr)                            // don't want "recursive call" diagnostic
+	return fmt.Sprintf("(%d . %v)", cons.car, cons.cdr) // don't want "recursive call" diagnostic
+}
+
 type BoolFormatter bool
 
 func (*BoolFormatter) Format(fmt.State, rune) {
@@ -652,6 +665,40 @@ func dbg(format string, args ...interface{}) {
 		format = "%v"
 	}
 	fmt.Printf(format, args...)
+}
+
+func PointersToCompoundTypes() {
+	stringSlice := []string{"a", "b"}
+	fmt.Printf("%s", &stringSlice) // not an error
+
+	intSlice := []int{3, 4}
+	fmt.Printf("%s", &intSlice) // want `Printf format %s has arg &intSlice of wrong type \*\[\]int`
+
+	stringArray := [2]string{"a", "b"}
+	fmt.Printf("%s", &stringArray) // not an error
+
+	intArray := [2]int{3, 4}
+	fmt.Printf("%s", &intArray) // want `Printf format %s has arg &intArray of wrong type \*\[2\]int`
+
+	stringStruct := struct{ F string }{"foo"}
+	fmt.Printf("%s", &stringStruct) // not an error
+
+	intStruct := struct{ F int }{3}
+	fmt.Printf("%s", &intStruct) // want `Printf format %s has arg &intStruct of wrong type \*struct{F int}`
+
+	stringMap := map[string]string{"foo": "bar"}
+	fmt.Printf("%s", &stringMap) // not an error
+
+	intMap := map[int]int{3: 4}
+	fmt.Printf("%s", &intMap) // want `Printf format %s has arg &intMap of wrong type \*map\[int\]int`
+
+	type T2 struct {
+		X string
+	}
+	type T1 struct {
+		X *T2
+	}
+	fmt.Printf("%s\n", T1{&T2{"x"}}) // want `Printf format %s has arg T1{&T2{.x.}} of wrong type a\.T1`
 }
 
 // Printf wrappers from external package

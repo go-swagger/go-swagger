@@ -293,10 +293,10 @@ func TestSchemaErrors(t *testing.T) {
 	assert.EqualValues(t, CompositeErrorCode, err2.Code())
 	assert.Equal(t, "validation failure list", err2.Error())
 
-	err2 = CompositeValidationError(fmt.Errorf("First error"), fmt.Errorf("Second error"))
+	err2 = CompositeValidationError(fmt.Errorf("first error"), fmt.Errorf("second error"))
 	assert.Error(t, err2)
 	assert.EqualValues(t, CompositeErrorCode, err2.Code())
-	assert.Equal(t, "validation failure list:\nFirst error\nSecond error", err2.Error())
+	assert.Equal(t, "validation failure list:\nfirst error\nsecond error", err2.Error())
 
 	//func MultipleOfMustBePositive(name, in string, factor interface{}) *Validation {
 	err = MultipleOfMustBePositive("path", "body", float64(-10))

@@ -388,6 +388,36 @@ func TestEnv(t *testing.T) {
 
 }
 
+func TestEmptyEnv(t *testing.T) {
+	initJSON()
+
+	BindEnv("type") // Empty environment variable
+	BindEnv("name") // Bound, but not set environment variable
+
+	os.Clearenv()
+
+	os.Setenv("TYPE", "")
+
+	assert.Equal(t, "donut", Get("type"))
+	assert.Equal(t, "Cake", Get("name"))
+}
+
+func TestEmptyEnv_Allowed(t *testing.T) {
+	initJSON()
+
+	AllowEmptyEnv(true)
+
+	BindEnv("type") // Empty environment variable
+	BindEnv("name") // Bound, but not set environment variable
+
+	os.Clearenv()
+
+	os.Setenv("TYPE", "")
+
+	assert.Equal(t, "", Get("type"))
+	assert.Equal(t, "Cake", Get("name"))
+}
+
 func TestEnvPrefix(t *testing.T) {
 	initJSON()
 
@@ -583,24 +613,28 @@ func TestBindPFlags(t *testing.T) {
 }
 
 func TestBindPFlagsStringSlice(t *testing.T) {
-	for _, testValue := range []struct {
+	tests := []struct {
 		Expected []string
 		Value    string
 	}{
 		{[]string{}, ""},
 		{[]string{"jeden"}, "jeden"},
 		{[]string{"dwa", "trzy"}, "dwa,trzy"},
-		{[]string{"cztery", "piec , szesc"}, "cztery,\"piec , szesc\""}} {
+		{[]string{"cztery", "piec , szesc"}, "cztery,\"piec , szesc\""},
+	}
+
+	v := New() // create independent Viper object
+	defaultVal := []string{"default"}
+	v.SetDefault("stringslice", defaultVal)
+
+	for _, testValue := range tests {
+		flagSet := pflag.NewFlagSet("test", pflag.ContinueOnError)
+		flagSet.StringSlice("stringslice", testValue.Expected, "test")
 
 		for _, changed := range []bool{true, false} {
-			v := New() // create independent Viper object
-			flagSet := pflag.NewFlagSet("test", pflag.ContinueOnError)
-			flagSet.StringSlice("stringslice", testValue.Expected, "test")
-			flagSet.Visit(func(f *pflag.Flag) {
-				if len(testValue.Value) > 0 {
-					f.Value.Set(testValue.Value)
-					f.Changed = changed
-				}
+			flagSet.VisitAll(func(f *pflag.Flag) {
+				f.Value.Set(testValue.Value)
+				f.Changed = changed
 			})
 
 			err := v.BindPFlags(flagSet)
@@ -615,7 +649,11 @@ func TestBindPFlagsStringSlice(t *testing.T) {
 			if err := v.Unmarshal(val); err != nil {
 				t.Fatalf("%+#v cannot unmarshal: %s", testValue.Value, err)
 			}
-			assert.Equal(t, testValue.Expected, val.StringSlice)
+			if changed {
+				assert.Equal(t, testValue.Expected, val.StringSlice)
+			} else {
+				assert.Equal(t, defaultVal, val.StringSlice)
+			}
 		}
 	}
 }

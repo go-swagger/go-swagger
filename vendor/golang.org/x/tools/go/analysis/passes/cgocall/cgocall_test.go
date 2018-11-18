@@ -13,5 +13,5 @@ import (
 
 func Test(t *testing.T) {
 	testdata := analysistest.TestData()
-	analysistest.Run(t, testdata, cgocall.Analyzer, "a", "b")
+	analysistest.Run(t, testdata, cgocall.Analyzer, "a", "b", "c")
 }

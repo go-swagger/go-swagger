@@ -48,6 +48,7 @@ package unix
 #include <sys/wait.h>
 #include <linux/filter.h>
 #include <linux/icmpv6.h>
+#include <linux/if_pppox.h>
 #include <linux/keyctl.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nfnetlink.h>
@@ -168,6 +169,7 @@ union sockaddr_all {
 	struct sockaddr_un s4;
 	struct sockaddr_ll s5;
 	struct sockaddr_nl s6;
+	struct sockaddr_pppox s7;
 };
 
 struct sockaddr_any {
@@ -432,6 +434,8 @@ type RawSockaddrVM C.struct_sockaddr_vm
 
 type RawSockaddrXDP C.struct_sockaddr_xdp
 
+type RawSockaddrPPPoX [C.sizeof_struct_sockaddr_pppox]byte
+
 type RawSockaddr C.struct_sockaddr
 
 type RawSockaddrAny C.struct_sockaddr_any
@@ -480,6 +484,7 @@ const (
 	SizeofSockaddrALG       = C.sizeof_struct_sockaddr_alg
 	SizeofSockaddrVM        = C.sizeof_struct_sockaddr_vm
 	SizeofSockaddrXDP       = C.sizeof_struct_sockaddr_xdp
+	SizeofSockaddrPPPoX     = C.sizeof_struct_sockaddr_pppox
 	SizeofLinger            = C.sizeof_struct_linger
 	SizeofIovec             = C.sizeof_struct_iovec
 	SizeofIPMreq            = C.sizeof_struct_ip_mreq

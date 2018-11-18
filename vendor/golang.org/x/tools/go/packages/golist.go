@@ -8,18 +8,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/types"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/tools/internal/gopathwalk"
 	"golang.org/x/tools/internal/semver"
 )
+
+// debug controls verbose logging.
+const debug = false
 
 // A goTooOldError reports that the go command
 // found by exec.LookPath is too old to use the new go list behavior.
@@ -31,6 +37,17 @@ type goTooOldError struct {
 // the build system package structure.
 // See driver for more details.
 func goListDriver(cfg *Config, patterns ...string) (*driverResponse, error) {
+	var sizes types.Sizes
+	var sizeserr error
+	var sizeswg sync.WaitGroup
+	if cfg.Mode >= LoadTypes {
+		sizeswg.Add(1)
+		go func() {
+			sizes, sizeserr = getSizes(cfg)
+			sizeswg.Done()
+		}()
+	}
+
 	// Determine files requested in contains patterns
 	var containFiles []string
 	var packagesNamed []string
@@ -66,18 +83,6 @@ extractQueries:
 		}
 	}
 	patterns = restPatterns
-	// Look for the deprecated contains: syntax.
-	// TODO(matloob): delete this around mid-October 2018.
-	restPatterns = restPatterns[:0]
-	for _, pattern := range patterns {
-		if strings.HasPrefix(pattern, "contains:") {
-			containFile := strings.TrimPrefix(pattern, "contains:")
-			containFiles = append(containFiles, containFile)
-		} else {
-			restPatterns = append(restPatterns, pattern)
-		}
-	}
-	containFiles = absJoin(cfg.Dir, containFiles)
 
 	// TODO(matloob): Remove the definition of listfunc and just use golistPackages once go1.12 is released.
 	var listfunc driver
@@ -103,6 +108,13 @@ extractQueries:
 	} else {
 		response = &driverResponse{}
 	}
+
+	sizeswg.Wait()
+	if sizeserr != nil {
+		return nil, sizeserr
+	}
+	// types.SizesFor always returns nil or a *types.StdSizes
+	response.Sizes, _ = sizes.(*types.StdSizes)
 
 	if len(containFiles) == 0 && len(packagesNamed) == 0 {
 		return response, nil
@@ -131,7 +143,6 @@ extractQueries:
 		return nil, err
 	}
 	response.Roots = append(response.Roots, namedResults...)
-
 	return response, nil
 }
 
@@ -174,8 +185,12 @@ func runContainsQueries(cfg *Config, driver driver, addPkg func(*Package), queri
 var modCacheRegexp = regexp.MustCompile(`(.*)@([^/\\]*)(.*)`)
 
 func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries []string) ([]string, error) {
+	// calling `go env` isn't free; bail out if there's nothing to do.
+	if len(queries) == 0 {
+		return nil, nil
+	}
 	// Determine which directories are relevant to scan.
-	roots, modulesEnabled, err := roots(cfg)
+	roots, modRoot, err := roots(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +225,31 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 			}
 		}
 	}
-	gopathwalk.Walk(roots, add, gopathwalk.Options{ModulesEnabled: modulesEnabled})
+
+	startWalk := time.Now()
+	gopathwalk.Walk(roots, add, gopathwalk.Options{ModulesEnabled: modRoot != "", Debug: debug})
+	if debug {
+		log.Printf("%v for walk", time.Since(startWalk))
+	}
+
+	// Weird special case: the top-level package in a module will be in
+	// whatever directory the user checked the repository out into. It's
+	// more reasonable for that to not match the package name. So, if there
+	// are any Go files in the mod root, query it just to be safe.
+	if modRoot != "" {
+		rel, err := filepath.Rel(cfg.Dir, modRoot)
+		if err != nil {
+			panic(err) // See above.
+		}
+
+		files, err := ioutil.ReadDir(modRoot)
+		for _, f := range files {
+			if strings.HasSuffix(f.Name(), ".go") {
+				simpleMatches = append(simpleMatches, rel)
+				break
+			}
+		}
+	}
 
 	var results []string
 	addResponse := func(r *driverResponse) {
@@ -268,6 +307,12 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 		gomod.WriteString(")\n")
 
 		tmpCfg := *cfg
+
+		// We're only trying to look at stuff in the module cache, so
+		// disable the network. This should speed things up, and has
+		// prevented errors in at least one case, #28518.
+		tmpCfg.Env = append(append([]string{"GOPROXY=off"}, cfg.Env...))
+
 		var err error
 		tmpCfg.Dir, err = ioutil.TempDir("", "gopackages-modquery")
 		if err != nil {
@@ -290,38 +335,53 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 	return results, nil
 }
 
+func getSizes(cfg *Config) (types.Sizes, error) {
+	stdout, err := invokeGo(cfg, "env", "GOARCH")
+	if err != nil {
+		return nil, err
+	}
+
+	goarch := strings.TrimSpace(stdout.String())
+	// Assume "gc" because SizesFor doesn't respond to other compilers.
+	// TODO(matloob): add support for gccgo as needed.
+	return types.SizesFor("gc", goarch), nil
+}
+
 // roots selects the appropriate paths to walk based on the passed-in configuration,
 // particularly the environment and the presence of a go.mod in cfg.Dir's parents.
-func roots(cfg *Config) ([]gopathwalk.Root, bool, error) {
+func roots(cfg *Config) ([]gopathwalk.Root, string, error) {
 	stdout, err := invokeGo(cfg, "env", "GOROOT", "GOPATH", "GOMOD")
 	if err != nil {
-		return nil, false, err
+		return nil, "", err
 	}
 
 	fields := strings.Split(stdout.String(), "\n")
 	if len(fields) != 4 || len(fields[3]) != 0 {
-		return nil, false, fmt.Errorf("go env returned unexpected output: %q", stdout.String())
+		return nil, "", fmt.Errorf("go env returned unexpected output: %q", stdout.String())
 	}
 	goroot, gopath, gomod := fields[0], filepath.SplitList(fields[1]), fields[2]
-	modsEnabled := gomod != ""
+	var modDir string
+	if gomod != "" {
+		modDir = filepath.Dir(gomod)
+	}
 
 	var roots []gopathwalk.Root
 	// Always add GOROOT.
 	roots = append(roots, gopathwalk.Root{filepath.Join(goroot, "/src"), gopathwalk.RootGOROOT})
 	// If modules are enabled, scan the module dir.
-	if modsEnabled {
-		roots = append(roots, gopathwalk.Root{filepath.Dir(gomod), gopathwalk.RootCurrentModule})
+	if modDir != "" {
+		roots = append(roots, gopathwalk.Root{modDir, gopathwalk.RootCurrentModule})
 	}
 	// Add either GOPATH/src or GOPATH/pkg/mod, depending on module mode.
 	for _, p := range gopath {
-		if modsEnabled {
+		if modDir != "" {
 			roots = append(roots, gopathwalk.Root{filepath.Join(p, "/pkg/mod"), gopathwalk.RootModuleCache})
 		} else {
 			roots = append(roots, gopathwalk.Root{filepath.Join(p, "/src"), gopathwalk.RootGOPATH})
 		}
 	}
 
-	return roots, modsEnabled, nil
+	return roots, modDir, nil
 }
 
 // These functions were copied from goimports. See further documentation there.
@@ -448,6 +508,7 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 	if err != nil {
 		return nil, err
 	}
+	seen := make(map[string]*jsonPackage)
 	// Decode the JSON and convert it to Package form.
 	var response driverResponse
 	for dec := json.NewDecoder(buf); dec.More(); {
@@ -470,6 +531,15 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 			return nil, fmt.Errorf("package missing import path: %+v", p)
 		}
 
+		if old, found := seen[p.ImportPath]; found {
+			if !reflect.DeepEqual(p, old) {
+				return nil, fmt.Errorf("go list repeated package %v with different values", p.ImportPath)
+			}
+			// skip the duplicate
+			continue
+		}
+		seen[p.ImportPath] = p
+
 		pkg := &Package{
 			Name:            p.Name,
 			ID:              p.ImportPath,
@@ -477,6 +547,17 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 			CompiledGoFiles: absJoin(p.Dir, p.CompiledGoFiles),
 			OtherFiles:      absJoin(p.Dir, otherFiles(p)...),
 		}
+
+		// Workaround for github.com/golang/go/issues/28749.
+		// TODO(adonovan): delete before go1.12 release.
+		out := pkg.CompiledGoFiles[:0]
+		for _, f := range pkg.CompiledGoFiles {
+			if strings.HasSuffix(f, ".s") {
+				continue
+			}
+			out = append(out, f)
+		}
+		pkg.CompiledGoFiles = out
 
 		// Extract the PkgPath from the package's ID.
 		if i := strings.IndexByte(pkg.ID, ' '); i >= 0 {
@@ -524,7 +605,9 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 			response.Roots = append(response.Roots, pkg.ID)
 		}
 
-		// TODO(matloob): Temporary hack since CompiledGoFiles isn't always set.
+		// Work around for pre-go.1.11 versions of go list.
+		// TODO(matloob): they should be handled by the fallback.
+		// Can we delete this?
 		if len(pkg.CompiledGoFiles) == 0 {
 			pkg.CompiledGoFiles = pkg.GoFiles
 		}
@@ -570,6 +653,9 @@ func golistargs(cfg *Config, words []string) []string {
 
 // invokeGo returns the stdout of a go command invocation.
 func invokeGo(cfg *Config, args ...string) (*bytes.Buffer, error) {
+	if debug {
+		defer func(start time.Time) { log.Printf("%s for %v", time.Since(start), cmdDebugStr(cfg, args...)) }(time.Now())
+	}
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd := exec.CommandContext(cfg.Context, "go", args...)
@@ -613,13 +699,24 @@ func invokeGo(cfg *Config, args ...string) (*bytes.Buffer, error) {
 	// be useful for debugging. Print them if $GOPACKAGESPRINTGOLISTERRORS
 	// is set.
 	if len(stderr.Bytes()) != 0 && os.Getenv("GOPACKAGESPRINTGOLISTERRORS") != "" {
-		fmt.Fprintf(os.Stderr, "go %v stderr: <<%s>>\n", args, stderr)
+		fmt.Fprintf(os.Stderr, "%s stderr: <<%s>>\n", cmdDebugStr(cfg, args...), stderr)
 	}
 
 	// debugging
 	if false {
-		fmt.Fprintf(os.Stderr, "go %v stdout: <<%s>>\n", args, stdout)
+		fmt.Fprintf(os.Stderr, "%s stdout: <<%s>>\n", cmdDebugStr(cfg, args...), stdout)
 	}
 
 	return stdout, nil
+}
+
+func cmdDebugStr(cfg *Config, args ...string) string {
+	env := make(map[string]string)
+	for _, kv := range cfg.Env {
+		split := strings.Split(kv, "=")
+		k, v := split[0], split[1]
+		env[k] = v
+	}
+
+	return fmt.Sprintf("GOROOT=%v GOPATH=%v GO111MODULE=%v PWD=%v go %v", env["GOROOT"], env["GOPATH"], env["GO111MODULE"], env["PWD"], args)
 }

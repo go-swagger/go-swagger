@@ -298,8 +298,10 @@ func TestLoadAbsolutePath(t *testing.T) {
 	for _, p := range initial {
 		got = append(got, p.ID)
 	}
-	if !reflect.DeepEqual(got, []string{"golang.org/gopatha/a", "golang.org/gopathb/b"}) {
-		t.Fatalf("initial packages loaded: got [%s], want [a b]", got)
+	sort.Strings(got)
+	want := []string{"golang.org/gopatha/a", "golang.org/gopathb/b"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("initial packages loaded: got [%s], want [%s]", got, want)
 	}
 }
 
@@ -1145,10 +1147,13 @@ func TestName_Modules(t *testing.T) {
 		t.Skip("pre-modules version of Go")
 	}
 
+	// Test the top-level package case described in runNamedQueries.
+	// Note that overriding GOPATH below prevents Export from
+	// creating more than one module.
 	exported := packagestest.Export(t, packagestest.Modules, []packagestest.Module{{
-		Name: "golang.org/fake",
+		Name: "golang.org/pkg",
 		Files: map[string]interface{}{
-			"pkg/pkg.go": `package pkg`,
+			"pkg.go": `package pkg`,
 		}}})
 	defer exported.Cleanup()
 
@@ -1170,7 +1175,7 @@ func TestName_Modules(t *testing.T) {
 	wantGraph := `
 * github.com/heschik/tools-testrepo/pkg
 * github.com/heschik/tools-testrepo/v2/pkg
-* golang.org/fake/pkg
+* golang.org/pkg
 `[1:]
 	if graph != wantGraph {
 		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
@@ -1405,24 +1410,41 @@ func testPatternPassthrough(t *testing.T, exporter packagestest.Exporter) {
 
 func TestConfigDefaultEnv(t *testing.T) { packagestest.TestAll(t, testConfigDefaultEnv) }
 func testConfigDefaultEnv(t *testing.T, exporter packagestest.Exporter) {
-	if runtime.GOOS == "windows" {
+	const driverJSON = `{
+  "Roots": ["gopackagesdriver"],
+  "Packages": [{"ID": "gopackagesdriver", "Name": "gopackagesdriver"}]
+}`
+	var (
+		pathKey      string
+		driverScript packagestest.Writer
+	)
+	switch runtime.GOOS {
+	case "windows":
 		// TODO(jayconrod): write an equivalent batch script for windows.
 		// Hint: "type" can be used to read a file to stdout.
 		t.Skip("test requires sh")
+	case "plan9":
+		pathKey = "path"
+		driverScript = packagestest.Script(`#!/bin/rc
+
+cat <<'EOF'
+` + driverJSON + `
+EOF
+`)
+	default:
+		pathKey = "PATH"
+		driverScript = packagestest.Script(`#!/bin/sh
+
+cat - <<'EOF'
+` + driverJSON + `
+EOF
+`)
 	}
 	exported := packagestest.Export(t, exporter, []packagestest.Module{{
 		Name: "golang.org/fake",
 		Files: map[string]interface{}{
-			"bin/gopackagesdriver": packagestest.Script(`#!/bin/sh
-
-cat - <<'EOF'
-{
-  "Roots": ["gopackagesdriver"],
-  "Packages": [{"ID": "gopackagesdriver", "Name": "gopackagesdriver"}]
-}
-EOF
-`),
-			"golist/golist.go": "package golist",
+			"bin/gopackagesdriver": driverScript,
+			"golist/golist.go":     "package golist",
 		}}})
 	defer exported.Cleanup()
 	driver := exported.File("golang.org/fake", "bin/gopackagesdriver")
@@ -1431,7 +1453,7 @@ EOF
 		t.Fatal(err)
 	}
 
-	path, ok := os.LookupEnv("PATH")
+	path, ok := os.LookupEnv(pathKey)
 	var pathWithDriver string
 	if ok {
 		pathWithDriver = binDir + string(os.PathListSeparator) + path
@@ -1463,9 +1485,9 @@ EOF
 		},
 	} {
 		t.Run(test.desc, func(t *testing.T) {
-			oldPath := os.Getenv("PATH")
-			os.Setenv("PATH", test.path)
-			defer os.Setenv("PATH", oldPath)
+			oldPath := os.Getenv(pathKey)
+			os.Setenv(pathKey, test.path)
+			defer os.Setenv(pathKey, oldPath)
 			exported.Config.Env = append(coreEnv, "GOPACKAGESDRIVER="+test.driver)
 			pkgs, err := packages.Load(exported.Config, "golist")
 			if err != nil {
@@ -1480,6 +1502,31 @@ EOF
 				t.Errorf("got %v; want %v", gotIds, test.wantIDs)
 			}
 		})
+	}
+}
+
+// This test that a simple x test package layout loads correctly.
+// There was a bug in go list where it returned multiple copies of the same
+// package (specifically in this case of golang.org/fake/a), and this triggered
+// a bug in go/packages where it would leave an empty entry in the root package
+// list. This would then cause a nil pointer crash.
+// This bug was triggered by the simple package layout below, and thus this
+// test will make sure the bug remains fixed.
+func TestBasicXTest(t *testing.T) { packagestest.TestAll(t, testBasicXTest) }
+func testBasicXTest(t *testing.T, exporter packagestest.Exporter) {
+	exported := packagestest.Export(t, exporter, []packagestest.Module{{
+		Name: "golang.org/fake",
+		Files: map[string]interface{}{
+			"a/a.go":      `package a;`,
+			"a/a_test.go": `package a_test;`,
+		}}})
+	defer exported.Cleanup()
+
+	exported.Config.Mode = packages.LoadFiles
+	exported.Config.Tests = true
+	_, err := packages.Load(exported.Config, "golang.org/fake/a")
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
