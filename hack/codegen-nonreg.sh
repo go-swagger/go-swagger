@@ -154,6 +154,7 @@ specdir=${specdir}" fixtures/bugs/1571"
 specdir=${specdir}" fixtures/bugs/957"
 specdir=${specdir}" fixtures/bugs/1614"
 specdir=${specdir}" fixtures/bugs/931"
+specdir=${specdir}" fixtures/bugs/1683"
 gendir=./tmp-gen
 rm -rf ${gendir}
 

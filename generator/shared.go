@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -87,6 +88,29 @@ func (l *LanguageOpts) MangleFileName(name string) string {
 	return swag.ToFileName(name)
 }
 
+// ManglePackageName makes sure a package gets a safe name.
+// In case of a file system path (e.g. name contains "/" or "\" on Windows), this return only the last element.
+func (l *LanguageOpts) ManglePackageName(name, suffix string) string {
+	if name == "" {
+		return suffix
+	}
+	pth := filepath.ToSlash(filepath.Clean(name)) // preserve path
+	_, pkg := path.Split(pth)                     // drop path
+	return l.MangleName(swag.ToFileName(pkg), suffix)
+}
+
+// ManglePackagePath makes sure a full package path gets a safe name.
+// Only the last part of the path is altered.
+func (l *LanguageOpts) ManglePackagePath(name string, suffix string) string {
+	if name == "" {
+		return suffix
+	}
+	target := filepath.ToSlash(filepath.Clean(name)) // preserve path
+	parts := strings.Split(target, "/")
+	parts[len(parts)-1] = l.ManglePackageName(parts[len(parts)-1], suffix)
+	return strings.Join(parts, "/")
+}
+
 // FormatContent formats a file with a language specific formatter
 func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error) {
 	if l.formatFunc != nil {
@@ -116,6 +140,7 @@ func GoLangOpts() *LanguageOpts {
 		"darwin":    true,
 		"dragonfly": true,
 		"freebsd":   true,
+		"js":        true,
 		"linux":     true,
 		"nacl":      true,
 		"netbsd":    true,
@@ -140,10 +165,15 @@ func GoLangOpts() *LanguageOpts {
 		"mips64p32":   true,
 		"mips64p32le": true,
 		"ppc":         true,
+		"ppc64":       true,
+		"ppc64le":     true,
+		"riscv":       true,
+		"riscv64":     true,
 		"s390":        true,
 		"s390x":       true,
 		"sparc":       true,
 		"sparc64":     true,
+		"wasm":        true,
 
 		// other reserved suffixes
 		"test": true,
@@ -358,7 +388,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			{
 				Name:     "definition",
 				Source:   "asset:model",
-				Target:   "{{ joinFilePath .Target .ModelPackage }}",
+				Target:   "{{ joinFilePath .Target (toPackage .ModelPackage) }}",
 				FileName: "{{ (snakize (pascalize .Name)) }}.go",
 			},
 		}
@@ -370,13 +400,13 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "parameters",
 					Source:   "asset:clientParameter",
-					Target:   "{{ joinFilePath .Target .ClientPackage .Package }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Package) }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				},
 				{
 					Name:     "responses",
 					Source:   "asset:clientResponse",
-					Target:   "{{ joinFilePath .Target .ClientPackage .Package }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Package) }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				},
 			}
@@ -387,7 +417,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package)  }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
@@ -395,7 +425,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "urlbuilder",
 					Source:   "asset:serverUrlbuilder",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
 				})
 			}
@@ -403,7 +433,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
 			}
@@ -411,7 +441,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
 			}
@@ -425,7 +455,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "client",
 					Source:   "asset:clientClient",
-					Target:   "{{ joinFilePath .Target .ClientPackage .Name }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Name)}}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
 				},
 			}
@@ -440,8 +470,8 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "facade",
 					Source:   "asset:clientFacade",
-					Target:   "{{ joinFilePath .Target .ClientPackage }}",
-					FileName: "{{ .Name }}Client.go",
+					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) }}",
+					FileName: "{{ snakize .Name }}Client.go",
 				},
 			}
 		} else {
@@ -449,7 +479,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:       "configure",
 					Source:     "asset:serverConfigureapi",
-					Target:     "{{ joinFilePath .Target .ServerPackage }}",
+					Target:     "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
 					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
 					SkipExists: !gen.RegenerateConfigureAPI,
 				},
@@ -462,25 +492,25 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "embedded_spec",
 					Source:   "asset:swaggerJsonEmbed",
-					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
 					FileName: "embedded_spec.go",
 				},
 				{
 					Name:     "server",
 					Source:   "asset:serverServer",
-					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
 					FileName: "server.go",
 				},
 				{
 					Name:     "builder",
 					Source:   "asset:serverBuilder",
-					Target:   "{{ joinFilePath .Target .ServerPackage .Package }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) }}",
 					FileName: "{{ snakize (pascalize .Name) }}_api.go",
 				},
 				{
 					Name:     "doc",
 					Source:   "asset:serverDoc",
-					Target:   "{{ joinFilePath .Target .ServerPackage }}",
+					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
 					FileName: "doc.go",
 				},
 			}
@@ -742,7 +772,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 // Render template and write generated source code
 // generated code is reformatted ("linted"), which gives an
 // additional level of checking. If this step fails, the generated
-// is still dumped, for template debugging purposes.
+// code is still dumped, for template debugging purposes.
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	dir, fname, err := g.location(t, data)
 	if err != nil {

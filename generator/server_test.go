@@ -29,10 +29,10 @@ func TestMain(m *testing.M) {
 
 func testGenOpts() (g GenOpts) {
 	g.Target = "."
-	g.APIPackage = "operations"
-	g.ModelPackage = "models"
-	g.ServerPackage = "restapi"
-	g.ClientPackage = "client"
+	g.APIPackage = defaultAPIPackage
+	g.ModelPackage = defaultModelPackage
+	g.ServerPackage = defaultServerPackage
+	g.ClientPackage = defaultClientPackage
 	g.Principal = ""
 	g.DefaultScheme = "http"
 	g.IncludeModel = true

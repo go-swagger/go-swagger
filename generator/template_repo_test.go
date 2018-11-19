@@ -46,6 +46,11 @@ PrettyJson={{ prettyjson . }}
 Snakize1={{ snakize "endingInOsNameLinux" }}
 Snakize2={{ snakize "endingInArchNameLinuxAmd64" }}
 Snakize3={{ snakize "endingInTest" }}
+toPackage1={{ toPackage "a/b-c/d-e" }}
+toPackage2={{ toPackage "a.a/b_c/d_e" }}
+toPackage3={{ toPackage "d_e" }}
+toPackage4={{ toPackage "d-e" }}
+toPackageName={{ toPackageName "d-e/f-g" }}
 `
 )
 
@@ -406,6 +411,11 @@ func TestTemplates_FuncMap(t *testing.T) {
 					assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
 					assert.Contains(t, rendered.String(), "Snakize3=ending_in_test_swagger\n")
 					//fmt.Println(rendered.String())
+					assert.Contains(t, rendered.String(), "toPackage1=a/b-c/d_e\n")
+					assert.Contains(t, rendered.String(), "toPackage2=a.a/b_c/d_e\n")
+					assert.Contains(t, rendered.String(), "toPackage3=d_e\n")
+					assert.Contains(t, rendered.String(), "toPackage4=d_e\n")
+					assert.Contains(t, rendered.String(), "toPackageName=f_g\n")
 				}
 			}
 		}

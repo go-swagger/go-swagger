@@ -455,7 +455,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- else }}
     defer r.Body.Close()
       {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .GoType (toPackageName .ModelsPackage) }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {

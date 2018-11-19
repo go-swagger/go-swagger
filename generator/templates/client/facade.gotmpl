@@ -117,7 +117,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 // {{ pascalize .Name }} is a client for {{ humanize .Name }}
 type {{ pascalize .Name }} struct {
   {{ range .OperationGroups }}
-  {{ pascalize .Name }} *{{ snakize .Name }}.Client
+  {{ pascalize .Name }} *{{ .Name }}.Client
   {{ end }}
   Transport runtime.ClientTransport
 }
