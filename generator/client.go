@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -126,7 +127,9 @@ func (c *clientGenerator) Generate() error {
 			app.Imports = make(map[string]string)
 		}
 		pkgAlias := c.GenOpts.LanguageOpts.ManglePackageName(c.ModelsPackage, "models")
-		app.Imports[pkgAlias] = filepath.ToSlash(filepath.Join(baseImport, c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ModelPackage, "models")))
+		app.Imports[pkgAlias] = path.Join(
+			filepath.ToSlash(baseImport),
+			c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ModelPackage, "models"))
 	} else {
 		app.DefaultImports = append(app.DefaultImports, c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ExistingModels, ""))
 	}
@@ -170,8 +173,11 @@ func (c *clientGenerator) Generate() error {
 					return err
 				}
 			}
-			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport,
-				c.GenOpts.LanguageOpts.ManglePackagePath(c.ClientPackage, "client"), opGroup.Name)))
+			app.DefaultImports = append(app.DefaultImports,
+				path.Join(
+					filepath.ToSlash(baseImport),
+					c.GenOpts.LanguageOpts.ManglePackagePath(c.ClientPackage, "client"),
+					opGroup.Name))
 
 			if err := c.GenOpts.renderOperationGroup(&opGroup); err != nil {
 				return err

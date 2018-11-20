@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -116,7 +117,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
 			SecurityDefinitions:  analyzed.SecurityDefinitionsFor(operation),
 			Principal:            opts.Principal,
-			Target:               filepath.Join(opts.Target, serverPackage),
+			Target:               filepath.Join(opts.Target, filepath.FromSlash(serverPackage)),
 			Base:                 opts.Target,
 			Tags:                 opts.Tags,
 			IncludeHandler:       opts.IncludeHandler,
@@ -215,8 +216,9 @@ func (o *operationGenerator) Generate() error {
 	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
 	if o.GenOpts.ExistingModels == "" {
 		bldr.DefaultImports = []string{
-			filepath.ToSlash(filepath.Join(o.GenOpts.LanguageOpts.baseImport(o.Base),
-				o.GenOpts.LanguageOpts.ManglePackagePath(o.ModelsPackage, ""))),
+			path.Join(
+				filepath.ToSlash(o.GenOpts.LanguageOpts.baseImport(o.Base)),
+				o.GenOpts.LanguageOpts.ManglePackagePath(o.ModelsPackage, "")),
 		}
 	}
 

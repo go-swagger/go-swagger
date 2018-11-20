@@ -1,0 +1,77 @@
+host: localhost:45555
+info:
+  title: Marketplace Parser
+  version: 0.1.0
+produces:
+  - application/json
+consumes:
+  - application/json
+schemes:
+  - http
+swagger: "2.0"
+paths:
+
+  /search:
+    post:
+      tags:
+        - watchedgames
+      operationId: searchGame
+      parameters:
+        - in: body
+          name: game
+          description: Name of the game to search for.
+          schema:
+            type: object
+            required:
+              - gameName
+            properties:
+              gameName:
+                type: string
+      responses:
+        200:
+          description: list of products that matches the searched game
+          schema:
+            $ref: "#/definitions/gameSearchResult"
+        500:
+          description: generic error response
+          schema:
+            $ref: "#/definitions/error"
+
+definitions:
+  gameSearchResult:
+    type: object
+    description: A collection of games that have been found through
+    properties:
+      data:
+        type: array
+        items:
+          $ref: "#/definitions/gameSearchResultItem"
+
+  gameSearchResultItem:
+    type: object
+    description: A game that have been found
+    properties:
+      name:
+        description: Name of the product
+        type: string
+      price:
+        description: Price of the product
+        type: number
+        format: double
+      provider:
+        description: Provider on which this product was found
+        type: string
+      link:
+        type: string
+        description: Url to this product
+
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string

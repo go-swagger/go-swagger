@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
@@ -262,11 +263,10 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
-	importPath := filepath.ToSlash(filepath.Join(baseImport,
-		a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, "")))
+	importPath := path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
 	app.DefaultImports = append(
 		app.DefaultImports,
-		filepath.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, "")),
+		path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, "")),
 		importPath,
 	)
 
@@ -530,8 +530,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if imports == nil {
 			imports = make(map[string]string)
 		}
-		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, "models")] = filepath.ToSlash(filepath.Join(baseImport,
-			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, "models")))
+		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, "models")] = path.Join(
+			filepath.ToSlash(baseImport),
+			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, "models"))
 	}
 	if importPath != "" {
 		defaultImports = append(defaultImports, importPath)
@@ -550,7 +551,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
 		}
 		if mod != nil {
-			//mod.ReceiverName = receiver
 			if !mod.External {
 				genMods = append(genMods, *mod)
 			}
@@ -624,7 +624,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	for k := range tns {
 		importPath := filepath.ToSlash(
-			filepath.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""),
+			path.Join(
+				filepath.ToSlash(baseImport),
+				a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""),
 				swag.ToFileName(k)))
 		defaultImports = append(defaultImports, importPath)
 	}
@@ -673,9 +675,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroups = append(opGroups, opGroup)
 		var importPath string
 		if k == a.APIPackage {
-			importPath = filepath.ToSlash(filepath.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, "")))
+			importPath = path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
 		} else {
-			importPath = filepath.ToSlash(filepath.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""), k))
+			importPath = path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""), k)
 		}
 		defaultImports = append(defaultImports, importPath)
 	}

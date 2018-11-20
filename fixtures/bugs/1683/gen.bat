@@ -1,0 +1,2 @@
+del /S /F /Q tmp && mkdir tmp
+%GOPATH%\bin\swagger.exe generate server --skip-validation --spec=fixture-1683.yaml --model-package=mabc/msubdir --server-package=sabc-dashed/ssubdir --api-package=aabc/asubdir --target=tmp --name=nrcodegen-test
