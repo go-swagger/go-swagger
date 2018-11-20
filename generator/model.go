@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -82,8 +83,10 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 			Name:    modelName,
 			Model:   model,
 			SpecDoc: specDoc,
-			Target:  filepath.Join(opts.Target, opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "")),
-			opts:    opts,
+			Target: filepath.Join(
+				opts.Target,
+				filepath.FromSlash(opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, ""))),
+			opts: opts,
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -334,7 +337,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			Copyright:        opts.Copyright,
 			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
 		},
-		Package:        opts.LanguageOpts.ManglePackageName(filepath.Base(pkg), "definitions"),
+		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,

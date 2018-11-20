@@ -29,6 +29,9 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"varname":   golang.MangleVarName,
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   golang.MangleFileName,
+	"toPackagePath": func(name string) string {
+		return filepath.FromSlash(golang.ManglePackagePath(name, ""))
+	},
 	"toPackage": func(name string) string {
 		return golang.ManglePackagePath(name, "")
 	},

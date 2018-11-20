@@ -388,7 +388,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			{
 				Name:     "definition",
 				Source:   "asset:model",
-				Target:   "{{ joinFilePath .Target (toPackage .ModelPackage) }}",
+				Target:   "{{ joinFilePath .Target (toPackagePath .ModelPackage) }}",
 				FileName: "{{ (snakize (pascalize .Name)) }}.go",
 			},
 		}
@@ -400,13 +400,13 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "parameters",
 					Source:   "asset:clientParameter",
-					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Package) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Package) }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				},
 				{
 					Name:     "responses",
 					Source:   "asset:clientResponse",
-					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Package) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Package) }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				},
 			}
@@ -417,7 +417,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package)  }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package)  }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
@@ -425,7 +425,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "urlbuilder",
 					Source:   "asset:serverUrlbuilder",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
 				})
 			}
@@ -433,7 +433,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
 			}
@@ -441,7 +441,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) (toPackage .Package) }}{{ else }}{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .Package) }}{{ end }}",
+					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
 			}
@@ -455,7 +455,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "client",
 					Source:   "asset:clientClient",
-					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) (toPackage .Name)}}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Name)}}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
 				},
 			}
@@ -470,7 +470,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "facade",
 					Source:   "asset:clientFacade",
-					Target:   "{{ joinFilePath .Target (toPackage .ClientPackage) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) }}",
 					FileName: "{{ snakize .Name }}Client.go",
 				},
 			}
@@ -479,7 +479,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:       "configure",
 					Source:     "asset:serverConfigureapi",
-					Target:     "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
+					Target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
 					SkipExists: !gen.RegenerateConfigureAPI,
 				},
@@ -492,25 +492,25 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "embedded_spec",
 					Source:   "asset:swaggerJsonEmbed",
-					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName: "embedded_spec.go",
 				},
 				{
 					Name:     "server",
 					Source:   "asset:serverServer",
-					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName: "server.go",
 				},
 				{
 					Name:     "builder",
 					Source:   "asset:serverBuilder",
-					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) (toPackage .APIPackage) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) }}",
 					FileName: "{{ snakize (pascalize .Name) }}_api.go",
 				},
 				{
 					Name:     "doc",
 					Source:   "asset:serverDoc",
-					Target:   "{{ joinFilePath .Target (toPackage .ServerPackage) }}",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName: "doc.go",
 				},
 			}
