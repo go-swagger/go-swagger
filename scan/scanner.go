@@ -36,7 +36,7 @@ import (
 
 const (
 	rxMethod = "(\\p{L}+)"
-	rxPath   = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}\\-\\._~%!$&'()*+,;=:@/]*)+/?)"
+	rxPath   = "((?:/[\\p{L}\\p{N}\\p{Pd}\\p{Pc}{}\\-\\.\\?_~%!$&'()*+,;=:@/]*)+/?)"
 	rxOpTags = "(\\p{L}[\\p{L}\\p{N}\\p{Pd}\\.\\p{Pc}\\p{Zs}]+)"
 	rxOpID   = "((?:\\p{L}[\\p{L}\\p{N}\\p{Pd}\\p{Pc}]+)+)"
 
@@ -151,12 +151,12 @@ func rxf(rxp, ar string) *regexp.Regexp {
 
 // The Opts for the application scanner.
 type Opts struct {
-	BasePath   string
-	Input      *spec.Swagger
-	ScanModels bool
-	BuildTags  string
-	Include    []string
-	Exclude    []string
+	BasePath    string
+	Input       *spec.Swagger
+	ScanModels  bool
+	BuildTags   string
+	Include     []string
+	Exclude     []string
 	IncludeTags []string
 	ExcludeTags []string
 }
