@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -431,13 +432,18 @@ func TestServer_Issue1746(t *testing.T) {
 		}
 	}()
 	opts := testGenOpts()
-	// NOTE: test fails when target != "."
-	opts.Target = "."
-	opts.Spec = "../../fixtures/bugs/1746/fixture-1746.yaml"
+
+	opts.Target = filepath.Join("x")
+	_ = os.Mkdir(opts.Target, 0755)
+	opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "1746", "fixture-1746.yaml")
+	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
 
 	err = GenerateServer("", nil, nil, &opts)
 	assert.NoError(t, err)
-	gulp, err := ioutil.ReadFile(filepath.Join("restapi", "configure_example_swagger_server.go"))
+	gulp, err := ioutil.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
 	assert.NoError(t, err)
-	assertInCode(t, `//go:generate swagger generate server --target .. --name ExampleSwaggerServer`, string(gulp))
+	tgtPath := regexp.QuoteMeta(filepath.Join("..", "..", opts.Target))
+	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-target `+tgtPath, string(gulp))
+	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-name\s+ExampleSwaggerServer`, string(gulp))
+	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, string(gulp))
 }
