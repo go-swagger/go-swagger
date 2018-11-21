@@ -583,57 +583,82 @@ type GenOpts struct {
 	Copyright              string
 }
 
-// TargetPath returns the target generation path relative to the server package
-// Method used by templates, e.g. with {{ .TargetPath }}
-// Errors are not fatal: an empty string is returned instead
+// CheckOpts carries out some global consistency checks on options.
+//
+// At the moment, these checks simply protect TargetPath() and SpecPath()
+// functions. More checks may be added here.
+func (g *GenOpts) CheckOpts() error {
+	if !filepath.IsAbs(g.Target) {
+		if _, err := filepath.Abs(g.Target); err != nil {
+			return fmt.Errorf("could not locate target %s: %v", g.Target, err)
+		}
+	}
+	if filepath.IsAbs(g.ServerPackage) {
+		return fmt.Errorf("you shouldn't specify an absolute path in --server-package: %s", g.ServerPackage)
+	}
+	if !filepath.IsAbs(g.Spec) && !strings.HasPrefix(g.Spec, "http://") && !strings.HasPrefix(g.Spec, "https://") {
+		if _, err := filepath.Abs(g.Spec); err != nil {
+			return fmt.Errorf("could not locate spec: %s", g.Spec)
+		}
+	}
+	return nil
+}
+
+// TargetPath returns the target generation path relative to the server package.
+// This method is used by templates, e.g. with {{ .TargetPath }}
+//
+// Errors cases are prevented by calling CheckOpts beforehand.
+//
+// Example:
+// Target: ${PWD}/tmp
+// ServerPackage: abc/efg
+//
+// Server is generated in ${PWD}/tmp/abc/efg
+// relative TargetPath returned: ../../../tmp
+//
 func (g *GenOpts) TargetPath() string {
-	tgtAbs, err := filepath.Abs(g.Target)
-	if err != nil {
-		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Target, err)
-		return ""
+	var tgt string
+	if g.Target == "" {
+		tgt = "." // That's for windows
+	} else {
+		tgt = g.Target
 	}
-	tgtAbs = filepath.ToSlash(tgtAbs)
-	srvrAbs, err := filepath.Abs(g.ServerPackage)
-	if err != nil {
-		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
-		return ""
-	}
-	srvrAbs = filepath.ToSlash(srvrAbs)
-	tgtRel, err := filepath.Rel(srvrAbs, tgtAbs)
-	if err != nil {
-		log.Printf("Target path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Target, g.ServerPackage, err)
-		return ""
-	}
-	tgtRel = filepath.ToSlash(tgtRel)
+	tgtAbs, _ := filepath.Abs(tgt)
+	srvPkg := filepath.FromSlash(g.LanguageOpts.ManglePackagePath(g.ServerPackage, "server"))
+	srvrAbs := filepath.Join(tgtAbs, srvPkg)
+	tgtRel, _ := filepath.Rel(srvrAbs, filepath.Dir(tgtAbs))
+	tgtRel = filepath.Join(tgtRel, filepath.Base(tgtAbs))
 	return tgtRel
 }
 
-// SpecPath returns the path to the spec relative to the server package
-// Method used by templates, e.g. with {{ .SpecPath }}
-// Errors are not fatal: an empty string is returned instead
+// SpecPath returns the path to the spec relative to the server package.
+// If the spec is remote keep this absolute location.
+//
+// If spec is not relative to server (e.g. lives on a different drive on windows),
+// then the resolved path is absolute.
+//
+// This method is used by templates, e.g. with {{ .SpecPath }}
+//
+// Errors cases are prevented by calling CheckOpts beforehand.
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
 	}
 	// Local specifications
-	specAbs, err := filepath.Abs(g.Spec)
-	if err != nil {
-		log.Printf("could not evaluate target generation path \"%s\": you must create the target directory beforehand: %v", g.Spec, err)
-		return ""
+	specAbs, _ := filepath.Abs(g.Spec)
+	var tgt string
+	if g.Target == "" {
+		tgt = "." // That's for windows
+	} else {
+		tgt = g.Target
 	}
-	specAbs = filepath.ToSlash(specAbs)
-	srvrAbs, err := filepath.Abs(g.ServerPackage)
+	tgtAbs, _ := filepath.Abs(tgt)
+	srvPkg := filepath.FromSlash(g.LanguageOpts.ManglePackagePath(g.ServerPackage, "server"))
+	srvAbs := filepath.Join(tgtAbs, srvPkg)
+	specRel, err := filepath.Rel(srvAbs, specAbs)
 	if err != nil {
-		log.Printf("could not evaluate target server path \"%s\": %v", g.ServerPackage, err)
-		return ""
+		return specAbs
 	}
-	srvrAbs = filepath.ToSlash(srvrAbs)
-	specRel, err := filepath.Rel(srvrAbs, specAbs)
-	if err != nil {
-		log.Printf("Specification path \"%s\" and server path \"%s\" are not related. You shouldn't specify an absolute path in --server-package: %v", g.Spec, g.ServerPackage, err)
-		return ""
-	}
-	specRel = filepath.ToSlash(specRel)
 	return specRel
 }
 

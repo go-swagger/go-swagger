@@ -57,6 +57,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if opts == nil {
 		return nil, errors.New("gen opts are required")
 	}
+	if err := opts.CheckOpts(); err != nil {
+		return nil, err
+	}
 
 	templates.LoadDefaults()
 	if opts.Template != "" {

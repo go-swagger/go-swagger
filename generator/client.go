@@ -47,6 +47,10 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		}
 	}
 
+	if err := opts.CheckOpts(); err != nil {
+		return err
+	}
+
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
