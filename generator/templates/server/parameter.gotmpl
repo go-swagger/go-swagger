@@ -12,38 +12,45 @@
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
   {{- else if and .HasSimpleBodyParams .HasModelBodyItems }}
+
     {{- if or .Schema.HasSliceValidations .Schema.Items.HasValidations }}
   // validate array of body objects
     {{- end }}
     {{- if .Schema.HasSliceValidations }}
+      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
       {{ template "sliceparamvalidator" . }}
     {{- end }}
+
     {{- if and .Schema.Items.HasValidations (not (or .Schema.Items.IsInterface .Schema.Items.IsStream)) }}
   for {{ .IndexVar }} := range body {
-    {{- if .Schema.Items.IsNullable }}
+      {{- if .Schema.Items.IsNullable }}
     if body[{{ .IndexVar }}] == nil {
-      {{- if .Schema.Items.Required }}
+        {{- if .Schema.Items.Required }}
         res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}))
         break
-      {{- else }}
+        {{- else }}
       continue
-      {{- end }}
+        {{- end }}
     }
-    {{- end }}
+      {{- end }}
     if err := body[{{ .IndexVar }}].Validate(route.Formats); err != nil {
       res = append(res, err)
       break
     }
   }
 
+      {{- if not .Schema.HasSliceValidations }}
   if len(res) == 0 {
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
+      {{- end }}
     {{- else }}
   // no validation for items in this slice
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end }}
+
   {{- else if and .HasSimpleBodyParams .HasModelBodyMap }}
+
     {{- if and .Schema.HasValidations (not (or .Schema.AdditionalProperties.IsInterface .Schema.AdditionalProperties.IsStream)) }}
   // validate map of body objects
   for {{ .KeyVar }} := range body {
@@ -448,7 +455,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- else }}
     defer r.Body.Close()
       {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .GoType (toPackageName .ModelsPackage) }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {

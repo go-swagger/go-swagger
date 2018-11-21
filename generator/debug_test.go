@@ -82,3 +82,16 @@ func TestDebug(t *testing.T) {
 	assert.Contains(t, string(buf2), `"fieldOne":`)
 	assert.Contains(t, string(buf2), `"content"`)
 }
+
+func TestDebugAsJSON(t *testing.T) {
+	t.SkipNow()
+	var body struct {
+		A string `json:"a"`
+		B int    `json:"b"`
+	}
+	Debug = true
+	body.A = "abc"
+	body.B = 123
+	debugLogAsJSON("No arg")
+	debugLogAsJSON("With arg:%t", true, body)
+}

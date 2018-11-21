@@ -1,0 +1,70 @@
+---
+  swagger: "2.0"
+  info:
+    title: "tag name conflict"
+    version: "0.0.1"
+    description: "repro issue 1683"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    records:
+      type: array
+      maxItems: 10
+      items:
+        type: object
+  paths:
+    /my/route:
+      get:
+        operationId: getRecords
+        summary: get some data
+        tags: [test]
+        parameters:
+        - name: inBody
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/records'
+        responses:
+          200:
+            description: "OK"
+            schema:
+              $ref: '#/definitions/records'
+    /her/route:
+      get:
+        operationId: getOthers
+        summary: get some other data
+        tags: [test-dash]
+        parameters:
+        - name: inBody
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/records'
+        responses:
+          200:
+            description: "OK"
+            schema:
+              $ref: '#/definitions/records'
+    /our/route:
+      get:
+        operationId: getYetAnother
+        summary: get yet some other data
+        tags: [test_underscore]
+        parameters:
+        - name: inBody
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/records'
+        responses:
+          200:
+            description: "OK"
+            schema:
+              $ref: '#/definitions/records'

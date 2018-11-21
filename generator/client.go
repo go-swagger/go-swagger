@@ -19,11 +19,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
 	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 )
@@ -47,20 +47,12 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		}
 	}
 
-	// Load the spec
-	var err error
-	var specDoc *loads.Document
-	opts.Spec, err = findSwaggerSpec(opts.Spec)
-	if err != nil {
+	if err := opts.CheckOpts(); err != nil {
 		return err
 	}
 
-	if !filepath.IsAbs(opts.Spec) {
-		cwd, _ := os.Getwd()
-		opts.Spec = filepath.Join(cwd, opts.Spec)
-	}
-
-	opts.Spec, specDoc, err = loadSpec(opts.Spec)
+	// Load the spec
+	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
 		return err
 	}
@@ -107,12 +99,12 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		Operations:        operations,
 		Target:            opts.Target,
 		DumpData:          opts.DumpData,
-		Package:           opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		APIPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api"),
-		ModelsPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:     opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		OperationsPackage: opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		Package:           opts.LanguageOpts.ManglePackageName(opts.ClientPackage, "client"),
+		APIPackage:        opts.LanguageOpts.ManglePackagePath(opts.APIPackage, "api"),
+		ModelsPackage:     opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "definitions"),
+		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, "server"),
+		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, "client"),
+		OperationsPackage: opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, "client"),
 		Principal:         opts.Principal,
 		DefaultScheme:     defaultScheme,
 		DefaultProduces:   defaultProduces,
@@ -121,11 +113,6 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 	generator.Receiver = "o"
 	return (&clientGenerator{generator}).Generate()
-}
-
-func manglePackageName(opts *GenOpts, nm, def string) string {
-	dir, fn := filepath.Split(nm)
-	return opts.LanguageOpts.MangleName(filepath.Join(dir, swag.ToFileName(fn)), def)
 }
 
 type clientGenerator struct {
@@ -143,9 +130,12 @@ func (c *clientGenerator) Generate() error {
 		if app.Imports == nil {
 			app.Imports = make(map[string]string)
 		}
-		app.Imports[c.ModelsPackage] = filepath.ToSlash(filepath.Join(baseImport, manglePackageName(c.GenOpts, c.GenOpts.ModelPackage, "models")))
+		pkgAlias := c.GenOpts.LanguageOpts.ManglePackageName(c.ModelsPackage, "models")
+		app.Imports[pkgAlias] = path.Join(
+			filepath.ToSlash(baseImport),
+			c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ModelPackage, "models"))
 	} else {
-		app.DefaultImports = append(app.DefaultImports, c.GenOpts.ExistingModels)
+		app.DefaultImports = append(app.DefaultImports, c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ExistingModels, ""))
 	}
 	if err != nil {
 		return err
@@ -157,28 +147,18 @@ func (c *clientGenerator) Generate() error {
 		return nil
 	}
 
-	// errChan := make(chan error, 100)
-	// wg := nsync.NewControlWaitGroup(20)
-
 	if c.GenOpts.IncludeModel {
 		for _, mod := range app.Models {
-			// if len(errChan) > 0 {
-			// 	wg.Wait()
-			// 	return <-errChan
-			// }
 			modCopy := mod
-			// wg.Do(func() {
 			modCopy.IncludeValidator = true
 			if !mod.IsStream {
 				if err := c.GenOpts.renderDefinition(&modCopy); err != nil {
 					return err
 				}
 			}
-			// })
 		}
 	}
 
-	// wg.Wait()
 	if c.GenOpts.IncludeHandler {
 		sort.Sort(app.OperationGroups)
 		for i := range app.OperationGroups {
@@ -189,45 +169,31 @@ func (c *clientGenerator) Generate() error {
 			app.OperationGroups[i] = opGroup
 			sort.Sort(opGroup.Operations)
 			for _, op := range opGroup.Operations {
-				// if len(errChan) > 0 {
-				// 	wg.Wait()
-				// 	return <-errChan
-				// }
 				opCopy := op
 				if opCopy.Package == "" {
 					opCopy.Package = c.Package
 				}
-				// wg.Do(func() {
 				if err := c.GenOpts.renderOperation(&opCopy); err != nil {
 					return err
 				}
-				// })
 			}
-			app.DefaultImports = append(app.DefaultImports, filepath.ToSlash(filepath.Join(baseImport, c.ClientPackage, opGroup.Name)))
+			app.DefaultImports = append(app.DefaultImports,
+				path.Join(
+					filepath.ToSlash(baseImport),
+					c.GenOpts.LanguageOpts.ManglePackagePath(c.ClientPackage, "client"),
+					opGroup.Name))
 
-			// wg.Do(func() {
 			if err := c.GenOpts.renderOperationGroup(&opGroup); err != nil {
-				// errChan <- err
 				return err
 			}
-			// })
 		}
-		// wg.Wait()
 	}
 
 	if c.GenOpts.IncludeSupport {
-		// wg.Do(func() {
 		if err := c.GenOpts.renderApplication(&app); err != nil {
 			return err
 		}
-		// })
 	}
-
-	// wg.Wait()
-
-	// if len(errChan) > 0 {
-	// 	return <-errChan
-	// }
 
 	return nil
 }

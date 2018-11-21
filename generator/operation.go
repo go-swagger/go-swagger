@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -68,6 +69,10 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 		}
 	}
 
+	if err := opts.CheckOpts(); err != nil {
+		return err
+	}
+
 	// Load the spec
 	_, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -102,22 +107,21 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			defaultConsumes = runtime.JSONMime
 		}
 
-		apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
-		serverPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server")
+		serverPackage := opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, "server")
 		generator := operationGenerator{
 			Name:                 operationName,
 			Method:               method,
 			Path:                 path,
 			BasePath:             specDoc.BasePath(),
-			APIPackage:           apiPackage,
-			ModelsPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-			ClientPackage:        opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+			APIPackage:           opts.LanguageOpts.ManglePackagePath(opts.APIPackage, "api"),
+			ModelsPackage:        opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "definitions"),
+			ClientPackage:        opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, "client"),
 			ServerPackage:        serverPackage,
 			Operation:            *operation,
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
 			SecurityDefinitions:  analyzed.SecurityDefinitionsFor(operation),
 			Principal:            opts.Principal,
-			Target:               filepath.Join(opts.Target, serverPackage),
+			Target:               filepath.Join(opts.Target, filepath.FromSlash(serverPackage)),
 			Base:                 opts.Target,
 			Tags:                 opts.Tags,
 			IncludeHandler:       opts.IncludeHandler,
@@ -207,7 +211,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
-	bldr.RootAPIPackage = o.APIPackage
+	bldr.RootAPIPackage = o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, "server")
 	bldr.WithContext = o.WithContext
 	bldr.GenOpts = o.GenOpts
 	bldr.DefaultConsumes = o.DefaultConsumes
@@ -215,10 +219,14 @@ func (o *operationGenerator) Generate() error {
 
 	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
 	if o.GenOpts.ExistingModels == "" {
-		bldr.DefaultImports = []string{filepath.ToSlash(filepath.Join(o.GenOpts.LanguageOpts.baseImport(o.Base), o.ModelsPackage))}
+		bldr.DefaultImports = []string{
+			path.Join(
+				filepath.ToSlash(o.GenOpts.LanguageOpts.baseImport(o.Base)),
+				o.GenOpts.LanguageOpts.ManglePackagePath(o.ModelsPackage, "")),
+		}
 	}
 
-	bldr.APIPackage = bldr.RootAPIPackage
+	bldr.APIPackage = o.APIPackage
 	st := o.Tags
 	if o.GenOpts != nil {
 		st = o.GenOpts.Tags
@@ -226,7 +234,7 @@ func (o *operationGenerator) Generate() error {
 	intersected := intersectTags(o.Operation.Tags, st)
 	if len(intersected) == 1 {
 		tag := intersected[0]
-		bldr.APIPackage = o.GenOpts.LanguageOpts.MangleName(swag.ToFileName(tag), o.APIPackage)
+		bldr.APIPackage = o.GenOpts.LanguageOpts.ManglePackagePath(tag, o.APIPackage)
 	}
 	op, err := bldr.MakeOperation()
 	if err != nil {
@@ -315,7 +323,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	//
 	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
 	// we take from there the spec possibly already transformed by the GenDefinitions stage.
-	resolver := newTypeResolver(b.ModelsPackage, b.Doc)
+	resolver := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(b.ModelsPackage, "models"), b.Doc)
 	receiver := "o"
 
 	operation := b.Operation
@@ -478,7 +486,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			Copyright:        b.GenOpts.Copyright,
 			TargetImportPath: filepath.ToSlash(b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target)),
 		},
-		Package:              b.APIPackage,
+		Package:              b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
 		Method:               b.Method,
@@ -561,7 +569,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	res := GenResponse{
-		Package:        b.APIPackage,
+		Package:        b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
 		ModelsPackage:  b.ModelsPackage,
 		ReceiverName:   receiver,
 		Name:           name,
@@ -603,7 +611,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	res := GenHeader{
 		sharedValidations: sharedValidationsFromSimple(hdr.CommonValidations, true), // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
 		resolvedType:      tpe,
-		Package:           b.APIPackage,
+		Package:           b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
 		ReceiverName:      receiver,
 		ID:                id,
 		Name:              name,
@@ -1002,7 +1010,7 @@ func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
 // This uses a deep clone the spec document to construct a type resolver which knows about definitions when the making of this operation started,
 // and only these definitions. We are not interested in the "original spec", but in the already transformed spec.
 func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *spec.Schema) (*typeResolver, *spec.Schema) {
-	rslv := newTypeResolver(resolver.ModelsPackage, b.Doc.Pristine())
+	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models"), b.Doc.Pristine())
 
 	return rslv, b.cloneSchema(schema)
 }
@@ -1021,7 +1029,8 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec
 	sc.Schema = *bs
 
 	pg := sc.shallowClone()
-	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(resolver.ModelsPackage)
+	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models")
+	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(pkg)
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
 
 	if err = pg.makeGenSchema(); err != nil {

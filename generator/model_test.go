@@ -2292,7 +2292,7 @@ func TestGenModel_Issue1409(t *testing.T) {
 					//log.Println("1409")
 					//log.Println(res)
 					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `propNodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
+					assertInCode(t, `nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
 					assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
 					assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
 					assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)

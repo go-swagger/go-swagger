@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -14,18 +16,57 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TargetPath and SpecPath are used in server.gotmpl
-// as template variables: {{ .TestTargetPath }} and
-// {{ .SpecPath }}, to construct the go generate
-// directive.
+const testPath = "a/b/c"
+
 // TODO: there is a catch, since these methods are sensitive
 // to the CWD of the current swagger command (or go
 // generate when working on resulting template)
 // NOTE:
-// Errors in TargetPath are hard to simulate since
+// Errors in CheckOpts are hard to simulate since
 // they occur only on os.Getwd() errors
 // Windows style path is difficult to test on unix
 // since the filepath pkg is platform dependant
+func TestShared_CheckOpts(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	var opts = new(GenOpts)
+	_ = opts.EnsureDefaults()
+	cwd, _ := os.Getwd()
+
+	opts.Target = filepath.Join(".", "a", "b", "c")
+	opts.ServerPackage = filepath.Join(cwd, "a", "b", "c")
+	err := opts.CheckOpts()
+	assert.Error(t, err)
+
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
+	opts.ServerPackage = testPath
+	err = opts.CheckOpts()
+	assert.NoError(t, err)
+
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
+	opts.ServerPackage = testPath
+	opts.Spec = "https:/ab/c"
+	err = opts.CheckOpts()
+	assert.NoError(t, err)
+
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
+	opts.ServerPackage = testPath
+	opts.Spec = "http:/ab/c"
+	err = opts.CheckOpts()
+	assert.NoError(t, err)
+
+	opts.Target = filepath.Join("a", "b", "c")
+	opts.ServerPackage = testPath
+	opts.Spec = filepath.Join(cwd, "x")
+	err = opts.CheckOpts()
+	assert.NoError(t, err)
+}
+
+// TargetPath and SpecPath are used in server.gotmpl
+// as template variables: {{ .TestTargetPath }} and
+// {{ .SpecPath }}, to construct the go generate
+// directive.
 func TestShared_TargetPath(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
@@ -34,58 +75,39 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// relative target
 	var opts = new(GenOpts)
-	opts.Target = "./a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y"
-	expected := "../a/b/c"
+	expected := filepath.Join("..", "..", "c")
 	result := opts.TargetPath()
 	assert.Equal(t, expected, result)
 
 	// relative target, server path
 	opts = new(GenOpts)
-	opts.Target = "./a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y/z"
-	expected = "../../a/b/c"
+	expected = filepath.Join("..", "..", "..", "c")
 	result = opts.TargetPath()
 	assert.Equal(t, expected, result)
 
 	// absolute target
 	opts = new(GenOpts)
-	opts.Target = filepath.Join(cwd, "a/b/c")
+	_ = opts.EnsureDefaults()
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = "y"
-	expected = "../a/b/c"
+	expected = filepath.Join("..", "..", "c")
 	result = opts.TargetPath()
 	assert.Equal(t, expected, result)
 
 	// absolute target, server path
 	opts = new(GenOpts)
-	opts.Target = "./a/b/c"
-	opts.ServerPackage = "y/z"
-	expected = "../../a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
+	opts.ServerPackage = path.Join("y", "z")
+	expected = filepath.Join("..", "..", "..", "c")
 	result = opts.TargetPath()
 	assert.Equal(t, expected, result)
-
-	// absolute server package
-	opts = new(GenOpts)
-	opts.Target = "/a/b/c"
-	opts.ServerPackage = "/y/z"
-	expected = "../../a/b/c"
-	result = opts.TargetPath()
-	assert.Equal(t, expected, result)
-
-	// TODO:
-	// unrelated path (Windows specific)
-	// TargetPath() is expected to fail
-	// when target and server reside on
-	// different volumes.
-	//if runtime.GOOS == "windows" {
-	//	log.Println("INFO:Need some additional testing on windows")
-	//opts = new(GenOpts)
-	//opts.Target = "C:/a/b/c"
-	//opts.ServerPackage = "D:/y/z"
-	//expected = ""
-	//result = opts.TargetPath()
-	//assert.Equal(t, expected, result)
-	//}
 }
 
 // NOTE: file://url is not supported
@@ -97,6 +119,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	// http URL spec
 	var opts = new(GenOpts)
+	_ = opts.EnsureDefaults()
 	opts.Spec = "http://a/b/c"
 	opts.ServerPackage = "y"
 	expected := opts.Spec
@@ -105,6 +128,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	// https URL spec
 	opts = new(GenOpts)
+	_ = opts.EnsureDefaults()
 	opts.Spec = "https://a/b/c"
 	opts.ServerPackage = "y"
 	expected = opts.Spec
@@ -113,64 +137,63 @@ func TestShared_SpecPath(t *testing.T) {
 
 	// relative spec
 	opts = new(GenOpts)
-	opts.Spec = "./a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Spec = filepath.Join(".", "a", "b", "c")
+	opts.Target = filepath.Join("d")
 	opts.ServerPackage = "y"
-	expected = "../a/b/c"
+	expected = filepath.Join("..", "..", "a", "b", "c")
 	result = opts.SpecPath()
 	assert.Equal(t, expected, result)
 
 	// relative spec, server path
 	opts = new(GenOpts)
-	opts.Spec = "./a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Spec = filepath.Join(".", "a", "b", "c")
+	opts.Target = filepath.Join("d", "e")
 	opts.ServerPackage = "y/z"
-	expected = "../../a/b/c"
+	expected = filepath.Join("..", "..", "..", "..", "a", "b", "c")
+	result = opts.SpecPath()
+	assert.Equal(t, expected, result)
+
+	// relative spec, server path
+	opts = new(GenOpts)
+	_ = opts.EnsureDefaults()
+	opts.Spec = filepath.Join(".", "a", "b", "c")
+	opts.Target = filepath.Join(".", "a", "b")
+	opts.ServerPackage = "y/z"
+	expected = filepath.Join("..", "..", "c")
 	result = opts.SpecPath()
 	assert.Equal(t, expected, result)
 
 	// absolute spec
 	opts = new(GenOpts)
-	opts.Spec = filepath.Join(cwd, "a/b/c")
+	_ = opts.EnsureDefaults()
+	opts.Spec = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = "y"
-	expected = "../a/b/c"
+	expected = filepath.Join("..", "a", "b", "c")
 	result = opts.SpecPath()
 	assert.Equal(t, expected, result)
 
 	// absolute spec, server path
 	opts = new(GenOpts)
-	opts.Spec = "./a/b/c"
-	opts.ServerPackage = "y/z"
-	expected = "../../a/b/c"
+	_ = opts.EnsureDefaults()
+	opts.Spec = filepath.Join("..", "a", "b", "c")
+	opts.Target = ""
+	opts.ServerPackage = path.Join("y", "z")
+	expected = filepath.Join("..", "..", "..", "a", "b", "c")
 	result = opts.SpecPath()
 	assert.Equal(t, expected, result)
 
-	// absolute server package
-	opts = new(GenOpts)
-	opts.Spec = "/a/b/c"
-	opts.ServerPackage = "/y/z"
-	expected = "../../a/b/c"
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// TODO:
-	// unrelated path (Windows specific)
-	// SpecPath() is expected to fail
-	// when spec and server reside on
-	// different volumes.
-	// This shouldn't happen with go, since everything
-	// should be under the same GOPATH
-	// NOTE: a better error handling strategy would be
-	// to check that os.Getwd() and Rel() work well upstream
-	// and assume in functions that no error is returned.
-	//if runtime.GOOS == "windows" {
-	//	log.SetOutput(os.Stdout)
-	//	log.Println("INFO:Need some additional testing on windows")
-	//opts = new(GenOpts)
-	//opts.Spec = "C:/a/b/c"
-	//opts.ServerPackage = "D:/y/z"
-	//expected = ""
-	//result = opts.SpecPath()
-	//assert.Equal(t, expected, result)
-	//}
+	if runtime.GOOS == "windows" {
+		opts = new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join("a", "b", "c")
+		opts.Target = filepath.Join("Z:", "e", "f", "f")
+		opts.ServerPackage = "y/z"
+		expected, _ = filepath.Abs(opts.Spec)
+		result = opts.SpecPath()
+		assert.Equal(t, expected, result)
+	}
 }
 
 // Low level testing: templates not found (higher level calls raise panic(), see above)
@@ -458,6 +481,28 @@ func TestShared_MangleFileName(t *testing.T) {
 	assert.True(t, strings.HasSuffix(res, "_test_swagger"))
 }
 
+func TestShared_ManglePackage(t *testing.T) {
+	o := GoLangOpts()
+	o.Init()
+
+	for _, v := range []struct {
+		tested       string
+		expectedPath string
+		expectedName string
+	}{
+		{tested: "", expectedPath: "default", expectedName: "default"},
+		{tested: "select", expectedPath: "select_default", expectedName: "select_default"},
+		{tested: "x", expectedPath: "x", expectedName: "x"},
+		{tested: "a/b/c-d/e_f/g", expectedPath: "a/b/c-d/e_f/g", expectedName: "g"},
+		{tested: "a/b/c-d/e_f/g-h", expectedPath: "a/b/c-d/e_f/g_h", expectedName: "g_h"},
+	} {
+		res := o.ManglePackagePath(v.tested, "default")
+		assert.Equal(t, v.expectedPath, res)
+		res = o.ManglePackageName(v.tested, "default")
+		assert.Equal(t, v.expectedName, res)
+	}
+}
+
 func TestShared_Issue1621(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
@@ -470,7 +515,7 @@ func TestShared_Issue1621(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = specPath
 	opts.ValidateSpec = true
-	t.Logf("path: %s", specDoc.SpecFilePath())
+	//t.Logf("path: %s", specDoc.SpecFilePath())
 	_, err = validateAndFlattenSpec(&opts, specDoc)
 	assert.NoError(t, err)
 }

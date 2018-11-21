@@ -56,7 +56,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   {{ if .Schema }}
   {{ if .Schema.IsBaseType }}
   // response payload as interface type
-  payload, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType .ModelsPackage }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
+  payload, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType ( toPackageName .ModelsPackage ) }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
   if err != nil {
     return err
   }

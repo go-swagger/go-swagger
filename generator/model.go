@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -58,6 +59,10 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		}
 	}
 
+	if err := opts.CheckOpts(); err != nil {
+		return err
+	}
+
 	// Load the spec
 	specPath, specDoc, err := loadSpec(opts.Spec)
 	if err != nil {
@@ -82,8 +87,10 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 			Name:    modelName,
 			Model:   model,
 			SpecDoc: specDoc,
-			Target:  filepath.Join(opts.Target, opts.ModelPackage),
-			opts:    opts,
+			Target: filepath.Join(
+				opts.Target,
+				filepath.FromSlash(opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, ""))),
+			opts: opts,
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -334,7 +341,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			Copyright:        opts.Copyright,
 			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
 		},
-		Package:        opts.LanguageOpts.MangleName(filepath.Base(pkg), "definitions"),
+		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
@@ -680,7 +687,7 @@ func (sg *schemaGenContext) buildProperties() error {
 	debugLog("building properties %s (parent: %s)", sg.Name, sg.Container)
 
 	for k, v := range sg.Schema.Properties {
-		debugLogAsJSON("building property %s[%q] (tup: %t) (BaseType: %t) %s",
+		debugLogAsJSON("building property %s[%q] (tup: %t) (BaseType: %t)",
 			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.Schema)
 		debugLog("property %s[%q] (tup: %t) HasValidations: %t)",
 			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
@@ -1185,7 +1192,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			}
 			sg.MergeResult(cp, false)
 			sg.GenSchema.AdditionalProperties = &cp.GenSchema
-			debugLog("added interface{} schema for additionalProperties[allows == true]", cp.GenSchema.IsInterface)
+			debugLog("added interface{} schema for additionalProperties[allows == true], IsInterface=%t", cp.GenSchema.IsInterface)
 		}
 		return nil
 	}
@@ -1315,7 +1322,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
-	debugLog("making new struct", name, sg.Container)
+	debugLog("making new struct: name: %s, container: %s", name, sg.Container)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = swag.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {

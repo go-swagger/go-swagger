@@ -29,6 +29,15 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"varname":   golang.MangleVarName,
 	"humanize":  swag.ToHumanNameLower,
 	"snakize":   golang.MangleFileName,
+	"toPackagePath": func(name string) string {
+		return filepath.FromSlash(golang.ManglePackagePath(name, ""))
+	},
+	"toPackage": func(name string) string {
+		return golang.ManglePackagePath(name, "")
+	},
+	"toPackageName": func(name string) string {
+		return golang.ManglePackageName(name, "")
+	},
 	"dasherize": swag.ToCommandName,
 	"pluralizeFirstWord": func(arg string) string {
 		sentence := strings.Split(arg, " ")
@@ -46,6 +55,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"hasSecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 	},
+	// TODO: simplify redundant functions
 	"stripPackage": func(str, pkg string) string {
 		parts := strings.Split(str, ".")
 		strlen := len(parts)

@@ -17,6 +17,7 @@ package generator
 import (
 	"fmt"
 	"log"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -159,9 +160,9 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 	if ok {
 		alias = al.(string)
 	} else {
-		alias = filepath.Base(pkg)
+		alias = path.Base(pkg)
 	}
-	debugLog("known def type %s no clear: %q", xGoType, alias+"."+t, pkg, alias)
+	debugLog("known def type %s no clear: %q: pkg=%s, alias=%s", xGoType, alias+"."+t, pkg, alias)
 	return alias + "." + t, pkg, alias
 }
 
