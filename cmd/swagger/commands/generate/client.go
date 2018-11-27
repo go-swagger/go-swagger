@@ -78,10 +78,9 @@ func (c *Client) log(rp string) {
 For this generation to compile you need to have some packages in your GOPATH:
 
 	* github.com/go-openapi/errors
-	* github.com/go-openapi/strfmt
 	* github.com/go-openapi/runtime
 	* github.com/go-openapi/runtime/client
-	* golang.org/x/net/context
+	* github.com/go-openapi/strfmt
 
 You can get these now with: go get -u -f %s/...
 `, rp)
