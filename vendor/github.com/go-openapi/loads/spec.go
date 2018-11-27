@@ -54,6 +54,7 @@ func init() {
 
 	gob.Register(map[string]interface{}{})
 	gob.Register([]interface{}{})
+	//gob.Register(spec.Refable{})
 }
 
 // AddLoader for a document
@@ -288,6 +289,7 @@ func cloneSpec(src *spec.Swagger) (*spec.Swagger, error) {
 	if err := gob.NewEncoder(&b).Encode(src); err != nil {
 		return nil, err
 	}
+
 	var dst spec.Swagger
 	if err := gob.NewDecoder(&b).Decode(&dst); err != nil {
 		return nil, err
