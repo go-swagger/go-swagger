@@ -14,7 +14,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
 )
 
-//go:generate swagger generate server --target .. --name TodoList --spec ../swagger.yml
+//go:generate swagger generate server --target ../../todo-list --name TodoList --spec ../swagger.yml
 
 func configureFlags(api *operations.TodoListAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

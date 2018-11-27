@@ -13,7 +13,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../gen --name greeter --spec ../swagger/swagger.yml --exclude-main
+//go:generate swagger generate server --target ../../gen --name Greeter --spec ../../swagger/swagger.yml --exclude-main
 
 func configureFlags(api *operations.GreeterAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

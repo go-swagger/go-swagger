@@ -16,7 +16,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target .. --name Petstore --spec ../swagger.json
+//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger.json
 
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

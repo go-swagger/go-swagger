@@ -126,10 +126,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": []
+            "api_key": null
           },
           {
-            "token_header": []
+            "token_header": null
           }
         ],
         "description": "Allows for creating a task.\nThis operation requires authentication so that we know which user\ncreated the task.\n",
@@ -188,10 +188,10 @@ func init() {
       "put": {
         "security": [
           {
-            "api_key": []
+            "api_key": null
           },
           {
-            "token_header": []
+            "token_header": null
           }
         ],
         "description": "Allows for updating a task.\nThis operation requires authentication so that we know which user\nlast updated the task.\n",
@@ -232,10 +232,10 @@ func init() {
       "delete": {
         "security": [
           {
-            "api_key": []
+            "api_key": null
           },
           {
-            "token_header": []
+            "token_header": null
           }
         ],
         "description": "This is a soft delete and changes the task status to ignored.\n",
@@ -297,10 +297,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": []
+            "api_key": null
           },
           {
-            "token_header": []
+            "token_header": null
           }
         ],
         "description": "The comment can contain ___github markdown___ syntax.\nFenced codeblocks etc are supported through pygments.\n",
@@ -356,10 +356,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": []
+            "api_key": null
           },
           {
-            "token_header": []
+            "token_header": null
           }
         ],
         "description": "The file can't be larger than **5MB**",
@@ -620,7 +620,6 @@ func init() {
           "type": "number",
           "format": "float32",
           "title": "the karma donated to this item.",
-          "minimum": 0,
           "exclusiveMinimum": true,
           "multipleOf": 0.5
         },

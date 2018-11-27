@@ -62,7 +62,6 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 					break
 				}
 			}
-
 			if len(res) == 0 {
 				o.Body = body
 			}
