@@ -39,7 +39,7 @@ func init() {
       "get": {
         "security": [
           {
-            "isRegistered": []
+            "isRegistered": null
           }
         ],
         "description": "Every registered user should be able to access this operation\n",
@@ -64,7 +64,6 @@ func init() {
     },
     "/items": {
       "get": {
-        "security": [],
         "description": "Everybody should be able to access this operation\n",
         "summary": "items on sale",
         "operationId": "GetItems",
@@ -85,19 +84,19 @@ func init() {
             "hasRole": [
               "customer"
             ],
-            "isRegistered": []
+            "isRegistered": null
           },
           {
             "hasRole": [
               "inventoryManager"
             ],
-            "isReseller": []
+            "isReseller": null
           },
           {
             "hasRole": [
               "inventoryManager"
             ],
-            "isResellerQuery": []
+            "isResellerQuery": null
           }
         ],
         "description": "Registered customers should be able to add purchase orders.\nRegistered inventory managers should be able to add replenishment orders.\n",
@@ -136,7 +135,7 @@ func init() {
             "hasRole": [
               "customer"
             ],
-            "isRegistered": []
+            "isRegistered": null
           }
         ],
         "description": "Only registered customers should be able to retrieve orders\n",
@@ -170,10 +169,10 @@ func init() {
       "get": {
         "security": [
           {
-            "isReseller": []
+            "isReseller": null
           },
           {
-            "isResellerQuery": []
+            "isResellerQuery": null
           }
         ],
         "description": "Only registered resellers should be able to search orders for an item\n",
@@ -341,7 +340,7 @@ func init() {
   },
   "security": [
     {
-      "isRegistered": []
+      "isRegistered": null
     }
   ]
 }`))

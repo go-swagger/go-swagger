@@ -16,7 +16,7 @@ import (
 	models "github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
-//go:generate swagger generate server --target .. --name AuthSample --spec ../swagger.yml --principal models.Principal
+//go:generate swagger generate server --target ../../authentication --name AuthSample --spec ../swagger.yml --principal models.Principal
 
 func configureFlags(api *operations.AuthSampleAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

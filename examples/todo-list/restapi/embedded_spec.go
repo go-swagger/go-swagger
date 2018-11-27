@@ -220,7 +220,7 @@ func init() {
   },
   "security": [
     {
-      "key": []
+      "key": null
     }
   ],
   "x-schemes": [
