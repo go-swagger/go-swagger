@@ -367,7 +367,6 @@ type GenOperationGroup struct {
 	Imports        map[string]string
 	DefaultImports []string
 	RootPackage    string
-	WithContext    bool
 	GenOpts        *GenOpts
 }
 
@@ -468,7 +467,6 @@ type GenOperation struct {
 	ExtraSchemes       []string
 	ProducesMediaTypes []string
 	ConsumesMediaTypes []string
-	WithContext        bool
 	TimeoutName        string
 
 	Extensions map[string]interface{}
@@ -516,7 +514,6 @@ type GenApp struct {
 	// adding a middleware to the generated API.
 	FlatSwaggerJSON string
 	ExcludeSpec     bool
-	WithContext     bool
 	GenOpts         *GenOpts
 }
 

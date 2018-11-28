@@ -48,7 +48,6 @@ func testClientGenOpts() (g GenOpts) {
 	g.IncludeResponses = true
 	g.IncludeSupport = true
 	g.TemplateDir = ""
-	g.WithContext = false
 	g.DumpData = false
 	g.IsClient = true
 	_ = g.EnsureDefaults()

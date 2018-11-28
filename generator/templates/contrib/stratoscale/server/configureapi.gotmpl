@@ -136,7 +136,7 @@ func Handler(c Config) (http.Handler, error) {
 	{{ end -}}
 
 	{{ range .Operations -}}
-	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func({{ if .WithContext }}ctx context.Context, {{ end }}params {{.Package}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
+	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func(params {{.Package}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)

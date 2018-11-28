@@ -550,7 +550,6 @@ type GenOpts struct {
 	IncludeSupport    bool
 	ExcludeSpec       bool
 	DumpData          bool
-	WithContext       bool
 	ValidateSpec      bool
 	FlattenOpts       *analysis.FlattenOpts
 	IsClient          bool
