@@ -120,7 +120,7 @@
   version = "v0.17.2"
 
 [[projects]]
-  branch = "fix-clone-spec"
+  branch = "master"
   digest = "1:e6529722d1b6bb2e80126d20a03bc05ab4409ace3f006cfa8717c74a8b5ad075"
   name = "github.com/go-openapi/loads"
   packages = [
@@ -128,8 +128,7 @@
     "fmts",
   ]
   pruneopts = ""
-  revision = "35dcb00f5b452dc6f97c7a4d32a5ae7fd666bc9e"
-  source = "github.com/fredbi/loads"
+  revision = "74628589c3b94e3526a842d24f46589980f5ab22"
 
 [[projects]]
   branch = "master"
@@ -150,13 +149,12 @@
   revision = "aadb2cc7b8862fdab251bf60a8b9d2a951c9746c"
 
 [[projects]]
-  branch = "fix-1846"
+  branch = "master"
   digest = "1:a35c031b701153df4bd35671a1892ebd460dc65247f4f8f14c817578fa3d4216"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = ""
-  revision = "c166dd3c4e4175ad85614c437908094139645030"
-  source = "github.com/fredbi/spec"
+  revision = "c3754ea506f554c8ec5572f3c776075eb69a23c6"
 
 [[projects]]
   branch = "master"

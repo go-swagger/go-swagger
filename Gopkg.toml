@@ -34,20 +34,16 @@
   name = "github.com/go-openapi/inflect"
 
 [[constraint]]
-  #branch = "master"
-  branch = "fix-clone-spec"
+  branch = "master"
   name = "github.com/go-openapi/loads"
-  source = "github.com/fredbi/loads"
 
 [[constraint]]
   branch = "master"
   name = "github.com/go-openapi/runtime"
 
 [[constraint]]
-  #branch = "master"
-  branch = "fix-1846"
+  branch = "master"
   name = "github.com/go-openapi/spec"
-  source = "github.com/fredbi/spec"
 
 [[constraint]]
   branch = "master"
