@@ -77,7 +77,7 @@ func TestDate_Scan(t *testing.T) {
 	values := []interface{}{str, []byte(str), ref}
 	for _, value := range values {
 		result := Date{}
-		(&result).Scan(value)
+		_ = (&result).Scan(value)
 		assert.Equal(t, date, result, "value: %#v", value)
 	}
 

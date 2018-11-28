@@ -49,7 +49,7 @@ const (
 	//  <subdomain> ::= <label> | <subdomain> "." <label>
 	//  var subdomain = /^[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?(\.[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?)*$/;
 	//  <domain> ::= <subdomain> | " "
-	HostnamePattern = `^[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?(\.[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?)*$`
+	HostnamePattern = `^[a-zA-Z0-9](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?(\.[a-zA-Z](([-0-9a-zA-Z]+)?[0-9a-zA-Z])?)*$`
 	// UUIDPattern Regex for UUID that allows uppercase
 	UUIDPattern = `(?i)^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$`
 	// UUID3Pattern Regex for UUID3 that allows uppercase
@@ -112,7 +112,7 @@ func IsUUID5(str string) bool {
 	return rxUUID5.MatchString(str)
 }
 
-// Validates an email address.
+// IsEmail validates an email address.
 func IsEmail(str string) bool {
 	addr, e := mail.ParseAddress(str)
 	return e == nil && addr.Address != ""
@@ -197,13 +197,7 @@ func init() {
 	Default.Add("password", &pw, func(_ string) bool { return true })
 }
 
-/* unused:
-var formatCheckers = map[string]Validator{
-	"byte": govalidator.IsBase64,
-}
-*/
-
-// Base64 represents a base64 encoded string
+// Base64 represents a base64 encoded string, using URLEncoding alphabet
 //
 // swagger:strfmt byte
 type Base64 []byte

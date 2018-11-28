@@ -134,26 +134,26 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 		rw.Header().Add("Allow", strings.Join(err.(*MethodNotAllowedError).Allowed, ","))
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
 		if r == nil || r.Method != head {
-			rw.Write(errorAsJSON(e))
+			_, _ = rw.Write(errorAsJSON(e))
 		}
 	case Error:
 		value := reflect.ValueOf(e)
 		if value.Kind() == reflect.Ptr && value.IsNil() {
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
+			_, _ = rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
 			return
 		}
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
 		if r == nil || r.Method != head {
-			rw.Write(errorAsJSON(e))
+			_, _ = rw.Write(errorAsJSON(e))
 		}
 	case nil:
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
+		_, _ = rw.Write(errorAsJSON(New(http.StatusInternalServerError, "Unknown error")))
 	default:
 		rw.WriteHeader(http.StatusInternalServerError)
 		if r == nil || r.Method != head {
-			rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
+			_, _ = rw.Write(errorAsJSON(New(http.StatusInternalServerError, err.Error())))
 		}
 	}
 }

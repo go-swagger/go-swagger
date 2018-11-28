@@ -821,6 +821,83 @@ func TestToStringMapBoolE(t *testing.T) {
 	}
 }
 
+func TestToStringMapIntE(t *testing.T) {
+	tests := []struct {
+		input  interface{}
+		expect map[string]int
+		iserr  bool
+	}{
+		{map[interface{}]interface{}{"v1": 1, "v2": 222}, map[string]int{"v1": 1, "v2": 222}, false},
+		{map[string]interface{}{"v1": 342, "v2": 5141}, map[string]int{"v1": 342, "v2": 5141}, false},
+		{map[string]int{"v1": 33, "v2": 88}, map[string]int{"v1": 33, "v2": 88}, false},
+		{map[string]int32{"v1": int32(33), "v2": int32(88)}, map[string]int{"v1": 33, "v2": 88}, false},
+		{map[string]uint16{"v1": uint16(33), "v2": uint16(88)}, map[string]int{"v1": 33, "v2": 88}, false},
+		{map[string]float64{"v1": float64(8.22), "v2": float64(43.32)}, map[string]int{"v1": 8, "v2": 43}, false},
+		{`{"v1": 67, "v2": 56}`, map[string]int{"v1": 67, "v2": 56}, false},
+
+		// errors
+		{nil, nil, true},
+		{testing.T{}, nil, true},
+		{"", nil, true},
+	}
+
+	for i, test := range tests {
+		errmsg := fmt.Sprintf("i = %d", i) // assert helper message
+
+		v, err := ToStringMapIntE(test.input)
+		if test.iserr {
+			assert.Error(t, err, errmsg)
+			continue
+		}
+
+		assert.NoError(t, err, errmsg)
+		assert.Equal(t, test.expect, v, errmsg)
+
+		// Non-E test
+		v = ToStringMapInt(test.input)
+		assert.Equal(t, test.expect, v, errmsg)
+	}
+}
+
+func TestToStringMapInt64E(t *testing.T) {
+	tests := []struct {
+		input  interface{}
+		expect map[string]int64
+		iserr  bool
+	}{
+		{map[interface{}]interface{}{"v1": int32(8), "v2": int32(888)}, map[string]int64{"v1": int64(8), "v2": int64(888)}, false},
+		{map[string]interface{}{"v1": int64(45), "v2": int64(67)}, map[string]int64{"v1": 45, "v2": 67}, false},
+		{map[string]int64{"v1": 33, "v2": 88}, map[string]int64{"v1": 33, "v2": 88}, false},
+		{map[string]int{"v1": 33, "v2": 88}, map[string]int64{"v1": 33, "v2": 88}, false},
+		{map[string]int32{"v1": int32(33), "v2": int32(88)}, map[string]int64{"v1": 33, "v2": 88}, false},
+		{map[string]uint16{"v1": uint16(33), "v2": uint16(88)}, map[string]int64{"v1": 33, "v2": 88}, false},
+		{map[string]float64{"v1": float64(8.22), "v2": float64(43.32)}, map[string]int64{"v1": 8, "v2": 43}, false},
+		{`{"v1": 67, "v2": 56}`, map[string]int64{"v1": 67, "v2": 56}, false},
+
+		// errors
+		{nil, nil, true},
+		{testing.T{}, nil, true},
+		{"", nil, true},
+	}
+
+	for i, test := range tests {
+		errmsg := fmt.Sprintf("i = %d", i) // assert helper message
+
+		v, err := ToStringMapInt64E(test.input)
+		if test.iserr {
+			assert.Error(t, err, errmsg)
+			continue
+		}
+
+		assert.NoError(t, err, errmsg)
+		assert.Equal(t, test.expect, v, errmsg)
+
+		// Non-E test
+		v = ToStringMapInt64(test.input)
+		assert.Equal(t, test.expect, v, errmsg)
+	}
+}
+
 func TestToStringMapStringE(t *testing.T) {
 	var stringMapString = map[string]string{"key 1": "value 1", "key 2": "value 2", "key 3": "value 3"}
 	var stringMapInterface = map[string]interface{}{"key 1": "value 1", "key 2": "value 2", "key 3": "value 3"}
@@ -1112,6 +1189,7 @@ func TestToTimeEE(t *testing.T) {
 		{"Tue, 10 Nov 2009 23:00:00 UTC", time.Date(2009, 11, 10, 23, 0, 0, 0, time.UTC), false},   // RFC1123
 		{"Tue, 10 Nov 2009 23:00:00 +0000", time.Date(2009, 11, 10, 23, 0, 0, 0, time.UTC), false}, // RFC1123Z
 		{"2009-11-10T23:00:00Z", time.Date(2009, 11, 10, 23, 0, 0, 0, time.UTC), false},            // RFC3339
+		{"2018-10-21T23:21:29+0200", time.Date(2018, 10, 21, 21, 21, 29, 0, time.UTC), false},      // RFC3339 without timezone hh:mm colon
 		{"2009-11-10T23:00:00Z", time.Date(2009, 11, 10, 23, 0, 0, 0, time.UTC), false},            // RFC3339Nano
 		{"11:00PM", time.Date(0, 1, 1, 23, 0, 0, 0, time.UTC), false},                              // Kitchen
 		{"Nov 10 23:00:00", time.Date(0, 11, 10, 23, 0, 0, 0, time.UTC), false},                    // Stamp
@@ -1119,6 +1197,7 @@ func TestToTimeEE(t *testing.T) {
 		{"Nov 10 23:00:00.000000", time.Date(0, 11, 10, 23, 0, 0, 0, time.UTC), false},             // StampMicro
 		{"Nov 10 23:00:00.000000000", time.Date(0, 11, 10, 23, 0, 0, 0, time.UTC), false},          // StampNano
 		{"2016-03-06 15:28:01-00:00", time.Date(2016, 3, 6, 15, 28, 1, 0, time.UTC), false},        // RFC3339 without T
+		{"2016-03-06 15:28:01-0000", time.Date(2016, 3, 6, 15, 28, 1, 0, time.UTC), false},         // RFC3339 without T or timezone hh:mm colon
 		{"2016-03-06 15:28:01", time.Date(2016, 3, 6, 15, 28, 1, 0, time.UTC), false},
 		{"2016-03-06 15:28:01 -0000", time.Date(2016, 3, 6, 15, 28, 1, 0, time.UTC), false},
 		{"2016-03-06 15:28:01 -00:00", time.Date(2016, 3, 6, 15, 28, 1, 0, time.UTC), false},

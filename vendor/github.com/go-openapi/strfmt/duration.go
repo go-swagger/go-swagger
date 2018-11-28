@@ -121,7 +121,7 @@ func ParseDuration(cand string) (time.Duration, error) {
 	if ok {
 		return dur, nil
 	}
-	return 0, fmt.Errorf("Unable to parse %s as duration", cand)
+	return 0, fmt.Errorf("unable to parse %s as duration", cand)
 }
 
 // Scan reads a Duration value from database driver type.

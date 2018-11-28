@@ -293,7 +293,7 @@ func (c *rwConn) Write(p []byte) (int, error) {
 	return n, err
 }
 
-// settingsAckSwallowWriter is a writer that normally forwards bytes to it's
+// settingsAckSwallowWriter is a writer that normally forwards bytes to its
 // underlying Writer, but swallows the first SettingsAck frame that it sees.
 type settingsAckSwallowWriter struct {
 	Writer     *bufio.Writer

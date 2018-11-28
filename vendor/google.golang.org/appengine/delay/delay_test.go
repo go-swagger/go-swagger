@@ -6,6 +6,7 @@ package delay
 
 import (
 	"bytes"
+	stdctx "context"
 	"encoding/gob"
 	"errors"
 	"fmt"
@@ -101,6 +102,11 @@ var (
 	reqFunc        = Func("req", func(c context.Context) {
 		reqFuncRuns++
 		reqFuncHeaders, reqFuncErr = RequestHeaders(c)
+	})
+
+	stdCtxRuns = 0
+	stdCtxFunc = Func("stdctx", func(c stdctx.Context) {
+		stdCtxRuns++
 	})
 )
 
@@ -424,5 +430,35 @@ func TestGetRequestHeadersFromContext(t *testing.T) {
 	}
 	if reqFuncErr != nil {
 		t.Errorf("reqFuncErr: got %v, want nil", reqFuncErr)
+	}
+}
+
+func TestStandardContext(t *testing.T) {
+	// Fake out the adding of a task.
+	var task *taskqueue.Task
+	taskqueueAdder = func(_ context.Context, tk *taskqueue.Task, queue string) (*taskqueue.Task, error) {
+		if queue != "" {
+			t.Errorf(`Got queue %q, expected ""`, queue)
+		}
+		task = tk
+		return tk, nil
+	}
+
+	c := newFakeContext()
+	stdCtxRuns = 0 // reset state
+	if err := stdCtxFunc.Call(c.ctx); err != nil {
+		t.Fatal("Function.Call:", err)
+	}
+
+	// Simulate the Task Queue service.
+	req, err := http.NewRequest("POST", path, bytes.NewBuffer(task.Payload))
+	if err != nil {
+		t.Fatalf("Failed making http.Request: %v", err)
+	}
+	rw := httptest.NewRecorder()
+	runFunc(c.ctx, rw, req)
+
+	if stdCtxRuns != 1 {
+		t.Errorf("stdCtxRuns: got %d, want 1", stdCtxRuns)
 	}
 }

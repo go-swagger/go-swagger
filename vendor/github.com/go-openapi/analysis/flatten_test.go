@@ -137,7 +137,7 @@ func TestImportExternalReferences(t *testing.T) {
 			// technically not necessary to run for each value, but if things go right
 			// this is idempotent, so having it repeat shouldn't matter
 			// this validates that behavior
-			err := importExternalReferences(&FlattenOpts{
+			_, err := importExternalReferences(&FlattenOpts{
 				Spec:     New(sp),
 				BasePath: bp,
 			})
@@ -1844,4 +1844,64 @@ func Test_NormalizePath(t *testing.T) {
 		assert.Equal(t, v.Expected, normalizePath(spec.MustCreateRef(v.Source),
 			&FlattenOpts{BasePath: "/abs/to/spec/spec.json"}))
 	}
+}
+
+func TestFlatten_Issue_1796(t *testing.T) {
+	// remote cyclic ref
+	bp := filepath.Join("fixtures", "bugs", "1796", "queryIssue.json")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
+	//t.Logf("%s", string(bbb))
+	//t.Logf("%s", an.AllDefinitionReferences())
+
+	// assert all $ref match  "$ref": "#/definitions/something"
+	for _, ref := range an.AllReferences() {
+		assert.True(t, strings.HasPrefix(ref, "#/definitions"))
+	}
+}
+
+func TestFlatten_Issue_1767(t *testing.T) {
+	// remote cyclic ref again
+	bp := filepath.Join("fixtures", "bugs", "1767", "fixture-1767.yaml")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+	// assert all $ref match  "$ref": "#/definitions/something"
+	for _, ref := range an.AllReferences() {
+		assert.True(t, strings.HasPrefix(ref, "#/definitions"))
+	}
+}
+
+func TestFlatten_Issue_1774(t *testing.T) {
+	// remote cyclic ref again
+	bp := filepath.Join("fixtures", "bugs", "1774", "def_api.yaml")
+	sp := loadOrFail(t, bp)
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: false, Expand: false,
+		RemoveUnused: false})
+	assert.NoError(t, err)
+	//bbb, _ := json.MarshalIndent(an.spec, "", " ")
+	//t.Logf("%s", string(bbb))
+	//t.Logf("%s", an.AllDefinitionReferences())
+	// assert all $ref match  "$ref": "#/definitions/something"
+	for _, ref := range an.AllReferences() {
+		assert.True(t, strings.HasPrefix(ref, "#/definitions"))
+	}
+}
+
+func TestFlatten_1429(t *testing.T) {
+	// nested / remote $ref in response / param schemas
+	// issue go-swagger/go-swagger#1429
+	bp := filepath.Join("fixtures", "bugs", "1429", "swagger.yaml")
+	sp := loadOrFail(t, bp)
+
+	an := New(sp)
+	err := Flatten(FlattenOpts{Spec: an, BasePath: bp, Verbose: true, Minimal: true, RemoveUnused: false})
+	assert.NoError(t, err)
 }

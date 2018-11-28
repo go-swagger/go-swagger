@@ -172,12 +172,8 @@ func TestRSASignerPrivateKey(t *testing.T) {
 
 	priv := NewSignerPrivateKey(time.Now(), &rsaSigner{rsaPriv})
 
-	if priv.PubKeyAlgo != PubKeyAlgoRSASignOnly {
-		t.Fatal("NewSignerPrivateKey should have made a sign-only RSA private key")
-	}
-
 	sig := &Signature{
-		PubKeyAlgo: PubKeyAlgoRSASignOnly,
+		PubKeyAlgo: PubKeyAlgoRSA,
 		Hash:       crypto.SHA256,
 	}
 	msg := []byte("Hello World!")

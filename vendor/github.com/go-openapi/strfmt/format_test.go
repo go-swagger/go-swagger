@@ -131,12 +131,12 @@ type testStruct struct {
 	D          Date       `json:"d,omitempty"`
 	DT         DateTime   `json:"dt,omitempty"`
 	Dur        Duration   `json:"dur,omitempty"`
-	Uri        URI        `json:"uri,omitempty"`
+	URI        URI        `json:"uri,omitempty"`
 	Eml        Email      `json:"eml,omitempty"`
-	Uuid       UUID       `json:"uuid,omitempty"`
-	Uuid3      UUID3      `json:"uuid3,omitempty"`
-	Uuid4      UUID4      `json:"uuid4,omitempty"`
-	Uuid5      UUID5      `json:"uuid5,omitempty"`
+	UUID       UUID       `json:"uuid,omitempty"`
+	UUID3      UUID3      `json:"uuid3,omitempty"`
+	UUID4      UUID4      `json:"uuid4,omitempty"`
+	UUID5      UUID5      `json:"uuid5,omitempty"`
 	Hn         Hostname   `json:"hn,omitempty"`
 	Ipv4       IPv4       `json:"ipv4,omitempty"`
 	Ipv6       IPv6       `json:"ipv6,omitempty"`
@@ -187,12 +187,12 @@ func TestDecodeHook(t *testing.T) {
 		D:          Date(date),
 		DT:         dt,
 		Dur:        Duration(dur),
-		Uri:        URI("http://www.dummy.com"),
+		URI:        URI("http://www.dummy.com"),
 		Eml:        Email("dummy@dummy.com"),
-		Uuid:       UUID("a8098c1a-f86e-11da-bd1a-00112444be1e"),
-		Uuid3:      UUID3("bcd02e22-68f0-3046-a512-327cca9def8f"),
-		Uuid4:      UUID4("025b0d74-00a2-4048-bf57-227c5111bb34"),
-		Uuid5:      UUID5("886313e1-3b8a-5372-9b90-0c9aee199e5d"),
+		UUID:       UUID("a8098c1a-f86e-11da-bd1a-00112444be1e"),
+		UUID3:      UUID3("bcd02e22-68f0-3046-a512-327cca9def8f"),
+		UUID4:      UUID4("025b0d74-00a2-4048-bf57-227c5111bb34"),
+		UUID5:      UUID5("886313e1-3b8a-5372-9b90-0c9aee199e5d"),
 		Hn:         Hostname("somewhere.com"),
 		Ipv4:       IPv4("192.168.254.1"),
 		Ipv6:       IPv6("::1"),

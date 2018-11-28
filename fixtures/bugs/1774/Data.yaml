@@ -1,0 +1,11 @@
+# Data
+type: object
+properties:
+  name:
+    type: string
+    example: "Test User"
+    description: "A name of the user"
+  credentials:
+    $ref: "./Credentials.yaml"
+required:
+- credentials

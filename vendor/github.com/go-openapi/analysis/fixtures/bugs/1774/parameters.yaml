@@ -1,0 +1,46 @@
+top:
+  name: $top
+  in: query
+  description: >-
+    Show only the first N elements, where N is a positive integer. If a value
+    less than 0 is specified, the URI should be considered malformed.
+  type: integer
+  minimum: 0
+  required: false
+skip:
+  name: $skip
+  in: query
+  description: >-
+    Skip the first N elements, where N is a positive integer as specified by
+    this query option. If a value less than 0 is specified, the URI should be
+    considered malformed.
+  type: integer
+  minimum: 0
+  required: false
+search:
+  name: $search
+  in: query
+  description: Free text search on selected entity.
+  type: string
+  required: false
+filter:
+  name: $filter
+  in: query
+  description: >-
+    Causes returning only entities, for those the filter condition evaluates true.
+  type: string
+  required: false
+etag:
+  name: ETag
+  in: header
+  description: Known fingerprint of the entity
+  type: string
+  required: false
+ifmatch:
+  name: If-Match
+  in: header
+  description: >-
+    The request will succeed if the value equals to the current fingerprint
+    of the entity on the server side.
+  type: string
+  required: false

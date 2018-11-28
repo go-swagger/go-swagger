@@ -884,3 +884,62 @@ func Test_EdgeCases(t *testing.T) {
 	assert.NotNil(t, res7)
 	assert.Len(t, res7, 1)
 }
+
+func TestEnumAnalysis(t *testing.T) {
+	doc, err := loadSpec(filepath.Join("fixtures", "enums.yml"))
+	if assert.NoError(t, err) {
+		an := New(doc)
+		en := an.enums
+
+		// parameters
+		assertEnum(t, en.parameters, "#/parameters/idParam", []interface{}{"aA", "b9", "c3"})
+		assertEnum(t, en.parameters, "#/paths/~1some~1where~1{id}/parameters/1", []interface{}{"bA", "ba", "b9"})
+		assertEnum(t, en.parameters, "#/paths/~1some~1where~1{id}/get/parameters/0", []interface{}{"a0", "b1", "c2"})
+
+		// responses
+		assertEnum(t, en.headers, "#/responses/notFound/headers/ContentLength", []interface{}{"1234", "123"})
+		assertEnum(t, en.headers,
+			"#/paths/~1some~1where~1{id}/get/responses/200/headers/X-Request-Id", []interface{}{"dA", "d9"})
+
+		// definitions
+		assertEnum(t, en.schemas,
+			"#/paths/~1other~1place/post/parameters/0/schema/properties/value", []interface{}{"eA", "e9"})
+		assertEnum(t, en.schemas, "#/paths/~1other~1place/post/responses/200/schema/properties/data",
+			[]interface{}{"123a", "123b", "123d"})
+		assertEnum(t, en.schemas, "#/definitions/named", []interface{}{"fA", "f9"})
+		assertEnum(t, en.schemas, "#/definitions/tag/properties/value", []interface{}{"gA", "ga", "g9"})
+		assertEnum(t, en.schemas, "#/definitions/record",
+			[]interface{}{`{"createdAt": "2018-08-31"}`, `{"createdAt": "2018-09-30"}`})
+
+		// array enum
+		assertEnum(t, en.parameters, "#/paths/~1some~1where~1{id}/get/parameters/1",
+			[]interface{}{[]interface{}{"cA", "cz", "c9"}, []interface{}{"cA", "cz"}, []interface{}{"cz", "c9"}})
+
+		// items
+		assertEnum(t, en.items, "#/paths/~1some~1where~1{id}/get/parameters/1/items", []interface{}{"cA", "cz", "c9"})
+		assertEnum(t, en.items, "#/paths/~1other~1place/post/responses/default/headers/Via/items",
+			[]interface{}{"AA", "Ab"})
+
+		res := an.AllEnums()
+		assert.Lenf(t, res, 14, "Expected 14 enums in this spec, but got %d", len(res))
+
+		res = an.ParameterEnums()
+		assert.Lenf(t, res, 4, "Expected 4 enums in this spec, but got %d", len(res))
+
+		res = an.SchemaEnums()
+		assert.Lenf(t, res, 6, "Expected 6 schema enums in this spec, but got %d", len(res))
+
+		res = an.HeaderEnums()
+		assert.Lenf(t, res, 2, "Expected 2 header enums in this spec, but got %d", len(res))
+
+		res = an.ItemsEnums()
+		assert.Lenf(t, res, 2, "Expected 2 items enums in this spec, but got %d", len(res))
+	}
+}
+
+func assertEnum(t testing.TB, data map[string][]interface{}, key string, enum []interface{}) bool {
+	if assert.Contains(t, data, key) {
+		return assert.Equal(t, enum, data[key])
+	}
+	return false
+}

@@ -1,0 +1,16 @@
+{
+    "Pair": {
+        "description":
+          "Simple key value pair model that is used by some of the other models.",
+        "type": "object",
+        "required": ["key", "value"],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+     }
+  }

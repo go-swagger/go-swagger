@@ -1,0 +1,9 @@
+# Users
+type: object
+properties:
+  users:
+    type: array
+    items:
+      $ref: "./User.yaml"
+required:
+- users

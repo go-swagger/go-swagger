@@ -27,7 +27,7 @@ import (
 //             └── golang.org
 //                 └── repob
 //                     └── b
-//     										└── b.go
+//                         └── b.go
 // GOPATH would be set to
 //     /sometemporarydirectory/repoa;/sometemporarydirectory/repob
 // and the working directory would be
@@ -56,10 +56,6 @@ func (gopath) Finalize(exported *Exported) error {
 			gopath += string(filepath.ListSeparator)
 		}
 		dir := gopathDir(exported, module)
-		if module == gorootModule {
-			exported.Config.Env = append(exported.Config.Env, "GOROOT="+dir)
-			continue
-		}
 		gopath += dir
 		if module == exported.primary {
 			exported.Config.Dir = filepath.Join(dir, "src")
@@ -70,5 +66,9 @@ func (gopath) Finalize(exported *Exported) error {
 }
 
 func gopathDir(exported *Exported, module string) string {
-	return filepath.Join(exported.temp, path.Base(module))
+	dir := path.Base(module)
+	if versionSuffixRE.MatchString(dir) {
+		dir = path.Base(path.Dir(module)) + "_" + dir
+	}
+	return filepath.Join(exported.temp, dir)
 }
