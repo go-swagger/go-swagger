@@ -446,3 +446,27 @@ func TestServer_Issue1746(t *testing.T) {
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-name\s+ExampleSwaggerServer`, string(gulp))
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, string(gulp))
 }
+
+func TestServer_Issue1816(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/bugs/1816/fixture-1816.yaml", "generate embedded spec")
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	app, err := gen.makeCodegenApp()
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+	buf := bytes.NewBuffer(nil)
+	if !assert.NoError(t, templates.MustGet("swaggerJsonEmbed").Execute(buf, app)) {
+		t.FailNow()
+	}
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("embed.go", buf.Bytes())
+	if assert.NoError(t, err) {
+		res := string(formatted)
+		assertNotInCode(t, `"$ref": "#"`, res)
+	} else {
+		fmt.Println(buf.String())
+	}
+}
