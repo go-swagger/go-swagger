@@ -940,7 +940,7 @@ func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*l
 		}
 		for _, info := range scp.program.AllPackages {
 			n := info.String()
-			path := "/vendor/" + selPath
+			path := "vendor/" + selPath
 			if strings.HasSuffix(n, path) {
 				pkg = scp.program.Package(n)
 				return pkg, nil
