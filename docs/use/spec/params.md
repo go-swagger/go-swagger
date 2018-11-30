@@ -75,7 +75,7 @@ type BarSliceParam struct {
 	// items.items.items.pattern: \w+
 	// collection format: pipe
 	// in: query
-        // example: [[["bar_000"]]]
+	// example: [[["bar_000"]]]
 	BarSlice [][][]string `json:"bar_slice"`
 }
 ```

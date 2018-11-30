@@ -75,7 +75,7 @@ type User struct {
 	// the email address for this user
 	//
 	// required: true
-        // example: user@provider.net
+	// example: user@provider.net
 	Email strfmt.Email `json:"login"`
 
 	// the friends for this user
