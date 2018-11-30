@@ -311,13 +311,15 @@ func parseValueFromSchema(s string, schema *spec.SimpleSchema) (interface{}, err
 		case "object":
 			var obj map[string]interface{}
 			if err := json.Unmarshal([]byte(s), &obj); err != nil {
-				return nil, err
+				// If we can't parse it, just return the string.
+				return s, nil
 			}
 			return obj, nil
 		case "array":
 			var slice []interface{}
 			if err := json.Unmarshal([]byte(s), &slice); err != nil {
-				return nil, err
+				// If we can't parse it, just return the string.
+				return s, nil
 			}
 			return slice, nil
 		default:
