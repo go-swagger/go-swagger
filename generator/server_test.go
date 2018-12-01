@@ -447,10 +447,10 @@ func TestServer_Issue1746(t *testing.T) {
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, string(gulp))
 }
 
-func TestServer_Issue1816(t *testing.T) {
+func doGenAppTemplate(t *testing.T, fixture, template string) string {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
-	gen, err := testAppGenerator(t, "../fixtures/bugs/1816/fixture-1816.yaml", "generate embedded spec")
+	gen, err := testAppGenerator(t, fixture, "generate: "+fixture)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
@@ -459,14 +459,23 @@ func TestServer_Issue1816(t *testing.T) {
 		t.FailNow()
 	}
 	buf := bytes.NewBuffer(nil)
-	if !assert.NoError(t, templates.MustGet("swaggerJsonEmbed").Execute(buf, app)) {
+	if !assert.NoError(t, templates.MustGet(template).Execute(buf, app)) {
 		t.FailNow()
 	}
-	formatted, err := app.GenOpts.LanguageOpts.FormatContent("embed.go", buf.Bytes())
-	if assert.NoError(t, err) {
-		res := string(formatted)
-		assertNotInCode(t, `"$ref": "#"`, res)
-	} else {
-		fmt.Println(buf.String())
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	if !assert.NoError(t, err) {
+		t.FailNow()
 	}
+	return string(formatted)
+}
+
+func TestServer_Issue1816(t *testing.T) {
+	// fixed regression: gob encoding in $ref
+	res := doGenAppTemplate(t, "../fixtures/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
+	assertNotInCode(t, `"$ref": "#"`, res)
+
+	// fixed regression: gob encoding in operation security requirements
+	res = doGenAppTemplate(t, "../fixtures/bugs/1824/swagger.json", "swaggerJsonEmbed")
+	assertInCode(t, `"api_key": []`, res)
+	assertNotInCode(t, `"api_key": null`, res)
 }

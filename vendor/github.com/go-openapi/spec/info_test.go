@@ -63,3 +63,13 @@ func TestIntegrationInfo_Deserialize(t *testing.T) {
 		assert.EqualValues(t, info, actual)
 	}
 }
+
+func TestInfoGobEncoding(t *testing.T) {
+	var src, dst Info
+	if assert.NoError(t, json.Unmarshal([]byte(infoJSON), &src)) {
+		assert.EqualValues(t, src, info)
+	} else {
+		t.FailNow()
+	}
+	doTestAnyGobEncoding(t, &src, &dst)
+}

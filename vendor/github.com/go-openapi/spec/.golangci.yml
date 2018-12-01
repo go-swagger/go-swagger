@@ -19,3 +19,5 @@ linters:
     - maligned
     - unparam
     - lll
+    - gochecknoinits
+    - gochecknoglobals
