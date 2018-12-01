@@ -32,6 +32,7 @@ Annotation | Description
 **Unique** | when set to true the slice can only contain unique items
 **Required** | when set to true this value needs to be set on the schema
 **Read Only** | when set to true this value will be marked as read-only and is not required in request bodies
+**Example** | an example value, parsed as the field's type<br/>(objects and slices are parsed as JSON)
 
 For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
 level the value is a 0-based index, so items.minLength is the same as items.0.minLength
@@ -74,6 +75,7 @@ type User struct {
 	// the email address for this user
 	//
 	// required: true
+	// example: user@provider.net
 	Email strfmt.Email `json:"login"`
 
 	// the friends for this user
@@ -109,6 +111,7 @@ definitions:
         type: string
         format: email
         x-go-name: Email
+        example: user@provider.net
       friends:
         description: the friends for this user
         type: array

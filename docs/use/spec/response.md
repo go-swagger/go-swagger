@@ -15,6 +15,7 @@ swagger:response [?response name]
 
 Annotation | Description
 -----------|------------
+**In** | where to find the field
 **Collection Format** | when a slice the formatter for the collection when serialized on the request
 **Maximum** | specifies the maximum a number or integer value can have
 **Minimum** | specifies the minimum a number or integer value can have
@@ -25,6 +26,7 @@ Annotation | Description
 **Minimum items** | the minimum number of items a slice needs to have
 **Maximum items** | the maximum number of items a slice can have
 **Unique** | when set to true the slice can only contain unique items
+**Example** | an example value, parsed as the field's type<br/>(objects and slices are parsed as JSON)
 
 For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
 level the value is a 0-based index, so items.minLength is the same as items.0.minLength
@@ -53,6 +55,7 @@ type ValidationError struct {
 		// The validation message
 		//
 		// Required: true
+		// Example: Expected type int
 		Message string
 		// An optional field name to which this validation applies
 		FieldName string
@@ -76,6 +79,7 @@ responses:
         Message:
           type: string
           description: The validation message
+          example: Expected type int
         FieldName:
           type: string
           description: an optional field name to which this validation applies
