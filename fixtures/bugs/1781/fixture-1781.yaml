@@ -1,13 +1,13 @@
 ---
 swagger: "2.0"
 info:
-  description: "Deterministic or pseudo-random data generator"
+  description: "Test fixture for issue#1781, based on deterministic or pseudo-random data generator"
   version: "1.0.0"
   title: "Pseudo Service"
   contact:
-    name: "https://github.com/bgadrian"
+    name: "go-swagger maintainers"
   license:
-    name: "AGPL 2.0"
+    name: "Apache 2.0"
 host: "localhost"
 basePath: "/"
 schemes:
