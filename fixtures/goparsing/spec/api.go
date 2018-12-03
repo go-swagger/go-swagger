@@ -57,6 +57,8 @@ type BookingResponse struct {
 		Dates    DateRange         `json:"dates"`
 		// example: {"key": "value"}
 		Map map[string]string `json:"map"`
+		// example: [1, 2]
+		Slice []int `json:"slice"`
 	}
 }
 

@@ -1,0 +1,558 @@
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  title: Service Manager
+
+schemes:
+  - http
+
+produces:
+  - application/vnd.cia.v1+json
+
+tags:
+  - name: services
+
+basePath: /v1
+
+paths:
+  /services:
+    parameters:
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: searchServices
+      summary: Search for Services
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: name
+          in: query
+          description: Search records by name
+          required: false
+          type: string
+          minLength: 3
+        - name: version
+          in: query
+          description: Search records by version
+          required: false
+          type: string
+          minLength: 3
+        - name: location
+          in: query
+          description: Search records by location
+          required: false
+          type: string
+          minLength: 3
+        - name: region
+          in: query
+          description: Search records by region
+          required: false
+          type: string
+          minLength: 3
+      responses:
+        200:
+          description: List of Services
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/service_view"
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        default:
+          $ref: '#/responses/500'
+
+  /services/{serviceId}:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: viewService
+      summary: View Service
+      description: View Service
+      responses:
+        200:
+          description: Service
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/service_view"
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+
+  /services/{serviceId}/units:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: searchUnits
+      summary: Search for Service Units
+      description: |
+        To apply filter criteria use the following approach:
+
+        `?<field><operator><value>`
+
+        Example: `?name=Test`
+
+      parameters:
+        - name: name
+          in: query
+          description: Search records by name
+          required: false
+          type: string
+          minLength: 3
+        - name: type
+          in: query
+          description: Search records by type
+          required: false
+          type: string
+          minLength: 3
+      responses:
+        200:
+          description: List of Service Units
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/unit_view"
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+
+
+  /services/{serviceId}/units/{unitId}:
+    parameters:
+      - name: serviceId
+        description: Unique identifier for Service
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: unitId
+        description: Unique identifier for Service Unit
+        in: path
+        required: true
+        type: string
+        format: uuid
+      - name: "X-Request-Id"
+        in: "header"
+        description: Unique identifier associated with request
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags: [services]
+      operationId: viewUnit
+      summary: View Service Unit
+      description: View Service Unit
+      responses:
+        200:
+          description: Service Unit
+          headers:
+            X-Request-Id:
+              description: Unique identifier associated with request
+              type: string
+              format: uuid
+          schema:
+            $ref: "#/definitions/unit_view"
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: '#/responses/401'
+        403:
+          $ref: '#/responses/403'
+        404:
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+
+definitions:
+
+  service_view:
+    title: Service View
+    description: An order-able Service defined in Service Catalog.
+    type: object
+    properties:
+      id:
+        title: Service Identifier
+        description: unique identifier for the service
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Name
+        description: name for the service
+        type: string
+        example: OpenStack Service
+      version:
+        title: Service Version
+        description: labeled variant of the service
+        type: string
+        example: Newton
+      tenant_id:
+        title: Service Providers Tenant
+        description: The Tenant identifier for the Tenant providing the service
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      location:
+        title: Service Location
+        description: location of the service
+        type: string
+        example: ALLN
+      region:
+        title: Service Region
+        description: region of the service
+        type: string
+        example: US-EAST
+      status:
+        title: Service Status
+        description: status of the service
+        type: string
+        enum: [CREATING, ACTIVE, UPDATING, DELETING, INACTIVE, DELETED, FAILED]
+        example: ACTIVE
+      tags:
+        title: Service Tags
+        description: tags to identify service properties
+        type: array
+        items:
+          type: string
+        x-omitempty: true
+        example: [LA, ALPHA]
+      metadata:
+        title: Service Metadata
+        description: metadata of the service
+        type: object
+        additionalProperties:
+          type: string
+      audit:
+        $ref: "#/definitions/audit"
+
+  unit_view:
+    title: Service Unit View
+    description: A Service Unit for the Location defined in Service Catalog.
+    type: object
+    properties:
+      id:
+        title: Service Unit Identifier
+        description: unique identifier for the service unit
+        type: string
+        format: uuid
+        example: 3377f6e7-dd55-4639-bc54-65646fde2adc
+      name:
+        title: Service Unit Name
+        description: name for the service unit
+        type: string
+        example: Example Service Unit
+      type:
+        title: Service Unit Type
+        description: type of the service unit
+        type: string
+        example: VCPU
+      description:
+        title: Service Unit Description
+        description: summary describing the service unit
+        type: string
+        example: Long description about the service unit
+      cost:
+        title: Service Unit Cost
+        description: cost for the service unit
+        type: number
+        format: double
+        example: 0.02
+      period:
+        title: Service Unit Cost Period
+        description: cost period for the service unit
+        type: string
+        enum: [FLAT, HOURLY, MONTHLY]
+        example: HOURLY
+      cost_algorithm:
+        title: Service Unit Consumption Cost Algorithm
+        description: consumption cost algorithm for the service unit
+        type: string
+        enum: [SIMPLE_SUM, DAILY_MAX_AVG]
+        example: SIMPLE_SUM
+      quotas:
+        title: Service Unit Quotas
+        description: quotas defined for the service unit
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/quota'
+      activated_at:
+         title: Service Unit Cost Activation Timestamp
+         description: >
+             service unit activation date (inclusive) as YYYY-MM-DD with respect to the billing period
+             always as the start of the billing period
+         type: string
+         example: 2018-02-01
+      deactivated_at:
+         title: Service Unit Cost Deactivation Timestamp
+         description: >
+             service unit deactivation date (exclusive) as YYYY-MM-DD with respect to the billing period
+             - omitted if empty or the end of the billing period
+         type: string
+         example: 2018-03-01
+      audit:
+        $ref: "#/definitions/audit"
+
+  quota:
+     title: Service Unit Quota
+     description: quota details with values
+     type: object
+     properties:
+       min:
+         title: Minimum quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+       max:
+         title: Maximum quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+       default:
+         title: Default quota value
+         type: number
+         format: double
+         minimum: 0.0
+         example: 1.0
+
+  audit:
+    title: Audit
+    description: Audit trail details
+    type: object
+    properties:
+      created_at:
+        title: Created At
+        description: timestamp when the record was created
+        type: string
+        format: date-time
+        readOnly: true
+      created_by:
+        title: Created By
+        description: entity that created the record
+        type: string
+        readOnly: true
+      updated_at:
+        title: Updated At
+        description: timestamp when the record was updated
+        type: string
+        format: date-time
+        readOnly: true
+      updated_by:
+        title: Updated By
+        description: entity that updated the record
+        type: string
+        readOnly: true
+
+  error:
+    title: Error
+    description: |
+      An error provides information about why the request failed.
+    type: object
+    required:
+      - code
+      - message
+    properties:
+      code:
+        title: Code
+        description: |
+            Code identifies a specific type of error.
+        type: string
+      message:
+        title: Message
+        description: |
+          The message provides details about the failure.
+        type: string
+
+responses:
+  400:
+    description: |
+      Invalid Request Error. Check error message in the response body for details.
+    examples:
+      application/json:
+        code: EXAMPLE-001
+        message: Missing required attribute 'name'.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  401:
+    description: |
+      Authentication Failure
+    examples:
+      application/json:
+        code: EXAMPLE-002
+        message: Authentication failed bad password.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  402:
+    description: |
+      Insufficient Funds
+    examples:
+      application/json:
+        code: EXAMPLE-003
+        message: Insufficient Funds to cover the cost of resource.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  403:
+    description: |
+      Authorization Failure
+    examples:
+      application/json:
+        code: EXAMPLE-004
+        message: Not authorized to perform action.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  404:
+    description: |
+      Resource not found
+    examples:
+      application/json:
+        code: EXAMPLE-005
+        message: Resource <id> does not exist.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  409:
+    description: |
+      Conflict
+    examples:
+      application/json:
+        code: EXAMPLE-006
+        message: Resource already exists.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  422:
+    description: |
+      Unprocessable Entity Failure
+    examples:
+      application/json:
+        code: EXAMPLE-007
+        message: Resource is not able to be updated.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  500:
+    description: |
+      Internal Server Error. Check error entity in the response body for details.
+    examples:
+      application/json:
+        code: EXAMPLE-009
+        message: Internal server error.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"
+  503:
+    description: |
+      Service Unavailable
+    examples:
+      application/json:
+        code: EXAMPLE-010
+        message: Service Unavailable.
+    headers:
+      X-Request-Id:
+        description: Unique identifier associated with request
+        type: string
+        format: uuid
+    schema:
+      $ref: "#/definitions/error"

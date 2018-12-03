@@ -87,3 +87,12 @@ responses:
           example:
             key: value
           x-go-name: Map
+        slice:
+          type: array
+          items:
+            type: integer
+            format: int64
+          x-go-name: Slice
+          example:
+            - 1
+            - 2
