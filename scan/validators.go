@@ -769,11 +769,10 @@ func (ss *setOpResponses) Parse(lines []string) error {
 				return err
 			}
 
-			var resp spec.Response
+			// description should used on anyway.
+			resp := spec.Response{ResponseProps: spec.ResponseProps{Description: description}}
 
-			if !isDefinitionRef {
-				resp.Ref = ref
-			} else {
+			if isDefinitionRef {
 				resp.Schema = new(spec.Schema)
 				resp.Description = description
 				if arrays == 0 {
@@ -788,6 +787,9 @@ func (ss *setOpResponses) Parse(lines []string) error {
 					}
 					cs.Ref = ref
 				}
+				// ref. could be empty while use description tag
+			} else if len(refTarget) > 0 {
+				resp.Ref = ref
 			}
 
 			if strings.EqualFold("default", key) {
