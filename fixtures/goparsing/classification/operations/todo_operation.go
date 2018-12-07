@@ -193,6 +193,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Responses:
 	// default: genericError
 	// 200: someResponse
+	// 202: description:Some description
 	// 422: validationError
 	mountItem("DELETE", basePath+"/orders/:id", nil)
 

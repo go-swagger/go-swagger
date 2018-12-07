@@ -111,6 +111,12 @@ func TestRoutesParser(t *testing.T) {
 		nil,
 		[]string{"read", "write"},
 	)
+
+	// additional check description tag at Responses
+	rsp, ok := po.Delete.Responses.StatusCodeResponses[202]
+	assert.True(t, ok)
+	assert.Equal(t, "Some description", rsp.Description)
+	assert.Equal(t, "", rsp.Ref.String())
 }
 
 func TestRoutesParserBody(t *testing.T) {
