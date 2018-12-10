@@ -154,3 +154,11 @@ func TestParameterSerialization(t *testing.T) {
 		`{"type":"object","in":"body","schema":{"type":"array","items":{"$ref":"Cat"}}}`)
 
 }
+
+func TestParameterGobEncoding(t *testing.T) {
+	var src, dst Parameter
+	if !assert.NoError(t, json.Unmarshal([]byte(parameterJSON), &src)) {
+		t.FailNow()
+	}
+	doTestAnyGobEncoding(t, &src, &dst)
+}

@@ -150,11 +150,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a35c031b701153df4bd35671a1892ebd460dc65247f4f8f14c817578fa3d4216"
+  digest = "1:54af405aae840f810418f3d25211012af1c4bfd56d07d3de6482a7a3b762528a"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = ""
-  revision = "c3754ea506f554c8ec5572f3c776075eb69a23c6"
+  revision = "5b6cdde3200976e3ecceb2868706ee39b6aff3e4"
 
 [[projects]]
   branch = "master"
