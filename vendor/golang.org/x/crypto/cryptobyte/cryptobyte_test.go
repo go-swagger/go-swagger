@@ -421,7 +421,7 @@ func TestFixedBuilderLengthPrefixed(t *testing.T) {
 		b.AddBytes(inner)
 	})
 	if got := b.BytesOrPanic(); len(got) != bufCap {
-		t.Errorf("Expected output lenght to be %d, got %d", bufCap, len(got))
+		t.Errorf("Expected output length to be %d, got %d", bufCap, len(got))
 	}
 }
 

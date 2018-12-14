@@ -86,9 +86,11 @@ extractQueries:
 
 	// TODO(matloob): Remove the definition of listfunc and just use golistPackages once go1.12 is released.
 	var listfunc driver
+	var isFallback bool
 	listfunc = func(cfg *Config, words ...string) (*driverResponse, error) {
 		response, err := golistDriverCurrent(cfg, words...)
 		if _, ok := err.(goTooOldError); ok {
+			isFallback = true
 			listfunc = golistDriverFallback
 			return listfunc(cfg, words...)
 		}
@@ -116,10 +118,6 @@ extractQueries:
 	// types.SizesFor always returns nil or a *types.StdSizes
 	response.Sizes, _ = sizes.(*types.StdSizes)
 
-	if len(containFiles) == 0 && len(packagesNamed) == 0 {
-		return response, nil
-	}
-
 	seenPkgs := make(map[string]*Package) // for deduplication. different containing queries could produce same packages
 	for _, pkg := range response.Packages {
 		seenPkgs[pkg.ID] = pkg
@@ -132,27 +130,83 @@ extractQueries:
 		response.Packages = append(response.Packages, p)
 	}
 
-	containsResults, err := runContainsQueries(cfg, listfunc, addPkg, containFiles)
-	if err != nil {
-		return nil, err
-	}
-	response.Roots = append(response.Roots, containsResults...)
+	var containsCandidates []string
 
-	namedResults, err := runNamedQueries(cfg, listfunc, addPkg, packagesNamed)
+	if len(containFiles) != 0 {
+		containsCandidates, err = runContainsQueries(cfg, listfunc, isFallback, addPkg, containFiles)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(packagesNamed) != 0 {
+		namedResults, err := runNamedQueries(cfg, listfunc, addPkg, packagesNamed)
+		if err != nil {
+			return nil, err
+		}
+		response.Roots = append(response.Roots, namedResults...)
+	}
+
+	modifiedPkgs, needPkgs, err := processGolistOverlay(cfg, response)
 	if err != nil {
 		return nil, err
 	}
-	response.Roots = append(response.Roots, namedResults...)
+	if len(containFiles) > 0 {
+		containsCandidates = append(containsCandidates, modifiedPkgs...)
+		containsCandidates = append(containsCandidates, needPkgs...)
+	}
+
+	if len(needPkgs) > 0 {
+		addNeededOverlayPackages(cfg, listfunc, addPkg, needPkgs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// Check candidate packages for containFiles.
+	if len(containFiles) > 0 {
+		for _, id := range containsCandidates {
+			pkg := seenPkgs[id]
+			for _, f := range containFiles {
+				for _, g := range pkg.GoFiles {
+					if sameFile(f, g) {
+						response.Roots = append(response.Roots, id)
+					}
+				}
+			}
+		}
+	}
+
 	return response, nil
 }
 
-func runContainsQueries(cfg *Config, driver driver, addPkg func(*Package), queries []string) ([]string, error) {
+func addNeededOverlayPackages(cfg *Config, driver driver, addPkg func(*Package), pkgs []string) error {
+	response, err := driver(cfg, pkgs...)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range response.Packages {
+		addPkg(pkg)
+	}
+	return nil
+}
+
+func runContainsQueries(cfg *Config, driver driver, isFallback bool, addPkg func(*Package), queries []string) ([]string, error) {
 	var results []string
 	for _, query := range queries {
 		// TODO(matloob): Do only one query per directory.
 		fdir := filepath.Dir(query)
-		cfg.Dir = fdir
-		dirResponse, err := driver(cfg, ".")
+		// Pass absolute path of directory to go list so that it knows to treat it as a directory,
+		// not a package path.
+		pattern, err := filepath.Abs(fdir)
+		if err != nil {
+			return nil, fmt.Errorf("could not determine absolute path of file= query path %q: %v", query, err)
+		}
+		if isFallback {
+			pattern = "."
+			cfg.Dir = fdir
+		}
+
+		dirResponse, err := driver(cfg, pattern)
 		if err != nil {
 			return nil, err
 		}
@@ -548,7 +602,7 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 			OtherFiles:      absJoin(p.Dir, otherFiles(p)...),
 		}
 
-		// Workaround for github.com/golang/go/issues/28749.
+		// Workaround for https://golang.org/issue/28749.
 		// TODO(adonovan): delete before go1.12 release.
 		out := pkg.CompiledGoFiles[:0]
 		for _, f := range pkg.CompiledGoFiles {
@@ -694,7 +748,7 @@ func invokeGo(cfg *Config, args ...string) (*bytes.Buffer, error) {
 
 	// As of writing, go list -export prints some non-fatal compilation
 	// errors to stderr, even with -e set. We would prefer that it put
-	// them in the Package.Error JSON (see http://golang.org/issue/26319).
+	// them in the Package.Error JSON (see https://golang.org/issue/26319).
 	// In the meantime, there's nowhere good to put them, but they can
 	// be useful for debugging. Print them if $GOPACKAGESPRINTGOLISTERRORS
 	// is set.

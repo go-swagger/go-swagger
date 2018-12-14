@@ -7,11 +7,12 @@ package packagestest
 import (
 	"fmt"
 	"go/token"
+	"path/filepath"
 	"reflect"
 	"regexp"
-	"strings"
 
 	"golang.org/x/tools/go/expect"
+	"golang.org/x/tools/go/packages"
 )
 
 const (
@@ -47,8 +48,10 @@ const (
 //   expect.Comment : passed the Comment instance being evaluated.
 //   string : can be supplied either a string literal or an identifier.
 //   int : can only be supplied an integer literal.
+//   *regexp.Regexp : can only be supplied a regular expression literal
 //   token.Pos : has a file position calculated as described below.
 //   token.Position : has a file position calculated as described below.
+//   interface{} : will be passed any value
 //
 // Position calculation
 //
@@ -131,12 +134,23 @@ func (e *Exported) getNotes() error {
 		return nil
 	}
 	notes := []*expect.Note{}
+	var dirs []string
 	for _, module := range e.written {
 		for _, filename := range module {
-			if !strings.HasSuffix(filename, ".go") {
-				continue
+			dirs = append(dirs, filepath.Dir(filename))
+		}
+	}
+	pkgs, err := packages.Load(e.Config, dirs...)
+	if err != nil {
+		return fmt.Errorf("unable to load packages for directories %s: %v", dirs, err)
+	}
+	for _, pkg := range pkgs {
+		for _, filename := range pkg.GoFiles {
+			content, err := e.FileContents(filename)
+			if err != nil {
+				return err
 			}
-			l, err := expect.Parse(e.fset, filename, nil)
+			l, err := expect.Parse(e.fset, filename, content)
 			if err != nil {
 				return fmt.Errorf("Failed to extract expectations: %v", err)
 			}
@@ -164,6 +178,8 @@ var (
 	posType        = reflect.TypeOf(token.Pos(0))
 	positionType   = reflect.TypeOf(token.Position{})
 	rangeType      = reflect.TypeOf(Range{})
+	fsetType       = reflect.TypeOf((*token.FileSet)(nil))
+	regexType      = reflect.TypeOf((*regexp.Regexp)(nil))
 )
 
 // converter converts from a marker's argument parsed from the comment to
@@ -189,6 +205,10 @@ func (e *Exported) buildConverter(pt reflect.Type) (converter, error) {
 	case pt == noteType:
 		return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
 			return reflect.ValueOf(n), args, nil
+		}, nil
+	case pt == fsetType:
+		return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
+			return reflect.ValueOf(e.fset), args, nil
 		}, nil
 	case pt == posType:
 		return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
@@ -225,6 +245,17 @@ func (e *Exported) buildConverter(pt reflect.Type) (converter, error) {
 				return reflect.Value{}, nil, fmt.Errorf("cannot convert %v to string", arg)
 			}
 		}, nil
+
+	case pt == regexType:
+		return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
+			arg := args[0]
+			args = args[1:]
+			if _, ok := arg.(*regexp.Regexp); !ok {
+				return reflect.Value{}, nil, fmt.Errorf("cannot convert %v to *regexp.Regexp", arg)
+			}
+			return reflect.ValueOf(arg), args, nil
+		}, nil
+
 	case pt.Kind() == reflect.String:
 		return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
 			arg := args[0]
@@ -277,7 +308,12 @@ func (e *Exported) buildConverter(pt reflect.Type) (converter, error) {
 			return result, args, nil
 		}, nil
 	default:
-		return nil, fmt.Errorf("param has invalid type %v", pt)
+		if pt.Kind() == reflect.Interface && pt.NumMethod() == 0 {
+			return func(n *expect.Note, args []interface{}) (reflect.Value, []interface{}, error) {
+				return reflect.ValueOf(args[0]), args[1:], nil
+			}, nil
+		}
+		return nil, fmt.Errorf("param has unexpected type %v (kind %v)", pt, pt.Kind())
 	}
 }
 
@@ -305,7 +341,7 @@ func (e *Exported) rangeConverter(n *expect.Note, args []interface{}) (Range, []
 			return mark, args, nil
 		}
 	case string:
-		start, end, err := expect.MatchBefore(e.fset, e.fileContents, n.Pos, arg)
+		start, end, err := expect.MatchBefore(e.fset, e.FileContents, n.Pos, arg)
 		if err != nil {
 			return Range{}, nil, err
 		}
@@ -314,7 +350,7 @@ func (e *Exported) rangeConverter(n *expect.Note, args []interface{}) (Range, []
 		}
 		return Range{Start: start, End: end}, args, nil
 	case *regexp.Regexp:
-		start, end, err := expect.MatchBefore(e.fset, e.fileContents, n.Pos, arg)
+		start, end, err := expect.MatchBefore(e.fset, e.FileContents, n.Pos, arg)
 		if err != nil {
 			return Range{}, nil, err
 		}
