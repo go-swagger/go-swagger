@@ -126,10 +126,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
-            "token_header": null
+            "token_header": []
           }
         ],
         "description": "Allows for creating a task.\nThis operation requires authentication so that we know which user\ncreated the task.\n",
@@ -188,10 +188,10 @@ func init() {
       "put": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
-            "token_header": null
+            "token_header": []
           }
         ],
         "description": "Allows for updating a task.\nThis operation requires authentication so that we know which user\nlast updated the task.\n",
@@ -232,10 +232,10 @@ func init() {
       "delete": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
-            "token_header": null
+            "token_header": []
           }
         ],
         "description": "This is a soft delete and changes the task status to ignored.\n",
@@ -297,10 +297,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
-            "token_header": null
+            "token_header": []
           }
         ],
         "description": "The comment can contain ___github markdown___ syntax.\nFenced codeblocks etc are supported through pygments.\n",
@@ -356,10 +356,10 @@ func init() {
       "post": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
-            "token_header": null
+            "token_header": []
           }
         ],
         "description": "The file can't be larger than **5MB**",

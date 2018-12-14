@@ -222,7 +222,7 @@ func init() {
       "get": {
         "security": [
           {
-            "api_key": null
+            "api_key": []
           },
           {
             "petstore_auth": [

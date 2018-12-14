@@ -33,6 +33,7 @@ func init() {
   "paths": {
     "/auth/callback": {
       "get": {
+        "security": [],
         "summary": "return access_token",
         "responses": {
           "200": {
@@ -131,6 +132,7 @@ func init() {
     },
     "/login": {
       "get": {
+        "security": [],
         "summary": "login through oauth2 server",
         "responses": {
           "200": {
