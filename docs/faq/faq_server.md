@@ -107,7 +107,7 @@ Can i pass it somehow via context or any other way to do that?
 >Lookup would be faster in that way because each operation has a unique id according to swagger specification.
 >The problem comes when I want to check against that ACL of mine...
 
-**Suggestions**: 
+**Suggestions**:
 This is possible in 2 ways.
 - first way is by using an authenticator,
 - the second way is making a middleware (not global)
@@ -167,7 +167,7 @@ that was a little confusing looking through the other examples and not seeing an
 
 _Similar use-case_: dependency injection
 
-Wouldn't it be better to have all the handlers automatically be part of a default struct that simply has a Context member variable or empty interface? 
+Wouldn't it be better to have all the handlers automatically be part of a default struct that simply has a Context member variable or empty interface?
 
 >That would save everyone a lot of copy/paste when we need to inject some info.
 >I mean, a different context than the one available on params.HTTPRequest.Context(),
@@ -217,7 +217,7 @@ Also keep in mind that `go-openapi` and `go-swagger` constitute a _toolkit_
 and provide you the *tools* to adapt to your own use case.
 The `swagger` command line and standard templates only covers general purpose use-cases.
 
-If you think your use-case would benefit to many people, feel free to make the necessary changes for your case to work and submitting a PR. 
+If you think your use-case would benefit to many people, feel free to make the necessary changes for your case to work and submitting a PR.
 
 Example config file for generation:
 ```YAML
@@ -295,7 +295,105 @@ This should be sufficient. However:
 >I decided against this because it seemed to just add complexity for little benefit.
 >I can be persuaded to implement such a responder though, and should somebody send a PR like that I would not say no to it.
 
-Originally from issue Originally from issue [#305](https://github.com/go-swagger/go-swagger/issues/305).
+Originally from issue [#305](https://github.com/go-swagger/go-swagger/issues/305).
+
+### OAuth authentication does not redirect to the authorization server
+_Use-Case_: oauth2 accessCode flow does not redirect to the authorization server
+
+> In my understanding, if the accessCode flow is used for oauth2 securitydefinition, the generated server could redirect the authentication to the oauth2 server, e.g., https://accounts.google.com/o/oauth2/v2/auth. However, my generated code does not perform the redirection. Could anyone help on this? Thanks.
+
+Like in:
+```yaml
+---
+swagger: '2.0'
+info:
+  title: oauth2 debug
+  version: 0.3.0
+produces:
+- application/json
+schemes:
+  - http
+basePath: /api
+securityDefinitions:
+  OauthSecurity:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    tokenUrl: 'hhttps://www.googleapis.com/oauth2/v4/token'
+    scopes:
+      admin: Admin scope
+      user: User scope
+security:
+  - OauthSecurity:
+    - user
+paths:
+  /customers:
+  ....
+```
+
+
+> The generated server does not redirect the browser to the google login page.
+
+**Answer**: Redirection flow is for UI. The spec has them so your UI can do the redirection.
+
+Swagger 2.0 only defines those properties as hints for a UI to work,
+this doesn't have to be server side. At the same time the redirection flow is not supported in an API
+but you can use an OAuth 2.0 middleware from any library to get you that functionality
+
+Originally from issue [#1217](https://github.com/go-swagger/go-swagger/issues/1217).
+
+### HTTPS TLS Cipher Suites not supported by AWS Elastic LoadBalancer
+
+_Use-case_: AWS Elastic LoadBalancer forwards https requests to instances, and their security policy is 'ELBSecurityPolicy-2016-08'.
+However, while running the server on https, the server keeps on logging
+
+`http: TLS handshake error from 192.168.X.X:XXXXX: tls: no cipher suite supported by both client and server.`
+
+If we remove the cipher suites on the generated code, it resolves the issue -
+
+```golang
+CipherSuites: []uint16{
+  tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+  tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+  tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+  tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+},
+```
+
+The ELB security policy 'ELBSecurityPolicy-2016-08' does include these cipher suites, however all requests sent by the ELB are rejected by the server.
+
+**Answer**: you can generate the server with a different compatibility mode for the older generation of ciphers
+
+```
+swagger generate server --compatibility-mode=intermediate
+```
+
+Originally from issue [#1383](https://github.com/go-swagger/go-swagger/issues/1383).
+
+### Which mime types are supported?
+
+_Use-Case_: I seem to be unable to find supported mime-types that the API's can consume and produce. Any references?
+
+**Answer**: see the current list of supported media MIMEs [here](https://github.com/go-swagger/go-swagger/blob/3099f611ada66d42974160ac4e0ec475d24b7041/generator/support.go#L279)
+You can add more through the consumer producer mechanism.
+
+Originally from issue [#1022](https://github.com/go-swagger/go-swagger/issues/1022).
+
+### Is it possible to return error to main function of server?
+
+_Use-Case_: Is it possible to return error to main function of server?
+
+> For example, my server saves some configs in file, and I want that if config file is missing,
+> then server must be stopped with some error code. It is possible to do it with panic(err),
+> but I think it is not good way. So can I return error main function of server ?
+
+**Answer**: you can make your own main function.
+
+There is an example here: https://github.com/go-openapi/kvstore/blob/master/cmd/kvstored/main.go
+
+There is a command line argument to avoid overwriting the main when generating: `--exclude-main`.
+
+Originally from issue [#1060](https://github.com/go-swagger/go-swagger/issues/1060).
 
 -------------
 

@@ -61,7 +61,7 @@ func pathUnescape(path string) (string, error) {
 }
 ```
 
-All repos should remain go-gettable (i.e. available with the `go get ...` command)
+All repos should remain go-gettable (i.e. available with the `go get ./...` command)
 and testable with `go test ./...`
 
 ### Continuous integration
