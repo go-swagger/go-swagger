@@ -29,6 +29,12 @@ Feel free to contribute new questions and share your experience with go-swagger!
 * [How to validate dates and times?](faq_model.md#how-to-validate-dates-and-times)
 * [Accessing the return value from Default response](faq_model.md#accessing-the-default-return-value)
 * [How to avoid deep copies of complex data structures that need to be marshalled across the API?](faq_model.md#how-to-avoid-deep-copies-of-complex-data-structures-that-need-to-be-marshalled-across-the-api)
+* [Extra sections in POST body](faq_model.md#extra-sections-in-post-body)
+* [How to support generate type int?](faq_model.md#how-to-support-generate-type-int)
+* [Generate all models necessary for specified operation](faq_model.md#generate-all-models-necessary-for-specified-operation)
+* [Generated code changes the order of properties in struct](faq_model.md#generated-code-changes-the-order-of-properties-in-struct)
+* [Fail to use swagger generate model -name](faq_model.md#fail-to-use-swagger-generate-model-name)
+
 <!-- * How to make custom validators? -->
 
 #### Server generation and customization
@@ -39,6 +45,10 @@ Feel free to contribute new questions and share your experience with go-swagger!
 * [How to access access API struct inside operator handler?](faq_server.md#how-to-access-access-api-struct-inside-operator-handler)
 * [Use go-swagger to generate different client or servers](faq_server.md#use-go-swagger-to-generate-different-client-or-servers)
 * [Support streaming responses](faq_server.md#support-streaming-responses)
+* [OAuth authentication does not redirect to the authorization server](faq_server.md#oauth-authentication-does-not-redirect-to-the-authorization-server)
+* [HTTPS TLS Cipher Suites not supported by AWS Elastic LoadBalancer](faq_server.md#https-tls-cipher-suites-not-supported-by-aws-elastic-loadbalancer)
+* [Which mime types are supported?](faq_server.md#which-mime-types-are-supported)
+* [Is it possible to return error to main function of server?](faq_server.md#is-it-possible-to-return-error-to-main-function-of-server)
 
 #### Client generation
 * [Is there an example for dynamic client?](faq_client.md#example-for-dynamic-client)
@@ -66,6 +76,11 @@ Feel free to contribute new questions and share your experience with go-swagger!
 * [Serving UI from existing app](faq_documenting.md#how-to-serve-swagger-ui-from-a-preexisting-web-app)
 * [How to use swagger-ui/cors?](faq_server.md#how-to-use-swagger-ui-cors)
 * [Serving my own UI files](faq_server.md#how-to-serve-my-ui-files)
+
+#### Swagger specification
+* [Default vs_required](faq_swagger.md#default-vs-required)
+* [type string, format int64 not respected in generator](faq_swagger.md#type-string-format-int64-not-respected-in-generator)
+* [Duplicate operationId error](faq_swagger.md#duplicate-operationid-error)
 
 <!-- More on that...
 #### Documentation and tutorials

@@ -56,3 +56,4 @@
   - [Spec generation from source](faq/faq_spec.md)
   - [API testing](faq/faq_testing.md)
   - [Documenting your API](faq/faq_documenting.md)
+  - [Swagger specification](faq/faq_swagger.md)
