@@ -32,6 +32,8 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+const asMethod = "()"
+
 /*
 Rewrite specification document first:
 
@@ -258,7 +260,9 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		}
 
 		for j := range pg.GenSchema.Properties {
-			pg.GenSchema.Properties[j].ValueExpression += "()"
+			if !strings.HasSuffix(pg.GenSchema.Properties[j].ValueExpression, asMethod) {
+				pg.GenSchema.Properties[j].ValueExpression += asMethod
+			}
 		}
 	}
 
@@ -840,7 +844,7 @@ func (sg *schemaGenContext) buildProperties() error {
 
 		// when discriminated, data is accessed via a getter func
 		if emprop.GenSchema.HasDiscriminator {
-			emprop.GenSchema.ValueExpression += "()"
+			emprop.GenSchema.ValueExpression += asMethod
 		}
 
 		emprop.GenSchema.Extensions = emprop.Schema.Extensions
@@ -1826,7 +1830,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	// usage of a polymorphic base type is rendered with getter funcs on private properties.
 	// In the case of aliased types, the value expression remains unchanged to the receiver.
 	if tpe.IsArray && tpe.ElemType != nil && tpe.ElemType.IsBaseType && sg.GenSchema.ValueExpression != sg.GenSchema.ReceiverName {
-		sg.GenSchema.ValueExpression += "()"
+		sg.GenSchema.ValueExpression += asMethod
 	}
 
 	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)
