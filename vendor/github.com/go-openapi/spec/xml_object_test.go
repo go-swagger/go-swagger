@@ -57,7 +57,13 @@ func TestXmlObject_Deserialize(t *testing.T) {
 	}
 
 	completed := `{"name":"the name","namespace":"the namespace","prefix":"the prefix","attribute":true,"wrapped":true}`
-	expected = XMLObject{"the name", "the namespace", "the prefix", true, true}
+	expected = XMLObject{
+		Name:      "the name",
+		Namespace: "the namespace",
+		Prefix:    "the prefix",
+		Attribute: true,
+		Wrapped:   true,
+	}
 	actual = XMLObject{}
 	if assert.NoError(t, json.Unmarshal([]byte(completed), &actual)) {
 		assert.Equal(t, expected, actual)

@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,7 +49,7 @@ var items = Items{
 	},
 }
 
-var itemsJSON = `{
+const itemsJSON = `{
 	"items": {
 		"$ref": "Cat"
 	},
@@ -102,6 +103,51 @@ func TestTypeNameItems(t *testing.T) {
 
 	assert.Equal(t, "array", nested.TypeName())
 	assert.Equal(t, "int32", nested.ItemsTypeName())
+
+	simple := SimpleSchema{
+		Type:  "string",
+		Items: nil,
+	}
+
+	assert.Equal(t, "string", simple.TypeName())
+	assert.Equal(t, "", simple.ItemsTypeName())
+
+	simple.Items = NewItems()
+	simple.Type = "array"
+	simple.Items.Type = "string"
+
+	assert.Equal(t, "array", simple.TypeName())
+	assert.Equal(t, "string", simple.ItemsTypeName())
+}
+
+func TestItemsBuilder(t *testing.T) {
+	simple := SimpleSchema{
+		Type: "array",
+		Items: NewItems().
+			Typed("string", "uuid").
+			WithDefault([]string{"default-value"}).
+			WithEnum([]string{"abc", "efg"}, []string{"hij"}).
+			WithMaxItems(4).
+			WithMinItems(1).
+			UniqueValues(),
+	}
+
+	assert.Equal(t, SimpleSchema{
+		Type: "array",
+		Items: &Items{
+			SimpleSchema: SimpleSchema{
+				Type:    "string",
+				Format:  "uuid",
+				Default: []string{"default-value"},
+			},
+			CommonValidations: CommonValidations{
+				Enum:        []interface{}{[]string{"abc", "efg"}, []string{"hij"}},
+				MinItems:    swag.Int64(1),
+				MaxItems:    swag.Int64(4),
+				UniqueItems: true,
+			},
+		},
+	}, simple)
 }
 
 func TestJSONLookupItems(t *testing.T) {

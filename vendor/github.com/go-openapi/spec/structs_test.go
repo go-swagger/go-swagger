@@ -31,26 +31,6 @@ func assertSerializeJSON(t testing.TB, actual interface{}, expected string) bool
 	return assert.Equal(t, string(ser), expected)
 }
 
-func assertParsesJSON(t testing.TB, actual string, expected interface{}) bool {
-	tpe := reflect.TypeOf(expected)
-	var pointed bool
-	if tpe.Kind() == reflect.Ptr {
-		tpe = tpe.Elem()
-		pointed = true
-	}
-
-	parsed := reflect.New(tpe)
-	err := json.Unmarshal([]byte(actual), parsed.Interface())
-	if err != nil {
-		return assert.Fail(t, "unable to unmarshal from json (%s): %s", err, actual)
-	}
-	act := parsed.Interface()
-	if !pointed {
-		act = reflect.Indirect(parsed).Interface()
-	}
-	return assert.Equal(t, act, expected)
-}
-
 func assertSerializeYAML(t testing.TB, actual interface{}, expected string) bool {
 	ser, err := yaml.Marshal(actual)
 	if err != nil {
@@ -59,20 +39,43 @@ func assertSerializeYAML(t testing.TB, actual interface{}, expected string) bool
 	return assert.Equal(t, string(ser), expected)
 }
 
-func assertParsesYAML(t testing.TB, actual string, expected interface{}) bool {
-	tpe := reflect.TypeOf(expected)
-	var pointed bool
+func derefTypeOf(expected interface{}) (tpe reflect.Type) {
+	tpe = reflect.TypeOf(expected)
 	if tpe.Kind() == reflect.Ptr {
 		tpe = tpe.Elem()
+	}
+	return
+}
+
+func isPointed(expected interface{}) (pointed bool) {
+	tpe := reflect.TypeOf(expected)
+	if tpe.Kind() == reflect.Ptr {
 		pointed = true
 	}
-	parsed := reflect.New(tpe)
+	return
+}
+
+func assertParsesJSON(t testing.TB, actual string, expected interface{}) bool {
+	parsed := reflect.New(derefTypeOf(expected))
+	err := json.Unmarshal([]byte(actual), parsed.Interface())
+	if err != nil {
+		return assert.Fail(t, "unable to unmarshal from json (%s): %s", err, actual)
+	}
+	act := parsed.Interface()
+	if !isPointed(expected) {
+		act = reflect.Indirect(parsed).Interface()
+	}
+	return assert.Equal(t, act, expected)
+}
+
+func assertParsesYAML(t testing.TB, actual string, expected interface{}) bool {
+	parsed := reflect.New(derefTypeOf(expected))
 	err := yaml.Unmarshal([]byte(actual), parsed.Interface())
 	if err != nil {
 		return assert.Fail(t, "unable to unmarshal from yaml (%s): %s", err, actual)
 	}
 	act := parsed.Interface()
-	if !pointed {
+	if !isPointed(expected) {
 		act = reflect.Indirect(parsed).Interface()
 	}
 	return assert.EqualValues(t, act, expected)

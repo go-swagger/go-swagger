@@ -17,7 +17,7 @@ package spec
 import "testing"
 
 func TestIntegrationLicense(t *testing.T) {
-	license := License{"the name", "the url"}
+	license := License{Name: "the name", URL: "the url"}
 	const licenseJSON = `{"name":"the name","url":"the url"}`
 	const licenseYAML = "name: the name\nurl: the url\n"
 

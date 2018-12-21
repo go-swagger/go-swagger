@@ -58,7 +58,7 @@ var operation = Operation{
 	},
 }
 
-var operationJSON = `{
+const operationJSON = `{
 	"description": "operation description",
 	"x-framework": "go-swagger",
 	"consumes": [ "application/json", "application/x-yaml" ],
@@ -76,6 +76,179 @@ var operationJSON = `{
 		}
 	}
 }`
+
+func TestSuccessResponse(t *testing.T) {
+	ope := &Operation{}
+	resp, n, f := ope.SuccessResponse()
+	assert.Nil(t, resp)
+	assert.Equal(t, 0, n)
+	assert.Equal(t, false, f)
+
+	resp, n, f = operation.SuccessResponse()
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, "void response", resp.Description)
+	}
+	assert.Equal(t, 0, n)
+	assert.Equal(t, false, f)
+
+	err := json.Unmarshal([]byte(operationJSON), ope)
+	if !assert.Nil(t, err) {
+		t.FailNow()
+	}
+	ope = ope.RespondsWith(301, &Response{
+		ResponseProps: ResponseProps{
+			Description: "failure",
+		},
+	})
+	resp, n, f = ope.SuccessResponse()
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, "void response", resp.Description)
+	}
+	assert.Equal(t, 0, n)
+	assert.Equal(t, false, f)
+
+	ope = ope.RespondsWith(200, &Response{
+		ResponseProps: ResponseProps{
+			Description: "success",
+		},
+	})
+
+	resp, n, f = ope.SuccessResponse()
+	if assert.NotNil(t, resp) {
+		assert.Equal(t, "success", resp.Description)
+	}
+	assert.Equal(t, 200, n)
+	assert.Equal(t, true, f)
+}
+
+func TestOperationBuilder(t *testing.T) {
+	ope := NewOperation("").WithID("operationID")
+	ope = ope.RespondsWith(200, &Response{
+		ResponseProps: ResponseProps{
+			Description: "success",
+		},
+	}).
+		WithDefaultResponse(&Response{
+			ResponseProps: ResponseProps{
+				Description: "default",
+			},
+		}).
+		SecuredWith("scheme-name", "scope1", "scope2").
+		WithConsumes("application/json").
+		WithProduces("application/json").
+		Deprecate().
+		WithTags("this", "that").
+		AddParam(nil).
+		AddParam(QueryParam("myQueryParam").Typed("integer", "int32")).
+		AddParam(QueryParam("myQueryParam").Typed("string", "hostname")).
+		AddParam(PathParam("myPathParam").Typed("string", "uuid")).
+		WithDescription("test operation").
+		WithSummary("my summary").
+		WithExternalDocs("some doc", "https://www.example.com")
+
+	jazon, _ := json.MarshalIndent(ope, "", " ")
+	assert.JSONEq(t, `{
+		     "operationId": "operationID",
+				 "description": "test operation",
+				 "summary": "my summary",
+				 "externalDocs": {
+					 "description": "some doc",
+					 "url": "https://www.example.com"
+				 },
+	       "security": [
+          {
+           "scheme-name": [
+            "scope1",
+            "scope2"
+           ]
+          }
+         ],
+         "consumes": [
+          "application/json"
+         ],
+         "produces": [
+          "application/json"
+         ],
+         "tags": [
+          "this",
+          "that"
+         ],
+         "deprecated": true,
+         "parameters": [
+          {
+           "type": "string",
+           "format": "hostname",
+           "name": "myQueryParam",
+           "in": "query"
+          },
+          {
+           "type": "string",
+           "format": "uuid",
+           "name": "myPathParam",
+           "in": "path",
+           "required": true
+          }
+         ],
+				 "responses": {
+          "200": {
+           "description": "success"
+          },
+          "default": {
+           "description": "default"
+          }
+         }
+		 }`, string(jazon))
+
+	// check token lookup
+	token, err := ope.JSONLookup("responses")
+	assert.NoError(t, err)
+	jazon, _ = json.MarshalIndent(token, "", " ")
+	assert.JSONEq(t, `{
+         "200": {
+          "description": "success"
+         },
+         "default": {
+          "description": "default"
+         }
+			 }`, string(jazon))
+
+	// check delete methods
+	ope = ope.RespondsWith(200, nil).
+		RemoveParam("myQueryParam", "query").
+		RemoveParam("myPathParam", "path").
+		RemoveParam("fakeParam", "query").
+		Undeprecate().
+		WithExternalDocs("", "")
+	jazon, _ = json.MarshalIndent(ope, "", " ")
+	assert.JSONEq(t, `{
+         "security": [
+          {
+           "scheme-name": [
+            "scope1",
+            "scope2"
+           ]
+          }
+         ],
+         "description": "test operation",
+         "consumes": [
+          "application/json"
+         ],
+         "produces": [
+          "application/json"
+         ],
+         "tags": [
+          "this",
+          "that"
+         ],
+         "summary": "my summary",
+         "operationId": "operationID",
+         "responses": {
+          "default": {
+           "description": "default"
+          }
+         }
+			 }`, string(jazon))
+}
 
 func TestIntegrationOperation(t *testing.T) {
 	var actual Operation

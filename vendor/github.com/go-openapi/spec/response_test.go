@@ -34,7 +34,7 @@ var response = Response{
 	},
 }
 
-var responseJSON = `{
+const responseJSON = `{
 	"$ref": "Dog",
 	"x-go-name": "PutDogExists",
 	"description": "Dog exists",
@@ -87,4 +87,27 @@ func TestJSONLookupResponse(t *testing.T) {
 		t.FailNow()
 		return
 	}
+}
+
+func TestResponseBuild(t *testing.T) {
+	resp := NewResponse().
+		WithDescription("some response").
+		WithSchema(new(Schema).Typed("object", "")).
+		AddHeader("x-header", ResponseHeader().Typed("string", "")).
+		AddExample("application/json", `{"key":"value"}`)
+	jazon, _ := json.MarshalIndent(resp, "", " ")
+	assert.JSONEq(t, `{
+         "description": "some response",
+         "schema": {
+          "type": "object"
+         },
+         "headers": {
+          "x-header": {
+           "type": "string"
+          }
+         },
+         "examples": {
+          "application/json": "{\"key\":\"value\"}"
+         }
+			 }`, string(jazon))
 }

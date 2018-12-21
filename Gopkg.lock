@@ -149,12 +149,13 @@
   revision = "41e24cc66d7af6af39eb9b5a6418e901bcdd333c"
 
 [[projects]]
-  branch = "master"
-  digest = "1:54af405aae840f810418f3d25211012af1c4bfd56d07d3de6482a7a3b762528a"
+  branch = "lint-and-refact"
+  digest = "1:22359833c00982fb26c61ea501eabbad401de8d811ef5ffc16deddb1e43a21ae"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = ""
-  revision = "5b6cdde3200976e3ecceb2868706ee39b6aff3e4"
+  revision = "9453b11fe699e3759d6eece6df7996431a78daed"
+  source = "github.com/fredbi/spec"
 
 [[projects]]
   branch = "master"

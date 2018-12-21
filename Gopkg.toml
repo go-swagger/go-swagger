@@ -42,8 +42,9 @@
   name = "github.com/go-openapi/runtime"
 
 [[constraint]]
-  branch = "master"
+  branch = "lint-and-refact"
   name = "github.com/go-openapi/spec"
+  source = "github.com/fredbi/spec"
 
 [[constraint]]
   branch = "master"

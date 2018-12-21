@@ -1,0 +1,20 @@
+{
+  "getTodo": {
+    "get": {
+      "responses": {
+        "200": {
+          "description": "List Todos",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "404": {
+          "description": "error"
+        }
+      }
+    }
+  }
+}

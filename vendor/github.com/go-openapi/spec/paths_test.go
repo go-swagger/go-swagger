@@ -30,7 +30,7 @@ var paths = Paths{
 	},
 }
 
-var pathsJSON = `{"x-framework":"go-swagger","/":{"$ref":"cats"}}`
+const pathsJSON = `{"x-framework":"go-swagger","/":{"$ref":"cats"}}`
 
 func TestIntegrationPaths(t *testing.T) {
 	var actual Paths

@@ -19,7 +19,7 @@ import (
 )
 
 func TestIntegrationExternalDocs(t *testing.T) {
-	var extDocs = ExternalDocumentation{"the name", "the url"}
+	var extDocs = ExternalDocumentation{Description: "the name", URL: "the url"}
 	const extDocsYAML = "description: the name\nurl: the url\n"
 	const extDocsJSON = `{"description":"the name","url":"the url"}`
 	assertSerializeJSON(t, extDocs, extDocsJSON)

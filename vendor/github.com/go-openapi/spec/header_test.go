@@ -57,7 +57,7 @@ var header = Header{
 	},
 }
 
-var headerJSON = `{
+const headerJSON = `{
   "items": {
     "$ref": "Cat"
   },
@@ -123,4 +123,46 @@ func TestJSONLookupHeader(t *testing.T) {
 	}
 	max = res.(*float64)
 	assert.Equal(t, float64(100), *max)
+}
+
+func TestResponseHeaueder(t *testing.T) {
+	var expectedHeader *Header
+	h := ResponseHeader()
+	assert.IsType(t, expectedHeader, h)
+}
+
+func TestWithHeader(t *testing.T) {
+	h := new(Header).WithDescription("header description").Typed("integer", "int32")
+	assert.Equal(t, "header description", h.Description)
+	assert.Equal(t, "integer", h.Type)
+	assert.Equal(t, "int32", h.Format)
+
+	i := new(Items).Typed("string", "date")
+	h = new(Header).CollectionOf(i, "pipe")
+
+	assert.EqualValues(t, *i, *h.Items)
+	assert.Equal(t, "pipe", h.CollectionFormat)
+
+	h = new(Header).WithDefault([]string{"a", "b", "c"}).WithMaxLength(10).WithMinLength(3)
+
+	assert.Equal(t, int64(10), *h.MaxLength)
+	assert.Equal(t, int64(3), *h.MinLength)
+	assert.EqualValues(t, []string{"a", "b", "c"}, h.Default)
+
+	h = new(Header).WithPattern("^abc$")
+	assert.Equal(t, Header{
+		CommonValidations: CommonValidations{
+			Pattern: "^abc$",
+		},
+	}, *h)
+	h = new(Header).WithEnum("a", "b", "c")
+	assert.Equal(t, Header{
+		CommonValidations: CommonValidations{
+			Enum: []interface{}{
+				"a",
+				"b",
+				"c",
+			},
+		},
+	}, *h)
 }

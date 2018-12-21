@@ -1,0 +1,57 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2.1.0",
+    "title": "Supported, but non Swagger 20 compliant $ref constructs"
+  },
+  "host": "item.com",
+  "basePath": "/extraRefs",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/employees": {
+      "get": {
+        "operationId": "LIST-Employees",
+        "summary": "List Employee Types",
+        "parameters": [
+          {
+          "description": "unsupported $ref in simple param",
+          "name": "myQueryParam",
+          "in": "query",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/arrayType"
+          }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "unsupported $ref in header",
+            "headers": {
+              "X-header": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/headerType"
+                }
+              }
+            },
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "arrayType": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "headerType": {
+      "type": "string",
+      "format": "uuid"
+    }
+  }
+}

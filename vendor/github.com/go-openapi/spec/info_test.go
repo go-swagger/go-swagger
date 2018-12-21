@@ -21,8 +21,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var infoJSON = `{
-	"description": "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification",
+const infoJSON = `{
+	"description": "A sample API that uses a petstore as an example to demonstrate features in ` +
+	`the swagger-2.0 specification",
 	"title": "Swagger Sample API",
 	"termsOfService": "http://helloreverb.com/terms/",
 	"contact": {
@@ -39,14 +40,18 @@ var infoJSON = `{
 
 var info = Info{
 	InfoProps: InfoProps{
-		Version:        "1.0.9-abcd",
-		Title:          "Swagger Sample API",
-		Description:    "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification",
+		Version: "1.0.9-abcd",
+		Title:   "Swagger Sample API",
+		Description: "A sample API that uses a petstore as an example to demonstrate features in " +
+			"the swagger-2.0 specification",
 		TermsOfService: "http://helloreverb.com/terms/",
 		Contact:        &ContactInfo{Name: "wordnik api team", URL: "http://developer.wordnik.com"},
-		License:        &License{Name: "Creative Commons 4.0 International", URL: "http://creativecommons.org/licenses/by/4.0/"},
+		License: &License{
+			Name: "Creative Commons 4.0 International",
+			URL:  "http://creativecommons.org/licenses/by/4.0/",
+		},
 	},
-	VendorExtensible: VendorExtensible{map[string]interface{}{"x-framework": "go-swagger"}},
+	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{"x-framework": "go-swagger"}},
 }
 
 func TestIntegrationInfo_Serialize(t *testing.T) {

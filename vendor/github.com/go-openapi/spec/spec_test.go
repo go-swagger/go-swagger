@@ -186,7 +186,7 @@ func Test_Issue69(t *testing.T) {
 	// asserts all $ref expanded
 	jazon, _ := json.MarshalIndent(sp, "", " ")
 
-	// assert all $ref maches  "$ref": "#/definitions/something"
+	// assert all $ref match  "$ref": "#/definitions/something"
 	m := rex.FindAllStringSubmatch(string(jazon), -1)
 	if assert.NotNil(t, m) {
 		for _, matched := range m {

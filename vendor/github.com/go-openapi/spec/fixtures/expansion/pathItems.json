@@ -1,0 +1,12 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0",
+      "title": "PathItems refs"
+    },
+    "paths": {
+      "/todos": {
+        "$ref": "pathItem1.json#/getTodo"
+      }
+   }
+}
