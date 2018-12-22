@@ -309,7 +309,7 @@ _Similar Use-Case_:
 *How do you use the swagger spec to define a raw JSON or XML transfer, defined by the subsystem's types?*
 
 **Hint**: you may use the `x-go-type` model annotation that allows you to use pre-existing types as models, you annotate your spec like this:
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L84-L88
+https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-103
 
 Originally from issue [#948](https://github.com/go-swagger/go-swagger/issues/948).
 
@@ -447,7 +447,7 @@ Example:
 	}
   }
 }
-```json
+```
 
 **Answer:** you need to make it available with that name in the definitions section then it will know
 
