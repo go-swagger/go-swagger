@@ -13,7 +13,7 @@ skip_branch_with_pr: true
 
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.9.2
+  GOVERSION: 1.11.3
   GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
