@@ -628,6 +628,26 @@ func symmetricTestKey(size int) []testKey {
 	}
 }
 
+func TestDirectEncryptionKeySizeCheck(t *testing.T) {
+	// 16-byte key
+	key16 := []byte("0123456789ABCDEF")
+
+	// 32-byte key
+	key32 := []byte("0123456789ABCDEF0123456789ABCDEF")
+
+	// AES-128 with 32-byte key should reject
+	_, err := NewEncrypter(A128GCM, Recipient{Algorithm: DIRECT, Key: key32}, nil)
+	if err != ErrInvalidKeySize {
+		t.Error("Should reject AES-128 with 32-byte key")
+	}
+
+	// AES-256 with 16-byte key should reject
+	_, err = NewEncrypter(A256GCM, Recipient{Algorithm: DIRECT, Key: key16}, nil)
+	if err != ErrInvalidKeySize {
+		t.Error("Should reject AES-256 with 16-byte key")
+	}
+}
+
 func generateTestKeys(keyAlg KeyAlgorithm, encAlg ContentEncryption) []testKey {
 	switch keyAlg {
 	case DIRECT:
@@ -700,19 +720,21 @@ var (
 		"64MB": make([]byte, 67108864),
 	}
 
-	symKey, _, _ = randomKeyGenerator{size: 32}.genKey()
+	symKey16, _, _ = randomKeyGenerator{size: 16}.genKey()
+	symKey32, _, _ = randomKeyGenerator{size: 32}.genKey()
+	symKey64, _, _ = randomKeyGenerator{size: 64}.genKey()
 
 	encrypters = map[string]Encrypter{
 		"OAEPAndGCM":          mustEncrypter(RSA_OAEP, A128GCM, &rsaTestKey.PublicKey),
 		"PKCSAndGCM":          mustEncrypter(RSA1_5, A128GCM, &rsaTestKey.PublicKey),
 		"OAEPAndCBC":          mustEncrypter(RSA_OAEP, A128CBC_HS256, &rsaTestKey.PublicKey),
 		"PKCSAndCBC":          mustEncrypter(RSA1_5, A128CBC_HS256, &rsaTestKey.PublicKey),
-		"DirectGCM128":        mustEncrypter(DIRECT, A128GCM, symKey),
-		"DirectCBC128":        mustEncrypter(DIRECT, A128CBC_HS256, symKey),
-		"DirectGCM256":        mustEncrypter(DIRECT, A256GCM, symKey),
-		"DirectCBC256":        mustEncrypter(DIRECT, A256CBC_HS512, symKey),
-		"AESKWAndGCM128":      mustEncrypter(A128KW, A128GCM, symKey),
-		"AESKWAndCBC256":      mustEncrypter(A256KW, A256GCM, symKey),
+		"DirectGCM128":        mustEncrypter(DIRECT, A128GCM, symKey16),
+		"DirectCBC128":        mustEncrypter(DIRECT, A128CBC_HS256, symKey32),
+		"DirectGCM256":        mustEncrypter(DIRECT, A256GCM, symKey32),
+		"DirectCBC256":        mustEncrypter(DIRECT, A256CBC_HS512, symKey64),
+		"AESKWAndGCM128":      mustEncrypter(A128KW, A128GCM, symKey16),
+		"AESKWAndCBC256":      mustEncrypter(A256KW, A256GCM, symKey32),
 		"ECDHOnP256AndGCM128": mustEncrypter(ECDH_ES, A128GCM, &ecTestKey256.PublicKey),
 		"ECDHOnP384AndGCM128": mustEncrypter(ECDH_ES, A128GCM, &ecTestKey384.PublicKey),
 		"ECDHOnP521AndGCM128": mustEncrypter(ECDH_ES, A128GCM, &ecTestKey521.PublicKey),
@@ -870,13 +892,13 @@ var (
 		"OAEPAndCBC": rsaTestKey,
 		"PKCSAndCBC": rsaTestKey,
 
-		"DirectGCM128": symKey,
-		"DirectCBC128": symKey,
-		"DirectGCM256": symKey,
-		"DirectCBC256": symKey,
+		"DirectGCM128": symKey16,
+		"DirectCBC128": symKey32,
+		"DirectGCM256": symKey32,
+		"DirectCBC256": symKey64,
 
-		"AESKWAndGCM128": symKey,
-		"AESKWAndCBC256": symKey,
+		"AESKWAndGCM128": symKey16,
+		"AESKWAndCBC256": symKey32,
 
 		"ECDHOnP256AndGCM128": ecTestKey256,
 		"ECDHOnP384AndGCM128": ecTestKey384,

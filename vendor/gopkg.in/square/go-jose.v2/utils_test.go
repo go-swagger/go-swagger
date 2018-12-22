@@ -68,3 +68,13 @@ func fromBase64Bytes(b64 string) []byte {
 	}
 	return val
 }
+
+// Decode base64-urlencoded string into byte array. Strips whitespace (for testing).
+func fromBase64URLBytes(b64 string) []byte {
+	re := regexp.MustCompile(`\s+`)
+	val, err := base64.RawURLEncoding.DecodeString(re.ReplaceAllString(b64, ""))
+	if err != nil {
+		panic("Invalid test data")
+	}
+	return val
+}

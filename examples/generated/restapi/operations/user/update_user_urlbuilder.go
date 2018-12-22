@@ -38,7 +38,7 @@ func (o *UpdateUserURL) SetBasePath(bp string) {
 
 // Build a url path and query string
 func (o *UpdateUserURL) Build() (*url.URL, error) {
-	var result url.URL
+	var _result url.URL
 
 	var _path = "/users/{username}"
 
@@ -53,9 +53,9 @@ func (o *UpdateUserURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/v2"
 	}
-	result.Path = golangswaggerpaths.Join(_basePath, _path)
+	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
-	return &result, nil
+	return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error

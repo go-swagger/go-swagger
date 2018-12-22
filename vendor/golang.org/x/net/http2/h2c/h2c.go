@@ -118,6 +118,9 @@ func initH2CWithPriorKnowledge(w http.ResponseWriter) (net.Conn, error) {
 
 	buf := make([]byte, len(expectedBody))
 	n, err := io.ReadFull(rw, buf)
+	if err != nil {
+		return nil, fmt.Errorf("could not read from the buffer: %s", err)
+	}
 
 	if string(buf[:n]) == expectedBody {
 		c := &rwConn{

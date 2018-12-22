@@ -5,78 +5,46 @@
 package source
 
 import (
-	"fmt"
+	"context"
+	"go/ast"
 	"go/token"
-	"sync"
 
 	"golang.org/x/tools/go/packages"
 )
 
-type View struct {
-	mu sync.Mutex // protects all mutable state of the view
-
-	Config *packages.Config
-
-	files map[URI]*File
+// View abstracts the underlying architecture of the package using the source
+// package. The view provides access to files and their contents, so the source
+// package does not directly access the file system.
+type View interface {
+	GetFile(ctx context.Context, uri URI) (File, error)
+	SetContent(ctx context.Context, uri URI, content []byte) (View, error)
+	FileSet() *token.FileSet
 }
 
-func NewView() *View {
-	return &View{
-		Config: &packages.Config{
-			Mode:    packages.LoadSyntax,
-			Fset:    token.NewFileSet(),
-			Tests:   true,
-			Overlay: make(map[string][]byte),
-		},
-		files: make(map[URI]*File),
-	}
+// File represents a Go source file that has been type-checked. It is the input
+// to most of the exported functions in this package, as it wraps up the
+// building blocks for most queries. Users of the source package can abstract
+// the loading of packages into their own caching systems.
+type File interface {
+	GetAST() (*ast.File, error)
+	GetFileSet() (*token.FileSet, error)
+	GetPackage() (*packages.Package, error)
+	GetToken() (*token.File, error)
+	Read() ([]byte, error)
 }
 
-// GetFile returns a File for the given uri.
-// It will always succeed, adding the file to the managed set if needed.
-func (v *View) GetFile(uri URI) *File {
-	v.mu.Lock()
-	f := v.getFile(uri)
-	v.mu.Unlock()
-	return f
+// Range represents a start and end position.
+// Because Range is based purely on two token.Pos entries, it is not self
+// contained. You need access to a token.FileSet to regain the file
+// information.
+type Range struct {
+	Start token.Pos
+	End   token.Pos
 }
 
-// getFile is the unlocked internal implementation of GetFile.
-func (v *View) getFile(uri URI) *File {
-	f, found := v.files[uri]
-	if !found {
-		f = &File{
-			URI:  uri,
-			view: v,
-		}
-		v.files[f.URI] = f
-	}
-	return f
-}
-
-func (v *View) parse(uri URI) error {
-	path, err := uri.Filename()
-	if err != nil {
-		return err
-	}
-	pkgs, err := packages.Load(v.Config, fmt.Sprintf("file=%s", path))
-	if len(pkgs) == 0 {
-		if err == nil {
-			err = fmt.Errorf("no packages found for %s", path)
-		}
-		return err
-	}
-	for _, pkg := range pkgs {
-		// add everything we find to the files cache
-		for _, fAST := range pkg.Syntax {
-			// if a file was in multiple packages, which token/ast/pkg do we store
-			fToken := v.Config.Fset.File(fAST.Pos())
-			fURI := ToURI(fToken.Name())
-			f := v.getFile(fURI)
-			f.token = fToken
-			f.ast = fAST
-			f.pkg = pkg
-		}
-	}
-	return nil
+// TextEdit represents a change to a section of a document.
+// The text within the specified range should be replaced by the supplied new text.
+type TextEdit struct {
+	Range   Range
+	NewText string
 }

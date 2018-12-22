@@ -10,7 +10,7 @@
 // modified to make the identifiers exported. It's provided here
 // for developers who want to write tools with similar semantics.
 // It needs to be manually kept in sync with upstream when changes are
-// made to cmd/go/internal/get; see https://golang.org/issues/11490.
+// made to cmd/go/internal/get; see https://golang.org/issue/11490.
 //
 package vcs // import "golang.org/x/tools/go/vcs"
 
@@ -731,7 +731,7 @@ func bitbucketVCS(match map[string]string) error {
 	var resp struct {
 		SCM string `json:"scm"`
 	}
-	url := expand(match, "https://api.bitbucket.org/1.0/repositories/{bitname}")
+	url := expand(match, "https://api.bitbucket.org/2.0/repositories/{bitname}?fields=scm")
 	data, err := httpGET(url)
 	if err != nil {
 		return err

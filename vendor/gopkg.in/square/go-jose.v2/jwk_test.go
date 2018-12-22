@@ -26,6 +26,7 @@ import (
 	"encoding/hex"
 	"math/big"
 	"reflect"
+	"strings"
 	"testing"
 
 	"golang.org/x/crypto/ed25519"
@@ -220,7 +221,7 @@ func TestRoundtripEcPrivate(t *testing.T) {
 
 		ec2, err := jwk.ecPrivateKey()
 		if err != nil {
-			t.Error("problem converting ECDSA private -> JWK", i, err)
+			t.Fatalf("problem converting ECDSA private -> JWK for %#v: %s", ecTestKey, err)
 		}
 
 		if !reflect.DeepEqual(ec2.Curve, ecTestKey.Curve) {
@@ -254,7 +255,7 @@ func TestRoundtripX5C(t *testing.T) {
 	var jwk2 JSONWebKey
 	err = jwk2.UnmarshalJSON(jsonbar)
 	if err != nil {
-		t.Error("problem unmarshalling", err)
+		t.Fatal("problem unmarshalling", err)
 	}
 
 	if !reflect.DeepEqual(testCertificates, jwk2.Certificates) {
@@ -288,12 +289,12 @@ func TestMarshalUnmarshal(t *testing.T) {
 			var jwk2 JSONWebKey
 			err = jwk2.UnmarshalJSON(jsonbar)
 			if err != nil {
-				t.Error("problem unmarshalling", i, err)
+				t.Fatal("problem unmarshalling", i, err)
 			}
 
 			jsonbar2, err := jwk2.MarshalJSON()
 			if err != nil {
-				t.Error("problem marshaling", i, err)
+				t.Fatal("problem marshaling", i, err)
 			}
 
 			if !bytes.Equal(jsonbar, jsonbar2) {
@@ -593,11 +594,11 @@ func TestMarshalUnmarshalJWKSet(t *testing.T) {
 	var set2 JSONWebKeySet
 	err = json.Unmarshal(jsonbar, &set2)
 	if err != nil {
-		t.Error("problem unmarshalling set", err)
+		t.Fatal("problem unmarshalling set", err)
 	}
 	jsonbar2, err := json.Marshal(&set2)
 	if err != nil {
-		t.Error("problem marshalling set", err)
+		t.Fatal("problem marshalling set", err)
 	}
 	if !bytes.Equal(jsonbar, jsonbar2) {
 		t.Error("roundtrip should not lose information")
@@ -762,4 +763,107 @@ func TestJWKBufferSizeCheck(t *testing.T) {
 	// panic: square/go-jose: invalid call to newFixedSizeBuffer (len(data) > length)
 	// github.com/square/go-jose.newFixedSizeBuffer(0xc420014557, 0x41, 0x41, 0x20, 0x0)
 	jwk.Thumbprint(crypto.SHA256)
+}
+
+func TestJWKPaddingPrivateX(t *testing.T) {
+	key := `{
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "nPTIABcDASY6FNGSNfHCB51tY7qChtgzeVazOtLrwQ",
+    "y": "vEEs4V0egJkNyM2Q4pp001zu14VcpQ0_Ei8xOOPxKZs",
+    "d": "nIVCvMR2wkLmeGJErOpI23VDHl2s3JwGdbzKy0odir0"
+  }`
+	var jwk JSONWebKey
+	err := jwk.UnmarshalJSON([]byte(key))
+	if err == nil {
+		t.Errorf("Expected key with short x to fail unmarshalling")
+	}
+	if !strings.Contains(err.Error(), "wrong length for x") {
+		t.Errorf("Wrong error for short x, got %q", err)
+	}
+	if jwk.Valid() {
+		t.Errorf("Expected key to be invalid, but it was valid.")
+	}
+}
+
+func TestJWKPaddingPrivateY(t *testing.T) {
+	key := `{
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "vEEs4V0egJkNyM2Q4pp001zu14VcpQ0_Ei8xOOPxKZs",
+    "y": "nPTIABcDASY6FNGSNfHCB51tY7qChtgzeVazOtLrwQ",
+    "d": "nIVCvMR2wkLmeGJErOpI23VDHl2s3JwGdbzKy0odir0"
+  }`
+	var jwk JSONWebKey
+	err := jwk.UnmarshalJSON([]byte(key))
+	if err == nil {
+		t.Errorf("Expected key with short x to fail unmarshalling")
+	}
+	if !strings.Contains(err.Error(), "wrong length for y") {
+		t.Errorf("Wrong error for short y, got %q", err)
+	}
+	if jwk.Valid() {
+		t.Errorf("Expected key to be invalid, but it was valid.")
+	}
+}
+
+func TestJWKPaddingPrivateD(t *testing.T) {
+	key := `{
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "vEEs4V0egJkNyM2Q4pp001zu14VcpQ0_Ei8xOOPxKZs",
+    "y": "qnPTIABcDASY6FNGSNfHCB51tY7qChtgzeVazOtLrwQ",
+    "d": "IVCvMR2wkLmeGJErOpI23VDHl2s3JwGdbzKy0odir0"
+  }`
+	var jwk JSONWebKey
+	err := jwk.UnmarshalJSON([]byte(key))
+	if err == nil {
+		t.Errorf("Expected key with short x to fail unmarshalling")
+	}
+	if !strings.Contains(err.Error(), "wrong length for d") {
+		t.Errorf("Wrong error for short d, got %q", err)
+	}
+	if jwk.Valid() {
+		t.Errorf("Expected key to be invalid, but it was valid.")
+	}
+}
+
+func TestJWKPaddingX(t *testing.T) {
+	key := `{
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "nPTIABcDASY6FNGSNfHCB51tY7qChtgzeVazOtLrwQ",
+    "y": "vEEs4V0egJkNyM2Q4pp001zu14VcpQ0_Ei8xOOPxKZs"
+  }`
+	var jwk JSONWebKey
+	err := jwk.UnmarshalJSON([]byte(key))
+	if err == nil {
+		t.Errorf("Expected key with short x to fail unmarshalling")
+	}
+	if !strings.Contains(err.Error(), "wrong length for x") {
+		t.Errorf("Wrong error for short x, got %q", err)
+	}
+	if jwk.Valid() {
+		t.Errorf("Expected key to be invalid, but it was valid.")
+	}
+}
+
+func TestJWKPaddingY(t *testing.T) {
+	key := `{
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "vEEs4V0egJkNyM2Q4pp001zu14VcpQ0_Ei8xOOPxKZs",
+    "y": "nPTIABcDASY6FNGSNfHCB51tY7qChtgzeVazOtLrwQ"
+  }`
+	var jwk JSONWebKey
+	err := jwk.UnmarshalJSON([]byte(key))
+	if err == nil {
+		t.Errorf("Expected key with short y to fail unmarshalling")
+	}
+	if !strings.Contains(err.Error(), "wrong length for y") {
+		t.Errorf("Wrong error for short y, got %q", err)
+	}
+	if jwk.Valid() {
+		t.Errorf("Expected key to be invalid, but it was valid.")
+	}
 }

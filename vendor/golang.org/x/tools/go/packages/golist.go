@@ -16,21 +16,59 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"golang.org/x/tools/go/internal/packagesdriver"
 	"golang.org/x/tools/internal/gopathwalk"
 	"golang.org/x/tools/internal/semver"
 )
 
 // debug controls verbose logging.
-const debug = false
+var debug, _ = strconv.ParseBool(os.Getenv("GOPACKAGESDEBUG"))
 
 // A goTooOldError reports that the go command
 // found by exec.LookPath is too old to use the new go list behavior.
 type goTooOldError struct {
 	error
+}
+
+// responseDeduper wraps a driverResponse, deduplicating its contents.
+type responseDeduper struct {
+	seenRoots    map[string]bool
+	seenPackages map[string]*Package
+	dr           *driverResponse
+}
+
+// init fills in r with a driverResponse.
+func (r *responseDeduper) init(dr *driverResponse) {
+	r.dr = dr
+	r.seenRoots = map[string]bool{}
+	r.seenPackages = map[string]*Package{}
+	for _, pkg := range dr.Packages {
+		r.seenPackages[pkg.ID] = pkg
+	}
+	for _, root := range dr.Roots {
+		r.seenRoots[root] = true
+	}
+}
+
+func (r *responseDeduper) addPackage(p *Package) {
+	if r.seenPackages[p.ID] != nil {
+		return
+	}
+	r.seenPackages[p.ID] = p
+	r.dr.Packages = append(r.dr.Packages, p)
+}
+
+func (r *responseDeduper) addRoot(id string) {
+	if r.seenRoots[id] {
+		return
+	}
+	r.seenRoots[id] = true
+	r.dr.Roots = append(r.dr.Roots, id)
 }
 
 // goListDriver uses the go list command to interpret the patterns and produce
@@ -86,9 +124,11 @@ extractQueries:
 
 	// TODO(matloob): Remove the definition of listfunc and just use golistPackages once go1.12 is released.
 	var listfunc driver
+	var isFallback bool
 	listfunc = func(cfg *Config, words ...string) (*driverResponse, error) {
 		response, err := golistDriverCurrent(cfg, words...)
 		if _, ok := err.(goTooOldError); ok {
+			isFallback = true
 			listfunc = golistDriverFallback
 			return listfunc(cfg, words...)
 		}
@@ -96,17 +136,18 @@ extractQueries:
 		return response, err
 	}
 
-	var response *driverResponse
+	response := &responseDeduper{}
 	var err error
 
 	// see if we have any patterns to pass through to go list.
 	if len(restPatterns) > 0 {
-		response, err = listfunc(cfg, restPatterns...)
+		dr, err := listfunc(cfg, restPatterns...)
 		if err != nil {
 			return nil, err
 		}
+		response.init(dr)
 	} else {
-		response = &driverResponse{}
+		response.init(&driverResponse{})
 	}
 
 	sizeswg.Wait()
@@ -114,47 +155,83 @@ extractQueries:
 		return nil, sizeserr
 	}
 	// types.SizesFor always returns nil or a *types.StdSizes
-	response.Sizes, _ = sizes.(*types.StdSizes)
+	response.dr.Sizes, _ = sizes.(*types.StdSizes)
 
-	if len(containFiles) == 0 && len(packagesNamed) == 0 {
-		return response, nil
-	}
+	var containsCandidates []string
 
-	seenPkgs := make(map[string]*Package) // for deduplication. different containing queries could produce same packages
-	for _, pkg := range response.Packages {
-		seenPkgs[pkg.ID] = pkg
-	}
-	addPkg := func(p *Package) {
-		if _, ok := seenPkgs[p.ID]; ok {
-			return
+	if len(containFiles) != 0 {
+		if err := runContainsQueries(cfg, listfunc, isFallback, response, containFiles); err != nil {
+			return nil, err
 		}
-		seenPkgs[p.ID] = p
-		response.Packages = append(response.Packages, p)
 	}
 
-	containsResults, err := runContainsQueries(cfg, listfunc, addPkg, containFiles)
+	if len(packagesNamed) != 0 {
+		if err := runNamedQueries(cfg, listfunc, response, packagesNamed); err != nil {
+			return nil, err
+		}
+	}
+
+	modifiedPkgs, needPkgs, err := processGolistOverlay(cfg, response.dr)
 	if err != nil {
 		return nil, err
 	}
-	response.Roots = append(response.Roots, containsResults...)
-
-	namedResults, err := runNamedQueries(cfg, listfunc, addPkg, packagesNamed)
-	if err != nil {
-		return nil, err
+	if len(containFiles) > 0 {
+		containsCandidates = append(containsCandidates, modifiedPkgs...)
+		containsCandidates = append(containsCandidates, needPkgs...)
 	}
-	response.Roots = append(response.Roots, namedResults...)
-	return response, nil
+
+	if len(needPkgs) > 0 {
+		addNeededOverlayPackages(cfg, listfunc, response, needPkgs)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// Check candidate packages for containFiles.
+	if len(containFiles) > 0 {
+		for _, id := range containsCandidates {
+			pkg := response.seenPackages[id]
+			for _, f := range containFiles {
+				for _, g := range pkg.GoFiles {
+					if sameFile(f, g) {
+						response.addRoot(id)
+					}
+				}
+			}
+		}
+	}
+
+	return response.dr, nil
 }
 
-func runContainsQueries(cfg *Config, driver driver, addPkg func(*Package), queries []string) ([]string, error) {
-	var results []string
+func addNeededOverlayPackages(cfg *Config, driver driver, response *responseDeduper, pkgs []string) error {
+	dr, err := driver(cfg, pkgs...)
+	if err != nil {
+		return err
+	}
+	for _, pkg := range dr.Packages {
+		response.addPackage(pkg)
+	}
+	return nil
+}
+
+func runContainsQueries(cfg *Config, driver driver, isFallback bool, response *responseDeduper, queries []string) error {
 	for _, query := range queries {
 		// TODO(matloob): Do only one query per directory.
 		fdir := filepath.Dir(query)
-		cfg.Dir = fdir
-		dirResponse, err := driver(cfg, ".")
+		// Pass absolute path of directory to go list so that it knows to treat it as a directory,
+		// not a package path.
+		pattern, err := filepath.Abs(fdir)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("could not determine absolute path of file= query path %q: %v", query, err)
+		}
+		if isFallback {
+			pattern = "."
+			cfg.Dir = fdir
+		}
+
+		dirResponse, err := driver(cfg, pattern)
+		if err != nil {
+			return err
 		}
 		isRoot := make(map[string]bool, len(dirResponse.Roots))
 		for _, root := range dirResponse.Roots {
@@ -165,34 +242,34 @@ func runContainsQueries(cfg *Config, driver driver, addPkg func(*Package), queri
 			// We don't bother to filter packages that will be dropped by the changes of roots,
 			// that will happen anyway during graph construction outside this function.
 			// Over-reporting packages is not a problem.
-			addPkg(pkg)
+			response.addPackage(pkg)
 			// if the package was not a root one, it cannot have the file
 			if !isRoot[pkg.ID] {
 				continue
 			}
 			for _, pkgFile := range pkg.GoFiles {
 				if filepath.Base(query) == filepath.Base(pkgFile) {
-					results = append(results, pkg.ID)
+					response.addRoot(pkg.ID)
 					break
 				}
 			}
 		}
 	}
-	return results, nil
+	return nil
 }
 
 // modCacheRegexp splits a path in a module cache into module, module version, and package.
 var modCacheRegexp = regexp.MustCompile(`(.*)@([^/\\]*)(.*)`)
 
-func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries []string) ([]string, error) {
+func runNamedQueries(cfg *Config, driver driver, response *responseDeduper, queries []string) error {
 	// calling `go env` isn't free; bail out if there's nothing to do.
 	if len(queries) == 0 {
-		return nil, nil
+		return nil
 	}
 	// Determine which directories are relevant to scan.
 	roots, modRoot, err := roots(cfg)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Scan the selected directories. Simple matches, from GOPATH/GOROOT
@@ -251,13 +328,12 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 		}
 	}
 
-	var results []string
 	addResponse := func(r *driverResponse) {
 		for _, pkg := range r.Packages {
-			addPkg(pkg)
+			response.addPackage(pkg)
 			for _, name := range queries {
 				if pkg.Name == name {
-					results = append(results, pkg.ID)
+					response.addRoot(pkg.ID)
 					break
 				}
 			}
@@ -267,7 +343,7 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 	if len(simpleMatches) != 0 {
 		resp, err := driver(cfg, simpleMatches...)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		addResponse(resp)
 	}
@@ -316,35 +392,27 @@ func runNamedQueries(cfg *Config, driver driver, addPkg func(*Package), queries 
 		var err error
 		tmpCfg.Dir, err = ioutil.TempDir("", "gopackages-modquery")
 		if err != nil {
-			return nil, err
+			return err
 		}
 		defer os.RemoveAll(tmpCfg.Dir)
 
 		if err := ioutil.WriteFile(filepath.Join(tmpCfg.Dir, "go.mod"), gomod.Bytes(), 0777); err != nil {
-			return nil, fmt.Errorf("writing go.mod for module cache query: %v", err)
+			return fmt.Errorf("writing go.mod for module cache query: %v", err)
 		}
 
 		// Run the query, using the import paths calculated from the matches above.
 		resp, err := driver(&tmpCfg, imports...)
 		if err != nil {
-			return nil, fmt.Errorf("querying module cache matches: %v", err)
+			return fmt.Errorf("querying module cache matches: %v", err)
 		}
 		addResponse(resp)
 	}
 
-	return results, nil
+	return nil
 }
 
 func getSizes(cfg *Config) (types.Sizes, error) {
-	stdout, err := invokeGo(cfg, "env", "GOARCH")
-	if err != nil {
-		return nil, err
-	}
-
-	goarch := strings.TrimSpace(stdout.String())
-	// Assume "gc" because SizesFor doesn't respond to other compilers.
-	// TODO(matloob): add support for gccgo as needed.
-	return types.SizesFor("gc", goarch), nil
+	return packagesdriver.GetSizesGolist(cfg.Context, cfg.BuildFlags, cfg.Env, cfg.Dir, usesExportData(cfg))
 }
 
 // roots selects the appropriate paths to walk based on the passed-in configuration,
@@ -548,7 +616,7 @@ func golistDriverCurrent(cfg *Config, words ...string) (*driverResponse, error) 
 			OtherFiles:      absJoin(p.Dir, otherFiles(p)...),
 		}
 
-		// Workaround for github.com/golang/go/issues/28749.
+		// Workaround for https://golang.org/issue/28749.
 		// TODO(adonovan): delete before go1.12 release.
 		out := pkg.CompiledGoFiles[:0]
 		for _, f := range pkg.CompiledGoFiles {
@@ -644,6 +712,9 @@ func golistargs(cfg *Config, words []string) []string {
 		fmt.Sprintf("-test=%t", cfg.Tests),
 		fmt.Sprintf("-export=%t", usesExportData(cfg)),
 		fmt.Sprintf("-deps=%t", cfg.Mode >= LoadImports),
+		// go list doesn't let you pass -test and -find together,
+		// probably because you'd just get the TestMain.
+		fmt.Sprintf("-find=%t", cfg.Mode < LoadImports && !cfg.Tests),
 	}
 	fullargs = append(fullargs, cfg.BuildFlags...)
 	fullargs = append(fullargs, "--")
@@ -687,14 +758,17 @@ func invokeGo(cfg *Config, args ...string) (*bytes.Buffer, error) {
 		// If that build fails, errors appear on stderr
 		// (despite the -e flag) and the Export field is blank.
 		// Do not fail in that case.
-		if !usesExportData(cfg) {
+		// The same is true if an ad-hoc package given to go list doesn't exist.
+		// TODO(matloob): Remove these once we can depend on go list to exit with a zero status with -e even when
+		// packages don't exist or a build fails.
+		if !usesExportData(cfg) && !containsGoFile(args) {
 			return nil, fmt.Errorf("go %v: %s: %s", args, exitErr, stderr)
 		}
 	}
 
 	// As of writing, go list -export prints some non-fatal compilation
 	// errors to stderr, even with -e set. We would prefer that it put
-	// them in the Package.Error JSON (see http://golang.org/issue/26319).
+	// them in the Package.Error JSON (see https://golang.org/issue/26319).
 	// In the meantime, there's nowhere good to put them, but they can
 	// be useful for debugging. Print them if $GOPACKAGESPRINTGOLISTERRORS
 	// is set.
@@ -708,6 +782,15 @@ func invokeGo(cfg *Config, args ...string) (*bytes.Buffer, error) {
 	}
 
 	return stdout, nil
+}
+
+func containsGoFile(s []string) bool {
+	for _, f := range s {
+		if strings.HasSuffix(f, ".go") {
+			return true
+		}
+	}
+	return false
 }
 
 func cmdDebugStr(cfg *Config, args ...string) string {

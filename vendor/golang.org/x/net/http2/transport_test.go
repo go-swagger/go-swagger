@@ -3529,6 +3529,8 @@ func TestTransportResponseDataBeforeHeaders(t *testing.T) {
 	}
 	ct.run()
 }
+
+// tests Transport.StrictMaxConcurrentStreams
 func TestTransportRequestsStallAtServerLimit(t *testing.T) {
 	const maxConcurrent = 2
 
@@ -3582,6 +3584,7 @@ func TestTransportRequestsStallAtServerLimit(t *testing.T) {
 	}()
 
 	ct := newClientTester(t)
+	ct.tr.StrictMaxConcurrentStreams = true
 	ct.client = func() error {
 		var wg sync.WaitGroup
 		defer func() {

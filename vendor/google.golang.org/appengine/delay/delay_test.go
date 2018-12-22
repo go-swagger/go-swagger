@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -460,5 +462,80 @@ func TestStandardContext(t *testing.T) {
 
 	if stdCtxRuns != 1 {
 		t.Errorf("stdCtxRuns: got %d, want 1", stdCtxRuns)
+	}
+}
+
+func TestFileKey(t *testing.T) {
+	os.Setenv("GAE_ENV", "standard")
+	tests := []struct {
+		mainPath string
+		file     string
+		want     string
+	}{
+		// first-gen
+		{
+			"",
+			filepath.FromSlash("srv/foo.go"),
+			filepath.FromSlash("srv/foo.go"),
+		},
+		// gopath
+		{
+			filepath.FromSlash("/tmp/staging1234/srv/"),
+			filepath.FromSlash("/tmp/staging1234/srv/foo.go"),
+			"foo.go",
+		},
+		{
+			filepath.FromSlash("/tmp/staging1234/srv/_gopath/src/example.com/foo"),
+			filepath.FromSlash("/tmp/staging1234/srv/_gopath/src/example.com/foo/foo.go"),
+			"foo.go",
+		},
+		{
+			filepath.FromSlash("/tmp/staging2234/srv/_gopath/src/example.com/foo"),
+			filepath.FromSlash("/tmp/staging2234/srv/_gopath/src/example.com/foo/bar/bar.go"),
+			filepath.FromSlash("example.com/foo/bar/bar.go"),
+		},
+		{
+			filepath.FromSlash("/tmp/staging3234/srv/_gopath/src/example.com/foo"),
+			filepath.FromSlash("/tmp/staging3234/srv/_gopath/src/example.com/bar/main.go"),
+			filepath.FromSlash("example.com/bar/main.go"),
+		},
+		// go mod, same package
+		{
+			filepath.FromSlash("/tmp/staging3234/srv"),
+			filepath.FromSlash("/tmp/staging3234/srv/main.go"),
+			"main.go",
+		},
+		{
+			filepath.FromSlash("/tmp/staging3234/srv"),
+			filepath.FromSlash("/tmp/staging3234/srv/bar/main.go"),
+			filepath.FromSlash("bar/main.go"),
+		},
+		{
+			filepath.FromSlash("/tmp/staging3234/srv/cmd"),
+			filepath.FromSlash("/tmp/staging3234/srv/cmd/main.go"),
+			"main.go",
+		},
+		{
+			filepath.FromSlash("/tmp/staging3234/srv/cmd"),
+			filepath.FromSlash("/tmp/staging3234/srv/bar/main.go"),
+			filepath.FromSlash("bar/main.go"),
+		},
+		// go mod, other package
+		{
+			filepath.FromSlash("/tmp/staging3234/srv"),
+			filepath.FromSlash("/go/pkg/mod/github.com/foo/bar@v0.0.0-20181026220418-f595d03440dc/baz.go"),
+			filepath.FromSlash("github.com/foo/bar/baz.go"),
+		},
+	}
+	for i, tc := range tests {
+		internal.MainPath = tc.mainPath
+		got, err := fileKey(tc.file)
+		if err != nil {
+			t.Errorf("Unexpected error, call %v, file %q: %v", i, tc.file, err)
+			continue
+		}
+		if got != tc.want {
+			t.Errorf("Call %v, file %q: got %q, want %q", i, tc.file, got, tc.want)
+		}
 	}
 }

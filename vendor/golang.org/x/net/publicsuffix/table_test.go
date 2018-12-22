@@ -2,6 +2,8 @@
 
 package publicsuffix
 
+const numICANNRules = 7334
+
 var rules = [...]string{
 	"ac",
 	"com.ac",

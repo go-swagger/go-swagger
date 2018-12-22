@@ -66,9 +66,17 @@ type Config struct {
 // Handler returns an http.Handler given the handler configuration
 // It mounts all the business logic implementers in the right routing.
 func Handler(c Config) (http.Handler, error) {
+	h, _, err := HandlerAPI(c)
+	return h, err
+}
+
+// HandlerAPI returns an http.Handler given the handler configuration
+// and the corresponding *Petstore instance.
+// It mounts all the business logic implementers in the right routing.
+func HandlerAPI(c Config) (http.Handler, *operations.PetstoreAPI, error) {
 	spec, err := loads.Analyzed(swaggerCopy(SwaggerJSON), "")
 	if err != nil {
-		return nil, fmt.Errorf("analyze swagger: %v", err)
+		return nil, nil, fmt.Errorf("analyze swagger: %v", err)
 	}
 	api := operations.NewPetstoreAPI(spec)
 	api.ServeError = errors.ServeError
@@ -135,7 +143,7 @@ func Handler(c Config) (http.Handler, error) {
 		return c.PetAPI.PetUploadImage(ctx, params)
 	})
 	api.ServerShutdown = func() {}
-	return api.Serve(c.InnerMiddleware), nil
+	return api.Serve(c.InnerMiddleware), api, nil
 }
 
 // swaggerCopy copies the swagger json to prevent data races in runtime

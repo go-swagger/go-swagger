@@ -65,7 +65,7 @@ func (m *Task) UnmarshalJSON(raw []byte) error {
 	var dataAO1 struct {
 		Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
 
-		Comments []*Comment `json:"comments,omitempty"`
+		Comments []*Comment `json:"comments"`
 
 		LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
 
@@ -103,7 +103,7 @@ func (m Task) MarshalJSON() ([]byte, error) {
 	var dataAO1 struct {
 		Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
 
-		Comments []*Comment `json:"comments,omitempty"`
+		Comments []*Comment `json:"comments"`
 
 		LastUpdated strfmt.DateTime `json:"lastUpdated,omitempty"`
 
