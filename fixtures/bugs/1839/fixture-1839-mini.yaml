@@ -1,0 +1,520 @@
+---
+swagger: "2.0"
+info:
+  description: "discriminator fixture #1839"
+  version: "3.1"
+  title: "ClickSend v3 API"
+  termsOfService: "https://www.clicksend.com/au/legal/terms-of-service/"
+  contact:
+    email: "support@clicksend.com"
+host: "rest.clicksend.com"
+basePath: "/v3"
+schemes:
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /sms/email-sms:
+    get:
+      tags:
+      - "Email To Sms"
+      summary: "Get list of email to sms allowed addresses"
+      description: "Get list of email to sms allowed addresses"
+      operationId: "SmsEmailSmsGet"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "page"
+        in: "query"
+        description: "Page number"
+        required: false
+        type: "integer"
+        default: 1
+        exclusiveMaximum: false
+        minimum: 1
+        exclusiveMinimum: false
+        format: "int32"
+      responses:
+        default:
+          description: "INTERNAL_SERVER_ERROR"
+          schema:
+            type: "string"
+definitions:
+  Email:
+    type: "object"
+    required:
+    - "body"
+    - "from"
+    - "to"
+    discriminator: "classType"
+    properties:
+      to:
+        type: "array"
+        description: "Array of To Recipient items."
+        items:
+          $ref: "#/definitions/EmailRecipient"
+      cc:
+        type: "array"
+        description: "Array of Cc Recipient items."
+        items:
+          $ref: "#/definitions/EmailRecipient"
+      bcc:
+        type: "array"
+        description: "Array of Bcc Recipient items."
+        items:
+          $ref: "#/definitions/EmailRecipient"
+      from:
+        $ref: "#/definitions/Email_from"
+      subject:
+        type: "string"
+        description: "Subject of the email."
+      body:
+        type: "string"
+        description: "Body of the email."
+      attachments:
+        type: "array"
+        description: "Array of Attachment items."
+        items:
+          $ref: "#/definitions/Attachment"
+      schedule:
+        type: "number"
+        description: "Schedule."
+    description: "Send Email"
+    example:
+      cc:
+      - name: "name"
+        email: "email"
+      - name: "name"
+        email: "email"
+      schedule: 0.80082819046101150206595775671303272247314453125
+      bcc:
+      - name: "name"
+        email: "email"
+      - name: "name"
+        email: "email"
+      attachments:
+      - disposition: "disposition"
+        filename: "filename"
+        content_id: "content_id"
+        type: "type"
+        content: "content"
+      - disposition: "disposition"
+        filename: "filename"
+        content_id: "content_id"
+        type: "type"
+        content: "content"
+      subject: "subject"
+      from:
+        email_address_id: "email_address_id"
+        name: "name"
+      to:
+      - name: "name"
+        email: "email"
+      - name: "name"
+        email: "email"
+      body: "body"
+  EmailRecipient:
+    type: "object"
+    required:
+    - "email"
+    discriminator: "classType"
+    properties:
+      email:
+        type: "string"
+        description: "Email of the recipient."
+      name:
+        type: "string"
+        description: "Name of the recipient."
+    description: "Recipient of an email, either To, Cc, or Bcc."
+    example:
+      name: "name"
+      email: "email"
+  Url:
+    type: "object"
+    required:
+    - "url"
+    discriminator: "classType"
+    properties:
+      url:
+        type: "string"
+        description: "Your url."
+    description: "Your url."
+    example:
+      url: "url"
+  DateBefore:
+    type: "object"
+    discriminator: "classType"
+    properties:
+      date_before:
+        type: "number"
+        description: "An optional timestamp - mark all as read before this timestamp.\
+          \ If not given, all messages will be marked as read."
+    description: "All dates before specified timestam."
+    example:
+      date_before: 0.80082819046101150206595775671303272247314453125
+  UploadFile:
+    type: "object"
+    required:
+    - "content"
+    discriminator: "classType"
+    properties:
+      content:
+        type: "string"
+        description: "Your base64 encoded file string."
+    description: "Your file to be uploaded."
+    example:
+      content: "content"
+  ContactList:
+    type: "object"
+    required:
+    - "list_name"
+    discriminator: "classType"
+    properties:
+      list_name:
+        type: "string"
+        description: "Your list name."
+    description: "Your contact list."
+    example:
+      list_name: "list_name"
+  StrippedString:
+    type: "object"
+    required:
+    - "strip_string"
+    discriminator: "classType"
+    properties:
+      strip_string:
+        type: "string"
+        description: "String to be."
+    description: "String to be stripped."
+    example:
+      strip_string: "strip_string"
+  Attachment:
+    type: "object"
+    required:
+    - "content"
+    - "content_id"
+    - "disposition"
+    - "filename"
+    - "type"
+    discriminator: "classType"
+    properties:
+      content:
+        type: "string"
+        description: "The base64-encoded contents of the file."
+      type:
+        type: "string"
+        description: "The type of file being attached."
+      filename:
+        type: "string"
+        description: "The name of the file being attached."
+      disposition:
+        type: "string"
+        description: "Inline for content that can be displayed within the email, or\
+          \ attachment for any other files."
+      content_id:
+        type: "string"
+        description: "An ID for the content."
+    description: "Email attachment"
+    example:
+      disposition: "disposition"
+      filename: "filename"
+      content_id: "content_id"
+      type: "type"
+      content: "content"
+  EmailCampaign:
+    type: "object"
+    required:
+    - "body"
+    - "from_email_address_id"
+    - "from_name"
+    - "list_id"
+    - "name"
+    - "subject"
+    discriminator: "classType"
+    properties:
+      name:
+        type: "string"
+        description: "Your campaign name."
+      subject:
+        type: "string"
+        description: "Your campaign subject."
+      body:
+        type: "string"
+        description: "Your campaign message."
+      from_email_address_id:
+        type: "number"
+        description: "The allowed email address id."
+      from_name:
+        type: "string"
+        description: "Your name or business name."
+      template_id:
+        type: "number"
+        description: "Your template id."
+      list_id:
+        type: "number"
+        description: "Your contact list id."
+      schedule:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "Your schedule timestamp."
+        default: 0
+    description: "Campaign Model for Email"
+    example:
+      schedule: 0
+      list_id: 1.46581298050294517310021547018550336360931396484375
+      subject: "subject"
+      from_email_address_id: 0.80082819046101150206595775671303272247314453125
+      name: "name"
+      template_id: 6.02745618307040320615897144307382404804229736328125
+      body: "body"
+      from_name: "from_name"
+  EmailTemplateNew:
+    type: "object"
+    required:
+    - "template_id_master"
+    - "template_name"
+    discriminator: "classType"
+    properties:
+      template_name:
+        type: "string"
+        description: "The intended name for the new template."
+      template_id_master:
+        type: "number"
+        description: "The ID of the master template you want to base on."
+    description: "Model for Email Templates"
+    example:
+      template_name: "template_name"
+      template_id_master: 0.80082819046101150206595775671303272247314453125
+  EmailTemplateUpdate:
+    type: "object"
+    required:
+    - "body"
+    discriminator: "classType"
+    properties:
+      template_name:
+        type: "string"
+        description: "The intended name for the template."
+      body:
+        type: "string"
+        description: "Your template body."
+    description: "Model for Email Templates"
+    example:
+      template_name: "template_name"
+      body: "body"
+  InboundSMSRule:
+    type: "object"
+    required:
+    - "action"
+    - "action_address"
+    - "dedicated_number"
+    - "enabled"
+    - "message_search_term"
+    - "message_search_type"
+    - "rule_name"
+    discriminator: "classType"
+    properties:
+      dedicated_number:
+        type: "string"
+        description: "Dedicated Number. Can be '*' to apply to all numbers."
+      rule_name:
+        type: "string"
+        description: "Rule Name."
+      message_search_type:
+        type: "number"
+        description: "Message Search Type: 0=Any message, 1=starts with, 2=contains,\
+          \ 3=does not contain."
+      message_search_term:
+        type: "string"
+        description: "Message search term."
+      action:
+        type: "string"
+        description: "Action to be taken (AUTO_REPLY, EMAIL_USER, EMAIL_FIXED, URL,\
+          \ SMS, POLL, GROUP_SMS, MOVE_CONTACT, CREATE_CONTACT, CREATE_CONTACT_PLUS_EMAIL,\
+          \ CREATE_CONTACT_PLUS_NAME_EMAIL CREATE_CONTACT_PLUS_NAME, SMPP, NONE)."
+      action_address:
+        type: "string"
+        description: "Action address."
+      enabled:
+        type: "number"
+        description: "Enabled: Disabled=0 or Enabled=1."
+    description: "Model for Inbound SMS Rules"
+  InboundFaxRule:
+    type: "object"
+    required:
+    - "action"
+    - "action_address"
+    - "dedicated_number"
+    - "enabled"
+    - "rule_name"
+    discriminator: "classType"
+    properties:
+      dedicated_number:
+        type: "string"
+        description: "Dedicated Number. Can be '*' to apply to all numbers."
+      rule_name:
+        type: "string"
+        description: "Rule Name."
+      action:
+        type: "string"
+        description: "Action to be taken (AUTO_REPLY, EMAIL_USER, EMAIL_FIXED, URL,\
+          \ SMS, POLL, GROUP_SMS, MOVE_CONTACT, CREATE_CONTACT, CREATE_CONTACT_PLUS_EMAIL,\
+          \ CREATE_CONTACT_PLUS_NAME_EMAIL CREATE_CONTACT_PLUS_NAME, SMPP, NONE)."
+      action_address:
+        type: "string"
+        description: "Action address."
+      enabled:
+        type: "number"
+        description: "Enabled: Disabled=0 or Enabled=1."
+    description: "Model for Inbound FAX Rules"
+    example:
+      action_address: "action_address"
+      dedicated_number: "dedicated_number"
+      rule_name: "rule_name"
+      action: "action"
+      enabled: 0.80082819046101150206595775671303272247314453125
+  DeliveryReceiptRule:
+    type: "object"
+    required:
+    - "action"
+    - "action_address"
+    - "enabled"
+    - "match_type"
+    - "rule_name"
+    discriminator: "classType"
+    properties:
+      rule_name:
+        type: "string"
+        description: "Rule Name."
+      match_type:
+        type: "number"
+        description: "Match Type. 0=All reports."
+      action:
+        type: "string"
+        description: "Action to be taken (AUTO_REPLY, EMAIL_USER, EMAIL_FIXED, URL,\
+          \ SMS, POLL, GROUP_SMS, MOVE_CONTACT, CREATE_CONTACT, CREATE_CONTACT_PLUS_EMAIL,\
+          \ CREATE_CONTACT_PLUS_NAME_EMAIL CREATE_CONTACT_PLUS_NAME, SMPP, NONE)."
+      action_address:
+        type: "string"
+        description: "Action address."
+      enabled:
+        type: "number"
+        description: "Enabled: Disabled=0 or Enabled=1."
+    description: "Model for a Delivery Receipt"
+    example:
+      action_address: "action_address"
+      rule_name: "rule_name"
+      match_type: 0.80082819046101150206595775671303272247314453125
+      action: "action"
+      enabled: 6.02745618307040320615897144307382404804229736328125
+  forgotUsername:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        description: "Email belonging to account."
+      phone_number:
+        type: "string"
+        description: "Phone number belonging to account."
+  forgotPassword:
+    type: "object"
+    required:
+    - "username"
+    properties:
+      username:
+        type: "string"
+        description: "Username belonging to account."
+  emailAddress:
+    type: "object"
+    required:
+    - "email_address"
+    properties:
+      email_address:
+        type: "string"
+        description: "Email to be allowed."
+  Fields_fields:
+    properties:
+      phone_number:
+        type: "string"
+        description: "Your phone number in E.164 format. Must be provided if no fax\
+          \ number or email."
+      custom_1:
+        type: "string"
+        description: ""
+      email:
+        type: "string"
+        description: "Your email. Must be provided if no phone number or fax number."
+      fax_number:
+        type: "string"
+        description: "Your fax number. Must be provided if no phone number or email."
+      first_name:
+        type: "string"
+        description: "Your first name."
+      address_line_1:
+        type: "string"
+        description: "Your street address"
+      address_line_2:
+        type: "string"
+        description: ""
+      address_city:
+        type: "string"
+        description: "Your nearest city"
+      address_state:
+        type: "string"
+        description: "Your current state"
+      address_postal_code:
+        type: "string"
+        description: "Your current postcode"
+      address_country:
+        type: "string"
+        description: "Your current country"
+      organization_name:
+        type: "string"
+        description: "Your organisation name"
+      custom_2:
+        type: "string"
+        description: ""
+      custom_3:
+        type: "string"
+        description: ""
+      custom_4:
+        type: "string"
+        description: ""
+      last_name:
+        type: "string"
+        description: "Your last name"
+    description: "From Email object."
+    example:
+      custom_1: "custom_1"
+      custom_3: "custom_3"
+      address_postal_code: "address_postal_code"
+      custom_2: "custom_2"
+      address_country: "address_country"
+      custom_4: "custom_4"
+      address_state: "address_state"
+      last_name: "last_name"
+      organization_name: "organization_name"
+      fax_number: "fax_number"
+      address_city: "address_city"
+      address_line_1: "address_line_1"
+      phone_number: "phone_number"
+      address_line_2: "address_line_2"
+      first_name: "first_name"
+      email: "email"
+  Email_from:
+    required:
+    - "email_address_id"
+    properties:
+      email_address_id:
+        type: "string"
+        description: "Email address id of the recipient."
+      name:
+        type: "string"
+        description: "Name of the recipient."
+    description: "From Email object."
+    example:
+      email_address_id: "email_address_id"
+      name: "name"
+
