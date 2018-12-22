@@ -13,13 +13,14 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"io/ioutil"
 	"os"
-	"regexp"
 	"runtime"
 	"strings"
 	"testing"
 
 	"golang.org/x/tools/go/ast/astutil"
+	"golang.org/x/tools/go/expect"
 	"golang.org/x/tools/go/loader"
 	"golang.org/x/tools/go/ssa"
 	"golang.org/x/tools/go/ssa/ssautil"
@@ -31,10 +32,14 @@ func TestObjValueLookup(t *testing.T) {
 	}
 
 	conf := loader.Config{ParserMode: parser.ParseComments}
-	f, err := conf.ParseFile("testdata/objlookup.go", nil)
+	src, err := ioutil.ReadFile("testdata/objlookup.go")
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
+	}
+	readFile := func(filename string) ([]byte, error) { return src, nil }
+	f, err := conf.ParseFile("testdata/objlookup.go", src)
+	if err != nil {
+		t.Fatal(err)
 	}
 	conf.CreateFromFiles("main", f)
 
@@ -42,16 +47,40 @@ func TestObjValueLookup(t *testing.T) {
 	// kind of ssa.Value we expect (represented "Constant", "&Alloc").
 	expectations := make(map[string]string)
 
-	// Find all annotations of form x::BinOp, &y::Alloc, etc.
-	re := regexp.MustCompile(`(\b|&)?(\w*)::(\w*)\b`)
-	for _, c := range f.Comments {
-		text := c.Text()
-		pos := conf.Fset.Position(c.Pos())
-		for _, m := range re.FindAllStringSubmatch(text, -1) {
-			key := fmt.Sprintf("%s:%d", m[2], pos.Line)
-			value := m[1] + m[3]
-			expectations[key] = value
+	// Each note of the form @ssa(x, "BinOp") in testdata/objlookup.go
+	// specifies an expectation that an object named x declared on the
+	// same line is associated with an an ssa.Value of type *ssa.BinOp.
+	notes, err := expect.Extract(conf.Fset, f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, n := range notes {
+		if n.Name != "ssa" {
+			t.Errorf("%v: unexpected note type %q, want \"ssa\"", conf.Fset.Position(n.Pos), n.Name)
+			continue
 		}
+		if len(n.Args) != 2 {
+			t.Errorf("%v: ssa has %d args, want 2", conf.Fset.Position(n.Pos), len(n.Args))
+			continue
+		}
+		ident, ok := n.Args[0].(expect.Identifier)
+		if !ok {
+			t.Errorf("%v: got %v for arg 1, want identifier", conf.Fset.Position(n.Pos), n.Args[0])
+			continue
+		}
+		exp, ok := n.Args[1].(string)
+		if !ok {
+			t.Errorf("%v: got %v for arg 2, want string", conf.Fset.Position(n.Pos), n.Args[1])
+			continue
+		}
+		p, _, err := expect.MatchBefore(conf.Fset, readFile, n.Pos, string(ident))
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		pos := conf.Fset.Position(p)
+		key := fmt.Sprintf("%s:%d", ident, pos.Line)
+		expectations[key] = exp
 	}
 
 	iprog, err := conf.Load()
@@ -232,37 +261,41 @@ func testValueForExpr(t *testing.T, testfile string) {
 		}
 	}
 
-	// Find the actual AST node for each canonical position.
-	parenExprByPos := make(map[token.Pos]*ast.ParenExpr)
+	var parenExprs []*ast.ParenExpr
 	ast.Inspect(f, func(n ast.Node) bool {
 		if n != nil {
 			if e, ok := n.(*ast.ParenExpr); ok {
-				parenExprByPos[e.Pos()] = e
+				parenExprs = append(parenExprs, e)
 			}
 		}
 		return true
 	})
 
-	// Find all annotations of form /*@kind*/.
-	for _, c := range f.Comments {
-		text := strings.TrimSpace(c.Text())
-		if text == "" || text[0] != '@' {
-			continue
+	notes, err := expect.Extract(prog.Fset, f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, n := range notes {
+		want := n.Name
+		if want == "nil" {
+			want = "<nil>"
 		}
-		text = text[1:]
-		pos := c.End() + 1
-		position := prog.Fset.Position(pos)
+		position := prog.Fset.Position(n.Pos)
 		var e ast.Expr
-		if target := parenExprByPos[pos]; target == nil {
-			t.Errorf("%s: annotation doesn't precede ParenExpr: %q", position, text)
+		for _, paren := range parenExprs {
+			if paren.Pos() > n.Pos {
+				e = paren.X
+				break
+			}
+		}
+		if e == nil {
+			t.Errorf("%s: note doesn't precede ParenExpr: %q", position, want)
 			continue
-		} else {
-			e = target.X
 		}
 
-		path, _ := astutil.PathEnclosingInterval(f, pos, pos)
+		path, _ := astutil.PathEnclosingInterval(f, n.Pos, n.Pos)
 		if path == nil {
-			t.Errorf("%s: can't find AST path from root to comment: %s", position, text)
+			t.Errorf("%s: can't find AST path from root to comment: %s", position, want)
 			continue
 		}
 
@@ -274,7 +307,7 @@ func testValueForExpr(t *testing.T, testfile string) {
 
 		v, gotAddr := fn.ValueForExpr(e) // (may be nil)
 		got := strings.TrimPrefix(fmt.Sprintf("%T", v), "*ssa.")
-		if want := text; got != want {
+		if got != want {
 			t.Errorf("%s: got value %q, want %q", position, got, want)
 		}
 		if v != nil {

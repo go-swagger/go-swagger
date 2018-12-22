@@ -103,7 +103,7 @@ func newAESGCM(keySize int) contentCipher {
 func newAESCBC(keySize int) contentCipher {
 	return &aeadContentCipher{
 		keyBytes:     keySize * 2,
-		authtagBytes: 16,
+		authtagBytes: keySize,
 		getAead: func(key []byte) (cipher.AEAD, error) {
 			return josecipher.NewCBCHMAC(key, aes.NewCipher)
 		},

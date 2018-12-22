@@ -57,7 +57,28 @@ package unix
 #include <linux/perf_event.h>
 #include <linux/rtnetlink.h>
 #include <linux/stat.h>
+#if defined(__sparc__)
+// On sparc{,64}, the kernel defines struct termios2 itself which clashes with the
+// definition in glibc. Duplicate the kernel version here.
+#if defined(__arch64__)
+typedef unsigned int tcflag_t;
+#else
+typedef unsigned long tcflag_t;
+#endif
+
+struct termios2 {
+	tcflag_t c_iflag;
+	tcflag_t c_oflag;
+	tcflag_t c_cflag;
+	tcflag_t c_lflag;
+	unsigned char c_line;
+	unsigned char c_cc[19];
+	unsigned int c_ispeed;
+	unsigned int c_ospeed;
+};
+#else
 #include <asm/termbits.h>
+#endif
 #include <asm/ptrace.h>
 #include <time.h>
 #include <unistd.h>

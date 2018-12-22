@@ -39,6 +39,11 @@ type Module struct {
 	// be a string or byte slice, in which case it is the contents of the
 	// file, otherwise it must be a Writer function.
 	Files map[string]interface{}
+
+	// Overlay is the set of source file overlays for the module.
+	// The keys are the file fragment as in the Files configuration.
+	// The values are the in memory overlay content for the file.
+	Overlay map[string][]byte
 }
 
 // A Writer is a function that writes out a test file.
@@ -53,13 +58,15 @@ type Exported struct {
 	// Exactly what it will contain varies depending on the Exporter being used.
 	Config *packages.Config
 
-	temp     string                       // the temporary directory that was exported to
-	primary  string                       // the first non GOROOT module that was exported
-	written  map[string]map[string]string // the full set of exported files
-	fset     *token.FileSet               // The file set used when parsing expectations
-	notes    []*expect.Note               // The list of expectations extracted from go source files
-	markers  map[string]Range             // The set of markers extracted from go source files
-	contents map[string][]byte
+	// Modules is the module description that was used to produce this exported data set.
+	Modules []Module
+
+	temp    string                       // the temporary directory that was exported to
+	primary string                       // the first non GOROOT module that was exported
+	written map[string]map[string]string // the full set of exported files
+	fset    *token.FileSet               // The file set used when parsing expectations
+	notes   []*expect.Note               // The list of expectations extracted from go source files
+	markers map[string]Range             // The set of markers extracted from go source files
 }
 
 // Exporter implementations are responsible for converting from the generic description of some
@@ -94,6 +101,19 @@ func TestAll(t *testing.T, f func(*testing.T, Exporter)) {
 	}
 }
 
+// BenchmarkAll invokes the testing function once for each exporter registered in
+// the All global.
+// Each exporter will be run as a sub-test named after the exporter being used.
+func BenchmarkAll(b *testing.B, f func(*testing.B, Exporter)) {
+	b.Helper()
+	for _, e := range All {
+		b.Run(e.Name(), func(b *testing.B) {
+			b.Helper()
+			f(b, e)
+		})
+	}
+}
+
 // Export is called to write out a test directory from within a test function.
 // It takes the exporter and the build system agnostic module descriptions, and
 // uses them to build a temporary directory.
@@ -103,7 +123,7 @@ func TestAll(t *testing.T, f func(*testing.T, Exporter)) {
 // The file deletion in the cleanup can be skipped by setting the skip-cleanup
 // flag when invoking the test, allowing the temporary directory to be left for
 // debugging tests.
-func Export(t *testing.T, exporter Exporter, modules []Module) *Exported {
+func Export(t testing.TB, exporter Exporter, modules []Module) *Exported {
 	t.Helper()
 	dirname := strings.Replace(t.Name(), "/", "_", -1)
 	dirname = strings.Replace(dirname, "#", "_", -1) // duplicate subtests get a #NNN suffix.
@@ -113,14 +133,15 @@ func Export(t *testing.T, exporter Exporter, modules []Module) *Exported {
 	}
 	exported := &Exported{
 		Config: &packages.Config{
-			Dir: temp,
-			Env: append(os.Environ(), "GOPACKAGESDRIVER=off"),
+			Dir:     temp,
+			Env:     append(os.Environ(), "GOPACKAGESDRIVER=off"),
+			Overlay: make(map[string][]byte),
 		},
-		temp:     temp,
-		primary:  modules[0].Name,
-		written:  map[string]map[string]string{},
-		fset:     token.NewFileSet(),
-		contents: map[string][]byte{},
+		Modules: modules,
+		temp:    temp,
+		primary: modules[0].Name,
+		written: map[string]map[string]string{},
+		fset:    token.NewFileSet(),
 	}
 	defer func() {
 		if t.Failed() || t.Skipped() {
@@ -151,6 +172,10 @@ func Export(t *testing.T, exporter Exporter, modules []Module) *Exported {
 			default:
 				t.Fatalf("Invalid type %T in files, must be string or Writer", value)
 			}
+		}
+		for fragment, value := range module.Overlay {
+			fullpath := exporter.Filename(exported, module.Name, filepath.FromSlash(fragment))
+			exported.Config.Overlay[fullpath] = value
 		}
 	}
 	if err := exporter.Finalize(exported); err != nil {
@@ -269,8 +294,11 @@ func (e *Exported) File(module, fragment string) string {
 	return ""
 }
 
-func (e *Exported) fileContents(filename string) ([]byte, error) {
-	if content, found := e.contents[filename]; found {
+// FileContents returns the contents of the specified file.
+// It will use the overlay if the file is present, otherwise it will read it
+// from disk.
+func (e *Exported) FileContents(filename string) ([]byte, error) {
+	if content, found := e.Config.Overlay[filename]; found {
 		return content, nil
 	}
 	content, err := ioutil.ReadFile(filename)

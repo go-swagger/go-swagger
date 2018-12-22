@@ -2416,7 +2416,8 @@ func testRejectTLS(t *testing.T, max uint16) {
 
 func TestServer_Rejects_TLSBadCipher(t *testing.T) {
 	st := newServerTester(t, nil, func(c *tls.Config) {
-		c.MaxVersion = tls.VersionTLS12 // workaround for golang.org/issue/28762
+		// All TLS 1.3 ciphers are good. Test with TLS 1.2.
+		c.MaxVersion = tls.VersionTLS12
 		// Only list bad ones:
 		c.CipherSuites = []uint16{
 			tls.TLS_RSA_WITH_RC4_128_SHA,

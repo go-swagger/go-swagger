@@ -341,7 +341,7 @@ func init() {
   },
   "security": [
     {
-      "isRegistered": []
+      "isRegistered": null
     }
   ]
 }`))

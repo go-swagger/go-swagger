@@ -824,8 +824,18 @@ func testOverlay(t *testing.T, exporter packagestest.Exporter) {
 		{map[string][]byte{}, `"abc"`, nil}, // empty overlay
 		{map[string][]byte{exported.File("golang.org/fake", "c/c.go"): []byte(`package c; const C = "C"`)}, `"abC"`, nil},
 		{map[string][]byte{exported.File("golang.org/fake", "b/b.go"): []byte(`package b; import "golang.org/fake/c"; const B = "B" + c.C`)}, `"aBc"`, nil},
-		{map[string][]byte{exported.File("golang.org/fake", "b/b.go"): []byte(`package b; import "d"; const B = "B" + d.D`)}, `unknown`,
-			[]string{`could not import d (no metadata for d)`}},
+		// Overlay with an existing file in an existing package adding a new import.
+		{map[string][]byte{exported.File("golang.org/fake", "b/b.go"): []byte(`package b; import "golang.org/fake/d"; const B = "B" + d.D`)}, `"aBd"`, nil},
+		// Overlay with a new file in an existing package.
+		{map[string][]byte{
+			exported.File("golang.org/fake", "c/c.go"):                                               []byte(`package c;`),
+			filepath.Join(filepath.Dir(exported.File("golang.org/fake", "c/c.go")), "c_new_file.go"): []byte(`package c; const C = "Ç"`)},
+			`"abÇ"`, nil},
+		// Overlay with a new file in an existing package, adding a new dependency to that package.
+		{map[string][]byte{
+			exported.File("golang.org/fake", "c/c.go"):                                               []byte(`package c;`),
+			filepath.Join(filepath.Dir(exported.File("golang.org/fake", "c/c.go")), "c_new_file.go"): []byte(`package c; import "golang.org/fake/d"; const C = "c" + d.D`)},
+			`"abcd"`, nil},
 	} {
 		exported.Config.Overlay = test.overlay
 		exported.Config.Mode = packages.LoadAllSyntax
@@ -862,7 +872,8 @@ func TestLoadAllSyntaxImportErrors(t *testing.T) {
 	packagestest.TestAll(t, testLoadAllSyntaxImportErrors)
 }
 func testLoadAllSyntaxImportErrors(t *testing.T, exporter packagestest.Exporter) {
-	// TODO(matloob): Remove this once go list -e -compiled is fixed. See golang.org/issue/26755
+	// TODO(matloob): Remove this once go list -e -compiled is fixed.
+	// See https://golang.org/issue/26755
 	t.Skip("go list -compiled -e fails with non-zero exit status for empty packages")
 
 	exported := packagestest.Export(t, exporter, []packagestest.Module{{
@@ -1047,6 +1058,35 @@ func testContains(t *testing.T, exporter packagestest.Exporter) {
 	}
 }
 
+func TestContainsOverlay(t *testing.T) { packagestest.TestAll(t, testContainsOverlay) }
+func testContainsOverlay(t *testing.T, exporter packagestest.Exporter) {
+	exported := packagestest.Export(t, exporter, []packagestest.Module{{
+		Name: "golang.org/fake",
+		Files: map[string]interface{}{
+			"a/a.go": `package a; import "golang.org/fake/b"`,
+			"b/b.go": `package b; import "golang.org/fake/c"`,
+			"c/c.go": `package c`,
+		}}})
+	defer exported.Cleanup()
+	bOverlayFile := filepath.Join(filepath.Dir(exported.File("golang.org/fake", "b/b.go")), "b_overlay.go")
+	exported.Config.Mode = packages.LoadImports
+	exported.Config.Overlay = map[string][]byte{bOverlayFile: []byte(`package b;`)}
+	initial, err := packages.Load(exported.Config, "file="+bOverlayFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	graph, _ := importGraph(initial)
+	wantGraph := `
+* golang.org/fake/b
+  golang.org/fake/c
+  golang.org/fake/b -> golang.org/fake/c
+`[1:]
+	if graph != wantGraph {
+		t.Errorf("wrong import graph: got <<%s>>, want <<%s>>", graph, wantGraph)
+	}
+}
+
 // This test ensures that the effective GOARCH variable in the
 // application determines the Sizes function used by the type checker.
 // This behavior is a stop-gap until we make the build system's query
@@ -1076,7 +1116,6 @@ func testSizes(t *testing.T, exporter packagestest.Exporter) {
 			t.Errorf("for GOARCH=%s, got word size %d, want %d", arch, gotWordSize, wantWordSize)
 		}
 	}
-
 }
 
 // TestContains_FallbackSticks ensures that when there are both contains and non-contains queries
@@ -1217,6 +1256,25 @@ func TestName_ModulesDedup(t *testing.T) {
 		}
 	}
 	t.Errorf("didn't find v2.0.2 of pkg in Load results: %v", initial)
+}
+
+// Test that Load doesn't get confused when two different patterns match the same package. See #29297.
+func TestRedundantQueries(t *testing.T) { packagestest.TestAll(t, testRedundantQueries) }
+func testRedundantQueries(t *testing.T, exporter packagestest.Exporter) {
+	exported := packagestest.Export(t, exporter, []packagestest.Module{{
+		Name: "golang.org/fake",
+		Files: map[string]interface{}{
+			"a/a.go": `package a;`,
+		}}})
+	defer exported.Cleanup()
+
+	initial, err := packages.Load(exported.Config, "errors", "name=errors")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(initial) != 1 || initial[0].Name != "errors" {
+		t.Fatalf(`Load("errors", "name=errors") = %v, wanted just the errors package`, initial)
+	}
 }
 
 func TestJSON(t *testing.T) { packagestest.TestAll(t, testJSON) }
@@ -1530,6 +1588,24 @@ func testBasicXTest(t *testing.T, exporter packagestest.Exporter) {
 	}
 }
 
+func TestErrorMissingFile(t *testing.T) { packagestest.TestAll(t, testErrorMissingFile) }
+func testErrorMissingFile(t *testing.T, exporter packagestest.Exporter) {
+	exported := packagestest.Export(t, exporter, []packagestest.Module{{
+		Name: "golang.org/fake",
+		Files: map[string]interface{}{
+			"a/a_test.go": `package a;`,
+		}}})
+	defer exported.Cleanup()
+
+	exported.Config.Mode = packages.LoadSyntax
+	exported.Config.Tests = false
+	pkgs, err := packages.Load(exported.Config, "missing.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(pkgs)
+}
+
 func errorMessages(errors []packages.Error) []string {
 	var msgs []string
 	for _, err := range errors {
@@ -1599,6 +1675,12 @@ func importGraph(initial []*packages.Package) (string, map[string]*packages.Pack
 						edges = append(edges, fmt.Sprintf("%s -> %s (pruned)", p, imp))
 						continue
 					}
+				}
+				// math/bits took on a dependency on unsafe in 1.12, which breaks some
+				// tests. As a short term hack, prune that edge.
+				// TODO(matloob): think of a cleaner solution, or remove math/bits from the test.
+				if p.ID == "math/bits" && imp.ID == "unsafe" {
+					continue
 				}
 				edges = append(edges, fmt.Sprintf("%s -> %s", p, imp))
 				visit(imp)
