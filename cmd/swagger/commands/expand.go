@@ -24,8 +24,8 @@ type ExpandSpec struct {
 
 // Execute expands the spec
 func (c *ExpandSpec) Execute(args []string) error {
-	if len(args) == 0 {
-		return errors.New("The validate command requires the swagger document url to be specified")
+	if len(args) != 1 {
+		return errors.New("The expand command requires the single swagger document url to be specified")
 	}
 
 	swaggerDoc := args[0]

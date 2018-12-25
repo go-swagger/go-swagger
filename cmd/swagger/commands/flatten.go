@@ -19,10 +19,10 @@ type FlattenSpec struct {
 	generate.FlattenCmdOptions
 }
 
-// Execute expands the spec
+// Execute flattens the spec
 func (c *FlattenSpec) Execute(args []string) error {
-	if len(args) == 0 {
-		return errors.New("The validate command requires the swagger document url to be specified")
+	if len(args) != 1 {
+		return errors.New("The flatten command requires the single swagger document url to be specified")
 	}
 
 	swaggerDoc := args[0]
