@@ -1019,7 +1019,6 @@ func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *sp
 // We need to rebuild the schema with a new type resolver to reflect this change in the
 // models package.
 func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec.Schema, sc *schemaGenContext) (schema *GenSchema, err error) {
-
 	// restore resolving state before previous call to makeGenSchema()
 	rslv := br
 	sc.Schema = *bs
@@ -1086,6 +1085,9 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 
 	if err := sc.makeGenSchema(); err != nil {
 		return GenSchema{}, err
+	}
+	for alias, pkg := range findImports(&sc.GenSchema) {
+		b.Imports[alias] = pkg
 	}
 
 	if sch.Ref.String() == "" && len(sc.ExtraSchemas) > 0 {
