@@ -1,0 +1,118 @@
+swagger: '2.0'
+info:
+  title: 'x-go-type issues'
+  version: '1.0'
+paths:
+  /users_arr_ref:
+    get:
+      parameters:
+      - name: bodyUser
+        in: body
+        schema:
+          $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UsersArrayRef'
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/User'
+  /users_arr_flat:
+    get:
+      parameters:
+      - name: bodyUser
+        in: body
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UsersArrayFlat'
+        201:
+          description: OK
+          schema:
+            $ref: '#/definitions/Users'
+        203:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Users'
+  /user_obj_ref:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserObjectRef'
+  /user_obj_flat:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserObjectFlat'
+definitions:
+  User:
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: integer
+    x-go-type:
+      type: ExtUser
+      import:
+        alias: myalias0
+        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+  Users:
+    type: array
+    items:
+       $ref: '#/definitions/User'
+  UsersArrayRef:
+    type: array
+    items:
+       $ref: '#/definitions/User'
+    x-go-type:
+      type: ExtUsersArrayRef
+      import:
+        alias: myalias1
+        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+  UsersArrayFlat:
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+    x-go-type:
+      type: ExtUsersArrayFlat
+      import:
+        alias: myalias2
+        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+  UserObjectRef:
+    $ref: '#/definitions/User'
+    x-go-type:
+      type: ExtUser
+      import:
+        alias: myalias3
+        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models2'
+  UserObjectFlat:
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: integer
+    x-go-type:
+      type: ExtUser
+      import:
+        alias: myalias4
+        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models2'
