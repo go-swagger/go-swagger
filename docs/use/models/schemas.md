@@ -320,13 +320,6 @@ Rendered as:
 type MyDate strfmt.Date
 ```
 
-> **NOTE**: go 1.9 type aliasing is not being used in generated code at the moment.
-
-> **Known limitations**:
->
-> Currently, re-aliasing types (i.e. a definition as a `$ref` on another definition) works only for objects.
-> Map or slice realiasing still suffers some implementation bugs.
-
 Notice that setting `x-nullable: true` in such an alias will not render the type itself into a pointer, but rather,
 all containers of his type will use it as a pointer.
 
@@ -348,6 +341,27 @@ Yields:
 type MyDate strfmt.Date
 ...
 type AnArrayOfDates []*MyDate
+```
+
+Realiasing
+
+Given the above definitions, we add:
+
+```yaml
+  ...
+  herDate:
+    $ref: #/definitions/myDate
+  hisDate:
+    $ref: #/definitions/herDate
+```
+
+Rendered as (requires go1.9+):
+```go
+type HerDate = MyDate
+```
+
+```go
+type HisDate = HerDate
 ```
 
 ### Extensible types
