@@ -429,7 +429,7 @@ type schemaGenContext struct {
 	TypeResolver *typeResolver
 
 	GenSchema      GenSchema
-	Dependencies   []string
+	Dependencies   []string // NOTE: Dependencies is actually set nowhere
 	ExtraSchemas   map[string]GenSchema
 	Discriminator  *discor
 	Discriminated  *discee
@@ -1593,19 +1593,82 @@ func (sg *schemaGenContext) buildXMLName() error {
 func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// This if block ensures that a struct gets
 	// rendered with the ref as embedded ref.
+	//
+	// NOTE: this assumes that all $ref point to a definition,
+	// i.e. the spec is canonical, as guaranteed by minimal flattening.
+	//
 	// TODO: RefHandled is actually set nowhere
 	if sg.RefHandled || !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
 	debugLogAsJSON("short circuit named ref: %q", sg.Schema.Ref.String(), sg.Schema)
 
+	// Simple aliased types (arrays, maps and primitives)
+	//
+	// Before deciding to make a struct with a composition branch (below),
+	// check if the $ref points to a simple type or polymorphic (base) type.
+	//
+	// If this is the case, just realias this simple type, without creating a struct.
+	asch, era := analysis.Schema(analysis.SchemaOpts{
+		Root:     sg.TypeResolver.Doc.Spec(),
+		BasePath: sg.TypeResolver.Doc.SpecFilePath(),
+		Schema:   &sg.Schema,
+	})
+	if era != nil {
+		return false, era
+	}
+
+	if asch.IsArray || asch.IsMap || asch.IsKnownType || asch.IsBaseType {
+		tpx, ers := sg.TypeResolver.ResolveSchema(&sg.Schema, false, true)
+		if ers != nil {
+			return false, ers
+		}
+		tpe := resolvedType{}
+		tpe.IsMap = asch.IsMap
+		tpe.IsArray = asch.IsArray
+		tpe.IsPrimitive = asch.IsKnownType
+
+		tpe.IsAliased = true
+		tpe.AliasedType = ""
+		tpe.IsComplexObject = false
+		tpe.IsAnonymous = false
+		tpe.IsCustomFormatter = false
+		tpe.IsBaseType = tpx.IsBaseType
+
+		tpe.GoType = sg.TypeResolver.goTypeName(path.Base(sg.Schema.Ref.String()))
+
+		tpe.IsNullable = tpx.IsNullable // TODO
+		tpe.IsInterface = tpx.IsInterface
+		tpe.IsStream = tpx.IsStream
+
+		tpe.SwaggerType = tpx.SwaggerType
+		sch := spec.Schema{}
+		pg := sg.makeNewStruct(sg.Name, sch)
+		if err := pg.makeGenSchema(); err != nil {
+			return true, err
+		}
+		sg.MergeResult(pg, true)
+		sg.GenSchema = pg.GenSchema
+		sg.GenSchema.resolvedType = tpe
+		sg.GenSchema.resolvedType.IsSuperAlias = true
+		sg.GenSchema.IsBaseType = tpe.IsBaseType
+
+		return true, nil
+	}
+
+	// Aliased object: use golang struct composition.
+	// This is rendered as a struct with type field, i.e. :
+	// Alias struct {
+	//		AliasedType
+	// }
 	nullableOverride := sg.GenSchema.IsNullable
+
 	tpe := resolvedType{}
 	tpe.GoType = sg.TypeResolver.goTypeName(sg.Name)
-
 	tpe.SwaggerType = "object"
 	tpe.IsComplexObject = true
 	tpe.IsMap = false
+	tpe.IsArray = false
 	tpe.IsAnonymous = false
 	tpe.IsNullable = sg.TypeResolver.IsNullable(&sg.Schema)
 
