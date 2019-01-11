@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
+	"github.com/stretchr/testify/assert"
 )
 
 // Commands requires at least one arg
@@ -24,6 +25,17 @@ func TestCmd_Expand_NoError(t *testing.T) {
 		Output:  flags.Filename(output),
 	}
 	testProduceOutput(t, v, specDoc, output)
+}
+
+func TestCmd_Expand_NoOutputFile(t *testing.T) {
+	specDoc := filepath.Join(fixtureBase, "bugs", "1536", "fixture-1536.yaml")
+	v := &ExpandSpec{
+		Format:  "json",
+		Compact: false,
+		Output:  "",
+	}
+	result := v.Execute([]string{specDoc})
+	assert.Nil(t, result)
 }
 
 func TestCmd_Expand_Error(t *testing.T) {
