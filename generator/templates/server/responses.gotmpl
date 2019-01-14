@@ -192,7 +192,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) WriteResponse(rw http.Response
   if {{ .ReceiverName }}.Payload != nil {
     {{- end }}
     payload := {{ .ReceiverName }}.Payload
-    {{- if or .Schema.IsArray .Schema.IsMap }}
+    {{- if and (not .Schema.IsInterface) (or .Schema.IsArray .Schema.IsMap) }}
     if payload == nil {
       // return empty {{ if .Schema.IsArray }}array{{ else if .Schema.IsMap }}map{{ end }}
       payload =

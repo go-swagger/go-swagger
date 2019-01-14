@@ -1,0 +1,72 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "test",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/test": {
+            "get": {
+                "operationId": "getTest",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/test2": {
+            "get": {
+                "operationId": "getTest2",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/test3": {
+            "get": {
+                "operationId": "getTest3",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "object"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/test4": {
+            "get": {
+                "operationId": "getTest4",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "$ref": "#/definitions/Error"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Error": {
+            "type": "object"
+        }
+    }
+}
