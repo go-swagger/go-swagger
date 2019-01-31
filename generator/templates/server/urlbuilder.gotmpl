@@ -69,7 +69,7 @@ if len({{ varname .ID }}) > 0 {
   if psv != "" {
     _path = strings.Replace(_path, "{{ printf "{%s}" .Name }}", psv, -1)
   } else {
-    return nil, errors.New("{{ pascalize .ID }} is required on {{ pascalize $.Name }}URL")
+    return nil, errors.New("{{ camelize .ID }} is required on {{ pascalize $.Name }}URL")
   }
 }
 {{ else -}}
@@ -149,7 +149,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}URL) Build() (*url.URL, error) {
   if {{ varname .ID }} != "" {
     _path = strings.Replace(_path, "{{ printf "{%s}" .Name }}", {{ varname .ID }}, -1)
   } else {
-    return nil, errors.New("{{ pascalize .ID }} is required on {{ pascalize $.Name }}URL")
+    return nil, errors.New("{{ camelize .ID }} is required on {{ pascalize $.Name }}URL")
   }
   {{ end }}
 
