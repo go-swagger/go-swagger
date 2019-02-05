@@ -218,7 +218,6 @@ func (a *appGenerator) Generate() error {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
 			modCopy := mod
-			modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
 			modCopy.IncludeModel = true
 			if err := a.GenOpts.renderDefinition(&modCopy); err != nil {
 				return err

@@ -30,6 +30,7 @@ type Operation struct {
 	DefaultScheme  string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
 	NoHandler      bool     `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct       bool     `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
+	NoValidators   bool     `long:"skip-validators" description:"when present will not generate the Validate() and related functions"`
 	NoResponses    bool     `long:"skip-responses" description:"when present will not generate the response model struct"`
 	NoURLBuilder   bool     `long:"skip-url-builder" description:"when present will not generate a URL builder"`
 	DumpData       bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
@@ -52,6 +53,7 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		IncludeResponses:  !o.NoResponses,
 		IncludeParameters: !o.NoStruct,
 		IncludeURLBuilder: !o.NoURLBuilder,
+		IncludeValidator:  !o.NoValidators,
 		Tags:              o.Tags,
 		ValidateSpec:      !o.SkipValidation,
 	}, nil

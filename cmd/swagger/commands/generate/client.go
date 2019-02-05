@@ -32,6 +32,7 @@ type Client struct {
 	DefaultProduces string   `long:"default-produces" description:"the default mime type that API operations produce" default:"application/json"`
 	SkipModels      bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations  bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	NoValidators    bool     `long:"skip-validators" description:"no validators will be generated when this flag is specified"`
 	DumpData        bool     `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files"`
 	SkipValidation  bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 }
@@ -49,7 +50,7 @@ func (c *Client) getOpts() (*generator.GenOpts, error) {
 		DefaultScheme:     c.DefaultScheme,
 		DefaultProduces:   c.DefaultProduces,
 		IncludeModel:      !c.SkipModels,
-		IncludeValidator:  !c.SkipModels,
+		IncludeValidator:  !c.NoValidators,
 		IncludeHandler:    !c.SkipOperations,
 		IncludeParameters: !c.SkipOperations,
 		IncludeResponses:  !c.SkipOperations,

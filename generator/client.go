@@ -150,7 +150,6 @@ func (c *clientGenerator) Generate() error {
 	if c.GenOpts.IncludeModel {
 		for _, mod := range app.Models {
 			modCopy := mod
-			modCopy.IncludeValidator = true
 			if !mod.IsStream {
 				if err := c.GenOpts.renderDefinition(&modCopy); err != nil {
 					return err

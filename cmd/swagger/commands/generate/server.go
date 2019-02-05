@@ -30,6 +30,7 @@ type Server struct {
 	Principal              string   `long:"principal" short:"P" description:"the model to use for the security principal"`
 	DefaultScheme          string   `long:"default-scheme" description:"the default scheme for this API" default:"http"`
 	Models                 []string `long:"model" short:"M" description:"specify a model to include, repeat for multiple"`
+	NoValidators           bool     `long:"skip-validators" description:"no validators will be generated when this flag is specified"`
 	SkipModels             bool     `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations         bool     `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
 	SkipSupport            bool     `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
@@ -59,7 +60,7 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		Principal:              s.Principal,
 		DefaultScheme:          s.DefaultScheme,
 		IncludeModel:           !s.SkipModels,
-		IncludeValidator:       !s.SkipModels,
+		IncludeValidator:       !s.NoValidators,
 		IncludeHandler:         !s.SkipOperations,
 		IncludeParameters:      !s.SkipOperations,
 		IncludeResponses:       !s.SkipOperations,
