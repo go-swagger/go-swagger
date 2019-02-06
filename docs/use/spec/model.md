@@ -33,6 +33,7 @@ Annotation | Description
 **Required** | when set to true this value needs to be set on the schema
 **Read Only** | when set to true this value will be marked as read-only and is not required in request bodies
 **Example** | an example value, parsed as the field's type<br/>(objects and slices are parsed as JSON)
+**Extensions** | list of extensions. The field name MUST begin with x-, for example, x-internal-id. The value can be null, a primitive, an array or an object.
 
 For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
 level the value is a 0-based index, so items.minLength is the same as items.0.minLength
@@ -79,6 +80,17 @@ type User struct {
 	Email strfmt.Email `json:"login"`
 
 	// the friends for this user
+	//
+	// Extensions:
+	// ---
+	// x-property-value: value
+	// x-property-array:
+	//   - value1
+	//   - value2
+	// x-property-array-obj:
+	//   - name: obj
+	//     value: field
+	// ---
 	Friends []User `json:"friends"`
 }
 ```
@@ -117,4 +129,11 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/User"
+        x-property-value: value
+        x-property-array:
+          - value1
+          - value2
+        x-property-array-obj:
+          - name: obj
+            value: field
 ```
