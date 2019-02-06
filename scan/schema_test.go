@@ -60,6 +60,21 @@ func TestSchemaParser(t *testing.T) {
 	assert.False(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
 	assert.Equal(t, 27, prop.Example)
 
+	expectedNameExtensions := spec.Extensions{
+		"x-go-name": "Name",
+		"x-property-array": []interface{}{
+			"value1",
+			"value2",
+		},
+		"x-property-array-obj": []interface{}{
+			map[string]interface{}{
+				"name":  "obj",
+				"value": "field",
+			},
+		},
+		"x-property-value": "value",
+	}
+
 	assertProperty(t, &schema, "string", "name", "", "Name")
 	prop, ok = schema.Properties["name"]
 	assert.True(t, ok)
@@ -67,6 +82,7 @@ func TestSchemaParser(t *testing.T) {
 	assert.EqualValues(t, 4, *prop.MinLength)
 	assert.EqualValues(t, 50, *prop.MaxLength)
 	assert.Equal(t, "[A-Za-z0-9-.]*", prop.Pattern)
+	assert.EqualValues(t, expectedNameExtensions, prop.Extensions)
 
 	assertProperty(t, &schema, "string", "created", "date-time", "Created")
 	prop, ok = schema.Properties["created"]

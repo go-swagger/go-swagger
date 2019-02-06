@@ -57,6 +57,18 @@ type NoModel struct {
 	// max length: 50
 	// pattern: [A-Za-z0-9-.]*
 	// required: true
+	//
+	// Extensions:
+	// ---
+	// x-property-value: value
+	// x-property-array:
+	//   - value1
+	//   - value2
+	// x-property-array-obj:
+	//   - name: obj
+	//     value: field
+	// ---
+	//
 	Name string `json:"name"`
 
 	// Created holds the time when this entry was created
