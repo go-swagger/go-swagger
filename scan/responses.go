@@ -328,7 +328,14 @@ func (rp *responseParser) parseStructType(gofile *ast.File, response *spec.Respo
 				}
 
 				ps := response.Headers[nm]
-				if err := rp.scp.parseNamedType(gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
+
+				// support swagger:file for response
+				// An API operation can return a file, such as an image or PDF. In this case,
+				// define the response schema with type: file and specify the appropriate MIME types in the produces section.
+				if fld.Doc != nil && fileParam(fld.Doc) {
+					response.Schema = &spec.Schema{}
+					response.Schema.Typed("file", "")
+				} else if err := rp.scp.parseNamedType(gofile, fld.Type, responseTypable{in, &ps, response}); err != nil {
 					return err
 				}
 
