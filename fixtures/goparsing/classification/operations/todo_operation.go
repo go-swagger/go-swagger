@@ -143,6 +143,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// Responses:
 	// default: genericError
 	// 200: someResponse
+	// 201: fileResponse
 	// 422: validationError
 	mountItem("GET", basePath+"/orders/:id", nil)
 
