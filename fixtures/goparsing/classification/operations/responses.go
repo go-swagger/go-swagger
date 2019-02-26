@@ -197,4 +197,16 @@ type user struct {
 type Resp struct {
 	// in: body
 	Body *user `json:"user"`
+
+	// swagger:strfmt uuid
+	UUID string
+}
+
+// File response
+//
+// swagger:response fileResponse
+type FileResponse struct {
+	// swagger:file
+	// in:  body
+	File []byte
 }
