@@ -95,12 +95,17 @@ func HasRole(token string, scopes []string) (*models.Principal, error) {
 			isInScopes := false
 			claimedRoles := []string{}
 			for _, scope := range scopes {
+				isInScopes = false
 				for _, role := range claims.Roles {
 					if role == scope {
 						isInScopes = true
-						// we enrich the principal with all claimed roles within scope (hence: not breaking here)
+						// we enrich the principal with all claimed roles within scope
 						claimedRoles = append(claimedRoles, role)
+						break
 					}
+				}
+				if isInScopes == false {
+					break
 				}
 			}
 			if isInScopes {
