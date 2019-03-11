@@ -46,7 +46,7 @@ func (o *DestroyOneURL) Build() (*url.URL, error) {
 	if id != "" {
 		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
-		return nil, errors.New("ID is required on DestroyOneURL")
+		return nil, errors.New("id is required on DestroyOneURL")
 	}
 
 	_basePath := o._basePath

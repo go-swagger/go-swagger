@@ -46,7 +46,7 @@ func (o *GetOrderURL) Build() (*url.URL, error) {
 	if orderID != "" {
 		_path = strings.Replace(_path, "{orderID}", orderID, -1)
 	} else {
-		return nil, errors.New("OrderID is required on GetOrderURL")
+		return nil, errors.New("orderId is required on GetOrderURL")
 	}
 
 	_basePath := o._basePath

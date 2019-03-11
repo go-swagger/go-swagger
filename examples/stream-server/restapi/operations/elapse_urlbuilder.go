@@ -48,7 +48,7 @@ func (o *ElapseURL) Build() (*url.URL, error) {
 	if length != "" {
 		_path = strings.Replace(_path, "{length}", length, -1)
 	} else {
-		return nil, errors.New("Length is required on ElapseURL")
+		return nil, errors.New("length is required on ElapseURL")
 	}
 
 	_basePath := o._basePath

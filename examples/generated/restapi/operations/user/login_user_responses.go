@@ -51,7 +51,6 @@ func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
 // LoginUserBadRequestCode is the HTTP code returned for type LoginUserBadRequest

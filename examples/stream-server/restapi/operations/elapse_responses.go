@@ -52,7 +52,6 @@ func (o *ElapseOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produc
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
 // ElapseForbiddenCode is the HTTP code returned for type ElapseForbidden

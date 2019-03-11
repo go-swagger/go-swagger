@@ -53,7 +53,6 @@ func (o *GetAccountOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
 // GetAccountUnauthorizedCode is the HTTP code returned for type GetAccountUnauthorized
