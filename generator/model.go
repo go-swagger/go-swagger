@@ -808,7 +808,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 			if ttpe.HasAdditionalItems && sch.AdditionalItems.Schema != nil {
 				// when AdditionalItems specifies a Schema, there is a validation
-				// check if we stepped upon an exeption
+				// check if we stepped upon an exception
 				child, err := tr.ResolveSchema(sch.AdditionalItems.Schema, false, true)
 				if err != nil {
 					return err
@@ -819,7 +819,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			}
 			if ttpe.IsMap && sch.AdditionalProperties != nil && sch.AdditionalProperties.Schema != nil {
 				// when AdditionalProperties specifies a Schema, there is a validation
-				// check if we stepped upon an exeption
+				// check if we stepped upon an exception
 				child, err := tr.ResolveSchema(sch.AdditionalProperties.Schema, false, true)
 				if err != nil {
 					return err
@@ -1715,7 +1715,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 				break
 			}
 			if (!tpe.IsAnonymous && tpe.IsComplexObject) || tpe.IsPrimitive {
-				// lifting complex ojects here results in inlined structs in the model
+				// lifting complex objects here results in inlined structs in the model
 				schemaToLift = sch
 			}
 		}

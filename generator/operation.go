@@ -1048,7 +1048,7 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec
 // buildOperationSchema constructs a schema for an operation (for body params or responses).
 // It determines if the schema is readily available from the models package,
 // or if a schema has to be generated in the operations package (i.e. is anonymous).
-// Whenever an anonymous schema needs somes extra schemas, we also determine if these extras are
+// Whenever an anonymous schema needs some extra schemas, we also determine if these extras are
 // available from models or must be generated alongside the schema in the operations package.
 //
 // Duplicate extra schemas are pruned later on, when operations grouping in packages (e.g. from tags) takes place.

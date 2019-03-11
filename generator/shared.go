@@ -251,7 +251,7 @@ func GoLangOpts() *LanguageOpts {
 			// 		- Case 2: Symlink in target path points to location inside GOPATH. (Expanded Target Path)
 			//    - Case 3: Symlink in target path points to directory outside GOPATH (Unexpanded target path)
 
-			// Case 1: - Do nothing case. If non-expanded paths match just genrate base import path as if
+			// Case 1: - Do nothing case. If non-expanded paths match just generate base import path as if
 			//				   there are no symlinks.
 
 			// Case 2: - Symlink in target path points to location inside GOPATH. (Expanded Target Path)
