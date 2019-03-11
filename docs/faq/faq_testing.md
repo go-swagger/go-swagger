@@ -66,7 +66,7 @@ res, err := http.Get(ts.URL + "/api/v1/boxes")
 
 But, hacking restapi, which use my handlers is cyclic, I can't drop my test near my handlers, and this is still a hack.
 
-*What is the offical way to manage handler testing?*
+*What is the official way to manage handler testing?*
 
 **Hint**: you don't actually need httptest to test the handlers.
 A handler is essentially a function of parameters to result.

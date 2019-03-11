@@ -5,7 +5,7 @@ The toolkit supports building a swagger specification entirely with go code. It 
 <!--more-->
 
 This tutorial uses the todo list application to serve a swagger based API defined entirely in go code.
-Because we know what we want the spec to look like, first we'll just build the entire spec with the interal dsl.
+Because we know what we want the spec to look like, first we'll just build the entire spec with the internal dsl.
 
 ## Loading the specification
 
@@ -255,7 +255,7 @@ func itemByID(id int64) (map[string]interface{}, error) {
 
 The backend code builds a todo-list-item store that's save for concurrent access buy guarding every operation with a lock. This is all in memory so as soon as you quit the process all your changes will be reset.
 
-Because we now have an actual implemenation that we can use for testings, lets hook that up in our API:
+Because we now have an actual implementation that we can use for testings, lets hook that up in our API:
 
 ```go
 func main() {

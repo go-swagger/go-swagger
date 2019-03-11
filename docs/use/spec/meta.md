@@ -10,7 +10,7 @@ http, https, ws or wss
 Host and BasePath can be specified but those values will be defaults,
 they should get substituted when serving the swagger spec.
 
-The description property uses the rest of the comment block as description for the api when not explictily provided
+The description property uses the rest of the comment block as description for the api when not explicitly provided
 
 ##### Syntax:
 
