@@ -22,7 +22,7 @@ Help Options:
 
 [mixin command options]
       -c=                         expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual.
-          --compact               applies to JSON formated specs. When present, doesn't prettify the json
+          --compact               applies to JSON formatted specs. When present, doesn't prettify the json
       -o, --output=               the file to write to
           --format=[yaml|json]    the format for the spec document (default: json)
 ```
