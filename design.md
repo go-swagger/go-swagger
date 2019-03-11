@@ -25,7 +25,7 @@ These are provided in the API. There is a tool to generate a statically typed AP
 The reference API will use the denco router to register route handlers.
 The actual request handler implementation is always the same.  The API must be designed in such a way that other frameworks can use their router implementation and perhaps their own validation infrastructure.
 
-An API is served over http by a router, the default implementation is a router based on denco. This is just an interface implemenation so it can be replaced with another router should you so desire.
+An API is served over http by a router, the default implementation is a router based on denco. This is just an interface implementation so it can be replaced with another router should you so desire.
 
 The API comes in 2 flavors an untyped one and a typed one.
 
@@ -57,10 +57,10 @@ The typed API uses a swagger spec to generate a typed API.
 
 For this there is a generator that will take the swagger spec document.
 It will then generate an interface for each operation and optionally a default implementation of that interface.
-The default implemenation of an interface just returns a not implemented api error.
+The default implementation of an interface just returns a not implemented api error.
 
 When all the interfaces and default implementations are generated it will generate a swagger mux implementation.
-This swagger mux implemenation links all the interface implementations to operation names.
+This swagger mux implementation links all the interface implementations to operation names.
 
 The typed API avoids reflection as much as possible, there are 1 or 2 validations that require it. For now it needs to include the swagger.json in the code for a few reasons.
 
