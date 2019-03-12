@@ -465,7 +465,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 		if tt == nil {
 			tt = t.templates[dep]
 
-			// Still dont have it return an error
+			// Still don't have it, return an error
 			if tt == nil {
 				return templ, fmt.Errorf("Could not find template %s", dep)
 			}

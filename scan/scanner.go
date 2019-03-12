@@ -768,7 +768,7 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 		return errors.New("yaml spec has to start with `---`")
 	}
 
-	// remove indention
+	// remove indentation
 	spec = removeIndent(spec)
 
 	// 1. parse yaml lines

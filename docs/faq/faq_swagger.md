@@ -58,7 +58,7 @@ But I think the error message should not show even I just use `swagger generate 
 
 > The default where you put it is a default for the entire object if it is not provided at all.
 > Thus it must pass validation of the object schema.
-> As per swagger, defaults MUST validate their schema. This differs fro json-Schema spec.
+> As per swagger, defaults MUST validate their schema. This differs from json-Schema spec.
 
 Originally from issue [#1552](https://github.com/go-swagger/go-swagger/issues/1552).
 

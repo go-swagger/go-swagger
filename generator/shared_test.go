@@ -25,7 +25,7 @@ const testPath = "a/b/c"
 // Errors in CheckOpts are hard to simulate since
 // they occur only on os.Getwd() errors
 // Windows style path is difficult to test on unix
-// since the filepath pkg is platform dependant
+// since the filepath pkg is platform dependent
 func TestShared_CheckOpts(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)

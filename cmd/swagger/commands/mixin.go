@@ -22,7 +22,7 @@ const (
 // "github.com/jessevdk/go-flags" format.
 type MixinSpec struct {
 	ExpectedCollisionCount uint           `short:"c" description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual."`
-	Compact                bool           `long:"compact" description:"applies to JSON formated specs. When present, doesn't prettify the json"`
+	Compact                bool           `long:"compact" description:"applies to JSON formatted specs. When present, doesn't prettify the json"`
 	Output                 flags.Filename `long:"output" short:"o" description:"the file to write to"`
 	Format                 string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
 }

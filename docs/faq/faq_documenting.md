@@ -46,7 +46,7 @@ Originally from issue [#370](https://github.com/go-swagger/go-swagger/issues/370
 See also: How to serve Swagger UI from a preexisting web app? [#1029](https://github.com/go-swagger/go-swagger/issues/1029).
 
 ### How to serve Swagger UI from a preexisting web app?
-_Use-Case_: Does go-swagger provide an `http.HandlerFunc` or other easy method for serving Swagger UI from a prexisting web app? 
+_Use-Case_: Does go-swagger provide an `http.HandlerFunc` or other easy method for serving Swagger UI from a preexisting web app? 
 I want my web app to expose `/swagger-ui`, without using code generation, and without hosting a separate server.
 
 **Answer**: there are a few ways you can serve a UI.

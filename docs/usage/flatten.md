@@ -29,7 +29,7 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [flatten command options]
-          --compact                                                               applies to JSON formated specs. When present, doesn't prettify the json
+          --compact                                                               applies to JSON formatted specs. When present, doesn't prettify the json
       -o, --output=                                                               the file to write to
           --format=[yaml|json]                                                    the format for the spec document (default: json)
           --with-expand                                                           expands all $ref's in spec prior to generation (equivalent to --with-flatten=expand)

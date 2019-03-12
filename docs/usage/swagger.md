@@ -17,7 +17,7 @@ Help Options:
 Available commands:
   expand    expand $ref fields in a swagger spec
   flatten   flattens a swagger document
-  generate  genererate go code
+  generate  generate go code
   init      initialize a spec document
   mixin     merge swagger documents
   serve     serve spec and docs

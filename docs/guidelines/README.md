@@ -76,7 +76,7 @@ Enabled CI engines and bots:
 - GolangCI
 - Codecov
 - DCO (enfore signed-off commits)
-- WIP (blocks PRs wih title WIP/do not merge, etc...)
+- WIP (blocks PRs with title WIP/do not merge, etc...)
 
 Codecov results are not blocking.
 

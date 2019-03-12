@@ -51,13 +51,13 @@ func (o *GetOrdersForItemOK) WriteResponse(rw http.ResponseWriter, producer runt
 	rw.WriteHeader(200)
 	payload := o.Payload
 	if payload == nil {
+		// return empty array
 		payload = make([]*models.Order, 0, 50)
 	}
 
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }
 
 // GetOrdersForItemUnauthorizedCode is the HTTP code returned for type GetOrdersForItemUnauthorized

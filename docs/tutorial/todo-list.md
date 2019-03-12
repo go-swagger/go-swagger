@@ -426,7 +426,7 @@ Application Options:
       --tls-host=          the IP to listen on for tls, when not specified it's the same as --host [$TLS_HOST]
       --tls-port=          the port to listen on for secure connections, defaults to a random value [$TLS_PORT]
       --tls-certificate=   the certificate to use for secure connections [$TLS_CERTIFICATE]
-      --tls-key=           the private key to use for secure conections [$TLS_PRIVATE_KEY]
+      --tls-key=           the private key to use for secure connections [$TLS_PRIVATE_KEY]
       --tls-ca=            the certificate authority file to be used with mutual tls auth [$TLS_CA_CERTIFICATE]
       --tls-listen-limit=  limit the number of outstanding requests
       --tls-keep-alive=    sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)

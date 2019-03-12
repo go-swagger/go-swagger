@@ -45,7 +45,7 @@ paths:
 
 As you can see, there is only 1 operation,
 allowing us to focus on how to create a custom server,
-without loosing track in the details of any specific implementation.
+without losing track in the details of any specific implementation.
 
 Where you store the specification is not important.
 By default the [swagger cli][go-swagger] expects it to be stored as `./swagger.yml`,

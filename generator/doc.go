@@ -20,7 +20,7 @@ The general idea is that you should rarely see interface{} in the generated code
 You get a complete representation of a swagger document in somewhat idiomatic go.
 
 To do so, there is a set of mapping patterns that are applied,
-to map a Swagger specfication to go types:
+to map a Swagger specification to go types:
 
    definition of primitive   => type alias/name
    definition of array       => type alias/name

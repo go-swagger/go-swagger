@@ -46,7 +46,7 @@ func (o *UpdateUserURL) Build() (*url.URL, error) {
 	if username != "" {
 		_path = strings.Replace(_path, "{username}", username, -1)
 	} else {
-		return nil, errors.New("Username is required on UpdateUserURL")
+		return nil, errors.New("username is required on UpdateUserURL")
 	}
 
 	_basePath := o._basePath

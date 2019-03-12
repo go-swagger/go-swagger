@@ -48,7 +48,7 @@ func (o *UpdateOneURL) Build() (*url.URL, error) {
 	if id != "" {
 		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
-		return nil, errors.New("ID is required on UpdateOneURL")
+		return nil, errors.New("id is required on UpdateOneURL")
 	}
 
 	_basePath := o._basePath

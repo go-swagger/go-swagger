@@ -33,7 +33,7 @@ func NewFindPetsByStatus(ctx *middleware.Context, handler FindPetsByStatusHandle
 
 Finds Pets by status
 
-Multiple status values can be provided with comma seperated strings
+Multiple status values can be provided with comma separated strings
 
 */
 type FindPetsByStatus struct {
