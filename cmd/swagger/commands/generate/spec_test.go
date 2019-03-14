@@ -10,6 +10,10 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
+
+	// Just to add this to vendor
+	_ "github.com/davecgh/go-spew/spew"
+	_ "github.com/stretchr/testify/assert"
 )
 
 const (

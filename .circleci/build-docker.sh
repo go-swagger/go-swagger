@@ -9,7 +9,7 @@ repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename "$(pwd)")"}/${CIRCLE
 for dir in $(go list ./... | grep -v -E 'vendor|fixtures|examples')
 do
   pth="${dir//*$repo_pref}"
-  go test -vet off -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir
+  go testgo install -mod=vendor ./cmd/swagger -vet off -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir
   if [ -f $pth/profile.tmp ]
   then
       cat $pth/profile.tmp | tail -n +2 >> coverage.txt
@@ -23,8 +23,8 @@ LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAM
 go tool cover -func coverage.txt
 gocov convert coverage.txt | gocov report
 gocov convert coverage.txt | gocov-html > /usr/share/coverage/coverage-${CIRCLE_BUILD_NUM-"0"}.html
-go build -o /usr/share/dist/swagger --ldflags "$LDFLAGS" ./cmd/swagger
+go build -mod=vendor -o /usr/share/dist/swagger --ldflags "$LDFLAGS" ./cmd/swagger
 
-go install ./cmd/swagger
+go install -mod=vendor ./cmd/swagger
 
 ./hack/run-canary.sh
