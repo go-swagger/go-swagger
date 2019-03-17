@@ -1269,7 +1269,7 @@ func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValid
 	return
 }
 
-func stringTernary(cond bool, ifTrue string, ifFalse string) string {
+func stringTernary(cond bool, ifTrue string, ifFalse string) string { // nolint: unparam
 	if cond {
 		return ifTrue
 	}
