@@ -150,6 +150,13 @@ var assets = map[string][]byte{
 	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
 	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
 	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+
+	"server/builder-strict.gotmpl":      MustAsset("templates/server/builder-strict.gotmpl"),
+	"server/configureapi-strict.gotmpl": MustAsset("templates/server/configureapi-strict.gotmpl"),
+	"server/responses-strict.gotmpl":    MustAsset("templates/server/responses-strict.gotmpl"),
+	"server/operation-strict.gotmpl":    MustAsset("templates/server/operation-strict.gotmpl"),
+	"server/buildapi.gotmpl":            MustAsset("templates/server/buildapi.gotmpl"),
+	"server/buildapi-strict.gotmpl":     MustAsset("templates/server/buildapi-strict.gotmpl"),
 }
 
 var protectedTemplates = map[string]bool{

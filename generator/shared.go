@@ -432,7 +432,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			if gen.IncludeResponses {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
-					Source:   "asset:serverResponses",
+					Source:   "asset:serverResponses" + stringTernary(gen.Strict, "Strict", ""),
 					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
@@ -440,7 +440,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			if gen.IncludeHandler {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
-					Source:   "asset:serverOperation",
+					Source:   "asset:serverOperation" + stringTernary(gen.Strict, "Strict", ""),
 					Target:   "{{ if eq (len .Tags) 1 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
@@ -478,7 +478,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			sec.Application = []TemplateOpts{
 				{
 					Name:       "configure",
-					Source:     "asset:serverConfigureapi",
+					Source:     "asset:serverConfigureapi" + stringTernary(gen.Strict, "Strict", ""),
 					Target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
 					SkipExists: !gen.RegenerateConfigureAPI,
@@ -503,7 +503,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				},
 				{
 					Name:     "builder",
-					Source:   "asset:serverBuilder",
+					Source:   "asset:serverBuilder" + stringTernary(gen.Strict, "Strict", ""),
 					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) }}",
 					FileName: "{{ snakize (pascalize .Name) }}_api.go",
 				},
@@ -513,6 +513,14 @@ func DefaultSectionOpts(gen *GenOpts) {
 					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName: "doc.go",
 				},
+			}
+			if gen.IncludeBuildAPI {
+				sec.Application = append(sec.Application, TemplateOpts{
+					Name:     "buildapi",
+					Source:   "asset:serverBuildapi" + stringTernary(gen.Strict, "Strict", ""),
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					FileName: "buildapi_{{ (snakize (pascalize .Name)) }}.go",
+				})
 			}
 		}
 	}
@@ -580,6 +588,9 @@ type GenOpts struct {
 	CompatibilityMode      string
 	ExistingModels         string
 	Copyright              string
+
+	Strict          bool
+	IncludeBuildAPI bool
 }
 
 // CheckOpts carries out some global consistency checks on options.
@@ -1256,4 +1267,11 @@ func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValid
 		Enum:             v.Enum,
 	}
 	return
+}
+
+func stringTernary(cond bool, ifTrue string, ifFalse string) string {
+	if cond {
+		return ifTrue
+	}
+	return ifFalse
 }

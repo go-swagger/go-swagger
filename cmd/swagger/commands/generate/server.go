@@ -41,6 +41,8 @@ type Server struct {
 	CompatibilityMode      string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation         bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 	RegenerateConfigureAPI bool     `long:"regenerate-configureapi" description:"Force regeneration of configureapi.go"`
+	Strict                 bool     `long:"strict" description:"Use strict types in configureapi.go and buildapi.go"`
+	IncludeBuildAPI        bool     `long:"include-buildapi" description:"generate buildapi.go file"`
 }
 
 func (s *Server) getOpts() (*generator.GenOpts, error) {
@@ -79,6 +81,8 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		FlagStrategy:           s.FlagStrategy,
 		CompatibilityMode:      s.CompatibilityMode,
 		ExistingModels:         s.ExistingModels,
+		Strict:                 s.Strict,
+		IncludeBuildAPI:        s.IncludeBuildAPI,
 	}, nil
 }
 
