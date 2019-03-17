@@ -157,6 +157,8 @@ type GenResponse struct {
 	DefaultImports []string
 
 	Extensions map[string]interface{}
+
+	OperationName string
 }
 
 // GenHeader represents a header on a response for code generation

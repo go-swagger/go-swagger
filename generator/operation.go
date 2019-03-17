@@ -577,6 +577,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		Method:         b.Method,
 		Path:           b.Path,
 		Extensions:     resp.Extensions,
+		OperationName:  b.Name,
 	}
 
 	// prepare response headers
