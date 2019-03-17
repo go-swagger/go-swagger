@@ -34,7 +34,6 @@ require (
 	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v2 v2.2.2
-	layeh.com/radius v0.0.0-20190118135028-0f678f039617
 )
 
-replace github.com/layeh/radius v0.0.0-20190118135028-0f678f039617 => layeh.com/radius v0.0.0-20190118135028-0f678f039617
+replace github.com/go-swagger/go-swagger => ./

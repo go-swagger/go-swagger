@@ -149,5 +149,3 @@ gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
-# layeh.com/radius v0.0.0-20190118135028-0f678f039617
-layeh.com/radius
