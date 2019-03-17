@@ -16,6 +16,7 @@ import (
   runtime "github.com/go-openapi/runtime"
   middleware "github.com/go-openapi/runtime/middleware"
   security "github.com/go-openapi/runtime/security"
+	loads "github.com/go-openapi/loads"
 
   {{range .DefaultImports}}{{printf "%q" .}}
   {{end}}
@@ -25,6 +26,7 @@ import (
 {{ $package := .Package }}
 
 func BuildAPI(
+  swaggerSpec *loads.Document,
   ServeError func(http.ResponseWriter, *http.Request, error),
   Logger func(string, ...interface{}),
 
@@ -51,58 +53,9 @@ func BuildAPI(
   ServerShutdown func(),
 
 ) *{{.Package}}.{{ pascalize .Name }}API {
-  api := &{{.Package}}.{{ pascalize .Name }}API{}
+  api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 
-  // configure the api here
-  api.ServeError = errors.ServeError
-
-  // Set your custom logger if needed. Default one is log.Printf
-  // Expected interface func(string, ...interface{})
-  //
-  // Example:
-  // api.Logger = log.Printf
-
-  {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
-  {{else}}api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
-    return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
-  }){{end}}
-  {{end}}
-  {{ range .Produces }}{{ if .Implementation }}api.{{ pascalize .Name }}Producer = {{ .Implementation }}
-  {{else}}api.{{ pascalize .Name }}Producer = runtime.ProducerFunc(func(w io.Writer, data interface{}) error {
-    return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
-  }){{end}}
-  {{end}}
-  {{ range .SecurityDefinitions }}
-    {{- if .IsBasicAuth }}
-  // Applies when the Authorization header is set with the Basic scheme
-  api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
-  }
-    {{- else if .IsAPIKeyAuth }}
-  // Applies when the "{{ .Name }}" {{ .Source }} is set
-  api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} param [{{ .Name }}] has not yet been implemented")
-  }
-    {{- else if .IsOAuth2 }}
-  api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-    return nil, errors.NotImplemented("oauth2 bearer auth ({{ .ID }}) has not yet been implemented")
-  }
-    {{- end }}
-  {{- end }}
-  {{- if .SecurityDefinitions }}
-
-  // Set your custom authorizer if needed. Default one is security.Authorized()
-  // Expected interface runtime.Authorizer
-  //
-  // Example:
-  // api.APIAuthorizer = security.Authorized()
-  {{- end }}
-  {{range .Operations}}api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func(params {{.Package}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{.Package}}.{{ pascalize .Name }}Responder {
-    return {{.Package}}.{{ pascalize .Name }}NotImplemented()
-  })
-  {{end}}
-
-  api.ServerShutdown = func() {  }
+  configureAPI(api)
 
   if ServeError != nil {
     api.ServeError = errors.ServeError
