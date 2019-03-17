@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/examples/todo-list-strict/models"
+	models "github.com/go-swagger/go-swagger/examples/todo-list-strict/models"
 )
 
 // UpdateOneOKCode is the HTTP code returned for type UpdateOneOK
