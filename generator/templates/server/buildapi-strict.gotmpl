@@ -28,8 +28,10 @@ func BuildAPI(
   ServeError func(http.ResponseWriter, *http.Request, error),
   Logger func(string, ...interface{}),
 
-  {{ range .Consumes }}{{ pascalize .Name }}Consumer func(r io.Reader, target interface{}) error{{end}},
-  {{ range .Produces }}{{ pascalize .Name }}Producer func(w io.Writer, data interface{}) error{{end}},
+  {{ range .Consumes }}{{ pascalize .Name }}Consumer func(r io.Reader, target interface{}) error,
+  {{end}}
+  {{ range .Produces }}{{ pascalize .Name }}Producer func(w io.Writer, data interface{}) error,
+  {{end}}
   {{ range .SecurityDefinitions }}
     {{- if .IsBasicAuth }}
   {{ pascalize .ID }}Auth func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error),
