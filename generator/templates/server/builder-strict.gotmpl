@@ -51,9 +51,9 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     {{end}}{{ range .Produces }}{{ if .Implementation }}{{ pascalize .Name }}Producer: {{ .Implementation }},{{else}}{{ pascalize .Name }}Producer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {
       return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
     }),{{end}}
-    {{end}}{{range .Operations}}{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler: {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}HandlerFunc(func(params {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{if ne .Package $package }}{{ .Package }}{{ end }}.{{ pascalize .Name }}Responder {
+    {{end}}{{range .Operations}}{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler: {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}HandlerFunc(func(params {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Responder {
       // return middleware.NotImplemented("operation {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{pascalize .Name}} has not yet been implemented")
-      return {{if ne .Package $package }}{{ .Package }}{{ end }}.{{ pascalize .Name }}NotImplemented()
+      return {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}NotImplemented()
     }),
     {{end}}
     {{range .SecurityDefinitions}}{{if .IsBasicAuth}}// Applies when the Authorization header is set with the Basic scheme
