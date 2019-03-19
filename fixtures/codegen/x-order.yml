@@ -70,6 +70,18 @@ definitions:
   sessionData:
     type: object
     properties:
+      aaa:
+        type: string
+        format: string
+        description: ZZZ
+      bbb:
+        type: string
+        format: string
+        description: AAA
+      zzz:
+        type: string
+        format: string
+        description: BBB
       sessionId:
         x-order: 0
         type: string

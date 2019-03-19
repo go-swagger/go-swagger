@@ -2438,8 +2438,14 @@ func TestGenerateModel_Xorder(t *testing.T) {
 					foundDeviceID := strings.Index(res, "DeviceID")
 					foundSessionID := strings.Index(res, "SessionID")
 					foundUMain := strings.Index(res, "UMain")
+					foundAaa := strings.Index(res, "Aaa")
+					foundBbb := strings.Index(res, "Bbb")
+					foundZzz := strings.Index(res, "Zzz")
 					assert.True(t, foundSessionID < foundDeviceID)
 					assert.True(t, foundSessionID < foundUMain)
+					assert.True(t, foundUMain < foundAaa)
+					assert.True(t, foundAaa < foundBbb)
+					assert.True(t, foundBbb < foundZzz)
 				}
 			}
 		}
