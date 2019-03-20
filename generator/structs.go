@@ -95,13 +95,25 @@ type GenSchema struct {
 func (g GenSchemaList) Len() int      { return len(g) }
 func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
 func (g GenSchemaList) Less(i, j int) bool {
-	a, ok := g[i].Extensions[xOrder].(float64)
-	if ok {
-		b, ok := g[j].Extensions[xOrder].(float64)
-		if ok {
-			return a < b
-		}
+	a, okA := g[i].Extensions[xOrder].(float64)
+	b, okB := g[j].Extensions[xOrder].(float64)
+
+	// If both properties have x-order defined, then the one with lower x-order is smaller
+	if okA && okB {
+		return a < b
 	}
+
+	// If only the first property has x-order defined, then it is smaller
+	if okA {
+		return true
+	}
+
+	// If only the second property has x-order defined, then it is smaller
+	if okB {
+		return false
+	}
+
+	// If neither property has x-order defined, then the one with lower lexicographic name is smaller
 	return g[i].Name < g[j].Name
 }
 
