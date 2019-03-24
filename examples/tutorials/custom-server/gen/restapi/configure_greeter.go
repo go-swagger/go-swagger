@@ -33,9 +33,11 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 
 	api.TxtProducer = runtime.TextProducer()
 
-	api.GetGreetingHandler = operations.GetGreetingHandlerFunc(func(params operations.GetGreetingParams) middleware.Responder {
-		return middleware.NotImplemented("operation .GetGreeting has not yet been implemented")
-	})
+	if api.GetGreetingHandler == nil {
+		api.GetGreetingHandler = operations.GetGreetingHandlerFunc(func(params operations.GetGreetingParams) middleware.Responder {
+			return middleware.NotImplemented("operation .GetGreeting has not yet been implemented")
+		})
+	}
 
 	api.ServerShutdown = func() {}
 

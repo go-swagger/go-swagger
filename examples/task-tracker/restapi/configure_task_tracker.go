@@ -50,30 +50,46 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-	api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
-	})
-	api.TasksCreateTaskHandler = tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
-	})
-	api.TasksDeleteTaskHandler = tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
-	})
-	api.TasksGetTaskCommentsHandler = tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
-	})
-	api.TasksGetTaskDetailsHandler = tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
-	})
-	api.TasksListTasksHandler = tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
-	})
-	api.TasksUpdateTaskHandler = tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
-	})
-	api.TasksUploadTaskFileHandler = tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
-		return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
-	})
+	if api.TasksAddCommentToTaskHandler == nil {
+		api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
+		})
+	}
+	if api.TasksCreateTaskHandler == nil {
+		api.TasksCreateTaskHandler = tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
+		})
+	}
+	if api.TasksDeleteTaskHandler == nil {
+		api.TasksDeleteTaskHandler = tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
+		})
+	}
+	if api.TasksGetTaskCommentsHandler == nil {
+		api.TasksGetTaskCommentsHandler = tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
+		})
+	}
+	if api.TasksGetTaskDetailsHandler == nil {
+		api.TasksGetTaskDetailsHandler = tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
+		})
+	}
+	if api.TasksListTasksHandler == nil {
+		api.TasksListTasksHandler = tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
+		})
+	}
+	if api.TasksUpdateTaskHandler == nil {
+		api.TasksUpdateTaskHandler = tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
+		})
+	}
+	if api.TasksUploadTaskFileHandler == nil {
+		api.TasksUploadTaskFileHandler = tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
+		})
+	}
 
 	api.ServerShutdown = func() {}
 
