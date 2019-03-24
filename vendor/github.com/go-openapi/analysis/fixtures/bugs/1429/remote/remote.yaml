@@ -1,8 +1,0 @@
-aRemotePlace:
-  type: object
-  properties:
-    remoteProp:
-      type: integer
-
-moreRemoteThanYouCanThink:
-  $ref: './remote/remote.yaml#/farFarAway'

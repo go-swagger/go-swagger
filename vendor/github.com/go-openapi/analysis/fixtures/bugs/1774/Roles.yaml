@@ -1,9 +1,0 @@
-# Roles
-type: array
-items:
-  type: string
-  enum:
-  - ADMIN
-  - USER
-  example: "User"
-  description: "A role of the user"
