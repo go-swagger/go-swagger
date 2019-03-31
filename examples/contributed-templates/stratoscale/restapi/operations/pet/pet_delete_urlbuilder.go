@@ -48,7 +48,7 @@ func (o *PetDeleteURL) Build() (*url.URL, error) {
 	if petID != "" {
 		_path = strings.Replace(_path, "{petId}", petID, -1)
 	} else {
-		return nil, errors.New("PetID is required on PetDeleteURL")
+		return nil, errors.New("petId is required on PetDeleteURL")
 	}
 
 	_basePath := o._basePath

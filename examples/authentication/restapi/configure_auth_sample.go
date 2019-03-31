@@ -46,12 +46,16 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
-	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
-		return middleware.NotImplemented("operation customers.Create has not yet been implemented")
-	})
-	api.CustomersGetIDHandler = customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
-		return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
-	})
+	if api.CustomersCreateHandler == nil {
+		api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
+		})
+	}
+	if api.CustomersGetIDHandler == nil {
+		api.CustomersGetIDHandler = customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
+		})
+	}
 
 	api.ServerShutdown = func() {}
 

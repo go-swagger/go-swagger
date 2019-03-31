@@ -1,5 +1,0 @@
-get:
-  summary: Health Check
-  responses:
-    200:
-      description: Server OK

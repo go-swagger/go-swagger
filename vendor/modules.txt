@@ -1,0 +1,152 @@
+# github.com/PuerkitoBio/purell v1.1.1
+github.com/PuerkitoBio/purell
+# github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
+github.com/PuerkitoBio/urlesc
+# github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
+github.com/asaskevich/govalidator
+# github.com/coreos/go-oidc v2.0.0+incompatible
+github.com/coreos/go-oidc
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/dgrijalva/jwt-go v3.2.0+incompatible
+github.com/dgrijalva/jwt-go
+# github.com/docker/go-units v0.3.3
+github.com/docker/go-units
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
+github.com/globalsign/mgo/bson
+github.com/globalsign/mgo/internal/json
+# github.com/go-openapi/analysis v0.19.0
+github.com/go-openapi/analysis
+github.com/go-openapi/analysis/internal
+# github.com/go-openapi/errors v0.19.0
+github.com/go-openapi/errors
+# github.com/go-openapi/inflect v0.19.0
+github.com/go-openapi/inflect
+# github.com/go-openapi/jsonpointer v0.19.0
+github.com/go-openapi/jsonpointer
+# github.com/go-openapi/jsonreference v0.19.0
+github.com/go-openapi/jsonreference
+# github.com/go-openapi/loads v0.19.0
+github.com/go-openapi/loads
+github.com/go-openapi/loads/fmts
+# github.com/go-openapi/runtime v0.19.0
+github.com/go-openapi/runtime/middleware
+github.com/go-openapi/runtime
+github.com/go-openapi/runtime/middleware/untyped
+github.com/go-openapi/runtime/client
+github.com/go-openapi/runtime/flagext
+github.com/go-openapi/runtime/security
+github.com/go-openapi/runtime/middleware/denco
+github.com/go-openapi/runtime/logger
+github.com/go-openapi/runtime/middleware/header
+# github.com/go-openapi/spec v0.19.0
+github.com/go-openapi/spec
+# github.com/go-openapi/strfmt v0.19.0
+github.com/go-openapi/strfmt
+# github.com/go-openapi/swag v0.19.0
+github.com/go-openapi/swag
+# github.com/go-openapi/validate v0.19.0
+github.com/go-openapi/validate
+# github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
+github.com/go-swagger/scan-repo-boundary/makeplans
+# github.com/golang/protobuf v1.3.1
+github.com/golang/protobuf/proto
+# github.com/gorilla/handlers v1.4.0
+github.com/gorilla/handlers
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/jessevdk/go-flags v1.4.0
+github.com/jessevdk/go-flags
+# github.com/kr/pretty v0.1.0
+github.com/kr/pretty
+# github.com/kr/text v0.1.0
+github.com/kr/text
+# github.com/magiconair/properties v1.8.0
+github.com/magiconair/properties
+# github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe
+github.com/mailru/easyjson/jlexer
+github.com/mailru/easyjson/jwriter
+github.com/mailru/easyjson/buffer
+# github.com/mitchellh/mapstructure v1.1.2
+github.com/mitchellh/mapstructure
+# github.com/pelletier/go-toml v1.2.0
+github.com/pelletier/go-toml
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35
+github.com/pquerna/cachecontrol
+github.com/pquerna/cachecontrol/cacheobject
+# github.com/spf13/afero v1.2.1
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.3.0
+github.com/spf13/cast
+# github.com/spf13/jwalterweatherman v1.1.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.3
+github.com/spf13/pflag
+# github.com/spf13/viper v1.3.2
+github.com/spf13/viper
+# github.com/stretchr/testify v1.3.0
+github.com/stretchr/testify/assert
+# github.com/toqueteos/webbrowser v1.1.0
+github.com/toqueteos/webbrowser
+# golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/pbkdf2
+golang.org/x/crypto/ed25519/internal/edwards25519
+# golang.org/x/net v0.0.0-20190322120337-addf6b3196f6
+golang.org/x/net/netutil
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+golang.org/x/net/idna
+# golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
+golang.org/x/oauth2
+golang.org/x/oauth2/internal
+# golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc
+golang.org/x/sys/unix
+# golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+golang.org/x/text/width
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+# golang.org/x/tools v0.0.0-20190322203728-c1a832b0ad89
+golang.org/x/tools/imports
+golang.org/x/tools/go/loader
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/module
+golang.org/x/tools/go/buildutil
+golang.org/x/tools/go/internal/cgo
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/semver
+golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/go/internal/gcimporter
+# google.golang.org/appengine v1.5.0
+google.golang.org/appengine/urlfetch
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
+# gopkg.in/square/go-jose.v2 v2.3.0
+gopkg.in/square/go-jose.v2
+gopkg.in/square/go-jose.v2/cipher
+gopkg.in/square/go-jose.v2/json
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2

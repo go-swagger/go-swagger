@@ -1,5 +1,0 @@
-farFarAway:
-  type: object
-  properties:
-    farFarAwayProp:
-      type: integer
