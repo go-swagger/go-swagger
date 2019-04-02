@@ -48,8 +48,12 @@ func (o *InventoryGetOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 
 	rw.WriteHeader(200)
 	payload := o.Payload
+	if payload == nil {
+		// return empty map
+		payload = make(map[string]int32, 50)
+	}
+
 	if err := producer.Produce(rw, payload); err != nil {
 		panic(err) // let the recovery middleware deal with this
 	}
-
 }

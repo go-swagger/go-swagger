@@ -48,7 +48,7 @@ func (o *PetUploadImageURL) Build() (*url.URL, error) {
 	if petID != "" {
 		_path = strings.Replace(_path, "{petId}", petID, -1)
 	} else {
-		return nil, errors.New("PetID is required on PetUploadImageURL")
+		return nil, errors.New("petId is required on PetUploadImageURL")
 	}
 
 	_basePath := o._basePath

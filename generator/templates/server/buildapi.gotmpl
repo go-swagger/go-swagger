@@ -54,8 +54,6 @@ func BuildAPI(
 ) *{{.Package}}.{{ pascalize .Name }}API {
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 
-  configureAPI(api)
-
   if ServeError != nil {
     api.ServeError = errors.ServeError
   }
