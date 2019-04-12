@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/todo-list-strict/models"
+	models "github.com/Djarvur/go-swagger/examples/todo-list-strict/models"
 )
 
 // AddOneReader is a Reader for the AddOne structure.

@@ -46,7 +46,7 @@ definitions:
         format: int64
         x-go-name: ID
         readOnly: true
-    x-go-package: github.com/go-swagger/go-swagger/vendor/github.com/go-swagger/scan-repo-boundary/makeplans
+    x-go-package: github.com/Djarvur/go-swagger/vendor/github.com/go-swagger/scan-repo-boundary/makeplans
   Customer:
     type: object
     title: Customer of the site.
@@ -54,7 +54,7 @@ definitions:
       name:
         type: string
         x-go-name: Name
-    x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+    x-go-package: github.com/Djarvur/go-swagger/fixtures/goparsing/spec
   DateRange:
     description: |-
       DateRange represents a scheduled appointments time
@@ -67,7 +67,7 @@ definitions:
       start:
         type: string
         x-go-name: Start
-    x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+    x-go-package: github.com/Djarvur/go-swagger/fixtures/goparsing/spec
 responses:
   BookingResponse:
     description: BookingResponse represents a scheduled appointment

@@ -19,7 +19,7 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations/tasks"
+	"github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations/tasks"
 )
 
 // NewIssueTrackerAPI creates a new IssueTracker instance

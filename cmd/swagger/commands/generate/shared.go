@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/Djarvur/go-swagger/generator"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 )

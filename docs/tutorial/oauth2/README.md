@@ -296,7 +296,7 @@ Make sure that the callback URL is the same as set in the above code (``./restap
 http://127.0.0.1:12345/api/auth/callback
 ```
 
-![Google api screenshot](https://github.com/go-swagger/go-swagger/blob/master/examples/oauth2/img/google-api.png)
+![Google api screenshot](https://github.com/Djarvur/go-swagger/blob/master/examples/oauth2/img/google-api.png)
 
 >**NOTE:** you may specify a client ID for your API during the registration process.
 >A password (the API client's secret) is then delivered.
@@ -357,4 +357,4 @@ Content-Length: 47
 ```
 
 [google_credential]: https://console.cloud.google.com/apis/credentials/
-[example_code]: https://github.com/go-swagger/go-swagger/blob/master/examples/oauth2/
+[example_code]: https://github.com/Djarvur/go-swagger/blob/master/examples/oauth2/

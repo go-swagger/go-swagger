@@ -8,8 +8,8 @@ import (
 	"os"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/go-swagger/go-swagger/examples/todo-list/restapi"
-	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
+	"github.com/Djarvur/go-swagger/examples/todo-list/restapi"
+	"github.com/Djarvur/go-swagger/examples/todo-list/restapi/operations"
 	flag "github.com/spf13/pflag"
 )
 

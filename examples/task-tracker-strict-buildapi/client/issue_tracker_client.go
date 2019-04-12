@@ -11,7 +11,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/client/tasks"
+	"github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/client/tasks"
 )
 
 // Default issue tracker HTTP client.

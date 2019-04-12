@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
+	models "github.com/Djarvur/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
 // NewPetCreateParams creates a new PetCreateParams object

@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/go-swagger/go-swagger/fixtures/bugs/1548/gen-fixture-1548/models"
+	"github.com/Djarvur/go-swagger/fixtures/bugs/1548/gen-fixture-1548/models"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -32,16 +32,16 @@ Another way is to use the `x-go-type extension`, to replace type generation with
 
 There is the opportunity to get go-swagger to reuse a predefined type to satisfy the definition in the swagger spec.
 Imported package and type alias may be specified as options, as shown in this example:
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-L103
+https://github.com/Djarvur/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-L103
 
 That example reuses a type provided by a library with a package alias and type name. The code generator will respect this.
 
 You might use both, preparing a customized model from an initially generated structure, then reusing type custom type in other declarations by hinting the generator with x-go-type.
 
-Further, for repetitive customization, you might be willing to customize the generator's templates. Like in [here](https://github.com/go-swagger/go-swagger/blob/master/generator/templates/schemavalidator.gotmpl)
-for models, or in [here](https://github.com/go-swagger/go-swagger/blob/master/generator/templates/server/parameter.gotmpl) for inline parameters.
+Further, for repetitive customization, you might be willing to customize the generator's templates. Like in [here](https://github.com/Djarvur/go-swagger/blob/master/generator/templates/schemavalidator.gotmpl)
+for models, or in [here](https://github.com/Djarvur/go-swagger/blob/master/generator/templates/server/parameter.gotmpl) for inline parameters.
 
-Originally from issues [#997](https://github.com/go-swagger/go-swagger/issues/997) and [#1334](https://github.com/go-swagger/go-swagger/issues/1334)
+Originally from issues [#997](https://github.com/Djarvur/go-swagger/issues/997) and [#1334](https://github.com/Djarvur/go-swagger/issues/1334)
 
 ### Non-required or nullable property?
 _Use-Case_: when a definition has a property N, if N is a number and is not required,
@@ -57,7 +57,7 @@ This will also apply for returning objects that return false and so on.
 
 **Hint**: a workaround for this is to use the extension **x-nullable:true** on properties.
 
-Originally from issue [#959](https://github.com/go-swagger/go-swagger/issues/959). (*more discussion on edge cases there*).
+Originally from issue [#959](https://github.com/Djarvur/go-swagger/issues/959). (*more discussion on edge cases there*).
 
 Related: [go-openapi/validate#19](https://github.com/go-openapi/validate/issues/19).
 
@@ -102,7 +102,7 @@ post:
 
 **Hint**: more generally, you might want to check the validity of your spec re the OpenAPI 2.0 schema before trying generation, using the `swagger validate {spec}` command.
 
-Originally from issue [#990](https://github.com/go-swagger/go-swagger/issues/990).
+Originally from issue [#990](https://github.com/Djarvur/go-swagger/issues/990).
 
 ### Request response can have different objects returned based on query parameters
 _Use-Case_: I have a POST request that returns different object models based on the query parameters.
@@ -173,7 +173,7 @@ paths:
 ...
 ```
 
-Originally from issue [#932](https://github.com/go-swagger/go-swagger/issues/932).
+Originally from issue [#932](https://github.com/Djarvur/go-swagger/issues/932).
 
 ### How to validate dates and times?
 JSON schema and Swagger (aka OpenAPI 2.0) define ISO-8601 dates as a known format (e.g. date-time, or `yyyy-MM-dd'T'HH:mm:ss.SSS'Z`).
@@ -193,12 +193,12 @@ The `go-openapi/strfmt` package supports many additional string formats for vali
 Check out for more in [this document](../generate/spec/strfmt.md).
 Regarding dates, this package extends validation to [RFC3339](https://tools.ietf.org/html/rfc3339) full-date format (e.g. "2006-01-02").
 
-Originally from issue [#643](https://github.com/go-swagger/go-swagger/issues/643).
+Originally from issue [#643](https://github.com/Djarvur/go-swagger/issues/643).
 
 ### Accessing the Default return value
 _Use-Case_: I was wondering how I would get the default response from the client?
 
-Note: see also [Access HTTP status code from client#597](https://github.com/go-swagger/go-swagger/issues/597).
+Note: see also [Access HTTP status code from client#597](https://github.com/Djarvur/go-swagger/issues/597).
 
 I have a spec like this:
 ```YAML
@@ -269,7 +269,7 @@ casted, ok := err.(*operations.GetDeployDefault)
 
 Because it's a struct type it will be a pointer.
 
-Originally from issue [#616](https://github.com/go-swagger/go-swagger/issues/616).
+Originally from issue [#616](https://github.com/Djarvur/go-swagger/issues/616).
 
 ### How to avoid deep copies of complex data structures that need to be marshalled across the API?
 _Use-Case_:
@@ -309,9 +309,9 @@ _Similar Use-Case_:
 *How do you use the swagger spec to define a raw JSON or XML transfer, defined by the subsystem's types?*
 
 **Hint**: you may use the `x-go-type` model annotation that allows you to use pre-existing types as models, you annotate your spec like this:
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-103
+https://github.com/Djarvur/go-swagger/blob/master/fixtures/codegen/existing-model.yml#L99-103
 
-Originally from issue [#948](https://github.com/go-swagger/go-swagger/issues/948).
+Originally from issue [#948](https://github.com/Djarvur/go-swagger/issues/948).
 
 ### Extra sections in POST body
 
@@ -334,7 +334,7 @@ Two questions:
 **Answer**: use `additionalProperties: false` or `additionalProperties: true` in your definition.
 when it's set to true you'll have a `map[string]interface{}` added.
 
-Originally from issue [#1337](https://github.com/go-swagger/go-swagger/issues/1337).
+Originally from issue [#1337](https://github.com/Djarvur/go-swagger/issues/1337).
 
 ### How to support generate type int?
 
@@ -352,7 +352,7 @@ _Use-case_: generating `int` types
 > So while go allows int as type I think for API contracts int is too ambiguous as definition leading to subtle but hard to debug failures.
 > Similarly other languages may choose to default to int32 type instead of int64 type regardless of platform.
 
-Originally from issue [#1205](https://github.com/go-swagger/go-swagger/issues/1205).
+Originally from issue [#1205](https://github.com/Djarvur/go-swagger/issues/1205).
 
 ### Generate all models necessary for specified operation
 
@@ -362,7 +362,7 @@ _Use-case_: I'm specifying specific operations and I'd like to restrict the mode
 
  > NOTE: this option is not available for `generate model`.
 
-Originally from issue [#1427](https://github.com/go-swagger/go-swagger/issues/1427).
+Originally from issue [#1427](https://github.com/Djarvur/go-swagger/issues/1427).
 
 ### Generated code changes the order of properties in struct
 
@@ -391,7 +391,7 @@ Is there any way to keep the order of properties?
 
 **Answer:** try x-order: n extension
 
-Originally from issue [#1759](https://github.com/go-swagger/go-swagger/issues/1759).
+Originally from issue [#1759](https://github.com/Djarvur/go-swagger/issues/1759).
 
 ### Fail to use swagger generate model -name
 
@@ -451,7 +451,7 @@ Example:
 
 **Answer:** you need to make it available with that name in the definitions section then it will know
 
-Originally from issue [#1517](https://github.com/go-swagger/go-swagger/issues/1517).
+Originally from issue [#1517](https://github.com/Djarvur/go-swagger/issues/1517).
 
 -------------
 

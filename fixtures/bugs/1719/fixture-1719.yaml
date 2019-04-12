@@ -69,7 +69,7 @@ definitions:
       type: ExtUser
       import:
         alias: myalias0
-        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+        package: 'github.com/Djarvur/go-swagger/fixtures/bugs/1719/pkg/models'
   Users:
     type: array
     items:
@@ -82,7 +82,7 @@ definitions:
       type: ExtUsersArrayRef
       import:
         alias: myalias1
-        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+        package: 'github.com/Djarvur/go-swagger/fixtures/bugs/1719/pkg/models'
   UsersArrayFlat:
     type: array
     items:
@@ -96,14 +96,14 @@ definitions:
       type: ExtUsersArrayFlat
       import:
         alias: myalias2
-        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models'
+        package: 'github.com/Djarvur/go-swagger/fixtures/bugs/1719/pkg/models'
   UserObjectRef:
     $ref: '#/definitions/User'
     x-go-type:
       type: ExtUser
       import:
         alias: myalias3
-        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models2'
+        package: 'github.com/Djarvur/go-swagger/fixtures/bugs/1719/pkg/models2'
   UserObjectFlat:
     type: object
     properties:
@@ -115,4 +115,4 @@ definitions:
       type: ExtUser
       import:
         alias: myalias4
-        package: 'github.com/go-swagger/go-swagger/fixtures/bugs/1719/pkg/models2'
+        package: 'github.com/Djarvur/go-swagger/fixtures/bugs/1719/pkg/models2'

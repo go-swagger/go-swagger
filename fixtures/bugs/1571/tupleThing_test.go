@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-	"github.com/go-swagger/go-swagger/fixtures/bugs/1571/gen-fixture-simple-tuple-minimal/models"
+	"github.com/Djarvur/go-swagger/fixtures/bugs/1571/gen-fixture-simple-tuple-minimal/models"
 	"github.com/stretchr/testify/assert"
 )
 

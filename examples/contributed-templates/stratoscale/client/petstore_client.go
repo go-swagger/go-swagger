@@ -13,8 +13,8 @@ import (
 	rtclient "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/client/pet"
-	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/client/store"
+	"github.com/Djarvur/go-swagger/examples/contributed-templates/stratoscale/client/pet"
+	"github.com/Djarvur/go-swagger/examples/contributed-templates/stratoscale/client/store"
 )
 
 const (

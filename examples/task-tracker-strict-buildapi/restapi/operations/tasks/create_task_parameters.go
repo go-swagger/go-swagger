@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/models"
+	models "github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/models"
 )
 
 // NewCreateTaskParams creates a new CreateTaskParams object

@@ -3,7 +3,7 @@
   "plugins": [ "forkmegithub", "prism", "-highlight", "anchors" ],
   "pluginsConfig": {
     "forkmegithub": {
-      "url": "https://github.com/go-swagger/go-swagger",
+      "url": "https://github.com/Djarvur/go-swagger",
       "color": "green"
     }
   }

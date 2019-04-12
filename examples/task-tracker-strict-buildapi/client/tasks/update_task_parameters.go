@@ -17,7 +17,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/models"
+	models "github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/models"
 )
 
 // NewUpdateTaskParams creates a new UpdateTaskParams object

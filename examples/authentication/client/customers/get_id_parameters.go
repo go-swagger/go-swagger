@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+	models "github.com/Djarvur/go-swagger/examples/authentication/models"
 )
 
 // NewGetIDParams creates a new GetIDParams object

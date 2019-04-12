@@ -145,7 +145,7 @@
             {{- end }}
             {{ if and .IsTuple .AdditionalItems }}
       // TODO: validating additional items should go here, if you see this raise an issue
-      // at https://github.com/go-swagger/go-swagger/issues
+      // at https://github.com/Djarvur/go-swagger/issues
             {{ end }}
           {{ else }}
             {{ template "primitivefieldvalidator" . }}
@@ -193,7 +193,7 @@
           {{- end }}
           {{ if and .IsTuple .AdditionalItems }}
       // TODO: validating additional items should go here, if you see this raise an issue
-      // at https://github.com/go-swagger/go-swagger/issues
+      // at https://github.com/Djarvur/go-swagger/issues
           {{ end }}
         {{ end }}
     }
@@ -270,7 +270,7 @@
   {{- end }}
   {{- if and .IsTuple .AdditionalItems }}
     // TODO: validating additional items should go here, if you see this raise an issue
-    // at https://github.com/go-swagger/go-swagger/issues
+    // at https://github.com/Djarvur/go-swagger/issues
   {{- end }}
 {{ end }}
 

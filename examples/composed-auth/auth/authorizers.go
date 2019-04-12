@@ -6,7 +6,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	errors "github.com/go-openapi/errors"
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	models "github.com/Djarvur/go-swagger/examples/composed-auth/models"
 )
 
 const (

@@ -9,15 +9,15 @@ That being said, as of Dec. 2017, our CI engines currently run all tests on go 1
 
 You should be able to build with go **1.6**, but we won't proceed to changes in order to maintain backward compatibility with 1.6.
 
-Originally from issue [#636](https://github.com/go-swagger/go-swagger/issues/636).
+Originally from issue [#636](https://github.com/Djarvur/go-swagger/issues/636).
 
 <!-- Obsolete stuff : should be resourceful FAQ, though: TODO
 ### Swagger installation issues
 _Use-Case_: I've installed go-swagger using brew ... (story goes on)
-Originally from issue [#554](https://github.com/go-swagger/go-swagger/issues/554).
+Originally from issue [#554](https://github.com/Djarvur/go-swagger/issues/554).
 
 ### What is the proper way to vendor go-swagger?
-Originally from issue [#730](https://github.com/go-swagger/go-swagger/issues/730).
+Originally from issue [#730](https://github.com/Djarvur/go-swagger/issues/730).
 -->
 
 -------------

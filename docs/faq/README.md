@@ -1,13 +1,13 @@
 # FAQ
 
 This FAQ is actually a recap of questions reported by the community
-(you may search [past and current issues labelled as "question"](https://github.com/go-swagger/go-swagger/issues?q=is%3Aissue+label%3Aquestion)).
+(you may search [past and current issues labelled as "question"](https://github.com/Djarvur/go-swagger/issues?q=is%3Aissue+label%3Aquestion)).
 
 Original issues are kept as links for additional details about the inquirer's use-case.
 
 >*We regularly update this document based on questions asked by the community in the "issues" section of the go-swagger repository.*
 
-You may also find most recent questions on Github [here](https://github.com/go-swagger/go-swagger/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3Aquestion).
+You may also find most recent questions on Github [here](https://github.com/Djarvur/go-swagger/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3Aquestion).
 Feel free to contribute new questions and share your experience with go-swagger!
 
 **Disclaimer**: some of this material might be outdated, as the project is rapidly evolving.

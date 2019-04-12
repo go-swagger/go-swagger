@@ -7,8 +7,8 @@ import (
 	"os"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/go-swagger/go-swagger/examples/composed-auth/restapi"
-	"github.com/go-swagger/go-swagger/examples/composed-auth/restapi/operations"
+	"github.com/Djarvur/go-swagger/examples/composed-auth/restapi"
+	"github.com/Djarvur/go-swagger/examples/composed-auth/restapi/operations"
 	flags "github.com/jessevdk/go-flags"
 )
 

@@ -9,8 +9,8 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 
-	"github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations"
-	"github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations/tasks"
+	"github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations"
+	"github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/restapi/operations/tasks"
 )
 
 //go:generate swagger generate server --target ../../task-tracker-strict-buildapi --name IssueTracker --spec ../swagger.yml --strict

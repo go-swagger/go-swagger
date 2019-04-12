@@ -32,7 +32,7 @@ More detailed documentation is available at https://goswagger.io.
 
 Install:
 
-		go get -u github.com/go-swagger/go-swagger/cmd/swagger
+		go get -u github.com/Djarvur/go-swagger/cmd/swagger
 
 The implementation also provides a number of command line tools to help working with swagger.
 

@@ -10,14 +10,14 @@ Cloning `go-swagger`:
 ```bash
 mkdir -p $GOPATH/src/github.com/go-swagger
 cd $GOPATH/src/github.com/go-swagger
-git clone https://github.com/go-swagger/go-swagger
+git clone https://github.com/Djarvur/go-swagger
 ```
 
 All dependencies are available in the checked out `vendor` directory.
 
 Building and installing go-swagger from source on your system:
 ```
-go install github.com/go-swagger/go-swagger/cmd/swagger
+go install github.com/Djarvur/go-swagger/cmd/swagger
 ```
 
 Running standard unit tests:

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+	models "github.com/Djarvur/go-swagger/examples/authentication/models"
 )
 
 // GetIDOKCode is the HTTP code returned for type GetIDOK

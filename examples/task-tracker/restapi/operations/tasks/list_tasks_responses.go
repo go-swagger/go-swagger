@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 
-	models "github.com/go-swagger/go-swagger/examples/task-tracker/models"
+	models "github.com/Djarvur/go-swagger/examples/task-tracker/models"
 )
 
 // ListTasksOKCode is the HTTP code returned for type ListTasksOK

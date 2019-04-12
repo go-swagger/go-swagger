@@ -13,11 +13,11 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-swagger/go-swagger/fixtures/bugs/1232/gen-fixture-1232/models"
+	"github.com/Djarvur/go-swagger/fixtures/bugs/1232/gen-fixture-1232/models"
 	"github.com/stretchr/testify/assert"
 )
 
-//"github.com/go-swagger/go-swagger/fixtures/bugs/1232/gen-fixture-1232/mode"
+//"github.com/Djarvur/go-swagger/fixtures/bugs/1232/gen-fixture-1232/mode"
 
 func Test_Pet(t *testing.T) {
 	base := "pet-data"

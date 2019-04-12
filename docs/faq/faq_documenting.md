@@ -41,9 +41,9 @@ I'm reluctant to do so at this point in time because a git submodule break go-ge
 >On top of it it are a lot of javascript and html files and people haven't been over the moon when go-swagger gets
 >vendored and they see all of that.
 
-Originally from issue [#370](https://github.com/go-swagger/go-swagger/issues/370).
+Originally from issue [#370](https://github.com/Djarvur/go-swagger/issues/370).
 
-See also: How to serve Swagger UI from a preexisting web app? [#1029](https://github.com/go-swagger/go-swagger/issues/1029).
+See also: How to serve Swagger UI from a preexisting web app? [#1029](https://github.com/Djarvur/go-swagger/issues/1029).
 
 ### How to serve Swagger UI from a preexisting web app?
 _Use-Case_: Does go-swagger provide an `http.HandlerFunc` or other easy method for serving Swagger UI from a preexisting web app? 
@@ -53,7 +53,7 @@ I want my web app to expose `/swagger-ui`, without using code generation, and wi
 
 Use the middleware provided in the go-openapi/runtime package: https://github.com/go-openapi/runtime/blob/master/middleware/redoc.go
 
-Originally from issues [#1029](https://github.com/go-swagger/go-swagger/issues/1029) and [#976](https://github.com/go-swagger/go-swagger/issues/976)
+Originally from issues [#1029](https://github.com/Djarvur/go-swagger/issues/1029) and [#976](https://github.com/Djarvur/go-swagger/issues/976)
 
 ### How to use swagger-ui cors?
 
@@ -74,7 +74,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 }
 ```
 
-Originally from issue [#481](https://github.com/go-swagger/go-swagger/issues/481).
+Originally from issue [#481](https://github.com/Djarvur/go-swagger/issues/481).
 
 ### How to serve my UI files?
 _Use-Case_: I generated server code using go-swagger with my swagger.yaml file like below.
@@ -108,11 +108,11 @@ But I'm not sure it is the best solution.
 That page also contains a link to a good explanation on how to create net/http middlewares.
 
 > An implementation example is provided by the go-swagger serve UI command. It constructs a server with a redoc middleware:
-> https://github.com/go-swagger/go-swagger/blob/f552963ac0dfdec0450f6749aeeeeb2d31cd5544/cmd/swagger/commands/serve.go#L35.
+> https://github.com/Djarvur/go-swagger/blob/f552963ac0dfdec0450f6749aeeeeb2d31cd5544/cmd/swagger/commands/serve.go#L35.
 
 Besides, every swagger generated server comes with the redoc UI baked in at `/{basepath}/docs`
 
-Originally from issue [#1375](https://github.com/go-swagger/go-swagger/issues/1375).
+Originally from issue [#1375](https://github.com/Djarvur/go-swagger/issues/1375).
 
 -------------------
 

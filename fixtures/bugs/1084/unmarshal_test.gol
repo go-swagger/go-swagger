@@ -7,7 +7,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/stretchr/testify/assert"
 
-	model "github.com/go-swagger/go-swagger/fixtures/bugs/1084/gen-fixture-1084/models"
+	model "github.com/Djarvur/go-swagger/fixtures/bugs/1084/gen-fixture-1084/models"
 )
 
 func Test_Datetime(t *testing.T) {

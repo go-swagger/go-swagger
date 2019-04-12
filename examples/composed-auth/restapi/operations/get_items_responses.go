@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	models "github.com/Djarvur/go-swagger/examples/composed-auth/models"
 )
 
 // GetItemsOKCode is the HTTP code returned for type GetItemsOK

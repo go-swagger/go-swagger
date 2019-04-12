@@ -60,7 +60,7 @@ But I think the error message should not show even I just use `swagger generate 
 > Thus it must pass validation of the object schema.
 > As per swagger, defaults MUST validate their schema. This differs from json-Schema spec.
 
-Originally from issue [#1552](https://github.com/go-swagger/go-swagger/issues/1552).
+Originally from issue [#1552](https://github.com/Djarvur/go-swagger/issues/1552).
 
 _Use-Case_: `go-swagger` rejects default object that misses required properties.
 
@@ -118,7 +118,7 @@ paths:
 For some use cases, we have to, since `go-swagger` supports constructs that are not stricly swagger-compliant.
 This one is an example: some override silently take place here at generation time.
 
-Originally from issue [#1501](https://github.com/go-swagger/go-swagger/issues/1501).
+Originally from issue [#1501](https://github.com/Djarvur/go-swagger/issues/1501).
 
 ### type string, format int64 not respected in generator
 _Use-Case_:  when generating parameters or models from a swagger file with a definition that specifies type: string and format: int64,
@@ -152,7 +152,7 @@ format: int64
 ```
 
 
-Originally from issue [#1381](https://github.com/go-swagger/go-swagger/issues/1381).
+Originally from issue [#1381](https://github.com/Djarvur/go-swagger/issues/1381).
 
 ### Duplicate operationId error
 _Use-Case_:  my spec indicates duplicate operationIds but for separate endpoints.
@@ -221,7 +221,7 @@ https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operati
 > Tools and libraries MAY use the operationId to uniquely identify an operation,
 > therefore, it is recommended to follow common programming naming conventions.
 
-Originally from issue [#1143](https://github.com/go-swagger/go-swagger/issues/1143).
+Originally from issue [#1143](https://github.com/Djarvur/go-swagger/issues/1143).
 
 -------------------
 

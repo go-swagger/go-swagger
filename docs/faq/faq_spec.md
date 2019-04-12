@@ -6,7 +6,7 @@ _Use-Case_: I have read the swagger.json generation and feel confused. Could you
 
 **Answer**: this folder uses most of the annotations
 
-https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/petstore
+https://github.com/Djarvur/go-swagger/tree/master/fixtures/goparsing/petstore
 
 >This begs for 3 questions :
 > - Q1: Does a struct for Parameter model have to be declared in the SAME .go file where the swagger:route is declared for a router function?
@@ -54,7 +54,7 @@ https://goswagger.io/generate/spec/params.html
 
 **Answer**: I don't think that is supported at the moment
 
-Originally from issue [#213](https://github.com/go-swagger/go-swagger/issues/213).
+Originally from issue [#213](https://github.com/Djarvur/go-swagger/issues/213).
 
 ### Extra function in example?
 In file: `go-swagger/fixtures/goparsing/classification/operations/todo_operation.go`,
@@ -82,7 +82,7 @@ return nil
 }
 ```
 
-Originally from issue [#68](https://github.com/go-swagger/go-swagger/issues/68).
+Originally from issue [#68](https://github.com/Djarvur/go-swagger/issues/68).
 
 ### Maps as swagger parameters
 _Use-case_: I'm using go-swagger to generate my Swagger docs from code, and I came across a problem with a given parameter.
@@ -95,7 +95,7 @@ it returns `items doesn't support maps`.
 - In non-body parameters maps are not supported in the swagger spec
 - In body parameters, a JSON schema only allows maps with string keys
 
-Originally from issue [#960](https://github.com/go-swagger/go-swagger/issues/960).
+Originally from issue [#960](https://github.com/Djarvur/go-swagger/issues/960).
 
 ### How to define a swagger response that produces a binary file?
 
@@ -120,7 +120,7 @@ type fileResponse struct {
     File runtime.File
 }
 ```
-Originally from issue [#1003](https://github.com/go-swagger/go-swagger/issues/1003).
+Originally from issue [#1003](https://github.com/Djarvur/go-swagger/issues/1003).
 
 ### How to use swagger params?
 _Use-Case_: I defined a route with!
@@ -133,7 +133,7 @@ _Use-Case_: I defined a route with!
 **Answer**: `swagger:params` is used to indicate which operations the properties of the operation are included in the struct.
 
 So you'd use something like these:
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/goparsing/petstore/rest/handlers/orders.go#L24-L46
+https://github.com/Djarvur/go-swagger/blob/master/fixtures/goparsing/petstore/rest/handlers/orders.go#L24-L46
 
 or:
 
@@ -154,7 +154,7 @@ type ListOneParams struct {
 }
 ```
 
-Originally from issue [#668](https://github.com/go-swagger/go-swagger/issues/668).
+Originally from issue [#668](https://github.com/Djarvur/go-swagger/issues/668).
 
 ### Empty definitions
 _Use-Case_: I don't understand how to deal with model annotation.
@@ -217,22 +217,22 @@ type User struct {
 }
 ```
 
-Originally from issue [#561](https://github.com/go-swagger/go-swagger/issues/561).
+Originally from issue [#561](https://github.com/Djarvur/go-swagger/issues/561).
 
 ### Documentation or tutorials on code annotation
 _Use-Case_: documentation is scant on how to generate swagger files from annotations.
 Is it really all there in http://goswagger.io/generate/spec/?
 
-**Answer**: yes, it's all in there (or directly in the repo: https://github.com/go-swagger/go-swagger/tree/master/docs/generate/spec)
+**Answer**: yes, it's all in there (or directly in the repo: https://github.com/Djarvur/go-swagger/tree/master/docs/generate/spec)
 
 *How about some code examples that show annotations being used?*
 
 **Answer**: there is an "examples" folder in the repo.
 All generated code also uses all the annotations that are applicable for it.
 
-https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list
+https://github.com/Djarvur/go-swagger/tree/master/examples/todo-list
 
-And also: https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification
+And also: https://github.com/Djarvur/go-swagger/tree/master/fixtures/goparsing/classification
 (this is the code used to test parsing the annotations).
 
 Please bear in mind that this is a project (not a product) to which a number of volunteers have
@@ -241,7 +241,7 @@ contributed significant amounts of free time to get it to where it is today.
 Improvement of documentation is always a good request.
 All help we can get is absolutely welcome.
 
-Originally from issue [#599](https://github.com/go-swagger/go-swagger/issues/599).
+Originally from issue [#599](https://github.com/Djarvur/go-swagger/issues/599).
 
 ### Wrong schema in response structure?
 I set up this response struct:
@@ -306,7 +306,7 @@ type ResponseData struct {
 }
 ```
 
-Originally from issue [#407](https://github.com/go-swagger/go-swagger/issues/407).
+Originally from issue [#407](https://github.com/Djarvur/go-swagger/issues/407).
 
 ### go-swagger not generating model info and showing error on swagger UI
 
@@ -460,7 +460,7 @@ Wow! You're right man! All that was needed to make generate spec work, was to ad
 
 The appengine includes are in there. It's working now, thanks for the insight!
 
-Originally from issue [#47](https://github.com/go-swagger/go-swagger/issues/47).
+Originally from issue [#47](https://github.com/Djarvur/go-swagger/issues/47).
 -->
 <!-- Obsolete / Not helpfu
 ### Generating spec cannot import dependencies
@@ -508,7 +508,7 @@ Are you on a Linux box? Like I said, I think it's a path issue since home brew i
 
 I uninstalled go-swagger from brew, installed it from source and it worked. So strange. And no, I installed it through brew:
 
-Originally from issue [#400](https://github.com/go-swagger/go-swagger/issues/400).
+Originally from issue [#400](https://github.com/Djarvur/go-swagger/issues/400).
 -->
 
 -------------------

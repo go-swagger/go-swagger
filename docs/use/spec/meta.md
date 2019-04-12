@@ -139,4 +139,4 @@ bin           | bin
 urlform       | urlform
 multipartform | multipartform
 
-[Source](https://github.com/go-swagger/go-swagger/blob/7485a982b539bedd870bd56a487e37c8decd7f2c/generator/support.go#L317-L335)
+[Source](https://github.com/Djarvur/go-swagger/blob/7485a982b539bedd870bd56a487e37c8decd7f2c/generator/support.go#L317-L335)

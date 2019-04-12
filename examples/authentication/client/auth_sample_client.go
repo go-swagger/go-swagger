@@ -11,7 +11,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/client/customers"
+	"github.com/Djarvur/go-swagger/examples/authentication/client/customers"
 )
 
 // Default auth sample HTTP client.

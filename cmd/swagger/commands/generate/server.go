@@ -18,7 +18,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/Djarvur/go-swagger/generator"
 )
 
 // Server the command to generate an entire server application

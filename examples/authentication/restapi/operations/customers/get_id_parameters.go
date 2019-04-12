@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+	models "github.com/Djarvur/go-swagger/examples/authentication/models"
 )
 
 // NewGetIDParams creates a new GetIDParams object

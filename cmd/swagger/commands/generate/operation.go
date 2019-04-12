@@ -18,7 +18,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/go-swagger/go-swagger/generator"
+	"github.com/Djarvur/go-swagger/generator"
 )
 
 // Operation the generate operation files command

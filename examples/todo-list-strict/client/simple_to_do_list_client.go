@@ -11,7 +11,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list-strict/client/todos"
+	"github.com/Djarvur/go-swagger/examples/todo-list-strict/client/todos"
 )
 
 // Default simple to do list HTTP client.

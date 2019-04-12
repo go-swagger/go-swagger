@@ -40,7 +40,7 @@ swagger: "2.0"
 This doesn't do much but it does pass validation:
 
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list
 git:(master) ✗ ? » swagger validate ./swagger.yml
 The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
 ```
@@ -246,7 +246,7 @@ definitions:
 When you generate a server for this spec you'll see the following output:
 
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-1
 git:(master) ✗ !? » swagger generate server -A todo-list -f ./swagger.yml
 2018/01/06 11:49:16 building a plan for generation
 2018/01/06 11:49:16 planning definitions
@@ -322,7 +322,7 @@ For this generation to compile you need to have some packages in your GOPATH:
   * github.com/go-openapi/runtime
   * github.com/jessevdk/go-flags
 
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-1
 git:(master) ✗ !? » tree
 .
 ├── cmd
@@ -679,7 +679,7 @@ definitions:
 This is a good time to sanity check and by validating the schema:
 
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-2
 git:(master) ✗ !? » swagger validate ./swagger.yml
 The swagger spec at "./swagger.yml" is valid against swagger specification 2.0
 ```
@@ -690,7 +690,7 @@ Now you're ready to generate the API and start filling in the actual operations:
 git:(master) ✗ !? » swagger generate server -A TodoList -f ./swagger.yml
 ... elided output ...
 2015/12/31 18:16:28 rendered main template: server.TodoList
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-2
 git:(master) ✗ !? » tree
 .
 ├── cmd
@@ -752,7 +752,7 @@ api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.Destr
 
 After deleting the item from the store, you need to provide a response. The code generator created responders for each response you defined in the the swagger specification, and you can see how one of those is being used in the example above.
 
-The other 3 handler implementations are similar to this one. They are provided in the [source for this tutorial](https://github.com/go-swagger/go-swagger/blob/master/examples/tutorials/todo-list/server-complete/restapi/configure_todo_list.go).
+The other 3 handler implementations are similar to this one. They are provided in the [source for this tutorial](https://github.com/Djarvur/go-swagger/blob/master/examples/tutorials/todo-list/server-complete/restapi/configure_todo_list.go).
 
 So assuming you go ahead and implement the remainder of the endpoints, you're all set to test it out:
 
@@ -768,7 +768,7 @@ Content-Length: 3
 []
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 ```
 ```http
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}"
@@ -777,7 +777,7 @@ Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:56:11 GMT
 Content-Length: 157
 
-{"code":415,"message":"unsupported media type \"application/x-www-form-urlencoded\", only [application/io.goswagger.examples.todo-list.v1+json] are allowed"}                                                                                                     ± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+{"code":415,"message":"unsupported media type \"application/x-www-form-urlencoded\", only [application/io.goswagger.examples.todo-list.v1+json] are allowed"}                                                                                                     ± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 ```
 ```
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
@@ -791,7 +791,7 @@ Content-Length: 39
 {"description":"message 30925","id":1}
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
 ```http
@@ -803,7 +803,7 @@ Content-Length: 37
 {"description":"message 104","id":2}
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765 -d "{\"description\":\"message $RANDOM\"}" -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
 ```http
@@ -815,7 +815,7 @@ Content-Length: 39
 {"description":"message 15225","id":3}
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```
 ```http
@@ -827,7 +827,7 @@ Content-Length: 117
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"message 15225","id":3}]
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765/3 -X PUT -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json' -d '{"description":"go shopping"}'
 ```
 ```http
@@ -839,7 +839,7 @@ Content-Length: 37
 {"description":"go shopping","id":3}
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```
 ```http
@@ -851,7 +851,7 @@ Content-Length: 115
 [{"description":"message 30925","id":1},{"description":"message 104","id":2},{"description":"go shopping","id":3}]
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765/1 -X DELETE -H 'Content-Type: application/io.goswagger.examples.todo-list.v1+json'
 ```
 ```http
@@ -860,7 +860,7 @@ Content-Type: application/io.goswagger.examples.todo-list.v1+json
 Date: Fri, 01 Jan 2016 19:57:04 GMT
 ```
 ```
-± ~/go/src/github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete
+± ~/go/src/github.com/Djarvur/go-swagger/examples/tutorials/todo-list/server-complete
 » curl -i localhost:8765
 ```
 ```http

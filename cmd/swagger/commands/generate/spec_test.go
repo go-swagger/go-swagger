@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/scan"
+	"github.com/Djarvur/go-swagger/scan"
 	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"

@@ -19,9 +19,9 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
+	"github.com/Djarvur/go-swagger/examples/authentication/restapi/operations/customers"
 
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+	models "github.com/Djarvur/go-swagger/examples/authentication/models"
 )
 
 // NewAuthSampleAPI creates a new AuthSample instance

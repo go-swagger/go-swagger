@@ -311,4 +311,4 @@ same techniques as described in this tutorial.
 [kvstore example]: https://github.com/go-openapi/kvstore
 [KISS]: https://en.wikipedia.org/wiki/KISS_principle
 [go-openapi/swag]: https://github.com/go-openapi/swag
-[go-swagger]: https://github.com/go-swagger/go-swagger
+[go-swagger]: https://github.com/Djarvur/go-swagger

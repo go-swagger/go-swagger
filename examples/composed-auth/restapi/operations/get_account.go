@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	models "github.com/Djarvur/go-swagger/examples/composed-auth/models"
 )
 
 // GetAccountHandlerFunc turns a function with the right signature into a get account handler

@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/todo-list/models"
+	models "github.com/Djarvur/go-swagger/examples/todo-list/models"
 )
 
 // NewUpdateOneParams creates a new UpdateOneParams object

@@ -12,7 +12,7 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 
-	models "github.com/go-swagger/go-swagger/examples/task-tracker-strict-buildapi/models"
+	models "github.com/Djarvur/go-swagger/examples/task-tracker-strict-buildapi/models"
 )
 
 // ListTasksOKCode is the HTTP code returned for type ListTasksOK
