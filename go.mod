@@ -2,7 +2,7 @@ module github.com/Djarvur/go-swagger
 
 go 1.12
 
-replace github.com/go-swagger/go-swagger => ./
+replace github.com/go-swagger/go-swagger => github.com/Djarvur/go-swagger v0.19.0-20190412010101-c4b0275b
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
 
