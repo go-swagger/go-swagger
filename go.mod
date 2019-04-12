@@ -1,4 +1,4 @@
-module github.com/go-swagger/go-swagger
+module github.com/Djarvur/go-swagger
 
 go 1.12
 
