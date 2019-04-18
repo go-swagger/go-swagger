@@ -31,7 +31,7 @@ securityDefinitions:
 We specify the following security requirements:
 
 - A default requirements for all endpoints: users need to be authenticated within the "user" scope by providing 
-a OAuth token (e.g. Authentication: Bearer header or `accss_token` query parameter).
+a OAuth token (e.g. Authentication: Bearer header or `access_token` query parameter).
 
 ```yaml
 security:
