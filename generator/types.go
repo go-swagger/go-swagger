@@ -153,7 +153,13 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 	}
 	xt := v.(map[string]interface{})
 	t := xt["type"].(string)
-	imp := xt["import"].(map[string]interface{})
+	impIface, ok := xt["import"]
+
+	if !ok {
+		return t, "", ""
+	}
+
+	imp := impIface.(map[string]interface{})
 	pkg := imp["package"].(string)
 	al, ok := imp["alias"]
 	var alias string
