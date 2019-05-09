@@ -2490,3 +2490,49 @@ func TestGenModel_Issue1623(t *testing.T) {
 	assertInCode(t, "RefHasOmitEmptyTrue Bar `json:\"refHasOmitEmptyTrue,omitempty\"`", res)
 	assertInCode(t, "RefNoOmitEmpty Bar `json:\"refNoOmitEmpty,omitempty\"`", res)
 }
+
+func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
+	ymlFile := "../fixtures/codegen/keep-spec-order.yml"
+	opts := opts()
+	abcType := "abctype"
+
+	specDoc, err := loads.Spec(ymlFile)
+	assert.NoError(t, err)
+	orderedSpecDoc, err := loads.Spec(withAutoXOrder(ymlFile))
+	assert.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	orderedDefinitions := orderedSpecDoc.Spec().Definitions
+
+	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts)
+	assert.NoError(t, err)
+	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts)
+	assert.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	assert.NoError(t, templates.MustGet("model").Execute(buf, genModel))
+	orderBuf := bytes.NewBuffer(nil)
+	assert.NoError(t, templates.MustGet("model").Execute(orderBuf, orderGenModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("keepSpecOrder.go", buf.Bytes())
+	assert.NoError(t, err)
+	modelCode := string(ff)
+	ff, err = opts.LanguageOpts.FormatContent("keepSpecOrder-ordered.go", orderBuf.Bytes())
+	assert.NoError(t, err)
+	orderModelCode := string(ff)
+
+	//without auto order , properties sorted by alphanumeric
+	foundA := strings.Index(modelCode, "Aaa")
+	foundB := strings.Index(modelCode, "Bbb")
+	foundC := strings.Index(modelCode, "Ccc")
+	assert.True(t, foundA < foundB)
+	assert.True(t, foundB < foundC)
+
+	foundOrderA := strings.Index(orderModelCode, "Aaa")
+	foundOrderB := strings.Index(orderModelCode, "Bbb")
+	foundOrderC := strings.Index(orderModelCode, "Ccc")
+
+	assert.True(t, foundOrderC < foundOrderB)
+	assert.True(t, foundOrderB < foundOrderA)
+
+}
