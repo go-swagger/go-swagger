@@ -41,6 +41,7 @@ type Server struct {
 	CompatibilityMode      string   `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`
 	SkipValidation         bool     `long:"skip-validation" description:"skips validation of spec prior to generation"`
 	RegenerateConfigureAPI bool     `long:"regenerate-configureapi" description:"Force regeneration of configureapi.go"`
+	KeepSpecOrder          bool     `long:"keep-spec-order" description:"Keep schema properties order identical to spec file"`
 }
 
 func (s *Server) getOpts() (*generator.GenOpts, error) {
@@ -66,6 +67,7 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		IncludeURLBuilder:      !s.SkipOperations,
 		IncludeMain:            !s.ExcludeMain,
 		IncludeSupport:         !s.SkipSupport,
+		PropertiesSpecOrder:    s.KeepSpecOrder,
 		ValidateSpec:           !s.SkipValidation,
 		ExcludeSpec:            s.ExcludeSpec,
 		Template:               s.Template,

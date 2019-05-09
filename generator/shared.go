@@ -540,20 +540,21 @@ type SectionOpts struct {
 
 // GenOpts the options for the generator
 type GenOpts struct {
-	IncludeModel      bool
-	IncludeValidator  bool
-	IncludeHandler    bool
-	IncludeParameters bool
-	IncludeResponses  bool
-	IncludeURLBuilder bool
-	IncludeMain       bool
-	IncludeSupport    bool
-	ExcludeSpec       bool
-	DumpData          bool
-	ValidateSpec      bool
-	FlattenOpts       *analysis.FlattenOpts
-	IsClient          bool
-	defaultsEnsured   bool
+	IncludeModel        bool
+	IncludeValidator    bool
+	IncludeHandler      bool
+	IncludeParameters   bool
+	IncludeResponses    bool
+	IncludeURLBuilder   bool
+	IncludeMain         bool
+	IncludeSupport      bool
+	ExcludeSpec         bool
+	DumpData            bool
+	ValidateSpec        bool
+	FlattenOpts         *analysis.FlattenOpts
+	IsClient            bool
+	defaultsEnsured     bool
+	PropertiesSpecOrder bool
 
 	Spec                   string
 	APIPackage             string

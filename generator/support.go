@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -27,6 +28,8 @@ import (
 	goruntime "runtime"
 	"sort"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -85,6 +88,10 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	if !filepath.IsAbs(opts.Spec) {
 		cwd, _ := os.Getwd()
 		opts.Spec = filepath.Join(cwd, opts.Spec)
+	}
+
+	if opts.PropertiesSpecOrder {
+		opts.Spec = withAutoXOrder(opts.Spec)
 	}
 
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
@@ -169,6 +176,64 @@ type appGenerator struct {
 	DefaultProduces   string
 	DefaultConsumes   string
 	GenOpts           *GenOpts
+}
+
+func withAutoXOrder(specPath string) string {
+	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
+		switch slice := ele.(type) {
+		case yaml.MapSlice:
+			for _, v := range slice {
+				if v.Key == key {
+					if slice, ok := v.Value.(yaml.MapSlice); ok {
+						return slice, ok
+					}
+				}
+			}
+		}
+		return nil, false
+	}
+
+	yamlDoc, err := swag.YAMLData(specPath)
+
+	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
+		for _, def := range defs {
+			if props, ok := lookFor(def.Value, "properties"); ok {
+				for i, prop := range props {
+					if pSlice, ok := prop.Value.(yaml.MapSlice); ok {
+						//Find if x-order already exists
+						index := -1
+						for i, v := range pSlice {
+							if v.Key == xOrder {
+								index = i
+								break
+							}
+						}
+						if index > -1 { //Override existing x-order
+							pSlice[index] = yaml.MapItem{Key: xOrder, Value: i}
+						} else { // append new x-order
+							pSlice = append(pSlice, yaml.MapItem{Key: xOrder, Value: i})
+						}
+						prop.Value = pSlice
+						props[i] = prop
+					}
+				}
+			}
+		}
+	}
+
+	out, err := yaml.Marshal(yamlDoc)
+	if err != nil {
+		panic(err)
+	}
+
+	tmpFile, err := ioutil.TempFile("", filepath.Base(specPath))
+	if err != nil {
+		panic(err)
+	}
+	if err := ioutil.WriteFile(tmpFile.Name(), out, 0); err != nil {
+		panic(err)
+	}
+	return tmpFile.Name()
 }
 
 // 1. Checks if the child path and parent path coincide.
