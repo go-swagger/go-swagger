@@ -152,19 +152,19 @@ fi
 # All fixtures in ./fixtures/codegen + some others
 cd $(git rev-parse --show-toplevel)
 specdir="fixtures/codegen fixtures/bugs/909 fixtures/bugs/1437 fixtures/bugs/1314 fixtures/bugs/1062/eve-online-esi.json"
-#specdir=${specdir}" fixtures/bugs/1392"
-#specdir=${specdir}" fixtures/bugs/1277"
-#specdir=${specdir}" fixtures/bugs/1536"
-#specdir=${specdir}" fixtures/bugs/1487"
-#specdir=${specdir}" fixtures/bugs/1571"
-#specdir=${specdir}" fixtures/bugs/957"
-#specdir=${specdir}" fixtures/bugs/1614"
-#specdir=${specdir}" fixtures/bugs/931"
-#specdir=${specdir}" fixtures/bugs/1683"
-#specdir=${specdir}" fixtures/bugs/1796"
-#specdir=${specdir}" fixtures/bugs/1839"
-#specdir=${specdir}" fixtures/bugs/1719"
-#specdir=${specdir}" fixtures/bugs/1859"
+specdir=${specdir}" fixtures/bugs/1392"
+specdir=${specdir}" fixtures/bugs/1277"
+specdir=${specdir}" fixtures/bugs/1536"
+specdir=${specdir}" fixtures/bugs/1487"
+specdir=${specdir}" fixtures/bugs/1571"
+specdir=${specdir}" fixtures/bugs/957"
+specdir=${specdir}" fixtures/bugs/1614"
+specdir=${specdir}" fixtures/bugs/931"
+specdir=${specdir}" fixtures/bugs/1683"
+specdir=${specdir}" fixtures/bugs/1796"
+specdir=${specdir}" fixtures/bugs/1839"
+specdir=${specdir}" fixtures/bugs/1719"
+specdir=${specdir}" fixtures/bugs/1859"
 gendir=./tmp-gen
 rm -rf ${gendir}
 

@@ -2,6 +2,8 @@ version: 2
 jobs:
   build:
     working_directory: /go/src/github.com/go-swagger/go-swagger
+    environment:
+      GO111MODULE: 'on'
     docker:
       - image: goswagger/builder:20190324
     steps:
@@ -28,6 +30,8 @@ jobs:
 
       - run:
           name: Test codegen builds
+          environment:
+            MONO: '1'
           command: ./hack/codegen-nonreg.sh --circleci
 
       - run:
