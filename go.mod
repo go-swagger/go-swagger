@@ -4,6 +4,8 @@ go 1.12
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
 
+replace github.com/go-openapi/analysis => github.com/fredbi/analysis v0.0.0-20190515133215-f4d23bf68007
+
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/coreos/go-oidc v2.0.0+incompatible
