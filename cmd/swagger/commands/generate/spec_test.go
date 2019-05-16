@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/scan"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (

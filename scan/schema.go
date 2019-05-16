@@ -897,6 +897,21 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 		if hasFilePathPrefix(fa, pref) {
 			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
 			break
+		} else {
+			mod := filepath.Join(p, "pkg", "mod")
+			if hasFilePathPrefix(fa, mod) {
+				fgp = filepath.Dir(strings.TrimPrefix(fa, mod))[1:]
+				if i := strings.IndexRune(fgp, '@'); i > 0 {
+					if j := strings.IndexRune(fgp[i:], '/'); j > 0 {
+						p1 := fgp[0:i]
+						p2 := fgp[i+j:]
+						fgp = p1 + p2
+					} else {
+						fgp = fgp[0:i]
+					}
+				}
+				break
+			}
 		}
 	}
 	if Debug {
