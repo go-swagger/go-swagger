@@ -27,6 +27,7 @@ require (
 	github.com/gorilla/handlers v1.4.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kr/pretty v0.1.0
+	github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

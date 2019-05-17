@@ -10,6 +10,9 @@ echo "Running tests in $(pwd)..."
 # Currently no packaged tests are available in fixtures or examples
 packages=$(go list ./... | grep -v -E 'vendor|fixtures|examples')
 repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}/"
+
+go version
+
 if [[ "${GO111MODULE}" == "on" ]] ; then
   echo "Downloading dependencies"
   go mod download
