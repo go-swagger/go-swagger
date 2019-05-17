@@ -30,7 +30,7 @@ type packageFilter struct {
 func (pf *packageFilter) Matches(path string) bool {
 	matched, err := regexp.MatchString(pf.Name, path)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("Matches: %v", err))
 	}
 	return matched
 }

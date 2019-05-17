@@ -15,6 +15,7 @@
 package scan
 
 import (
+	"fmt"
 	gobuild "go/build"
 	goparser "go/parser"
 	"log"
@@ -61,7 +62,7 @@ func classifierProgram() *loader.Program {
 	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations")
 	prog, err := ldr.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("classifierProgram: %v", err))
 	}
 	return prog
 }
@@ -75,7 +76,7 @@ func petstoreProgram() *loader.Program {
 	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/rest/handlers")
 	prog, err := ldr.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("petstoreProgram: %v", err))
 	}
 	return prog
 }
@@ -86,7 +87,7 @@ func invalidProgram(name string) *loader.Program {
 	ldr.ImportWithTests("github.com/go-swagger/go-swagger/fixtures/goparsing/" + name)
 	prog, err := ldr.Load()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Sprintf("invalidProgram: %v", err))
 	}
 	return prog
 }

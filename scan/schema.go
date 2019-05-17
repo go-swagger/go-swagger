@@ -892,26 +892,44 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	if gopath == "" {
 		gopath = filepath.Join(os.Getenv("HOME"), "go")
 	}
+	if Debug {
+		log.Println("scanning for packages in", append(filepath.SplitList(gopath), runtime.GOROOT()))
+	}
 	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
+
+		// when GOPATH or GOROOT evaluate as symlinks we have to explore this as well
+		altpath, err := filepath.EvalSymlinks(p)
+		if err != nil {
+			return nil, err
+		}
+		// search for packages in source tree
 		pref := filepath.Join(p, "src")
-		if hasFilePathPrefix(fa, pref) {
+		altpref := filepath.Join(altpath, "src")
+
+		// search for packages in modules tree
+		mod := filepath.Join(p, "pkg", "mod")
+		altmod := filepath.Join(altpath, "pkg", "mod")
+
+		found := false
+		switch {
+		case hasFilePathPrefix(fa, pref):
 			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
+			found = true
+
+		case altpref != pref && hasFilePathPrefix(fa, altpref):
+			fgp = filepath.Dir(strings.TrimPrefix(fa, altpref))[1:]
+			found = true
+
+		case hasFilePathPrefix(fa, mod):
+			fgp = trimVersion(filepath.Dir(strings.TrimPrefix(fa, mod))[1:])
+			found = true
+
+		case altmod != mod && hasFilePathPrefix(fa, altmod):
+			fgp = trimVersion(filepath.Dir(strings.TrimPrefix(fa, altmod))[1:])
+			found = true
+		}
+		if found {
 			break
-		} else {
-			mod := filepath.Join(p, "pkg", "mod")
-			if hasFilePathPrefix(fa, mod) {
-				fgp = filepath.Dir(strings.TrimPrefix(fa, mod))[1:]
-				if i := strings.IndexRune(fgp, '@'); i > 0 {
-					if j := strings.IndexRune(fgp[i:], '/'); j > 0 {
-						p1 := fgp[0:i]
-						p2 := fgp[i+j:]
-						fgp = p1 + p2
-					} else {
-						fgp = fgp[0:i]
-					}
-				}
-				break
-			}
 		}
 	}
 	if Debug {
@@ -920,6 +938,8 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	for pkg, pkgInfo := range scp.program.AllPackages {
 		if Debug {
 			log.Println("inferring for", tpe.Name, "with", gofile.Name.Name, "at", pkg.Path(), "against", filepath.ToSlash(fgp))
+			log.Println("pkg.Name()", pkg.Name(), "gofile.Name.Name", gofile.Name.Name)
+			log.Println("filepath.ToSlash(fgp)", filepath.ToSlash(fgp), "pkg.Path()", pkg.Path())
 		}
 		if pkg.Name() == gofile.Name.Name && filepath.ToSlash(fgp) == pkg.Path() {
 			return pkgInfo, nil
@@ -927,6 +947,20 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	}
 
 	return nil, fmt.Errorf("unable to determine package for %s", fn)
+}
+
+// trimVersion takes a path with a version (e.g. package@v0.0.17/sub/sub) and
+// strips it to get a regular path (e.g. package/sub/sub)
+func trimVersion(path string) string {
+	if i := strings.IndexRune(path, '@'); i > 0 {
+		if j := strings.IndexRune(path[i:], '/'); j > 0 {
+			p1 := path[0:i]
+			p2 := path[i+j:]
+			return p1 + p2
+		}
+		return path[0:i]
+	}
+	return path
 }
 
 func (scp *schemaParser) packageForSelector(gofile *ast.File, expr ast.Expr) (*loader.PackageInfo, error) {
