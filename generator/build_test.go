@@ -46,8 +46,10 @@ func TestGenerateAndBuild(t *testing.T) {
 		var captureLog bytes.Buffer
 		log.SetOutput(&captureLog)
 
+		thisCas := cas
+
 		t.Run(name, func(t *testing.T) {
-			spec := filepath.FromSlash(cas.spec)
+			spec := filepath.FromSlash(thisCas.spec)
 
 			generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
 			if err != nil {
