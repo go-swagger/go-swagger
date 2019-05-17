@@ -11,10 +11,13 @@ pull_requests:
 skip_tags: true
 skip_branch_with_pr: true
 
+stack: go1.12
+
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.11.3
+  #GOVERSION: 1.11.3
   GOCOVMODE: "mode: atomic"
+  GO111MODULE: 'on'
   PATH: C:\gopath\bin;%PATH%
 
 platform:
@@ -43,6 +46,8 @@ install:
   - go get -u github.com/axw/gocov/gocov
   - go get -u gopkg.in/matm/v1/gocov-html
   - go get -u github.com/cee-dub/go-junit-report
+
+  - go mod download
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

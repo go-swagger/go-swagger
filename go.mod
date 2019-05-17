@@ -8,6 +8,7 @@ replace github.com/go-openapi/analysis => github.com/fredbi/analysis v0.0.0-2019
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
 	github.com/coreos/go-oidc v2.0.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -27,12 +28,14 @@ require (
 	github.com/gorilla/handlers v1.4.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kr/pretty v0.1.0
+	github.com/kr/pty v1.1.4 // indirect
 	github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.2
+	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/toqueteos/webbrowser v1.1.0
 	golang.org/x/net v0.0.0-20190322120337-addf6b3196f6
