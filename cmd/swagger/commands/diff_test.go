@@ -64,7 +64,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	// see the test cases in fixtures/diff
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
-	matches := []string{"param"}
+	matches := []string{}
 
 	allTests, err := filepath.Glob(pattern)
 
