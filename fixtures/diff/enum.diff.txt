@@ -1,0 +1,14 @@
+NON-BREAKING CHANGES:
+            =====================
+            /a/:get - Request Param: Added possible enumeration(s) <extrovert>  - Query.personality
+            /a/:get->200 - Response Body: Deleted possible enumeration(s) <crazy>  - array[A1].personality : string
+            /a/{id}:get->200 - Response Body: Deleted possible enumeration(s) <crazy>  - array[A1].personality : string
+            /b/:get->200 - Response Body: Deleted possible enumeration(s) <crazy>  - array[A1].personality : string
+            
+            BREAKING CHANGES:
+            =================
+            /a/:get - Request Param: Deleted possible enumeration(s) <saucy>  - Query.personality
+            /a/:get->200 - Response Body: Added possible enumeration(s) <sane>  - array[A1].personality : string
+            /a/{id}:get->200 - Response Body: Added possible enumeration(s) <sane>  - array[A1].personality : string
+            /b/:get->200 - Response Body: Added possible enumeration(s) <sane>  - array[A1].personality : string
+            
