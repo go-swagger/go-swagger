@@ -11,11 +11,9 @@ pull_requests:
 skip_tags: true
 skip_branch_with_pr: true
 
-stack: go1.12
-
 environment:
   GOPATH: C:\gopath
-  #GOVERSION: 1.11.3
+  GOVERSION: 1.12.5
   GOCOVMODE: "mode: atomic"
   GO111MODULE: 'on'
   PATH: C:\gopath\bin;%PATH%

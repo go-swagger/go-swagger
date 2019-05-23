@@ -27,6 +27,8 @@ github.com/fredbi/analysis v0.0.0-20190514193640-adcd02c54ef6 h1:u74E6FJZFmiLLuo
 github.com/fredbi/analysis v0.0.0-20190514193640-adcd02c54ef6/go.mod h1:IowGgpVeD0vNm45So8nr+IcQ3pxVtpRoBWb8PVZO0ik=
 github.com/fredbi/analysis v0.0.0-20190515133215-f4d23bf68007 h1:TcDX3LfecmUOhpPmRGywf6/42+bBsVRd2Th78jC5XkQ=
 github.com/fredbi/analysis v0.0.0-20190515133215-f4d23bf68007/go.mod h1:IowGgpVeD0vNm45So8nr+IcQ3pxVtpRoBWb8PVZO0ik=
+github.com/fredbi/strfmt v0.0.0-20190523130408-d43480ba747e h1:72U7C0g8EdrSNrrHuGr4zNx4g0NDOGfZ03udkCQqxgo=
+github.com/fredbi/strfmt v0.0.0-20190523130408-d43480ba747e/go.mod h1:+36ENsFQa5L1wV9Aa4UT1qlG04N6KKAQnnIl0A45wXY=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/globalsign/mgo v0.0.0-20180905125535-1ca0a4f7cbcb/go.mod h1:xkRDCp4j0OGD1HRkm4kmhM+pmpv3AKq5SU7GMg4oO/Q=

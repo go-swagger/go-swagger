@@ -6,6 +6,8 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b
 
 replace github.com/go-openapi/analysis => github.com/fredbi/analysis v0.0.0-20190515133215-f4d23bf68007
 
+replace github.com/go-openapi/strfmt => github.com/fredbi/strfmt v0.0.0-20190523130408-d43480ba747e
+
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
