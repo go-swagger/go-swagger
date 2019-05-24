@@ -71,7 +71,7 @@ func getIgnores()[]diff.SpecDifference{
 	return ignores
 }
 
-func getDiffs(oldSpecPath, newSpecPath string) (*diff.SpecDiff, error) {
+func getDiffs(oldSpecPath, newSpecPath string) (*diff.SpecAnalyser, error) {
 	swaggerDoc1 := oldSpecPath
 	specDoc1, err := loads.Spec(swaggerDoc1)
 
