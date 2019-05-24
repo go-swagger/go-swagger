@@ -175,9 +175,7 @@ func (sd *SpecDiff) analyseResponseParams() {
 
 						if op1Header, ok := op1Headers[op2HeaderName]; ok {
 							childLocation := location.AddNode(getNameOnlyDiffNode(op2HeaderName))
-							isDefault1 := boolValue(op1Header.SimpleSchema.Default)
-							isDefault2 := boolValue(op2Header.SimpleSchema.Default)
-							sd.compareSimpleSchema(childLocation, &op1Header.SimpleSchema, &op2Header.SimpleSchema, isDefault1, isDefault2)
+							sd.compareSimpleSchema(childLocation, &op1Header.SimpleSchema, &op2Header.SimpleSchema, false, false)
 						} else {
 							childLocation := location.AddNode(getNameOnlyDiffNode(op2HeaderName))
 							sd.addDiff(SpecDifference{DifferenceLocation: childLocation, Code: AddedResponseHeader})
@@ -202,22 +200,6 @@ func (sd *SpecDiff) analyseResponseParams() {
 				}
 			}
 		}
-	}
-}
-
-func boolValue(val interface{}) bool {
-	if val == nil {
-		return false
-	}
-	switch bType := val.(type) {
-	case bool:
-		return bType
-	case string:
-		return val == "true"
-	case int:
-		return val != 0
-	default:
-		return false
 	}
 }
 
