@@ -3,14 +3,14 @@
 {{- end }}
 {{ define "simplequeryparambuilder" }}
 {{ if .IsNullable -}}
-var {{ varname .ID }} string
+var {{ varname .ID }}Q string
 if {{ .ReceiverName }}.{{ pascalize .ID }} != nil {
-  {{ varname .ID }} = {{ if .Formatter }}{{ .Formatter }}(*{{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ if not .IsCustomFormatter }}*{{ end }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+  {{ varname .ID }}Q = {{ if .Formatter }}{{ .Formatter }}(*{{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ if not .IsCustomFormatter }}*{{ end }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
 }
-{{ else }}{{ varname .ID }} := {{ if .Formatter }}{{ .Formatter }}({{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+{{ else }}{{ varname .ID }}Q := {{ if .Formatter }}{{ .Formatter }}({{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
 {{ end -}}
-if {{ varname .ID }} != "" {
-  qs.Set({{ printf "%q" .Name }}, {{ varname .ID }})
+if {{ varname .ID }}Q != "" {
+  qs.Set({{ printf "%q" .Name }}, {{ varname .ID }}Q)
 }
 {{ end }}
 {{ define "sliceitemqueryparambuilder" }}
