@@ -14,7 +14,7 @@ import (
 
 // Compare returns the result of analysing breaking and non breaking changes
 // between to Swagger specs
-func Compare(spec1, spec2 *spec.Swagger) *SpecDiff {
+func Compare(spec1, spec2 *spec.Swagger) *SpecAnalyser {
 	specDiffs := NewSpecDiffs()
 	specDiffs.Analyse(spec1, spec2)
 	return specDiffs
@@ -32,13 +32,7 @@ type URLMethod struct {
 	Method string `json:"method"`
 }
 
-// DifferenceLocation indicates where the difference occurs
-type DifferenceLocation struct {
-	URL      string `json:"url"`
-	Method   string `json:"method,omitempty"`
-	Response int    `json:"response,omitempty"`
-	Node     *Node  `json:"node,omitempty"`
-}
+
 
 // DataDirection indicates the direction of change Request vs Response
 type DataDirection int
@@ -58,18 +52,6 @@ type SpecDifference struct {
 	DiffInfo           string             `json:"info,omitempty"`
 }
 
-// AddNode returns a copy of this location with the leaf node added
-func (dl DifferenceLocation) AddNode(node *Node) DifferenceLocation {
-	newLoc := dl
-
-	if newLoc.Node != nil {
-		newLoc.Node = newLoc.Node.Copy()
-		newLoc.Node.AddLeafNode(node)
-	} else {
-		newLoc.Node = node
-	}
-	return newLoc
-}
 
 func (sd SpecDifference) String() string {
 	optionalMethod := ""
@@ -118,17 +100,7 @@ func getParams(pathParams, opParams []spec.Parameter, location string) map[strin
 	return params
 }
 
-//Copy does a deep copy of the Node and its children
-func (dn *Node) Copy() *Node {
-	if dn == nil {
-		return nil
-	}
-	newNode := *dn
-	if newNode.ChildNode != nil {
-		newNode.ChildNode = newNode.ChildNode.Copy()
-	}
-	return &newNode
-}
+
 
 func getNameOnlyDiffNode(forLocation string) *Node {
 	node := Node{
@@ -289,7 +261,7 @@ func onlyOneNil(left, right interface{}) (onlyOne bool, isNil bool) {
 }
 
 // ReportCompatability lists and spec
-func (sd *SpecDiff) ReportCompatability() error {
+func (sd *SpecAnalyser) ReportCompatability() error {
 	if sd.BreakingChangeCount > 0 {
 		fmt.Printf("\nBREAKING CHANGES:\n=================\n")
 		sd.reportChanges(Breaking)
@@ -299,7 +271,7 @@ func (sd *SpecDiff) ReportCompatability() error {
 	return nil
 }
 
-func (sd *SpecDiff) reportChanges(compat Compatability) {
+func (sd *SpecAnalyser) reportChanges(compat Compatability) {
 	toReportList := []string{}
 
 	for _, diff := range sd.Diffs {
@@ -333,7 +305,7 @@ func JSONMarshal(t interface{}) ([]byte, error) {
 }
 
 // ReportAllDiffs lists all the diffs between two specs
-func (sd *SpecDiff) ReportAllDiffs(fmtJSON bool) error {
+func (sd *SpecAnalyser) ReportAllDiffs(fmtJSON bool) error {
 	if fmtJSON {
 
 		b, err := JSONMarshal(sd.Diffs)
