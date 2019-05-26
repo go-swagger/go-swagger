@@ -31,28 +31,6 @@ type testCaseData struct {
 	expectedLines string
 }
 
-func dieOn(err error, t *testing.T) {
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func catchStdOut(t *testing.T, runnable func()) string {
-
-	realStdout := os.Stdout
-	defer func() { os.Stdout = realStdout }()
-	r, fakeStdout, err := os.Pipe()
-	dieOn(err, t)
-	os.Stdout = fakeStdout
-	runnable()
-	// need to close here, otherwise ReadAll never gets "EOF".
-	dieOn(fakeStdout.Close(), t)
-	newOutBytes, err := ioutil.ReadAll(r)
-	dieOn(err, t)
-	dieOn(r.Close(), t)
-	return string(newOutBytes)
-}
-
 // TestDiffForVariousCombinations - computes the diffs for a number
 // of scenarios and compares the computed diff with expected diffs
 func TestDiffForVariousCombinations(t *testing.T) {
@@ -111,6 +89,22 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	assertThat(t, len(matches), is.EqualTo(len(allTests)).Reason("All test cases were not run. Remove filter."))
 }
 
+func TestReadIgnores(t *testing.T) {
+
+	diffRootPath := basePath + "/"
+	ignorePath := diffRootPath +"ignorefile.json"
+	ignores,err := readIgnores(ignorePath)
+
+	assertThat(t,err,is.Nil())
+	assertThat(t,len(ignores), is.Not(equals(0)))
+}
+
+func dieOn(err error, t *testing.T) {
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func LinesInFile(fileName string) string {
 	bytes, _ := ioutil.ReadFile(fileName)
 	return string(bytes)
@@ -128,4 +122,20 @@ func containsString(expected ...interface{}) *gocrest.Matcher {
 
 	}
 	return match
+}
+
+func catchStdOut(t *testing.T, runnable func()) string {
+
+	realStdout := os.Stdout
+	defer func() { os.Stdout = realStdout }()
+	r, fakeStdout, err := os.Pipe()
+	dieOn(err, t)
+	os.Stdout = fakeStdout
+	runnable()
+	// need to close here, otherwise ReadAll never gets "EOF".
+	dieOn(fakeStdout.Close(), t)
+	newOutBytes, err := ioutil.ReadAll(r)
+	dieOn(err, t)
+	dieOn(r.Close(), t)
+	return string(newOutBytes)
 }
