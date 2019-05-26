@@ -1,18 +1,18 @@
 NON-BREAKING CHANGES:
             =====================
+            /a/:get - Request Param: Deleted optional param   - Query.limit
             /a/{id}:get - Request Param: Added optional param   - Query.newOptParam
             /a/{id}:get - Request Param: Widened type integer.int32 -> integer.int64  - Query.widenedParam
+            /a/{id}:get->200 - Response Body: Added response header   - Headers.newResponseHeader
             /a/{id}:post - Request Param: Added optional param   - Header.newboris
+            /a/{id}:post - Request Param: Deleted optional param   - Header.optboris
             /a/{id}:post - Request Param: Deleted required param   - Header.reqdboris
             
             BREAKING CHANGES:
             =================
-            /a/:get - Request Param: Deleted optional param   - Query.limit
             /a/{id}:get - Request Param: Added required param   - Query.newReqParam
             /a/{id}:get - Request Param: Changed optional param to required   - Query.flavour
             /a/{id}:get - Request Param: Narrowed type string -> integer  - Path.id
-            /a/{id}:get->200 - Response Body: Added response header   - Headers.newResponseHeader
             /a/{id}:get->200 - Response Body: Deleted response header   - Headers.optResponseHeader
-            /a/{id}:post - Request Param: Deleted optional param   - Header.optboris
             /a/{id}:post - Request Param: Narrowed type string -> integer  - Header.changedboris
             

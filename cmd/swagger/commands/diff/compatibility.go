@@ -14,6 +14,7 @@ func getCompatabilityForChange(forDiff SpecChangeCode, where DataDirection) Comp
 	case AddedRequiredProperty:
 	case ChangedOptionalToRequiredParam:
 	case DeletedOptionalParam:
+		compatability = NonBreaking
 	case DeletedEndpoint:
 	case AddedRequiredParam:
 	case DeletedRequiredParam:
@@ -39,6 +40,7 @@ func getCompatabilityForChange(forDiff SpecChangeCode, where DataDirection) Comp
 	case ChangedType:
 		compatability = Breaking
 	case AddedResponseHeader:
+		compatability = NonBreaking
 	case ChangedResponseHeader:
 	case DeletedResponseHeader:
 	default:
