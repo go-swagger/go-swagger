@@ -1,0 +1,104 @@
+[
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "node": {
+        "name": "Query",
+        "child": {
+          "name": "personality"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "<extrovert>"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "node": {
+        "name": "Query",
+        "child": {
+          "name": "personality"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "Breaking",
+    "info": "<saucy>"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "Breaking",
+    "info": "<sane>"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "<crazy>"
+  },
+  {
+    "location": {
+      "url": "/a/{id}",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "Breaking",
+    "info": "<sane>"
+  },
+  {
+    "location": {
+      "url": "/a/{id}",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "<crazy>"
+  }
+]

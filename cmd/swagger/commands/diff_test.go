@@ -92,17 +92,39 @@ func TestDiffForVariousCombinations(t *testing.T) {
 func TestReadIgnores(t *testing.T) {
 
 	diffRootPath := basePath + "/"
-	ignorePath := diffRootPath +"ignorefile.json"
-	ignores,err := readIgnores(ignorePath)
+	ignorePath := diffRootPath + "ignoreFile.json"
+	ignores, err := readIgnores(ignorePath)
 
-	assertThat(t,err,is.Nil())
-	assertThat(t,len(ignores), is.Not(equals(0)))
+	assertThat(t, err, is.Nil())
+	assertThat(t, len(ignores), is.Not(equals(0)))
 }
 
 func dieOn(err error, t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestProcessIgnores(t *testing.T) {
+	diffRootPath := basePath + "/"
+	namePart := "enum"
+	tc := testCaseData{
+		name:          namePart,
+		oldSpec:       diffRootPath + namePart + ".v1.json",
+		newSpec:       diffRootPath + namePart + ".v2.json",
+		expectedLines: LinesInFile(diffRootPath + "ignoreDiffs.json"),
+	}
+
+	cmd := DiffCommand{
+		Format:     "json",
+		IgnoreFile: diffRootPath + "ignoreFile.json",
+	}
+
+	diffsStr := catchStdOut(t, func() {
+		err := cmd.Execute([]string{tc.oldSpec, tc.newSpec})
+		assertThat(t, err, is.Nil())
+	})
+	assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
 }
 
 func LinesInFile(fileName string) string {
