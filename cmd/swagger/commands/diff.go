@@ -17,7 +17,7 @@ import (
 type DiffCommand struct {
 	OnlyBreakingChanges bool   `long:"break" short:"b" description:"When present, only shows incompatible changes"`
 	Format              string `long:"format" short:"f" description:"When present, writes output as json" default:"txt" choice:"txt" choice:"json"`
-	IgnoreFile          string `long:"ignore" short:"i" description:"Exception file of diffs to ignore"  default:"none specified"`
+	IgnoreFile          string `long:"ignore" short:"i" description:"Exception file of diffs to ignore (copy output from json diff format)"  default:"none specified"`
 	Destination         string `long:"dest" short:"d" description:"Output destination file or stdout" default:"stdout"`
 }
 
@@ -52,11 +52,15 @@ func (c *DiffCommand) Execute(args []string) error {
 	diffs, err := getDiffs(args[0], args[1])
 
 	ignores, err := readIgnores(c.IgnoreFile)
-
-	diffs = diffs.FilterIgnores(ignores)
-
 	if err != nil {
 		return err
+	}
+	diffs = diffs.FilterIgnores(ignores)
+	if len(ignores) > 0 {
+		log.Printf("Diff Report Ignored Items from IgnoreFile")
+		for _,eachItem := range ignores {
+			log.Printf("%s", eachItem.String())
+		}
 	}
 
 	if c.Format == "json" {
@@ -69,7 +73,6 @@ func (c *DiffCommand) Execute(args []string) error {
 			diffs.ReportAllDiffs(false)
 		}
 	}
-
 	return err
 }
 

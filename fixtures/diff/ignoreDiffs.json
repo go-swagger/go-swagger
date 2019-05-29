@@ -1,0 +1,38 @@
+[
+  {
+    "location": {
+      "url": "/b/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "Breaking",
+    "info": "<sane>"
+  },
+  {
+    "location": {
+      "url": "/b/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "is-array": true,
+        "type": "A1",
+        "child": {
+          "type": "string",
+          "name": "personality"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "<crazy>"
+  }
+]
