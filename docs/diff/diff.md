@@ -50,7 +50,7 @@ with for as long as we've had them.
 The popularity of microservice architectures talking to each other via REST has multiplied the
 complexity, particularly in a Continuous Integration Continuous Delivery (CI/CD) environment.
 
-One popular solution is to use testing to ensure confidence in API compatability as they change.
+One popular solution is to use testing to ensure confidence in API compatibility as they change.
 There are a few flavours of this but they are all variations on a theme.
 
   i) Humans imagine an API.

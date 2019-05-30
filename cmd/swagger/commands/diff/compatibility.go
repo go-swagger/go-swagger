@@ -4,55 +4,55 @@ import (
 	"fmt"
 )
 
-func getCompatabilityForChange(forDiff SpecChangeCode, where DataDirection) Compatability {
-	compatability := Breaking
+func getCompatibilityForChange(forDiff SpecChangeCode, where DataDirection) Compatibility {
+	compatibility := Breaking
 	switch forDiff {
 	case DeletedProperty:
-		nonBreakingIf(where == Request, &compatability)
+		nonBreakingIf(where == Request, &compatibility)
 	case AddedProperty:
-		nonBreakingIf(where == Response, &compatability)
+		nonBreakingIf(where == Response, &compatibility)
 	case AddedRequiredProperty:
 	case ChangedOptionalToRequiredParam:
 	case DeletedOptionalParam:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case DeletedDeprecatedEndpoint:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case DeletedEndpoint:
 	case AddedRequiredParam:
 	case DeletedRequiredParam:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case ChangedRequiredToOptional, AddedEndpoint:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case WidenedType:
-		nonBreakingIf(where == Request, &compatability)
+		nonBreakingIf(where == Request, &compatibility)
 	case NarrowedType:
-		nonBreakingIf(where == Response, &compatability)
+		nonBreakingIf(where == Response, &compatibility)
 	case AddedEnumValue:
-		nonBreakingIf(where == Request, &compatability)
+		nonBreakingIf(where == Request, &compatibility)
 	case DeletedEnumValue:
-		nonBreakingIf(where == Response, &compatability)
+		nonBreakingIf(where == Response, &compatibility)
 	case AddedOptionalParam:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case ChangedRequiredToOptionalParam:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case AddedResponse:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case DeletedResponse:
-		compatability = Breaking
+		compatibility = Breaking
 	case ChangedType:
-		compatability = Breaking
+		compatibility = Breaking
 	case AddedResponseHeader:
-		compatability = NonBreaking
+		compatibility = NonBreaking
 	case ChangedResponseHeader:
 	case DeletedResponseHeader:
 	default:
 		fmt.Printf("ERROR: Unknown diff type")
 	}
-	return compatability
+	return compatibility
 }
 
-func nonBreakingIf(cond bool, compatability *Compatability) {
+func nonBreakingIf(cond bool, compatibility *Compatibility) {
 	if cond {
-		*compatability = NonBreaking
+		*compatibility = NonBreaking
 	}
 }

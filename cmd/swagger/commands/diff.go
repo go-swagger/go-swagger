@@ -68,7 +68,7 @@ func (c *DiffCommand) Execute(args []string) error {
 
 	} else {
 		if c.OnlyBreakingChanges {
-			err = diffs.ReportCompatability()
+			err = diffs.ReportCompatibility()
 		} else {
 			diffs.ReportAllDiffs(false)
 		}

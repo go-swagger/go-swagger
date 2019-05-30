@@ -40,7 +40,7 @@ const (
 	NarrowedType
 	// ChangedToCompatibleType - An type has been changed to a compatible type eg password->string
 	ChangedToCompatibleType
-	// ChangedType - An type has been changed to a type whose relative compatability cannot be determined
+	// ChangedType - An type has been changed to a type whose relative compatibility cannot be determined
 	ChangedType
 	// AddedEnumValue - An enum type has had a new potential value added to it
 	AddedEnumValue
@@ -182,40 +182,40 @@ func (s *SpecChangeCode) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Compatability - whether this is a breaking or non-breaking change
-type Compatability int
+// Compatibility - whether this is a breaking or non-breaking change
+type Compatibility int
 
 const (
 	// Breaking this change could break existing clients
-	Breaking Compatability = iota
+	Breaking Compatibility = iota
 	// NonBreaking This is a backwards-compatible API change
 	NonBreaking
 )
 
-func (s Compatability) String() string {
-	return toStringCompatability[s]
+func (s Compatibility) String() string {
+	return toStringCompatibility[s]
 }
 
-var toStringCompatability = map[Compatability]string{
+var toStringCompatibility = map[Compatibility]string{
 	Breaking:    "Breaking",
 	NonBreaking: "NonBreaking",
 }
 
-var toIDCompatability = map[string]Compatability{}
+var toIDCompatibility = map[string]Compatibility{}
 
 // MarshalJSON marshals the enum as a quoted json string
-func (s *Compatability) MarshalJSON() ([]byte, error) {
-	return stringAsQuotedBytes(toStringCompatability[*s])
+func (s *Compatibility) MarshalJSON() ([]byte, error) {
+	return stringAsQuotedBytes(toStringCompatibility[*s])
 }
 
 // UnmarshalJSON unmashals a quoted json string to the enum value
-func (s *Compatability) UnmarshalJSON(b []byte) error {
+func (s *Compatibility) UnmarshalJSON(b []byte) error {
 	str, err := readStringFromByteStream(b)
 	if err != nil {
 		return err
 	}
 	// Note that if the string cannot be found then it will return an error to the caller.
-	val, ok := toIDCompatability[str]
+	val, ok := toIDCompatibility[str]
 
 	if ok {
 		*s = val
@@ -245,8 +245,8 @@ func init() {
 	for key, val := range toStringSpecChangeCode {
 		toIDSpecChangeCode[val] = key
 	}
-	for key, val := range toStringCompatability {
-		toIDCompatability[val] = key
+	for key, val := range toStringCompatibility {
+		toIDCompatibility[val] = key
 	}
 
 }
