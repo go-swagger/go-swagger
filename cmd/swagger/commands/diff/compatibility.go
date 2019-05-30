@@ -15,6 +15,8 @@ func getCompatabilityForChange(forDiff SpecChangeCode, where DataDirection) Comp
 	case ChangedOptionalToRequiredParam:
 	case DeletedOptionalParam:
 		compatability = NonBreaking
+	case DeletedDeprecatedEndpoint:
+		compatability = NonBreaking
 	case DeletedEndpoint:
 	case AddedRequiredParam:
 	case DeletedRequiredParam:
