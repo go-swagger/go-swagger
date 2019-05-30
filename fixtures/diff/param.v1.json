@@ -170,6 +170,7 @@
       "properties": {
         "id": { "type": "integer" },
         "name": { "type": "string" },
+        "otherDeletedName":{"type":"string","deprecated":true},
         "description": { "type": "string" },
         "letters": {
           "type": "array",

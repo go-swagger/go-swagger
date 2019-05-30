@@ -24,6 +24,8 @@ const (
 	DeletedResponse
 	// DeletedEndpoint - An endpoint has been deleted in the new spec
 	DeletedEndpoint
+	// DeletedDeprecatedEndpoint - A deprecated endpoint has been deleted in the new spec
+	DeletedDeprecatedEndpoint
 	// AddedRequiredParam - A required parameter has been added in the new spec
 	AddedRequiredParam
 	// DeletedRequiredParam - A required parameter has been deleted in the new spec
@@ -80,6 +82,7 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	NoChangeDetected:               "No Change detected",
 	AddedEndpoint:                  "Added endpoint",
 	DeletedEndpoint:                "Deleted endpoint",
+	DeletedDeprecatedEndpoint:			"Deleted a deprecated endpoint",
 	AddedRequiredProperty:          "Added required property",
 	DeletedProperty:                "Deleted property",
 	AddedProperty:                  "Added property",
@@ -114,6 +117,7 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedEndpoint:                  "AddedEndpoint",
 	NoChangeDetected:               "NoChangeDetected",
 	DeletedEndpoint:                "DeletedEndpoint",
+	DeletedDeprecatedEndpoint:			"DeletedDeprecatedEndpoint",
 	AddedRequiredProperty:          "AddedRequiredProperty",
 	DeletedProperty:                "DeletedProperty",
 	AddedProperty:                  "AddedProperty",
