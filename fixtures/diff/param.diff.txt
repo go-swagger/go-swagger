@@ -10,9 +10,12 @@ NON-BREAKING CHANGES:
             
             BREAKING CHANGES:
             =================
+            /a/:post->200 - Response Body: Deleted property   - otherDeletedName : string
             /a/{id}:get - Request Param: Added required param   - Query.newReqParam
             /a/{id}:get - Request Param: Changed optional param to required   - Query.flavour
             /a/{id}:get - Request Param: Narrowed type string -> integer  - Path.id
             /a/{id}:get->200 - Response Body: Deleted response header   - Headers.optResponseHeader
             /a/{id}:post - Request Param: Narrowed type string -> integer  - Header.changedboris
+            /a/{id}:post->200 - Response Body: Deleted property   - otherDeletedName : string
+            /b/:post->200 - Response Body: Deleted property   - otherDeletedName : string
             

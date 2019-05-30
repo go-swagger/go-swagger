@@ -70,6 +70,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 
 	}
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(fmt.Sprintf("%s", tc.name), func(t *testing.T) {
 
 			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
