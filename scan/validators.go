@@ -809,3 +809,18 @@ func (ss *setOpResponses) Parse(lines []string) error {
 	ss.set(def, scr)
 	return nil
 }
+
+func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
+	list := strings.Split(val, ",")
+	interfaceSlice := make([]interface{}, len(list))
+	for i, d := range list {
+		v, err := parseValueFromSchema(d, s)
+		if err != nil {
+			interfaceSlice[i] = d
+			continue
+		}
+
+		interfaceSlice[i] = v
+	}
+	return interfaceSlice
+}
