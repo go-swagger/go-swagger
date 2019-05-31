@@ -85,6 +85,7 @@ func getURLMethodsFor(spec *spec.Swagger) URLMethods {
 	returnURLMethods := URLMethods{}
 
 	for url, eachPath := range spec.Paths.Paths {
+		eachPath := eachPath
 		opsMap := toMap(&eachPath)
 		for method, op := range opsMap {
 			returnURLMethods[URLMethod{url, method}] = &PathItemOp{&eachPath, op}
