@@ -163,8 +163,9 @@ type NoParams struct {
 	// This is mix in enum. And actually on output should be valid form where int will be int and
 	// string will also be presented.
 	//
-	// enum: 1,bar,none
-	BadEnum int `json:"bad_type"`
+	// enum: 1,rsq,qaz
+	// in: query
+	BadEnum int `json:"bad_enum"`
 
 	// a FooSlice has foos which are strings
 	//
