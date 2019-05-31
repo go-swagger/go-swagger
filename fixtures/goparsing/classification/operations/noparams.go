@@ -153,6 +153,19 @@ type NoParams struct {
 	// in: query
 	Category string `json:"category"`
 
+	// Type of this model
+	//
+	// enum: 1,3,5
+	// default: 1
+	// in: query
+	Type int `json:"type"`
+
+	// This is mix in enum. And actually on output should be valid form where int will be int and
+	// string will also be presented.
+	//
+	// enum: 1,bar,none
+	BadEnum int `json:"bad_type"`
+
 	// a FooSlice has foos which are strings
 	//
 	// min items: 3
