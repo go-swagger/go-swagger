@@ -164,6 +164,7 @@ type NoParams struct {
 	// string will also be presented.
 	//
 <<<<<<< HEAD
+<<<<<<< HEAD
 	// enum: 1,rsq,qaz
 	// in: query
 	BadEnum int `json:"bad_enum"`
@@ -171,6 +172,11 @@ type NoParams struct {
 	// enum: 1,bar,none
 	BadEnum int `json:"bad_type"`
 >>>>>>> scan: proper parse for numeric elements (future validation pass).
+=======
+	// enum: 1,rsq,qaz
+	// in: query
+	BadEnum int `json:"bad_enum"`
+>>>>>>> fix test
 
 	// a FooSlice has foos which are strings
 	//

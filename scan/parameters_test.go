@@ -204,6 +204,7 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "Type of this model", param.Description)
 			assert.Equal(t, "query", param.In)
 <<<<<<< HEAD
+<<<<<<< HEAD
 			assert.Equal(t, "integer", param.Type)
 			assert.EqualValues(t, []interface{}{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
 		case gcBadEnum:
@@ -216,6 +217,14 @@ func TestParamsParser(t *testing.T) {
 		case "bad_type":
 			assert.EqualValues(t, []interface{}{1, "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
 >>>>>>> scan: proper parse for numeric elements (future validation pass).
+=======
+			assert.Equal(t, "integer", param.Type)
+			assert.EqualValues(t, []interface{}{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
+		case gcBadEnum:
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.EqualValues(t, []interface{}{1, "rsq", "qaz"}, param.Enum, "%s enum values are incorrect", param.Name)
+>>>>>>> fix test
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)
 			assert.Equal(t, "FooSlice", param.Extensions["x-go-name"])
