@@ -851,7 +851,7 @@ func (scp *schemaParser) createParser(nm string, schema, ps *spec.Schema, fld *a
 	return sp
 }
 
-// hasFilePathPrefix reports whether the filesystem path s begins with the
+// hasFilePathPrefix reports whether the filesystem path begins with the
 // elements in prefix.
 //
 // taken from: https://github.com/golang/go/blob/c87520c5981ecdeaa99e7ba636a6088f900c0c75/src/cmd/go/internal/load/path.go#L60-L80
@@ -892,12 +892,16 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	if gopath == "" {
 		gopath = filepath.Join(os.Getenv("HOME"), "go")
 	}
+	// TODO: up to go 1.12
+	enableModules := os.Getenv("GO111MODULE") == "on"
+
 	if Debug {
 		log.Println("scanning for packages in", append(filepath.SplitList(gopath), runtime.GOROOT()))
 	}
+
 	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
 
-		// when GOPATH or GOROOT evaluate as symlinks we have to explore this as well
+		// when GOPATH or GOROOT evaluate as symlinks we have to explore this as well as alternate path string
 		altpath, err := filepath.EvalSymlinks(p)
 		if err != nil {
 			return nil, err
@@ -920,11 +924,11 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 			fgp = filepath.Dir(strings.TrimPrefix(fa, altpref))[1:]
 			found = true
 
-		case hasFilePathPrefix(fa, mod):
+		case enableModules && hasFilePathPrefix(fa, mod):
 			fgp = trimVersion(filepath.Dir(strings.TrimPrefix(fa, mod))[1:])
 			found = true
 
-		case altmod != mod && hasFilePathPrefix(fa, altmod):
+		case enableModules && altmod != mod && hasFilePathPrefix(fa, altmod):
 			fgp = trimVersion(filepath.Dir(strings.TrimPrefix(fa, altmod))[1:])
 			found = true
 		}

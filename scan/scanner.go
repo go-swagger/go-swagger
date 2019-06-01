@@ -24,6 +24,7 @@ import (
 	"go/types"
 	"log"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -210,6 +211,17 @@ func newAppScanner(opts *Opts) (*appScanner, error) {
 	if Debug {
 		log.Println("scanning packages discovered through entrypoint @ ", opts.BasePath)
 	}
+
+	enableModules := os.Getenv("GO111MODULE") == "on"
+	if enableModules {
+		log.Println("resolving modules from", opts.BasePath)
+		cmd := exec.Command("go", "mod", "download")
+		cmd.Dir = opts.BasePath
+		if p, err := cmd.CombinedOutput(); err != nil {
+			log.Fatalf("go mod download from %s: %s\n%s", opts.BasePath, err, p)
+		}
+	}
+
 	var ldr loader.Config
 	ldr.ParserMode = goparser.ParseComments
 	ldr.Import(opts.BasePath)
