@@ -5,9 +5,12 @@ go 1.12
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
 
 require (
+<<<<<<< HEAD
 	github.com/BurntSushi/toml v0.3.1 // indirect
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Updated go.mod
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/vcs v1.13.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
@@ -34,6 +37,7 @@ require (
 	github.com/golang/dep v0.5.3 // indirect
 >>>>>>> Updating vendor folder and adding coverage.txt to gitignore
 	github.com/golang/protobuf v1.3.1 // indirect
+	github.com/golangci/golangci-lint v1.16.0 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/jmank88/nuts v0.3.0 // indirect
