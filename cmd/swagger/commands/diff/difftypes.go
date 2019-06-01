@@ -177,7 +177,7 @@ func (s *SpecChangeCode) UnmarshalJSON(b []byte) error {
 	if ok {
 		*s = val
 	} else {
-		return fmt.Errorf("Unknown enum value. Cannot unmarshal '%s'", str)
+		return fmt.Errorf("unknown enum value. cannot unmarshal '%s'", str)
 	}
 	return nil
 }
@@ -220,7 +220,7 @@ func (s *Compatibility) UnmarshalJSON(b []byte) error {
 	if ok {
 		*s = val
 	} else {
-		return fmt.Errorf("Unknown enum value. Cannot unmarshal '%s'", str)
+		return fmt.Errorf("unknown enum value. cannot unmarshal '%s'", str)
 	}
 	return nil
 }
