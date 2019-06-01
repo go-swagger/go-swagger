@@ -6,6 +6,14 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+<<<<<<< HEAD
+=======
+	github.com/Masterminds/semver v1.4.2 // indirect
+	github.com/Masterminds/vcs v1.13.0 // indirect
+	github.com/armon/go-radix v1.0.0 // indirect
+	github.com/boltdb/bolt v1.3.1 // indirect
+	github.com/corbym/gocrest v1.0.3
+>>>>>>> Updating vendor folder and adding coverage.txt to gitignore
 	github.com/coreos/go-oidc v2.0.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -21,11 +29,19 @@ require (
 	github.com/go-openapi/swag v0.19.0
 	github.com/go-openapi/validate v0.19.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
+<<<<<<< HEAD
+=======
+	github.com/golang/dep v0.5.3 // indirect
+>>>>>>> Updating vendor folder and adding coverage.txt to gitignore
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/gorilla/handlers v1.4.0
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/jmank88/nuts v0.3.0 // indirect
 	github.com/kr/pretty v0.1.0
+	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
+	github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353 // indirect
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.3
