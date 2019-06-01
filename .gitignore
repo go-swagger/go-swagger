@@ -60,6 +60,5 @@ cover/
 bin/
 enter-deploy-env.sh
 
-swagger
 coverage.txt
 
