@@ -212,10 +212,8 @@ func addTypeDiff(diffs []TypeDiff, diff TypeDiff) []TypeDiff {
 	return diffs
 }
 
-// CompareTypes computes type specific property diffs
-func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
-
-	diffs := []TypeDiff{}
+// CheckToFromPrimitiveType check for diff to or from a primitive
+func (sd *SpecAnalyser) CheckToFromPrimitiveType(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 
 	type1IsPrimitive := len(type1.Type) > 0
 	type2IsPrimitive := len(type2.Type) > 0
@@ -229,6 +227,11 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: type2.Type[0], ToType: "obj"})
 	}
 
+	return diffs
+}
+
+// CheckToFromArrayType check for changes to or from an Array type
+func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 	// Single to Array or Array to Single
 	type1Array := type1.Type[0] == "array"
 	type2Array := type2.Type[0] == "array"
@@ -241,24 +244,26 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: type1.Type[0], ToType: "array"})
 	}
 
-	// check type hierarchy change eg string -> integer = NarrowedChange
-	//Type
-	//Format
-	if type1.Type[0] != type2.Type[0] ||
-		type1.Format != type2.Format {
-		diff := getTypeHierarchyChange(primitiveTypeString(type1.Type[0], type1.Format), primitiveTypeString(type2.Type[0], type2.Format))
-		diffs = addTypeDiff(diffs, diff)
-	}
+	if type1Array && 	type2Array {
+		// array
+		// TODO: Items??
+		diffs = addTypeDiff(diffs, compareIntValues("MaxItems", type1.MaxItems, type2.MaxItems, WidenedType, NarrowedType))
+		diffs = addTypeDiff(diffs, compareIntValues("MinItems", type1.MinItems, type2.MinItems, NarrowedType, WidenedType))
 
+	}
+	return diffs
+}
+
+// CheckStringTypeChanges checks for changes to or from a string type
+func (sd *SpecAnalyser) CheckStringTypeChanges(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 	// string changes
 	if type1.Type[0] == "string" &&
 		type2.Type[0] == "string" {
-		//Pattern
-		diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
-		diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
-		if type1.Pattern != type2.Pattern {
-			diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
-		}
+			diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
+			diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
+			if type1.Pattern != type2.Pattern {
+				diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
+			}
 		if type1.Type[0] == "string" {
 			if len(type1.Enum) > 0 {
 				enumDiffs := sd.compareEnums(type1.Enum, type2.Enum)
@@ -268,15 +273,11 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 			}
 		}
 	}
+	return diffs
+}
 
-	if type1.Type[0] == "array" &&
-		type2.Type[0] == "array" {
-		// array
-		// TODO: Items??
-		diffs = addTypeDiff(diffs, compareIntValues("MaxItems", type1.MaxItems, type2.MaxItems, WidenedType, NarrowedType))
-		diffs = addTypeDiff(diffs, compareIntValues("MinItems", type1.MinItems, type2.MinItems, NarrowedType, WidenedType))
-
-	}
+// CheckNumericTypeChanges checks for changes to or from a numeric type
+func (sd *SpecAnalyser) CheckNumericTypeChanges(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 	// Number
 	_, type1IsNumeric := numberWideness[type1.Type[0]]
 	_, type2IsNumeric := numberWideness[type2.Type[0]]
@@ -297,6 +298,47 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 			diffs = addTypeDiff(diffs, TypeDiff{Change: NarrowedType, Description: fmt.Sprintf("Exclusive Minimum Added:%v->%v", type1.ExclusiveMaximum, type2.ExclusiveMaximum)})
 		}
 	}
+	return diffs
+}
+
+// CompareTypes computes type specific property diffs
+func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
+
+	diffs := []TypeDiff{}
+
+	diffs = CheckToFromPrimitiveType(diffs, type1,type2)
+
+	if len(diffs)>0{
+		return diffs
+	}
+
+	diffs = CheckToFromArrayType(diffs, type1,type2)
+
+	if len(diffs)>0{
+		return diffs
+	}
+
+	// check type hierarchy change eg string -> integer = NarrowedChange
+	//Type
+	//Format
+	if type1.Type[0] != type2.Type[0] ||
+		type1.Format != type2.Format {
+		diff := getTypeHierarchyChange(primitiveTypeString(type1.Type[0], type1.Format), primitiveTypeString(type2.Type[0], type2.Format))
+		diffs = addTypeDiff(diffs, diff)
+	}
+
+	diffs = CheckStringTypeChanges(diffs,type1,type2)
+
+	if len(diffs)>0{
+		return diffs
+	}
+
+	diffs = CheckNumericTypeChanges(diffs,type1,type2)
+
+	if len(diffs)>0{
+		return diffs
+	}
+
 	return diffs
 }
 

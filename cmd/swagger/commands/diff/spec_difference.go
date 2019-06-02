@@ -17,10 +17,10 @@ type SpecDifference struct {
 // SpecDifferences list of differences
 type SpecDifferences []SpecDifference
 
-func newSpecDifferences() *SpecDifferences {
-	diffs := SpecDifferences{}
-	return &diffs
-}
+// func newSpecDifferences() *SpecDifferences {
+// 	diffs := SpecDifferences{}
+// 	return &diffs
+// }
 
 func (sd SpecDifference) matches(other SpecDifference) bool {
 	return sd.Code == other.Code &&
@@ -51,6 +51,7 @@ func equalNodes(a, b *Node) bool {
 
 }
 
+// BreakingChangeCount counts the number of breaking changes
 func (sd SpecDifferences) BreakingChangeCount() int {
 	count := 0
 	for _, eachDiff := range sd {
@@ -61,6 +62,7 @@ func (sd SpecDifferences) BreakingChangeCount() int {
 	return count
 }
 
+//FilterIgnores returns the list of diffs that aren't in the diff list provided
 func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences {
 	newDiffs := SpecDifferences{}
 	for _, eachDiff := range sd {
@@ -71,6 +73,7 @@ func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences
 	return newDiffs
 }
 
+// Contains returns true if the specified item is in this list of differences
 func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	for _, eachDiff := range sd {
 		if eachDiff.matches(diff) {
@@ -80,6 +83,7 @@ func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	return false
 }
 
+// String std sting renderer
 func (sd SpecDifference) String() string {
 	optionalMethod := ""
 	direction := "Request Param:"

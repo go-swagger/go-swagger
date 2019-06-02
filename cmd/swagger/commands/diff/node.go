@@ -1,5 +1,6 @@
 package diff
 
+// Node defines a diff position in a spec
 type Node struct {
 	Field     string
 	TypeName  string
@@ -7,6 +8,7 @@ type Node struct {
 	ChildNode *Node
 }
 
+// String std string render method
 func (n *Node) String() string {
 	name := n.Field
 	if n.IsArray {
@@ -22,6 +24,7 @@ func (n *Node) String() string {
 	return name
 }
 
+// AddLeafNode (recursive) finds the nil leaf and replaces it with the node specified
 func (n *Node) AddLeafNode(toAdd *Node) *Node {
 
 	if n.ChildNode == nil {
@@ -33,6 +36,7 @@ func (n *Node) AddLeafNode(toAdd *Node) *Node {
 	return n
 }
 
+// Copy returns a deep copy of the Node
 func (n Node) Copy() *Node {
 	newNode := n
 

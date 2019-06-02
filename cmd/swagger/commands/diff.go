@@ -51,6 +51,10 @@ func (c *DiffCommand) Execute(args []string) error {
 
 	diffs, err := getDiffs(args[0], args[1])
 
+	if err != nil {
+		return err
+	}
+
 	ignores, err := readIgnores(c.IgnoreFile)
 	if err != nil {
 		return err
@@ -58,7 +62,7 @@ func (c *DiffCommand) Execute(args []string) error {
 	diffs = diffs.FilterIgnores(ignores)
 	if len(ignores) > 0 {
 		log.Printf("Diff Report Ignored Items from IgnoreFile")
-		for _,eachItem := range ignores {
+		for _, eachItem := range ignores {
 			log.Printf("%s", eachItem.String())
 		}
 	}
@@ -91,6 +95,11 @@ func readIgnores(ignoreFile string) (diff.SpecDifferences, error) {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	byteValue, err := ioutil.ReadAll(jsonFile)
+
+	if err != nil {
+		return nil, err
+	}
+
 	json.Unmarshal(byteValue, &ignoreDiffs)
 	return ignoreDiffs, nil
 }

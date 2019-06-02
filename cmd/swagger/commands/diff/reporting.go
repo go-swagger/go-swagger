@@ -40,14 +40,15 @@ const (
 	Response
 )
 
-func findParam(name string, params []spec.Parameter) (spec.Parameter, bool) {
-	for _, eachCandidate := range params {
-		if eachCandidate.Name == name {
-			return eachCandidate, true
-		}
-	}
-	return spec.Parameter{}, false
-}
+//TODO REMOVE
+// func findParam(name string, params []spec.Parameter) (spec.Parameter, bool) {
+// 	for _, eachCandidate := range params {
+// 		if eachCandidate.Name == name {
+// 			return eachCandidate, true
+// 		}
+// 	}
+// 	return spec.Parameter{}, false
+// }
 
 func getParams(pathParams, opParams []spec.Parameter, location string) map[string]spec.Parameter {
 	params := map[string]spec.Parameter{}
@@ -73,10 +74,11 @@ func getNameOnlyDiffNode(forLocation string) *Node {
 	return &node
 }
 
-func getParamDiffNode(paramName string, param spec.Parameter, includeType bool) *Node {
-	node := getSchemaDiffNode(paramName, param.Schema)
-	return node
-}
+//TODO REMOVE
+// func getParamDiffNode(paramName string, param spec.Parameter, includeType bool) *Node {
+// 	node := getSchemaDiffNode(paramName, param.Schema)
+// 	return node
+// }
 
 func getSimpleSchemaDiffNode(name string, schema *spec.SimpleSchema) *Node {
 	node := Node{
@@ -160,15 +162,16 @@ var numberWideness = map[string]int{
 	"integer.int32": 0,
 }
 
-func typeAndFormat(property *spec.Schema) string {
-	if len(property.Type) == 0 {
-		return "obj"
-	}
-	if property.Format != "" {
-		return fmt.Sprintf("%s:%s", property.Type[0], property.Format)
-	}
-	return fmt.Sprintf("%s", property.Type[0])
-}
+// TODO REMOVE
+// func typeAndFormat(property *spec.Schema) string {
+// 	if len(property.Type) == 0 {
+// 		return "obj"
+// 	}
+// 	if property.Format != "" {
+// 		return fmt.Sprintf("%s:%s", property.Type[0], property.Format)
+// 	}
+// 	return fmt.Sprintf("%s", property.Type[0])
+// }
 
 func prettyprint(b []byte) ([]byte, error) {
 	var out bytes.Buffer
