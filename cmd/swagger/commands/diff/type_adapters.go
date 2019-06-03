@@ -102,10 +102,10 @@ func sliceToStrMap(elements []string) map[string]bool {
 	return elementMap
 }
 
-func isNumericType(typeName string) (wideness int, isNumeric bool) {
-	wideness, isNumeric = numberWideness[typeName]
-	return
-}
+// func isNumericType(typeName string) (wideness int, isNumeric bool) {
+// 	wideness, isNumeric = numberWideness[typeName]
+// 	return
+// }
 
 func isStringType(typeName string) bool {
 	return typeName == "string" || typeName == "password"

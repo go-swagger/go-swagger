@@ -1,27 +1,21 @@
 package commands
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/corbym/gocrest"
 	"github.com/corbym/gocrest/is"
 	"github.com/corbym/gocrest/then"
 )
 
 var assertThat = then.AssertThat
 var equals = is.EqualTo
-var contains = is.ValueContaining
 
 const (
 	basePath           = "../../../fixtures/diff"
-	initialFile        = basePath + "/dummy.v1.json"
-	badChangeFile      = basePath + "/dummy.v2.json"
-	expectedOutputFile = basePath + "/v1v2diff.txt"
 )
 
 type testCaseData struct {
@@ -71,7 +65,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
-		t.Run(fmt.Sprintf("%s", tc.name), func(t *testing.T) {
+		t.Run( tc.name, func(t *testing.T) {
 
 			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
 
@@ -80,7 +74,8 @@ func TestDiffForVariousCombinations(t *testing.T) {
 			if err == nil {
 
 				diffsStr := catchStdOut(t, func() {
-					diffs.ReportAllDiffs(false)
+					err = diffs.ReportAllDiffs(false)
+					assertThat(t, err, is.Not(is.Nil()))
 				})
 				assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
 			}
@@ -133,19 +128,19 @@ func LinesInFile(fileName string) string {
 	return string(bytes)
 }
 
-func containsString(expected ...interface{}) *gocrest.Matcher {
-	match := new(gocrest.Matcher)
-	expectedAsString := expected[0].(string)
-	match.Describe = fmt.Sprintf("string containing %s", expectedAsString)
-	match.Matches = func(actual interface{}) bool {
-		expectedAsStr := expected[0].(string)
-		actualAsStr := actual.(string)
+// func containsString(expected ...interface{}) *gocrest.Matcher {
+// 	match := new(gocrest.Matcher)
+// 	expectedAsString := expected[0].(string)
+// 	match.Describe = fmt.Sprintf("string containing %s", expectedAsString)
+// 	match.Matches = func(actual interface{}) bool {
+// 		expectedAsStr := expected[0].(string)
+// 		actualAsStr := actual.(string)
 
-		return strings.Contains(actualAsStr, expectedAsStr)
+// 		return strings.Contains(actualAsStr, expectedAsStr)
 
-	}
-	return match
-}
+// 	}
+// 	return match
+// }
 
 func catchStdOut(t *testing.T, runnable func()) string {
 

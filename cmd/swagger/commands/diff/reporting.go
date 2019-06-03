@@ -6,16 +6,19 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-
 	"github.com/go-openapi/spec"
 )
 
 // Compare returns the result of analysing breaking and non breaking changes
 // between to Swagger specs
-func Compare(spec1, spec2 *spec.Swagger) SpecDifferences {
+func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 	analyser := NewSpecAnalyser()
-	analyser.Analyse(spec1, spec2)
-	return analyser.Diffs
+	err = analyser.Analyse(spec1, spec2)
+	if err != nil{
+		return nil,err
+	}
+	diffs = analyser.Diffs
+	return
 }
 
 // PathItemOp - combines path and operation into a single keyed entity
@@ -40,14 +43,14 @@ const (
 	Response
 )
 
-func findParam(name string, params []spec.Parameter) (spec.Parameter, bool) {
-	for _, eachCandidate := range params {
-		if eachCandidate.Name == name {
-			return eachCandidate, true
-		}
-	}
-	return spec.Parameter{}, false
-}
+// func findParam(name string, params []spec.Parameter) (spec.Parameter, bool) {
+// 	for _, eachCandidate := range params {
+// 		if eachCandidate.Name == name {
+// 			return eachCandidate, true
+// 		}
+// 	}
+// 	return spec.Parameter{}, false
+// }
 
 func getParams(pathParams, opParams []spec.Parameter, location string) map[string]spec.Parameter {
 	params := map[string]spec.Parameter{}
@@ -73,10 +76,10 @@ func getNameOnlyDiffNode(forLocation string) *Node {
 	return &node
 }
 
-func getParamDiffNode(paramName string, param spec.Parameter, includeType bool) *Node {
-	node := getSchemaDiffNode(paramName, param.Schema)
-	return node
-}
+// func getParamDiffNode(paramName string, param spec.Parameter, includeType bool) *Node {
+// 	node := getSchemaDiffNode(paramName, param.Schema)
+// 	return node
+// }
 
 func getSimpleSchemaDiffNode(name string, schema *spec.SimpleSchema) *Node {
 	node := Node{
@@ -160,15 +163,15 @@ var numberWideness = map[string]int{
 	"integer.int32": 0,
 }
 
-func typeAndFormat(property *spec.Schema) string {
-	if len(property.Type) == 0 {
-		return "obj"
-	}
-	if property.Format != "" {
-		return fmt.Sprintf("%s:%s", property.Type[0], property.Format)
-	}
-	return fmt.Sprintf("%s", property.Type[0])
-}
+// func typeAndFormat(property *spec.Schema) string {
+// 	if len(property.Type) == 0 {
+// 		return "obj"
+// 	}
+// 	if property.Format != "" {
+// 		return fmt.Sprintf("%s:%s", property.Type[0], property.Format)
+// 	}
+// 	return fmt.Sprintf("%s", property.Type[0])
+// }
 
 func prettyprint(b []byte) ([]byte, error) {
 	var out bytes.Buffer

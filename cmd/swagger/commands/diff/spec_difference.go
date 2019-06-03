@@ -17,17 +17,16 @@ type SpecDifference struct {
 // SpecDifferences list of differences
 type SpecDifferences []SpecDifference
 
-func newSpecDifferences() *SpecDifferences {
-	diffs := SpecDifferences{}
-	return &diffs
-}
+// func newSpecDifferences() *SpecDifferences {
+// 	diffs := SpecDifferences{}
+// 	return &diffs
+// }
 
 func (sd SpecDifference) matches(other SpecDifference) bool {
 	return sd.Code == other.Code &&
 		sd.Compatibility == other.Compatibility &&
 		sd.DiffInfo == other.DiffInfo &&
 		equalLocations(sd.DifferenceLocation, other.DifferenceLocation)
-	return false
 }
 
 func equalLocations(a, b DifferenceLocation) bool {
@@ -51,6 +50,7 @@ func equalNodes(a, b *Node) bool {
 
 }
 
+// BreakingChangeCount Calculates the breaking change count
 func (sd SpecDifferences) BreakingChangeCount() int {
 	count := 0
 	for _, eachDiff := range sd {
@@ -61,6 +61,7 @@ func (sd SpecDifferences) BreakingChangeCount() int {
 	return count
 }
 
+// FilterIgnores returns a copy of the list without the items in the specified ignore list
 func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences {
 	newDiffs := SpecDifferences{}
 	for _, eachDiff := range sd {
@@ -71,6 +72,7 @@ func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences
 	return newDiffs
 }
 
+// Contains Returns true if the item contains the specified item
 func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	for _, eachDiff := range sd {
 		if eachDiff.matches(diff) {
@@ -80,6 +82,7 @@ func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	return false
 }
 
+// String std string renderer
 func (sd SpecDifference) String() string {
 	optionalMethod := ""
 	direction := "Request Param:"
@@ -117,7 +120,7 @@ func (sd *SpecDifferences) ReportCompatibility() error {
 	if breakingCount > 0 {
 		fmt.Printf("\nBREAKING CHANGES:\n=================\n")
 		sd.reportChanges(Breaking)
-		return fmt.Errorf("Compatibility Test FAILED: %d Breaking changes detected", breakingCount)
+		return fmt.Errorf("compatibility Test FAILED: %d Breaking changes detected", breakingCount)
 	}
 	log.Printf("Compatibility test OK. No breaking changes identified.")
 	return nil

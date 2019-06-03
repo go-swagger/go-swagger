@@ -1,58 +1,75 @@
 package diff
 
-import (
-	"fmt"
-)
-
-func getCompatibilityForChange(forDiff SpecChangeCode, where DataDirection) Compatibility {
-	compatibility := Breaking
-	switch forDiff {
-	case DeletedProperty:
-		nonBreakingIf(where == Request, &compatibility)
-	case AddedProperty:
-		nonBreakingIf(where == Response, &compatibility)
-	case AddedRequiredProperty:
-	case ChangedOptionalToRequiredParam:
-	case DeletedOptionalParam:
-		compatibility = NonBreaking
-	case DeletedDeprecatedEndpoint:
-		compatibility = NonBreaking
-	case DeletedEndpoint:
-	case AddedRequiredParam:
-	case DeletedRequiredParam:
-		compatibility = NonBreaking
-	case ChangedRequiredToOptional, AddedEndpoint:
-		compatibility = NonBreaking
-	case WidenedType:
-		nonBreakingIf(where == Request, &compatibility)
-	case NarrowedType:
-		nonBreakingIf(where == Response, &compatibility)
-	case AddedEnumValue:
-		nonBreakingIf(where == Request, &compatibility)
-	case DeletedEnumValue:
-		nonBreakingIf(where == Response, &compatibility)
-	case AddedOptionalParam:
-		compatibility = NonBreaking
-	case ChangedRequiredToOptionalParam:
-		compatibility = NonBreaking
-	case AddedResponse:
-		compatibility = NonBreaking
-	case DeletedResponse:
-		compatibility = Breaking
-	case ChangedType:
-		compatibility = Breaking
-	case AddedResponseHeader:
-		compatibility = NonBreaking
-	case ChangedResponseHeader:
-	case DeletedResponseHeader:
-	default:
-		fmt.Printf("ERROR: Unknown diff type")
-	}
-	return compatibility
+// CompatibilityPolicy decides which changes are breaking and which are not
+type CompatibilityPolicy struct{
+	ForResponse map[SpecChangeCode]Compatibility
+	ForRequest map[SpecChangeCode]Compatibility
+	ForChange map[SpecChangeCode]Compatibility
 }
 
-func nonBreakingIf(cond bool, compatibility *Compatibility) {
-	if cond {
-		*compatibility = NonBreaking
+var compatibility CompatibilityPolicy
+
+func init(){
+	compatibility = CompatibilityPolicy{
+		ForResponse : map[SpecChangeCode]Compatibility{
+			AddedRequiredProperty:          Breaking,
+			DeletedProperty:                Breaking,
+			AddedProperty:                  NonBreaking,
+			DeletedResponse:                Breaking,
+			AddedResponse:                  NonBreaking,
+			WidenedType:                    NonBreaking,
+			NarrowedType:                   NonBreaking,
+			ChangedType:                    Breaking,
+			ChangedToCompatibleType:        NonBreaking,
+			AddedEnumValue:                 Breaking,
+			DeletedEnumValue:               NonBreaking,
+			AddedResponseHeader:            NonBreaking,
+			ChangedResponseHeader:          Breaking,
+			DeletedResponseHeader:          Breaking,
+		},
+		ForRequest : map[SpecChangeCode]Compatibility{
+			AddedRequiredProperty:          Breaking,
+			DeletedProperty:                Breaking,
+			AddedProperty:                  Breaking,
+			AddedOptionalParam:             NonBreaking,
+			AddedRequiredParam:             Breaking,
+			DeletedOptionalParam:           NonBreaking,
+			DeletedRequiredParam:           NonBreaking,
+			WidenedType:                    NonBreaking,
+			NarrowedType:                   Breaking,
+			ChangedType:                    Breaking,
+			ChangedToCompatibleType:        NonBreaking,
+			ChangedOptionalToRequiredParam: Breaking,
+			ChangedRequiredToOptionalParam: NonBreaking,
+			AddedEnumValue:                 NonBreaking,
+			DeletedEnumValue:               Breaking,
+		},
+		ForChange : map[SpecChangeCode]Compatibility{
+			NoChangeDetected:               NonBreaking,
+			AddedEndpoint:                  NonBreaking,
+			DeletedEndpoint:                Breaking,
+			DeletedDeprecatedEndpoint:			NonBreaking,
+			AddedConsumesFormat:            NonBreaking,
+			DeletedConsumesFormat:          Breaking,
+			AddedProducesFormat:            Breaking,
+			DeletedProducesFormat:          NonBreaking,
+			AddedSchemes:                   NonBreaking,
+			DeletedSchemes:                 Breaking,
+			ChangedHostURL:                 Breaking,
+			ChangedBasePath:                Breaking,
+		},
 	}
 }
+
+
+func getCompatibilityForChange(diffCode SpecChangeCode, where DataDirection) Compatibility {
+	if compat, commonChange := compatibility.ForChange[diffCode]; commonChange{
+			return compat
+	}
+	if where == Request{
+		return compatibility.ForRequest[diffCode]
+	}
+	return compatibility.ForResponse[diffCode]
+}
+
+

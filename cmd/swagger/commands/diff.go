@@ -24,20 +24,7 @@ type DiffCommand struct {
 // Execute diffs the two specs provided
 func (c *DiffCommand) Execute(args []string) error {
 	if len(args) != 2 {
-		msg := `The diff command requires an old and new swagger document urls to be specified.
-		diff will fail if any breaking changes are detected.
-		eg 
-		   swagger diff spec1Path spec2Path
-		
-		Breaking changes are:
-		  * all path and verb combinations in the old specification are present in the new one
-		  * no request parameters are required in the new specification that were not required in the old one
-		  * all request parameters in the old specification are present in the new one
-		  * all request parameters in the old specification have the same type in the new one
-		  * all response attributes in the old specification are present in the new one
-		  * all response attributes in the old specification have the same type in the new one
-		  * all enum values accepted by the old specification are accepted by the new one
-`
+		msg := `missing arguments for diff command (use --help for more info)`
 		return errors.New(msg)
 	}
 
@@ -50,6 +37,9 @@ func (c *DiffCommand) Execute(args []string) error {
 	log.Printf("Diff Report Destination (-d) :%s", c.Destination)
 
 	diffs, err := getDiffs(args[0], args[1])
+	if err != nil {
+		return err
+	}
 
 	ignores, err := readIgnores(c.IgnoreFile)
 	if err != nil {
@@ -64,13 +54,15 @@ func (c *DiffCommand) Execute(args []string) error {
 	}
 
 	if c.Format == "json" {
-		diffs.ReportAllDiffs(true)
-
+		err = diffs.ReportAllDiffs(true)
+		if err != nil {
+			return err
+		}
 	} else {
 		if c.OnlyBreakingChanges {
 			err = diffs.ReportCompatibility()
 		} else {
-			diffs.ReportAllDiffs(false)
+			err = diffs.ReportAllDiffs(false)
 		}
 	}
 	return err
@@ -91,7 +83,14 @@ func readIgnores(ignoreFile string) (diff.SpecDifferences, error) {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 	byteValue, err := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &ignoreDiffs)
+	if err != nil {
+		return nil, err
+	}
+	// def
+	err = json.Unmarshal(byteValue, &ignoreDiffs)
+	if err != nil {
+		return nil, err
+	}
 	return ignoreDiffs, nil
 }
 
@@ -109,6 +108,5 @@ func getDiffs(oldSpecPath, newSpecPath string) (diff.SpecDifferences, error) {
 		return nil, err
 	}
 
-	diffs := diff.Compare(specDoc1.Spec(), specDoc2.Spec())
-	return diffs, nil
+	return diff.Compare(specDoc1.Spec(), specDoc2.Spec())
 }
