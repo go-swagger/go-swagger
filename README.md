@@ -167,7 +167,6 @@ Merge specifications (composition):
 swagger mixin {spec1} {spec2}
 ```
 
-
 ### Compare specs
 
 The  diff command allows you to check backwards compatibility.
