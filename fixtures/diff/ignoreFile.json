@@ -35,11 +35,11 @@
       "method": "get",
       "response": 200,
       "node": {
-        "is-array": true,
         "type": "A1",
+        "is_array": true,
         "child": {
-          "type": "string",
-          "name": "personality"
+          "name": "personality",
+          "type": "string"
         }
       }
     },
@@ -53,11 +53,11 @@
       "method": "get",
       "response": 200,
       "node": {
-        "is-array": true,
         "type": "A1",
+        "is_array": true,
         "child": {
-          "type": "string",
-          "name": "personality"
+          "name": "personality",
+          "type": "string"
         }
       }
     },
@@ -71,11 +71,11 @@
       "method": "get",
       "response": 200,
       "node": {
-        "is-array": true,
         "type": "A1",
+        "is_array": true,
         "child": {
-          "type": "string",
-          "name": "personality"
+          "name": "personality",
+          "type": "string"
         }
       }
     },
@@ -89,11 +89,11 @@
       "method": "get",
       "response": 200,
       "node": {
-        "is-array": true,
         "type": "A1",
+        "is_array": true,
         "child": {
-          "type": "string",
-          "name": "personality"
+          "name": "personality",
+          "type": "string"
         }
       }
     },

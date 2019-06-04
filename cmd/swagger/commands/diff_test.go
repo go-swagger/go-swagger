@@ -142,20 +142,6 @@ func LinesInFile(fileName string) string {
 	return string(bytes)
 }
 
-// func containsString(expected ...interface{}) *gocrest.Matcher {
-// 	match := new(gocrest.Matcher)
-// 	expectedAsString := expected[0].(string)
-// 	match.Describe = fmt.Sprintf("string containing %s", expectedAsString)
-// 	match.Matches = func(actual interface{}) bool {
-// 		expectedAsStr := expected[0].(string)
-// 		actualAsStr := actual.(string)
-
-// 		return strings.Contains(actualAsStr, expectedAsStr)
-
-// 	}
-// 	return match
-// }
-
 func catchStdOut(t *testing.T, runnable func()) string {
 
 	realStdout := os.Stdout
