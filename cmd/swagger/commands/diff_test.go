@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -93,6 +94,19 @@ func TestReadIgnores(t *testing.T) {
 
 	assertThat(t, err, is.Nil())
 	assertThat(t, len(ignores), is.Not(equals(0)))
+
+	isIn := diff.SpecDifference{DifferenceLocation:diff.DifferenceLocation{
+		Method:"get",
+		Response:0,
+		URL:"/a/",
+		Node: &diff.Node{Field:"Query",ChildNode:&diff.Node{Field:"personality"}},
+	},
+	Code: diff.AddedEnumValue,
+	Compatibility: diff.NonBreaking,
+	DiffInfo: "<extrovert>",
+}
+	assertThat(t, ignores.Contains(isIn), equals(true))
+	
 }
 
 func dieOn(err error, t *testing.T) {

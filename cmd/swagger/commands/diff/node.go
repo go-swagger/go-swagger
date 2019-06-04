@@ -2,10 +2,10 @@ package diff
 
 //Node is the position od a diff in a spec
 type Node struct {
-	Field     string
-	TypeName  string
-	IsArray   bool
-	ChildNode *Node
+	Field     string `json:"name,omitempty"`
+	TypeName  string `json:"type,omitempty"`
+	IsArray   bool `json:"is_array,omitempty"`
+	ChildNode *Node `json:"child,omitempty"`
 }
 
 // String std stirng render
