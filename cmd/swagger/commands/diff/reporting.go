@@ -9,6 +9,8 @@ import (
 	"github.com/go-openapi/spec"
 )
 
+var ArrayType = "array"
+
 // Compare returns the result of analysing breaking and non breaking changes
 // between to Swagger specs
 func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
@@ -115,7 +117,7 @@ func definitonFromURL(url *url.URL) string {
 
 func getSimpleSchemaType(schema *spec.SimpleSchema) (typeName string, isArray bool) {
 	typeName = schema.Type
-	if typeName == "array" {
+	if typeName == ArrayType {
 		typeName, _ = getSimpleSchemaType(&schema.Items.SimpleSchema)
 		return typeName, true
 	}
@@ -128,7 +130,7 @@ func getSchemaType(schema *spec.SchemaProps) (typeName string, isArray bool) {
 		return refStr, false
 	}
 	typeName = schema.Type[0]
-	if typeName == "array" {
+	if typeName == ArrayType {
 		typeName, _ = getSchemaType(&schema.Items.Schema.SchemaProps)
 		return typeName, true
 	}

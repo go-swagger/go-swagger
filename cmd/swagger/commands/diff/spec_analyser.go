@@ -7,6 +7,8 @@ import (
 
 )
 
+const StringType = "string"
+
 // URLMethodResponse encapsulates these three elements to act as a map key
 type URLMethodResponse struct {
 	Path     string `json:"path"`
@@ -233,15 +235,15 @@ func (sd *SpecAnalyser) CheckToFromPrimitiveType(diffs[]TypeDiff, type1, type2 s
 // CheckToFromArrayType check for changes to or from an Array type
 func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 	// Single to Array or Array to Single
-	type1Array := type1.Type[0] == "array"
-	type2Array := type2.Type[0] == "array"
+	type1Array := type1.Type[0] == ArrayType
+	type2Array := type2.Type[0] == ArrayType
 
 	if type1Array && !type2Array {
 		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: "obj", ToType: type2.Type[0]})
 	}
 
 	if !type1Array && type2Array {
-		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: type1.Type[0], ToType: "array"})
+		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: type1.Type[0], ToType: ArrayType})
 	}
 
 	if type1Array && 	type2Array {
@@ -257,14 +259,14 @@ func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.
 // CheckStringTypeChanges checks for changes to or from a string type
 func (sd *SpecAnalyser) CheckStringTypeChanges(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
 	// string changes
-	if type1.Type[0] == "string" &&
-		type2.Type[0] == "string" {
+	if type1.Type[0] == StringType &&
+		type2.Type[0] == StringType {
 			diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
 			diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
 			if type1.Pattern != type2.Pattern {
 				diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
 			}
-		if type1.Type[0] == "string" {
+		if type1.Type[0] == StringType {
 			if len(type1.Enum) > 0 {
 				enumDiffs := sd.compareEnums(type1.Enum, type2.Enum)
 				diffs = append(diffs,enumDiffs...)
@@ -373,7 +375,7 @@ func (sd *SpecAnalyser) compareSimpleSchema(location DifferenceLocation, schema1
 		return
 	}
 
-	if schema1.Type == "array" {
+	if schema1.Type == ArrayType {
 		refSchema1 := schema1.Items.SimpleSchema
 		refSchema2 := schema2.Items.SimpleSchema
 
@@ -419,7 +421,7 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 			sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: eachTypeDiff.Change, DiffInfo: eachTypeDiff.Description})
 		}
 	}
-	if schema1.Type[0] == "array" {
+	if schema1.Type[0] == ArrayType {
 		refSchema1, _ := sd.schemaFromRef(schema1.Items.Schema, &sd.Definitions1)
 		refSchema2, _ := sd.schemaFromRef(schema2.Items.Schema, &sd.Definitions2)
 
@@ -441,6 +443,7 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 	schema2Props := sd.propertiesFor(schema2, &sd.Definitions2)
 	// find deleted and changed properties
 	for eachProp1Name, eachProp1 := range schema1Props {
+		eachProp1 := eachProp1
 		_, required1 := requiredProps1[eachProp1Name]
 		_, required2 := requiredProps2[eachProp1Name]
 		childLoc := sd.addChildDiffNode(location, eachProp1Name, &eachProp1)
@@ -454,6 +457,7 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 
 	// find added properties
 	for eachProp2Name, eachProp2 := range schema2.Properties {
+		eachProp2 := eachProp2
 		if _, ok := schema1.Properties[eachProp2Name]; !ok {
 			childLoc := sd.addChildDiffNode(location, eachProp2Name, &eachProp2)
 			_, required2 := requiredProps2[eachProp2Name]
@@ -483,7 +487,7 @@ func (sd *SpecAnalyser) addChildDiffNode(location DifferenceLocation, propName s
 
 func (sd *SpecAnalyser) fromSchemaProps(fieldName string, props *spec.SchemaProps) Node {
 	node := Node{}
-	node.IsArray = props.Type[0] == "array"
+	node.IsArray = props.Type[0] == ArrayType
 	if !node.IsArray {
 		node.TypeName = props.Type[0]
 	}
@@ -571,6 +575,7 @@ func (sd *SpecAnalyser) propertiesFor(schema *spec.Schema, defns *spec.Definitio
 
 	if schema.Properties != nil {
 		for name, prop := range schema.Properties {
+			prop := prop
 			eachProp, _ := sd.schemaFromRef(&prop, defns)
 			props[name] = *eachProp
 		}
@@ -578,6 +583,7 @@ func (sd *SpecAnalyser) propertiesFor(schema *spec.Schema, defns *spec.Definitio
 	for _, eachAllOf := range schema.AllOf {
 		eachAllOfActual, _ := sd.schemaFromRef(&eachAllOf, defns)
 		for name, prop := range eachAllOfActual.Properties {
+			prop := prop
 			eachProp, _ := sd.schemaFromRef(&prop, defns)
 			props[name] = *eachProp
 		}

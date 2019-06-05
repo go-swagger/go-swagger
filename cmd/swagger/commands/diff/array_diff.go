@@ -95,5 +95,5 @@ func (f FromMapStruct) DiffsTo(destMap map[string]interface{}) (added, deleted, 
 			common[key] = Pair{f.srcMap[key], destMap[key]}
 		}
 	}
-	return
+	return added, deleted, common
 }

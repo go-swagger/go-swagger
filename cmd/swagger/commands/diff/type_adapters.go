@@ -102,11 +102,6 @@ func sliceToStrMap(elements []string) map[string]bool {
 	return elementMap
 }
 
-// func isNumericType(typeName string) (wideness int, isNumeric bool) {
-// 	wideness, isNumeric = numberWideness[typeName]
-// 	return
-// }
-
 func isStringType(typeName string) bool {
 	return typeName == "string" || typeName == "password"
 }
@@ -141,10 +136,10 @@ func getTypeHierarchyChange(type1, type2 string) TypeDiff {
 func compareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) TypeDiff {
 	if val1 != nil && val2 != nil {
 		if *val1 > *val2 {
-			return TypeDiff{Change: ifGreaterCode, Description: ""}
+			return TypeDiff{Change: ifGreaterCode, Description: fieldName}
 		}
 		if *val1 < *val2 {
-			return TypeDiff{Change: ifLessCode, Description: ""}
+			return TypeDiff{Change: ifLessCode, Description: fieldName}
 		}
 	}
 	return TypeDiff{Change: NoChangeDetected, Description: ""}
@@ -153,10 +148,10 @@ func compareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreate
 func compareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) TypeDiff {
 	if val1 != nil && val2 != nil {
 		if *val1 > *val2 {
-			return TypeDiff{Change: ifGreaterCode, Description: ""}
+			return TypeDiff{Change: ifGreaterCode, Description: fieldName}
 		}
 		if *val1 < *val2 {
-			return TypeDiff{Change: ifLessCode, Description: ""}
+			return TypeDiff{Change: ifLessCode, Description: fieldName}
 		}
 
 	}
