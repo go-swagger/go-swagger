@@ -87,11 +87,11 @@ func (sd *SpecAnalyser) analyseSpecMetadata(spec1, spec2 *spec.Swagger) {
 	}
 
 	// // host should be able to change without any issues?
-	sd.analysefMetaDataProperty(spec1.Host, spec2.Host, ChangedHostURL, Breaking)
+	sd.analyseMetaDataProperty(spec1.Host, spec2.Host, ChangedHostURL, Breaking)
 	// sd.Host = compareStrings(spec1.Host, spec2.Host)
 
 	// // Base Path change will break non generated clients
-	sd.analysefMetaDataProperty(spec1.BasePath, spec2.BasePath, ChangedBasePath, Breaking)
+	sd.analyseMetaDataProperty(spec1.BasePath, spec2.BasePath, ChangedBasePath, Breaking)
 
 	// TODO: what to do about security?
 	// Missing security scheme will break a client
@@ -538,7 +538,7 @@ func (sd *SpecAnalyser) findDeletedEndpoints() {
 	}
 }
 
-func (sd *SpecAnalyser) analysefMetaDataProperty(item1, item2 string, codeIfDiff SpecChangeCode, compatIfDiff Compatibility) {
+func (sd *SpecAnalyser) analyseMetaDataProperty(item1, item2 string, codeIfDiff SpecChangeCode, compatIfDiff Compatibility) {
 	if item1 != item2 {
 		diffSpec := fmt.Sprintf("%s -> %s", item1, item2)
 		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: ""}, Code: codeIfDiff, Compatibility: compatIfDiff, DiffInfo: diffSpec})
