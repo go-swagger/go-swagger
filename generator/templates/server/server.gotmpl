@@ -256,7 +256,6 @@ func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
 	}
 
 	s.api = api
-	s.api.Logger = log.Printf
 	s.handler = configureAPI(api)
 }
 
