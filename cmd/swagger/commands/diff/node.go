@@ -4,22 +4,22 @@ package diff
 type Node struct {
 	Field     string `json:"name,omitempty"`
 	TypeName  string `json:"type,omitempty"`
-	IsArray   bool `json:"is_array,omitempty"`
-	ChildNode *Node `json:"child,omitempty"`
+	IsArray   bool   `json:"is_array,omitempty"`
+	ChildNode *Node  `json:"child,omitempty"`
 }
 
 // String std stirng render
 func (n *Node) String() string {
 	name := n.Field
 	if n.IsArray {
-		name = "array["+n.TypeName+"]"
+		name = "array[" + n.TypeName + "]"
 	}
-	
+
 	if n.ChildNode != nil {
 		return name + "." + n.ChildNode.String()
 	}
-	if len(n.TypeName)>0{
-		return name +" : "+ n.TypeName
+	if len(n.TypeName) > 0 {
+		return name + " : " + n.TypeName
 	}
 	return name
 }

@@ -1,10 +1,9 @@
 package diff
 
 import (
-	"github.com/go-openapi/spec"
 	"fmt"
+	"github.com/go-openapi/spec"
 	"strings"
-
 )
 
 const StringType = "string"
@@ -215,7 +214,7 @@ func addTypeDiff(diffs []TypeDiff, diff TypeDiff) []TypeDiff {
 }
 
 // CheckToFromPrimitiveType check for diff to or from a primitive
-func (sd *SpecAnalyser) CheckToFromPrimitiveType(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
+func (sd *SpecAnalyser) CheckToFromPrimitiveType(diffs []TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff {
 
 	type1IsPrimitive := len(type1.Type) > 0
 	type2IsPrimitive := len(type2.Type) > 0
@@ -233,7 +232,7 @@ func (sd *SpecAnalyser) CheckToFromPrimitiveType(diffs[]TypeDiff, type1, type2 s
 }
 
 // CheckToFromArrayType check for changes to or from an Array type
-func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
+func (sd *SpecAnalyser) CheckToFromArrayType(diffs []TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff {
 	// Single to Array or Array to Single
 	type1Array := type1.Type[0] == ArrayType
 	type2Array := type2.Type[0] == ArrayType
@@ -246,7 +245,7 @@ func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.
 		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: type1.Type[0], ToType: ArrayType})
 	}
 
-	if type1Array && 	type2Array {
+	if type1Array && type2Array {
 		// array
 		// TODO: Items??
 		diffs = addTypeDiff(diffs, compareIntValues("MaxItems", type1.MaxItems, type2.MaxItems, WidenedType, NarrowedType))
@@ -257,19 +256,19 @@ func (sd *SpecAnalyser) CheckToFromArrayType(diffs[]TypeDiff, type1, type2 spec.
 }
 
 // CheckStringTypeChanges checks for changes to or from a string type
-func (sd *SpecAnalyser) CheckStringTypeChanges(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
+func (sd *SpecAnalyser) CheckStringTypeChanges(diffs []TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff {
 	// string changes
 	if type1.Type[0] == StringType &&
 		type2.Type[0] == StringType {
-			diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
-			diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
-			if type1.Pattern != type2.Pattern {
-				diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
-			}
+		diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
+		diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
+		if type1.Pattern != type2.Pattern {
+			diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
+		}
 		if type1.Type[0] == StringType {
 			if len(type1.Enum) > 0 {
 				enumDiffs := sd.compareEnums(type1.Enum, type2.Enum)
-				diffs = append(diffs,enumDiffs...)
+				diffs = append(diffs, enumDiffs...)
 			}
 		}
 	}
@@ -277,7 +276,7 @@ func (sd *SpecAnalyser) CheckStringTypeChanges(diffs[]TypeDiff, type1, type2 spe
 }
 
 // CheckNumericTypeChanges checks for changes to or from a numeric type
-func (sd *SpecAnalyser) CheckNumericTypeChanges(diffs[]TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff{
+func (sd *SpecAnalyser) CheckNumericTypeChanges(diffs []TypeDiff, type1, type2 spec.SchemaProps) []TypeDiff {
 	// Number
 	_, type1IsNumeric := numberWideness[type1.Type[0]]
 	_, type2IsNumeric := numberWideness[type2.Type[0]]
@@ -306,15 +305,15 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 
 	diffs := []TypeDiff{}
 
-	diffs = sd.CheckToFromPrimitiveType(diffs, type1,type2)
+	diffs = sd.CheckToFromPrimitiveType(diffs, type1, type2)
 
-	if len(diffs)>0{
+	if len(diffs) > 0 {
 		return diffs
 	}
 
-	diffs = sd.CheckToFromArrayType(diffs, type1,type2)
+	diffs = sd.CheckToFromArrayType(diffs, type1, type2)
 
-	if len(diffs)>0{
+	if len(diffs) > 0 {
 		return diffs
 	}
 
@@ -327,21 +326,20 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 		diffs = addTypeDiff(diffs, diff)
 	}
 
-	diffs = sd.CheckStringTypeChanges(diffs,type1,type2)
+	diffs = sd.CheckStringTypeChanges(diffs, type1, type2)
 
-	if len(diffs)>0{
+	if len(diffs) > 0 {
 		return diffs
 	}
 
-	diffs = sd.CheckNumericTypeChanges(diffs,type1,type2)
+	diffs = sd.CheckNumericTypeChanges(diffs, type1, type2)
 
-	if len(diffs)>0{
+	if len(diffs) > 0 {
 		return diffs
 	}
 
 	return diffs
 }
-
 
 func (sd *SpecAnalyser) compareParams(urlMethod URLMethod, location string, name string, param1, param2 spec.Parameter) {
 	diffLocation := DifferenceLocation{URL: urlMethod.Path, Method: urlMethod.Method}
