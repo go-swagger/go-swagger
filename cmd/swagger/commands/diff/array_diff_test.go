@@ -42,7 +42,7 @@ func isListWithItems(other []string) *gocrest.Matcher {
 			for _, actualItem := range actualValue {
 				for _, otherItem := range other {
 					if actualItem == otherItem {
-						leftToMatch = leftToMatch - 1
+						leftToMatch--
 						break
 					}
 				}
