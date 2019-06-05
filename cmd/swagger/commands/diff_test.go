@@ -16,7 +16,7 @@ var assertThat = then.AssertThat
 var equals = is.EqualTo
 
 const (
-	basePath           = "../../../fixtures/diff"
+	basePath = "../../../fixtures/diff"
 )
 
 type testCaseData struct {
@@ -66,7 +66,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
-		t.Run( tc.name, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 
 			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
 
@@ -95,18 +95,18 @@ func TestReadIgnores(t *testing.T) {
 	assertThat(t, err, is.Nil())
 	assertThat(t, len(ignores), is.Not(equals(0)))
 
-	isIn := diff.SpecDifference{DifferenceLocation:diff.DifferenceLocation{
-		Method:"get",
-		Response:0,
-		URL:"/a/",
-		Node: &diff.Node{Field:"Query",ChildNode:&diff.Node{Field:"personality"}},
+	isIn := diff.SpecDifference{DifferenceLocation: diff.DifferenceLocation{
+		Method:   "get",
+		Response: 0,
+		URL:      "/a/",
+		Node:     &diff.Node{Field: "Query", ChildNode: &diff.Node{Field: "personality"}},
 	},
-	Code: diff.AddedEnumValue,
-	Compatibility: diff.NonBreaking,
-	DiffInfo: "<extrovert>",
-}
+		Code:          diff.AddedEnumValue,
+		Compatibility: diff.NonBreaking,
+		DiffInfo:      "<extrovert>",
+	}
 	assertThat(t, ignores.Contains(isIn), equals(true))
-	
+
 }
 
 func dieOn(err error, t *testing.T) {

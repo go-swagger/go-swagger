@@ -51,12 +51,12 @@ func (c *DiffCommand) Execute(args []string) error {
 	diffs = diffs.FilterIgnores(ignores)
 	if len(ignores) > 0 {
 		log.Printf("Diff Report Ignored Items from IgnoreFile")
-		for _,eachItem := range ignores {
+		for _, eachItem := range ignores {
 			log.Printf("%s", eachItem.String())
 		}
 	}
 
-	if c.Format == JSONFormat{
+	if c.Format == JSONFormat {
 		err = diffs.ReportAllDiffs(true)
 		if err != nil {
 			return err

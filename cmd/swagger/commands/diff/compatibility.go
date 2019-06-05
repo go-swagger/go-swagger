@@ -1,33 +1,33 @@
 package diff
 
 // CompatibilityPolicy decides which changes are breaking and which are not
-type CompatibilityPolicy struct{
+type CompatibilityPolicy struct {
 	ForResponse map[SpecChangeCode]Compatibility
-	ForRequest map[SpecChangeCode]Compatibility
-	ForChange map[SpecChangeCode]Compatibility
+	ForRequest  map[SpecChangeCode]Compatibility
+	ForChange   map[SpecChangeCode]Compatibility
 }
 
 var compatibility CompatibilityPolicy
 
-func init(){
+func init() {
 	compatibility = CompatibilityPolicy{
-		ForResponse : map[SpecChangeCode]Compatibility{
-			AddedRequiredProperty:          Breaking,
-			DeletedProperty:                Breaking,
-			AddedProperty:                  NonBreaking,
-			DeletedResponse:                Breaking,
-			AddedResponse:                  NonBreaking,
-			WidenedType:                    NonBreaking,
-			NarrowedType:                   NonBreaking,
-			ChangedType:                    Breaking,
-			ChangedToCompatibleType:        NonBreaking,
-			AddedEnumValue:                 Breaking,
-			DeletedEnumValue:               NonBreaking,
-			AddedResponseHeader:            NonBreaking,
-			ChangedResponseHeader:          Breaking,
-			DeletedResponseHeader:          Breaking,
+		ForResponse: map[SpecChangeCode]Compatibility{
+			AddedRequiredProperty:   Breaking,
+			DeletedProperty:         Breaking,
+			AddedProperty:           NonBreaking,
+			DeletedResponse:         Breaking,
+			AddedResponse:           NonBreaking,
+			WidenedType:             NonBreaking,
+			NarrowedType:            NonBreaking,
+			ChangedType:             Breaking,
+			ChangedToCompatibleType: NonBreaking,
+			AddedEnumValue:          Breaking,
+			DeletedEnumValue:        NonBreaking,
+			AddedResponseHeader:     NonBreaking,
+			ChangedResponseHeader:   Breaking,
+			DeletedResponseHeader:   Breaking,
 		},
-		ForRequest : map[SpecChangeCode]Compatibility{
+		ForRequest: map[SpecChangeCode]Compatibility{
 			AddedRequiredProperty:          Breaking,
 			DeletedProperty:                Breaking,
 			AddedProperty:                  Breaking,
@@ -44,32 +44,29 @@ func init(){
 			AddedEnumValue:                 NonBreaking,
 			DeletedEnumValue:               Breaking,
 		},
-		ForChange : map[SpecChangeCode]Compatibility{
-			NoChangeDetected:               NonBreaking,
-			AddedEndpoint:                  NonBreaking,
-			DeletedEndpoint:                Breaking,
-			DeletedDeprecatedEndpoint:			NonBreaking,
-			AddedConsumesFormat:            NonBreaking,
-			DeletedConsumesFormat:          Breaking,
-			AddedProducesFormat:            Breaking,
-			DeletedProducesFormat:          NonBreaking,
-			AddedSchemes:                   NonBreaking,
-			DeletedSchemes:                 Breaking,
-			ChangedHostURL:                 Breaking,
-			ChangedBasePath:                Breaking,
+		ForChange: map[SpecChangeCode]Compatibility{
+			NoChangeDetected:          NonBreaking,
+			AddedEndpoint:             NonBreaking,
+			DeletedEndpoint:           Breaking,
+			DeletedDeprecatedEndpoint: NonBreaking,
+			AddedConsumesFormat:       NonBreaking,
+			DeletedConsumesFormat:     Breaking,
+			AddedProducesFormat:       Breaking,
+			DeletedProducesFormat:     NonBreaking,
+			AddedSchemes:              NonBreaking,
+			DeletedSchemes:            Breaking,
+			ChangedHostURL:            Breaking,
+			ChangedBasePath:           Breaking,
 		},
 	}
 }
 
-
 func getCompatibilityForChange(diffCode SpecChangeCode, where DataDirection) Compatibility {
-	if compat, commonChange := compatibility.ForChange[diffCode]; commonChange{
-			return compat
+	if compat, commonChange := compatibility.ForChange[diffCode]; commonChange {
+		return compat
 	}
-	if where == Request{
+	if where == Request {
 		return compatibility.ForRequest[diffCode]
 	}
 	return compatibility.ForResponse[diffCode]
 }
-
-
