@@ -21,3 +21,4 @@ linters:
     - lll
     - gochecknoinits
     - gochecknoglobals
+    - dupl
