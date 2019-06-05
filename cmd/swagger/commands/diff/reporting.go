@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-openapi/spec"
 	"net/url"
 	"strings"
-	"github.com/go-openapi/spec"
 )
 
 var ArrayType = "array"
@@ -16,8 +16,8 @@ var ArrayType = "array"
 func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 	analyser := NewSpecAnalyser()
 	err = analyser.Analyse(spec1, spec2)
-	if err != nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 	diffs = analyser.Diffs
 	return
