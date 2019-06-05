@@ -11,8 +11,8 @@ import (
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 )
 
-// JsonFormat for json
-const JsonFormat = "json"
+// JSONFormat for json
+const JSONFormat = "json"
 
 // DiffCommand is a command that generates the diff of two swagger specs.
 //
@@ -56,7 +56,7 @@ func (c *DiffCommand) Execute(args []string) error {
 		}
 	}
 
-	if c.Format == JsonFormat{
+	if c.Format == JSONFormat{
 		err = diffs.ReportAllDiffs(true)
 		if err != nil {
 			return err
