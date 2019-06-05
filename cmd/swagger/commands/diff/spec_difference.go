@@ -17,12 +17,8 @@ type SpecDifference struct {
 // SpecDifferences list of differences
 type SpecDifferences []SpecDifference
 
-// func newSpecDifferences() *SpecDifferences {
-// 	diffs := SpecDifferences{}
-// 	return &diffs
-// }
-
-func (sd SpecDifference) matches(other SpecDifference) bool {
+// Matches returns true if the diff matches another
+func (sd SpecDifference) Matches(other SpecDifference) bool {
 	return sd.Code == other.Code &&
 		sd.Compatibility == other.Compatibility &&
 		sd.DiffInfo == other.DiffInfo &&
@@ -75,7 +71,7 @@ func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences
 // Contains Returns true if the item contains the specified item
 func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	for _, eachDiff := range sd {
-		if eachDiff.matches(diff) {
+		if eachDiff.Matches(diff) {
 			return true
 		}
 	}
@@ -172,14 +168,3 @@ func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) error {
 
 	return sd.ReportCompatibility()
 }
-
-// func (sd *SpecDifferences) ProcessIgnores(ignores[]SpecDifference) {
-// 	remnant := []SpecDifference{}
-// 	ignoreDiffs := specDifferencesFor(ignores)
-
-// 	for _,eachDiff:= range sd.Diffs{
-// 		if ignoreDiffs.Contains(eachDiff){
-// 			remnant = append(remnant,eachDiff)
-// 		}
-// 	}
-// }

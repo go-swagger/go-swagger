@@ -1,6 +1,6 @@
 package diff
 
-//Node is the position od a diff in a spec
+// Node is the position od a diff in a spec
 type Node struct {
 	Field     string `json:"name,omitempty"`
 	TypeName  string `json:"type,omitempty"`
@@ -8,7 +8,7 @@ type Node struct {
 	ChildNode *Node  `json:"child,omitempty"`
 }
 
-// String std stirng render
+// String std string render
 func (n *Node) String() string {
 	name := n.Field
 	if n.IsArray {
