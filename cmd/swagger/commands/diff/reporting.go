@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-openapi/spec"
 	"net/url"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 var ArrayType = "array"

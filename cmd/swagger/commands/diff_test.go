@@ -1,12 +1,13 @@
 package commands
 
 import (
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 
 	"github.com/corbym/gocrest/is"
 	"github.com/corbym/gocrest/then"

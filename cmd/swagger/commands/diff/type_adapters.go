@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+
 	"github.com/go-openapi/spec"
 )
 

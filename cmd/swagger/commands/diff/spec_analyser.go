@@ -2,8 +2,9 @@ package diff
 
 import (
 	"fmt"
-	"github.com/go-openapi/spec"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 const StringType = "string"
