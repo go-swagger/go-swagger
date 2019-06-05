@@ -581,6 +581,7 @@ func (sd *SpecAnalyser) propertiesFor(schema *spec.Schema, defns *spec.Definitio
 		}
 	}
 	for _, eachAllOf := range schema.AllOf {
+		eachAllOf := eachAllOf
 		eachAllOfActual, _ := sd.schemaFromRef(&eachAllOf, defns)
 		for name, prop := range eachAllOfActual.Properties {
 			prop := prop
