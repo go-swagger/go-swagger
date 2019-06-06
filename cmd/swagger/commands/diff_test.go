@@ -84,7 +84,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 		})
 	}
 
-	assertThat(t, len(matches), is.EqualTo(len(allTests)).Reason("All test cases were not run. Remove filter."))
+	assertThat(t, len(matches), equals(len(allTests)).Reason("All test cases were not run. Remove filter."))
 }
 
 func TestReadIgnores(t *testing.T) {
