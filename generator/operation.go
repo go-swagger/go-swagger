@@ -230,7 +230,7 @@ func (o *operationGenerator) Generate() error {
 		st = o.GenOpts.Tags
 	}
 	intersected := intersectTags(o.Operation.Tags, st)
-	if len(intersected) == 1 {
+	if len(intersected) > 0 {
 		tag := intersected[0]
 		bldr.APIPackage = o.GenOpts.LanguageOpts.ManglePackagePath(tag, o.APIPackage)
 	}
