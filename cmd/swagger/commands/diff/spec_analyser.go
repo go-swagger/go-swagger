@@ -57,7 +57,7 @@ func (sd *SpecAnalyser) Analyse(spec1, spec2 *spec.Swagger) error {
 
 func (sd *SpecAnalyser) analyseSpecMetadata(spec1, spec2 *spec.Swagger) {
 	// breaking if it no longer consumes any formats
-	added, deleted, _ := FromStringArray(spec1.Consumes).DiffsTo(spec1.Consumes)
+	added, deleted, _ := FromStringArray(spec1.Consumes).DiffsTo(spec2.Consumes)
 
 	for _, eachAdded := range added {
 		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "consumes"}, Code: AddedConsumesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
@@ -67,7 +67,7 @@ func (sd *SpecAnalyser) analyseSpecMetadata(spec1, spec2 *spec.Swagger) {
 	}
 
 	// // breaking if it no longer produces any formats
-	added, deleted, _ = FromStringArray(spec1.Produces).DiffsTo(spec1.Produces)
+	added, deleted, _ = FromStringArray(spec1.Produces).DiffsTo(spec2.Produces)
 
 	for _, eachAdded := range added {
 		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "produces"}, Code: AddedProducesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
@@ -77,7 +77,7 @@ func (sd *SpecAnalyser) analyseSpecMetadata(spec1, spec2 *spec.Swagger) {
 	}
 
 	// // breaking if it no longer supports a scheme
-	added, deleted, _ = FromStringArray(spec1.Schemes).DiffsTo(spec1.Schemes)
+	added, deleted, _ = FromStringArray(spec1.Schemes).DiffsTo(spec2.Schemes)
 
 	for _, eachAdded := range added {
 		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "schemes"}, Code: AddedSchemes, Compatibility: NonBreaking, DiffInfo: eachAdded})
@@ -295,7 +295,7 @@ func (sd *SpecAnalyser) CheckNumericTypeChanges(diffs []TypeDiff, type1, type2 s
 			diffs = addTypeDiff(diffs, TypeDiff{Change: WidenedType, Description: fmt.Sprintf("Exclusive Minimum Removed:%v->%v", type1.ExclusiveMaximum, type2.ExclusiveMaximum)})
 		}
 		if !type1.ExclusiveMinimum && type2.ExclusiveMinimum {
-			diffs = addTypeDiff(diffs, TypeDiff{Change: NarrowedType, Description: fmt.Sprintf("Exclusive Minimum Added:%v->%v", type1.ExclusiveMaximum, type2.ExclusiveMaximum)})
+			diffs = addTypeDiff(diffs, TypeDiff{Change: NarrowedType, Description: fmt.Sprintf("Exclusive Minimum Added:%v->%v", type1.ExclusiveMinimum, type2.ExclusiveMinimum)})
 		}
 	}
 	return diffs

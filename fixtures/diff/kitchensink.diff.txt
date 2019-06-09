@@ -1,0 +1,18 @@
+NON-BREAKING CHANGES:
+            =====================
+            /a/:get - Request Param: Widened type Maximum 200.000000->300.000000  - Query.changeMaxInt
+            consumes -  Added a consumes format bob 
+            produces -  Deleted produces format bill 
+            schemes -  Added schemes https 
+            
+            BREAKING CHANGES:
+            =================
+             -  Changed base path /api -> /apibaby 
+             -  Changed host URL petstore.swagger.wordnik.com -> petstore.swaggery.wordnik.com 
+            /a/:get - Request Param: Narrowed type Exclusive Maximum Added:false->true  - Query.changeMaxInt
+            /a/:get - Request Param: Narrowed type Exclusive Minimum Added:false->true  - Query.changeMinInt
+            /a/:get - Request Param: Narrowed type Minimum 200.000000->300.000000  - Query.changeMinInt
+            consumes -  Deleted a consumes format bill 
+            produces -  Added produces format bob 
+            schemes -  Deleted schemes http 
+            
