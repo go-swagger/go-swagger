@@ -29,7 +29,7 @@ import (
 	"sort"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -193,33 +193,52 @@ func withAutoXOrder(specPath string) string {
 		return nil, false
 	}
 
-	yamlDoc, err := swag.YAMLData(specPath)
+	var addXOrder func(interface{})
+	addXOrder = func(element interface{}) {
+		if props, ok := lookFor(element, "properties"); ok {
+			for i, prop := range props {
+				if pSlice, ok := prop.Value.(yaml.MapSlice); ok {
+					isObject := false
+					xOrderIndex := -1 //Find if x-order already exists
 
-	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
-		for _, def := range defs {
-			if props, ok := lookFor(def.Value, "properties"); ok {
-				for i, prop := range props {
-					if pSlice, ok := prop.Value.(yaml.MapSlice); ok {
-						//Find if x-order already exists
-						index := -1
-						for i, v := range pSlice {
-							if v.Key == xOrder {
-								index = i
-								break
-							}
+					for i, v := range pSlice {
+						if v.Key == "type" && v.Value == object {
+							isObject = true
 						}
-						if index > -1 { //Override existing x-order
-							pSlice[index] = yaml.MapItem{Key: xOrder, Value: i}
-						} else { // append new x-order
-							pSlice = append(pSlice, yaml.MapItem{Key: xOrder, Value: i})
+						if v.Key == xOrder {
+							xOrderIndex = i
+							break
 						}
-						prop.Value = pSlice
-						props[i] = prop
+					}
+
+					if xOrderIndex > -1 { //Override existing x-order
+						pSlice[xOrderIndex] = yaml.MapItem{Key: xOrder, Value: i}
+					} else { // append new x-order
+						pSlice = append(pSlice, yaml.MapItem{Key: xOrder, Value: i})
+					}
+					prop.Value = pSlice
+					props[i] = prop
+
+					if isObject {
+						addXOrder(pSlice)
 					}
 				}
 			}
 		}
 	}
+
+	yamlDoc, err := swag.YAMLData(specPath)
+	if err != nil {
+		panic(err)
+	}
+
+	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
+		for _, def := range defs {
+			addXOrder(def.Value)
+		}
+	}
+
+	addXOrder(yamlDoc)
 
 	out, err := yaml.Marshal(yamlDoc)
 	if err != nil {
