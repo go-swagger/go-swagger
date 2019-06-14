@@ -26,6 +26,25 @@ func TestArrayDiff(t *testing.T) {
 	assertThat(t, common, isListWithItems([]string{"abc", "ghi", "jkl"}))
 
 }
+func TestMapDiff(t *testing.T) {
+	mapA := map[string]interface{}{"abc": 1, "def": 2, "ghi": 3, "jkl": 4}
+	added, deleted, common := FromStringMap(mapA).
+		DiffsTo(mapA)
+	assertThat(t, added, isMapWithItems(map[string]interface{}{}))
+	assertThat(t, deleted, isMapWithItems(map[string]interface{}{}))
+	commonDiffs := map[string]interface{}{"abc": Pair{1, 1}, "def": Pair{2, 2}, "ghi": Pair{3, 3}, "jkl": Pair{4, 4}}
+
+	assertThat(t, common, isMapWithItems(commonDiffs))
+
+	mapB := map[string]interface{}{"abc": 2, "ghi": 3, "jkl": 4, "xyz": 5, "fgh": 6}
+	added, deleted, common = FromStringMap(mapA).
+		DiffsTo(mapB)
+	assertThat(t, added, isMapWithItems(map[string]interface{}{"xyz": 5, "fgh": 6}))
+	assertThat(t, deleted, isMapWithItems(map[string]interface{}{"def": 2}))
+	commonDiffs = map[string]interface{}{"abc": Pair{1, 2}, "ghi": Pair{3, 3}, "jkl": Pair{4, 4}}
+	assertThat(t, common, isMapWithItems(commonDiffs))
+
+}
 
 func isListWithItems(other []string) *gocrest.Matcher {
 	matcher := new(gocrest.Matcher)
@@ -52,4 +71,40 @@ func isListWithItems(other []string) *gocrest.Matcher {
 		return false
 	}
 	return matcher
+}
+
+func isMapWithItems(other map[string]interface{}) *gocrest.Matcher {
+	matcher := new(gocrest.Matcher)
+	matcher.Describe = fmt.Sprintf("map with items:%v", other)
+	matcher.Matches = func(actual interface{}) bool {
+		if actual == nil {
+			return other == nil
+		}
+		if actualValue, ok := actual.(map[string]interface{}); ok {
+			if len(actualValue) == 0 {
+				return len(other) == 0
+			}
+			leftToMatch := len(actualValue)
+			for keyActual, actualItem := range actualValue {
+				for keyOther, otherItem := range other {
+					if actualItem == otherItem && keyActual == keyOther {
+						leftToMatch--
+						break
+					}
+				}
+			}
+			return leftToMatch == 0
+		}
+		return false
+	}
+	return matcher
+}
+
+func mapKeys(theMap map[string]interface{}) []string {
+
+	keys := make([]string, 0, len(theMap))
+	for key, _ := range theMap {
+		keys = append(keys, key)
+	}
+	return keys
 }
