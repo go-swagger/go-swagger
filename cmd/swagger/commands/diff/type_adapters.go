@@ -107,17 +107,19 @@ func isStringType(typeName string) bool {
 	return typeName == "string" || typeName == "password"
 }
 
+const objType = "obj"
+
 func getTypeHierarchyChange(type1, type2 string) TypeDiff {
 	if type1 == type2 {
 		return TypeDiff{Change: NoChangeDetected, Description: ""}
 	}
 	fromType := type1
 	if fromType == "" {
-		fromType = "obj"
+		fromType = objType
 	}
 	toType := type2
 	if toType == "" {
-		toType = "obj"
+		toType = objType
 	}
 	diffDescription := fmt.Sprintf("%s -> %s", fromType, toType)
 	if isStringType(type1) && !isStringType(type2) {

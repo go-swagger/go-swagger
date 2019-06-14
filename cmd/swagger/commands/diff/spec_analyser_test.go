@@ -1,16 +1,15 @@
 package diff
 
 import (
-	"github.com/corbym/gocrest/is"
-	"github.com/go-openapi/loads"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-)
 
-var equals = is.EqualTo
+	"github.com/corbym/gocrest/is"
+	"github.com/go-openapi/loads"
+)
 
 const (
 	basePath = "../../../../fixtures/diff"
@@ -70,7 +69,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 			if err == nil {
 				diffsStr := catchStdOut(t, func() {
 					err = diffs.ReportAllDiffs(false)
-					if diffs.BreakingChangeCount()>0{
+					if diffs.BreakingChangeCount() > 0 {
 						assertThat(t, err, is.Not(is.Nil()))
 					}
 				})

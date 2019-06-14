@@ -2,10 +2,10 @@ package commands
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
-	"os"
-	
+
 	"testing"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"

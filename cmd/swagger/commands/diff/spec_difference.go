@@ -109,23 +109,9 @@ func (sd SpecDifference) String() string {
 		}
 	}
 
-	// if len(sd.DifferenceLocation.Method) > 0 {
-	// 	optionalMethod = fmt.Sprintf(":%s", sd.DifferenceLocation.Method)
-	// }
-	// optionalResponse := ""
-	// if sd.DifferenceLocation.Response > 0 {
-	// 	direction = "Response Body:"
-	// 	optionalResponse = fmt.Sprintf("->%d", sd.DifferenceLocation.Response)
-	// }
-	// if len(sd.DifferenceLocation.URL) == 0{
-	// 	direction = "Metadata"
-	// }
-
 	paramOrPropertyLocation := ""
 	if sd.DifferenceLocation.Node != nil {
 		paramOrPropertyLocation = " - " + sd.DifferenceLocation.Node.String() + " "
-	} else {
-		// direction = ""
 	}
 	optionalInfo := ""
 	if sd.DiffInfo != "" {
