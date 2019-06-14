@@ -99,12 +99,3 @@ func isMapWithItems(other map[string]interface{}) *gocrest.Matcher {
 	}
 	return matcher
 }
-
-func mapKeys(theMap map[string]interface{}) []string {
-
-	keys := make([]string, 0, len(theMap))
-	for key, _ := range theMap {
-		keys = append(keys, key)
-	}
-	return keys
-}
