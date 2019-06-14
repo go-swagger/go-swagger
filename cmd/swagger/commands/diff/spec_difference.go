@@ -80,24 +80,58 @@ func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 
 // String std string renderer
 func (sd SpecDifference) String() string {
-	optionalMethod := ""
-	direction := "Request Param:"
-	if len(sd.DifferenceLocation.Method) > 0 {
-		optionalMethod = fmt.Sprintf(":%s", sd.DifferenceLocation.Method)
+	isResponse := sd.DifferenceLocation.Response > 0
+	hasMethod := len(sd.DifferenceLocation.Method) > 0
+	hasURL := len(sd.DifferenceLocation.URL) > 0
+
+	prefix := ""
+	direction := ""
+
+	if isResponse {
+		direction = " Response"
+		if hasURL {
+			if hasMethod {
+				prefix = fmt.Sprintf("%s:%s -> %d", sd.DifferenceLocation.URL, sd.DifferenceLocation.Method, sd.DifferenceLocation.Response)
+			} else {
+				prefix = fmt.Sprintf("%s ", sd.DifferenceLocation.URL)
+			}
+		}
+	} else {
+		if hasURL {
+			if hasMethod {
+				direction = " Request"
+				prefix = fmt.Sprintf("%s:%s", sd.DifferenceLocation.URL, sd.DifferenceLocation.Method)
+			} else {
+				prefix = fmt.Sprintf("%s ", sd.DifferenceLocation.URL)
+			}
+		} else {
+			prefix = " Metadata"
+		}
 	}
-	optionalResponse := ""
-	if sd.DifferenceLocation.Response > 0 {
-		direction = "Response Body:"
-		optionalResponse = fmt.Sprintf("->%d", sd.DifferenceLocation.Response)
-	}
+
+	// if len(sd.DifferenceLocation.Method) > 0 {
+	// 	optionalMethod = fmt.Sprintf(":%s", sd.DifferenceLocation.Method)
+	// }
+	// optionalResponse := ""
+	// if sd.DifferenceLocation.Response > 0 {
+	// 	direction = "Response Body:"
+	// 	optionalResponse = fmt.Sprintf("->%d", sd.DifferenceLocation.Response)
+	// }
+	// if len(sd.DifferenceLocation.URL) == 0{
+	// 	direction = "Metadata"
+	// }
 
 	paramOrPropertyLocation := ""
 	if sd.DifferenceLocation.Node != nil {
-		paramOrPropertyLocation = " - " + sd.DifferenceLocation.Node.String()
+		paramOrPropertyLocation = " - " + sd.DifferenceLocation.Node.String() + " "
 	} else {
-		direction = ""
+		// direction = ""
 	}
-	return fmt.Sprintf("%s%s%s - %s %s %s %s", sd.DifferenceLocation.URL, optionalMethod, optionalResponse, direction, sd.Code.Description(), sd.DiffInfo, paramOrPropertyLocation)
+	optionalInfo := ""
+	if sd.DiffInfo != "" {
+		optionalInfo = fmt.Sprintf(" <%s>", sd.DiffInfo)
+	}
+	return fmt.Sprintf("%s%s%s- %s%s", prefix, direction, paramOrPropertyLocation, sd.Code.Description(), optionalInfo)
 }
 
 func (sd SpecDifferences) addDiff(diff SpecDifference) SpecDifferences {

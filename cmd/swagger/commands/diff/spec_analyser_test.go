@@ -1,17 +1,16 @@
 package diff
 
 import (
-	"github.com/go-openapi/loads"
 	"github.com/corbym/gocrest/is"
-	"os"
+	"github.com/go-openapi/loads"
 	"io/ioutil"
-	"strings"
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 var equals = is.EqualTo
-
 
 const (
 	basePath = "../../../../fixtures/diff"
@@ -65,16 +64,15 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
 			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
-
 			assertThat(t, err, is.Nil())
 
 			if err == nil {
-
 				diffsStr := catchStdOut(t, func() {
 					err = diffs.ReportAllDiffs(false)
-					assertThat(t, err, is.Not(is.Nil()))
+					if diffs.BreakingChangeCount()>0{
+						assertThat(t, err, is.Not(is.Nil()))
+					}
 				})
 				assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
 			}
@@ -84,7 +82,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	assertThat(t, len(matches), is.EqualTo(len(allTests)).Reason("All test cases were not run. Remove filter."))
 }
 
-	func LinesInFile(fileName string) string {
+func LinesInFile(fileName string) string {
 	bytes, _ := ioutil.ReadFile(fileName)
 	return string(bytes)
 }
@@ -104,7 +102,6 @@ func catchStdOut(t *testing.T, runnable func()) string {
 	dieOn(r.Close(), t)
 	return string(newOutBytes)
 }
-
 
 func dieOn(err error, t *testing.T) {
 	if err != nil {

@@ -111,7 +111,15 @@ func getTypeHierarchyChange(type1, type2 string) TypeDiff {
 	if type1 == type2 {
 		return TypeDiff{Change: NoChangeDetected, Description: ""}
 	}
-	diffDescription := fmt.Sprintf("%s -> %s", type1, type2)
+	fromType := type1
+	if fromType == "" {
+		fromType = "obj"
+	}
+	toType := type2
+	if toType == "" {
+		toType = "obj"
+	}
+	diffDescription := fmt.Sprintf("%s -> %s", fromType, toType)
 	if isStringType(type1) && !isStringType(type2) {
 		return TypeDiff{Change: NarrowedType, Description: diffDescription}
 	}
@@ -137,10 +145,10 @@ func getTypeHierarchyChange(type1, type2 string) TypeDiff {
 func compareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) TypeDiff {
 	if val1 != nil && val2 != nil {
 		if *val2 > *val1 {
-			return TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %f->%f",fieldName,*val1,*val2)}
+			return TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %f->%f", fieldName, *val1, *val2)}
 		}
 		if *val2 < *val1 {
-			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %f->%f",fieldName,*val1,*val2)}
+			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %f->%f", fieldName, *val1, *val2)}
 		}
 	}
 	return TypeDiff{Change: NoChangeDetected, Description: ""}
@@ -149,10 +157,10 @@ func compareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreate
 func compareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) TypeDiff {
 	if val1 != nil && val2 != nil {
 		if *val2 > *val1 {
-			return TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %d->%d",fieldName,*val1,*val2)}
+			return TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %d->%d", fieldName, *val1, *val2)}
 		}
 		if *val2 < *val1 {
-			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %d->%d",fieldName,*val1,*val2)}
+			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %d->%d", fieldName, *val1, *val2)}
 		}
 
 	}

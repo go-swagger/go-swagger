@@ -26,6 +26,12 @@ func init() {
 			AddedResponseHeader:     NonBreaking,
 			ChangedResponseHeader:   Breaking,
 			DeletedResponseHeader:   Breaking,
+			ChangedDescripton:       NonBreaking,
+			AddedDescripton:         NonBreaking,
+			DeletedDescripton:       NonBreaking,
+			ChangedTag:              NonBreaking,
+			AddedTag:                NonBreaking,
+			DeletedTag:              NonBreaking,
 		},
 		ForRequest: map[SpecChangeCode]Compatibility{
 			AddedRequiredProperty:          Breaking,
@@ -43,6 +49,12 @@ func init() {
 			ChangedRequiredToOptionalParam: NonBreaking,
 			AddedEnumValue:                 NonBreaking,
 			DeletedEnumValue:               Breaking,
+			ChangedDescripton:              NonBreaking,
+			AddedDescripton:                NonBreaking,
+			DeletedDescripton:              NonBreaking,
+			ChangedTag:                     NonBreaking,
+			AddedTag:                       NonBreaking,
+			DeletedTag:                     NonBreaking,
 		},
 		ForChange: map[SpecChangeCode]Compatibility{
 			NoChangeDetected:          NonBreaking,
@@ -57,6 +69,12 @@ func init() {
 			DeletedSchemes:            Breaking,
 			ChangedHostURL:            Breaking,
 			ChangedBasePath:           Breaking,
+			ChangedDescripton:         NonBreaking,
+			AddedDescripton:           NonBreaking,
+			DeletedDescripton:         NonBreaking,
+			ChangedTag:                NonBreaking,
+			AddedTag:                  NonBreaking,
+			DeletedTag:                NonBreaking,
 		},
 	}
 }

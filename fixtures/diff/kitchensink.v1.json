@@ -51,6 +51,27 @@
               "empathic",
               "saucy"
             ]
+          },
+          {
+            "name": "changeyPattern",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "pattern": "*"
+          },
+          {
+            "name": "primToObj",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "ObjToPrim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/A2"
+            }
           }
         ],
         "responses": {

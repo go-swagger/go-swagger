@@ -103,7 +103,7 @@ func TestReadIgnores(t *testing.T) {
 	},
 		Code:          diff.AddedEnumValue,
 		Compatibility: diff.NonBreaking,
-		DiffInfo:      "<extrovert>",
+		DiffInfo:      "extrovert",
 	}
 	assertThat(t, ignores.Contains(isIn), equals(true))
 

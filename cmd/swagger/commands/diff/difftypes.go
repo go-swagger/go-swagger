@@ -20,6 +20,18 @@ const (
 	AddedRequiredProperty
 	// DeletedOptionalParam - An endpoint parameter has been deleted in the new spec
 	DeletedOptionalParam
+	// ChangedDescripton - Changed a description
+	ChangedDescripton
+	// AddedDescripton - Added a description
+	AddedDescripton
+	// DeletedDescripton - Deleted a description
+	DeletedDescripton
+	// ChangedTag - Changed a tag
+	ChangedTag
+	// AddedTag - Added a tag
+	AddedTag
+	// DeletedTag - Deleted a tag
+	DeletedTag
 	// DeletedResponse - An endpoint response has been deleted in the new spec
 	DeletedResponse
 	// DeletedEndpoint - An endpoint has been deleted in the new spec
@@ -85,6 +97,12 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	DeletedDeprecatedEndpoint:      "Deleted a deprecated endpoint",
 	AddedRequiredProperty:          "Added required property",
 	DeletedProperty:                "Deleted property",
+	ChangedDescripton:              "Changed a description",
+	AddedDescripton:                "Added a description",
+	DeletedDescripton:              "Deleted a description",
+	ChangedTag:                     "Changed a tag",
+	AddedTag:                       "Added a tag",
+	DeletedTag:                     "Deleted a tag",
 	AddedProperty:                  "Added property",
 	AddedOptionalParam:             "Added optional param",
 	AddedRequiredParam:             "Added required param",
@@ -121,6 +139,12 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedRequiredProperty:          "AddedRequiredProperty",
 	DeletedProperty:                "DeletedProperty",
 	AddedProperty:                  "AddedProperty",
+	ChangedDescripton:              "ChangedDescription",
+	AddedDescripton:                "AddedDescription",
+	DeletedDescripton:              "DeletedDescription",
+	ChangedTag:                     "ChangedTag",
+	AddedTag:                       "AddedTag",
+	DeletedTag:                     "DeletedTag",
 	AddedOptionalParam:             "AddedOptionalParam",
 	AddedRequiredParam:             "AddedRequiredParam",
 	DeletedOptionalParam:           "DeletedRequiredParam",

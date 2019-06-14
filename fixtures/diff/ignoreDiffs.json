@@ -15,7 +15,7 @@
     },
     "code": "AddedEnumValue",
     "compatibility": "Breaking",
-    "info": "<sane>"
+    "info": "sane"
   },
   {
     "location": {
@@ -33,7 +33,7 @@
     },
     "code": "DeletedEnumValue",
     "compatibility": "NonBreaking",
-    "info": "<crazy>"
+    "info": "crazy"
   }
 ]
 

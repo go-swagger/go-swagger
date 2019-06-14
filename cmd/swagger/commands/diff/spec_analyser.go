@@ -26,11 +26,12 @@ type URLMethods map[URLMethod]*PathItemOp
 
 // SpecAnalyser contains all the differences for a Spec
 type SpecAnalyser struct {
-	Diffs        SpecDifferences
-	urlMethods1  URLMethods
-	urlMethods2  URLMethods
-	Definitions1 spec.Definitions
-	Definitions2 spec.Definitions
+	Diffs                      SpecDifferences
+	urlMethods1                URLMethods
+	urlMethods2                URLMethods
+	Definitions1               spec.Definitions
+	Definitions2               spec.Definitions
+	AlreadyComparedDefinitions map[string]bool
 }
 
 // NewSpecAnalyser returns an empty SpecDiffs
@@ -50,6 +51,7 @@ func (sd *SpecAnalyser) Analyse(spec1, spec2 *spec.Swagger) error {
 	sd.analyseSpecMetadata(spec1, spec2)
 	sd.analyseEndpoints()
 	sd.analyseParams()
+	sd.analyseEndpointData()
 	sd.analyseResponseParams()
 
 	return nil
@@ -59,32 +61,41 @@ func (sd *SpecAnalyser) analyseSpecMetadata(spec1, spec2 *spec.Swagger) {
 	// breaking if it no longer consumes any formats
 	added, deleted, _ := FromStringArray(spec1.Consumes).DiffsTo(spec2.Consumes)
 
+	node := getNameOnlyDiffNode("Spec")
+	location := DifferenceLocation{Node: node}
+	consumesLoation := location.AddNode(getNameOnlyDiffNode("consumes"))
+
 	for _, eachAdded := range added {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "consumes"}, Code: AddedConsumesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
+		sd.Diffs = sd.Diffs.addDiff(
+			SpecDifference{DifferenceLocation: consumesLoation, Code: AddedConsumesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
 	}
 	for _, eachDeleted := range deleted {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "consumes"}, Code: DeletedConsumesFormat, Compatibility: Breaking, DiffInfo: eachDeleted})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: consumesLoation, Code: DeletedConsumesFormat, Compatibility: Breaking, DiffInfo: eachDeleted})
 	}
 
 	// // breaking if it no longer produces any formats
 	added, deleted, _ = FromStringArray(spec1.Produces).DiffsTo(spec2.Produces)
-
+	producesLocation := location.AddNode(getNameOnlyDiffNode("produces"))
 	for _, eachAdded := range added {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "produces"}, Code: AddedProducesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: producesLocation, Code: AddedProducesFormat, Compatibility: NonBreaking, DiffInfo: eachAdded})
 	}
 	for _, eachDeleted := range deleted {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "produces"}, Code: DeletedProducesFormat, Compatibility: Breaking, DiffInfo: eachDeleted})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: producesLocation, Code: DeletedProducesFormat, Compatibility: Breaking, DiffInfo: eachDeleted})
 	}
 
 	// // breaking if it no longer supports a scheme
 	added, deleted, _ = FromStringArray(spec1.Schemes).DiffsTo(spec2.Schemes)
+	schemesLocation := location.AddNode(getNameOnlyDiffNode("schemes"))
 
 	for _, eachAdded := range added {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "schemes"}, Code: AddedSchemes, Compatibility: NonBreaking, DiffInfo: eachAdded})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: schemesLocation, Code: AddedSchemes, Compatibility: NonBreaking, DiffInfo: eachAdded})
 	}
 	for _, eachDeleted := range deleted {
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: "schemes"}, Code: DeletedSchemes, Compatibility: Breaking, DiffInfo: eachDeleted})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: schemesLocation, Code: DeletedSchemes, Compatibility: Breaking, DiffInfo: eachDeleted})
 	}
+
+	// // host should be able to change without any issues?
+	sd.analyseMetaDataProperty(spec1.Info.Description, spec2.Info.Description, ChangedDescripton, NonBreaking)
 
 	// // host should be able to change without any issues?
 	sd.analyseMetaDataProperty(spec1.Host, spec2.Host, ChangedHostURL, Breaking)
@@ -105,6 +116,27 @@ func (sd *SpecAnalyser) analyseEndpoints() {
 	sd.findAddedEndpoints()
 }
 
+func (sd *SpecAnalyser) analyseEndpointData() {
+
+	for URLMethod, op2 := range sd.urlMethods2 {
+		if op1, ok := sd.urlMethods1[URLMethod]; ok {
+			addedTags, deletedTags, _ := FromStringArray(op1.Operation.Tags).DiffsTo(op2.Operation.Tags)
+			location := DifferenceLocation{URL: URLMethod.Path, Method: URLMethod.Method}
+
+			for _, eachAddedTag := range addedTags {
+				sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: AddedTag, DiffInfo: eachAddedTag})
+			}
+			for _, eachDeletedTag := range deletedTags {
+				sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: DeletedTag, DiffInfo: eachDeletedTag})
+			}
+
+			sd.compareDescripton(location, op1.Operation.Description, op2.Operation.Description)
+
+		}
+	}
+
+}
+
 func (sd *SpecAnalyser) analyseParams() {
 	locations := []string{"query", "path", "body", "header"}
 
@@ -117,6 +149,7 @@ func (sd *SpecAnalyser) analyseParams() {
 				params2 := getParams(op2.ParentPathItem.Parameters, op2.Operation.Parameters, paramLocation)
 
 				location := DifferenceLocation{URL: URLMethod.Path, Method: URLMethod.Method, Node: rootNode}
+
 				// detect deleted params
 				for paramName1, param1 := range params1 {
 					if _, ok := params2[paramName1]; !ok {
@@ -164,7 +197,7 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 				}
 			}
 			// Added updated Response Codes
-			for code2, response2 := range op2Responses {
+			for code2, op2Response := range op2Responses {
 
 				if op1Response, ok := op1Responses[code2]; ok {
 					op1Headers := op1Response.ResponseProps.Headers
@@ -172,7 +205,7 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 					location := DifferenceLocation{URL: URLMethod2.Path, Method: URLMethod2.Method, Response: code2, Node: headerRootNode}
 
 					// Iterate Spec2 Headers looking for added and updated
-					for op2HeaderName, op2Header := range response2.ResponseProps.Headers {
+					for op2HeaderName, op2Header := range op2Response.ResponseProps.Headers {
 						if op1Header, ok := op1Headers[op2HeaderName]; ok {
 							sd.compareSimpleSchema(location.AddNode(getNameOnlyDiffNode(op2HeaderName)),
 								&op1Header.SimpleSchema,
@@ -184,18 +217,20 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 						}
 					}
 					for op1HeaderName := range op1Response.ResponseProps.Headers {
-						if _, ok := response2.ResponseProps.Headers[op1HeaderName]; !ok {
+						if _, ok := op2Response.ResponseProps.Headers[op1HeaderName]; !ok {
 							sd.Diffs = sd.Diffs.addDiff(SpecDifference{
 								DifferenceLocation: location.AddNode(getNameOnlyDiffNode(op1HeaderName)),
 								Code:               DeletedResponseHeader})
 						}
 					}
+					responseLocation := DifferenceLocation{URL: URLMethod2.Path, Method: URLMethod2.Method, Response: code2}
+					sd.compareDescripton(responseLocation, op1Response.Description, op2Response.Description)
 
 					if op1Response.Schema != nil {
 						sd.compareSchema(
 							DifferenceLocation{URL: URLMethod2.Path, Method: URLMethod2.Method, Response: code2},
 							op1Response.Schema,
-							response2.Schema, true, true)
+							op2Response.Schema, true, true)
 					}
 				} else {
 					sd.Diffs = sd.Diffs.addDiff(SpecDifference{
@@ -345,14 +380,16 @@ func (sd *SpecAnalyser) CompareTypes(type1, type2 spec.SchemaProps) []TypeDiff {
 func (sd *SpecAnalyser) compareParams(urlMethod URLMethod, location string, name string, param1, param2 spec.Parameter) {
 	diffLocation := DifferenceLocation{URL: urlMethod.Path, Method: urlMethod.Method}
 
+	childLocation := diffLocation.AddNode(getNameOnlyDiffNode(strings.Title(location)))
+	paramLocation := diffLocation.AddNode(getNameOnlyDiffNode(name))
+	sd.compareDescripton(paramLocation, param1.Description, param2.Description)
+
 	if param1.Schema != nil && param2.Schema != nil {
-		childLocation := diffLocation.AddNode(getNameOnlyDiffNode(strings.Title(location)))
 		childLocation = childLocation.AddNode(getSchemaDiffNode(name, param2.Schema))
 		sd.compareSchema(childLocation, param1.Schema, param2.Schema, param1.Required, param2.Required)
 	}
 	diffs := sd.CompareTypes(forParam(param1), forParam(param2))
 
-	childLocation := diffLocation.AddNode(getNameOnlyDiffNode(strings.Title(location)))
 	childLocation = childLocation.AddNode(getSchemaDiffNode(name, param2.Schema))
 	for _, eachDiff := range diffs {
 		sd.Diffs = sd.Diffs.addDiff(SpecDifference{
@@ -393,41 +430,64 @@ func (sd *SpecAnalyser) compareSimpleSchema(location DifferenceLocation, schema1
 
 }
 
+func (sd *SpecAnalyser) compareDescripton(location DifferenceLocation, desc1, desc2 string) {
+	if desc1 != desc2 {
+		code := ChangedDescripton
+		if len(desc1) > 0 {
+			code = DeletedDescripton
+		} else if len(desc2) > 0 {
+			code = AddedDescripton
+		}
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: code})
+	}
+
+}
+
 func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, schema2 *spec.Schema, required1, required2 bool) {
 
 	if schema1 == nil || schema2 == nil {
 		return
 	}
 
+	sd.compareDescripton(location, schema1.Description, schema2.Description)
+
 	if len(schema1.Type) == 0 {
 		refSchema1, definition1 := sd.schemaFromRef(schema1, &sd.Definitions1)
 		refSchema2, definition2 := sd.schemaFromRef(schema2, &sd.Definitions2)
-		info := fmt.Sprintf("[%s -> %s]", definition1, definition2)
 
-		if definition1 != definition2 {
-			sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location,
-				Code:     ChangedType,
-				DiffInfo: info,
-			})
+		if len(definition1) > 0 {
+			info := fmt.Sprintf("[%s -> %s]", definition1, definition2)
+
+			if definition1 != definition2 {
+				sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location,
+					Code:     ChangedType,
+					DiffInfo: info,
+				})
+			}
+			sd.compareSchema(location, refSchema1, refSchema2, required1, required2)
+			return
 		}
-		sd.compareSchema(location, refSchema1, refSchema2, required1, required2)
-		return
-	}
-	diffs := sd.CompareTypes(schema1.SchemaProps, schema2.SchemaProps)
+	} else {
+		if schema1.Type[0] == ArrayType {
+			refSchema1, definition1 := sd.schemaFromRef(schema1.Items.Schema, &sd.Definitions1)
+			refSchema2, _ := sd.schemaFromRef(schema2.Items.Schema, &sd.Definitions2)
 
-	for _, eachTypeDiff := range diffs {
-		if eachTypeDiff.Change != NoChangeDetected {
-			sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: eachTypeDiff.Change, DiffInfo: eachTypeDiff.Description})
+			if len(definition1) > 0 {
+				childLocation := location.AddNode(getSchemaDiffNode("", schema1))
+				sd.compareSchema(childLocation, refSchema1, refSchema2, required1, required2)
+				return
+			}
+
+		}
+		diffs := sd.CompareTypes(schema1.SchemaProps, schema2.SchemaProps)
+
+		for _, eachTypeDiff := range diffs {
+			if eachTypeDiff.Change != NoChangeDetected {
+				sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: eachTypeDiff.Change, DiffInfo: eachTypeDiff.Description})
+			}
 		}
 	}
-	if schema1.Type[0] == ArrayType {
-		refSchema1, _ := sd.schemaFromRef(schema1.Items.Schema, &sd.Definitions1)
-		refSchema2, _ := sd.schemaFromRef(schema2.Items.Schema, &sd.Definitions2)
 
-		childLocation := location.AddNode(getSchemaDiffNode("", schema1))
-		sd.compareSchema(childLocation, refSchema1, refSchema2, required1, required2)
-		return
-	}
 	if required1 != required2 {
 		code := AddedRequiredProperty
 		if required1 {
@@ -449,6 +509,7 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 
 		if eachProp2, ok := schema2Props[eachProp1Name]; ok {
 			sd.compareSchema(childLoc, &eachProp1, &eachProp2, required1, required2)
+			sd.compareDescripton(childLoc, eachProp1.Description, eachProp2.Description)
 		} else {
 			sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: childLoc, Code: DeletedProperty})
 		}
@@ -507,13 +568,14 @@ func (sd *SpecAnalyser) compareEnums(left, right []interface{}) []TypeDiff {
 	}
 	added, deleted, _ := FromStringArray(leftStrs).DiffsTo(rightStrs)
 	if len(added) > 0 {
-		typeChange := "<" + strings.Join(added, ",") + ">"
+		typeChange := strings.Join(added, ",")
 		diffs = append(diffs, TypeDiff{Change: AddedEnumValue, Description: typeChange})
 	}
 	if len(deleted) > 0 {
-		typeChange := "<" + strings.Join(deleted, ",") + ">"
+		typeChange := strings.Join(deleted, ",")
 		diffs = append(diffs, TypeDiff{Change: DeletedEnumValue, Description: typeChange})
 	}
+
 	return diffs
 }
 
@@ -541,7 +603,7 @@ func (sd *SpecAnalyser) findDeletedEndpoints() {
 func (sd *SpecAnalyser) analyseMetaDataProperty(item1, item2 string, codeIfDiff SpecChangeCode, compatIfDiff Compatibility) {
 	if item1 != item2 {
 		diffSpec := fmt.Sprintf("%s -> %s", item1, item2)
-		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{URL: ""}, Code: codeIfDiff, Compatibility: compatIfDiff, DiffInfo: diffSpec})
+		sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: DifferenceLocation{Node: &Node{Field: "Spec Metadata"}}, Code: codeIfDiff, Compatibility: compatIfDiff, DiffInfo: diffSpec})
 	}
 }
 

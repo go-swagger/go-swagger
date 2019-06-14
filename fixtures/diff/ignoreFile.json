@@ -12,7 +12,7 @@
     },
     "code": "AddedEnumValue",
     "compatibility": "NonBreaking",
-    "info": "<extrovert>"
+    "info": "extrovert"
   },
   {
     "location": {
@@ -27,7 +27,7 @@
     },
     "code": "DeletedEnumValue",
     "compatibility": "Breaking",
-    "info": "<saucy>"
+    "info": "saucy"
   },
   {
     "location": {
@@ -45,7 +45,7 @@
     },
     "code": "AddedEnumValue",
     "compatibility": "Breaking",
-    "info": "<sane>"
+    "info": "sane"
   },
   {
     "location": {
@@ -63,7 +63,7 @@
     },
     "code": "DeletedEnumValue",
     "compatibility": "NonBreaking",
-    "info": "<crazy>"
+    "info": "crazy"
   },
   {
     "location": {
@@ -81,7 +81,7 @@
     },
     "code": "AddedEnumValue",
     "compatibility": "Breaking",
-    "info": "<sane>"
+    "info": "sane"
   },
   {
     "location": {
@@ -99,6 +99,6 @@
     },
     "code": "DeletedEnumValue",
     "compatibility": "NonBreaking",
-    "info": "<crazy>"
+    "info": "crazy"
   }
 ]
