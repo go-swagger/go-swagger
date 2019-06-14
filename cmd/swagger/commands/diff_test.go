@@ -137,6 +137,17 @@ func TestProcessIgnores(t *testing.T) {
 	assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
 }
 
+func TestNoArgs(t *testing.T) {
+
+	cmd := DiffCommand{
+		Format:     "json",
+		IgnoreFile: "",
+	}
+
+	err := cmd.Execute([]string{})
+	assertThat(t, err, is.Not(is.Nil()))
+}
+
 func LinesInFile(fileName string) string {
 	bytes, _ := ioutil.ReadFile(fileName)
 	return string(bytes)
