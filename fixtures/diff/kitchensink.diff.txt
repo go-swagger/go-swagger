@@ -4,6 +4,8 @@ NON-BREAKING CHANGES:
              Metadata - Spec.produces - Deleted produces format <bill>
              Metadata - Spec.schemes - Added schemes <https>
             /a/:get Request - Query.changeMaxInt - Widened type <Maximum 200.000000->300.000000>
+            /a/:get Request - Query.removeMaxInt - Widened type <Exclusive Maximum Removed:true->false>
+            /a/:get Request - Query.wideryString - Widened type <integer -> string>
             
             BREAKING CHANGES:
             =================

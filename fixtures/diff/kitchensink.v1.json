@@ -34,12 +34,26 @@
             "exclusiveMaximum": false
           },
           {
+            "name": "removeMaxInt",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "maximum": 200,
+            "exclusiveMaximum": true
+          },
+          {
             "name": "changeMinInt",
             "in": "query",
             "required": false,
             "type": "integer",
             "minimum": 200,
             "exclusiveMinimum": false
+          },
+          {
+            "name": "wideryString",
+            "in": "query",
+            "required": false,
+            "type": "integer"
           },
           {
             "name": "personality",
