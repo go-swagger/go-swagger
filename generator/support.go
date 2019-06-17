@@ -673,7 +673,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			continue
 		}
 
-		if len(intersected) == 1 {
+		if len(intersected) > 0 {
 			tag := intersected[0]
 			bldr.APIPackage = a.GenOpts.LanguageOpts.ManglePackagePath(tag, a.APIPackage)
 			for _, t := range intersected {
