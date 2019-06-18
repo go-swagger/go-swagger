@@ -26,6 +26,22 @@
             "type": "integer"
           },
           {
+            "name": "headerParam",
+            "in": "header",
+            "schema":{
+              "type":"string",
+              "format":"password"
+            }
+          },
+          {
+            "name": "deletedHeaderParam",
+            "in": "header",
+            "schema":{
+              "type":"string",
+              "format":"password"
+            }
+          },
+          {
             "name": "changeMaxInt",
             "in": "query",
             "required": false,
@@ -91,6 +107,12 @@
         "responses": {
           "200": {
             "description": "200 response",
+            "headers":[
+              {"header1":{
+                "type":"integer"
+              }
+            }
+            ],
             "schema": {
               "type": "array",
               "items": {

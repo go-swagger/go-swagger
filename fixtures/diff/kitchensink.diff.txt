@@ -3,6 +3,10 @@ NON-BREAKING CHANGES:
              Metadata - Spec.consumes - Added a consumes format <bob>
              Metadata - Spec.produces - Deleted produces format <bill>
              Metadata - Spec.schemes - Added schemes <https>
+            /a/:get -> 200 Response- Added response
+            /a/:get Request - Header.addedHeaderParam : string - Added optional param
+            /a/:get Request - Header.deletedHeaderParam : string - Deleted optional param
+            /a/:get Request - Header.headerParam.headerParam : string - Widened type <string.password -> string>
             /a/:get Request - Query.changeMaxInt - Widened type <Maximum 200.000000->300.000000>
             /a/:get Request - Query.removeMaxInt - Widened type <Exclusive Maximum Removed:true->false>
             /a/:get Request - Query.wideryString - Widened type <integer -> string>
