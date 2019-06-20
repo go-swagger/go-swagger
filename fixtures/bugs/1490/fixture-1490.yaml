@@ -1,0 +1,52 @@
+---
+  swagger: "2.0"
+  info:
+    title: "interface body"
+    version: "0.0.1"
+    description: "repro issue 1490"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    modelInterface:
+      type: object
+      additionalProperties: true
+    modelInterface2:
+      type: object
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/modelInterface'
+        responses:
+          200:
+            description: "OK"
+    /getMoreRecords:
+      get:
+        operationId: getMoreRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: object
+        responses:
+          200:
+            description: "OK"
+    /getRecordsNonRequired:
+      get:
+        operationId: getRecordsNonRequired
+        parameters:
+          - name: recordsNonRequired
+            in: body
+            required: false
+            schema:
+              $ref: '#/definitions/modelInterface2'
+        responses:
+          200:
+            description: "OK"
