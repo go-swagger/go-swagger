@@ -4344,3 +4344,23 @@ func TestGenClientParameter_973(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "973", "fixture-973.yaml"), true, false)
 }
+
+func TestGenClientParameter_1020(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1024.yaml with minimal flatten
+	// param is File
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"someTest": { // fixture index
+			"clientParameter": { // executed template
+				`File runtime.NamedReadCloser`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1020", "fixture-1020.yaml"), true, false)
+}
