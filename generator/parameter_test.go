@@ -4323,3 +4323,24 @@ func TestGenClientParameter_1490(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1490", "fixture-1490.yaml"), true, false)
 }
+
+func TestGenClientParameter_973(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-973.yaml with minimal flatten
+	// header param is UUID, with or without required constraint
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"getResourceRecords": { // fixture index
+			"clientParameter": { // executed template
+				`if err := r.SetHeaderParam("profile", o.Profile.String()); err != nil {`,
+				`if err := r.SetHeaderParam("profileRequired", o.ProfileRequired.String()); err != nil {`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "973", "fixture-973.yaml"), true, false)
+}
