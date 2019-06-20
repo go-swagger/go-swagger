@@ -1,0 +1,29 @@
+---
+swagger: "2.0"
+info:
+  description: someTest
+  title: test
+  version: "0.0.0"
+consumes:
+  - multipart/form-data
+produces:
+  - application/json
+paths:
+  /upload:
+    post:
+      operationId: someTest
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+        - name: file
+          description: The file to upload
+          in: formData
+          required: true
+          type: file
+      responses:
+        200:
+          description: Successful upload
+          schema:
+            type: string
