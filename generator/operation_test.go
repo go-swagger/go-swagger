@@ -442,48 +442,6 @@ func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 	// some fixtures do not fully validate - skip this
 	o.ValidateSpec = false
 	return opBuilderWithOpts(name, fname, o)
-	/*
-		if fname == "" {
-			fname = "../fixtures/codegen/todolist.simple.yml"
-		}
-
-		if !filepath.IsAbs(fname) {
-			cwd, _ := os.Getwd()
-			fname = filepath.Join(cwd, fname)
-		}
-
-		specDoc, err := loads.Spec(fname)
-		if err != nil {
-			return codeGenOpBuilder{}, err
-		}
-		if err != nil {
-			return codeGenOpBuilder{}, err
-		}
-
-		analyzed := analysis.New(specDoc.Spec())
-
-		method, path, op, ok := analyzed.OperationForName(name)
-		if !ok {
-			return codeGenOpBuilder{}, errors.New("No operation could be found for " + name)
-		}
-
-		return codeGenOpBuilder{
-			Name:          name,
-			Method:        method,
-			Path:          path,
-			BasePath:      specDoc.BasePath(),
-			APIPackage:    "restapi",
-			ModelsPackage: "models",
-			Principal:     "models.User",
-			Target:        ".",
-			Operation:     *op,
-			Doc:           specDoc,
-			Analyzed:      analyzed,
-			Authed:        false,
-			ExtraSchemas:  make(map[string]GenSchema),
-			GenOpts:       opts(),
-		}, nil
-	*/
 }
 
 func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header {
