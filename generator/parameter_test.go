@@ -4284,7 +4284,7 @@ func TestGenParameter_1755(t *testing.T) {
 	fixtureConfig := map[string]map[string][]string{
 
 		// load expectations for parameters
-		"registerAsset": { // fixture index
+		"registerAsset": { // fixture index (operation name)
 			"serverParameter": { // executed template
 				`o.AssetProperties = body`,
 				`assetPropertiesSize := int64(len(o.AssetProperties))`,
@@ -4292,4 +4292,34 @@ func TestGenParameter_1755(t *testing.T) {
 		},
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1755", "fixture-1755.yaml"), true, false)
+}
+
+func TestGenClientParameter_1490(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1490.yaml with minimal flatten
+	// body param is interface
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"getRecords": { // fixture index
+			"clientParameter": { // executed template
+				`if err := r.SetBodyParam(o.Records); err != nil {`,
+			},
+		},
+		"getMoreRecords": { // fixture index
+			"clientParameter": { // executed template
+				`if err := r.SetBodyParam(o.Records); err != nil {`,
+			},
+		},
+		"getRecordsNonRequired": { // fixture index
+			"clientParameter": { // executed template
+				`if err := r.SetBodyParam(o.RecordsNonRequired); err != nil {`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1490", "fixture-1490.yaml"), true, false)
 }
