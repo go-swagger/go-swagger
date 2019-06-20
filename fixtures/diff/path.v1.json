@@ -1,0 +1,317 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Fixture",
+    "version": "1.0"
+  },
+  "paths": {
+    "/a/": {
+      "get": {
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/A1" }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/A2" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      }
+    },
+    "/a/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      },
+      "post": {
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      },
+      "patch" : {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/A4" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A6" }
+          }
+        }
+      },
+      "put" : {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/A2" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      }
+    },
+    "/b/": {
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/B3" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A1" }
+          }
+        }
+      }
+    },
+    "/b/{id}": {
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/B1" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/B2" }
+          }
+        }
+      }
+    },
+    "/c/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/C1" }
+            }
+          },
+          "201": {
+            "description": "201 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/C1" }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/C2" }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "204 response"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "A1": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" }
+      }
+    },
+    "A2": {
+      "type": "object",
+      "required": [ "name", "description" ],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "A3": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "letters": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "A4": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": ["string", "null"] },
+        "obj": { "$ref": "#/definitions/A5" },
+        "str": { "type": "string" }
+      }
+    },
+    "A5": {
+      "type": "object",
+      "properties": {
+        "thing": { "type": "integer" },
+        "name": { "type": "string" }
+      }
+    },
+    "A6": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "obj": { "$ref": "#/definitions/A5" },
+        "objs": { "type": "array",
+                  "items": { "$ref": "#/definitions/A5" }
+        },
+        "str": { "type": "string" }
+      }
+    },
+    "B1": {
+      "type": "object",
+      "allOf": [
+        { "$ref": "#/definitions/A2" },
+        {
+          "required": ["req"],
+          "properties": {
+            "req": { "type": "string" },
+            "opt": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "B2": {
+      "type": "object",
+      "allOf": [
+        { "$ref": "#/definitions/A3" },
+        {
+          "properties": {
+            "key1": { "type": "integer" },
+            "key2": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "B3": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" }
+      }
+    },
+    "C1": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" }
+      }
+    },
+    "C2": {
+      "type": "object",
+      "properties": {
+        "existing": { "$ref": "#/definitions/C3" }
+      }
+    },
+    "C3": {
+      "type": "object",
+      "required": [ "a" ],
+      "properties": {
+        "a": { "type": "string" },
+        "b": { "type": "string" }
+      }
+    },
+    "C4": {
+      "type": "object",
+      "required": [ "a", "b" ],
+      "properties": {
+        "a": { "type": "string" },
+        "b": { "type": "string" }
+      }
+    }
+  }
+}

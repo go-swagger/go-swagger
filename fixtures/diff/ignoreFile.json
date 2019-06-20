@@ -1,0 +1,104 @@
+[
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "node": {
+        "name": "Query",
+        "child": {
+          "name": "personality"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "extrovert"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "node": {
+        "name": "Query",
+        "child": {
+          "name": "personality"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "Breaking",
+    "info": "saucy"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "type": "A1",
+        "is_array": true,
+        "child": {
+          "name": "personality",
+          "type": "string"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "Breaking",
+    "info": "sane"
+  },
+  {
+    "location": {
+      "url": "/a/",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "type": "A1",
+        "is_array": true,
+        "child": {
+          "name": "personality",
+          "type": "string"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "crazy"
+  },
+  {
+    "location": {
+      "url": "/a/{id}",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "type": "A1",
+        "is_array": true,
+        "child": {
+          "name": "personality",
+          "type": "string"
+        }
+      }
+    },
+    "code": "AddedEnumValue",
+    "compatibility": "Breaking",
+    "info": "sane"
+  },
+  {
+    "location": {
+      "url": "/a/{id}",
+      "method": "get",
+      "response": 200,
+      "node": {
+        "type": "A1",
+        "is_array": true,
+        "child": {
+          "name": "personality",
+          "type": "string"
+        }
+      }
+    },
+    "code": "DeletedEnumValue",
+    "compatibility": "NonBreaking",
+    "info": "crazy"
+  }
+]

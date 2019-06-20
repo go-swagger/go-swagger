@@ -10,7 +10,7 @@ func SetJSONTagFallback(state bool) {
 	useJSONTagFallback = state
 }
 
-// JSONTagFallbackState returns the current status of the JSON tag fallback compatability option. See SetJSONTagFallback
+// JSONTagFallbackState returns the current status of the JSON tag fallback compatibility option. See SetJSONTagFallback
 // for more information.
 func JSONTagFallbackState() bool {
 	return useJSONTagFallback

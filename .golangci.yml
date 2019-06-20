@@ -17,4 +17,8 @@ linters:
   enable-all: true
   disable:
     - maligned
+    - unparam
     - lll
+    - gochecknoinits
+    - gochecknoglobals
+    - dupl
