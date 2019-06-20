@@ -84,6 +84,7 @@ Here is an outline of available features (see the full list [here](https://goswa
   - Validation
   - Authorization
   - Swagger docs UI
+  - A Diff tool which will cause a build to fail if a change in the spec breaks backwards compatibility
 
 There is more to that...
 
@@ -156,7 +157,7 @@ Resolve and expand $ref's in your spec as inline definitions:
 swagger expand {spec}
 ```
 
-Flatten you spec: all external $ref's are imported into the main document and inline schemas reorganized as definitions.
+Flatten your spec: all external $ref's are imported into the main document and inline schemas reorganized as definitions.
 ```
 swagger flatten {spec}
 ```
@@ -165,6 +166,22 @@ Merge specifications (composition):
 ```
 swagger mixin {spec1} {spec2}
 ```
+
+
+### Compare specs
+
+The  diff command allows you to check backwards compatibility.
+Type ```swagger diff --help``` for info.
+
+```
+swagger diff {spec1} {spec2}
+```
+
+## Try it
+
+Try `go-swagger` in a free online workspace using Gitpod:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/go-swagger/go-swagger)
 
 ## Licensing
 

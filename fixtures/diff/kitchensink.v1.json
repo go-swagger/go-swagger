@@ -1,0 +1,297 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Fixture",
+    "version": "1.0"
+  },
+  "host": "petstore.swagger.wordnik.com",
+  "basePath": "/api",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "bill"
+  ],
+  "produces": [
+    "bill"
+  ],
+  "paths": {
+    "/a/": {
+      "get": {
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "headerParam",
+            "in": "header",
+            "schema":{
+              "type":"string",
+              "format":"password"
+            }
+          },
+          {
+            "name": "deletedHeaderParam",
+            "in": "header",
+            "schema":{
+              "type":"string",
+              "format":"password"
+            }
+          },
+          {
+            "name": "changeMaxInt",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "maximum": 200,
+            "exclusiveMaximum": false
+          },
+          {
+            "name": "removeMaxInt",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "maximum": 200,
+            "exclusiveMaximum": true
+          },
+          {
+            "name": "changeMinInt",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "minimum": 200,
+            "exclusiveMinimum": false
+          },
+          {
+            "name": "wideryString",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "personality",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "crazy",
+              "empathic",
+              "saucy"
+            ]
+          },
+          {
+            "name": "changeyPattern",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "pattern": "*"
+          },
+          {
+            "name": "primToObj",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "name": "ObjToPrim",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/A2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers":[
+              {"header1":{
+                "type":"integer"
+              }
+            }
+            ],
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/A1"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/A2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/A3"
+            }
+          }
+        }
+      }
+    },
+    "/a/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "flavour",
+            "required": false,
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/A1"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/A2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/A3"
+            }
+          }
+        }
+      }
+    },
+    "/b/": {
+      "get": {
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/A1"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/A2"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "$ref": "#/definitions/A3"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "A1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string",
+          "enum": [
+            "crazy",
+            "empathic",
+            "saucy"
+          ]
+        }
+      }
+    },
+    "A2": {
+      "type": "object",
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "A3": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "letters": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

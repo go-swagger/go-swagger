@@ -84,6 +84,7 @@ Here is an outline of available features (see the full list [here](https://goswa
   - Validation
   - Authorization
   - Swagger docs UI
+  - A Diff tool which will cause a build to fail if a change in the spec breaks backwards compatibility
 
 There is more to that...
 
@@ -164,6 +165,15 @@ swagger flatten {spec}
 Merge specifications (composition):
 ```
 swagger mixin {spec1} {spec2}
+```
+
+### Compare specs
+
+The  diff command allows you to check backwards compatibility.
+Type ```swagger diff --help``` for info.
+
+```
+swagger diff {spec1} {spec2}
 ```
 
 ## Try it
