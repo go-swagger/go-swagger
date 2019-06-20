@@ -1,0 +1,41 @@
+---
+  swagger: "2.0"
+  info:
+    title: "interface body"
+    version: "0.0.1"
+    description: "repro issue 1490"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths:
+    /dns/rrset:
+      get:
+        tags: [DNS]
+        summary: Get Resource Records
+        operationId: getResourceRecords
+        description: |
+          Retrieve the resource record sets for the domain.
+        parameters:
+          - name: profile
+            description: |
+              The profile context for which resource records are associated.
+            in: header
+            required: false
+            type: string
+            format: uuid
+          - name: profileRequired
+            description: |
+              The profile context for which resource records are associated.
+            in: header
+            required: true
+            type: string
+            format: uuid
+          - name: name
+            description: |
+              The associated DNS name to view.
+            in: query
+            required: false
+            type: string
+        responses:
+          200:
+            description: Resource records for the domain.
