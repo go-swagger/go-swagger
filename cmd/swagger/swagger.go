@@ -22,7 +22,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 )
 
 func init() {
@@ -37,7 +37,7 @@ var (
 var opts struct {
 	// General options applicable to all commands
 	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
-	LogFile func(string) `long:"output" short:"o" description:"redirect logs to file" value-name:"LOG-FILE"`
+	LogFile func(string) `long:"log-output" description:"redirect logs to file" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
