@@ -4350,7 +4350,7 @@ func TestGenClientParameter_1020(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
-	// testing fixture-1024.yaml with minimal flatten
+	// testing fixture-1020.yaml with minimal flatten
 	// param is File
 
 	fixtureConfig := map[string]map[string][]string{
@@ -4363,4 +4363,24 @@ func TestGenClientParameter_1020(t *testing.T) {
 		},
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1020", "fixture-1020.yaml"), true, false)
+}
+
+func TestGenClientParameter_1339(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1339.yaml with minimal flatten
+	// param is binary
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"postBin": { // fixture index
+			"clientParameter": { // executed template
+				`if err := r.SetBodyParam(o.Body); err != nil {`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1339", "fixture-1339.yaml"), true, false)
 }
