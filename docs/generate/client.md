@@ -12,7 +12,7 @@ generate all the files for a client library
 
 Application Options:
   -q, --quiet                                                                     silence logs
-  -o, --output=LOG-FILE                                                           redirect logs to file
+      --log-output=LOG-FILE                                                       redirect logs to file
 
 Help Options:
   -h, --help                                                                      Show this help message
@@ -24,6 +24,7 @@ Help Options:
       -s, --server-package=                                                       the package to save the server specific code (default: restapi)
       -c, --client-package=                                                       the package to save the client specific code (default: client)
       -t, --target=                                                               the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                Load contributed templates
       -T, --template-dir=                                                         alternative template override directory
       -C, --config-file=                                                          configuration file to use for overriding template options
       -r, --copyright-file=                                                       copyright file used to add copyright header
