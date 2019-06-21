@@ -8,11 +8,14 @@ Currently it is possible to apply the following transforms:
 - full flattening: performs minimal flattening and in addition, replaces all complex constructs in schemas by named definitions
 - mixin: merges one or more specifications into a primary spec
 
+In addition, it is possible to compare specs (diff) to inspect breaking changes in the API.
+
 ### Expansion
 
 Expanding a spec may prove useful to validate a schema, produce documentation or test cases. The primary intent is not code generation.
 
-> **NOTE**: Circular `$ref` are detected and remain as local `$ref`
+> **NOTE**: Circular `$ref` are detected and remain as local `$ref`. Remote circular `$ref` remain remote 
+> (favor `flatten` to regroup all remote `$ref` under one single root document).
 
 Usage:
 

@@ -17,8 +17,9 @@
   - [Serve UI](usage/serve_ui.md)
   - [Validate](usage/validate.md)
   - [Transform spec](use/transform.md)
-    - [Flatten](usage/flatten.md)
+    - [Diff](usage/diff.md)
     - [Expand](usage/expand.md)
+    - [Flatten](usage/flatten.md)
     - [Mixin](usage/mixin.md)
   - Generate code from spec
     - [Dependencies & Requirements](generate/requirements.md)
