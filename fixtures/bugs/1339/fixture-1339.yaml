@@ -1,0 +1,17 @@
+swagger: '2.0'
+info:
+  title: postBin
+  version: x
+paths:
+  /bin:
+    post:
+      operationId: postBin
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: string
+            format: binary
+      responses:
+        200:
+          description: success
