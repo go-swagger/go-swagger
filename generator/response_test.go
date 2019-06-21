@@ -676,3 +676,28 @@ func TestGenResponse_1572(t *testing.T) {
 	// assertParams also works for responses
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "1572", "fixture-1572.yaml"), true, false)
 }
+
+func TestGenResponse_1893(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	fixtureConfig := map[string]map[string][]string{
+		// load expectations for parameters in operation get_nested_required_responses.go
+		"getRecords": { // fixture index
+			"clientResponse": { // executed template
+				// expected code lines
+				`type GetRecordsStatus512 struct {`,
+				`type GetRecordsStatus515 struct {`,
+			},
+			"serverResponses": { // executed template
+				// expected code lines
+				`type GetRecordsStatus512 struct {`,
+				`type GetRecordsStatus515 struct {`,
+			},
+		},
+	}
+	// assertParams also works for responses
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1893", "fixture-1893.yaml"), true, false)
+}
