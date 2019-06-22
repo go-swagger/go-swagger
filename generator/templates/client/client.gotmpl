@@ -25,7 +25,7 @@ import (
 )
 
 // New creates a new {{ humanize .Name }} API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
   return &Client{transport: transport, formats: formats}
 }
 
@@ -37,6 +37,15 @@ Client {{ if .Summary }}{{ .Summary }}{{ if .Description }}
 type Client struct {
   transport runtime.ClientTransport
   formats strfmt.Registry
+}
+
+// ClientService is the interface for Client methods
+type ClientService interface {
+	{{ range .Operations }}
+	{{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }}
+	{{ end }}
+
+	SetTransport(transport runtime.ClientTransport)
 }
 
 {{ range .Operations }}
