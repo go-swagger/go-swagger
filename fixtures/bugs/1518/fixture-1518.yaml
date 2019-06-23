@@ -1,0 +1,94 @@
+---
+  swagger: "2.0"
+  info:
+    title: "client panick issue"
+    version: "0.0.1"
+    description: "repro issue 1518"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths:
+    # no default
+    /getRecords1:
+      get:
+        operationId: getRecords1
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: string
+    # with default
+    /getRecords2:
+      get:
+        operationId: getRecords2
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: string
+          default:
+            description: "default"
+            schema:
+              type: object
+    # multiple, no default
+    /getRecords3:
+      get:
+        operationId: getRecords3
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: string
+          201:
+            description: "OK"
+            schema:
+              type: string
+    # multple, with default
+    /getRecords4:
+      get:
+        operationId: getRecords4
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses:
+          200:
+            description: "OK"
+            schema:
+              type: string
+          201:
+            description: "OK"
+            schema:
+              type: string
+          default:
+            description: "default"
+            schema:
+              type: object
