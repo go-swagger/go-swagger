@@ -131,6 +131,47 @@ known_failed_minimal="@(\
 fixture-1767.yaml|\
 )"
 
+# this collects all available yml/yaml/json fixtures in the following directories
+fixtureDirs=(\
+"fixtures/codegen" \
+"fixtures/bugs/909" \
+"fixtures/bugs/1437" \
+"fixtures/bugs/1314" \
+"fixtures/bugs/1062/eve-online-esi.json" \
+"fixtures/bugs/1392" \
+"fixtures/bugs/1277" \
+"fixtures/bugs/1536" \
+"fixtures/bugs/1487" \
+"fixtures/bugs/1571" \
+"fixtures/bugs/957" \
+"fixtures/bugs/1614" \
+"fixtures/bugs/931" \
+"fixtures/bugs/1683" \
+"fixtures/bugs/1796" \
+"fixtures/bugs/1839" \
+"fixtures/bugs/1719" \
+"fixtures/bugs/1859" \
+"fixtures/bugs/1490" \
+"fixtures/bugs/973" \
+"fixtures/bugs/1020" \
+"fixtures/bugs/1339" \
+"fixtures/bugs/1893" \
+"fixtures/bugs/1518" \
+"fixtures/bugs/1993" \
+"fixtures/bugs/1937" \
+)
+
+# there are several subspecs there: we just want a specific one
+singleFixtures=(\
+"fixtures/bugs/1621/fixture-1621.yaml" \
+"fixtures/bugs/1774/def_api.yaml" \
+"fixtures/bugs/1767/fixture-1767.yaml" \
+"fixtures/bugs/1260/fixture-realiased-types.yaml" \
+"fixtures/bugs/1260/test3-swagger.yaml fixtures/bugs/1260/test3-bis-swagger.yaml" \
+"fixtures/bugs/1260/test3-ter-swagger.yaml fixtures/bugs/1260/test3-ter-swagger-flat.json" \
+"fixtures/bugs/1851/fixture-1851.yaml" \
+)
+
 if [[ "$1" == "--circleci" ]] ; then
     # Coloured output not supported by default on CircleCI.
     # Forcing term to xterm is not enough: tput not available with minimalist env.
@@ -151,43 +192,25 @@ fi
 
 # All fixtures in ./fixtures/codegen + some others
 cd $(git rev-parse --show-toplevel)
-specdir="fixtures/codegen fixtures/bugs/909 fixtures/bugs/1437 fixtures/bugs/1314 fixtures/bugs/1062/eve-online-esi.json"
-specdir=${specdir}" fixtures/bugs/1392"
-specdir=${specdir}" fixtures/bugs/1277"
-specdir=${specdir}" fixtures/bugs/1536"
-specdir=${specdir}" fixtures/bugs/1487"
-specdir=${specdir}" fixtures/bugs/1571"
-specdir=${specdir}" fixtures/bugs/957"
-specdir=${specdir}" fixtures/bugs/1614"
-specdir=${specdir}" fixtures/bugs/931"
-specdir=${specdir}" fixtures/bugs/1683"
-specdir=${specdir}" fixtures/bugs/1796"
-specdir=${specdir}" fixtures/bugs/1839"
-specdir=${specdir}" fixtures/bugs/1719"
-specdir=${specdir}" fixtures/bugs/1859"
-specdir=${specdir}" fixtures/bugs/1490"
-specdir=${specdir}" fixtures/bugs/973"
-specdir=${specdir}" fixtures/bugs/1020"
-specdir=${specdir}" fixtures/bugs/1339"
-specdir=${specdir}" fixtures/bugs/1893"
-specdir=${specdir}" fixtures/bugs/1518"
-specdir=${specdir}" fixtures/bugs/1993"
-specdir=${specdir}" fixtures/bugs/1937"
-gendir=./tmp-gen
-rm -rf ${gendir}
 
+# build list of fixtures from dirs
+for fixture in ${fixtureDirs[@]} ; do
+  specdir=${specdir}" ${fixture}"
+done
 check_list=`for d in ${specdir}; do ls $d/*.yml;ls $d/*.json;ls $d/*.yaml;done 2>/dev/null`
-# there are several subspecs there: we just want the master
-check_list=${check_list}" fixtures/bugs/1621/fixture-1621.yaml"
-check_list=${check_list}" fixtures/bugs/1774/def_api.yaml"
-check_list=${check_list}" fixtures/bugs/1767/fixture-1767.yaml"
-check_list=${check_list}" fixtures/bugs/1260/fixture-realiased-types.yaml"
-check_list=${check_list}" fixtures/bugs/1260/test3-swagger.yaml fixtures/bugs/1260/test3-bis-swagger.yaml"
-check_list=${check_list}" fixtures/bugs/1260/test3-ter-swagger.yaml fixtures/bugs/1260/test3-ter-swagger-flat.json"
-check_list=${check_list}" fixtures/bugs/1851/fixture-1851.yaml"
+
+# extend list of fixtures with extra single specs
+for fixture in ${singleFixtures[@]} ; do
+  check_list=${check_list}" ${fixture}"
+done
 
 list=( $check_list )
 fixtures_count=${#list[@]}
+
+# cleanup CI spec generation target
+gendir=./tmp-gen
+rm -rf ${gendir}
+
 okcr "Running codegen for ${fixtures_count} specs"
 
 for spec in ${check_list}; do
