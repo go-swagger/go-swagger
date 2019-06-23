@@ -1,0 +1,30 @@
+---
+  swagger: "2.0"
+  info:
+    title: "error codes >= 512"
+    version: "0.0.1"
+    description: "repro issue 1893"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              type: array
+              items:
+                type: object
+        responses:
+          default:
+            description: "OK"
+          200:
+            description: "OK"
+          512:
+            description: "512"
+          515:
+            description: "515"
