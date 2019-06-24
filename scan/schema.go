@@ -1301,17 +1301,7 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 			jsonName := jsonParts[0]
 
 			if len(jsonParts) > 1 && jsonParts[1] == "string" {
-				// Need to check if the field type is a scalar. Otherwise, the
-				// ",string" directive doesn't apply.
-				ident, ok := field.Type.(*ast.Ident)
-				if ok {
-					switch ident.Name {
-					case "int", "int8", "int16", "int32", "int64",
-						"uint", "uint8", "uint16", "uint32", "uint64",
-						"float64", "string", "bool":
-						isString = true
-					}
-				}
+				isString = isFieldStringable(field.Type)
 			}
 
 			if jsonName == "-" {
@@ -1322,4 +1312,23 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 		}
 	}
 	return name, false, false, nil
+}
+
+// isFieldStringable check if the field type is a scalar. If the field type is
+// *ast.StarExpr and is pointer type, check if it refers to a scalar.
+// Otherwise, the ",string" directive doesn't apply.
+func isFieldStringable(tpe ast.Expr) bool {
+	if ident, ok := tpe.(*ast.Ident); ok {
+		switch ident.Name {
+		case "int", "int8", "int16", "int32", "int64",
+			"uint", "uint8", "uint16", "uint32", "uint64",
+			"float64", "string", "bool":
+				return true
+		}
+	} else if starExpr, ok := tpe.(*ast.StarExpr); ok {
+		return isFieldStringable(starExpr.X)
+	} else {
+		return false
+	}
+	return false
 }
