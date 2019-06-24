@@ -28,6 +28,7 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+	"unicode"
 
 	swaggererrors "github.com/go-openapi/errors"
 
@@ -1074,17 +1075,28 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 }
 
 func pascalize(arg string) string {
-	if len(arg) == 0 || arg[0] > '9' {
-		return swag.ToGoName(arg)
-	}
-	if arg[0] == '+' {
-		return swag.ToGoName("Plus " + arg[1:])
-	}
-	if arg[0] == '-' {
-		return swag.ToGoName("Minus " + arg[1:])
-	}
+	return swag.ToGoName(swag.ToGoName(arg)) // want to remove spaces
+}
 
-	return swag.ToGoName("Nr " + arg)
+func prefixForName(arg string) string {
+	first := []rune(arg)[0]
+	if len(arg) == 0 || unicode.IsLetter(first) {
+		return ""
+	}
+	switch first {
+	case '+':
+		return "Plus"
+	case '-':
+		return "Minus"
+		// other cases (#,@ etc..) handled by swag.ToGoName
+	}
+	return "Nr"
+}
+
+func init() {
+	// this makes the ToGoName func behave with the special
+	// prefixing rule above
+	swag.GoNamePrefixFunc = prefixForName
 }
 
 func pruneEmpty(in []string) (out []string) {

@@ -1,0 +1,34 @@
+---
+  swagger: "2.0"
+  info:
+    title: "error codes >= 512"
+    version: "0.0.1"
+    description: "repro issue 1893"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    400Schema:
+      type: string
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: 101param
+            type: string
+            in: query
+          - name: records
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/400Schema'
+        responses:
+          200:
+            description: "OK"
+            headers:
+              101header:
+                type: string
+            schema:
+              $ref: '#/definitions/400Schema'
+
