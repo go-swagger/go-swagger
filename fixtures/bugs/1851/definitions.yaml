@@ -1,0 +1,12 @@
+definitions:
+  ServerStatus:
+    type: string
+    enum: [OK, Not OK]
+
+  Server:
+    type: object
+    properties:
+      Name:
+        type: string
+      Status:
+        $ref: '#/definitions/ServerStatus'

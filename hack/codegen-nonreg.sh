@@ -183,6 +183,7 @@ check_list=${check_list}" fixtures/bugs/1767/fixture-1767.yaml"
 check_list=${check_list}" fixtures/bugs/1260/fixture-realiased-types.yaml"
 check_list=${check_list}" fixtures/bugs/1260/test3-swagger.yaml fixtures/bugs/1260/test3-bis-swagger.yaml"
 check_list=${check_list}" fixtures/bugs/1260/test3-ter-swagger.yaml fixtures/bugs/1260/test3-ter-swagger-flat.json"
+check_list=${check_list}" fixtures/bugs/1851/fixture-1851.yaml"
 
 list=( $check_list )
 fixtures_count=${#list[@]}

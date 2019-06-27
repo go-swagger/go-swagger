@@ -1,0 +1,39 @@
+swagger: '2.0'
+
+info:
+  title: 'Title'
+  version: '1.0'
+
+paths:
+  '/':
+    get:
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: '#/definitions/Response'
+    post:
+      parameters:
+        - in: body
+          schema:
+            $ref: '#/definitions/Request'
+          name: filter
+      responses:
+        200:
+          description: OK response
+          schema:
+            $ref: '#/definitions/Response'
+
+definitions:
+  Response:
+    type: object
+    properties:
+      Server:
+        type: array
+        items:
+          $ref: 'definitions.yaml#/definitions/Server'
+  Request:
+    type: object
+    properties:
+      ServerStatus:
+        $ref: 'definitions.yaml#/definitions/ServerStatus'
