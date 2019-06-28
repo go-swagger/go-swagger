@@ -21,21 +21,18 @@ type PetDeleteReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *PetDeleteReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewPetDeleteNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	case 400:
 		result := NewPetDeleteBadRequest()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	case 404:
 		result := NewPetDeleteNotFound()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {

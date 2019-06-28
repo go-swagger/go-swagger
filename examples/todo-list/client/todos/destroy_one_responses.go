@@ -24,14 +24,12 @@ type DestroyOneReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *DestroyOneReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 204:
 		result := NewDestroyOneNoContent()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		result := NewDestroyOneDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {

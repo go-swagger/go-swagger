@@ -134,7 +134,6 @@ func (s *Server) SetAPI(api *operations.TaskTrackerAPI) {
 	}
 
 	s.api = api
-	s.api.Logger = log.Printf
 	s.handler = configureAPI(api)
 }
 
@@ -253,7 +252,7 @@ func (s *Server) Serve() (err error) {
 			// https://github.com/golang/go/tree/master/src/crypto/elliptic
 			CurvePreferences: []tls.CurveID{tls.CurveP256},
 			// Use modern tls mode https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
-			NextProtos: []string{"http/1.1", "h2"},
+			NextProtos: []string{"h2", "http/1.1"},
 			// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
 			MinVersion: tls.VersionTLS12,
 			// These ciphersuites support Forward Secrecy: https://en.wikipedia.org/wiki/Forward_secrecy

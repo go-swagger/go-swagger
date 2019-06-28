@@ -198,7 +198,7 @@ func init() {
   },
   "security": [
     {
-      "key": null
+      "key": []
     }
   ]
 }`))

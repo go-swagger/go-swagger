@@ -24,21 +24,18 @@ type UpdateTaskReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *UpdateTaskReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewUpdateTaskOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	case 422:
 		result := NewUpdateTaskUnprocessableEntity()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		result := NewUpdateTaskDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {

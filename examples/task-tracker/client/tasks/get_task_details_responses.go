@@ -24,21 +24,18 @@ type GetTaskDetailsReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *GetTaskDetailsReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewGetTaskDetailsOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	case 422:
 		result := NewGetTaskDetailsUnprocessableEntity()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		result := NewGetTaskDetailsDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
