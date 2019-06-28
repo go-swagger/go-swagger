@@ -14,7 +14,7 @@ repo_pref="github.com/${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}/${CIRCLE_PR
 if [[ ${1} == "--nocover" ]] ; then
     # Run simple tests without coverage computations, but with race detector turned on
     echo "Running unit tests with race detector"
-    go test -race -vet off -v ${packages}
+    go test -race -v ${packages}
 else
     # Run test coverage on each subdirectories and merge the coverage profile.
     echo "Running CI unit tests with coverage calculation"
@@ -24,7 +24,7 @@ else
         pth="${GOPATH}/src/${dir}"
         # -tags netgo: test as statically linked
         # -installsuffix netgo: produce suffixed object for this statically linked build
-        go test -vet off -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir
+        go test -tags netgo -installsuffix netgo -covermode=${GOCOVMODE-atomic} -coverprofile=${pth}/profile.tmp $dir
         if [[ -f $pth/profile.tmp ]] ; then
             cat $pth/profile.tmp | tail -n +2 >> coverage.txt
             rm -f $pth/profile.tmp
