@@ -26,21 +26,18 @@ type ListTasksReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *ListTasksReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 200:
 		result := NewListTasksOK()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	case 422:
 		result := NewListTasksUnprocessableEntity()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		result := NewListTasksDefault(response.Code())
 		if err := result.readResponse(response, consumer, o.formats); err != nil {

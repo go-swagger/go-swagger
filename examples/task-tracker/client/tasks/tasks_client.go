@@ -53,8 +53,13 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runti
 	if err != nil {
 		return nil, err
 	}
-	return result.(*AddCommentToTaskCreated), nil
-
+	success, ok := result.(*AddCommentToTaskCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*AddCommentToTaskDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -87,8 +92,13 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	return result.(*CreateTaskCreated), nil
-
+	success, ok := result.(*CreateTaskCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*CreateTaskDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -119,8 +129,13 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	return result.(*DeleteTaskNoContent), nil
-
+	success, ok := result.(*DeleteTaskNoContent)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*DeleteTaskDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -150,8 +165,13 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams) (*GetTaskComment
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetTaskCommentsOK), nil
-
+	success, ok := result.(*GetTaskCommentsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetTaskCommentsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -184,8 +204,13 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK
 	if err != nil {
 		return nil, err
 	}
-	return result.(*GetTaskDetailsOK), nil
-
+	success, ok := result.(*GetTaskDetailsOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*GetTaskDetailsDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -218,8 +243,13 @@ func (a *Client) ListTasks(params *ListTasksParams) (*ListTasksOK, error) {
 	if err != nil {
 		return nil, err
 	}
-	return result.(*ListTasksOK), nil
-
+	success, ok := result.(*ListTasksOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*ListTasksDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -252,8 +282,13 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAut
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UpdateTaskOK), nil
-
+	success, ok := result.(*UpdateTaskOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UpdateTaskDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 /*
@@ -283,8 +318,13 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.C
 	if err != nil {
 		return nil, err
 	}
-	return result.(*UploadTaskFileCreated), nil
-
+	success, ok := result.(*UploadTaskFileCreated)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	unexpectedSuccess := result.(*UploadTaskFileDefault)
+	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
 // SetTransport changes the transport on the client

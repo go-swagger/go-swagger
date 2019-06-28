@@ -54,20 +54,20 @@ func (o *ListTasksURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var pageSize string
+	var pageSizeQ string
 	if o.PageSize != nil {
-		pageSize = swag.FormatInt32(*o.PageSize)
+		pageSizeQ = swag.FormatInt32(*o.PageSize)
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
-	var sinceID string
+	var sinceIDQ string
 	if o.SinceID != nil {
-		sinceID = swag.FormatInt64(*o.SinceID)
+		sinceIDQ = swag.FormatInt64(*o.SinceID)
 	}
-	if sinceID != "" {
-		qs.Set("sinceId", sinceID)
+	if sinceIDQ != "" {
+		qs.Set("sinceId", sinceIDQ)
 	}
 
 	var statusIR []string

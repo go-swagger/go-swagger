@@ -24,28 +24,24 @@ type PetUpdateReader struct {
 // ReadResponse reads a server response into the received o.
 func (o *PetUpdateReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
 	switch response.Code() {
-
 	case 201:
 		result := NewPetUpdateCreated()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return result, nil
-
 	case 400:
 		result := NewPetUpdateBadRequest()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	case 404:
 		result := NewPetUpdateNotFound()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
 			return nil, err
 		}
 		return nil, result
-
 	case 405:
 		result := NewPetUpdateMethodNotAllowed()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {

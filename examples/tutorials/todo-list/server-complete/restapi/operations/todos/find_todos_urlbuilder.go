@@ -49,20 +49,20 @@ func (o *FindTodosURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var limit string
+	var limitQ string
 	if o.Limit != nil {
-		limit = swag.FormatInt32(*o.Limit)
+		limitQ = swag.FormatInt32(*o.Limit)
 	}
-	if limit != "" {
-		qs.Set("limit", limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
-	var since string
+	var sinceQ string
 	if o.Since != nil {
-		since = swag.FormatInt64(*o.Since)
+		sinceQ = swag.FormatInt64(*o.Since)
 	}
-	if since != "" {
-		qs.Set("since", since)
+	if sinceQ != "" {
+		qs.Set("since", sinceQ)
 	}
 
 	_result.RawQuery = qs.Encode()

@@ -63,20 +63,20 @@ func (o *GetTaskCommentsURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var pageSize string
+	var pageSizeQ string
 	if o.PageSize != nil {
-		pageSize = swag.FormatInt32(*o.PageSize)
+		pageSizeQ = swag.FormatInt32(*o.PageSize)
 	}
-	if pageSize != "" {
-		qs.Set("pageSize", pageSize)
+	if pageSizeQ != "" {
+		qs.Set("pageSize", pageSizeQ)
 	}
 
-	var since string
+	var sinceQ string
 	if o.Since != nil {
-		since = o.Since.String()
+		sinceQ = o.Since.String()
 	}
-	if since != "" {
-		qs.Set("since", since)
+	if sinceQ != "" {
+		qs.Set("since", sinceQ)
 	}
 
 	_result.RawQuery = qs.Encode()

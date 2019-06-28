@@ -50,20 +50,20 @@ func (o *LoginUserURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var password string
+	var passwordQ string
 	if o.Password != nil {
-		password = *o.Password
+		passwordQ = *o.Password
 	}
-	if password != "" {
-		qs.Set("password", password)
+	if passwordQ != "" {
+		qs.Set("password", passwordQ)
 	}
 
-	var username string
+	var usernameQ string
 	if o.Username != nil {
-		username = *o.Username
+		usernameQ = *o.Username
 	}
-	if username != "" {
-		qs.Set("username", username)
+	if usernameQ != "" {
+		qs.Set("username", usernameQ)
 	}
 
 	_result.RawQuery = qs.Encode()

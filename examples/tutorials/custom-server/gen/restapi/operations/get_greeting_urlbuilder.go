@@ -46,12 +46,12 @@ func (o *GetGreetingURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var name string
+	var nameQ string
 	if o.Name != nil {
-		name = *o.Name
+		nameQ = *o.Name
 	}
-	if name != "" {
-		qs.Set("name", name)
+	if nameQ != "" {
+		qs.Set("name", nameQ)
 	}
 
 	_result.RawQuery = qs.Encode()
