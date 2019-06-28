@@ -46,13 +46,13 @@ do
         rm -rf client models restapi cmd
         echo "generating client for $dir..."
         swagger generate client --skip-validation --quiet
-        go test -vet off ./...
+        go test ./...
     fi
 
     if [[ "${server}" == "true" ]] ; then
         echo "generating server for $dir..."
         swagger generate server --skip-validation --quiet
-        go test -vet off ./...
+        go test ./...
     fi
     set +e
     popd > /dev/null || true

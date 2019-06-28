@@ -51,7 +51,7 @@ build_script:
   - echo %GOPATH%
 
 test_script:
-  - ps: go test -vet off -timeout 20m -v $(go list ./... | sls -n "vendor|fixtures|examples")
+  - ps: go test -timeout 20m -v $(go list ./... | sls -n "vendor|fixtures|examples")
 
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
