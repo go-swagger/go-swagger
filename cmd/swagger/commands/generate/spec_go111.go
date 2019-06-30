@@ -1,18 +1,4 @@
-//+build !go1.11
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// +build go1.11
 
 package generate
 
@@ -23,16 +9,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-swagger/go-swagger/codescan"
+
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/scan"
 	"github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v2"
 )
 
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
-	BasePath    string         `long:"base-path" short:"b" description:"the base path to use" default:"."`
+	WorkDir     string         `long:"work-dir" short:"w" description:"the base path to use" default:"."`
 	BuildTags   string         `long:"tags" short:"t" description:"build tags" default:""`
 	ScanModels  bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
 	Compact     bool           `long:"compact" description:"when present, doesn't prettify the json"`
@@ -46,21 +33,26 @@ type SpecFile struct {
 
 // Execute runs this command
 func (s *SpecFile) Execute(args []string) error {
+	if len(args) == 0 { // by default consider all the paths under the working directory
+		args = []string{"./..."}
+	}
+
 	input, err := loadSpec(string(s.Input))
 	if err != nil {
 		return err
 	}
 
-	var opts scan.Opts
-	opts.BasePath = s.BasePath
-	opts.Input = input
+	var opts codescan.Options
+	opts.Packages = args
+	opts.WorkDir = s.WorkDir
+	opts.InputSpec = input
 	opts.ScanModels = s.ScanModels
 	opts.BuildTags = s.BuildTags
 	opts.Include = s.Include
 	opts.Exclude = s.Exclude
 	opts.IncludeTags = s.IncludeTags
 	opts.ExcludeTags = s.ExcludeTags
-	swspec, err := scan.Application(opts)
+	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err
 	}

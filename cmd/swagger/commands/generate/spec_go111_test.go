@@ -1,4 +1,4 @@
-// +build !go1.11
+// +build go1.11
 
 package generate
 
@@ -24,8 +24,8 @@ func TestSpecFileExecute(t *testing.T) {
 	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
 	for _, outputFile := range files {
 		spec := &SpecFile{
-			BasePath: basePath,
-			Output:   flags.Filename(outputFile),
+			WorkDir: basePath,
+			Output:  flags.Filename(outputFile),
 		}
 
 		err := spec.Execute(nil)

@@ -4,6 +4,8 @@ go 1.12
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
 
+replace github.com/go-openapi/strfmt => ../strfmt
+
 require (
 	cloud.google.com/go v0.39.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
@@ -24,9 +26,9 @@ require (
 	github.com/go-openapi/jsonreference v0.19.0
 	github.com/go-openapi/loads v0.19.0
 	github.com/go-openapi/runtime v0.19.0
-	github.com/go-openapi/spec v0.19.0
+	github.com/go-openapi/spec v0.19.2
 	github.com/go-openapi/strfmt v0.19.0
-	github.com/go-openapi/swag v0.19.0
+	github.com/go-openapi/swag v0.19.2
 	github.com/go-openapi/validate v0.19.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang/mock v1.3.1 // indirect
