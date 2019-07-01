@@ -38,6 +38,7 @@ install:
   - go env
 
   # get the dependencies etc
+  - set GO111MODULE=off
   - go get -u github.com/stretchr/testify/assert
   - go get -u github.com/davecgh/go-spew/spew
   - go get -u github.com/axw/gocov/gocov
@@ -45,6 +46,7 @@ install:
   - go get -u github.com/cee-dub/go-junit-report
   - go get -u github.com/corbym/gocrest
   - go get -u gotest.tools/gotestsum
+  - set GO111MODULE=
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%

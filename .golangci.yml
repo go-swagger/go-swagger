@@ -26,7 +26,6 @@ linters:
     - gosec
     - nakedret
     - unconvert
-    - unparam
   disable:
     - maligned
     - unparam
