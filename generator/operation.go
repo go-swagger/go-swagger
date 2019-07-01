@@ -176,7 +176,7 @@ type operationGenerator struct {
 
 func intersectTags(left, right []string) (filtered []string) {
 	if len(right) == 0 {
-		filtered = left[:]
+		filtered = append(filtered, left...)
 		return
 	}
 	for _, l := range left {
@@ -494,7 +494,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Method:               b.Method,
 		Path:                 b.Path,
 		BasePath:             b.BasePath,
-		Tags:                 operation.Tags[:],
+		Tags:                 append([]string{}, operation.Tags...),
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
@@ -798,11 +798,12 @@ func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeRe
 	var items *GenItems
 	res.KeyVar = "k"
 	res.Schema.KeyVar = "k"
-	if schema.IsMap && !schema.IsInterface {
+	switch {
+	case schema.IsMap && !schema.IsInterface:
 		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.AdditionalProperties)
-	} else if schema.IsArray {
+	case schema.IsArray:
 		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.Items)
-	} else {
+	default:
 		items = new(GenItems)
 	}
 
@@ -878,11 +879,12 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 			prev = next
 			next = new(GenItems)
 
-			if it.Items != nil {
+			switch {
+			case it.Items != nil:
 				it = it.Items
-			} else if it.AdditionalProperties != nil {
+			case it.AdditionalProperties != nil:
 				it = it.AdditionalProperties
-			} else {
+			default:
 				it = nil
 			}
 		}

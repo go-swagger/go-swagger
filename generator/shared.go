@@ -235,9 +235,9 @@ func GoLangOpts() *LanguageOpts {
 		var pth string
 		for _, gp := range filepath.SplitList(gopath) {
 			// EvalSymLinks also calls the Clean
-			gopathExtended, err := filepath.EvalSymlinks(gp)
-			if err != nil {
-				log.Fatalln(err)
+			gopathExtended, err2 := filepath.EvalSymlinks(gp)
+			if err2 != nil {
+				log.Fatalln(err2)
 			}
 			gopathExtended = filepath.Join(gopathExtended, "src")
 			gp = filepath.Join(gp, "src")
@@ -1149,11 +1149,12 @@ func validateAndFlattenSpec(opts *GenOpts, specDoc *loads.Document) (*loads.Docu
 	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
 
 	var preprocessingOption string
-	if opts.FlattenOpts.Expand {
+	switch {
+	case opts.FlattenOpts.Expand:
 		preprocessingOption = "expand"
-	} else if opts.FlattenOpts.Minimal {
+	case opts.FlattenOpts.Minimal:
 		preprocessingOption = "minimal flattening"
-	} else {
+	default:
 		preprocessingOption = "full flattening"
 	}
 	log.Printf("preprocessing spec with option:  %s", preprocessingOption)

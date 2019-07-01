@@ -26,7 +26,7 @@ func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map
 			}
 		}
 	}
-	return len(includeTags) <= 0
+	return len(includeTags) == 0
 }
 
 // Many thanks go to https://github.com/yvasiyarov/swagger
@@ -1101,10 +1101,8 @@ func (su *setDiscriminator) Parse(lines []string) error {
 		}
 		if req {
 			su.schema.Discriminator = su.field
-		} else {
-			if su.schema.Discriminator == su.field {
-				su.schema.Discriminator = ""
-			}
+		} else if su.schema.Discriminator == su.field {
+			su.schema.Discriminator = ""
 		}
 	}
 	return nil

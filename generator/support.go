@@ -29,7 +29,7 @@ import (
 	"sort"
 	"strings"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -180,8 +180,7 @@ type appGenerator struct {
 
 func withAutoXOrder(specPath string) string {
 	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
-		switch slice := ele.(type) {
-		case yaml.MapSlice:
+		if slice, ok := ele.(yaml.MapSlice); ok {
 			for _, v := range slice {
 				if v.Key == key {
 					if slice, ok := v.Value.(yaml.MapSlice); ok {
@@ -291,7 +290,7 @@ func (a *appGenerator) Generate() error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(os.Stdout, string(bb))
+		_, _ = fmt.Fprintln(os.Stdout, string(bb))
 		return nil
 	}
 
@@ -614,9 +613,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var genMods GenDefinitions
 	importPath := a.GenOpts.ExistingModels
 	if a.GenOpts.ExistingModels == "" {
-		if imports == nil {
-			imports = make(map[string]string)
-		}
 		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, "models")] = path.Join(
 			filepath.ToSlash(baseImport),
 			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, "models"))

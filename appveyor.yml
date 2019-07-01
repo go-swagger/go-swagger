@@ -49,12 +49,12 @@ install:
   - set GO111MODULE=
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - cd C:\go-swagger
   - echo %PATH%
   - echo %GOPATH%
 
 test_script:
-  - ps: gotestsum -f short-verbose -- -vet off -timeout 20m ./...
+  - ps: gotestsum -f short-verbose -- -vet off -timeout 20m
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
 deploy: off

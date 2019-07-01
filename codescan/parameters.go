@@ -52,7 +52,11 @@ func (pt paramTypable) Schema() *spec.Schema {
 }
 
 func (pt paramTypable) AddExtension(key string, value interface{}) {
-	pt.AddExtension(key, value)
+	if pt.param.In == "body" {
+		pt.Schema().AddExtension(key, value)
+	} else {
+		pt.param.AddExtension(key, value)
+	}
 }
 
 type itemsTypable struct {

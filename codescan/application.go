@@ -52,9 +52,8 @@ type Options struct {
 }
 
 type scanCtx struct {
-	pkgs    []*packages.Package
-	app     *typeIndex
-	builder *specBuilder
+	pkgs []*packages.Package
+	app  *typeIndex
 }
 
 func tagSliceToSet(names []string) map[string]bool {

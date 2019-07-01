@@ -72,9 +72,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return str
 	},
-	"upper": func(str string) string {
-		return strings.ToUpper(str)
-	},
+	"upper": strings.ToUpper,
 	"contains": func(coll []string, arg string) bool {
 		for _, v := range coll {
 			if v == arg {
@@ -100,7 +98,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"joinFilePath": filepath.Join,
 	"comment": func(str string) string {
 		lines := strings.Split(str, "\n")
-		return (strings.Join(lines, "\n// "))
+		return strings.Join(lines, "\n// ")
 	},
 	"blockcomment": func(str string) string {
 		return strings.Replace(str, "*/", "[*]/", -1)
@@ -276,7 +274,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 					if ee := t.AddFile(assetName, string(data)); ee != nil {
 						// Fatality is decided by caller
 						// log.Fatal(ee)
-						return fmt.Errorf("Could not add template: %v", ee)
+						return fmt.Errorf("could not add template: %v", ee)
 					}
 				}
 				// Non-readable files are skipped
@@ -289,7 +287,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+		return fmt.Errorf("could not complete template processing in directory \"%s\": %v", templatePath, err)
 	}
 	return nil
 }
@@ -327,23 +325,23 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
 
 	if err != nil {
-		return fmt.Errorf("Failed to load template %s: %v", name, err)
+		return fmt.Errorf("failed to load tpl %s: %v", name, err)
 	}
 
 	// check if any protected templates are defined
 	if !allowOverride {
-		for _, template := range templ.Templates() {
-			if protectedTemplates[template.Name()] {
-				return fmt.Errorf("Cannot overwrite protected template %s", template.Name())
+		for _, tpl := range templ.Templates() {
+			if protectedTemplates[tpl.Name()] {
+				return fmt.Errorf("cannot overwrite protected tpl %s", tpl.Name())
 			}
 		}
 	}
 
-	// Add each defined template into the cache
-	for _, template := range templ.Templates() {
+	// Add each defined tpl into the cache
+	for _, tpl := range templ.Templates() {
 
-		t.files[template.Name()] = fileName
-		t.templates[template.Name()] = template.Lookup(template.Name())
+		t.files[tpl.Name()] = fileName
+		t.templates[tpl.Name()] = tpl.Lookup(tpl.Name())
 	}
 
 	return nil
@@ -467,7 +465,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 
 			// Still don't have it, return an error
 			if tt == nil {
-				return templ, fmt.Errorf("Could not find template %s", dep)
+				return templ, fmt.Errorf("could not find template %s", dep)
 			}
 			var err error
 
@@ -475,7 +473,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			templ, err = templ.AddParseTree(dep, tt.Tree)
 
 			if err != nil {
-				return templ, fmt.Errorf("Dependency Error: %v", err)
+				return templ, fmt.Errorf("dependency Error: %v", err)
 			}
 
 		}
@@ -489,7 +487,7 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 	templ, found := t.templates[name]
 
 	if !found {
-		return templ, fmt.Errorf("Template doesn't exist %s", name)
+		return templ, fmt.Errorf("template doesn't exist %s", name)
 	}
 
 	return t.addDependencies(templ)
@@ -498,16 +496,16 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 // DumpTemplates prints out a dump of all the defined templates, where they are defined and what their dependencies are.
 func (t *Repository) DumpTemplates() {
 	buf := bytes.NewBuffer(nil)
-	fmt.Fprintln(buf, "\n# Templates")
+	_, _ = fmt.Fprintln(buf, "\n# Templates")
 	for name, templ := range t.templates {
-		fmt.Fprintf(buf, "## %s\n", name)
-		fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
+		_, _ = fmt.Fprintf(buf, "## %s\n", name)
+		_, _ = fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
 
 		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
 
-			fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
+			_, _ = fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
 		}
-		fmt.Fprintln(buf, "\n---")
+		_, _ = fmt.Fprintln(buf, "\n---")
 	}
 	log.Println(buf.String())
 }

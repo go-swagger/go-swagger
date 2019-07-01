@@ -16,6 +16,8 @@ linters-settings:
 run:
   skip-dirs:
     - playground
+    - fixtures
+    - cmd
 
 linters:
   enable:
@@ -24,7 +26,6 @@ linters:
     - stylecheck
     # - goimports
     - gosec
-    - nakedret
     - unconvert
   disable:
     - maligned
@@ -33,3 +34,5 @@ linters:
     - gochecknoinits
     - gochecknoglobals
     - dupl
+    - nakedret
+
