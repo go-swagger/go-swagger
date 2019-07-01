@@ -1,6 +1,8 @@
 package codescan
 
 import (
+	"encoding/json"
+	"log"
 	"sort"
 	"testing"
 
@@ -62,6 +64,8 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	})
 	require.NoError(t, err)
 	if assert.NotNil(t, doc) {
+		b, _ := json.MarshalIndent(doc, "", "  ")
+		log.Println(string(b))
 		verifyParsedPetStore(t, doc)
 	}
 }
