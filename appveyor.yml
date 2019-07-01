@@ -3,7 +3,7 @@ version: "0.1.{build}"
 # Operating system (build VM template)
 os: Windows Server 2012 R2
 
-clone_folder: C:\gopath\src\github.com\go-swagger\go-swagger
+clone_folder: C:\go-swagger
 shallow_clone: true # for startup speed
 pull_requests:
   do_not_increment_build_number: true
@@ -13,7 +13,7 @@ skip_branch_with_pr: true
 
 environment:
   GOPATH: C:\gopath
-  GOVERSION: 1.11.3
+  GOVERSION: 1.12.6
   GOCOVMODE: "mode: atomic"
   PATH: C:\gopath\bin;%PATH%
 
@@ -44,6 +44,7 @@ install:
   - go get -u gopkg.in/matm/v1/gocov-html
   - go get -u github.com/cee-dub/go-junit-report
   - go get -u github.com/corbym/gocrest
+  - go get -u gotest.tools/gotestsum
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
@@ -51,8 +52,7 @@ build_script:
   - echo %GOPATH%
 
 test_script:
-  - ps: go test -vet off -timeout 20m -v $(go list ./... | sls -n "vendor|fixtures|examples")
-
+  - ps: gotestsum -f short-verbose -- -vet off -timeout 20m ./...
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
 deploy: off
