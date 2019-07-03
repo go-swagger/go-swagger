@@ -1,5 +1,3 @@
-// +build !go1.11
-
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scan
+package codescan
 
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	"net/mail"
 	"regexp"
 	"strings"
 
 	"github.com/go-openapi/spec"
 )
+
+type metaSection struct {
+	Comments *ast.CommentGroup
+}
 
 func metaTOSSetter(meta *spec.Info) func([]string) {
 	return func(lines []string) {

@@ -1,44 +1,35 @@
-// +build !go1.11
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package scan
+package codescan
 
 import (
-	goparser "go/parser"
-	"log"
 	"testing"
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
+func getResponse(sctx *scanCtx, nm string) *Decl {
+	for k := range sctx.app.Responses {
+		if k.Name == nm {
+			return sctx.app.Responses[k]
+		}
+	}
+	return nil
+}
+
 func TestParseResponses(t *testing.T) {
-	docFile := "../fixtures/goparsing/classification/operations/responses.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
+	sctx := loadClassificationPkgsCtx(t)
+	responses := make(map[string]spec.Response)
+	for _, rn := range []string{"ComplexerOne", "SimpleOnes", "SimpleOnesFunc", "ComplexerPointerOne", "SomeResponse", "ValidationError", "Resp", "FileResponse", "GenericError", "ValidationError"} {
+		td := getResponse(sctx, rn)
+		prs := &responseBuilder{
+			ctx:  sctx,
+			decl: td,
+		}
+		require.NoError(t, prs.Build(responses))
 	}
 
-	rp := newResponseParser(classificationProg)
-	responses := make(map[string]spec.Response)
-	err = rp.Parse(fileTree, responses)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Len(t, responses, 9)
+	require.Len(t, responses, 9)
 	cr, ok := responses["complexerOne"]
 	assert.True(t, ok)
 	assert.Len(t, cr.Headers, 7)

@@ -1,28 +1,47 @@
-// +build !go1.11
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package scan
+package codescan
 
 import (
+	"fmt"
 	"go/ast"
 	"regexp"
 	"strings"
 
 	"github.com/go-openapi/spec"
 )
+
+type operationsBuilder struct {
+	ctx        *scanCtx
+	path       parsedPathContent
+	operations map[string]*spec.Operation
+}
+
+func (o *operationsBuilder) Build(tgt *spec.Paths) error {
+	pthObj := tgt.Paths[o.path.Path]
+
+	op := setPathOperation(
+		o.path.Method, o.path.ID,
+		&pthObj, o.operations[o.path.ID])
+
+	op.Tags = o.path.Tags
+
+	sp := new(yamlSpecScanner)
+	sp.setTitle = func(lines []string) { op.Summary = joinDropLast(lines) }
+	sp.setDescription = func(lines []string) { op.Description = joinDropLast(lines) }
+
+	if err := sp.Parse(o.path.Remaining); err != nil {
+		return fmt.Errorf("operation (%s): %v", op.ID, err)
+	}
+	if err := sp.UnmarshalSpec(op.UnmarshalJSON); err != nil {
+		return fmt.Errorf("operation (%s): %v", op.ID, err)
+	}
+
+	if tgt.Paths == nil {
+		tgt.Paths = make(map[string]spec.PathItem)
+	}
+
+	tgt.Paths[o.path.Path] = pthObj
+	return nil
+}
 
 type parsedPathContent struct {
 	Method, Path, ID string
@@ -34,7 +53,8 @@ func parsePathAnnotation(annotation *regexp.Regexp, lines []*ast.Comment) (cnt p
 	var justMatched bool
 
 	for _, cmt := range lines {
-		for _, line := range strings.Split(cmt.Text, "\n") {
+		txt := cmt.Text
+		for _, line := range strings.Split(txt, "\n") {
 			matches := annotation.FindStringSubmatch(line)
 			if len(matches) > 3 {
 				cnt.Method, cnt.Path, cnt.ID = matches[1], matches[2], matches[len(matches)-1]

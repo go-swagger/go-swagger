@@ -1,9 +1,13 @@
-FROM golang:alpine
+FROM golang
 
 ENV GOCOVMODE atomic
 
-RUN apk add -U --no-cache bash tar gzip xz procps git curl ruby ruby-dev alpine-sdk libffi-dev rpm dpkg openssh-client ncurses &&\
-    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz | tar -C /usr/bin --strip-components=1 -xzf -
+RUN apt-get update -qq &&\
+    apt-get install -yqq tar gzip procps git curl ruby ruby-dev build-essential rpm openssh-client ncurses-term &&\
+    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz | tar -C /usr/bin --strip-components=1 -xzf - &&\
+    apt-get clean autoclean &&\
+    apt-get autoremove --yes &&\
+    rm -rf /var/lib/{apt,dpkg,cache,log}
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
@@ -13,6 +17,7 @@ RUN set -e -x \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/aktau/github-release \
   && go get -u github.com/mitchellh/gox \
+  && go get -u gotest.tools/gotestsum \
   && gem install --no-ri --no-rdoc fpm etc \
   && gem sources -c
 

@@ -1,25 +1,9 @@
-// +build !go1.11
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package scan
+package codescan
 
 import (
-	goparser "go/parser"
-	"log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
@@ -31,16 +15,16 @@ func TestRouteExpression(t *testing.T) {
 }
 
 func TestRoutesParser(t *testing.T) {
-	docFile := "../fixtures/goparsing/classification/operations/todo_operation.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rp := newRoutesParser(classificationProg)
+	sctx := loadClassificationPkgsCtx(t)
 	var ops spec.Paths
-	err = rp.Parse(fileTree, &ops, nil, nil)
-	assert.NoError(t, err)
+	for _, apiPath := range sctx.app.Routes {
+		prs := &routesBuilder{
+			ctx:        sctx,
+			route:      apiPath,
+			operations: make(map[string]*spec.Operation),
+		}
+		require.NoError(t, prs.Build(&ops))
+	}
 
 	assert.Len(t, ops.Paths, 3)
 
@@ -122,16 +106,24 @@ func TestRoutesParser(t *testing.T) {
 }
 
 func TestRoutesParserBody(t *testing.T) {
-	docFile := "../fixtures/goparsing/classification/operations_body/todo_operation_body.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rp := newRoutesParser(classificationProg)
+	sctx, err := newScanCtx(&Options{
+		Packages: []string{
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification",
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models",
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations",
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations_body",
+		},
+	})
+	require.NoError(t, err)
 	var ops spec.Paths
-	err = rp.Parse(fileTree, &ops, nil, nil)
-	assert.NoError(t, err)
+	for _, apiPath := range sctx.app.Routes {
+		prs := &routesBuilder{
+			ctx:        sctx,
+			route:      apiPath,
+			operations: make(map[string]*spec.Operation),
+		}
+		require.NoError(t, prs.Build(&ops))
+	}
 
 	assert.Len(t, ops.Paths, 4)
 

@@ -1,49 +1,41 @@
-// +build !go1.11
-
-// Copyright 2015 go-swagger maintainers
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package scan
+package codescan
 
 import (
-	goparser "go/parser"
-	"log"
 	"testing"
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
 	gcBadEnum = "bad_enum"
 )
 
-func TestScanFileParam(t *testing.T) {
-	docFile := "../fixtures/goparsing/classification/operations/noparams.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
+func getParameter(sctx *scanCtx, nm string) *Decl {
+	for k := range sctx.app.Parameters {
+		if k.Name == nm {
+			return sctx.app.Parameters[k]
+		}
 	}
-	sp := newParameterParser(classificationProg)
-	noParamOps := make(map[string]*spec.Operation)
-	err = sp.Parse(fileTree, noParamOps)
-	if err != nil {
-		log.Fatal(err)
-	}
-	assert.Len(t, noParamOps, 10)
+	return nil
+}
 
-	of, ok := noParamOps["myOperation"]
+func TestScanFileParam(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	operations := make(map[string]*spec.Operation)
+	for _, rn := range []string{"OrderBodyParams", "MultipleOrderParams", "ComplexerOneParams", "NoParams", "NoParamsAlias", "MyFileParams", "MyFuncFileParams", "EmbeddedFileParams"} {
+		td := getParameter(sctx, rn)
+
+		prs := &parameterBuilder{
+			ctx:  sctx,
+			decl: td,
+		}
+		require.NoError(t, prs.Build(operations))
+	}
+	assert.Len(t, operations, 10)
+
+	of, ok := operations["myOperation"]
 	assert.True(t, ok)
 	assert.Len(t, of.Parameters, 1)
 	fileParam := of.Parameters[0]
@@ -52,7 +44,7 @@ func TestScanFileParam(t *testing.T) {
 	assert.Equal(t, "file", fileParam.Type)
 	assert.False(t, fileParam.Required)
 
-	emb, ok := noParamOps["myOtherOperation"]
+	emb, ok := operations["myOtherOperation"]
 	assert.True(t, ok)
 	assert.Len(t, emb.Parameters, 2)
 	fileParam = emb.Parameters[0]
@@ -66,7 +58,7 @@ func TestScanFileParam(t *testing.T) {
 	assert.Equal(t, "integer", extraParam.Type)
 	assert.True(t, extraParam.Required)
 
-	ffp, ok := noParamOps["myFuncOperation"]
+	ffp, ok := operations["myFuncOperation"]
 	assert.True(t, ok)
 	assert.Len(t, ffp.Parameters, 1)
 	fileParam = ffp.Parameters[0]
@@ -77,20 +69,20 @@ func TestScanFileParam(t *testing.T) {
 }
 
 func TestParamsParser(t *testing.T) {
-	docFile := "../fixtures/goparsing/classification/operations/noparams.go"
-	fileTree, err := goparser.ParseFile(classificationProg.Fset, docFile, nil, goparser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	sp := newParameterParser(classificationProg)
-	noParamOps := make(map[string]*spec.Operation)
-	err = sp.Parse(fileTree, noParamOps)
-	if err != nil {
-		log.Fatal(err)
-	}
-	assert.Len(t, noParamOps, 10)
+	sctx := loadClassificationPkgsCtx(t)
+	operations := make(map[string]*spec.Operation)
+	for _, rn := range []string{"OrderBodyParams", "MultipleOrderParams", "ComplexerOneParams", "NoParams", "NoParamsAlias", "MyFileParams", "MyFuncFileParams", "EmbeddedFileParams"} {
+		td := getParameter(sctx, rn)
 
-	cr, okParam := noParamOps["yetAnotherOperation"]
+		prs := &parameterBuilder{
+			ctx:  sctx,
+			decl: td,
+		}
+		require.NoError(t, prs.Build(operations))
+	}
+
+	assert.Len(t, operations, 10)
+	cr, okParam := operations["yetAnotherOperation"]
 	assert.True(t, okParam)
 	assert.Len(t, cr.Parameters, 8)
 	for _, param := range cr.Parameters {
@@ -124,7 +116,7 @@ func TestParamsParser(t *testing.T) {
 		}
 	}
 
-	ob, okParam := noParamOps["updateOrder"]
+	ob, okParam := operations["updateOrder"]
 	assert.True(t, okParam)
 	assert.Len(t, ob.Parameters, 1)
 	bodyParam := ob.Parameters[0]
@@ -133,7 +125,7 @@ func TestParamsParser(t *testing.T) {
 	assert.Equal(t, "#/definitions/order", bodyParam.Schema.Ref.String())
 	assert.True(t, bodyParam.Required)
 
-	mop, okParam := noParamOps["getOrders"]
+	mop, okParam := operations["getOrders"]
 	assert.True(t, okParam)
 	assert.Len(t, mop.Parameters, 2)
 	ordersParam := mop.Parameters[0]
@@ -143,7 +135,7 @@ func TestParamsParser(t *testing.T) {
 	otherParam := mop.Parameters[1]
 	assert.Equal(t, "And another thing", otherParam.Description)
 
-	op, okParam := noParamOps["someOperation"]
+	op, okParam := operations["someOperation"]
 	assert.True(t, okParam)
 	assert.Len(t, op.Parameters, 10)
 
@@ -302,7 +294,7 @@ func TestParamsParser(t *testing.T) {
 	}
 
 	// assert that the order of the parameters is maintained
-	order, ok := noParamOps["anotherOperation"]
+	order, ok := operations["anotherOperation"]
 	assert.True(t, ok)
 	assert.Len(t, order.Parameters, 10)
 
@@ -334,7 +326,7 @@ func TestParamsParser(t *testing.T) {
 	}
 
 	// check that aliases work correctly
-	aliasOp, ok := noParamOps["someAliasOperation"]
+	aliasOp, ok := operations["someAliasOperation"]
 	assert.True(t, ok)
 	assert.Len(t, aliasOp.Parameters, 4)
 	for _, param := range aliasOp.Parameters {

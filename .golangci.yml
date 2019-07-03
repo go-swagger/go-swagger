@@ -13,8 +13,20 @@ linters-settings:
     min-len: 2
     min-occurrences: 2
 
+run:
+  skip-dirs:
+    - playground
+    - fixtures
+    - cmd
+
 linters:
-  enable-all: true
+  enable:
+    - golint
+    - gocritic
+    - stylecheck
+    # - goimports
+    - gosec
+    - unconvert
   disable:
     - maligned
     - unparam
@@ -22,3 +34,5 @@ linters:
     - gochecknoinits
     - gochecknoglobals
     - dupl
+    - nakedret
+

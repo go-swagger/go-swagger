@@ -1,6 +1,4 @@
-// +build !go1.11
-
-package scan
+package codescan
 
 import (
 	"errors"
@@ -130,11 +128,9 @@ func (s *setOpParams) Parse(lines []string) error {
 				if current.Type == TypeBool {
 					current.Type = TypeBoolean
 				}
-			} else {
-				if ref, err := spec.NewRef("#/definitions/" + value); err == nil {
-					current.Type = TypeObject
-					current.Schema.Ref = ref
-				}
+			} else if ref, err := spec.NewRef("#/definitions/" + value); err == nil {
+				current.Type = TypeObject
+				current.Schema.Ref = ref
 			}
 			current.Schema.Type = spec.StringOrArray{current.Type}
 		case ParamAllowEmptyKey:

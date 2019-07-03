@@ -1,20 +1,28 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/go-swagger/go-swagger
     docker:
-      - image: goswagger/builder:20190324
+      - image: goswagger/builder:20190630
     steps:
       - checkout
 
       - run:
           name: Run unit tests
-          command: ./hack/test.sh
+          command: gotestsum -f short-verbose -- -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
           no_output_timeout: 30m
 
       - run:
           name: Submit coverage results
           command: bash <(curl -s https://codecov.io/bash)
+
+      - run:
+          name: Save coverage html report
+          command: |
+            outputdir="/usr/share/coverage"
+            if [[ ! -d ${outputdir} ]] ; then
+                mkdir -p ${outputdir}
+            fi
+            gocov convert coverage.txt | gocov-html > ${outputdir}/coverage-${CIRCLE_BUILD_NUM-"0"}.html
 
       # Running the race detector is not supported on circleCI
       #- run:
