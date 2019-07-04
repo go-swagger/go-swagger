@@ -68,6 +68,7 @@ jobs:
               upload_to_github
               upload_to_bintray
 
+              export EXTRA_TAG=latest
               deploy_docker
             fi
 
