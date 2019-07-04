@@ -48,7 +48,7 @@ var zeroes = map[string]string{
 	"strfmt.ISBN10":     "strfmt.ISBN10(\"\")",
 	"strfmt.ISBN13":     "strfmt.ISBN13(\"\")",
 	"strfmt.MAC":        "strfmt.MAC(\"\")",
-	"strfmt.ObjectId":   "strfmt.ObjectId(\"\")",
+	"strfmt.ObjectId":   "strfmt.ObjectId{}",
 	"strfmt.Password":   "strfmt.Password(\"\")",
 	"strfmt.RGBColor":   "strfmt.RGBColor(\"rgb(0,0,0)\")",
 	"strfmt.SSN":        "strfmt.SSN(\"\")",
