@@ -200,6 +200,9 @@ func initModelFixtures() {
 
 	// type realiasing
 	initFixtureRealiasedTypes()
+
+	// required base type
+	initFixture1993()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

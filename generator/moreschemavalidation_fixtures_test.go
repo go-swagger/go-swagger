@@ -10932,3 +10932,32 @@ func initFixtureRealiasedTypes() {
 		noLines,
 		noLines)
 }
+
+func initFixture1993() {
+	/*
+	   required / non required base type
+	*/
+
+	f := newModelFixture("../fixtures/bugs/1993/fixture-1993.yaml", "test required/non required base type")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// load expectations for model: house.go
+	thisRun.AddExpectations("house.go", []string{
+		`if err := validate.Required("pet", "body", m.Pet()); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: empty_house.go
+	thisRun.AddExpectations("empty_house.go", []string{
+		`if swag.IsZero(m.Pet())`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+}
