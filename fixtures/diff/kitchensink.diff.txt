@@ -1,0 +1,27 @@
+NON-BREAKING CHANGES:
+            =====================
+             Metadata - Spec.consumes - Added a consumes format <bob>
+             Metadata - Spec.produces - Deleted produces format <bill>
+             Metadata - Spec.schemes - Added schemes <https>
+            /a/:get -> 200 Response- Added response
+            /a/:get Request - Header.addedHeaderParam : string - Added optional param
+            /a/:get Request - Header.deletedHeaderParam : string - Deleted optional param
+            /a/:get Request - Header.headerParam.headerParam : string - Widened type <string.password -> string>
+            /a/:get Request - Query.changeMaxInt - Widened type <Maximum 200.000000->300.000000>
+            /a/:get Request - Query.removeMaxInt - Widened type <Exclusive Maximum Removed:true->false>
+            /a/:get Request - Query.wideryString - Widened type <integer -> string>
+            
+            BREAKING CHANGES:
+            =================
+             Metadata - Spec Metadata - Changed base path </api -> /apibaby>
+             Metadata - Spec Metadata - Changed host URL <petstore.swagger.wordnik.com -> petstore.swaggery.wordnik.com>
+             Metadata - Spec.consumes - Deleted a consumes format <bill>
+             Metadata - Spec.produces - Added produces format <bob>
+             Metadata - Spec.schemes - Deleted schemes <http>
+            /a/:get Request - Query.ObjToPrim - Changed type <obj -> integer>
+            /a/:get Request - Query.changeMaxInt - Narrowed type <Exclusive Maximum Added:false->true>
+            /a/:get Request - Query.changeMinInt - Narrowed type <Exclusive Minimum Added:false->true>
+            /a/:get Request - Query.changeMinInt - Narrowed type <Minimum 200.000000->300.000000>
+            /a/:get Request - Query.changeyPattern - Changed type <Pattern Changed:*->anewpattern>
+            /a/:get Request - Query.primToObj : A2 - Changed type <integer -> obj>
+            

@@ -2535,4 +2535,16 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	assert.True(t, foundOrderC < foundOrderB)
 	assert.True(t, foundOrderB < foundOrderA)
 
+	foundInnerA := strings.Index(modelCode, "InnerAaa")
+	foundInnerB := strings.Index(modelCode, "InnerBbb")
+	foundInnerC := strings.Index(modelCode, "InnerCcc")
+	assert.True(t, foundInnerA < foundInnerB)
+	assert.True(t, foundInnerB < foundInnerC)
+
+	foundOrderInnerA := strings.Index(orderModelCode, "InnerAaa")
+	foundOrderInnerB := strings.Index(orderModelCode, "InnerBbb")
+	foundOrderInnerC := strings.Index(orderModelCode, "InnerCcc")
+
+	assert.True(t, foundOrderInnerC < foundOrderInnerB)
+	assert.True(t, foundOrderInnerB < foundOrderInnerA)
 }

@@ -1,3 +1,5 @@
+// +build !go1.11
+
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,12 +105,7 @@ func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems
 func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
 func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
-	list := strings.Split(val, ",")
-	interfaceSlice := make([]interface{}, len(list))
-	for i, d := range list {
-		interfaceSlice[i] = d
-	}
-	sv.current.Enum = interfaceSlice
+	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: sv.current.Type[0]})
 }
 
 type schemaDecl struct {
@@ -1306,17 +1303,7 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 			jsonName := jsonParts[0]
 
 			if len(jsonParts) > 1 && jsonParts[1] == "string" {
-				// Need to check if the field type is a scalar. Otherwise, the
-				// ",string" directive doesn't apply.
-				ident, ok := field.Type.(*ast.Ident)
-				if ok {
-					switch ident.Name {
-					case "int", "int8", "int16", "int32", "int64",
-						"uint", "uint8", "uint16", "uint32", "uint64",
-						"float64", "string", "bool":
-						isString = true
-					}
-				}
+				isString = isFieldStringable(field.Type)
 			}
 
 			if jsonName == "-" {
@@ -1327,4 +1314,23 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 		}
 	}
 	return name, false, false, nil
+}
+
+// isFieldStringable check if the field type is a scalar. If the field type is
+// *ast.StarExpr and is pointer type, check if it refers to a scalar.
+// Otherwise, the ",string" directive doesn't apply.
+func isFieldStringable(tpe ast.Expr) bool {
+	if ident, ok := tpe.(*ast.Ident); ok {
+		switch ident.Name {
+		case "int", "int8", "int16", "int32", "int64",
+			"uint", "uint8", "uint16", "uint32", "uint64",
+			"float64", "string", "bool":
+			return true
+		}
+	} else if starExpr, ok := tpe.(*ast.StarExpr); ok {
+		return isFieldStringable(starExpr.X)
+	} else {
+		return false
+	}
+	return false
 }

@@ -1,3 +1,5 @@
+// +build !go1.11
+
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -808,4 +810,19 @@ func (ss *setOpResponses) Parse(lines []string) error {
 	}
 	ss.set(def, scr)
 	return nil
+}
+
+func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
+	list := strings.Split(val, ",")
+	interfaceSlice := make([]interface{}, len(list))
+	for i, d := range list {
+		v, err := parseValueFromSchema(d, s)
+		if err != nil {
+			interfaceSlice[i] = d
+			continue
+		}
+
+		interfaceSlice[i] = v
+	}
+	return interfaceSlice
 }

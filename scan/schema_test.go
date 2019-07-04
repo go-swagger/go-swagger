@@ -1,3 +1,5 @@
+// +build !go1.11
+
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -607,6 +609,29 @@ func TestInterfaceDiscriminators(t *testing.T) {
 func TestStringStructTag(t *testing.T) {
 	_ = classificationProg
 	sch := noModelDefs["jsonString"]
+	assertProperty(t, &sch, "string", "someInt", "int64", "SomeInt")
+	assertProperty(t, &sch, "string", "someInt8", "int8", "SomeInt8")
+	assertProperty(t, &sch, "string", "someInt16", "int16", "SomeInt16")
+	assertProperty(t, &sch, "string", "someInt32", "int32", "SomeInt32")
+	assertProperty(t, &sch, "string", "someInt64", "int64", "SomeInt64")
+	assertProperty(t, &sch, "string", "someUint", "uint64", "SomeUint")
+	assertProperty(t, &sch, "string", "someUint8", "uint8", "SomeUint8")
+	assertProperty(t, &sch, "string", "someUint16", "uint16", "SomeUint16")
+	assertProperty(t, &sch, "string", "someUint32", "uint32", "SomeUint32")
+	assertProperty(t, &sch, "string", "someUint64", "uint64", "SomeUint64")
+	assertProperty(t, &sch, "string", "someFloat64", "double", "SomeFloat64")
+	assertProperty(t, &sch, "string", "someString", "", "SomeString")
+	assertProperty(t, &sch, "string", "someBool", "", "SomeBool")
+
+	prop, ok := sch.Properties["somethingElse"]
+	if assert.True(t, ok) {
+		assert.NotEqual(t, "string", prop.Type)
+	}
+}
+
+func TestPtrFieldStringStructTag(t *testing.T) {
+	_ = classificationProg
+	sch := noModelDefs["jsonPtrString"]
 	assertProperty(t, &sch, "string", "someInt", "int64", "SomeInt")
 	assertProperty(t, &sch, "string", "someInt8", "int8", "SomeInt8")
 	assertProperty(t, &sch, "string", "someInt16", "int16", "SomeInt16")

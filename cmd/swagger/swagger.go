@@ -22,7 +22,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
-	"github.com/jessevdk/go-flags"
+	flags "github.com/jessevdk/go-flags"
 )
 
 func init() {
@@ -37,7 +37,7 @@ var (
 var opts struct {
 	// General options applicable to all commands
 	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
-	LogFile func(string) `long:"output" short:"o" description:"redirect logs to file" value-name:"LOG-FILE"`
+	LogFile func(string) `long:"log-output" description:"redirect logs to file" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
@@ -95,6 +95,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 	}
 
 	_, err = parser.AddCommand("mixin", "merge swagger documents", "merge additional specs into first/primary spec by copying their paths and definitions", &commands.MixinSpec{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = parser.AddCommand("diff", "diff swagger documents", "diff specs showing which changes will break existing clients", &commands.DiffCommand{})
 	if err != nil {
 		log.Fatal(err)
 	}

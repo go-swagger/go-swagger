@@ -61,7 +61,7 @@ type Config struct {
 	{{ range .SecurityDefinitions -}}
 	{{ if .IsBasicAuth -}}
 	// Auth{{ pascalize .ID }} for basic authentication
-	Auth{{ pascalize .ID }} func(user string, pass string)
+	Auth{{ pascalize .ID }} func(user string, pass string) (interface{}, error)
 	{{ end -}}
 	{{ if .IsAPIKeyAuth -}}
 	// Auth{{ pascalize .ID }} Applies when the "{{ .Name }}" {{ .Source }} is set

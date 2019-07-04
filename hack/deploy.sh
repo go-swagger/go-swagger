@@ -68,9 +68,13 @@ deploy_docker() {
   mkdir -p deploybuild
   cp Dockerfile ./dist/swagger-musl ./deploybuild
   docker build --pull -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
-  docker tag quay.io/goswagger/swagger:$CIRCLE_TAG quay.io/goswagger/swagger:latest
   docker login -u $API_USERNAME -p $QUAY_PASS https://quay.io
   docker push quay.io/goswagger/swagger:$CIRCLE_TAG
+
+  if [[ -n "${EXTRA_TAG}" ]] ; then
+    docker tag quay.io/goswagger/swagger:$CIRCLE_TAG quay.io/goswagger/swagger:${EXTRA_TAG}
+    docker push quay.io/goswagger/swagger:${EXTRA_TAG}
+  fi
 }
 
 # prepare

@@ -1,3 +1,5 @@
+// +build !go1.11
+
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +23,10 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	gcBadEnum = "bad_enum"
 )
 
 func TestScanFileParam(t *testing.T) {
@@ -139,7 +145,7 @@ func TestParamsParser(t *testing.T) {
 
 	op, okParam := noParamOps["someOperation"]
 	assert.True(t, okParam)
-	assert.Len(t, op.Parameters, 8)
+	assert.Len(t, op.Parameters, 10)
 
 	for _, param := range op.Parameters {
 		switch param.Name {
@@ -196,7 +202,15 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "Category", param.Extensions["x-go-name"])
 			assert.EqualValues(t, []interface{}{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
 			assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
-
+		case "type":
+			assert.Equal(t, "Type of this model", param.Description)
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.EqualValues(t, []interface{}{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
+		case gcBadEnum:
+			assert.Equal(t, "query", param.In)
+			assert.Equal(t, "integer", param.Type)
+			assert.EqualValues(t, []interface{}{1, "rsq", "qaz"}, param.Enum, "%s enum values are incorrect", param.Name)
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)
 			assert.Equal(t, "FooSlice", param.Extensions["x-go-name"])
@@ -290,7 +304,7 @@ func TestParamsParser(t *testing.T) {
 	// assert that the order of the parameters is maintained
 	order, ok := noParamOps["anotherOperation"]
 	assert.True(t, ok)
-	assert.Len(t, order.Parameters, 8)
+	assert.Len(t, order.Parameters, 10)
 
 	for index, param := range order.Parameters {
 		switch param.Name {
@@ -304,12 +318,16 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 3, index, "%s index incorrect", param.Name)
 		case "category":
 			assert.Equal(t, 4, index, "%s index incorrect", param.Name)
-		case "foo_slice":
+		case "type":
 			assert.Equal(t, 5, index, "%s index incorrect", param.Name)
-		case "bar_slice":
+		case gcBadEnum:
 			assert.Equal(t, 6, index, "%s index incorrect", param.Name)
-		case "items":
+		case "foo_slice":
 			assert.Equal(t, 7, index, "%s index incorrect", param.Name)
+		case "bar_slice":
+			assert.Equal(t, 8, index, "%s index incorrect", param.Name)
+		case "items":
+			assert.Equal(t, 9, index, "%s index incorrect", param.Name)
 		default:
 			assert.Fail(t, "unknown property: "+param.Name)
 		}

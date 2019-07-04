@@ -1,10 +1,13 @@
+// +build !go1.11
+
 package scan
 
 import (
 	"errors"
-	"github.com/go-openapi/spec"
 	"strconv"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 const (

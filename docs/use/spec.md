@@ -15,6 +15,12 @@ To do this it makes use of go's loader package. The same package that is used by
 
 Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of the comment block is for swagger.
 
+If it is your first time using this library for generating swagger 
+specification, you can also take a look at 
+[this getting started guide](https://medium.com/@pedram.esmaeeli/generate-swagger-specification-from-go-source-code-648615f7b9d9?source=friends_link&sk=b402acc563e8d2bfadd1ac02abddc3bb)
+on Medium to get the big picture and then return here to read more 
+about all annotations and commands provided by this package.
+
 ### Usage
 
 To generate a spec:

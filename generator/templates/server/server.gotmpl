@@ -256,7 +256,6 @@ func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
 	}
 
 	s.api = api
-	s.api.Logger = log.Printf
 	s.handler = configureAPI(api)
 }
 
@@ -374,7 +373,7 @@ func (s *Server) Serve() (err error) {
 			CurvePreferences: []tls.CurveID{tls.CurveP256},
 		{{- if .UseModernMode }}
 			// Use modern tls mode https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility
-			NextProtos: []string{"http/1.1", "h2"},
+			NextProtos: []string{"h2", "http/1.1"},
 			// https://www.owasp.org/index.php/Transport_Layer_Protection_Cheat_Sheet#Rule_-_Only_Support_Strong_Protocols
 			MinVersion: tls.VersionTLS12,
 			// These ciphersuites support Forward Secrecy: https://en.wikipedia.org/wiki/Forward_secrecy

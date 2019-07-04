@@ -1,9 +1,6 @@
 version: "0.1.{build}"
 
-# Operating system (build VM template)
-os: Windows Server 2012 R2
-
-clone_folder: C:\gopath\src\github.com\go-swagger\go-swagger
+clone_folder: C:\go-swagger
 shallow_clone: true # for startup speed
 pull_requests:
   do_not_increment_build_number: true
@@ -11,47 +8,16 @@ pull_requests:
 skip_tags: true
 skip_branch_with_pr: true
 
+# appveyor.yml
+build: off
+
 environment:
-  GOPATH: C:\gopath
-  GOVERSION: 1.11.3
-  GOCOVMODE: "mode: atomic"
-  PATH: C:\gopath\bin;%PATH%
+  GOPATH: c:\gopath
 
-platform:
-  - x64
-
-# http://www.appveyor.com/docs/installed-software
-install:
-  # pre-installed MinGW at C:\MinGW is 32bit only
-  # but MSYS2 at C:\msys64 has mingw64
-  - set PATH=%GOPATH%\bin;c:\go\bin;C:\msys64\mingw64\bin;%PATH%
-  - gcc --version
-  - g++ --version
-
-  # upgrade go
-  - rmdir c:\go /s /q
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.zip
-  - 7z x go%GOVERSION%.windows-amd64.zip -y -oC:\ > NUL
-
-  # some helpful output for debugging builds
-  - go version
-  - go env
-
-  # get the dependencies etc
-  - go get -u github.com/stretchr/testify/assert
-  - go get -u github.com/davecgh/go-spew/spew
-  - go get -u github.com/axw/gocov/gocov
-  - go get -u gopkg.in/matm/v1/gocov-html
-  - go get -u github.com/cee-dub/go-junit-report
-
-build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - echo %PATH%
-  - echo %GOPATH%
+stack: go 1.12
 
 test_script:
-  - ps: go test -vet off -timeout 20m -v $(go list ./... | sls -n "vendor|fixtures|examples")
-
+  - go test -vet off -timeout 20m ./...
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
 deploy: off

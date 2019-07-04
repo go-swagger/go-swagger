@@ -230,7 +230,7 @@ func (o *operationGenerator) Generate() error {
 		st = o.GenOpts.Tags
 	}
 	intersected := intersectTags(o.Operation.Tags, st)
-	if len(intersected) == 1 {
+	if len(intersected) > 0 {
 		tag := intersected[0]
 		bldr.APIPackage = o.GenOpts.LanguageOpts.ManglePackagePath(tag, o.APIPackage)
 	}
@@ -400,7 +400,12 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		for _, v := range srs {
 			name, ok := v.Response.Extensions.GetString(xGoName)
 			if !ok {
+				// look for name of well-known codes
 				name = runtime.Statuses[v.Code]
+				if name == "" {
+					// non-standard codes deserve some name
+					name = fmt.Sprintf("Status %d", v.Code)
+				}
 			}
 			name = swag.ToJSONName(b.Name + " " + name)
 			isSuccess := v.Code/100 == 2

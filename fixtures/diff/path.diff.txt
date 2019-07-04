@@ -1,0 +1,11 @@
+NON-BREAKING CHANGES:
+            =====================
+            /a/:put Request- Added endpoint
+            /a/{id}:post Request- Deleted a deprecated endpoint
+            /newpath/:post Request- Added endpoint
+            
+            BREAKING CHANGES:
+            =================
+            /a/:post Request- Deleted endpoint
+            /b/:post Request- Deleted endpoint
+            

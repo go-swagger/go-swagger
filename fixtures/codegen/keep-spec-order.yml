@@ -30,4 +30,12 @@ definitions:
         type: string
       aaa:
         type: string
-
+      inner-object:
+        type: object
+        properties:
+          inner-ccc:
+            type: string
+          inner-bbb:
+            type: string
+          inner-aaa:
+            type: string

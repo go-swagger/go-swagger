@@ -18,7 +18,7 @@ serve a spec and swagger or redoc documentation ui
 
 Application Options:
   -q, --quiet                         silence logs
-  -o, --output=LOG-FILE               redirect logs to file
+      --log-output=LOG-FILE           redirect logs to file
 
 Help Options:
   -h, --help                          Show this help message

@@ -1,0 +1,12 @@
+NON-BREAKING CHANGES:
+            =====================
+            /a/:get -> 201 Response- Added response
+            /a/:put -> 200 Response - colour : string - Added property
+            /a/:put -> 200 Response - description : string - Narrowed type <string -> integer.int32>
+            /a/{id}:get -> 200 Response - colour : string - Added property
+            /a/{id}:get -> 200 Response - description : string - Narrowed type <string -> integer.int32>
+            
+            BREAKING CHANGES:
+            =================
+            /a/:get -> 200 Response- Deleted response
+            

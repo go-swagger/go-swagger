@@ -15,7 +15,7 @@ validate the provided swagger document against a swagger spec
 
 Application Options:
   -q, --quiet                 silence logs
-  -o, --output=LOG-FILE       redirect logs to file
+      --output=LOG-FILE       redirect logs to file
 
 Help Options:
   -h, --help                  Show this help message

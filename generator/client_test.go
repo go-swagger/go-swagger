@@ -19,6 +19,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -182,5 +183,72 @@ func TestClient(t *testing.T) {
 				assert.NoError(t, err)
 			}
 		})
+	}
+}
+
+func TestGenClient_1518(t *testing.T) {
+	// test client response handling when unexpected success response kicks in
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	opts := testClientGenOpts()
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "1518", "fixture-1518.yaml")
+
+	cwd, _ := os.Getwd()
+	tft, _ := ioutil.TempDir(cwd, "generated")
+	opts.Target = tft
+
+	defer func() {
+		_ = os.RemoveAll(opts.Target)
+	}()
+	err := GenerateClient("client", []string{}, []string{}, &opts)
+	if !assert.NoError(t, err) {
+		t.FailNow()
+	}
+
+	fixtureConfig := map[string][]string{
+		"client/operations/operations_client.go": { // generated file
+			// expected code lines
+			`success, ok := result.(*GetRecords1OK)`,
+			`if ok {`,
+			`return success, nil`,
+			`msg := fmt.Sprintf(`,
+			`panic(msg)`,
+			// expected code lines
+			`success, ok := result.(*GetRecords2OK)`,
+			`if ok {`,
+			`return success, nil`,
+			`unexpectedSuccess := result.(*GetRecords2Default)`,
+			`return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())`,
+			// expected code lines
+			`switch value := result.(type) {`,
+			`case *GetRecords3OK:`,
+			`return value, nil, nil`,
+			`case *GetRecords3Created:`,
+			`return nil, value, nil`,
+			`msg := fmt.Sprintf(`,
+			`panic(msg)`,
+			// expected code lines
+			`switch value := result.(type) {`,
+			`case *GetRecords4OK:`,
+			`return value, nil, nil`,
+			`case *GetRecords4Created:`,
+			`return nil, value, nil`,
+			`unexpectedSuccess := result.(*GetRecords4Default)`,
+			`return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())`,
+		},
+	}
+
+	for fileToInspect, expectedCode := range fixtureConfig {
+		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		if assert.NoError(t, err) {
+			for line, codeLine := range expectedCode {
+				if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+					t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+				}
+			}
+		}
 	}
 }

@@ -1,0 +1,8 @@
+NON-BREAKING CHANGES:
+            =====================
+             Metadata - Spec Metadata - Changed a description <Move your app forward with the Uber API -> Move your app forward with the Uber API with description change>
+            /estimates/price:get Request- Added a tag <A new tag>
+            /estimates/price:get Request- Deleted a tag <DeadTagWalking>
+            /products:get Request - latitude - Deleted a description
+            /products:get Request- Deleted a description
+           

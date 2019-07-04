@@ -21,7 +21,7 @@ generate all the files for a server application
 
 Application Options:
   -q, --quiet                                                                     silence logs
-  -o, --output=LOG-FILE                                                           redirect logs to file
+      --log-output=LOG-FILE                                                       redirect logs to file
 
 Help Options:
   -h, --help                                                                      Show this help message
@@ -33,6 +33,7 @@ Help Options:
       -s, --server-package=                                                       the package to save the server specific code (default: restapi)
       -c, --client-package=                                                       the package to save the client specific code (default: client)
       -t, --target=                                                               the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                Load contributed templates
       -T, --template-dir=                                                         alternative template override directory
       -C, --config-file=                                                          configuration file to use for overriding template options
       -r, --copyright-file=                                                       copyright file used to add copyright header
@@ -56,6 +57,8 @@ Help Options:
           --flag-strategy=[go-flags|pflag]                                        the strategy to provide flags for the server (default: go-flags)
           --compatibility-mode=[modern|intermediate]                              the compatibility mode for the tls server (default: modern)
           --skip-validation                                                       skips validation of spec prior to generation
+          --regenerate-configureapi                                               Force regeneration of configureapi.go
+          --keep-spec-order                                                       Keep schema properties order identical to spec file
 ```
 
 ### Build a server
