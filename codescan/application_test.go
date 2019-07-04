@@ -408,6 +408,9 @@ func verifyIDParam(t testing.TB, param spec.Parameter, description string) {
 func verifyRefParam(t testing.TB, param spec.Parameter, description, refed string) {
 	assert.Equal(t, description, param.Description)
 	assert.Equal(t, "body", param.In)
+	// TODO: this may fail sometimes (seen on go1.12 windows test): require pointer to be valid and avoid panicking
+	require.NotNil(t, param)
+	require.NotNil(t, param.Schema)
 	assert.Equal(t, "#/definitions/"+refed, param.Schema.Ref.String())
 	assert.True(t, param.Required)
 }
