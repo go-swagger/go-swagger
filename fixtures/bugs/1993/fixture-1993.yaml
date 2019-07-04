@@ -1,0 +1,81 @@
+consumes:
+- application/json
+info:
+  title: Pets
+  version: 0.1.0
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
+definitions:
+  House:
+    type: object
+    properties:
+      pet:
+        $ref: '#/definitions/Pet'
+    required:
+    - pet
+  EmptyHouse:
+    type: object
+    properties:
+      pet:
+        $ref: '#/definitions/Pet'
+  Pet:
+    type: object
+    discriminator: petType
+    properties:
+      name:
+        type: string
+      petType:
+        type: string
+    required:
+    - name
+    - petType
+  Dog:
+    type: object
+    description: A representation of a dog
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - properties:
+        packSize:
+          type: integer
+          format: int32
+          description: the size of the pack the dog is from
+          default: 0
+          minimum: 0
+      required:
+      - packSize
+paths:
+  "/houses":
+    post:
+      summary: Creates a house
+      produces:
+        - application/json
+      operationId: postHouse
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/House"
+      responses:
+        '200':
+          description: House response
+        default:
+          description: unexpected error
+  "/emptyhouses":
+    post:
+      summary: Creates a house
+      produces:
+        - application/json
+      operationId: postEmptyHouse
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/EmptyHouse"
+      responses:
+        '200':
+          description: House response
+        default:
+          description: unexpected error

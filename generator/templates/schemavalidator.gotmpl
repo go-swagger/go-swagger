@@ -214,7 +214,7 @@
     {{- if and .IsMap .HasValidations }}{{/* validation of aliased maps but does not know about AdditionalProperties: e.g. it comes from a $ref */}}
       {{- if not .IsAnonymous }}
         {{- if $.IsMap }}{{/* we come from a map range */}}
-      if val, ok := {{ .ValueExpression }}; ok {  
+      if val, ok := {{ .ValueExpression }}; ok {
         {{- end }}
         {{- if and .IsNullable (not .IsMapNullOverride) }}
           {{- if $.IsMap }}
@@ -229,7 +229,7 @@
         {{- if and .IsNullable (not .IsMapNullOverride) }}
         }
         {{- end }}
-        {{- if or $.IsMap }} 
+        {{- if or $.IsMap }}
      }
         {{- end }}
       {{- end }}
@@ -238,11 +238,25 @@
 {{ end }}
 
 {{define "objectvalidator" }}
+  {{/* // DEBUG
+  // .Name: {{ .Name }}
+  // .IsAliased: {{ .IsAliased }}
+  // .IsAnonymous: {{ .IsAnonymous }}
+  // .IsNullable: {{ .IsNullable }}
+  // .Required: {{ .Required }}
+  // .IsBaseType: {{ .IsBaseType }}
+  // .ValueExpression: {{ .ValueExpression }}
+  // .ReceiverName: {{ .ReceiverName }} */}}
   {{- if not .IsAnonymous }}
-    {{- if and .Required .IsNullable }}
+    {{- if and .Required (or .IsNullable .IsBaseType) }}
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
+      {{- if and (not .Required) .IsBaseType }}
+      if {{ .ValueExpression }} == nil {
+        return nil
+      }
+      {{- end }}
     {{ end }}
     {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: case of aliased types */}}
       {{- if and .IsNullable (not .IsMapNullOverride) }}
