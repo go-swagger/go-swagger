@@ -436,10 +436,6 @@ func TestShared_Issue1429(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	if runtime.GOOS == "windows" {
-		t.Skip("on windows till the bug is resolved for ref resolution")
-	}
-
 	// acknowledge fix in go-openapi/spec
 	specPath := filepath.Join("..", "fixtures", "bugs", "1429", "swagger-1429.yaml")
 	specDoc, err := loads.Spec(specPath)

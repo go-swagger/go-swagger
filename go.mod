@@ -9,14 +9,14 @@ require (
 	github.com/coreos/go-oidc v2.0.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-openapi/analysis v0.19.3
+	github.com/go-openapi/analysis v0.19.4
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.19.2
 	github.com/go-openapi/runtime v0.19.2
 	github.com/go-openapi/spec v0.19.2
 	github.com/go-openapi/strfmt v0.19.0
-	github.com/go-openapi/swag v0.19.3
+	github.com/go-openapi/swag v0.19.4
 	github.com/go-openapi/validate v0.19.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/gorilla/handlers v1.4.0
