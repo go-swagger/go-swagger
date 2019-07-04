@@ -4384,3 +4384,25 @@ func TestGenClientParameter_1339(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1339", "fixture-1339.yaml"), true, false)
 }
+
+func TestGenClientParameter_1937(t *testing.T) {
+	// names starting with a number
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	// testing fixture-1339.yaml with minimal flatten
+	// param is binary
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters
+		"getRecords": { // fixture index
+			"serverParameter": { // executed template
+				`Nr101param *string`,
+				`Records models.Nr400Schema`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1937", "fixture-1937.yaml"), true, false)
+}
