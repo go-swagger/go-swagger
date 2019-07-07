@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
-	"log"
 	"strings"
 
 	"golang.org/x/tools/go/ast/astutil"
@@ -162,7 +161,7 @@ func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
 			operations[opid] = operation
 			operation.ID = opid
 		}
-		log.Println("building spec for", opid)
+		debugLog("building parameters for: %s", opid)
 
 		// analyze struct body for fields etc
 		// each exported struct field:

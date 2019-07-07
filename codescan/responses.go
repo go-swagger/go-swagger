@@ -119,6 +119,7 @@ func (r *responseBuilder) Build(responses map[string]spec.Response) error {
 
 	name, _ := r.decl.ResponseNames()
 	response := responses[name]
+	debugLog("building response: %s", name)
 
 	// analyze doc comment for the model
 	sp := new(sectionedParser)
@@ -200,10 +201,32 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 			}
 			return r.buildFromStruct(r.decl, stpe, resp, seen)
 		default:
-			return errors.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
+			if decl, found := r.ctx.DeclForType(o.Type()); found {
+				var schema spec.Schema
+				typable := schemaTypable{schema: &schema, level: 0}
+
+				if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
+					typable.Typed("string", "date-time")
+					return nil
+				}
+				if sfnm, isf := strfmtName(decl.Comments); isf {
+					typable.Typed("string", sfnm)
+					return nil
+				}
+				sb := &schemaBuilder{ctx: r.ctx, decl: decl}
+				sb.inferNames()
+				if err := sb.buildFromType(tpe.Underlying(), typable); err != nil {
+					return err
+				}
+				resp.WithSchema(&schema)
+				r.postDecls = append(r.postDecls, sb.postDecls...)
+				return nil
+			}
+			return errors.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
 		}
 	default:
-		return errors.Errorf("unhandled type (%T): %s", otpe, tpe.String())
+		panic("unhandled type " + tpe.String())
+		// return errors.Errorf("unhandled type (%T): %s", otpe, tpe.String())
 	}
 }
 

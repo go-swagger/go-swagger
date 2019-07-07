@@ -34,6 +34,7 @@ func ServeAPI() error {
 		mux.GET("/orders/:id", handlers.GetOrderDetails),
 		mux.POST("/orders", handlers.CreateOrder),
 		mux.PUT("/orders/:id", handlers.UpdateOrder),
+		mux.GET("/help", handlers.GetHelp),
 		mux.Handler("DELETE", "/orders/:id", handlers.CancelOrder),
 	}
 	handler, err := mux.Build(routes)

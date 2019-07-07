@@ -1,6 +1,8 @@
 package codescan
 
 import (
+	"encoding/json"
+	"log"
 	"sort"
 	"testing"
 
@@ -62,8 +64,8 @@ func TestAppScanner_NewSpec(t *testing.T) {
 	})
 	require.NoError(t, err)
 	if assert.NotNil(t, doc) {
-		// b, _ := json.MarshalIndent(doc, "", "  ")
-		// log.Println(string(b))
+		b, _ := json.MarshalIndent(doc.Responses, "", "  ")
+		log.Println(string(b))
 		verifyParsedPetStore(t, doc)
 	}
 }
@@ -98,14 +100,14 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	verifyInfo(t, doc.Info)
 
 	if assert.NotNil(t, doc.Paths) {
-		assert.Len(t, doc.Paths.Paths, 4)
+		assert.Len(t, doc.Paths.Paths, 5)
 	}
 	var keys []string
 	for k := range doc.Definitions {
 		keys = append(keys, k)
 	}
 	assert.Len(t, keys, 3)
-	assert.Len(t, doc.Responses, 3)
+	assert.Len(t, doc.Responses, 4)
 
 	definitions := doc.Definitions
 	mod, ok := definitions["tag"]
@@ -224,6 +226,11 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assertProperty(t, resp.Schema, "integer", "code", "int32", "Code")
 	assertProperty(t, resp.Schema, "string", "message", "", "Message")
 	assertProperty(t, resp.Schema, "string", "field", "", "Field")
+
+	resp, ok = doc.Responses["MarkdownRender"]
+	assert.True(t, ok)
+	assert.NotNil(t, resp.Schema)
+	assert.True(t, resp.Schema.Type.Contains("string"))
 
 	paths := doc.Paths.Paths
 
