@@ -97,12 +97,12 @@ func (sv schemaValidations) SetEnum(val string) {
 
 type schemaBuilder struct {
 	ctx        *scanCtx
-	decl       *Decl
+	decl       *entityDecl
 	GoName     string
 	Name       string
 	annotated  bool
-	discovered []*Decl
-	postDecls  []*Decl
+	discovered []*entityDecl
+	postDecls  []*entityDecl
 }
 
 func (s *schemaBuilder) inferNames() (goName string, name string) {
@@ -149,7 +149,7 @@ func (s *schemaBuilder) Build(definitions map[string]spec.Schema) error {
 	return nil
 }
 
-func (s *schemaBuilder) buildFromDecl(decl *Decl, schema *spec.Schema) error {
+func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) error {
 	// analyze doc comment for the model
 	sp := new(sectionedParser)
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
@@ -379,7 +379,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 	return nil
 }
 
-func (s *schemaBuilder) buildFromInterface(decl *Decl, it *types.Interface, schema *spec.Schema, seen map[string]string) error {
+func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface, schema *spec.Schema, seen map[string]string) error {
 	if it.Empty() {
 		schema.Typed("object", "")
 		return nil
@@ -565,7 +565,7 @@ func (s *schemaBuilder) buildFromInterface(decl *Decl, it *types.Interface, sche
 	return nil
 }
 
-func (s *schemaBuilder) buildFromStruct(decl *Decl, st *types.Struct, schema *spec.Schema, seen map[string]string) error {
+func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, schema *spec.Schema, seen map[string]string) error {
 	// First check for all of schemas
 	var tgt *spec.Schema
 	hasAllOf := false
@@ -829,7 +829,7 @@ func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen 
 	return nil
 }
 
-func (s *schemaBuilder) makeRef(decl *Decl, prop swaggerTypable) error {
+func (s *schemaBuilder) makeRef(decl *entityDecl, prop swaggerTypable) error {
 	nm, _ := decl.Names()
 	ref, err := spec.NewRef("#/definitions/" + nm)
 	if err != nil {

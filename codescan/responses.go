@@ -107,8 +107,8 @@ func (sv headerValidations) SetExample(val interface{}) { sv.current.Example = v
 
 type responseBuilder struct {
 	ctx       *scanCtx
-	decl      *Decl
-	postDecls []*Decl
+	decl      *entityDecl
+	postDecls []*entityDecl
 }
 
 func (r *responseBuilder) Build(responses map[string]spec.Response) error {
@@ -207,7 +207,7 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 	}
 }
 
-func (r *responseBuilder) buildFromStruct(decl *Decl, tpe *types.Struct, resp *spec.Response, seen map[string]bool) error {
+func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, resp *spec.Response, seen map[string]bool) error {
 	if tpe.NumFields() == 0 {
 		return nil
 	}

@@ -11,7 +11,7 @@ import (
 
 func TestSchemaBuilder_Struct_Tag(t *testing.T) {
 	sctx := loadPetstorePkgsCtx(t)
-	var td *Decl
+	var td *entityDecl
 	for k := range sctx.app.Models {
 		if k.Name != "Tag" {
 			continue
@@ -34,7 +34,7 @@ func TestSchemaBuilder_Struct_Pet(t *testing.T) {
 	// defer func() { Debug = false }()
 
 	sctx := loadPetstorePkgsCtx(t)
-	var td *Decl
+	var td *entityDecl
 	for k := range sctx.app.Models {
 		if k.Name != "Pet" {
 			continue
@@ -57,7 +57,7 @@ func TestSchemaBuilder_Struct_Order(t *testing.T) {
 	// defer func() { Debug = false }()
 
 	sctx := loadPetstorePkgsCtx(t)
-	var td *Decl
+	var td *entityDecl
 	for k := range sctx.app.Models {
 		if k.Name != "Order" {
 			continue
@@ -934,7 +934,7 @@ func TestAddExtension(t *testing.T) {
 	assert.Equal(t, nil, ve.Extensions[key3])
 }
 
-func getClassificationModel(sctx *scanCtx, nm string) *Decl {
+func getClassificationModel(sctx *scanCtx, nm string) *entityDecl {
 	decl, ok := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models", nm)
 	if !ok {
 		return nil

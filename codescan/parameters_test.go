@@ -12,10 +12,11 @@ const (
 	gcBadEnum = "bad_enum"
 )
 
-func getParameter(sctx *scanCtx, nm string) *Decl {
-	for k := range sctx.app.Parameters {
-		if k.Name == nm {
-			return sctx.app.Parameters[k]
+func getParameter(sctx *scanCtx, nm string) *entityDecl {
+	for _, v := range sctx.app.Parameters {
+		param := v
+		if v.Ident.Name == nm {
+			return param
 		}
 	}
 	return nil

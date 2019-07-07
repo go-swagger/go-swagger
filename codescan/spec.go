@@ -35,7 +35,7 @@ type specBuilder struct {
 	scanModels  bool
 	input       *spec.Swagger
 	ctx         *scanCtx
-	discovered  []*Decl
+	discovered  []*entityDecl
 	definitions map[string]spec.Schema
 	responses   map[string]spec.Response
 	operations  map[string]*spec.Operation
@@ -82,7 +82,7 @@ func (s *specBuilder) buildDiscovered() error {
 	// loop over discovered until all the items are in definitions
 	keepGoing := len(s.discovered) > 0
 	for keepGoing {
-		var queue []*Decl
+		var queue []*entityDecl
 		for _, d := range s.discovered {
 			nm, _ := d.Names()
 			if _, ok := s.definitions[nm]; !ok {
@@ -101,7 +101,7 @@ func (s *specBuilder) buildDiscovered() error {
 	return nil
 }
 
-func (s *specBuilder) buildDiscoveredSchema(decl *Decl) error {
+func (s *specBuilder) buildDiscoveredSchema(decl *entityDecl) error {
 	sb := &schemaBuilder{
 		ctx:        s.ctx,
 		decl:       decl,

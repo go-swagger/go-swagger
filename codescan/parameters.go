@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"log"
 	"strings"
 
 	"golang.org/x/tools/go/ast/astutil"
@@ -144,8 +145,8 @@ func (sv itemsValidations) SetExample(val interface{}) { sv.current.Example = va
 
 type parameterBuilder struct {
 	ctx       *scanCtx
-	decl      *Decl
-	postDecls []*Decl
+	decl      *entityDecl
+	postDecls []*entityDecl
 }
 
 func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
@@ -161,6 +162,7 @@ func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
 			operations[opid] = operation
 			operation.ID = opid
 		}
+		log.Println("building spec for", opid)
 
 		// analyze struct body for fields etc
 		// each exported struct field:
@@ -245,7 +247,7 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 	}
 }
 
-func (p *parameterBuilder) buildFromStruct(decl *Decl, tpe *types.Struct, op *spec.Operation, seen map[string]spec.Parameter) error {
+func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, op *spec.Operation, seen map[string]spec.Parameter) error {
 	if tpe.NumFields() == 0 {
 		return nil
 	}
@@ -443,13 +445,12 @@ func (p *parameterBuilder) buildFromStruct(decl *Decl, tpe *types.Struct, op *sp
 		sequence = append(sequence, name)
 	}
 
-OUTER:
 	for _, k := range sequence {
 		p := seen[k]
 		for i, v := range op.Parameters {
 			if v.Name == k {
-				op.Parameters[i] = p
-				continue OUTER
+				op.Parameters = append(op.Parameters[:i], op.Parameters[i+1:]...)
+				break
 			}
 		}
 		op.Parameters = append(op.Parameters, p)
