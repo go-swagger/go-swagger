@@ -1,12 +1,10 @@
 version: 2
 jobs:
   build:
-    working_directory: /go/src/github.com/go-swagger/go-swagger
     docker:
       - image: goswagger/builder:20190630
     steps:
       - checkout
-      - run: GO111MODULE=on go mod vendor
 
       - run:
           name: Run unit tests
