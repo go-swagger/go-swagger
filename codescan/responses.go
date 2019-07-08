@@ -225,8 +225,7 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 			return errors.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
 		}
 	default:
-		panic("unhandled type " + tpe.String())
-		// return errors.Errorf("unhandled type (%T): %s", otpe, tpe.String())
+		return errors.New("anonymous types are currently not supported for responses")
 	}
 }
 
