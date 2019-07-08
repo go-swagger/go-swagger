@@ -1,14 +1,118 @@
 version: 2
+workflows:
+  version: 2
+  weekly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * 6"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - debian_builder
+      - alpine_builder
+
+  build_and_test:
+    jobs:
+      - build
+
+      - test:
+          requires:
+            - build
+
+      - codegen_tests:
+          requires:
+            - build
+
+      - canary_tests:
+          requires:
+            - build
+
+      - publish_dev:
+          requires:
+            - test
+            - codegen_tests
+            - canary_tests
+          filters:
+            branches:
+              only:
+                - master
+
+      - publish_release:
+          requires:
+            - test
+            - codegen_tests
+            - canary_tests
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+      - publish_release_docker:
+          requires:
+            - test
+            - codegen_tests
+            - canary_tests
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
 jobs:
   build:
     docker:
-      - image: goswagger/builder:20190630
+      - image: goswagger/builder:debian
     steps:
       - checkout
 
       - run:
+          name: Prepare directory layout
+          command: |
+            testresultsdir="/usr/share/testresults"
+            if [[ ! -d ${testresultsdir} ]] ; then
+                mkdir -p ${testresultsdir}
+            fi
+
+      - run:
           name: Run unit tests
-          command: gotestsum -f short-verbose -- -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose
+          no_output_timeout: 30m
+
+      - run:
+          name: Build docker images
+          command: ./hack/build-docker.sh --circleci
+
+      - store_test_results:
+          path: /usr/share/testresults
+
+  test:
+    docker:
+      - image: goswagger/builder:debian
+    steps:
+      - checkout
+      - run:
+          name: Prepare directory layout
+          command: |
+            coveragedir="/usr/share/coverage"
+            if [[ ! -d ${coveragedir} ]] ; then
+                mkdir -p ${coveragedir}
+            fi
+            testresultsdir="/usr/share/testresults"
+            if [[ ! -d ${testresultsdir} ]] ; then
+                mkdir -p ${testresultsdir}
+            fi
+
+      # - run:
+      #     name: Run tests with race detection
+      #     command: go test -race -p 1 -timeout=20m ./...
+      #     no_output_timeout: 30m
+
+      - run:
+          name: Run unit tests with code coverage
+          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -race -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
           no_output_timeout: 30m
 
       - run:
@@ -18,70 +122,201 @@ jobs:
       - run:
           name: Save coverage html report
           command: |
-            outputdir="/usr/share/coverage"
-            if [[ ! -d ${outputdir} ]] ; then
-                mkdir -p ${outputdir}
-            fi
-            gocov convert coverage.txt | gocov-html > ${outputdir}/coverage-${CIRCLE_BUILD_NUM-"0"}.html
+            gocov convert coverage.txt | gocov-html > /usr/share/coverage/coverage-${CIRCLE_BUILD_NUM-"0"}.html
 
-      # Running the race detector is not supported on circleCI
-      #- run:
-      #    name: Run unit tests with race detector
-      #    command: ./hack/test.sh --nocover
-      #    no_output_timeout: 30m
+      - store_test_results:
+          path: /usr/share/testresults
 
-      - run:
-          name: Build docker images
-          command: ./hack/build-docker.sh --circleci
+  codegen_tests:
+    docker:
+      - image: goswagger/builder:debian
+    steps:
+      - checkout
+
+      - run: go install ./cmd/swagger
 
       - run:
           name: Test codegen builds
           command: ./hack/codegen-nonreg.sh --circleci
 
+  canary_tests:
+    docker:
+      - image: goswagger/builder:debian
+    steps:
+      - checkout
+
+      - run: go install ./cmd/swagger
+
       - run:
           name: Test canary builds
           command: ./hack/run-canary.sh
 
+  publish_release:
+    docker:
+      - image: goswagger/builder:debian
+    steps:
+      - checkout
       - run:
-          name: Prepare release
+          name: Prepare environment
           command: |
-            if echo $CIRCLE_TAG | grep -q -E "[0-9]+(\\.[0-9]+)*"; then
-              . ./hack/deploy.sh
+            rm -rf dist
+            mkdir -p dist/bin
+            mkdir -p dist/build
+            mkdir -p dist/linux/amd64/usr/bin
 
-              prepare
-
-              build_binary -os="linux darwin windows" -arch="amd64 386"
-              build_binary -os="linux" -arch="arm64 arm"
-
-              prepare_linuxpkg
-              build_linuxpkg deb
-              build_linuxpkg rpm
-            fi
-
-      - setup_remote_docker
-
-      - deploy:
-          name: Deploy release
+      - run:
+          name: Build binaries
           command: |
-            if echo $CIRCLE_TAG | grep -q -E "[0-9]+(\\.[0-9]+)*"; then
-              . ./hack/deploy.sh
-              upload_to_github
-              upload_to_bintray
+            build_binary() {
+              LDFLAGS="-s -w -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+              LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+              gox -ldflags "$LDFLAGS" -tags netgo -output "./dist/bin/{{.Dir}}_{{.OS}}_{{.Arch}}" "$@" ./cmd/swagger
+            }
+            build_binary -os="linux darwin windows" -arch="amd64 386"
+            build_binary -os="linux" -arch="arm64 arm"
+            cp dist/bin/swagger_linux_amd64 dist/linux/amd64/usr/bin/swagger
 
-              export EXTRA_TAG=latest
-              deploy_docker
-            fi
-
-      - deploy:
+      - run:
+          name: Build packages
           command: |
-            if [ $CIRCLE_BRANCH = "master" ]; then
-              export CIRCLE_TAG=dev
-              . ./hack/deploy.sh
-              deploy_docker
-            fi
+            fpm -t deb -p ./dist/build -s dir -C ./dist/linux/amd64 -v ${CIRCLE_TAG:1} -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
+            fpm -t rpm -p ./dist/build -s dir -C ./dist/linux/amd64 -v ${CIRCLE_TAG:1} -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
+
+      - run:
+          name: Upload to bintray
+          command: |
+            nver="${CIRCLE_TAG:1}"
+            curl \
+              --retry 10 \
+              --retry-delay 5 \
+              -T ./dist/build/swagger-${nver//-/_}-1.x86_64.rpm \
+              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/swagger-${nver//-/_}-1.x86_64.rpm
+
+            curl \
+              --retry 10 \
+              --retry-delay 5 \
+              -XPOST \
+              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/publish
+
+            curl \
+              --retry 10 \
+              --retry-delay 5 \
+              -T ./dist/build/swagger_${nver}_amd64.deb \
+              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/swagger_${nver}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
+
+            curl \
+              --retry 10 \
+              --retry-delay 5 \
+              -XPOST \
+              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/publish
+
+      - run:
+          name: Upload to github
+          command: |
+            notes="$(cat notes/${CIRCLE_TAG}.md)"
+            pushd dist/bin
+            sha1sum * > sha1sum.txt
+            sha256sum * > sha256sum.txt
+
+            github-release release -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -d "$notes"
+            for f in *; do
+              github-release upload -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -t $CIRCLE_TAG -n $f -f $f
+            done
+
+            popd
 
       - store_artifacts:
           path: /usr/share/dist
 
-      - store_test_results:
-          path: /usr/share/testresults
+  publish_release_docker:
+    docker:
+      - image: goswagger/builder:alpine
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Build statically linked binary
+          command: |
+            LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+            go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
+
+      - run:
+          name: Build container
+          command: |
+            mkdir -p deploybuild
+            cp Dockerfile ./dist/swagger-musl ./deploybuild
+            docker build --pull -t quay.io/goswagger/swagger:latest -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
+
+      - run:
+          name: Publish container
+          command: |
+            echo $QUAY_PASS | docker login -u $API_USERNAME --password-stdin https://quay.io
+            docker push quay.io/goswagger/swagger:$CIRCLE_TAG
+            docker push quay.io/goswagger/swagger:latest
+
+      - store_artifacts:
+          path: /usr/share/dist
+
+  publish_dev:
+    docker:
+      - image: goswagger/builder:alpine
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Build statically linked binary
+          command: |
+            rm -rf dist
+            mkdir -p dist
+            LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+            go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
+
+      - run:
+          name: Build container
+          command: |
+            mkdir -p deploybuild
+            cp Dockerfile ./dist/swagger-musl ./deploybuild
+            docker build --pull -t quay.io/goswagger/swagger:dev ./deploybuild
+
+      - run:
+          name: Publish container
+          command: |
+            echo $QUAY_PASS | docker login -u $API_USERNAME --password-stdin https://quay.io
+            docker push quay.io/goswagger/swagger:dev
+
+  debian_builder:
+    docker:
+      - image: circleci/python
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build debian builder image
+          command: |
+            docker build --pull -t goswagger/builder:debian -f Dockerfile.ci .
+            echo $DOCKER_PASS | docker login -u $API_USERNAME --password-stdin
+            docker push goswagger/builder:debian
+
+  alpine_builder:
+    docker:
+      - image: circleci/python
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build alpine builder image
+          command: |
+            docker build --pull -t goswagger/builder:alpine -f Dockerfile.alpine.ci .
+            echo $DOCKER_PASS | docker login -u $API_USERNAME --password-stdin
+            docker push goswagger/builder:alpine

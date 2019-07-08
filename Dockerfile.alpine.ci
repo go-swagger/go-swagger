@@ -1,0 +1,21 @@
+FROM golang:alpine
+
+ENV GOCOVMODE atomic
+
+RUN apk add -U --no-cache bash tar gzip xz procps git curl ruby ruby-dev alpine-sdk libffi-dev rpm dpkg openssh-client ncurses &&\
+    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz | tar -C /usr/bin --strip-components=1 -xzf -
+
+RUN set -e -x \
+  && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
+  && go get -u golang.org/x/tools/cmd/... \
+  && go get -u github.com/axw/gocov/gocov \
+  && go get -u gopkg.in/matm/v1/gocov-html \
+  && go get -u -t github.com/cee-dub/go-junit-report \
+  && go get -u github.com/aktau/github-release \
+  && go get -u github.com/mitchellh/gox \
+  && gem install --no-ri --no-rdoc fpm etc \
+  && gem sources -c
+
+VOLUME /usr/share/coverage
+VOLUME /usr/share/testresults
+VOLUME /usr/share/dist

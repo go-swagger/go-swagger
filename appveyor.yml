@@ -24,9 +24,8 @@ deploy: off
 
 notifications:
   - provider: Slack
-    incoming_webhook: https://hooks.slack.com/services/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
-    auth_token:
-      secure: J4Kd3fY4CoTI+5+zSXkStkTPqnycfxFfk74GcGxDUq02z2jHcdIpiLyDbkIiQM9Z
+    incoming_webhook: https://hooks.slack.com/services/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
+    #incoming_webhook: https://hooks.slack.com/services/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
     channel: bots
     on_build_success: false
     on_build_failure: true
