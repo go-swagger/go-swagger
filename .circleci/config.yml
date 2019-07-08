@@ -105,9 +105,14 @@ jobs:
                 mkdir -p ${testresultsdir}
             fi
 
+      # - run:
+      #     name: Run tests with race detection
+      #     command: go test -race -p 1 -timeout=20m ./...
+      #     no_output_timeout: 30m
+
       - run:
-          name: Run unit tests
-          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -race -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+          name: Run unit tests with code coverage
+          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -race -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
           no_output_timeout: 30m
 
       - run:
