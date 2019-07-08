@@ -112,7 +112,7 @@ jobs:
 
       - run:
           name: Run unit tests with code coverage
-          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -race -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
           no_output_timeout: 30m
 
       - run:
