@@ -483,6 +483,9 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 
 	for i := 0; i < it.NumExplicitMethods(); i++ {
 		fld := it.ExplicitMethod(i)
+		if !fld.Exported() {
+			continue
+		}
 		sig, isSignature := fld.Type().(*types.Signature)
 		if !isSignature {
 			continue
@@ -667,6 +670,11 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 		tg := st.Tag(i)
 
 		if fld.Embedded() {
+			continue
+		}
+
+		if !fld.Exported() {
+			debugLog("skipping field %s because it's not exported", fld.Name())
 			continue
 		}
 
