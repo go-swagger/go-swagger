@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getResponse(sctx *scanCtx, nm string) *Decl {
-	for k := range sctx.app.Responses {
-		if k.Name == nm {
-			return sctx.app.Responses[k]
+func getResponse(sctx *scanCtx, nm string) *entityDecl {
+	for _, v := range sctx.app.Responses {
+		if v.Ident.Name == nm {
+			return v
 		}
 	}
 	return nil

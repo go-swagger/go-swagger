@@ -39,6 +39,7 @@ const (
 	responseNode
 )
 
+// Options for the scanner
 type Options struct {
 	Packages    []string
 	InputSpec   *spec.Swagger
@@ -64,6 +65,7 @@ func tagSliceToSet(names []string) map[string]bool {
 	return result
 }
 
+// Run the scanner to produce a spec with the options provided
 func Run(opts *Options) (*spec.Swagger, error) {
 	sc, err := newScanCtx(opts)
 	if err != nil {
@@ -99,7 +101,7 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 	}, nil
 }
 
-type Decl struct {
+type entityDecl struct {
 	Comments               *ast.CommentGroup
 	Type                   *types.Named
 	Ident                  *ast.Ident
@@ -111,7 +113,7 @@ type Decl struct {
 	hasParameterAnnotation bool
 }
 
-func (d *Decl) Names() (name, goName string) {
+func (d *entityDecl) Names() (name, goName string) {
 	goName = d.Ident.Name
 	name = goName
 	if d.Comments == nil {
@@ -134,7 +136,7 @@ DECLS:
 	return
 }
 
-func (d *Decl) ResponseNames() (name, goName string) {
+func (d *entityDecl) ResponseNames() (name, goName string) {
 	goName = d.Ident.Name
 	name = goName
 	if d.Comments == nil {
@@ -157,7 +159,7 @@ DECLS:
 	return
 }
 
-func (d *Decl) OperationIDS() (result []string) {
+func (d *entityDecl) OperationIDS() (result []string) {
 	if d == nil || d.Comments == nil {
 		return nil
 	}
@@ -181,7 +183,7 @@ func (d *Decl) OperationIDS() (result []string) {
 	return
 }
 
-func (d *Decl) HasModelAnnotation() bool {
+func (d *entityDecl) HasModelAnnotation() bool {
 	if d.hasModelAnnotation {
 		return true
 	}
@@ -200,7 +202,7 @@ func (d *Decl) HasModelAnnotation() bool {
 	return false
 }
 
-func (d *Decl) HasResponseAnnotation() bool {
+func (d *entityDecl) HasResponseAnnotation() bool {
 	if d.hasResponseAnnotation {
 		return true
 	}
@@ -219,7 +221,7 @@ func (d *Decl) HasResponseAnnotation() bool {
 	return false
 }
 
-func (d *Decl) HasParameterAnnotation() bool {
+func (d *entityDecl) HasParameterAnnotation() bool {
 	if d.hasParameterAnnotation {
 		return true
 	}
@@ -238,7 +240,7 @@ func (d *Decl) HasParameterAnnotation() bool {
 	return false
 }
 
-func (s *scanCtx) FindDecl(pkgPath, name string) (*Decl, bool) {
+func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 	if pkg, ok := s.app.AllPackages[pkgPath]; ok {
 		for _, file := range pkg.Syntax {
 			for _, d := range file.Decls {
@@ -259,7 +261,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*Decl, bool) {
 							debugLog("%s is not a named type but a %T", ts.Name, def.Type())
 							continue
 						}
-						decl := &Decl{
+						decl := &entityDecl{
 							Comments: gd.Doc,
 							Type:     nt,
 							Ident:    ts.Name,
@@ -277,7 +279,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*Decl, bool) {
 	return nil, false
 }
 
-func (s *scanCtx) FindModel(pkgPath, name string) (*Decl, bool) {
+func (s *scanCtx) FindModel(pkgPath, name string) (*entityDecl, bool) {
 	for _, cand := range s.app.Models {
 		ct := cand.Type.Obj()
 		if ct.Name() == name && ct.Pkg().Path() == pkgPath {
@@ -296,7 +298,7 @@ func (s *scanCtx) PkgForPath(pkgPath string) (*packages.Package, bool) {
 	return v, ok
 }
 
-func (s *scanCtx) DeclForType(t types.Type) (*Decl, bool) {
+func (s *scanCtx) DeclForType(t types.Type) (*entityDecl, bool) {
 	switch tpe := t.(type) {
 	case *types.Pointer:
 		return s.DeclForType(tpe.Elem())
@@ -349,9 +351,7 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 func newTypeIndex(pkgs []*packages.Package, includeTags, excludeTags map[string]bool) (*typeIndex, error) {
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
-		Models:      make(map[*ast.Ident]*Decl),
-		Parameters:  make(map[*ast.Ident]*Decl),
-		Responses:   make(map[*ast.Ident]*Decl),
+		Models:      make(map[*ast.Ident]*entityDecl),
 		includeTags: includeTags,
 		excludeTags: excludeTags,
 	}
@@ -363,12 +363,12 @@ func newTypeIndex(pkgs []*packages.Package, includeTags, excludeTags map[string]
 
 type typeIndex struct {
 	AllPackages map[string]*packages.Package
-	Models      map[*ast.Ident]*Decl
+	Models      map[*ast.Ident]*entityDecl
 	Meta        []metaSection
 	Routes      []parsedPathContent
 	Operations  []parsedPathContent
-	Parameters  map[*ast.Ident]*Decl
-	Responses   map[*ast.Ident]*Decl
+	Parameters  []*entityDecl
+	Responses   []*entityDecl
 	includeTags map[string]bool
 	excludeTags map[string]bool
 }
@@ -472,7 +472,7 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 				debugLog("%s is not a named type but a %T", ts.Name, def.Type())
 				//continue
 			}
-			decl := &Decl{
+			decl := &entityDecl{
 				Comments: gd.Doc,
 				Type:     nt,
 				Ident:    ts.Name,
@@ -485,10 +485,10 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 				a.Models[key] = decl
 			}
 			if n&parametersNode != 0 && decl.HasParameterAnnotation() {
-				a.Parameters[key] = decl
+				a.Parameters = append(a.Parameters, decl)
 			}
 			if n&responseNode != 0 && decl.HasResponseAnnotation() {
-				a.Responses[key] = decl
+				a.Responses = append(a.Responses, decl)
 			}
 		}
 	}

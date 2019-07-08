@@ -100,3 +100,19 @@ func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params)
 func CreateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
+
+// GetHelp swagger:route GET /help help
+//
+// Gets the help as markdown
+//
+// Responses:
+//    default: genericError
+//        200: MarkdownRender
+//        422: validationError
+func GetHelp(rw http.ResponseWriter, req *http.Request, params denco.Params) {
+	// some actual stuff should happen in here
+}
+
+// MarkdownRender is a rendered markdown document
+// swagger:response MarkdownRender
+type MarkdownRender string

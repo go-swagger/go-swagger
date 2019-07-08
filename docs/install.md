@@ -58,14 +58,14 @@ wget https://bintray.com/go-swagger/goswagger-rpm/rpm -O bintray-go-swagger-gosw
 Install or update from current source master:
 
 ```
-go get -u github.com/go-swagger/go-swagger/cmd/swagger
+dir=$(mktemp -d) 
+git clone https://github.com/go-swagger/go-swagger "$dir" 
+cd "$dir"
+go install ./cmd/swagger
 ```
 
 You are welcome to clone this repo and start contributing:
 ```
-cd $GOPATH/src
-mkdir -p github.com/go-swagger
-cd github.com/go-swagger
 git clone https://github.com/go-swagger/go-swagger
 ```
 
