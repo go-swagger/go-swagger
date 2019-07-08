@@ -68,6 +68,10 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -78,6 +82,11 @@ jobs:
                 n=$[$n+1]
                 sleep 1
             done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - run:
           name: Prepare directory layout
@@ -104,6 +113,10 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -114,6 +127,11 @@ jobs:
                 n=$[$n+1]
                 sleep 1
             done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run:
           name: Prepare directory layout
           command: |
@@ -153,6 +171,11 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -163,6 +186,11 @@ jobs:
                 n=$[$n+1]
                 sleep 1
             done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - run: go install ./cmd/swagger
 
@@ -175,6 +203,11 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -186,6 +219,10 @@ jobs:
                 sleep 1
             done
 
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run: go install ./cmd/swagger
 
       - run:
@@ -204,6 +241,11 @@ jobs:
             mkdir -p dist/bin
             mkdir -p dist/build
             mkdir -p dist/linux/amd64/usr/bin
+
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -214,6 +256,11 @@ jobs:
                 n=$[$n+1]
                 sleep 1
             done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - run:
           name: Build binaries
@@ -289,6 +336,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -300,6 +351,10 @@ jobs:
                 sleep 1
             done
 
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run:
           name: Build statically linked binary
           command: |
@@ -330,6 +385,10 @@ jobs:
       - image: goswagger/builder:alpine
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
       - run:
           name: download dependencies
           command: |
@@ -340,6 +399,11 @@ jobs:
                 n=$[$n+1]
                 sleep 1
             done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - setup_remote_docker
 
