@@ -69,6 +69,17 @@ jobs:
       - checkout
 
       - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - run:
           name: Prepare directory layout
           command: |
             testresultsdir="/usr/share/testresults"
@@ -93,6 +104,16 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
       - run:
           name: Prepare directory layout
           command: |
@@ -132,6 +153,16 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
 
       - run: go install ./cmd/swagger
 
@@ -144,6 +175,16 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
 
       - run: go install ./cmd/swagger
 
@@ -163,6 +204,16 @@ jobs:
             mkdir -p dist/bin
             mkdir -p dist/build
             mkdir -p dist/linux/amd64/usr/bin
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
 
       - run:
           name: Build binaries
@@ -238,6 +289,16 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
 
       - run:
           name: Build statically linked binary
@@ -269,6 +330,16 @@ jobs:
       - image: goswagger/builder:alpine
     steps:
       - checkout
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
 
       - setup_remote_docker
 
