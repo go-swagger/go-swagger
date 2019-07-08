@@ -17,6 +17,7 @@ environment:
 stack: go 1.12
 
 test_script:
+  - hack\gomod-download.cmd
   - go test -timeout 20m ./...
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'

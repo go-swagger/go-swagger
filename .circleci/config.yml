@@ -68,6 +68,26 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+
       - run:
           name: Prepare directory layout
           command: |
@@ -93,6 +113,25 @@ jobs:
       - image: goswagger/builder:debian
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run:
           name: Prepare directory layout
           command: |
@@ -112,7 +151,7 @@ jobs:
 
       - run:
           name: Run unit tests with code coverage
-          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -race -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose -- -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
           no_output_timeout: 30m
 
       - run:
@@ -133,6 +172,26 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+
       - run: go install ./cmd/swagger
 
       - run:
@@ -145,6 +204,25 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run: go install ./cmd/swagger
 
       - run:
@@ -163,6 +241,26 @@ jobs:
             mkdir -p dist/bin
             mkdir -p dist/build
             mkdir -p dist/linux/amd64/usr/bin
+
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - run:
           name: Build binaries
@@ -238,7 +336,25 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
 
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
       - run:
           name: Build statically linked binary
           command: |
@@ -269,6 +385,25 @@ jobs:
       - image: goswagger/builder:alpine
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
 
       - setup_remote_docker
 
