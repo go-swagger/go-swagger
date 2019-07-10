@@ -159,6 +159,16 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 		return nil
 	case *types.Pointer:
 		return r.buildFromField(fld, ftpe.Elem(), typable, seen)
+	case *types.Interface:
+		sb := schemaBuilder{
+			decl: r.decl,
+			ctx:  r.ctx,
+		}
+		if err := sb.buildFromType(tpe, typable); err != nil {
+			return err
+		}
+		r.postDecls = append(r.postDecls, sb.postDecls...)
+		return nil
 	case *types.Array:
 		return r.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
 	case *types.Slice:

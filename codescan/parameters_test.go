@@ -355,3 +355,44 @@ func TestParamsParser(t *testing.T) {
 		}
 	}
 }
+
+func TestParameterParser_Issue2007(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	operations := make(map[string]*spec.Operation)
+	td := getParameter(sctx, "SetConfiguration")
+	prs := &parameterBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(operations))
+
+	op := operations["getConfiguration"]
+	require.NotNil(t, op)
+	require.Len(t, op.Parameters, 1)
+	sch := op.Parameters[0].Schema
+	require.NotNil(t, sch)
+
+	require.True(t, sch.Type.Contains("object"))
+	require.NotNil(t, sch.AdditionalProperties)
+	require.NotNil(t, sch.AdditionalProperties.Schema)
+	require.True(t, sch.AdditionalProperties.Schema.Type.Contains("string"))
+}
+
+func TestParameterParser_Issue2011(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	operations := make(map[string]*spec.Operation)
+	td := getParameter(sctx, "NumPlates")
+	prs := &parameterBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(operations))
+
+	op := operations["putNumPlate"]
+	require.NotNil(t, op)
+	require.Len(t, op.Parameters, 1)
+	sch := op.Parameters[0].Schema
+	require.NotNil(t, sch)
+
+	require.True(t, sch.Type.Contains("object"))
+}

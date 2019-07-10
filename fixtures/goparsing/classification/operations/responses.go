@@ -217,3 +217,9 @@ type GetConfiguration struct {
 	// in:body
 	Value map[string]string
 }
+
+// swagger:response
+type NumPlatesResp struct {
+	// in: body
+	NumPlates interface{} `json:"num_plates"`
+}
