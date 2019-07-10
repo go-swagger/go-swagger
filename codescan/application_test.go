@@ -52,8 +52,8 @@ func TestApplication_LoadCode(t *testing.T) {
 	require.Len(t, sctx.app.Meta, 1)
 	require.Len(t, sctx.app.Routes, 7)
 	require.Empty(t, sctx.app.Operations)
-	require.Len(t, sctx.app.Parameters, 8)
-	require.Len(t, sctx.app.Responses, 9)
+	require.Len(t, sctx.app.Parameters, 9)
+	require.Len(t, sctx.app.Responses, 10)
 }
 
 func TestAppScanner_NewSpec(t *testing.T) {

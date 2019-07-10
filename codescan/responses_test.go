@@ -1,6 +1,8 @@
 package codescan
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/go-openapi/spec"
@@ -224,4 +226,27 @@ func TestParseResponses(t *testing.T) {
 	assert.True(t, ok)
 	assert.NotNil(t, res.Schema)
 	assert.Equal(t, "#/definitions/user", res.Schema.Ref.String())
+}
+
+func TestParseResponses_Issue2007(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	responses := make(map[string]spec.Response)
+	td := getResponse(sctx, "GetConfiguration")
+	prs := &responseBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(responses))
+
+	resp := responses["GetConfiguration"]
+	require.Len(t, resp.Headers, 0)
+	require.NotNil(t, resp.Schema)
+
+	b, _ := json.MarshalIndent(resp, "", "  ")
+	fmt.Println(string(b))
+
+	require.True(t, resp.Schema.Type.Contains("object"))
+	require.NotNil(t, resp.Schema.AdditionalProperties)
+	require.NotNil(t, resp.Schema.AdditionalProperties.Schema)
+	require.True(t, resp.Schema.AdditionalProperties.Schema.Type.Contains("string"))
 }

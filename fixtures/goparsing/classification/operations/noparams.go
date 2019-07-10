@@ -87,6 +87,13 @@ type MultipleOrderParams struct {
 	} `json:"another"`
 }
 
+// Success
+// swagger:parameters getOrders
+type SetConfiguration struct {
+	// in:body
+	Value map[string]string
+}
+
 // A ComplexerOneParams is composed of a SimpleOne and some extra fields
 // swagger:parameters yetAnotherOperation
 type ComplexerOneParams struct {
