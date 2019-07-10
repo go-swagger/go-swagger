@@ -22,7 +22,7 @@ func getResponse(sctx *scanCtx, nm string) *entityDecl {
 func TestParseResponses(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	responses := make(map[string]spec.Response)
-	for _, rn := range []string{"ComplexerOne", "SimpleOnes", "SimpleOnesFunc", "ComplexerPointerOne", "SomeResponse", "ValidationError", "Resp", "FileResponse", "GenericError", "ValidationError", "GetConfiguration"} {
+	for _, rn := range []string{"ComplexerOne", "SimpleOnes", "SimpleOnesFunc", "ComplexerPointerOne", "SomeResponse", "ValidationError", "Resp", "FileResponse", "GenericError", "ValidationError"} {
 		td := getResponse(sctx, rn)
 		prs := &responseBuilder{
 			ctx:  sctx,
