@@ -210,3 +210,10 @@ type FileResponse struct {
 	// in:  body
 	File []byte
 }
+
+// Success
+// swagger:response GetConfiguration
+type GetConfiguration struct {
+	// in:body
+	Value map[string]string
+}

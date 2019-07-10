@@ -163,6 +163,19 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 		return r.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
 	case *types.Slice:
 		return r.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
+	case *types.Map:
+		schema := new(spec.Schema)
+		typable.Schema().Typed("object", "").AdditionalProperties = &spec.SchemaOrBool{
+			Schema: schema,
+		}
+		sb := schemaBuilder{
+			decl: r.decl,
+			ctx:  r.ctx,
+		}
+		if err := sb.buildFromType(ftpe.Elem(), schemaTypable{schema, typable.Level() + 1}); err != nil {
+			return err
+		}
+		return nil
 	case *types.Named:
 		if decl, found := r.ctx.DeclForType(ftpe.Obj().Type()); found {
 			if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
