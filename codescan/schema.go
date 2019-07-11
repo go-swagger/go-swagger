@@ -92,7 +92,11 @@ func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems
 func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
 func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
-	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: sv.current.Type[0]})
+	tn := "object"
+	if len(sv.current.Type) > 0 {
+		tn = sv.current.Type[0]
+	}
+	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: tn})
 }
 
 type schemaBuilder struct {
