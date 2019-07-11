@@ -215,6 +215,16 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 		return nil
 	case *types.Pointer:
 		return p.buildFromField(fld, ftpe.Elem(), typable, seen)
+	case *types.Interface:
+		sb := schemaBuilder{
+			decl: p.decl,
+			ctx:  p.ctx,
+		}
+		if err := sb.buildFromType(tpe, typable); err != nil {
+			return err
+		}
+		p.postDecls = append(p.postDecls, sb.postDecls...)
+		return nil
 	case *types.Array:
 		return p.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
 	case *types.Slice:
