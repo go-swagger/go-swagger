@@ -35,6 +35,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
 	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown error {{ end }}{{ if .Schema }} %+v{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}, o.Payload{{ end }})
 }
 
+{{ if .Schema }}
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) GetPayload() {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject (not .Schema.IsStream) }}*{{ end }}{{ if (not .Schema.IsStream) }}{{ .Schema.GoType }}{{ else }}io.Writer{{end}} {
+	return o.Payload
+}
+{{ end }}
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
   {{ range .Headers }}
