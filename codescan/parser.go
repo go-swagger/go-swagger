@@ -29,6 +29,25 @@ func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map
 	return len(includeTags) == 0
 }
 
+func shouldAcceptPkg(path string, includePkgs, excludePkgs []string) bool {
+	if len(includePkgs) == 0 && len(excludePkgs) == 0 {
+		return true
+	}
+	for _, pkgName := range includePkgs {
+		matched, _ := regexp.MatchString(pkgName, path)
+		if matched {
+			return true
+		}
+	}
+	for _, pkgName := range excludePkgs {
+		matched, _ := regexp.MatchString(pkgName, path)
+		if matched {
+			return false
+		}
+	}
+	return len(includePkgs) == 0
+}
+
 // Many thanks go to https://github.com/yvasiyarov/swagger
 // this is loosely based on that implementation but for swagger 2.0
 

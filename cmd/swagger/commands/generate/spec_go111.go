@@ -29,6 +29,7 @@ type SpecFile struct {
 	Exclude     []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
 	IncludeTags []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
 	ExcludeTags []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
+	ExcludeDeps bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of projec"`
 }
 
 // Execute runs this command
@@ -52,6 +53,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.Exclude = s.Exclude
 	opts.IncludeTags = s.IncludeTags
 	opts.ExcludeTags = s.ExcludeTags
+	opts.ExcludeDeps = s.ExcludeDeps
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err

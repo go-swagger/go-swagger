@@ -1,6 +1,8 @@
 package codescan
 
-import "github.com/go-openapi/spec"
+import (
+	"github.com/go-openapi/spec"
+)
 
 func newSpecBuilder(input *spec.Swagger, sc *scanCtx, scanModels bool) *specBuilder {
 	if input == nil {

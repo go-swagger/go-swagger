@@ -46,6 +46,7 @@ type Options struct {
 	ScanModels  bool
 	WorkDir     string
 	BuildTags   string
+	ExcludeDeps bool
 	Include     []string
 	Exclude     []string
 	IncludeTags []string
@@ -57,7 +58,7 @@ type scanCtx struct {
 	app  *typeIndex
 }
 
-func tagSliceToSet(names []string) map[string]bool {
+func sliceToSet(names []string) map[string]bool {
 	result := make(map[string]bool)
 	for _, v := range names {
 		result[v] = true
@@ -90,7 +91,9 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 		return nil, err
 	}
 
-	app, err := newTypeIndex(pkgs, tagSliceToSet(opts.IncludeTags), tagSliceToSet(opts.ExcludeTags))
+	app, err := newTypeIndex(pkgs, opts.ExcludeDeps,
+		sliceToSet(opts.IncludeTags), sliceToSet(opts.ExcludeTags),
+		opts.Include, opts.Exclude)
 	if err != nil {
 		return nil, err
 	}
@@ -349,12 +352,18 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func newTypeIndex(pkgs []*packages.Package, includeTags, excludeTags map[string]bool) (*typeIndex, error) {
+func newTypeIndex(pkgs []*packages.Package, 
+	excludeDeps bool, includeTags, excludeTags map[string]bool,
+	includePkgs, excludePkgs []string) (*typeIndex, error) {
+	
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*entityDecl),
+		excludeDeps: excludeDeps,
 		includeTags: includeTags,
 		excludeTags: excludeTags,
+		includePkgs: includePkgs,
+		excludePkgs: excludePkgs,
 	}
 	if err := ac.build(pkgs); err != nil {
 		return nil, err
@@ -370,8 +379,11 @@ type typeIndex struct {
 	Operations  []parsedPathContent
 	Parameters  []*entityDecl
 	Responses   []*entityDecl
+	excludeDeps bool
 	includeTags map[string]bool
 	excludeTags map[string]bool
+	includePkgs []string
+	excludePkgs []string
 }
 
 func (a *typeIndex) build(pkgs []*packages.Package) error {
@@ -392,6 +404,11 @@ func (a *typeIndex) build(pkgs []*packages.Package) error {
 }
 
 func (a *typeIndex) processPackage(pkg *packages.Package) error {
+	if !shouldAcceptPkg(pkg.PkgPath, a.includePkgs, a.excludePkgs) {
+		debugLog("package %s is ignored due to rules", pkg.Name)
+		return nil
+	}
+
 	for _, file := range pkg.Syntax {
 		n, err := a.detectNodes(file)
 		if err != nil {
@@ -496,6 +513,9 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 }
 
 func (a *typeIndex) walkImports(pkg *packages.Package) error {
+	if a.excludeDeps {
+		return nil
+	}
 	for k := range pkg.Imports {
 		if _, known := a.AllPackages[k]; known {
 			continue
