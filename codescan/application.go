@@ -46,6 +46,7 @@ type Options struct {
 	ScanModels  bool
 	WorkDir     string
 	BuildTags   string
+	ExcludeDeps bool
 	Include     []string
 	Exclude     []string
 	IncludeTags []string
@@ -90,7 +91,7 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 		return nil, err
 	}
 
-	app, err := newTypeIndex(pkgs,
+	app, err := newTypeIndex(pkgs, opts.ExcludeDeps,
 		sliceToSet(opts.IncludeTags), sliceToSet(opts.ExcludeTags),
 		opts.Include, opts.Exclude)
 	if err != nil {
@@ -351,11 +352,14 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func newTypeIndex(pkgs []*packages.Package, includeTags, excludeTags map[string]bool,
+func newTypeIndex(pkgs []*packages.Package, 
+	excludeDeps bool, includeTags, excludeTags map[string]bool,
 	includePkgs, excludePkgs []string) (*typeIndex, error) {
+	
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*entityDecl),
+		excludeDeps: excludeDeps,
 		includeTags: includeTags,
 		excludeTags: excludeTags,
 		includePkgs: includePkgs,
@@ -375,6 +379,7 @@ type typeIndex struct {
 	Operations  []parsedPathContent
 	Parameters  []*entityDecl
 	Responses   []*entityDecl
+	excludeDeps bool
 	includeTags map[string]bool
 	excludeTags map[string]bool
 	includePkgs []string
@@ -508,6 +513,9 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 }
 
 func (a *typeIndex) walkImports(pkg *packages.Package) error {
+	if a.excludeDeps {
+		return nil
+	}
 	for k := range pkg.Imports {
 		if _, known := a.AllPackages[k]; known {
 			continue
