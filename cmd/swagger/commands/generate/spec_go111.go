@@ -29,7 +29,7 @@ type SpecFile struct {
 	Exclude     []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
 	IncludeTags []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
 	ExcludeTags []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
-	ExcludeDeps bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of projec"`
+	ExcludeDeps bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
 }
 
 // Execute runs this command

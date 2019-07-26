@@ -265,3 +265,41 @@ func ascg(txt string) *ast.CommentGroup {
 	}
 	return &cg
 }
+
+func TestShouldAcceptTag(t *testing.T) {
+	var tagTests = []struct {
+		tags        []string
+		includeTags map[string]bool
+		excludeTags map[string]bool
+		expected    bool
+	}{
+		{nil, nil, nil, true},
+		{[]string{"app"}, map[string]bool{"app": true}, nil, true},
+		{[]string{"app"}, nil, map[string]bool{"app": true}, false},
+	}
+	for _, tt := range tagTests {
+		actual := shouldAcceptTag(tt.tags, tt.includeTags, tt.excludeTags)
+		assert.Equal(t, tt.expected, actual)
+	}
+}
+
+func TestShouldAcceptPkg(t *testing.T) {
+	var pkgTests = []struct {
+		path        string
+		includePkgs []string
+		excludePkgs []string
+		expected    bool
+	}{
+		{"", nil, nil, true},
+		{"", nil, []string{"app"}, true},
+		{"", []string{"app"}, nil, false},
+		{"app", []string{"app"}, nil, true},
+		{"app", nil, []string{"app"}, false},
+		{"vendor/app", []string{"app"}, nil, true},
+		{"vendor/app", nil, []string{"app"}, false},
+	}
+	for _, tt := range pkgTests {
+		actual := shouldAcceptPkg(tt.path, tt.includePkgs, tt.excludePkgs)
+		assert.Equal(t, tt.expected, actual)
+	}
+}
