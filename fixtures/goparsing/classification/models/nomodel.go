@@ -42,6 +42,11 @@ type NoModel struct {
 	// A field which has omitempty set but no name
 	NoNameOmitEmpty string `json:",omitempty"`
 
+	// Note is a free form data in base64
+	//
+	// swagger:strfmt byte
+	Note []byte `json:"noteb64,omitempty"`
+
 	// The Score of this model
 	//
 	// required: true
