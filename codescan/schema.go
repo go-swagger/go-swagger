@@ -540,6 +540,7 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 		if sfName, isStrfmt := strfmtName(afld.Doc); isStrfmt {
 			ps.Typed("string", sfName)
 			ps.Ref = spec.Ref{}
+			ps.Items = nil
 		}
 
 		if err := s.createParser(name, tgt, &ps, afld).Parse(afld.Doc); err != nil {
@@ -718,10 +719,12 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 		if isString {
 			ps.Typed("string", ps.Format)
 			ps.Ref = spec.Ref{}
+			ps.Items = nil
 		}
 		if sfName, isStrfmt := strfmtName(afld.Doc); isStrfmt {
 			ps.Typed("string", sfName)
 			ps.Ref = spec.Ref{}
+			ps.Items = nil
 		}
 
 		if err = s.createParser(name, tgt, &ps, afld).Parse(afld.Doc); err != nil {

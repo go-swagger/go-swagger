@@ -91,7 +91,7 @@ func TestSchemaBuilder(t *testing.T) {
 	assert.Equal(t, "NoModel is a struct without an annotation.", schema.Title)
 	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
-	assert.Len(t, schema.Properties, 11)
+	assert.Len(t, schema.Properties, 12)
 
 	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
@@ -108,6 +108,11 @@ func TestSchemaBuilder(t *testing.T) {
 	prop, ok = schema.Properties["NoNameOmitEmpty"]
 	assert.Equal(t, "A field which has omitempty set but no name", prop.Description)
 	assert.True(t, ok, "should have had an 'NoNameOmitEmpty' property")
+
+	assertProperty(t, &schema, "string", "noteb64", "byte", "Note")
+	prop, ok = schema.Properties["noteb64"]
+	assert.True(t, ok, "should have a 'noteb64' property")
+	assert.Nil(t, prop.Items)
 
 	assertProperty(t, &schema, "integer", "score", "int32", "Score")
 	prop, ok = schema.Properties["score"]

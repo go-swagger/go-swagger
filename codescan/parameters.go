@@ -347,6 +347,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		if strfmtName, ok := strfmtName(afld.Doc); ok {
 			ps.Typed("string", strfmtName)
 			ps.Ref = spec.Ref{}
+			ps.Items = nil
 		}
 
 		sp := new(sectionedParser)
