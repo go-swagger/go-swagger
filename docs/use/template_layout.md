@@ -104,7 +104,7 @@ layout:
 ## Client generation
 
 ```
-swagger generate server -A TodoList -f ./swagger.json -C default-client.yml
+swagger generate client -A TodoList -f ./swagger.json -C default-client.yml
 ```
 
 For the default client generator this config file would have the following content.
