@@ -352,10 +352,10 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func newTypeIndex(pkgs []*packages.Package, 
+func newTypeIndex(pkgs []*packages.Package,
 	excludeDeps bool, includeTags, excludeTags map[string]bool,
 	includePkgs, excludePkgs []string) (*typeIndex, error) {
-	
+
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*entityDecl),
@@ -523,6 +523,9 @@ func (a *typeIndex) walkImports(pkg *packages.Package) error {
 		pk := pkg.Imports[k]
 		a.AllPackages[pk.PkgPath] = pk
 		if err := a.processPackage(pk); err != nil {
+			return err
+		}
+		if err := a.walkImports(pk); err != nil {
 			return err
 		}
 	}
