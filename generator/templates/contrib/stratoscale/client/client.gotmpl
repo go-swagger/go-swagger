@@ -29,8 +29,11 @@ import (
 // API is the interface of the {{ humanize .Name }} client
 type API interface {
 {{ range .Operations -}}
-  // {{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
-  // {{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
+/*
+{{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
+
+{{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ humanize .Name }} API{{ end -}}
+*/
   {{ pascalize .Name }}(ctx context.Context, params *{{ pascalize .Name }}Params{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }}
 {{ end -}}
 }
