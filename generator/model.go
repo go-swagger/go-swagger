@@ -224,20 +224,21 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
-		Path:             "",
-		Name:             name,
-		Receiver:         receiver,
-		IndexVar:         "i",
-		ValueExpr:        receiver,
-		Schema:           schema,
-		Required:         false,
-		TypeResolver:     resolver,
-		Named:            true,
-		ExtraSchemas:     make(map[string]GenSchema),
-		Discrimination:   di,
-		Container:        container,
-		IncludeValidator: opts.IncludeValidator,
-		IncludeModel:     opts.IncludeModel,
+		Path:                       "",
+		Name:                       name,
+		Receiver:                   receiver,
+		IndexVar:                   "i",
+		ValueExpr:                  receiver,
+		Schema:                     schema,
+		Required:                   false,
+		TypeResolver:               resolver,
+		Named:                      true,
+		ExtraSchemas:               make(map[string]GenSchema),
+		Discrimination:             di,
+		Container:                  container,
+		IncludeValidator:           opts.IncludeValidator,
+		IncludeModel:               opts.IncludeModel,
+		StrictAdditionalProperties: opts.StrictAdditionalProperties,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
@@ -405,16 +406,17 @@ func findImports(sch *GenSchema) map[string]string {
 }
 
 type schemaGenContext struct {
-	Required           bool
-	AdditionalProperty bool
-	Untyped            bool
-	Named              bool
-	RefHandled         bool
-	IsVirtual          bool
-	IsTuple            bool
-	IncludeValidator   bool
-	IncludeModel       bool
-	Index              int
+	Required                   bool
+	AdditionalProperty         bool
+	Untyped                    bool
+	Named                      bool
+	RefHandled                 bool
+	IsVirtual                  bool
+	IsTuple                    bool
+	IncludeValidator           bool
+	IncludeModel               bool
+	StrictAdditionalProperties bool
+	Index                      int
 
 	Path         string
 	Name         string
@@ -551,6 +553,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.IsTuple = false
 	pg.IncludeValidator = sg.IncludeValidator
 	pg.IncludeModel = sg.IncludeModel
+	pg.StrictAdditionalProperties = sg.StrictAdditionalProperties
 	return pg
 }
 
@@ -1337,19 +1340,20 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 	}
 	sp.Definitions[name] = schema
 	pg := schemaGenContext{
-		Path:             "",
-		Name:             name,
-		Receiver:         sg.Receiver,
-		IndexVar:         "i",
-		ValueExpr:        sg.Receiver,
-		Schema:           schema,
-		Required:         false,
-		Named:            true,
-		ExtraSchemas:     make(map[string]GenSchema),
-		Discrimination:   sg.Discrimination,
-		Container:        sg.Container,
-		IncludeValidator: sg.IncludeValidator,
-		IncludeModel:     sg.IncludeModel,
+		Path:                       "",
+		Name:                       name,
+		Receiver:                   sg.Receiver,
+		IndexVar:                   "i",
+		ValueExpr:                  sg.Receiver,
+		Schema:                     schema,
+		Required:                   false,
+		Named:                      true,
+		ExtraSchemas:               make(map[string]GenSchema),
+		Discrimination:             sg.Discrimination,
+		Container:                  sg.Container,
+		IncludeValidator:           sg.IncludeValidator,
+		IncludeModel:               sg.IncludeModel,
+		StrictAdditionalProperties: sg.StrictAdditionalProperties,
 	}
 	if schema.Ref.String() == "" {
 		pg.TypeResolver = sg.TypeResolver.NewWithModelName(name)
@@ -1846,6 +1850,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.ReadOnly = sg.Schema.ReadOnly
 	sg.GenSchema.IncludeValidator = sg.IncludeValidator
 	sg.GenSchema.IncludeModel = sg.IncludeModel
+	sg.GenSchema.StrictAdditionalProperties = sg.StrictAdditionalProperties
 	sg.GenSchema.Default = sg.Schema.Default
 
 	var err error

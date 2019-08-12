@@ -74,3 +74,22 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   return append(props, additional[1:]...), nil
 }
 {{ end }}
+
+{{ define "noAdditionalPropertiesSerializer" }}
+// UnmarshalJSON unmarshals this object while disallowing additional properties from JSON
+func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
+  var props {{ template "withoutAdditionalBody" . }}
+
+  dec := json.NewDecoder(bytes.NewReader(data))
+  dec.DisallowUnknownFields()
+  if err := dec.Decode(&props); err != nil {
+    return err
+  }
+
+  {{- $rcv :=  .ReceiverName }}
+  {{ range .Properties }}
+  {{ .ReceiverName }}.{{ pascalize .Name }} = props.{{ pascalize .Name }}
+  {{ end }}
+  return nil
+}
+{{ end }}

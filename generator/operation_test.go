@@ -1324,3 +1324,60 @@ func TestBuilder_Issue1646(t *testing.T) {
 		}
 	}
 }
+
+func TestGenServer_StrictAdditionalProperties(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
+		IncludeModel:      true,
+		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+		IsClient:          false,
+	}
+	if err := opts.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+
+	opts.StrictAdditionalProperties = true
+
+	appGen, err := newAppGenerator("StrictAdditionalProperties", nil, nil, opts)
+	if assert.NoError(t, err) {
+		op, err := appGen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+			if assert.NoError(t, err) {
+				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					for _, tt := range []struct {
+						name      string
+						assertion func(testing.TB, string, string) bool
+					}{
+						{"PostTestBody", assertInCode},
+						{"PostTestParamsBodyExplicit", assertInCode},
+						{"PostTestParamsBodyImplicit", assertInCode},
+						{"PostTestParamsBodyDisabled", assertNotInCode},
+					} {
+						fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
+						if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
+							tt.assertion(t, "dec.DisallowUnknownFields()", fn)
+						}
+					}
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}

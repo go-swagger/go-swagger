@@ -432,5 +432,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
     {{ template "additionalPropertiesSerializer" . }}
   {{- else if and (gt (len .AllOf) 0) (not .IsSubType ) -}}
     {{ template "allOfSerializer" . }}
+  {{ else if and .IsComplexObject .StrictAdditionalProperties }}
+    {{ template "noAdditionalPropertiesSerializer" . }}
   {{ end -}}
 {{ end }}

@@ -1065,18 +1065,19 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 	}
 	rslv := resolver
 	sc := schemaGenContext{
-		Path:             schemaPath,
-		Name:             containerName,
-		Receiver:         receiverName,
-		ValueExpr:        receiverName,
-		IndexVar:         indexVar,
-		Schema:           *sch,
-		Required:         false,
-		TypeResolver:     rslv,
-		Named:            false,
-		IncludeModel:     true,
-		IncludeValidator: true,
-		ExtraSchemas:     make(map[string]GenSchema),
+		Path:                       schemaPath,
+		Name:                       containerName,
+		Receiver:                   receiverName,
+		ValueExpr:                  receiverName,
+		IndexVar:                   indexVar,
+		Schema:                     *sch,
+		Required:                   false,
+		TypeResolver:               rslv,
+		Named:                      false,
+		IncludeModel:               true,
+		IncludeValidator:           true,
+		StrictAdditionalProperties: b.GenOpts.StrictAdditionalProperties,
+		ExtraSchemas:               make(map[string]GenSchema),
 	}
 
 	var (

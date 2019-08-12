@@ -1,0 +1,79 @@
+swagger: '2.0'
+info:
+  title: Test for strict additional properties
+  version: 0.0.1
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /test:
+    post:
+      parameters:
+      - name: body
+        in: body
+        schema:
+          type: object
+          additionalProperties: false
+          properties:
+            foo:
+              type: boolean
+            bar:
+              type: number
+            implicit:
+              type: object
+              properties:
+                baz:
+                  type: boolean
+            explicit:
+              type: object
+              additionalProperties: false
+              properties:
+                baz:
+                  type: boolean
+            disabled:
+              type: object
+              additionalProperties: true
+              properties:
+                baz:
+                  type: boolean
+      responses:
+        200:
+
+  /unused:
+    post:
+      parameters:
+      - name: body
+        in: body
+        schema:
+          $ref: '#/definitions/Body'
+      responses:
+        200:
+
+definitions:
+  Body:
+    type: object
+    additionalProperties: false
+    properties:
+      foo:
+        type: boolean
+      bar:
+        type: number
+      implicit:
+        type: object
+        properties:
+          baz:
+            type: boolean
+      explicit:
+        type: object
+        additionalProperties: false
+        properties:
+          baz:
+            type: boolean
+      disabled:
+        type: object
+        additionalProperties: true
+        properties:
+          baz:
+            type: boolean

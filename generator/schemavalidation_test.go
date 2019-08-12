@@ -68,6 +68,18 @@ func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
 	return true
 }
 
+func funcBody(code string, signature string) string {
+	submatches := regexp.MustCompile(
+		"\\nfunc \\([a-zA-Z_][a-zA-Z0-9_]* " + regexp.QuoteMeta(signature) + " {\\n" + // function signature
+			"((([^}\\n][^\\n]*)?\\n)*)}\\n", // function body
+	).FindStringSubmatch(code)
+
+	if submatches == nil {
+		return ""
+	}
+	return submatches[1]
+}
+
 func TestSchemaValidation_RequiredProps(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	if assert.NoError(t, err) {
