@@ -59,6 +59,7 @@ Help Options:
           --skip-validation                                                       skips validation of spec prior to generation
           --regenerate-configureapi                                               Force regeneration of configureapi.go
           --keep-spec-order                                                       Keep schema properties order identical to spec file
+          --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
 ```
 
 ### Build a server

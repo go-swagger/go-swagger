@@ -2548,3 +2548,43 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	assert.True(t, foundOrderInnerC < foundOrderInnerB)
 	assert.True(t, foundOrderInnerB < foundOrderInnerA)
 }
+
+func TestGenModel_StrictAdditionalProperties(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/strict-additional-properties.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "Body"
+		schema := definitions[k]
+		opts := opts()
+
+		opts.StrictAdditionalProperties = true
+
+		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err = templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ff, err := opts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ff)
+					for _, tt := range []struct {
+						name      string
+						assertion func(testing.TB, string, string) bool
+					}{
+						{k, assertInCode},
+						{k + "Explicit", assertInCode},
+						{k + "Implicit", assertInCode},
+						{k + "Disabled", assertNotInCode},
+					} {
+						fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
+						if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
+							tt.assertion(t, "dec.DisallowUnknownFields()", fn)
+						}
+					}
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
