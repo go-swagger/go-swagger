@@ -90,6 +90,7 @@ type PetBodyParams struct {
 // By default it will only lists pets that are available for sale.
 // This can be changed with the status flag.
 //
+// Deprecated: true
 // Responses:
 // 		default: genericError
 // 		    200: []pet
