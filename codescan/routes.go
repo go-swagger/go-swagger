@@ -70,6 +70,7 @@ func (r *routesBuilder) Build(tgt *spec.Paths) error {
 		newMultiLineTagParser("Security", newSetSecurity(rxSecuritySchemes, opSecurityDefsSetter(op)), false),
 		newMultiLineTagParser("Parameters", spa, false),
 		newMultiLineTagParser("Responses", sr, false),
+		newSingleLineTagParser("Deprecated", &setDeprecatedOp{op}),
 	}
 	if err := sp.Parse(r.route.Remaining); err != nil {
 		return fmt.Errorf("operation (%s): %v", op.ID, err)

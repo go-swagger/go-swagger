@@ -242,6 +242,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "By default it will only lists pets that are available for sale.\nThis can be changed with the status flag.", op.Get.Description)
 	assert.Equal(t, "listPets", op.Get.ID)
 	assert.EqualValues(t, []string{"pets"}, op.Get.Tags)
+	assert.True(t, op.Get.Deprecated)
 	var names namedParams
 	for i, v := range op.Get.Parameters {
 		names = append(names, namedParam{Index: i, Name: v.Name})

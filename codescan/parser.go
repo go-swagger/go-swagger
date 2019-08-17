@@ -1099,6 +1099,29 @@ func (su *setReadOnlySchema) Parse(lines []string) error {
 	return nil
 }
 
+type setDeprecatedOp struct {
+	tgt *spec.Operation
+}
+
+func (su *setDeprecatedOp) Matches(line string) bool {
+	return rxDeprecated.MatchString(line)
+}
+
+func (su *setDeprecatedOp) Parse(lines []string) error {
+	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
+		return nil
+	}
+	matches := rxDeprecated.FindStringSubmatch(lines[0])
+	if len(matches) > 1 && len(matches[1]) > 0 {
+		req, err := strconv.ParseBool(matches[1])
+		if err != nil {
+			return err
+		}
+		su.tgt.Deprecated = req
+	}
+	return nil
+}
+
 type setDiscriminator struct {
 	schema *spec.Schema
 	field  string
