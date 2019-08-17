@@ -23,6 +23,7 @@ Annotation | Format
 **Consumes** | a list of operation specific mime type values, one per line, for the content the API receives
 **Produces** | a list of operation specific mime type values, one per line, for the content the API sends
 **Schemes** | a list of operation specific schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured
+**Deprecated** | Route marked as deprecated if this value is true
 **Security** | a dictionary of key: []string{scopes}
 **Responses** | a dictionary of status code to named response
 
@@ -49,6 +50,8 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	//
 	//     Schemes: http, https, ws, wss
 	//
+	//     Deprecated: true
+	//
 	//     Security:
 	//       api_key:
 	//       oauth: read, write
@@ -69,6 +72,7 @@ paths:
   "/pets":
     get:
       operationId: listPets
+      deprecated: true
       summary: Lists pets filtered by some parameters.
       description: "This will show all available pets by default.\nYou can get the pets that are out of stock"
       tags:

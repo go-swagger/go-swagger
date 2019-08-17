@@ -40,6 +40,8 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	//
 	// Schemes: http, https, ws, wss
 	//
+	// Deprecated: true
+	//
 	// Security:
 	// api_key:
 	// oauth: read, write

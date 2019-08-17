@@ -22,6 +22,10 @@ func opSecurityDefsSetter(op *spec.Operation) func([]map[string][]string) {
 	return func(securityDefs []map[string][]string) { op.Security = securityDefs }
 }
 
+func opDeprecatedSetter(op *spec.Operation) func(bool) {
+	return func(deprecated bool) { op.Deprecated = deprecated }
+}
+
 func opResponsesSetter(op *spec.Operation) func(*spec.Response, map[int]spec.Response) {
 	return func(def *spec.Response, scr map[int]spec.Response) {
 		if op.Responses == nil {
@@ -70,6 +74,7 @@ func (r *routesBuilder) Build(tgt *spec.Paths) error {
 		newMultiLineTagParser("Security", newSetSecurity(rxSecuritySchemes, opSecurityDefsSetter(op)), false),
 		newMultiLineTagParser("Parameters", spa, false),
 		newMultiLineTagParser("Responses", sr, false),
+		newSingleLineTagParser("Deprecated", newSetDeprecated(rxDeprecated, opDeprecatedSetter(op))),
 	}
 	if err := sp.Parse(r.route.Remaining); err != nil {
 		return fmt.Errorf("operation (%s): %v", op.ID, err)

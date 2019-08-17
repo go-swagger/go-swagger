@@ -32,6 +32,7 @@
           "booking"
         ],
         "summary":"Bookings lists all the appointments that have been made on the site.",
+        "deprecated": true,
         "operationId":"Bookings",
         "responses":{
           "200":{

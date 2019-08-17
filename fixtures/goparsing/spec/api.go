@@ -72,6 +72,8 @@ type BookingResponse struct {
 //
 // Schemes: http, https
 //
+// Deprecated: true
+//
 // Produces:
 // application/json
 //

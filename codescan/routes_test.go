@@ -221,6 +221,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "path", p.In)
 	assert.Equal(t, true, p.Required)
 	assert.Equal(t, false, p.AllowEmptyValue)
+	assert.Equal(t, true, po.Get.Deprecated)
 
 	po = ops.Paths["/orders"]
 	assert.Equal(t, 2, len(po.Post.Parameters))

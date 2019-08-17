@@ -76,6 +76,7 @@ var (
 	rxReadOnly        = regexp.MustCompile(`[Rr]ead(?:\p{Zs}*|[\p{Pd}\p{Pc}])?[Oo]nly\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxConsumes        = regexp.MustCompile(`[Cc]onsumes\p{Zs}*:`)
 	rxProduces        = regexp.MustCompile(`[Pp]roduces\p{Zs}*:`)
+	rxDeprecated      = regexp.MustCompile(`[Dd]eprecated\p{Zs}*:\p{Zs}*(true|false)$`)
 	rxSecuritySchemes = regexp.MustCompile(`[Ss]ecurity\p{Zs}*:`)
 	rxSecurity        = regexp.MustCompile(`[Ss]ecurity\p{Zs}*[Dd]efinitions:`)
 	rxResponses       = regexp.MustCompile(`[Rr]esponses\p{Zs}*:`)
