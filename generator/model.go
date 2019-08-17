@@ -1776,15 +1776,16 @@ func goName(sch *spec.Schema, orig string) string {
 
 func (sg *schemaGenContext) checkNeedsPointer(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
 	derefType := strings.TrimPrefix(elem.GoType, "*")
-	if outer.IsAliased && !strings.HasSuffix(outer.AliasedType, "*"+derefType) {
+	switch {
+	case outer.IsAliased && !strings.HasSuffix(outer.AliasedType, "*"+derefType):
 		// override nullability of map of primitive elements: render element of aliased or anonymous map as a pointer
 		outer.AliasedType = strings.TrimSuffix(outer.AliasedType, derefType) + "*" + derefType
-	} else if sch != nil {
+	case sch != nil:
 		// nullable primitive
 		if sch.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType) {
 			sch.GoType = strings.TrimSuffix(sch.GoType, derefType) + "*" + derefType
 		}
-	} else if outer.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType) {
+	case outer.IsAnonymous && !strings.HasSuffix(outer.GoType, "*"+derefType):
 		outer.GoType = strings.TrimSuffix(outer.GoType, derefType) + "*" + derefType
 	}
 }
@@ -1797,9 +1798,6 @@ func (sg *schemaGenContext) checkNeedsPointer(outer *GenSchema, sch *GenSchema, 
 // code needs to be adapted by removing IsZero() and Required() calls in codegen.
 func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 	outer := &sg.GenSchema
-	if outer == nil {
-		return
-	}
 	if sch == nil {
 		sch = outer
 	}

@@ -220,7 +220,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map
         {{if .IsAPIKeyAuth}}result[name] = {{.ReceiverName}}.APIKeyAuthenticator(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token)
         }{{ end }}){{end}}
-        {{if .IsOAuth2}}result[name] = {{.ReceiverName}}.BearerAuthenticator(scheme.Name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
+        {{if .IsOAuth2}}result[name] = {{.ReceiverName}}.BearerAuthenticator(name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token, scopes)
         }{{ end }}){{end}}
       {{end}}

@@ -72,9 +72,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		}
 		return str
 	},
-	"upper": func(str string) string {
-		return strings.ToUpper(str)
-	},
+	"upper": strings.ToUpper,
 	"contains": func(coll []string, arg string) bool {
 		for _, v := range coll {
 			if v == arg {
@@ -276,7 +274,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 					if ee := t.AddFile(assetName, string(data)); ee != nil {
 						// Fatality is decided by caller
 						// log.Fatal(ee)
-						return fmt.Errorf("Could not add template: %v", ee)
+						return fmt.Errorf("could not add template: %v", ee)
 					}
 				}
 				// Non-readable files are skipped
@@ -289,7 +287,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Could not complete template processing in directory \"%s\": %v", templatePath, err)
+		return fmt.Errorf("could not complete template processing in directory \"%s\": %v", templatePath, err)
 	}
 	return nil
 }
@@ -327,14 +325,14 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
 
 	if err != nil {
-		return fmt.Errorf("Failed to load template %s: %v", name, err)
+		return fmt.Errorf("failed to load template %s: %v", name, err)
 	}
 
 	// check if any protected templates are defined
 	if !allowOverride {
 		for _, template := range templ.Templates() {
 			if protectedTemplates[template.Name()] {
-				return fmt.Errorf("Cannot overwrite protected template %s", template.Name())
+				return fmt.Errorf("cannot overwrite protected template %s", template.Name())
 			}
 		}
 	}
@@ -467,7 +465,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 
 			// Still don't have it, return an error
 			if tt == nil {
-				return templ, fmt.Errorf("Could not find template %s", dep)
+				return templ, fmt.Errorf("could not find template %s", dep)
 			}
 			var err error
 
@@ -475,7 +473,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			templ, err = templ.AddParseTree(dep, tt.Tree)
 
 			if err != nil {
-				return templ, fmt.Errorf("Dependency Error: %v", err)
+				return templ, fmt.Errorf("dependency error: %v", err)
 			}
 
 		}
@@ -489,7 +487,7 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 	templ, found := t.templates[name]
 
 	if !found {
-		return templ, fmt.Errorf("Template doesn't exist %s", name)
+		return templ, fmt.Errorf("template doesn't exist %s", name)
 	}
 
 	return t.addDependencies(templ)

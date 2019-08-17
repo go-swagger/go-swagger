@@ -28,6 +28,7 @@ var (
 )
 
 func TestDebug(t *testing.T) {
+	t.Parallel()
 	// test debugLog()
 	tmpFile, _ := ioutil.TempFile("", "debug-test")
 	tmpName := tmpFile.Name()
