@@ -124,6 +124,7 @@ func Test_GenerateClient(t *testing.T) {
 }
 
 func TestClient(t *testing.T) {
+	t.Parallel()
 	targetdir, err := ioutil.TempDir(os.TempDir(), "swagger_nogo")
 	if err != nil {
 		t.Fatalf("Failed to create a test target directory: %v", err)
@@ -187,6 +188,7 @@ func TestClient(t *testing.T) {
 }
 
 func TestGenClient_1518(t *testing.T) {
+	t.Parallel()
 	// test client response handling when unexpected success response kicks in
 	log.SetOutput(ioutil.Discard)
 	defer func() {

@@ -437,7 +437,7 @@ func TestTemplates_AddFile(t *testing.T) {
 	// protected
 	err = AddFile("schemabody", funcTpl)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Cannot overwrite protected template")
+	assert.Contains(t, err.Error(), "cannot overwrite protected template")
 }
 
 // Test LoadDir
@@ -447,12 +447,12 @@ func TestTemplates_LoadDir(t *testing.T) {
 	// Fails
 	err := templates.LoadDir("")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Could not complete")
+	assert.Contains(t, err.Error(), "could not complete")
 
 	// Fails again (from any dir?)
 	err = templates.LoadDir("templates")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Cannot overwrite protected template")
+	assert.Contains(t, err.Error(), "cannot overwrite protected template")
 
 	// TODO: success case
 	// To force a success, we need to empty the global list of protected

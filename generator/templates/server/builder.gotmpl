@@ -209,18 +209,18 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ServeErrorFor(operationID str
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
   {{if .SecurityDefinitions}}
   result := make(map[string]runtime.Authenticator)
-  for name, scheme := range schemes {
+  for name := range schemes {
     switch name {
       {{range .SecurityDefinitions}}
       case "{{.ID}}":
-        {{if .IsBasicAuth}}_ = scheme
-        result[name] = {{.ReceiverName}}.BasicAuthenticator({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
+        {{if .IsBasicAuth}}result[name] = {{.ReceiverName}}.BasicAuthenticator({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(username, password)
         }{{ end }}){{end}}
-        {{if .IsAPIKeyAuth}}result[name] = {{.ReceiverName}}.APIKeyAuthenticator(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
+        {{if .IsAPIKeyAuth}}scheme := schemes[name]
+          result[name] = {{.ReceiverName}}.APIKeyAuthenticator(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token)
         }{{ end }}){{end}}
-        {{if .IsOAuth2}}result[name] = {{.ReceiverName}}.BearerAuthenticator(scheme.Name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
+        {{if .IsOAuth2}}result[name] = {{.ReceiverName}}.BearerAuthenticator(name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token, scopes)
         }{{ end }}){{end}}
       {{end}}

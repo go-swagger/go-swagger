@@ -176,7 +176,7 @@ type operationGenerator struct {
 
 func intersectTags(left, right []string) (filtered []string) {
 	if len(right) == 0 {
-		filtered = left[:]
+		filtered = left
 		return
 	}
 	for _, l := range left {
@@ -494,7 +494,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Method:               b.Method,
 		Path:                 b.Path,
 		BasePath:             b.BasePath,
-		Tags:                 operation.Tags[:],
+		Tags:                 operation.Tags,
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
@@ -678,7 +678,6 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 
 // HasValidations resolves the validation status for simple schema objects
 func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolvedType) (hasValidations bool, hasSliceValidations bool) {
-	// TODO: exclude format byte (istrfmt.Base64) from validation (issue#1548)
 	hasNumberValidation := sh.Maximum != nil || sh.Minimum != nil || sh.MultipleOf != nil
 	hasStringValidation := sh.MaxLength != nil || sh.MinLength != nil || sh.Pattern != ""
 	hasSliceValidations = sh.MaxItems != nil || sh.MinItems != nil || sh.UniqueItems || len(sh.Enum) > 0
@@ -798,11 +797,12 @@ func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeRe
 	var items *GenItems
 	res.KeyVar = "k"
 	res.Schema.KeyVar = "k"
-	if schema.IsMap && !schema.IsInterface {
+	switch {
+	case schema.IsMap && !schema.IsInterface:
 		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.AdditionalProperties)
-	} else if schema.IsArray {
+	case schema.IsArray:
 		items = b.MakeBodyParameterItemsAndMaps(res, res.Schema.Items)
-	} else {
+	default:
 		items = new(GenItems)
 	}
 
@@ -878,11 +878,12 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 			prev = next
 			next = new(GenItems)
 
-			if it.Items != nil {
+			switch {
+			case it.Items != nil:
 				it = it.Items
-			} else if it.AdditionalProperties != nil {
+			case it.AdditionalProperties != nil:
 				it = it.AdditionalProperties
-			} else {
+			default:
 				it = nil
 			}
 		}
