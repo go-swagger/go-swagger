@@ -71,6 +71,10 @@ func (o *ListTasksOK) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasksOK  %+v", 200, o.Payload)
 }
 
+func (o *ListTasksOK) GetPayload() []*models.TaskCard {
+	return o.Payload
+}
+
 func (o *ListTasksOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Last-Task-Id
@@ -103,6 +107,10 @@ type ListTasksUnprocessableEntity struct {
 
 func (o *ListTasksUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity  %+v", 422, o.Payload)
+}
+
+func (o *ListTasksUnprocessableEntity) GetPayload() *models.ValidationError {
+	return o.Payload
 }
 
 func (o *ListTasksUnprocessableEntity) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -143,6 +151,10 @@ func (o *ListTasksDefault) Code() int {
 
 func (o *ListTasksDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasks default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *ListTasksDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *ListTasksDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

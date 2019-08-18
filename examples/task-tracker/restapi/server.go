@@ -293,7 +293,7 @@ func (s *Server) Serve() (err error) {
 		// call custom TLS configurator
 		configureTLS(httpsServer.TLSConfig)
 
-		if len(httpsServer.TLSConfig.Certificates) == 0 {
+		if len(httpsServer.TLSConfig.Certificates) == 0 && httpsServer.TLSConfig.GetCertificate == nil {
 			// after standard and custom config are passed, this ends up with no certificate
 			if s.TLSCertificate == "" {
 				if s.TLSCertificateKey == "" {

@@ -205,12 +205,12 @@ func (o *OauthSampleAPI) ServeErrorFor(operationID string) func(http.ResponseWri
 func (o *OauthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "OauthSecurity":
 
-			result[name] = o.BearerAuthenticator(scheme.Name, func(token string, scopes []string) (interface{}, error) {
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
 				return o.OauthSecurityAuth(token, scopes)
 			})
 

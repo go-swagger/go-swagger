@@ -91,6 +91,10 @@ func (o *UploadTaskFileDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *UploadTaskFileDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *UploadTaskFileDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code

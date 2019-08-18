@@ -59,6 +59,10 @@ func (o *GetTaskCommentsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskCommentsOK  %+v", 200, o.Payload)
 }
 
+func (o *GetTaskCommentsOK) GetPayload() []*models.Comment {
+	return o.Payload
+}
+
 func (o *GetTaskCommentsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
@@ -95,6 +99,10 @@ func (o *GetTaskCommentsDefault) Code() int {
 
 func (o *GetTaskCommentsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetTaskCommentsDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetTaskCommentsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

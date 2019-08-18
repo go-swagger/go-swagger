@@ -65,6 +65,10 @@ func (o *OrderGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
 }
 
+func (o *OrderGetOK) GetPayload() *models.Order {
+	return o.Payload
+}
+
 func (o *OrderGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Order)

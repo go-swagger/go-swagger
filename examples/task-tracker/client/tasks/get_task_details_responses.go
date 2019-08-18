@@ -65,6 +65,10 @@ func (o *GetTaskDetailsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
 }
 
+func (o *GetTaskDetailsOK) GetPayload() *models.Task {
+	return o.Payload
+}
+
 func (o *GetTaskDetailsOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Task)
@@ -92,6 +96,10 @@ type GetTaskDetailsUnprocessableEntity struct {
 
 func (o *GetTaskDetailsUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
+}
+
+func (o *GetTaskDetailsUnprocessableEntity) GetPayload() *models.ValidationError {
+	return o.Payload
 }
 
 func (o *GetTaskDetailsUnprocessableEntity) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -132,6 +140,10 @@ func (o *GetTaskDetailsDefault) Code() int {
 
 func (o *GetTaskDetailsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetTaskDetailsDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetTaskDetailsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

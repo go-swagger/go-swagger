@@ -91,6 +91,10 @@ func (o *DeleteTaskDefault) Error() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *DeleteTaskDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *DeleteTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code

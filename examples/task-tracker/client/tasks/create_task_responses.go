@@ -91,6 +91,10 @@ func (o *CreateTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *CreateTaskDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *CreateTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code

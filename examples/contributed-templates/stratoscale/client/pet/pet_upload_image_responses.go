@@ -53,6 +53,10 @@ func (o *PetUploadImageOK) Error() string {
 	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
 }
 
+func (o *PetUploadImageOK) GetPayload() *models.APIResponse {
+	return o.Payload
+}
+
 func (o *PetUploadImageOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.APIResponse)

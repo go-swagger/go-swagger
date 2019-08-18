@@ -241,7 +241,7 @@ func init() {
       "type": "oauth2",
       "flow": "accessCode",
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
-      "tokenUrl": "hhttps://www.googleapis.com/oauth2/v4/token",
+      "tokenUrl": "https://www.googleapis.com/oauth2/v4/token",
       "scopes": {
         "admin": "Admin scope",
         "user": "User scope"
@@ -480,7 +480,7 @@ func init() {
       "type": "oauth2",
       "flow": "accessCode",
       "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
-      "tokenUrl": "hhttps://www.googleapis.com/oauth2/v4/token",
+      "tokenUrl": "https://www.googleapis.com/oauth2/v4/token",
       "scopes": {
         "admin": "Admin scope",
         "user": "User scope"

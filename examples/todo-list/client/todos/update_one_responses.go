@@ -59,6 +59,10 @@ func (o *UpdateOneOK) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
 }
 
+func (o *UpdateOneOK) GetPayload() *models.Item {
+	return o.Payload
+}
+
 func (o *UpdateOneOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Item)
@@ -95,6 +99,10 @@ func (o *UpdateOneDefault) Code() int {
 
 func (o *UpdateOneDefault) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *UpdateOneDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *UpdateOneDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

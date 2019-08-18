@@ -276,29 +276,30 @@ func (o *MultiAuthExampleAPI) ServeErrorFor(operationID string) func(http.Respon
 func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "hasRole":
 
-			result[name] = o.BearerAuthenticator(scheme.Name, func(token string, scopes []string) (interface{}, error) {
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
 				return o.HasRoleAuth(token, scopes)
 			})
 
 		case "isRegistered":
-			_ = scheme
 			result[name] = o.BasicAuthenticator(func(username, password string) (interface{}, error) {
 				return o.IsRegisteredAuth(username, password)
 			})
 
 		case "isReseller":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerAuth(token)
 			})
 
 		case "isResellerQuery":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerQueryAuth(token)
 			})

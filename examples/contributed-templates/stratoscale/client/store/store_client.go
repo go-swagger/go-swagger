@@ -17,15 +17,21 @@ import (
 
 // API is the interface of the store client
 type API interface {
-	// InventoryGet returns pet inventories by status
+	/*
+	   InventoryGet returns pet inventories by status*/
 	InventoryGet(ctx context.Context, params *InventoryGetParams) (*InventoryGetOK, error)
-	// OrderCreate places an order for a pet
+	/*
+	   OrderCreate places an order for a pet*/
 	OrderCreate(ctx context.Context, params *OrderCreateParams) (*OrderCreateOK, error)
-	// OrderDelete deletes purchase order by ID
-	// For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
+	/*
+	   OrderDelete deletes purchase order by ID
+
+	   For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors*/
 	OrderDelete(ctx context.Context, params *OrderDeleteParams) (*OrderDeleteNoContent, error)
-	// OrderGet finds purchase order by ID
-	// For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+	/*
+	   OrderGet finds purchase order by ID
+
+	   For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions*/
 	OrderGet(ctx context.Context, params *OrderGetParams) (*OrderGetOK, error)
 }
 

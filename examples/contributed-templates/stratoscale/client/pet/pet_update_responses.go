@@ -71,6 +71,10 @@ func (o *PetUpdateCreated) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
 }
 
+func (o *PetUpdateCreated) GetPayload() *models.Pet {
+	return o.Payload
+}
+
 func (o *PetUpdateCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Pet)

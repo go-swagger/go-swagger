@@ -71,6 +71,10 @@ func (o *GetIDOK) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
 }
 
+func (o *GetIDOK) GetPayload() *models.Customer {
+	return o.Payload
+}
+
 func (o *GetIDOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Customer)
@@ -100,6 +104,10 @@ func (o *GetIDUnauthorized) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
 }
 
+func (o *GetIDUnauthorized) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *GetIDUnauthorized) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)
@@ -127,6 +135,10 @@ type GetIDNotFound struct {
 
 func (o *GetIDNotFound) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
+}
+
+func (o *GetIDNotFound) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetIDNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -165,6 +177,10 @@ func (o *GetIDDefault) Code() int {
 
 func (o *GetIDDefault) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *GetIDDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *GetIDDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

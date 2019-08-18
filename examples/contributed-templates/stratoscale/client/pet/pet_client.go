@@ -17,17 +17,23 @@ import (
 
 // API is the interface of the pet client
 type API interface {
-	// PetCreate adds a new pet to the store
+	/*
+	   PetCreate adds a new pet to the store*/
 	PetCreate(ctx context.Context, params *PetCreateParams) (*PetCreateCreated, error)
-	// PetDelete deletes a pet
+	/*
+	   PetDelete deletes a pet*/
 	PetDelete(ctx context.Context, params *PetDeleteParams) (*PetDeleteNoContent, error)
-	// PetGet gets pet by it s ID
+	/*
+	   PetGet gets pet by it s ID*/
 	PetGet(ctx context.Context, params *PetGetParams) (*PetGetOK, error)
-	// PetList lists pets
+	/*
+	   PetList lists pets*/
 	PetList(ctx context.Context, params *PetListParams) (*PetListOK, error)
-	// PetUpdate updates an existing pet
+	/*
+	   PetUpdate updates an existing pet*/
 	PetUpdate(ctx context.Context, params *PetUpdateParams) (*PetUpdateCreated, error)
-	// PetUploadImage uploads an image
+	/*
+	   PetUploadImage uploads an image*/
 	PetUploadImage(ctx context.Context, params *PetUploadImageParams) (*PetUploadImageOK, error)
 }
 
