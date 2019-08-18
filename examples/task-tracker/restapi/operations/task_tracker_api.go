@@ -265,15 +265,17 @@ func (o *TaskTrackerAPI) ServeErrorFor(operationID string) func(http.ResponseWri
 func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "api_key":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		case "token_header":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.TokenHeaderAuth)
 
 		}

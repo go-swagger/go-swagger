@@ -59,6 +59,10 @@ func (o *AddOneCreated) Error() string {
 	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
 }
 
+func (o *AddOneCreated) GetPayload() *models.Item {
+	return o.Payload
+}
+
 func (o *AddOneCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Item)
@@ -95,6 +99,10 @@ func (o *AddOneDefault) Code() int {
 
 func (o *AddOneDefault) Error() string {
 	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *AddOneDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *AddOneDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

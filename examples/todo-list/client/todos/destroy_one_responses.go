@@ -89,6 +89,10 @@ func (o *DestroyOneDefault) Error() string {
 	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *DestroyOneDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *DestroyOneDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Error)

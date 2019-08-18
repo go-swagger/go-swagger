@@ -188,11 +188,12 @@ func (o *AuthSampleAPI) ServeErrorFor(operationID string) func(http.ResponseWrit
 func (o *AuthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "key":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeyAuth(token)
 			})

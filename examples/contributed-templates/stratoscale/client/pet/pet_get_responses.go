@@ -65,6 +65,10 @@ func (o *PetGetOK) Error() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
 }
 
+func (o *PetGetOK) GetPayload() *models.Pet {
+	return o.Payload
+}
+
 func (o *PetGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.Pet)

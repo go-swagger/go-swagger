@@ -59,6 +59,10 @@ func (o *FindOK) Error() string {
 	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
 }
 
+func (o *FindOK) GetPayload() []*models.Item {
+	return o.Payload
+}
+
 func (o *FindOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
@@ -93,6 +97,10 @@ func (o *FindDefault) Code() int {
 
 func (o *FindDefault) Error() string {
 	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
+}
+
+func (o *FindDefault) GetPayload() *models.Error {
+	return o.Payload
 }
 
 func (o *FindDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

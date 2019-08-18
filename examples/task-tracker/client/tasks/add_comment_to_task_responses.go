@@ -94,6 +94,10 @@ func (o *AddCommentToTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
 }
 
+func (o *AddCommentToTaskDefault) GetPayload() *models.Error {
+	return o.Payload
+}
+
 func (o *AddCommentToTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response header X-Error-Code

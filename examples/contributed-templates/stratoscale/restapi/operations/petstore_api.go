@@ -259,11 +259,12 @@ func (o *PetstoreAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "roles":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.RolesAuth)
 
 		}

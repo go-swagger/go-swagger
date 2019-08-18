@@ -51,6 +51,10 @@ func (o *InventoryGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
 }
 
+func (o *InventoryGetOK) GetPayload() map[string]int32 {
+	return o.Payload
+}
+
 func (o *InventoryGetOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload

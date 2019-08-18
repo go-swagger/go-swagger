@@ -204,11 +204,12 @@ func (o *TodoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
 
 		case "key":
 
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.KeyAuth)
 
 		}
