@@ -20,12 +20,21 @@ workflows:
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
 
       - codegen_tests:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
 
       - canary_tests:
+          filters:
+            tags:
+              only: /.*/
           requires:
             - build
 
