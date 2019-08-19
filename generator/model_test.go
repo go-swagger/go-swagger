@@ -310,13 +310,14 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 		case "io.ReadCloser":
 			continue
 		default:
-			if strings.HasPrefix(v.Value.GoType, "[]") || strings.HasPrefix(v.Value.GoType, "map[") { // akin to slice or map
+			switch {
+			case strings.HasPrefix(v.Value.GoType, "[]") || strings.HasPrefix(v.Value.GoType, "map["): // akin to slice or map
 				assert.True(t, strings.HasPrefix(v.Value.Zero(), "make("))
 
-			} else if strings.HasPrefix(v.Value.GoType, "models.") {
+			case strings.HasPrefix(v.Value.GoType, "models."):
 				assert.True(t, strings.HasPrefix(v.Value.Zero(), "new("))
 
-			} else { // akin to string
+			default: // akin to string
 				rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(".*"\)`)
 				assert.True(t, rex.MatchString(v.Value.Zero()))
 				k := v.Value

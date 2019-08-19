@@ -156,7 +156,7 @@ func init() {
 	testedModels = make([]*modelFixture, 0, 50)
 	noLines = []string{}
 	todo = []string{`TODO`}
-	validatable = append(todo, `Validate(`)
+	validatable = append([]string{`Validate(`}, todo...)
 	warning = []string{`warning`}
 }
 
