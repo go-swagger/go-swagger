@@ -1211,13 +1211,14 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 	for fixtureIndex, fixtureContents := range fixtureConfig {
 		var gen codeGenOpBuilder
 		var err error
-		if minimalFlatten && !withExpand {
+		switch {
+		case minimalFlatten && !withExpand:
 			// proceed with minimal spec flattening
 			gen, err = opBuilder(fixtureIndex, fixture)
-		} else if !minimalFlatten {
+		case !minimalFlatten:
 			// proceed with full flattening
 			gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
-		} else {
+		default:
 			// proceed with spec expansion
 			gen, err = opBuilderWithExpand(fixtureIndex, fixture)
 		}

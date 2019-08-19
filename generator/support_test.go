@@ -55,11 +55,12 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 			item.path = strings.Replace(item.path, "/", "\\", -1)
 		}
 
-		if actualok != item.ok {
+		switch {
+		case actualok != item.ok:
 			t.Errorf("checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
-		} else if actualpath != item.path {
+		case actualpath != item.path:
 			t.Errorf("checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
-		} else {
+		default:
 			continue
 		}
 	}

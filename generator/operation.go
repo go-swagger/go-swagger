@@ -345,7 +345,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
 		}
 		seenIds[p.Name] = append(seenIds[p.Name], p.In)
-		if strings.ToLower(p.Name) == strings.ToLower(timeoutName) {
+		if strings.EqualFold(p.Name, timeoutName) {
 			timeoutName = renameTimeout(seenIds, timeoutName)
 		}
 	}
