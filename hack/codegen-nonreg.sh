@@ -159,6 +159,7 @@ fixtureDirs=(\
 "fixtures/bugs/1518" \
 "fixtures/bugs/1993" \
 "fixtures/bugs/1937" \
+"fixtures/bugs/2050" \
 )
 
 # there are several subspecs there: we just want a specific one

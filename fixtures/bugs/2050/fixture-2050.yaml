@@ -1,0 +1,37 @@
+---
+  swagger: "2.0"
+  info:
+    title: "enum with +,-"
+    version: "0.0.1"
+    description: "repro issue 2050"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    modelEnum:
+      type: object
+      properties:
+        p0:
+          type: string
+          enum:
+            - '+1'
+            - '-1'
+            - '0'
+        p1:
+          type: string
+          enum:
+            - '+'
+            - '-'
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/modelEnum'
+        responses:
+          200:
+            description: "OK"

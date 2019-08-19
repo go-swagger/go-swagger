@@ -536,3 +536,33 @@ func TestShared_Issue1614(t *testing.T) {
 	_, err = validateAndFlattenSpec(&opts, specDoc)
 	assert.NoError(t, err)
 }
+
+func TestPascalize(t *testing.T) {
+	assert.Equal(t, "Plus1", pascalize("+1"))
+	assert.Equal(t, "Plus", pascalize("+"))
+	assert.Equal(t, "Minus1", pascalize("-1"))
+	assert.Equal(t, "Minus", pascalize("-"))
+	assert.Equal(t, "Nr8", pascalize("8"))
+
+	assert.Equal(t, "Hello", pascalize("+hello"))
+
+	// other values from swag rules
+	assert.Equal(t, "At8", pascalize("@8"))
+	assert.Equal(t, "AtHello", pascalize("@hello"))
+	assert.Equal(t, "Bang8", pascalize("!8"))
+	assert.Equal(t, "At", pascalize("@"))
+
+	// # values
+	assert.Equal(t, "Hello", pascalize("#hello"))
+	assert.Equal(t, "BangHello", pascalize("#!hello"))
+	assert.Equal(t, "HashTag8", pascalize("#8"))
+	assert.Equal(t, "HashTag", pascalize("#"))
+
+	// single '_'
+	assert.Equal(t, "Nr", pascalize("_"))
+	assert.Equal(t, "Hello", pascalize("_hello"))
+
+	// remove spaces
+	assert.Equal(t, "HelloWorld", pascalize("# hello world"))
+	assert.Equal(t, "HashTag8HelloWorld", pascalize("# 8 hello world"))
+}

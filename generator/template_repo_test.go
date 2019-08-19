@@ -51,6 +51,11 @@ toPackage2={{ toPackage "a.a/b_c/d_e" }}
 toPackage3={{ toPackage "d_e" }}
 toPackage4={{ toPackage "d-e" }}
 toPackageName={{ toPackageName "d-e/f-g" }}
+PascalizeSpecialChar1={{ pascalize "+1" }}
+PascalizeSpecialChar2={{ pascalize "-1" }}
+PascalizeSpecialChar3={{ pascalize "1" }}
+PascalizeSpecialChar4={{ pascalize "-" }}
+PascalizeSpecialChar5={{ pascalize "+" }}
 `
 )
 
@@ -410,12 +415,16 @@ func TestTemplates_FuncMap(t *testing.T) {
 					assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
 					assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
 					assert.Contains(t, rendered.String(), "Snakize3=ending_in_test_swagger\n")
-					//fmt.Println(rendered.String())
 					assert.Contains(t, rendered.String(), "toPackage1=a/b-c/d_e\n")
 					assert.Contains(t, rendered.String(), "toPackage2=a.a/b_c/d_e\n")
 					assert.Contains(t, rendered.String(), "toPackage3=d_e\n")
 					assert.Contains(t, rendered.String(), "toPackage4=d_e\n")
 					assert.Contains(t, rendered.String(), "toPackageName=f_g\n")
+					assert.Contains(t, rendered.String(), "PascalizeSpecialChar1=Plus1\n")
+					assert.Contains(t, rendered.String(), "PascalizeSpecialChar2=Minus1\n")
+					assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
+					assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
+					assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
 				}
 			}
 		}

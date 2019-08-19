@@ -1076,6 +1076,16 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 }
 
 func pascalize(arg string) string {
+	runes := []rune(arg)
+	switch len(runes) {
+	case 0:
+		return ""
+	case 1: // handle special case when we have a single rune that is not handled by swag.ToGoName
+		switch runes[0] {
+		case '+', '-', '#', '_': // those cases are handled differently than swag utility
+			return prefixForName(arg)
+		}
+	}
 	return swag.ToGoName(swag.ToGoName(arg)) // want to remove spaces
 }
 
@@ -1089,7 +1099,9 @@ func prefixForName(arg string) string {
 		return "Plus"
 	case '-':
 		return "Minus"
-		// other cases (#,@ etc..) handled by swag.ToGoName
+	case '#':
+		return "HashTag"
+		// other cases ($,@ etc..) handled by swag.ToGoName
 	}
 	return "Nr"
 }
