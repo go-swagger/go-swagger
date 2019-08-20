@@ -297,28 +297,28 @@ jobs:
               --retry 10 \
               --retry-delay 5 \
               -T ./dist/build/swagger-${nver//-/_}-1.x86_64.rpm \
-              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/swagger-${nver//-/_}-1.x86_64.rpm
 
             curl \
               --retry 10 \
               --retry-delay 5 \
               -XPOST \
-              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/publish
 
             curl \
               --retry 10 \
               --retry-delay 5 \
               -T ./dist/build/swagger_${nver}_amd64.deb \
-              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/swagger_${nver}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
 
             curl \
               --retry 10 \
               --retry-delay 5 \
               -XPOST \
-              -u${API_USERNAME}:${BINTRAY_TOKEN} \
+              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/publish
 
       - run:

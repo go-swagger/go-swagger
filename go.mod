@@ -9,8 +9,8 @@ require (
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/corbym/gocrest v1.0.3
 	github.com/coreos/bbolt v1.3.3 // indirect
-	github.com/coreos/etcd v3.3.13+incompatible // indirect
-	github.com/coreos/go-oidc v2.0.0+incompatible
+	github.com/coreos/etcd v3.3.15+incompatible // indirect
+	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f // indirect
 	github.com/davecgh/go-spew v1.1.1
@@ -24,7 +24,7 @@ require (
 	github.com/go-openapi/runtime v0.19.4
 	github.com/go-openapi/spec v0.19.2
 	github.com/go-openapi/strfmt v0.19.2
-	github.com/go-openapi/swag v0.19.4
+	github.com/go-openapi/swag v0.19.5
 	github.com/go-openapi/validate v0.19.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
@@ -64,8 +64,8 @@ require (
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
-	golang.org/x/tools v0.0.0-20190816200558-6889da9d5479
-	google.golang.org/genproto v0.0.0-20190817000702-55e96fffbd48 // indirect
+	golang.org/x/tools v0.0.0-20190820033707-85edb9ef3283
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.23.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.2.2
