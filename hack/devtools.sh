@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export GO111MODULE=off
+
 go get -u -v golang.org/x/tools/cmd/...
 go get -u -v github.com/kevinburke/go-bindata/go-bindata
 go get -u -v github.com/elazarl/go-bindata-assetfs/...
