@@ -10,11 +10,31 @@ rpm, deb and docker image.
 
 ### Docker image [![Docker Repository on Quay](https://quay.io/repository/goswagger/swagger/status "Docker Repository on Quay")](https://quay.io/repository/goswagger/swagger)
 
+First grab the image:
+
 ```
 docker pull quay.io/goswagger/swagger
+```
 
+#### For Mac And Linux users:
+
+```bash
 alias swagger="docker run --rm -it -e GOPATH=$HOME/go:/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
 swagger version
+```
+
+#### For windows users:
+
+```cmd
+docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger
+```
+
+You can put the following in a file called **swagger.bat** and include it in your path environment variable to act as an alias.
+
+```batch
+@echo off
+echo.
+docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger %*
 ```
 
 ### Homebrew/Linuxbrew
