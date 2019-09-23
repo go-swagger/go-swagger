@@ -91,7 +91,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	}
 
 	if opts.PropertiesSpecOrder {
-		opts.Spec = withAutoXOrder(opts.Spec)
+		opts.Spec = WithAutoXOrder(opts.Spec)
 	}
 
 	opts.Spec, specDoc, err = loadSpec(opts.Spec)
@@ -178,7 +178,7 @@ type appGenerator struct {
 	GenOpts           *GenOpts
 }
 
-func withAutoXOrder(specPath string) string {
+func WithAutoXOrder(specPath string) string {
 	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
 		if slice, ok := ele.(yaml.MapSlice); ok {
 			for _, v := range slice {

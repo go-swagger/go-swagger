@@ -2499,7 +2499,7 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 
 	specDoc, err := loads.Spec(ymlFile)
 	assert.NoError(t, err)
-	orderedSpecDoc, err := loads.Spec(withAutoXOrder(ymlFile))
+	orderedSpecDoc, err := loads.Spec(WithAutoXOrder(ymlFile))
 	assert.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
