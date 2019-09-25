@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/go-openapi/swag"
 	"github.com/iancoleman/orderedmap"
 	"github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 const xOrder = "x-order" // sort order for properties (or any schema)
