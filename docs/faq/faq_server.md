@@ -16,6 +16,7 @@ Basically, here are the required packages:
 And depending on your generation options, a command line flags handling package:
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
 - [`github.com/spf13/pflags`](https://www.github.com/spf13/pflags)
+- [`flag`](flag)
 
 This dependency used to be necessary up to release 0.14:
 - [`github.com/tylerb/graceful`](https://www.github.com/tylerb/graceful)
@@ -25,7 +26,7 @@ These packages may of course be *vendored* with your own source.
 Originally from issue [#1085](https://github.com/go-swagger/go-swagger/issues/1085).
 
 ### How to add custom flags?
-`go-swagger` ships with an option to select a flag management package: `swagger generate server --flag-strategy=[go-flags|pflag]`
+`go-swagger` ships with an option to select a flag management package: `swagger generate server --flag-strategy=[go-flags|pflag|flag]`
 
 You may of course customize your server to accept arbitrary flags the way you prefer.
 This should be normally done with the generated main.go. For customization, you may either skip the generation of the main package (`--skip-main`)

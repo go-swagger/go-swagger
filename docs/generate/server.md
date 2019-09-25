@@ -54,7 +54,7 @@ Help Options:
           --exclude-spec                                                          don't embed the swagger specification
           --with-context                                                          handlers get a context as first arg (deprecated)
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
-          --flag-strategy=[go-flags|pflag]                                        the strategy to provide flags for the server (default: go-flags)
+          --flag-strategy=[go-flags|pflag|flag]                                   the strategy to provide flags for the server (default: go-flags)
           --compatibility-mode=[modern|intermediate]                              the compatibility mode for the tls server (default: modern)
           --skip-validation                                                       skips validation of spec prior to generation
           --regenerate-configureapi                                               Force regeneration of configureapi.go
