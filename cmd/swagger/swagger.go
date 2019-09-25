@@ -99,6 +99,11 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
+	_, err = parser.AddCommand("order", "order fields in a swagger document", "merge additional specs into first/primary spec by copying their paths and definitions", &commands.OrderSpec{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	_, err = parser.AddCommand("diff", "diff swagger documents", "diff specs showing which changes will break existing clients", &commands.DiffCommand{})
 	if err != nil {
 		log.Fatal(err)
