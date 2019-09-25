@@ -28,6 +28,9 @@ import (
   "github.com/go-openapi/runtime/flagext"
   {{ if .UsePFlags }}flag "github.com/spf13/pflag"
   {{ end -}}
+  {{ if .UseFlags }}"flag"
+  "strings"
+  {{ end -}}
   "golang.org/x/net/netutil"
 
   {{ range .DefaultImports }}{{ printf "%q" . }}
@@ -52,7 +55,7 @@ func init() {
 	}
 }
 
-{{ if .UsePFlags }}
+{{ if not .UseGoStructFlags}}
 var ({{ if .ExcludeSpec }}
   specFile         string
   {{ end }}enabledListeners []string
@@ -80,12 +83,36 @@ var ({{ if .ExcludeSpec }}
   tlsCACertificate  string
 )
 
+{{ if .UseFlags}}
+// StringSliceVar support for flag
+type sliceValue []string
+
+func newSliceValue(vals []string, p *[]string) *sliceValue {
+	*p = vals
+	return (*sliceValue)(p)
+}
+
+func (s *sliceValue) Set(val string) error {
+	*s = sliceValue(strings.Split(val, ","))
+	return nil
+}
+
+func (s *sliceValue) Get() interface{} { return []string(*s) }
+
+func (s *sliceValue) String() string { return strings.Join([]string(*s), ",") }
+// end StringSliceVar support for flag
+{{ end }}
+
 func init() {
   maxHeaderSize = flagext.ByteSize(1000000){{ if .ExcludeSpec }}
   flag.StringVarP(&specFile, "spec", "", "", "the swagger specification to serve")
   {{ end }}
-
+  {{ if .UseFlags }}
+	flag.Var(newSliceValue(defaultSchemes, &enabledListeners), "schema", "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
+	{{ end }}
+	{{ if .UsePFlags }}
 	flag.StringSliceVar(&enabledListeners, "scheme", defaultSchemes, "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
+	{{ end }}
 	flag.DurationVar(&cleanupTimeout, "cleanup-timeout", 10*time.Second, "grace period for which to wait before killing idle connections")
 	flag.DurationVar(&gracefulTimeout, "graceful-timeout", 15*time.Second, "grace period for which to wait before shutting down the server")
 	flag.Var(&maxHeaderSize, "max-header-size", "controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body")
@@ -143,7 +170,7 @@ func intEnvOverride(orig int, def int, keys ...string) int {
 // NewServer creates a new api {{ humanize .Name }} server but does not configure it
 func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
 	s := new(Server)
-  {{ if .UsePFlags }}
+  {{ if not .UseGoStructFlags }}
 	s.EnabledListeners = enabledListeners
 	s.CleanupTimeout = cleanupTimeout
 	s.GracefulTimeout = gracefulTimeout
@@ -195,7 +222,7 @@ type Server struct {
 	GracefulTimeout  time.Duration{{ if .UseGoStructFlags }}    `long:"graceful-timeout" description:"grace period for which to wait before shutting down the server" default:"15s"`{{ end }}
 	MaxHeaderSize    flagext.ByteSize{{ if .UseGoStructFlags }} `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`{{ end }}
 
-	SocketPath {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}
+	SocketPath {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/{{ dasherize .Name }}.sock"`{{ end }}
 	domainSocketL net.Listener
 
 	Host string{{ if .UseGoStructFlags }} `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`{{ end }}
@@ -208,16 +235,16 @@ type Server struct {
 
 	TLSHost           string{{ if .UseGoStructFlags }}         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`{{ end }}
 	TLSPort           int{{ if .UseGoStructFlags }}            `long:"tls-port" description:"the port to listen on for secure connections, defaults to a random value" env:"TLS_PORT"`{{ end }}
-	TLSCertificate    {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`{{ end }}
-	TLSCertificateKey {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-key" description:"the private key to use for secure connections" env:"TLS_PRIVATE_KEY"`{{ end }}
-	TLSCACertificate  {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"tls-ca" description:"the certificate authority file to be used with mutual tls auth" env:"TLS_CA_CERTIFICATE"`{{ end }}
+	TLSCertificate    {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"tls-certificate" description:"the certificate to use for secure connections" env:"TLS_CERTIFICATE"`{{ end }}
+	TLSCertificateKey {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"tls-key" description:"the private key to use for secure connections" env:"TLS_PRIVATE_KEY"`{{ end }}
+	TLSCACertificate  {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"tls-ca" description:"the certificate authority file to be used with mutual tls auth" env:"TLS_CA_CERTIFICATE"`{{ end }}
 	TLSListenLimit    int{{ if .UseGoStructFlags }}            `long:"tls-listen-limit" description:"limit the number of outstanding requests"`{{ end }}
 	TLSKeepAlive      time.Duration{{ if .UseGoStructFlags }}  `long:"tls-keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)"`{{ end }}
 	TLSReadTimeout    time.Duration{{ if .UseGoStructFlags }}  `long:"tls-read-timeout" description:"maximum duration before timing out read of the request"`{{ end }}
 	TLSWriteTimeout   time.Duration{{ if .UseGoStructFlags }}  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`{{ end }}
 	httpsServerL  net.Listener
 
-	{{ if .ExcludeSpec }}Spec {{ if .UsePFlags }}string{{ else }}flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}{{ end }}
+	{{ if .ExcludeSpec }}Spec {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}{{ end }}
 	api               *{{ .Package }}.{{ pascalize .Name }}API
 	handler           http.Handler
 	hasListeners      bool
