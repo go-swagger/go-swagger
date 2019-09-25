@@ -16,6 +16,8 @@ import (
   {{ end -}}
   {{ if .UsePFlags }}flag "github.com/spf13/pflag"
   {{ end -}}
+  {{ if .UseFlags }}"flag"
+  {{ end -}}
 
 
   {{range .DefaultImports}}{{printf "%q" .}}
@@ -75,7 +77,8 @@ func main() {
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
-  {{ else }}{{ if .ExcludeSpec }}
+	{{ end }}
+  {{ if .UseGoStructFlags}}{{ if .ExcludeSpec }}
   server := {{ .APIPackage }}.NewServer(nil){{ else }}
   swaggerSpec, err := loads.Embedded({{ .APIPackage }}.SwaggerJSON, {{ .APIPackage }}.FlatSwaggerJSON)
   if err != nil {
@@ -124,5 +127,49 @@ func main() {
   if err := server.Serve(); err != nil {
     log.Fatalln(err)
   }
+  {{ end }}
+   {{ if .UseFlags}}{{ if not .ExcludeSpec }}
+  swaggerSpec, err := loads.Embedded({{ .APIPackage }}.SwaggerJSON, {{ .APIPackage }}.FlatSwaggerJSON)
+  if err != nil {
+    log.Fatalln(err)
+  }
+  {{ end }}
+  var server *{{ .APIPackage }}.Server // make sure init is called
+
+	flag.Usage = func() {
+    fmt.Fprint(os.Stderr, "Usage:\n")
+		fmt.Fprint(os.Stderr, "  {{ dasherize .Name }}-server [OPTIONS]\n\n")
+
+    title := {{ if .Info }}{{ if .Info.Title }}{{ printf "%q" .Info.Title }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Title{{ end }}{{ end}}
+		fmt.Fprint(os.Stderr, title+"\n\n")
+		desc := {{ if .Info }}{{ if .Info.Description }}{{ printf "%q" .Info.Description }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Description{{ end }}{{ end }}{{ else }}{{ if .ExcludeSpec }}""{{ else }}swaggerSpec.Spec().Info.Description{{ end }}{{ end}}
+    if desc != "" {
+			fmt.Fprintf(os.Stderr, desc+"\n\n")
+		}
+		flag.CommandLine.SetOutput(os.Stderr)
+    flag.PrintDefaults()
+	}
+	// parse the CLI flags
+	flag.Parse()
+
+  {{ if .ExcludeSpec }}
+  server = {{ .APIPackage }}.NewServer(nil)
+  swaggerSpec, err := loads.Spec(string(server.Spec))
+  if err != nil {
+    log.Fatalln(err)
+  }
+  api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
+  server.SetAPI(api)
+  {{ else }}
+ 	api :={{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
+	// get server with flag values filled out
+	server = {{ .APIPackage }}.NewServer(api)
+  {{ end }}
+	defer server.Shutdown()
+
+	server.ConfigureAPI()
+	if err := server.Serve(); err != nil {
+		log.Fatalln(err)
+	}
   {{ end }}
 }
