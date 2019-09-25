@@ -22,6 +22,7 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/handlers v1.4.2
+	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kr/pretty v0.1.0
 	github.com/magiconair/properties v1.8.1 // indirect
