@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"sync"
 	"sync/atomic"
@@ -148,6 +149,8 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	})
 
 	api.ServerShutdown = func() {}
+	println(exampleFlags.Example1)
+	println(exampleFlags.Example2)
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }
@@ -162,6 +165,9 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *http.Server, scheme, addr string) {
+	if exampleFlags.Example1 != "something" {
+		fmt.Print("example1 argument is not something")
+	}
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
