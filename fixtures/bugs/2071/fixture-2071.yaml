@@ -1,0 +1,42 @@
+---
+  swagger: "2.0"
+  info:
+    title: "gen operation with body param, --skip-flatten mode"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths:
+    /getPet:
+      get:
+        responses:
+          200:
+            description: "OK"
+            schema:
+              $ref: '#/definitions/Pet'
+    /getCat:
+      get:
+        responses:
+          200:
+            description: "OK"
+            schema:
+              $ref: '#/definitions/Cat'
+
+  definitions:
+    Pet:
+        type: object
+        properties:
+            name:
+                type: string
+                x-go-name: Name
+                x-nullable: true
+    Cat:
+        allOf:
+            - $ref: "#/definitions/Pet"
+            - type: "object"
+              properties:
+                ability:
+                    type: string
+                    x-go-name: SomeAbility
+                    x-nullable: true

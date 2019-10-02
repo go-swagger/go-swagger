@@ -203,6 +203,9 @@ func initModelFixtures() {
 
 	// required base type
 	initFixture1993()
+
+	// allOf marshallers
+	initFixture2071()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

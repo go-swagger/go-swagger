@@ -242,7 +242,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {
 }
 {{ end }}
 
-{{ define "allOfSerializer" }} 
+{{ define "allOfSerializer" }}
   {{- $receiverName := .ReceiverName }}
 // UnmarshalJSON unmarshals this object from a JSON structure
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
@@ -256,13 +256,13 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
           {{- if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{- else }}
-            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
           {{- end }}
         {{ else }}
           {{ if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{ else }}
-            {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+            {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
           {{ end }}
         {{ end }}
       {{- end }}
@@ -303,13 +303,13 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
         {{- end }}
       {{- else }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+          {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
         {{- end }}
       {{- end }}
     {{ end }}
@@ -342,13 +342,13 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
           {{ if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{ else }}
-            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
           {{ end }}
         {{- else }}
           {{ if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{ else }}
-            {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+            {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
           {{ end}}
         {{- end }}
       {{ end }}
@@ -393,13 +393,13 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
         {{- end }}
       {{- else }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
+          {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}"`
         {{- end }}
       {{- end }}
     {{ end }}
