@@ -375,7 +375,8 @@ jobs:
       - run:
           name: Build container
           command: |
-            mkdir -p deploybuild
+            mkdir -p deploybuild/templates/
+            cp -r generator/templates/contrib/* deploybuild/templates/
             cp Dockerfile ./dist/swagger-musl ./deploybuild
             docker build --pull -t quay.io/goswagger/swagger:latest -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
 
@@ -429,7 +430,8 @@ jobs:
       - run:
           name: Build container
           command: |
-            mkdir -p deploybuild
+            mkdir -p deploybuild/templates/
+            cp -r generator/templates/contrib/* deploybuild/templates/
             cp Dockerfile ./dist/swagger-musl ./deploybuild
             docker build --pull -t quay.io/goswagger/swagger:dev ./deploybuild
 
