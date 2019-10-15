@@ -35,6 +35,7 @@ Help Options:
       -t, --target=                                                               the base directory for generating the files (default: ./)
           --template=[stratoscale]                                                Load contributed templates
       -T, --template-dir=                                                         alternative template override directory
+          --allow-template-override                                               allows overriding protected templates
       -C, --config-file=                                                          configuration file to use for overriding template options
       -r, --copyright-file=                                                       copyright file used to add copyright header
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
@@ -226,12 +227,12 @@ type or to override an existing mapping, call the corresponding API functions in
 ```go
 func configureAPI(api *operations.ToDoListAPI) http.Handler {
 	// other setup code here...
-	
+
 	api.RegisterConsumer("application/pkcs10", myCustomConsumer)
 	api.RegisterProducer("application/pkcs10", myCustomProducer)
 }
 
-``` 
+```
 
 The next thing that happens in the configureAPI method is setting up the authentication with a stub handler in this case. This particular swagger specification supports token based authentication and as such it wants you to configure a token auth handler.  Any error for an authentication handler is assumed to be an invalid authentication and will return the 401 status code.
 

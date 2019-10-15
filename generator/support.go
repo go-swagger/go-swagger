@@ -70,6 +70,9 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 			return nil, err
 		}
 	}
+
+	templates.SetAllowOverride(opts.AllowTemplateOverride)
+
 	if opts.TemplateDir != "" {
 		if err := templates.LoadDir(opts.TemplateDir); err != nil {
 			return nil, err

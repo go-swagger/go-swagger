@@ -479,6 +479,21 @@ func TestTemplates_LoadDir(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// Test LoadDir
+func TestTemplates_SetAllowOverride(t *testing.T) {
+	log.SetOutput(os.Stdout)
+
+	// adding protected file with allowOverride set to false fails
+	templates.SetAllowOverride(false)
+	err := templates.AddFile("schemabody", "some data")
+	assert.Contains(t, err.Error(), "cannot overwrite protected template schemabody")
+
+	// adding protected file with allowOverride set to true should not fail
+	templates.SetAllowOverride(true)
+	err = templates.AddFile("schemabody", "some data")
+	assert.NoError(t, err)
+}
+
 // Test LoadContrib
 func TestTemplates_LoadContrib(t *testing.T) {
 	tests := []struct {

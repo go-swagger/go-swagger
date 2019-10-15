@@ -83,6 +83,7 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		FlagStrategy:               s.FlagStrategy,
 		CompatibilityMode:          s.CompatibilityMode,
 		ExistingModels:             s.ExistingModels,
+		AllowTemplateOverride:      s.AllowTemplateOverride,
 	}, nil
 }
 
