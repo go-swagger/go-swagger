@@ -23,6 +23,7 @@ Help Options:
       -t, --target=                                                               the base directory for generating the files (default: ./)
           --template=[stratoscale]                                                Load contributed templates
       -T, --template-dir=                                                         alternative template override directory
+          --allow-template-override                                               allows overriding protected templates
       -C, --config-file=                                                          configuration file to use for overriding template options
       -r, --copyright-file=                                                       copyright file used to add copyright header
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
