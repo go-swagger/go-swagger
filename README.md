@@ -215,6 +215,7 @@ Iron.io
 [RackHD](https://github.com/RackHD/RackHD)  
 [ScaleFT](https://github.com/authclub/billforward)  
 [StratoScale](https://github.com/Stratoscale/swagger)  
+[Terraform Provider OpenAPI](https://github.com/dikhan/terraform-provider-openapi)  
 [VMWare](https://github.com/vmware/dispatch)  
 ...
 
