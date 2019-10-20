@@ -22,19 +22,19 @@ workflows:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
 
       - codegen_tests:
           requires:
             - build
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
 
       - canary_tests:
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
           requires:
             - build
 
