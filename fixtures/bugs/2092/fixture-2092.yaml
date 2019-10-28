@@ -1,0 +1,28 @@
+consumes:
+- application/json
+produces:
+- application/json
+schemes:
+- http
+- https
+swagger: "2.0"
+info:
+  description: Descr
+  title: Titl
+  version: 2.0.0
+paths:
+  /users:
+    get:
+      summary: dummy path, in order to have a path.
+      responses:
+        "200":
+          description: (empty)
+          schema:
+            $ref: '#/definitions/user'
+definitions:
+  ok:
+    $ref: ./definitions/response.yaml#/ok
+  teamupdate:
+    $ref: ./definitions/teams.yaml#/teamupdate
+  user:
+    $ref: ./definitions/user.yaml#/user

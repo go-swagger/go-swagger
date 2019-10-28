@@ -1,6 +1,6 @@
 module github.com/go-swagger/go-swagger
 
-go 1.12
+go 1.13
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3
 
@@ -9,7 +9,7 @@ require (
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-openapi/analysis v0.19.5
+	github.com/go-openapi/analysis v0.19.6
 	github.com/go-openapi/errors v0.19.2
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.19.3

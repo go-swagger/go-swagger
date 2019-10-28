@@ -1,0 +1,23 @@
+teamupdate:
+  type: object
+  properties:
+    id:
+      type: string
+    home_address:
+      $ref: './addresses.yaml#/address'
+    invoice_address:
+      $ref: './addresses.yaml#/address'
+    members:
+      type: array
+      items:
+        $ref: "./user.yaml#/user"
+    settings:
+      $ref: "./teams.yaml#/teampatchsettings"
+
+teampatchsettings:
+  type: object
+  properties:
+    a:
+      type: string
+    b:
+      type: string

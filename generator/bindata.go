@@ -831,38 +831,69 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"templates/additionalpropertiesserializer.gotmpl":          templatesAdditionalpropertiesserializerGotmpl,
-	"templates/client/client.gotmpl":                           templatesClientClientGotmpl,
-	"templates/client/facade.gotmpl":                           templatesClientFacadeGotmpl,
-	"templates/client/parameter.gotmpl":                        templatesClientParameterGotmpl,
-	"templates/client/response.gotmpl":                         templatesClientResponseGotmpl,
-	"templates/contrib/stratoscale/client/client.gotmpl":       templatesContribStratoscaleClientClientGotmpl,
-	"templates/contrib/stratoscale/client/facade.gotmpl":       templatesContribStratoscaleClientFacadeGotmpl,
+	"templates/additionalpropertiesserializer.gotmpl": templatesAdditionalpropertiesserializerGotmpl,
+
+	"templates/client/client.gotmpl": templatesClientClientGotmpl,
+
+	"templates/client/facade.gotmpl": templatesClientFacadeGotmpl,
+
+	"templates/client/parameter.gotmpl": templatesClientParameterGotmpl,
+
+	"templates/client/response.gotmpl": templatesClientResponseGotmpl,
+
+	"templates/contrib/stratoscale/client/client.gotmpl": templatesContribStratoscaleClientClientGotmpl,
+
+	"templates/contrib/stratoscale/client/facade.gotmpl": templatesContribStratoscaleClientFacadeGotmpl,
+
 	"templates/contrib/stratoscale/server/configureapi.gotmpl": templatesContribStratoscaleServerConfigureapiGotmpl,
-	"templates/contrib/stratoscale/server/server.gotmpl":       templatesContribStratoscaleServerServerGotmpl,
-	"templates/docstring.gotmpl":                               templatesDocstringGotmpl,
-	"templates/header.gotmpl":                                  templatesHeaderGotmpl,
-	"templates/model.gotmpl":                                   templatesModelGotmpl,
-	"templates/modelvalidator.gotmpl":                          templatesModelvalidatorGotmpl,
-	"templates/schema.gotmpl":                                  templatesSchemaGotmpl,
-	"templates/schemabody.gotmpl":                              templatesSchemabodyGotmpl,
-	"templates/schematype.gotmpl":                              templatesSchematypeGotmpl,
-	"templates/schemavalidator.gotmpl":                         templatesSchemavalidatorGotmpl,
-	"templates/server/builder.gotmpl":                          templatesServerBuilderGotmpl,
-	"templates/server/configureapi.gotmpl":                     templatesServerConfigureapiGotmpl,
-	"templates/server/doc.gotmpl":                              templatesServerDocGotmpl,
-	"templates/server/main.gotmpl":                             templatesServerMainGotmpl,
-	"templates/server/operation.gotmpl":                        templatesServerOperationGotmpl,
-	"templates/server/parameter.gotmpl":                        templatesServerParameterGotmpl,
-	"templates/server/responses.gotmpl":                        templatesServerResponsesGotmpl,
-	"templates/server/server.gotmpl":                           templatesServerServerGotmpl,
-	"templates/server/urlbuilder.gotmpl":                       templatesServerUrlbuilderGotmpl,
-	"templates/structfield.gotmpl":                             templatesStructfieldGotmpl,
-	"templates/swagger_json_embed.gotmpl":                      templatesSwagger_json_embedGotmpl,
-	"templates/tupleserializer.gotmpl":                         templatesTupleserializerGotmpl,
-	"templates/validation/customformat.gotmpl":                 templatesValidationCustomformatGotmpl,
-	"templates/validation/primitive.gotmpl":                    templatesValidationPrimitiveGotmpl,
-	"templates/validation/structfield.gotmpl":                  templatesValidationStructfieldGotmpl,
+
+	"templates/contrib/stratoscale/server/server.gotmpl": templatesContribStratoscaleServerServerGotmpl,
+
+	"templates/docstring.gotmpl": templatesDocstringGotmpl,
+
+	"templates/header.gotmpl": templatesHeaderGotmpl,
+
+	"templates/model.gotmpl": templatesModelGotmpl,
+
+	"templates/modelvalidator.gotmpl": templatesModelvalidatorGotmpl,
+
+	"templates/schema.gotmpl": templatesSchemaGotmpl,
+
+	"templates/schemabody.gotmpl": templatesSchemabodyGotmpl,
+
+	"templates/schematype.gotmpl": templatesSchematypeGotmpl,
+
+	"templates/schemavalidator.gotmpl": templatesSchemavalidatorGotmpl,
+
+	"templates/server/builder.gotmpl": templatesServerBuilderGotmpl,
+
+	"templates/server/configureapi.gotmpl": templatesServerConfigureapiGotmpl,
+
+	"templates/server/doc.gotmpl": templatesServerDocGotmpl,
+
+	"templates/server/main.gotmpl": templatesServerMainGotmpl,
+
+	"templates/server/operation.gotmpl": templatesServerOperationGotmpl,
+
+	"templates/server/parameter.gotmpl": templatesServerParameterGotmpl,
+
+	"templates/server/responses.gotmpl": templatesServerResponsesGotmpl,
+
+	"templates/server/server.gotmpl": templatesServerServerGotmpl,
+
+	"templates/server/urlbuilder.gotmpl": templatesServerUrlbuilderGotmpl,
+
+	"templates/structfield.gotmpl": templatesStructfieldGotmpl,
+
+	"templates/swagger_json_embed.gotmpl": templatesSwagger_json_embedGotmpl,
+
+	"templates/tupleserializer.gotmpl": templatesTupleserializerGotmpl,
+
+	"templates/validation/customformat.gotmpl": templatesValidationCustomformatGotmpl,
+
+	"templates/validation/primitive.gotmpl": templatesValidationPrimitiveGotmpl,
+
+	"templates/validation/structfield.gotmpl": templatesValidationStructfieldGotmpl,
 }
 
 // AssetDir returns the file names below a certain

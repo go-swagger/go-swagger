@@ -171,6 +171,7 @@ singleFixtures=(\
 "fixtures/bugs/1260/test3-swagger.yaml fixtures/bugs/1260/test3-bis-swagger.yaml" \
 "fixtures/bugs/1260/test3-ter-swagger.yaml fixtures/bugs/1260/test3-ter-swagger-flat.json" \
 "fixtures/bugs/1851/fixture-1851.yaml" \
+"fixtures/bugs/2092/fixture-2092.yaml" \
 )
 
 if [[ "$1" == "--circleci" ]] ; then
