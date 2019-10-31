@@ -645,6 +645,9 @@ type JSONString struct {
 
 	// The ",string" directive should be ignore before the type isn't scalar
 	SomethingElse Cars `json:"somethingElse,string"`
+
+	// The ",omitempty,string" directive should be valid
+	SomeDefaultInt int `json:",omitempty,string"`
 }
 
 // JSONPtrString has fields with ",string" JSON directives.
