@@ -409,6 +409,7 @@ func TestStringStructTag(t *testing.T) {
 	assertProperty(t, &sch, "string", "someFloat64", "double", "SomeFloat64")
 	assertProperty(t, &sch, "string", "someString", "", "SomeString")
 	assertProperty(t, &sch, "string", "someBool", "", "SomeBool")
+	assertProperty(t, &sch, "string", "SomeDefaultInt", "int64", "")
 
 	prop, ok := sch.Properties["somethingElse"]
 	if assert.True(t, ok) {
