@@ -973,6 +973,21 @@ func schemaVendorExtensibleSetter(meta *spec.Schema) func(json.RawMessage) error
 	}
 }
 
+type tagOptions []string
+
+func (t tagOptions) Contain(option string) bool {
+	for i := 1; i < len(t); i++ {
+		if t[i] == option {
+			return true
+		}
+	}
+	return false
+}
+
+func (t tagOptions) Name() string {
+	return t[0]
+}
+
 func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, err error) {
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
@@ -988,19 +1003,21 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 
 	if strings.TrimSpace(tv) != "" {
 		st := reflect.StructTag(tv)
-		jsonParts := strings.Split(st.Get("json"), ",")
-		jsonName := jsonParts[0]
+		jsonParts := tagOptions(strings.Split(st.Get("json"), ","))
 
-		if len(jsonParts) > 1 && jsonParts[1] == "string" {
+		if jsonParts.Contain("string") {
 			// Need to check if the field type is a scalar. Otherwise, the
 			// ",string" directive doesn't apply.
 			isString = isFieldStringable(field.Type)
 		}
 
-		if jsonName == "-" {
+		switch jsonParts.Name() {
+		case "-":
 			return name, true, isString, nil
-		} else if jsonName != "" {
-			return jsonName, false, isString, nil
+		case "":
+			return name, false, isString, nil
+		default:
+			return jsonParts.Name(), false, isString, nil
 		}
 	}
 	return name, false, false, nil
