@@ -263,6 +263,10 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			tgt.Typed("string", "date-time")
 			return nil
 		}
+		if pkg.PkgPath == "encoding/json" && tio.Name() == "RawMessage" {
+			tgt.Typed("object", "")
+			return nil
+		}
 		cmt, hasComments := s.ctx.FindComments(pkg, tio.Name())
 		if !hasComments {
 			cmt = new(ast.CommentGroup)
