@@ -39,6 +39,7 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     defaultProduces:        "{{ .DefaultProduces }}",
     customConsumers:        make(map[string]runtime.Consumer),
     customProducers:        make(map[string]runtime.Producer),
+    PreServerShutdown:      func() {  },
     ServerShutdown:         func() {  },
     spec:                   spec,
     ServeError:             errors.ServeError,
@@ -124,6 +125,10 @@ type {{ pascalize .Name }}API struct {
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
   ServeError     func(http.ResponseWriter, *http.Request, error)
+
+  // PreServerShutdown is called before the HTTP(S) server is shutdown
+  // This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+  PreServerShutdown func()
 
   // ServerShutdown is called when the HTTP(S) server is shut down and done
   // handling all active connections and does not accept connections any more
