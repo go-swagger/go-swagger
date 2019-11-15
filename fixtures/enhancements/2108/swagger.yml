@@ -1,0 +1,17 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Example
+schemes:
+  - http
+paths:
+  /test:
+    get:
+      summary: Says hello
+      produces:
+        - text/plain
+      responses:
+        200:
+          description: A hello world string
+          schema:
+            type: string

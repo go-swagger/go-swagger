@@ -377,6 +377,44 @@ func TestServer_Issue1301(t *testing.T) {
 	}
 }
 
+func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/enhancements/2108/swagger.yml", "pre server shutdown")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			// check the serverBuilder output
+			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+
+					assertInCode(t, `PreServerShutdown:   func() {},`, res)
+					assertInCode(t, `PreServerShutdown func()`, res)
+
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+			buf = bytes.NewBuffer(nil)
+			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
+				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(formatted)
+
+					// initialisation in New<Name>API function
+					assertInCode(t, `api.PreServerShutdown = func() {}`, res)
+
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
 func TestServer_Issue1557(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
