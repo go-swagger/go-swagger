@@ -582,7 +582,6 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, serversPtr *[]*http.Server) 
 			defer func() {
 				shutdownChan <- success
 			}()
-
 			if err := server.Shutdown(ctx); err != nil {
 				// Error from closing listeners, or context timeout:
 				s.Logf("HTTP server Shutdown: %v", err)
