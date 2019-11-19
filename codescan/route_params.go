@@ -152,6 +152,11 @@ func (s *setOpParams) finalizeParam(param *spec.Parameter, data map[string]strin
 		return
 	}
 
+	// don't use schema with in:path params
+	if param.In == "path" {
+		param.Schema = nil
+	}
+
 	processSchema(data, param)
 
 	// schema is only allowed for parameters in "body"
