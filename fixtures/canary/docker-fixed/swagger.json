@@ -350,13 +350,13 @@
           }
         },
         "Cmd": {
-          "type": ["array", "string"],
+          "type": "array",
           "items": {
             "type": "string"
           }
         },
         "Entrypoint": {
-          "type": ["array", "string"],
+          "type": "array",
           "items": {
             "type": "string"
           }
