@@ -261,7 +261,7 @@ func GoLangOpts() *LanguageOpts {
 			// Case 3: - Symlink in target path points to directory outside GOPATH (Unexpanded target path)
 			// 					 First if will succeed and break.
 
-			//compares non expanded path for both
+			// compares non expanded path for both
 			if ok, relativepath := checkPrefixAndFetchRelativePath(tgtAbsPath, gp); ok {
 				pth = relativepath
 				break
@@ -720,6 +720,7 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	d := struct {
 		Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, Target string
 		Tags                                                                          []string
+		Context                                                                       interface{}
 	}{
 		Name:          name,
 		Package:       pkg,
@@ -729,6 +730,7 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		ModelPackage:  g.ModelPackage,
 		Target:        g.Target,
 		Tags:          tags,
+		Context:       data,
 	}
 
 	// pretty.Println(data)
