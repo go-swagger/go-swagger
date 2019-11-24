@@ -96,18 +96,21 @@ var FuncMap template.FuncMap = map[string]interface{}{
 		return strings.Join(res, ",")
 	},
 	"joinFilePath": filepath.Join,
-	"comment": func(str string) string {
+	"comment": func(str string, pads ...string) string {
+		// pads specifes padding to indent multi line comments.Defaults to one space
+		pad := " "
 		lines := strings.Split(str, "\n")
-		return (strings.Join(lines, "\n// "))
+		if len(pads) > 0 {
+			pad = strings.Join(pads, "")
+		}
+		return (strings.Join(lines, "\n//"+pad))
 	},
 	"blockcomment": func(str string) string {
 		return strings.Replace(str, "*/", "[*]/", -1)
 	},
-	"inspect":   pretty.Sprint,
-	"cleanPath": path.Clean,
-	"mediaTypeName": func(orig string) string {
-		return strings.SplitN(orig, ";", 2)[0]
-	},
+	"inspect":            pretty.Sprint,
+	"cleanPath":          path.Clean,
+	"mediaTypeName":      mediaMime,
 	"goSliceInitializer": goSliceInitializer,
 	"hasPrefix":          strings.HasPrefix,
 	"stringContains":     strings.Contains,

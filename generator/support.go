@@ -24,7 +24,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	goruntime "runtime"
 	"sort"
 	"strings"
@@ -181,6 +180,8 @@ type appGenerator struct {
 	GenOpts           *GenOpts
 }
 
+// WithAutoXOrder amends the spec to specify property order as they appear
+// in the spec (supports yaml documents only).
 func WithAutoXOrder(specPath string) string {
 	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
 		if slice, ok := ele.(yaml.MapSlice); ok {
@@ -362,226 +363,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	return a.GenOpts.renderApplication(app)
 }
 
-var mediaTypeNames = map[*regexp.Regexp]string{
-	regexp.MustCompile("application/.*json"):                "json",
-	regexp.MustCompile("application/.*yaml"):                "yaml",
-	regexp.MustCompile("application/.*protobuf"):            "protobuf",
-	regexp.MustCompile("application/.*capnproto"):           "capnproto",
-	regexp.MustCompile("application/.*thrift"):              "thrift",
-	regexp.MustCompile("(?:application|text)/.*xml"):        "xml",
-	regexp.MustCompile("text/.*markdown"):                   "markdown",
-	regexp.MustCompile("text/.*html"):                       "html",
-	regexp.MustCompile("text/.*csv"):                        "csv",
-	regexp.MustCompile("text/.*tsv"):                        "tsv",
-	regexp.MustCompile("text/.*javascript"):                 "js",
-	regexp.MustCompile("text/.*css"):                        "css",
-	regexp.MustCompile("text/.*plain"):                      "txt",
-	regexp.MustCompile("application/.*octet-stream"):        "bin",
-	regexp.MustCompile("application/.*tar"):                 "tar",
-	regexp.MustCompile("application/.*gzip"):                "gzip",
-	regexp.MustCompile("application/.*gz"):                  "gzip",
-	regexp.MustCompile("application/.*raw-stream"):          "bin",
-	regexp.MustCompile("application/x-www-form-urlencoded"): "urlform",
-	regexp.MustCompile("multipart/form-data"):               "multipartform",
-}
-
-var knownProducers = map[string]string{
-	"json":          "runtime.JSONProducer()",
-	"yaml":          "yamlpc.YAMLProducer()",
-	"xml":           "runtime.XMLProducer()",
-	"txt":           "runtime.TextProducer()",
-	"bin":           "runtime.ByteStreamProducer()",
-	"urlform":       "runtime.DiscardProducer",
-	"multipartform": "runtime.DiscardProducer",
-}
-
-var knownConsumers = map[string]string{
-	"json":          "runtime.JSONConsumer()",
-	"yaml":          "yamlpc.YAMLConsumer()",
-	"xml":           "runtime.XMLConsumer()",
-	"txt":           "runtime.TextConsumer()",
-	"bin":           "runtime.ByteStreamConsumer()",
-	"urlform":       "runtime.DiscardConsumer",
-	"multipartform": "runtime.DiscardConsumer",
-}
-
-func getSerializer(sers []GenSerGroup, ext string) (*GenSerGroup, bool) {
-	for i := range sers {
-		s := &sers[i]
-		if s.Name == ext {
-			return s, true
-		}
-	}
-	return nil, false
-}
-
-func mediaTypeName(tn string) (string, bool) {
-	for k, v := range mediaTypeNames {
-		if k.MatchString(tn) {
-			return v, true
-		}
-	}
-	return "", false
-}
-
-func (a *appGenerator) makeConsumes() (consumes GenSerGroups, consumesJSON bool) {
-	reqCons := a.Analyzed.RequiredConsumes()
-	sort.Strings(reqCons)
-	for _, cons := range reqCons {
-		cn, ok := mediaTypeName(cons)
-		if !ok {
-			nm := swag.ToJSONName(cons)
-			ser := GenSerializer{
-				AppName:        a.Name,
-				ReceiverName:   a.Receiver,
-				Name:           nm,
-				MediaType:      cons,
-				Implementation: "",
-			}
-
-			consumes = append(consumes, GenSerGroup{
-				AppName:        ser.AppName,
-				ReceiverName:   ser.ReceiverName,
-				Name:           ser.Name,
-				MediaType:      cons,
-				AllSerializers: []GenSerializer{ser},
-				Implementation: ser.Implementation,
-			})
-			continue
-		}
-		nm := swag.ToJSONName(cn)
-		if nm == "json" {
-			consumesJSON = true
-		}
-
-		if ser, ok := getSerializer(consumes, cn); ok {
-			ser.AllSerializers = append(ser.AllSerializers, GenSerializer{
-				AppName:        ser.AppName,
-				ReceiverName:   ser.ReceiverName,
-				Name:           ser.Name,
-				MediaType:      cons,
-				Implementation: knownConsumers[nm],
-			})
-			sort.Sort(ser.AllSerializers)
-			continue
-		}
-
-		ser := GenSerializer{
-			AppName:        a.Name,
-			ReceiverName:   a.Receiver,
-			Name:           nm,
-			MediaType:      cons,
-			Implementation: knownConsumers[nm],
-		}
-
-		consumes = append(consumes, GenSerGroup{
-			AppName:        ser.AppName,
-			ReceiverName:   ser.ReceiverName,
-			Name:           ser.Name,
-			MediaType:      cons,
-			AllSerializers: []GenSerializer{ser},
-			Implementation: ser.Implementation,
-		})
-	}
-	if len(consumes) == 0 {
-		consumes = append(consumes, GenSerGroup{
-			AppName:      a.Name,
-			ReceiverName: a.Receiver,
-			Name:         "json",
-			MediaType:    runtime.JSONMime,
-			AllSerializers: []GenSerializer{{
-				AppName:        a.Name,
-				ReceiverName:   a.Receiver,
-				Name:           "json",
-				MediaType:      runtime.JSONMime,
-				Implementation: knownConsumers["json"],
-			}},
-			Implementation: knownConsumers["json"],
-		})
-		consumesJSON = true
-	}
-	sort.Sort(consumes)
-	return
-}
-
-func (a *appGenerator) makeProduces() (produces GenSerGroups, producesJSON bool) {
-	reqProds := a.Analyzed.RequiredProduces()
-	sort.Strings(reqProds)
-	for _, prod := range reqProds {
-		pn, ok := mediaTypeName(prod)
-		if !ok {
-			nm := swag.ToJSONName(prod)
-			ser := GenSerializer{
-				AppName:        a.Name,
-				ReceiverName:   a.Receiver,
-				Name:           nm,
-				MediaType:      prod,
-				Implementation: "",
-			}
-			produces = append(produces, GenSerGroup{
-				AppName:        ser.AppName,
-				ReceiverName:   ser.ReceiverName,
-				Name:           ser.Name,
-				MediaType:      prod,
-				Implementation: ser.Implementation,
-				AllSerializers: []GenSerializer{ser},
-			})
-			continue
-		}
-		nm := swag.ToJSONName(pn)
-		if nm == "json" {
-			producesJSON = true
-		}
-
-		if ser, ok := getSerializer(produces, pn); ok {
-			ser.AllSerializers = append(ser.AllSerializers, GenSerializer{
-				AppName:        ser.AppName,
-				ReceiverName:   ser.ReceiverName,
-				Name:           ser.Name,
-				MediaType:      prod,
-				Implementation: knownProducers[nm],
-			})
-			sort.Sort(ser.AllSerializers)
-			continue
-		}
-
-		ser := GenSerializer{
-			AppName:        a.Name,
-			ReceiverName:   a.Receiver,
-			Name:           nm,
-			MediaType:      prod,
-			Implementation: knownProducers[nm],
-		}
-		produces = append(produces, GenSerGroup{
-			AppName:        ser.AppName,
-			ReceiverName:   ser.ReceiverName,
-			Name:           ser.Name,
-			MediaType:      prod,
-			Implementation: ser.Implementation,
-			AllSerializers: []GenSerializer{ser},
-		})
-	}
-	if len(produces) == 0 {
-		produces = append(produces, GenSerGroup{
-			AppName:      a.Name,
-			ReceiverName: a.Receiver,
-			Name:         "json",
-			MediaType:    runtime.JSONMime,
-			AllSerializers: []GenSerializer{{
-				AppName:        a.Name,
-				ReceiverName:   a.Receiver,
-				Name:           "json",
-				MediaType:      runtime.JSONMime,
-				Implementation: knownProducers["json"],
-			}},
-			Implementation: knownProducers["json"],
-		})
-		producesJSON = true
-	}
-	sort.Sort(produces)
-	return
-}
-
 func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 	if a.Principal == "" {
 		a.Principal = "interface{}"
@@ -607,8 +388,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
-	sort.Sort(consumes)
-	sort.Sort(produces)
+	//sort.Sort(consumes) // TODO(fred): done inside
+	//sort.Sort(produces) // TODO(fred): done inside
 	security := a.makeSecuritySchemes()
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	var imports = make(map[string]string)

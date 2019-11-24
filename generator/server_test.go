@@ -427,10 +427,16 @@ func TestServer_Issue1557(t *testing.T) {
 				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 				if assert.NoError(t, err) {
 					res := string(formatted)
-					assertRegexpInCode(t, `ApplicationPdfConsumer:\s+runtime.Consumer`, res)
-					assertRegexpInCode(t, `ApplicationPdfProducer:\s+runtime.Producer`, res)
-					assertInCode(t, `result["application/pdf"] = o.ApplicationPdfConsumer`, res)
-					assertInCode(t, `result["application/pdf"] = o.ApplicationPdfProducer`, res)
+					assertInCode(t, `ApplicationDummyConsumer runtime.Consumer`, res)
+					assertInCode(t, `ApplicationDummyProducer runtime.Producer`, res)
+					assertInCode(t, `ApplicationDummyConsumer: runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {`, res)
+					assertInCode(t, `ApplicationDummyProducer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {`, res)
+					assertInCode(t, `BinConsumer: runtime.ByteStreamConsumer(),`, res)
+					assertInCode(t, `BinProducer: runtime.ByteStreamProducer(),`, res)
+					assertInCode(t, `result["application/pdf"] = o.BinConsumer`, res)
+					assertInCode(t, `result["application/pdf"] = o.BinProducer`, res)
+					assertInCode(t, `result["application/dummy"] = o.ApplicationDummyConsumer`, res)
+					assertInCode(t, `result["application/dummy"] = o.ApplicationDummyProducer`, res)
 				} else {
 					fmt.Println(buf.String())
 				}
