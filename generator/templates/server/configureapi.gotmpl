@@ -56,16 +56,24 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // Example:
   // api.Logger = log.Printf
 
-  {{ range .Consumes }}{{ if .Implementation }}api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
-  {{else}}api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
+  {{ range .Consumes }}
+    {{- if .Implementation }}
+  api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
+    {{- else }}
+  api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
     return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
-  }){{end}}
-  {{end}}
-  {{ range .Produces }}{{ if .Implementation }}api.{{ pascalize .Name }}Producer = {{ .Implementation }}
-  {{else}}api.{{ pascalize .Name }}Producer = runtime.ProducerFunc(func(w io.Writer, data interface{}) error {
+  })
+    {{- end }}
+  {{- end }}
+  {{ range .Produces }}
+    {{- if .Implementation }}
+  api.{{ pascalize .Name }}Producer = {{ .Implementation }}
+    {{- else }}
+  api.{{ pascalize .Name }}Producer = runtime.ProducerFunc(func(w io.Writer, data interface{}) error {
     return errors.NotImplemented("{{.Name}} producer has not yet been implemented")
-  }){{end}}
-  {{end}}
+  })
+    {{- end }}
+  {{- end}}
   {{ range .SecurityDefinitions }}
     {{- if .IsBasicAuth }}
   // Applies when the Authorization header is set with the Basic scheme
