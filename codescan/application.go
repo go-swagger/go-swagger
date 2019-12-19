@@ -516,16 +516,16 @@ func (a *typeIndex) walkImports(pkg *packages.Package) error {
 	if a.excludeDeps {
 		return nil
 	}
-	for k := range pkg.Imports {
-		if _, known := a.AllPackages[k]; known {
+	for _, v := range pkg.Imports {
+		if _, known := a.AllPackages[v.PkgPath]; known {
 			continue
 		}
-		pk := pkg.Imports[k]
-		a.AllPackages[pk.PkgPath] = pk
-		if err := a.processPackage(pk); err != nil {
+
+		a.AllPackages[v.PkgPath] = v
+		if err := a.processPackage(v); err != nil {
 			return err
 		}
-		if err := a.walkImports(pk); err != nil {
+		if err := a.walkImports(v); err != nil {
 			return err
 		}
 	}
