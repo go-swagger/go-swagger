@@ -691,7 +691,7 @@ func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolved
 	hasNumberValidation := sh.Maximum != nil || sh.Minimum != nil || sh.MultipleOf != nil
 	hasStringValidation := sh.MaxLength != nil || sh.MinLength != nil || sh.Pattern != ""
 	hasSliceValidations = sh.MaxItems != nil || sh.MinItems != nil || sh.UniqueItems || len(sh.Enum) > 0
-	hasValidations = (hasNumberValidation || hasStringValidation || hasSliceValidations || rt.IsCustomFormatter) && !rt.IsStream && !rt.IsInterface
+	hasValidations = hasNumberValidation || hasStringValidation || hasSliceValidations || hasFormatValidation(rt)
 	return
 }
 
@@ -710,6 +710,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 	res.IndexVar = indexVar
 
 	res.HasValidations, res.HasSliceValidations = b.HasValidations(items.CommonValidations, res.resolvedType)
+	res.NeedsIndex = res.HasValidations || res.Converter != "" || (res.IsCustomFormatter && !res.SkipParse)
 
 	if items.Items != nil {
 		// Recursively follows nested arrays
@@ -722,6 +723,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 		pi.Parent = &res
 		// Propagates HasValidations flag to outer Items definition
 		res.HasValidations = res.HasValidations || pi.HasValidations
+		res.NeedsIndex = res.NeedsIndex || pi.NeedsIndex
 	}
 
 	return res, nil
@@ -888,9 +890,10 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 				next.IsAliased = true
 				break
 			}
-			if next.IsInterface || next.IsStream {
+			if next.IsInterface || next.IsStream || next.IsBase64 {
 				next.HasValidations = false
 			}
+			next.NeedsIndex = next.HasValidations || next.Converter != "" || (next.IsCustomFormatter && !next.SkipParse)
 			prev = next
 			next = new(GenItems)
 
@@ -904,15 +907,17 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 			}
 		}
 		// propagate HasValidations
-		var propag func(child *GenItems) bool
-		propag = func(child *GenItems) bool {
+		var propag func(child *GenItems) (bool, bool)
+		propag = func(child *GenItems) (bool, bool) {
 			if child == nil {
-				return false
+				return false, false
 			}
-			child.HasValidations = child.HasValidations || propag(child.Child)
-			return child.HasValidations
+			cValidations, cIndex := propag(child.Child)
+			child.HasValidations = child.HasValidations || cValidations
+			child.NeedsIndex = child.HasValidations || child.Converter != "" || (child.IsCustomFormatter && !child.SkipParse) || cIndex
+			return child.HasValidations, child.NeedsIndex
 		}
-		items.HasValidations = propag(items)
+		items.HasValidations, items.NeedsIndex = propag(items)
 
 		// resolve nullability conflicts when declaring body as a map of array of an anonymous complex object
 		// (e.g. refer to an extra schema type, which is nullable, but not rendered as a pointer in arrays or maps)
@@ -951,7 +956,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 		var hasSimpleBodyParams, hasSimpleBodyItems, hasSimpleBodyMap, hasModelBodyParams, hasModelBodyItems, hasModelBodyMap bool
 		s := p.Schema
 		if s != nil {
-			doNot := s.IsInterface || s.IsStream
+			doNot := s.IsInterface || s.IsStream || s.IsBase64
 			// composition of primitive fields must be properly identified: hack this through
 			_, isPrimitive := primitives[s.GoType]
 			_, isFormatter := customFormatters[s.GoType]
@@ -962,7 +967,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 
 			if s.IsArray && s.Items != nil {
 				it := s.Items
-				doNot = it.IsInterface || it.IsStream
+				doNot = it.IsInterface || it.IsStream || it.IsBase64
 				hasSimpleBodyItems = !it.IsComplexObject && !(it.IsAliased || doNot)
 				hasModelBodyItems = (it.IsComplexObject || it.IsAliased) && !doNot
 			}

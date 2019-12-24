@@ -4071,8 +4071,6 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
 				`		} else {`,
-				`			o.Data = body`,
-				`			if err := o.validateDataBody(route.Formats); err != nil {`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *MyMethodParams) bindByteInQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {`,
 				`	if !hasKey {`,
@@ -4088,7 +4086,6 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 				`	if err := o.validateByteInQuery(formats); err != nil {`,
 				`func (o *MyMethodParams) validateByteInQuery(formats strfmt.Registry) error {`,
 				`	if err := validate.MaxLength("byteInQuery", "query", o.ByteInQuery.String(), 100); err != nil {`,
-				`func (o *MyMethodParams) validateDataBody(formats strfmt.Registry) error {`,
 			},
 		},
 
