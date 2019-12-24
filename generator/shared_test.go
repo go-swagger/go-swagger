@@ -565,4 +565,6 @@ func TestPascalize(t *testing.T) {
 	// remove spaces
 	assert.Equal(t, "HelloWorld", pascalize("# hello world"))
 	assert.Equal(t, "HashTag8HelloWorld", pascalize("# 8 hello world"))
+
+	assert.Equal(t, "Empty", pascalize(""))
 }
