@@ -4431,9 +4431,9 @@ definitions:
   LocalNodeState:
     description: "Current local status of this node."
     type: "string"
-    default: "none"
+    default: ""
     enum:
-      - "none"
+      - ""
       - "inactive"
       - "pending"
       - "active"
