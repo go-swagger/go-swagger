@@ -6064,7 +6064,7 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: array_multi_validations.go
 	flattenRun.AddExpectations("array_multi_validations.go", []string{
 		`type ArrayMultiValidations struct {`,
-		"	Args ArrayMultiValidationsArgs `json:\"args,omitempty\"`",
+		"	Args ArrayMultiValidationsArgs `json:\"args\"`", // arrays not omitempt-ied by default
 		`func (m *ArrayMultiValidations) Validate(formats strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -7292,7 +7292,7 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: array_additional_validations.go
 	flattenRun.AddExpectations("array_additional_validations.go", []string{
 		`type ArrayAdditionalValidations struct {`,
-		"	Args ArrayAdditionalValidationsArgs `json:\"args,omitempty\"`",
+		"	Args ArrayAdditionalValidationsArgs `json:\"args\"`", // arrays not omit-emptied by default
 		`func (m *ArrayAdditionalValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateArgs(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,

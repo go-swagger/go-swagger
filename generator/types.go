@@ -222,40 +222,38 @@ func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
-	if schema.Ref.String() != "" {
-		debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
-		returns = true
-		var ref *spec.Schema
-		var er error
-
-		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
-		if er != nil {
-			debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
-			err = er
-			return
-		}
-		res, er := t.ResolveSchema(ref, false, isRequired)
-		if er != nil {
-			err = er
-			return
-		}
-		result = res
-
-		tn := filepath.Base(schema.Ref.GetURL().Fragment)
-		tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
-		debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
-		if tpe != "" {
-			result.GoType = tpe
-			result.Pkg = pkg
-			result.PkgAlias = alias
-		}
-		result.HasDiscriminator = res.HasDiscriminator
-		result.IsBaseType = result.HasDiscriminator
-		result.IsNullable = t.IsNullable(ref)
-		//result.IsAliased = true
+	if schema.Ref.String() == "" {
 		return
-
 	}
+	debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
+	returns = true
+	var ref *spec.Schema
+	var er error
+
+	ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+	if er != nil {
+		debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
+		err = er
+		return
+	}
+	res, er := t.ResolveSchema(ref, false, isRequired)
+	if er != nil {
+		err = er
+		return
+	}
+	result = res
+
+	tn := filepath.Base(schema.Ref.GetURL().Fragment)
+	tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
+	debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
+	if tpe != "" {
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
+	}
+	result.HasDiscriminator = res.HasDiscriminator
+	result.IsBaseType = result.HasDiscriminator
+	result.IsNullable = t.IsNullable(ref)
 	return
 }
 
@@ -652,8 +650,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	tpe := t.firstType(schema)
-	defer setIsEmptyOmitted(&result, schema, tpe)
-
 	var returns bool
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
@@ -666,6 +662,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 	defer setIsJSONString(&result, schema, tpe)
+	defer setIsEmptyOmitted(&result, schema, tpe)
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
