@@ -33,6 +33,7 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -43,17 +44,13 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 		JSONProducer:        runtime.JSONProducer(),
 		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
-		}),
-		GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
+		}), GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetLogin has not yet been implemented")
-		}),
-		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+		}), CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CustomersCreate has not yet been implemented")
-		}),
-		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+		}), CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CustomersGetID has not yet been implemented")
 		}),
-
 		OauthSecurityAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (OauthSecurity) has not yet been implemented")
 		},
@@ -84,11 +81,11 @@ type OauthSampleAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// OauthSecurityAuth registers a function that takes an access token and a collection of required scopes and returns a principal
@@ -110,6 +107,10 @@ type OauthSampleAPI struct {
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -227,16 +228,14 @@ func (o *OauthSampleAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -244,19 +243,16 @@ func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -264,7 +260,6 @@ func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

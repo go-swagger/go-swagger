@@ -103,7 +103,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // TaskTracker is a client for task tracker
 type TaskTracker struct {
-	Tasks *tasks.Client
+	Tasks tasks.ClientService
 
 	Transport runtime.ClientTransport
 }

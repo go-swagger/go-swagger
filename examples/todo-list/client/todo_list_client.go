@@ -103,7 +103,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // TodoList is a client for todo list
 type TodoList struct {
-	Todos *todos.Client
+	Todos todos.ClientService
 
 	Transport runtime.ClientTransport
 }

@@ -40,6 +40,8 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 		})
 	}
 
+	api.PreServerShutdown = func() {}
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

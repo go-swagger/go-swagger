@@ -103,7 +103,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // AuthSample is a client for auth sample
 type AuthSample struct {
-	Customers *customers.Client
+	Customers customers.ClientService
 
 	Transport runtime.ClientTransport
 }

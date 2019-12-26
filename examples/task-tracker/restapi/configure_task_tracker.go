@@ -31,7 +31,6 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.MultipartformConsumer = runtime.DiscardConsumer
 
 	api.JSONProducer = runtime.JSONProducer()
@@ -90,6 +89,8 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
 		})
 	}
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 
