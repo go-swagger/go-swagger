@@ -23,7 +23,7 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
+	github.com/kevinburke/go-bindata v3.16.0+incompatible // indirect
 	github.com/kr/pretty v0.1.0
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/pelletier/go-toml v1.4.0 // indirect
@@ -43,5 +43,4 @@ require (
 	google.golang.org/appengine v1.6.2 // indirect
 	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.2.2
-	gotest.tools v2.2.0+incompatible // indirect
 )
