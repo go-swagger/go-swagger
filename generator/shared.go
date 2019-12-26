@@ -1082,7 +1082,7 @@ func pascalize(arg string) string {
 	runes := []rune(arg)
 	switch len(runes) {
 	case 0:
-		return ""
+		return "Empty"
 	case 1: // handle special case when we have a single rune that is not handled by swag.ToGoName
 		switch runes[0] {
 		case '+', '-', '#', '_': // those cases are handled differently than swag utility
