@@ -30,9 +30,22 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
+    "description": "This is a simple todo list API\nillustrating go-swagger codegen\ncapabilities.\n",
     "title": "Simple To Do List API",
+    "termsOfService": "There are actually none.\nThis is for demonstration purpose only.\n",
+    "contact": {
+      "name": "go-openapi maintainers",
+      "url": "https://github.com/go-openapi",
+      "email": "nowhere@example.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
     "version": "0.1.0"
   },
+  "host": "localhost",
+  "basePath": "/",
   "paths": {
     "/": {
       "get": {
@@ -240,9 +253,22 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
+    "description": "This is a simple todo list API\nillustrating go-swagger codegen\ncapabilities.\n",
     "title": "Simple To Do List API",
+    "termsOfService": "There are actually none.\nThis is for demonstration purpose only.\n",
+    "contact": {
+      "name": "go-openapi maintainers",
+      "url": "https://github.com/go-openapi",
+      "email": "nowhere@example.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
     "version": "0.1.0"
   },
+  "host": "localhost",
+  "basePath": "/",
   "paths": {
     "/": {
       "get": {

@@ -39,6 +39,8 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 		})
 	}
 
+	api.PreServerShutdown = func() {}
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

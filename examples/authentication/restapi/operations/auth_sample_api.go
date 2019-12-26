@@ -33,6 +33,7 @@ func NewAuthSampleAPI(spec *loads.Document) *AuthSampleAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -43,11 +44,9 @@ func NewAuthSampleAPI(spec *loads.Document) *AuthSampleAPI {
 		JSONProducer:        runtime.JSONProducer(),
 		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CustomersCreate has not yet been implemented")
-		}),
-		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+		}), CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation CustomersGetID has not yet been implemented")
 		}),
-
 		// Applies when the "x-token" header is set
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
@@ -79,11 +78,11 @@ type AuthSampleAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/keyauth.api.v1+json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/keyauth.api.v1+json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/keyauth.api.v1+json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/keyauth.api.v1+json
 	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
@@ -101,6 +100,10 @@ type AuthSampleAPI struct {
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -211,16 +214,14 @@ func (o *AuthSampleAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *AuthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/keyauth.api.v1+json":
 			result["application/keyauth.api.v1+json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -228,19 +229,16 @@ func (o *AuthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Con
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *AuthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/keyauth.api.v1+json":
 			result["application/keyauth.api.v1+json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -248,7 +246,6 @@ func (o *AuthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pro
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

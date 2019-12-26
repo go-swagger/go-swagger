@@ -57,6 +57,8 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 		})
 	}
 
+	api.PreServerShutdown = func() {}
+
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))

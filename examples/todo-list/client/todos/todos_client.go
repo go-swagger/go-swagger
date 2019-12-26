@@ -12,7 +12,7 @@ import (
 )
 
 // New creates a new todos API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -22,6 +22,19 @@ Client for todos API
 type Client struct {
 	transport runtime.ClientTransport
 	formats   strfmt.Registry
+}
+
+// ClientService is the interface for Client methods
+type ClientService interface {
+	AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter) (*AddOneCreated, error)
+
+	DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter) (*DestroyOneNoContent, error)
+
+	Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter) (*FindOK, error)
+
+	UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateOneOK, error)
+
+	SetTransport(transport runtime.ClientTransport)
 }
 
 /*

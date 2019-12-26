@@ -31,7 +31,7 @@ func main() {
 
 		title := "Simple To Do List API"
 		fmt.Fprint(os.Stderr, title+"\n\n")
-		desc := swaggerSpec.Spec().Info.Description
+		desc := "This is a simple todo list API\nillustrating go-swagger codegen\ncapabilities.\n"
 		if desc != "" {
 			fmt.Fprintf(os.Stderr, desc+"\n\n")
 		}

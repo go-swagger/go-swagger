@@ -12,7 +12,7 @@ import (
 )
 
 // New creates a new tasks API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -22,6 +22,27 @@ Client for tasks API
 type Client struct {
 	transport runtime.ClientTransport
 	formats   strfmt.Registry
+}
+
+// ClientService is the interface for Client methods
+type ClientService interface {
+	AddCommentToTask(params *AddCommentToTaskParams, authInfo runtime.ClientAuthInfoWriter) (*AddCommentToTaskCreated, error)
+
+	CreateTask(params *CreateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*CreateTaskCreated, error)
+
+	DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAuthInfoWriter) (*DeleteTaskNoContent, error)
+
+	GetTaskComments(params *GetTaskCommentsParams) (*GetTaskCommentsOK, error)
+
+	GetTaskDetails(params *GetTaskDetailsParams) (*GetTaskDetailsOK, error)
+
+	ListTasks(params *ListTasksParams) (*ListTasksOK, error)
+
+	UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateTaskOK, error)
+
+	UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.ClientAuthInfoWriter) (*UploadTaskFileCreated, error)
+
+	SetTransport(transport runtime.ClientTransport)
 }
 
 /*

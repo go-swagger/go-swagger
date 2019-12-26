@@ -33,13 +33,10 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.UrlformConsumer = runtime.DiscardConsumer
-
 	api.XMLConsumer = runtime.XMLConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
-
 	api.XMLProducer = runtime.XMLProducer()
 
 	// Applies when the "api_key" header is set
@@ -145,6 +142,8 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 			return middleware.NotImplemented("operation user.UpdateUser has not yet been implemented")
 		})
 	}
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 
