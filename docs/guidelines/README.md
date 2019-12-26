@@ -36,9 +36,9 @@ There are just a few common sense rules to be followed.
 2. Generally, contributors should squash their commits (use `git rebase -i master`)
 3. Provide sufficient test coverage with changes
 4. Do not bring in uncontrolled dependencies, including from fixtures or examples
-Adding dependencies is possible with a vendor update (`dep ensure -update`)
 5. Use the `fixes #xxx` github feature in PR to automate issue closing
 6. Sign-off commits with `git commit -s`. PGP-signed commits with verified signatures are not mandatory (but much appreciated)
+7. Use the "draft PR" github feature to draft some work and exercise it against our CI before review
 
 ### Go environment
 
@@ -64,6 +64,12 @@ func pathUnescape(path string) (string, error) {
 All repos should remain go-gettable (i.e. available with the `go get ./...` command)
 and testable with `go test ./...`
 
+### Linting
+
+Check your work with golangci linter:
+`go get -u github.com/golangci/golangci-lint/cmd/golangci-lint`
+`golangci-lint run --new-from-rev HEAD`
+
 ### Continuous integration
 
 All PR's require a review by a team member, whatever the CI engines tell.
@@ -75,7 +81,7 @@ Enabled CI engines and bots:
 - Appveyor (windows)
 - GolangCI
 - Codecov
-- DCO (enfore signed-off commits)
+- DCO (enforce signed-off commits)
 - WIP (blocks PRs with title WIP/do not merge, etc...)
 
 Codecov results are not blocking.
@@ -85,8 +91,8 @@ CI runs description/configuration:
 | CI engine | Test type     | Configuration             | Comment |
 |---        |---            |---                        |---      |
 | CircleCI  | unit test     | .circleci/config.yml      |         |
-|           | build test (1)| ./hack/codegen-nonreg.sh  | Codegen and build test on many (~ 80) specs in `fixtures/codegen` and `fixtures/bugs``|
-|           | build test (2)| ./hack/run-canary.sh      | Codegen and build test on (large) specs in fixtures/canary`|
+|           | build test (1)| ./hack/codegen_nonreg_test.go  | Codegen and build test on many (~ 80) specs in `fixtures/codegen` and `fixtures/bugs``|
+|           | build test (2)| ./hack/codegen_nonreg_test.go  | Codegen and build test on (large) specs in fixtures/canary`|
 | Appveyor  | unit test     | appveyor.yml              | `go test -v ./...` |
 | GolangCI  | linting       | .golangci.yml             | equ. `golangci-lint run` |
 | Codecov   | test coverage | -                         | project test coverage and PR diff coverage|
@@ -104,11 +110,12 @@ Deprecated engines:
 > Therefore, please make sure your UT remain mute on stderr or capture the
 > output if you need to assert something from the output.
 
-The script `./hack/codegen-nonreg.sh` runs on CI with a single generation option.
+The go test program `./hack/codegen_nonreg_test.go` runs on CI with various generation options.
 You may run it manually to explore more generation options (expand spec, flatten, etc...).
 
-CircleCI has a separate CI workflow to build releases, baking and checking newly released docker
-images.
+##### Releases
+
+Released are cut from CircleCI, with a separate workflow to build artifacts, and bake docker images.
 
 ##### go-openapi repos
 
@@ -116,8 +123,7 @@ Enabled CI engines:
 - Travis (linux)
 - GolangCI
 - Codecov
-
-> **NOTE**: setting up Appveyor on go-openapi/spec and validate is on the todo list.
+- experimental: Appveyor
 
 | CI engine | Test type     | Configuration             | Comment |
 |---        |---            |---                        |---      |
@@ -126,35 +132,7 @@ Enabled CI engines:
 
 ### Vendoring
 
-`go-swagger/go-swagger` repo comes with a vendor directory. This is because
-we release binary distributions (docker, debian...).
-
-The `go-openapi` packages are **not** vendored.
-
-Vendoring is managed using the current _official_ `dep` tool.
-Configuration is in `Gopkg.toml`.
-
-Run `dep ensure -update` to update dependencies. Please do not cherry-pick
-updates manually.
-
-> **NOTE**: since there are many dependencies, running an update may update
-> many things.
-> We prefer to get vendor updates as separate commits with changes to vendor only.
-
-##### Testing PRs requiring integration of a dependency (e.g. another pending PR on `go-openapi`)
-
-This happens for instance whenever you want to test the full integration in `go-swagger` of an unmerged PR
-in one of the `go-openapi` repos.
-
-With `go-swagger` (vendored):
-- prepare a "WIP" PR with a temporary vendor update commit
-- this vendor update temporarily alters the `branch` and `source` in `Gopkg.toml`
-to get the proper version of the required dependency from the unmerged branch (e.g. from your fork)
-
-With `go-openapi` (non vendored):
-- for your "WIP" PR, temporarily alter the CI config script (e.g. `.travis.yml`) and
-replace the `go get` requirements to build your CI with the adequate `git clone`
-pointing to the required branches
+The whole `go-openapi` and `go-swagger` has adopted go modules and no more use vendoring.
 
 ### Update templates
 
@@ -166,13 +144,15 @@ Binary encoded assets are auto-generated from the `generator/templates` director
 While developing, you may work with dynamically updated templates (i.e. no need to rebuild)
 using `bindata.go` generated in debug mode (use script: `./generator/gen-debug.sh`).
 
-There is a `.githook` script configured as pre-commit: every time you commit to the repo, `generator/bindata.go`
-is regenerated and added to the current commit (without debug mode).
+There is a `.githook` script configured as pre-commit: if you configure githooks locally for this repo,
+every time you commit,`generator/bindata.go`
+will be regenerated and added to the current commit (without debug mode).
 
 For `bindata` please use the fork found at: `github.com/kevinburke/go-bindata`.
 
 > **NOTE**: we are carrying out unit tests on codegen mostly by asserting lines in generated code.
 > There is a bunch of test utility functions for this. See `generator/*_test.go`.
+>
 > If you want to bring in more advanced testing go programs with your fixtures, please tag
 > those so they don't affect the `go ./...` command (e.g. with `// +build +integration`).
 
