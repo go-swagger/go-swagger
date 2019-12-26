@@ -60,7 +60,6 @@ func TestGenerateAndBuild(t *testing.T) {
 				t.Fatalf("Execute()=%s", err)
 			}
 
-			//fmt.Println(captureLog.String())
 			assert.Contains(t, strings.ToLower(captureLog.String()), "generation completed")
 
 			packages := filepath.Join(generated, "...")
