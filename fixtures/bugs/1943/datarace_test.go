@@ -1,4 +1,6 @@
-package _943
+// +build ignore
+
+package main
 
 import (
 	"log"
@@ -24,7 +26,7 @@ func Test_DataRace(t *testing.T) {
 	server.ConfigureAPI()
 
 	go func() {
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 		server.Shutdown()
 	}()
 

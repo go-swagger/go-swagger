@@ -475,7 +475,7 @@ func (s *Server) Serve() (err error) {
 	}
 
 	wg.Add(1)
-  go s.handleShutdown(wg, &servers)
+	go s.handleShutdown(wg, &servers)
 
 	wg.Wait()
 	return nil

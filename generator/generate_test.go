@@ -7,10 +7,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
 func TestGenerateAndTest(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// don't run race tests on Appveyor CI
+		t.SkipNow()
+	}
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -41,6 +46,7 @@ func TestGenerateAndTest(t *testing.T) {
 
 			fmt.Println(opts.Target)
 
+			t.Log("generating test server")
 			err := GenerateServer("", nil, nil, &opts)
 			defer func() { _ = os.RemoveAll(opts.Target + "/models") }()
 			defer func() { _ = os.RemoveAll(opts.Target + "/restapi") }()
@@ -49,15 +55,15 @@ func TestGenerateAndTest(t *testing.T) {
 				t.Fatalf("Execute()=%s", err)
 			}
 
-			//fmt.Println(captureLog.String())
-			//assert.Contains(t, strings.ToLower(captureLog.String()), "creating generated file")
 			packages := filepath.Join(opts.Target, "...")
+			testPrg := filepath.Join(opts.Target, "datarace_test.go")
 
 			if p, err := exec.Command("go", "get", packages).CombinedOutput(); err != nil {
 				t.Fatalf("go get %s: %s\n%s", packages, err, p)
 			}
 
-			if p, err := exec.Command("go", "test", "-race", packages).CombinedOutput(); err != nil {
+			t.Log("running data race test on generated server")
+			if p, err := exec.Command("go", "test", "-v", "-race", testPrg).CombinedOutput(); err != nil {
 				t.Fatalf("go test -race %s: %s\n%s", packages, err, p)
 			}
 		})
