@@ -274,6 +274,7 @@ type codeGenOpBuilder struct {
 	Target              string
 	Operation           spec.Operation
 	Doc                 *loads.Document
+	PristineDoc         *loads.Document
 	Analyzed            *analysis.Spec
 	DefaultImports      []string
 	Imports             map[string]string
@@ -288,14 +289,24 @@ type codeGenOpBuilder struct {
 
 // renameTimeout renames the variable in use by client template to avoid conflicting
 // with param names.
-func renameTimeout(seenIds map[string][]string, current string) string {
+//
+// NOTE: this merely protects the timeout field in the client parameter struct,
+// fields "Context" and "HTTPClient" remain exposed to name conflicts.
+func renameTimeout(seenIds map[string]bool, timeoutName string) string {
+	if seenIds == nil {
+		return timeoutName
+	}
+	current := strings.ToLower(timeoutName)
+	if _, ok := seenIds[current]; !ok {
+		return timeoutName
+	}
 	var next string
-	switch strings.ToLower(current) {
+	switch current {
 	case "timeout":
 		next = "requestTimeout"
 	case "requesttimeout":
 		next = "httpRequestTimeout"
-	case "httptrequesttimeout":
+	case "httprequesttimeout":
 		next = "swaggerTimeout"
 	case "swaggertimeout":
 		next = "operationTimeout"
@@ -303,11 +314,10 @@ func renameTimeout(seenIds map[string][]string, current string) string {
 		next = "opTimeout"
 	case "optimeout":
 		next = "operTimeout"
+	default:
+		next = timeoutName + "1"
 	}
-	if _, ok := seenIds[next]; ok {
-		return renameTimeout(seenIds, next)
-	}
-	return next
+	return renameTimeout(seenIds, next)
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
@@ -330,7 +340,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var params, qp, pp, hp, fp GenParameters
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
-	timeoutName := "timeout"
 
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(paramsForOperation)),
@@ -340,18 +349,16 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		"body":     make(map[string]string, len(paramsForOperation)),
 	}
 
-	seenIds := make(map[string][]string, len(paramsForOperation))
+	seenIds := make(map[string]bool, len(paramsForOperation))
 	for id, p := range paramsForOperation {
 		if _, ok := seenIds[p.Name]; ok {
 			idMapping[p.In][p.Name] = swag.ToGoName(id)
 		} else {
 			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
 		}
-		seenIds[p.Name] = append(seenIds[p.Name], p.In)
-		if strings.EqualFold(p.Name, timeoutName) {
-			timeoutName = renameTimeout(seenIds, timeoutName)
-		}
+		seenIds[strings.ToLower(idMapping[p.In][p.Name])] = true
 	}
+	timeoutName := renameTimeout(seenIds, "timeout")
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
@@ -1015,7 +1022,10 @@ func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
 // This uses a deep clone the spec document to construct a type resolver which knows about definitions when the making of this operation started,
 // and only these definitions. We are not interested in the "original spec", but in the already transformed spec.
 func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *spec.Schema) (*typeResolver, *spec.Schema) {
-	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models"), b.Doc.Pristine())
+	if b.PristineDoc == nil {
+		b.PristineDoc = b.Doc.Pristine()
+	}
+	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models"), b.PristineDoc)
 
 	return rslv, b.cloneSchema(schema)
 }
