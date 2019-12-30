@@ -20,7 +20,6 @@ const (
 	defaultAPIPackage    = "operations"
 	defaultClientPackage = "client"
 	defaultModelPackage  = "models"
-	//defaultServerPackage = "restapi"
 )
 
 func TestGenerateAndBuild(t *testing.T) {
@@ -39,6 +38,9 @@ func TestGenerateAndBuild(t *testing.T) {
 		},
 		"issue 1216": {
 			"../fixtures/bugs/1216/swagger.yml",
+		},
+		"issue 2111": {
+			"../fixtures/bugs/2111/fixture-2111.yaml",
 		},
 	}
 

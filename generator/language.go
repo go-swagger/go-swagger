@@ -2,6 +2,7 @@ package generator
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	goruntime "runtime"
+	"sort"
 	"strings"
 
 	"github.com/go-openapi/swag"
@@ -32,11 +34,13 @@ func initLanguage() {
 type LanguageOpts struct {
 	ReservedWords        []string
 	BaseImportFunc       func(string) string               `json:"-"`
+	ImportsFunc          func(map[string]string) string    `json:"-"`
 	ArrayInitializerFunc func(interface{}) (string, error) `json:"-"`
 	reservedWordsSet     map[string]struct{}
 	initialized          bool
 	formatFunc           func(string, []byte) ([]byte, error)
 	fileNameFunc         func(string) string // language specific source file naming rules
+	dirNameFunc          func(string) string // language specific directory naming rules
 }
 
 // Init the language option
@@ -82,9 +86,12 @@ func (l *LanguageOpts) ManglePackageName(name, suffix string) string {
 	if name == "" {
 		return suffix
 	}
+	if l.dirNameFunc != nil {
+		name = l.dirNameFunc(name)
+	}
 	pth := filepath.ToSlash(filepath.Clean(name)) // preserve path
-	_, pkg := path.Split(pth)                     // drop path
-	return l.MangleName(swag.ToFileName(pkg), suffix)
+	pkg := importAlias(pth)                       // drop path
+	return l.MangleName(swag.ToFileName(prefixForName(pkg)+pkg), suffix)
 }
 
 // ManglePackagePath makes sure a full package path gets a safe name.
@@ -107,6 +114,23 @@ func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error
 	return content, nil
 }
 
+// imports generate the code to import some external packages, possibly aliased
+func (l *LanguageOpts) imports(imports map[string]string) string {
+	if l.ImportsFunc != nil {
+		return l.ImportsFunc(imports)
+	}
+	return ""
+}
+
+// arrayInitializer builds a litteral array
+func (l *LanguageOpts) arrayInitializer(data interface{}) (string, error) {
+	if l.ArrayInitializerFunc != nil {
+		return l.ArrayInitializerFunc(data)
+	}
+	return "", nil
+}
+
+// baseImport figures out the base path to generate import statements
 func (l *LanguageOpts) baseImport(tgt string) string {
 	if l.BaseImportFunc != nil {
 		return l.BaseImportFunc(tgt)
@@ -198,6 +222,33 @@ func GoLangOpts() *LanguageOpts {
 			parts = append(parts, "swagger")
 		}
 		return strings.Join(parts, "_")
+	}
+
+	opts.dirNameFunc = func(name string) string {
+		// whenever a generated directory name is a special
+		// golang directory, append an innocuous suffix
+		switch name {
+		case "vendor", "internal":
+			return strings.Join([]string{name, "swagger"}, "_")
+		}
+		return name
+	}
+
+	opts.ImportsFunc = func(imports map[string]string) string {
+		if len(imports) == 0 {
+			return ""
+		}
+		result := make([]string, 0, len(imports))
+		for k, v := range imports {
+			_, name := path.Split(v)
+			if name != k {
+				result = append(result, fmt.Sprintf("%s %q", k, v))
+			} else {
+				result = append(result, fmt.Sprintf("%q", v))
+			}
+		}
+		sort.Strings(result)
+		return strings.Join(result, "\n")
 	}
 
 	opts.ArrayInitializerFunc = func(data interface{}) (string, error) {

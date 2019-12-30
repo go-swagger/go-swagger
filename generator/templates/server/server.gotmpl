@@ -33,10 +33,8 @@ import (
   {{ end -}}
   "golang.org/x/net/netutil"
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 const (

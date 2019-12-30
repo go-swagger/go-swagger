@@ -69,6 +69,7 @@
 - dir: fixtures/bugs/2136
   skipped:
     knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
+- dir: fixtures/bugs/2111
 #
 # The following specs fail to generate:
 # - existing-model.yml requires pregeneration (not supported yet by this script)

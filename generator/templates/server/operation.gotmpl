@@ -22,10 +22,8 @@ import (
   validate "github.com/go-openapi/validate"
   swag "github.com/go-openapi/swag"
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // {{ pascalize .Name }}HandlerFunc turns a function with the right signature into a {{ humanize .Name }} handler

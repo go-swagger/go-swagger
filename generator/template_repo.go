@@ -70,23 +70,20 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"hasSecure": func(arg []string) bool {
 			return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 		},
-		// TODO: simplify redundant functions
-		"stripPackage": func(str, _ string) string {
-			return dropPackage(str)
-		},
-		"dropPackage":        dropPackage,
-		"upper":              strings.ToUpper,
-		"contains":           swag.ContainsStrings,
-		"padSurround":        padSurround,
-		"joinFilePath":       filepath.Join,
-		"comment":            padComment,
-		"blockcomment":       blockComment,
-		"inspect":            pretty.Sprint,
-		"cleanPath":          path.Clean,
-		"mediaTypeName":      mediaMime,
-		"goSliceInitializer": lang.ArrayInitializerFunc,
-		"hasPrefix":          strings.HasPrefix,
-		"stringContains":     strings.Contains,
+		"dropPackage":      dropPackage,
+		"upper":            strings.ToUpper,
+		"contains":         swag.ContainsStrings,
+		"padSurround":      padSurround,
+		"joinFilePath":     filepath.Join,
+		"comment":          padComment,
+		"blockcomment":     blockComment,
+		"inspect":          pretty.Sprint,
+		"cleanPath":        path.Clean,
+		"mediaTypeName":    mediaMime,
+		"arrayInitializer": lang.arrayInitializer,
+		"hasPrefix":        strings.HasPrefix,
+		"stringContains":   strings.Contains,
+		"imports":          lang.imports,
 	})
 }
 

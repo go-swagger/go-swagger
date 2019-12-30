@@ -15,19 +15,17 @@ import (
   "strings"
   "net/http"
 
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/loads"
+  "github.com/go-openapi/runtime/middleware"
+  "github.com/go-openapi/runtime"
+  "github.com/go-openapi/runtime/security"
+  "github.com/go-openapi/spec"
+  "github.com/go-openapi/strfmt"
   "github.com/go-openapi/swag"
-  spec "github.com/go-openapi/spec"
-  loads "github.com/go-openapi/loads"
-  errors "github.com/go-openapi/errors"
-  strfmt "github.com/go-openapi/strfmt"
-  runtime "github.com/go-openapi/runtime"
-  middleware "github.com/go-openapi/runtime/middleware"
-  security "github.com/go-openapi/runtime/security"
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}API creates a new {{ pascalize .Name }} instance
@@ -64,11 +62,14 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
         }),
       {{- end }}
     {{- end }}
-    {{ range .Operations}}{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler: {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}HandlerFunc(func(params {{if ne .Package $package}}{{ .Package }}.{{end}}{{ pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
-      return middleware.NotImplemented("operation {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{pascalize .Name}} has not yet been implemented")
+    {{- range .Operations }}
+      {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler:
+        {{- if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}HandlerFunc(func(params {{ if ne .Package $package }}{{ .PackageAlias }}.{{end }}
+        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
+      return middleware.NotImplemented("operation {{ .Package }}.{{pascalize .Name}} has not yet been implemented")
     }),
     {{- end }}
-    {{range .SecurityDefinitions}}{{if .IsBasicAuth}}// Applies when the Authorization header is set with the Basic scheme
+    {{- range .SecurityDefinitions}}{{if .IsBasicAuth}}// Applies when the Authorization header is set with the Basic scheme
     {{ pascalize .ID }}Auth: func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
     },
@@ -139,9 +140,11 @@ type {{ pascalize .Name }}API struct {
   // APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
   APIAuthorizer runtime.Authorizer
   {{end}}
-  {{range .Operations}}// {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
-  {{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler {{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler
-  {{end}}
+  {{- $package := .Package }}
+  {{- range .Operations }}
+  // {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
+  {{ if ne  .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}Handler
+  {{- end }}
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
   ServeError     func(http.ResponseWriter, *http.Request, error)
@@ -215,8 +218,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   }
   {{end}}
   {{range .Operations}}
-  if {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler == nil {
-    unregistered = append(unregistered, "{{if ne .Package $package}}{{.Package}}.{{end}}{{ pascalize .Name }}Handler")
+  if {{.ReceiverName}}.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler == nil {
+    unregistered = append(unregistered, "{{ pascalize .Package }}.{{ pascalize .Name }}Handler")
   }
   {{end}}
 
@@ -351,7 +354,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   if {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] == nil {
     {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] = make(map[string]http.Handler)
   }
-  {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ if eq .Path "/" }}""{{ else }}{{ printf "%q" (cleanPath .Path) }}{{ end }}] = {{if ne .Package $package}}{{.Package}}.{{end}}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
+  {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ if eq .Path "/" }}""{{ else }}{{ printf "%q" (cleanPath .Path) }}{{ end }}] = {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
   {{end}}
   {{end}}
 }

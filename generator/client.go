@@ -16,8 +16,6 @@ package generator
 
 import (
 	"errors"
-	"path"
-	"sort"
 
 	"github.com/go-openapi/swag"
 )
@@ -81,65 +79,29 @@ func (c *clientGenerator) Generate() error {
 		return err
 	}
 
-	if app.Name == "" {
-		app.Name = "APIClient"
-	}
-	baseImport := c.GenOpts.LanguageOpts.baseImport(c.Target)
-
-	if c.GenOpts.ExistingModels == "" {
-		if app.Imports == nil {
-			app.Imports = make(map[string]string)
-		}
-		pkgAlias := c.GenOpts.LanguageOpts.ManglePackageName(c.ModelsPackage, defaultModelsTarget)
-		app.Imports[pkgAlias] = path.Join(
-			baseImport,
-			c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ModelPackage, defaultModelsTarget))
-	} else {
-		app.DefaultImports = append(app.DefaultImports, c.GenOpts.LanguageOpts.ManglePackagePath(c.GenOpts.ExistingModels, ""))
-	}
-
 	if c.DumpData {
 		return dumpData(swag.ToDynamicJSON(app))
 	}
 
 	if c.GenOpts.IncludeModel {
 		for _, mod := range app.Models {
-			modCopy := mod
-			modCopy.IncludeValidator = true
 			if mod.IsStream {
 				continue
 			}
-			if err := c.GenOpts.renderDefinition(&modCopy); err != nil {
+			if err := c.GenOpts.renderDefinition(&mod); err != nil {
 				return err
 			}
 		}
 	}
 
 	if c.GenOpts.IncludeHandler {
-		sort.Sort(app.OperationGroups)
-		for i := range app.OperationGroups {
-			opGroup := app.OperationGroups[i]
-			opGroup.DefaultImports = app.DefaultImports
-			opGroup.RootPackage = c.ClientPackage
-			opGroup.GenOpts = c.GenOpts
-			app.OperationGroups[i] = opGroup
-			sort.Sort(opGroup.Operations)
-			for _, op := range opGroup.Operations {
-				opCopy := op
-				if opCopy.Package == "" {
-					opCopy.Package = c.Package
-				}
-				if err := c.GenOpts.renderOperation(&opCopy); err != nil {
+		for _, opg := range app.OperationGroups {
+			for _, op := range opg.Operations {
+				if err := c.GenOpts.renderOperation(&op); err != nil {
 					return err
 				}
 			}
-			app.DefaultImports = append(app.DefaultImports,
-				path.Join(
-					baseImport,
-					c.GenOpts.LanguageOpts.ManglePackagePath(c.ClientPackage, defaultClientTarget),
-					opGroup.Name))
-
-			if err := c.GenOpts.renderOperationGroup(&opGroup); err != nil {
+			if err := c.GenOpts.renderOperationGroup(&opg); err != nil {
 				return err
 			}
 		}

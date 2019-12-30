@@ -28,6 +28,7 @@ Help Options:
 
 [server command options]
       -s, --server-package=                                                       the package to save the server specific code (default: restapi)
+          --main-package=                                                         the location of the generated main. Defaults to cmd/{name}-server
       -P, --principal=                                                            the model to use for the security principal
           --default-scheme=                                                       the default scheme for this API (default: http)
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)
@@ -68,6 +69,10 @@ Help Options:
       -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
           --tags=                                                                 the tags to include, if not specified defaults to all
       -a, --api-package=                                                          the package to save the operations (default: operations)
+<<<<<<< HEAD
+=======
+          --skip-tag-packages                                                     skips the generation of tag-based operation packages, resulting in a flat generation
+>>>>>>> Review of codegen imports
 ```
 
 ### Build a server
