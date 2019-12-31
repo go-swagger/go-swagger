@@ -185,6 +185,7 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 		if err := sb.buildFromType(ftpe.Elem(), schemaTypable{schema, typable.Level() + 1}); err != nil {
 			return err
 		}
+		r.postDecls = append(r.postDecls, sb.postDecls...)
 		return nil
 	case *types.Named:
 		if decl, found := r.ctx.DeclForType(ftpe.Obj().Type()); found {
