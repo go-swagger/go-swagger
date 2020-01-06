@@ -1,5 +1,5 @@
 ---
-swagger: '2.0'
+swagger: "2.0"
 info:
   version: 0.0.0
   title: Breaking API as described by christianklotz
@@ -9,11 +9,11 @@ paths:
       operationId: getFoo
       responses:
         200:
-          description: 'ok'
+          description: "ok"
           schema:
             type: array
             items:
-              $ref: '#/definitions/Foo'
+              $ref: "#/definitions/Foo"
 definitions:
   Foo:
     type: object
@@ -24,23 +24,23 @@ definitions:
         items:
           type: string
           enum:
-          - some
-          - values
+            - some
+            - values
       arrayHasOmitEmptyFalse:
         type: array
         x-omitempty: false
         items:
           type: string
           enum:
-          - some
-          - values
+            - some
+            - values
       arrayNoOmitEmpty:
         type: array
         items:
           type: string
           enum:
-          - some
-          - values
+            - some
+            - values
       generalHasOmitEmptyTrue:
         type: string
         x-omitempty: true
@@ -51,12 +51,19 @@ definitions:
         type: string
       refHasOmitEmptyTrue:
         x-omitempty: true
-        $ref: '#/definitions/bar'
+        $ref: "#/definitions/bar"
       refHasOmitEmptyFalse:
         x-omitempty: false
-        $ref: '#/definitions/bar'
+        $ref: "#/definitions/bar"
       refNoOmitEmpty:
-        $ref: '#/definitions/bar'
+        $ref: "#/definitions/bar"
+      intHasJsonString:
+        type: integer
+        format: int64
+        x-go-json-string: true
+      boolHasJsonString:
+        type: boolean
+        x-go-json-string: true
   bar:
     type: object
     x-nullable: false

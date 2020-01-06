@@ -43,15 +43,16 @@ const (
 
 // Extensions supported by go-swagger
 const (
-	xClass       = "x-class"         // class name used by discriminator
-	xGoCustomTag = "x-go-custom-tag" // additional tag for serializers on struct fields
-	xGoName      = "x-go-name"       // name of the generated go variable
-	xGoType      = "x-go-type"       // reuse existing type (do not generate)
-	xIsNullable  = "x-isnullable"
-	xNullable    = "x-nullable" // turns the schema into a pointer
-	xOmitEmpty   = "x-omitempty"
-	xSchemes     = "x-schemes" // additional schemes supported for operations (server generation)
-	xOrder       = "x-order"   // sort order for properties (or any schema)
+	xClass        = "x-class"         // class name used by discriminator
+	xGoCustomTag  = "x-go-custom-tag" // additional tag for serializers on struct fields
+	xGoName       = "x-go-name"       // name of the generated go variable
+	xGoType       = "x-go-type"       // reuse existing type (do not generate)
+	xIsNullable   = "x-isnullable"
+	xNullable     = "x-nullable" // turns the schema into a pointer
+	xOmitEmpty    = "x-omitempty"
+	xSchemes      = "x-schemes" // additional schemes supported for operations (server generation)
+	xOrder        = "x-order"   // sort order for properties (or any schema)
+	xGoJSONString = "x-go-json-string"
 )
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format
@@ -337,6 +338,17 @@ func setIsEmptyOmitted(result *resolvedType, schema *spec.Schema, tpe string) {
 
 	omitted, cast := v.(bool)
 	result.IsEmptyOmitted = omitted && cast
+}
+
+func setIsJSONString(result *resolvedType, schema *spec.Schema, tpe string) {
+
+	_, found := schema.Extensions[xGoJSONString]
+	if !found {
+		result.IsJSONString = false
+		return
+	}
+
+	result.IsJSONString = true
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -649,6 +661,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		debugLog("returning after ref")
 		return
 	}
+	defer setIsJSONString(&result, schema, tpe)
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
@@ -736,6 +749,7 @@ type resolvedType struct {
 	IsNullable        bool
 	IsStream          bool
 	IsEmptyOmitted    bool
+	IsJSONString      bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool
