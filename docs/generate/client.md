@@ -18,32 +18,40 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [client command options]
-      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=                                                          the package to save the operations (default: operations)
-      -m, --model-package=                                                        the package to save the models (default: models)
-      -s, --server-package=                                                       the package to save the server specific code (default: restapi)
       -c, --client-package=                                                       the package to save the client specific code (default: client)
-      -t, --target=                                                               the base directory for generating the files (default: ./)
-          --template=[stratoscale]                                                Load contributed templates
-      -T, --template-dir=                                                         alternative template override directory
-          --allow-template-override                                               allows overriding protected templates
-      -C, --config-file=                                                          configuration file to use for overriding template options
-      -r, --copyright-file=                                                       copyright file used to add copyright header
-          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
-          --additional-initialism=                                                consecutive capitals that should be considered intialisms
-          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
-      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
-      -O, --operation=                                                            specify an operation to include, repeat for multiple
-          --tags=                                                                 the tags to include, if not specified defaults to all
       -P, --principal=                                                            the model to use for the security principal
-      -M, --model=                                                                specify a model to include, repeat for multiple
-          --default-scheme=                                                       the default scheme for this client (default: http)
+          --default-scheme=                                                       the default scheme for this API (default: http)
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)
+          --default-consumes=                                                     the default mime type that API operations consume (default: application/json)
           --skip-models                                                           no models will be generated when this flag is specified
           --skip-operations                                                       no operations will be generated when this flag is specified
-          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
+
+    Options common to all code generation commands:
+      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
+      -t, --target=                                                               the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                load contributed templates
+      -T, --template-dir=                                                         alternative template override directory
+      -C, --config-file=                                                          configuration file to use for overriding template options
+      -r, --copyright-file=                                                       copyright file used to add copyright header
+          --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --allow-template-override                                               allows overriding protected templates
           --skip-validation                                                       skips validation of spec prior to generation
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+
+    Options for model generation:
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -M, --model=                                                                specify a model to include in generation, repeat for multiple (defaults to all)
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
+          --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
+          --keep-spec-order                                                       keep schema properties order identical to spec file
+
+    Options for operation generation:
+      -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
+          --tags=                                                                 the tags to include, if not specified defaults to all
+      -a, --api-package=                                                          the package to save the operations (default: operations)
 ```
 
 ### Build a client

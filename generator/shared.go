@@ -675,11 +675,13 @@ func (g *GenOpts) EnsureDefaults() error {
 		g.LanguageOpts = GoLangOpts()
 	}
 	// set defaults for flattening options
-	g.FlattenOpts = &analysis.FlattenOpts{
-		Minimal:      true,
-		Verbose:      true,
-		RemoveUnused: false,
-		Expand:       false,
+	if g.FlattenOpts == nil {
+		g.FlattenOpts = &analysis.FlattenOpts{
+			Minimal:      true,
+			Verbose:      true,
+			RemoveUnused: false,
+			Expand:       false,
+		}
 	}
 	g.defaultsEnsured = true
 	return nil
