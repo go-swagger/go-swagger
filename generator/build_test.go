@@ -77,15 +77,13 @@ func TestGenerateAndBuild(t *testing.T) {
 }
 
 func newTestClient(input, output string) *generate.Client {
-	c := &generate.Client{
-		DefaultScheme:   "http",
-		DefaultProduces: "application/json",
-	}
-	c.Spec = flags.Filename(input)
-	c.Target = flags.Filename(output)
-	c.APIPackage = defaultAPIPackage
-	c.ModelPackage = defaultModelPackage
-	c.ServerPackage = defaultServerPackage
+	c := &generate.Client{}
+	c.DefaultScheme = "http"
+	c.DefaultProduces = "application/json"
+	c.Shared.Spec = flags.Filename(input)
+	c.Shared.Target = flags.Filename(output)
+	c.Operations.APIPackage = defaultAPIPackage
+	c.Models.ModelPackage = defaultModelPackage
 	c.ClientPackage = defaultClientPackage
 	return c
 }

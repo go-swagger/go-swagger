@@ -36,7 +36,7 @@ func TestGenerateClient(t *testing.T) {
 			spec:      "todolist.simplequery.yml",
 			wantError: false,
 			prepare: func(c *generate.Client) {
-				c.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+				c.Shared.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
 			},
 		},
 		{
@@ -66,9 +66,9 @@ func TestGenerateClient(t *testing.T) {
 			}()
 			m := &generate.Client{}
 			_, _ = flags.Parse(m)
-			m.Spec = flags.Filename(path)
-			m.Target = flags.Filename(generated)
-			m.Template = tt.template
+			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Target = flags.Filename(generated)
+			m.Shared.Template = tt.template
 
 			if tt.prepare != nil {
 				tt.prepare(m)
@@ -90,7 +90,7 @@ func TestGenerateClient_Check(t *testing.T) {
 
 	m := &generate.Client{}
 	_, _ = flags.Parse(m)
-	m.CopyrightFile = "nullePart"
+	m.Shared.CopyrightFile = "nullePart"
 	err := m.Execute([]string{})
 	assert.Error(t, err)
 }
