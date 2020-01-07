@@ -15,7 +15,7 @@ import (
 
 // Milestone A milestone is a particular goal that is important to the project for this issue tracker.
 //
-// Milestones can have a escription and due date.
+// Milestones can have a description and due date.
 // This can be useful for filters and such.
 //
 // swagger:model Milestone
