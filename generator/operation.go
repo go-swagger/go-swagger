@@ -734,7 +734,13 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 
 	var child *GenItems
 	id := swag.ToGoName(param.Name)
-	if len(idMapping) > 0 {
+	if goName, ok := param.Extensions["x-go-name"]; ok {
+		id, ok = goName.(string)
+		if !ok {
+			return GenParameter{}, fmt.Errorf(`%s %s, parameter %q: "x-go-name" field must be a string, not a %T`,
+				b.Method, b.Path, param.Name, goName)
+		}
+	} else if len(idMapping) > 0 {
 		id = idMapping[param.In][param.Name]
 	}
 
