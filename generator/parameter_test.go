@@ -4407,3 +4407,29 @@ func TestGenClientParameter_1937(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1937", "fixture-1937.yaml"), true, false)
 }
+
+func TestGenParameter_Issue2167(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertRegexpInCode(t, `(?m)^\tMyPathName\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestRegion\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tMyQueryCount\s+\*int64$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestLimit\s+\*int64$`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
