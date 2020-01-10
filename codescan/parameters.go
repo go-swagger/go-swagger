@@ -286,6 +286,11 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 			continue
 		}
 
+		if !fld.Exported() {
+			debugLog("skipping field %s because it's not exported", fld.Name())
+			continue
+		}
+
 		tg := tpe.Tag(i)
 
 		var afld *ast.Field
