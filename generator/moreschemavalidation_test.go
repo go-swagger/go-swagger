@@ -206,6 +206,9 @@ func initModelFixtures() {
 
 	// allOf marshallers
 	initFixture2071()
+
+	// x-omitempty
+	initFixture2116()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -338,7 +341,8 @@ func TestMoreModelValidations(t *testing.T) {
 						// please do not inject fixtures with case conflicts on defs...
 						// this one is just easier to retrieve model back from file names when capturing
 						// the generated code.
-						if strings.EqualFold(def, k) {
+						mangled := swag.ToJSONName(def)
+						if strings.EqualFold(mangled, k) {
 							schema = &s
 							definitionName = def
 							break

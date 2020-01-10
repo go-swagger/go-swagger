@@ -327,32 +327,6 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	return len(schema.Properties) > 0
 }
 
-func setIsEmptyOmitted(result *resolvedType, schema *spec.Schema, tpe string) {
-	defaultValue := true
-	if tpe == array {
-		defaultValue = false
-	}
-	v, found := schema.Extensions[xOmitEmpty]
-	if !found {
-		result.IsEmptyOmitted = defaultValue
-		return
-	}
-
-	omitted, cast := v.(bool)
-	result.IsEmptyOmitted = omitted && cast
-}
-
-func setIsJSONString(result *resolvedType, schema *spec.Schema, tpe string) {
-
-	_, found := schema.Extensions[xGoJSONString]
-	if !found {
-		result.IsJSONString = false
-		return
-	}
-
-	result.IsJSONString = true
-}
-
 func (t *typeResolver) firstType(schema *spec.Schema) string {
 	if len(schema.Type) == 0 || schema.Type[0] == "" {
 		return object
@@ -651,6 +625,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 
 	tpe := t.firstType(schema)
 	var returns bool
+
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
 		if !isAnonymous {
@@ -661,8 +636,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		debugLog("returning after ref")
 		return
 	}
-	defer setIsJSONString(&result, schema, tpe)
-	defer setIsEmptyOmitted(&result, schema, tpe)
+	defer func() {
+		result.setIsEmptyOmitted(schema, tpe)
+		result.setIsJSONString(schema, tpe)
+	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
@@ -814,4 +791,23 @@ func (rt *resolvedType) Zero() string {
 	}
 
 	return ""
+}
+
+func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
+	if v, found := schema.Extensions[xOmitEmpty]; found {
+		omitted, cast := v.(bool)
+		rt.IsEmptyOmitted = omitted && cast
+		return
+	}
+	// array of primitives are by default not empty-omitted, but arrays of aliased type are
+	rt.IsEmptyOmitted = (tpe != array) || (tpe == array && rt.IsAliased)
+}
+
+func (rt *resolvedType) setIsJSONString(schema *spec.Schema, tpe string) {
+	_, found := schema.Extensions[xGoJSONString]
+	if !found {
+		rt.IsJSONString = false
+		return
+	}
+	rt.IsJSONString = true
 }

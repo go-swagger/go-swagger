@@ -10,7 +10,6 @@ paths:
         200:
           description: ""
 definitions:
-
   Case-1--Fail--omitempty-false-not-hoisted-by-ref:
     type: object
     properties:
@@ -63,3 +62,62 @@ definitions:
       Data:
         type: object
     x-nullable: false
+
+  arrayWithNullable:
+    type: array
+    items:
+      type: string
+    x-nullable: true
+
+  arrayWithNullableItems:
+    type: array
+    items:
+      type: string
+      x-nullable: true
+
+  arrayWithDefault:
+    type: array
+    items:
+      type: string
+
+  arrayWithOmitEmpty:
+    type: array
+    items:
+      type: string
+    x-omitempty: true
+
+  arrayWithNoOmitEmpty:
+    type: array
+    items:
+      type: string
+    x-omitempty: false
+
+  arrayWithOmitEmptyItems:
+    type: array
+    items:
+      type: string
+      x-omitempty: false
+
+  objectWithArrays:
+    type: object
+    properties:
+      array0: # <- expect property to be omit empty
+        $ref: '#/definitions/arrayWithDefault'
+      array1: # <- expect property to be no omit empty
+        type: array
+        items:
+          type: string
+        x-omitempty: false
+      array11: # <- expect property to be omit empty
+        type: array
+        items:
+          type: string
+        x-omitempty: true
+      array12: # <- expect property to be no omit empty
+        type: array
+        items:
+          type: string
+      array2: # <- expect property to be omit empty
+        $ref: '#/definitions/arrayWithOmitEmpty'
+      array3: # <- expect property to be no omit empty
+        $ref: '#/definitions/arrayWithNoOmitEmpty'
