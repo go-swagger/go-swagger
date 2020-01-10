@@ -44,13 +44,14 @@ type skipT struct {
 	KnownExpandFailure         bool `yaml:"knownExpandFailure,omitempty"`
 	KnownFlattenMinimalFailure bool `yaml:"knownFlattenMinimalFailure,omitempty"`
 
+	SkipModel  bool `yaml:"skipModel,omitempty"`
+	SkipExpand bool `yaml:"skipExpand,omitempty"`
+
 	// global skip settings
-	SkipModel       bool `yaml:"skipModel,omitempty"`
 	SkipClient      bool `yaml:"skipClient,omitempty"`
 	SkipServer      bool `yaml:"skipServer,omitempty"`
 	SkipFullFlatten bool `yaml:"skipFullFlatten,omitempty"`
 	SkipValidation  bool `yaml:"skipValidation,omitempty"`
-	SkipExpand      bool `yaml:"skipExpand,omitempty"`
 }
 
 // fixtureT describe a spec and what _not_ to do with it
@@ -86,6 +87,12 @@ func (f fixturesT) Update(key string, in skipT) {
 	}
 	if in.KnownFlattenMinimalFailure {
 		out.KnownFlattenMinimalFailure = true
+	}
+	if in.SkipModel {
+		out.SkipModel = true
+	}
+	if in.SkipExpand {
+		out.SkipExpand = true
 	}
 	f[key] = out
 }
@@ -264,7 +271,7 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 		GenOpts:   make([]string, 0, 10),
 		GenClient: !globalOpts.SkipClient,
 		GenServer: !globalOpts.SkipServer,
-		GenModel:  !globalOpts.SkipModel,
+		GenModel:  !globalOpts.SkipModel && !skip.SkipModel,
 	}
 
 	if skip.KnownFailure {
@@ -289,7 +296,7 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 		template.GenServer = false
 	}
 
-	if !skip.KnownExpandFailure && !globalOpts.SkipExpand {
+	if !skip.KnownExpandFailure && !globalOpts.SkipExpand && !skip.SkipExpand {
 		// safeguard: avoid discriminator use case for expand
 		doc, err := ioutil.ReadFile(spec)
 		if err == nil && !strings.Contains(string(doc), "discriminator") {
@@ -328,13 +335,14 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 
 var (
 	args struct {
-		skipModels  bool
-		skipClients bool
-		skipServers bool
-		skipFlatten bool
-		skipExpand  bool
-		fixtureFile string
-		runPattern  string
+		skipModels     bool
+		skipClients    bool
+		skipServers    bool
+		skipFlatten    bool
+		skipExpand     bool
+		fixtureFile    string
+		runPattern     string
+		excludePattern string
 	}
 )
 
@@ -345,7 +353,8 @@ func TestMain(m *testing.M) {
 	flag.BoolVar(&args.skipFlatten, "skip-full-flatten", false, "skips full flatten option from codegen runs")
 	flag.BoolVar(&args.skipExpand, "skip-expand", false, "skips spec expand option from codegen runs")
 	flag.StringVar(&args.fixtureFile, "fixture-file", defaultFixtureFile, "fixture configuration file")
-	flag.StringVar(&args.runPattern, "run", "", "regexp to filter fixture")
+	flag.StringVar(&args.runPattern, "run", "", "regexp to include fixture")
+	flag.StringVar(&args.excludePattern, "exclude", "", "regexp to exclude fixture")
 	flag.Parse()
 	status := m.Run()
 	if status == 0 {
@@ -417,10 +426,18 @@ func TestCodegen(t *testing.T) {
 		spec := key
 		skip := value
 		if args.runPattern != "" {
-			// filters on a spec name pattern
+			// include filter on a spec name pattern
 			re, err := regexp.Compile(args.runPattern)
 			require.NoError(t, err)
 			if !re.MatchString(spec) {
+				continue
+			}
+		}
+		if args.excludePattern != "" {
+			// exclude filter on a spec name pattern
+			re, err := regexp.Compile(args.excludePattern)
+			require.NoError(t, err)
+			if re.MatchString(spec) {
 				continue
 			}
 		}

@@ -55,6 +55,8 @@
 - dir: fixtures/bugs/1859
 - dir: fixtures/bugs/1490
 - dir: fixtures/bugs/973
+  skipped:
+    skipModel: true  # no models to generate here
 - dir: fixtures/bugs/1020
 - dir: fixtures/bugs/1339
 - dir: fixtures/bugs/1893
