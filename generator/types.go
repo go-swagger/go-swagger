@@ -39,6 +39,7 @@ const (
 	binary  = "binary"
 	sHTTP   = "http"
 	body    = "body"
+	b64     = "byte"
 )
 
 // Extensions supported by go-swagger
@@ -87,6 +88,8 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 				// special case of swagger format "binary", rendered as io.ReadCloser interface
 				// TODO(fredbi): should set IsCustomFormatter=false when binary
 				result.IsStream = fmt == binary
+				// special case of swagger format "byte", rendered as a strfmt.Base64 type: no validation
+				result.IsBase64 = fmt == b64
 				return
 			}
 		}
@@ -294,6 +297,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 		// TODO: should set IsCustomFormatter=false in this case.
 		result.IsPrimitive = schFmt != binary
 		result.IsStream = schFmt == binary
+		result.IsBase64 = schFmt == b64
 		// propagate extensions in resolvedType
 		result.Extensions = schema.Extensions
 
@@ -750,6 +754,7 @@ type resolvedType struct {
 	IsStream          bool
 	IsEmptyOmitted    bool
 	IsJSONString      bool
+	IsBase64          bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool

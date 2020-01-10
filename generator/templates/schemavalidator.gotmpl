@@ -40,7 +40,7 @@
     return err
   }
   {{ end }}
-  {{ if .IsCustomFormatter }}{{/* the .IsStream case (ioReadCloser) is already excluded, since it does not resolve as primitive */}}
+  {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
     {{ template "validationCustomformat" . }}
   {{ end }}
 {{ end }}
@@ -156,7 +156,7 @@
     return err
   }
           {{- end }}
-          {{- if not .IsStream }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+          {{- if and (not .IsStream) (not .IsBase64) }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
             {{ template "validationCustomformat" . }}
           {{- end }}
         {{ else if .IsArray }}
@@ -301,7 +301,7 @@
     return err
   }
     {{- end }}
-    {{- if not .IsStream }}
+    {{- if and (not .IsStream) (not .IsBase64) }}
       {{ template "validationCustomformat" . }}
     {{- end }}
   {{- else if .IsArray }}
@@ -322,7 +322,7 @@
     return err
   }
     {{- end }}
-    {{- if not .IsStream }}
+    {{- if and (not .IsStream) (not .IsBase64) }}
       {{ template "validationCustomformat" . }}
     {{- end }}
   {{- else if .IsArray }}

@@ -4,16 +4,9 @@
 # Known bug in doc.go with */* media types (garbled generated comment)
 - dir: fixtures/canary/kubernetes
   spec: swagger.json
-  skipped:
-    knownFailure: true
-- dir: fixtures/canary/kubernetes
-  spec: swagger-fixed.json
-  #skipped:
-  #  knownServerFailure: true
 - dir: fixtures/canary/docker
   skipped:
     knownValidationFailure: true
-    #knownServerFailure: true
 - dir: fixtures/canary/docker-fixed
 - dir: fixtures/canary/ms-cog-sci
   skipped:
@@ -27,9 +20,7 @@
   spec: swagger.yaml
   skipped:
     knownFailure: true
-# fixing :
-# 1. the enum value
-# 2. the x-nullable on array
-# is enough to proceed (we have to adapt the default value as well)
+# fixing : the x-nullable on array
+# is enough to proceed
 - dir: fixtures/canary/docker-v1.41
   spec: swagger-fixed.yaml

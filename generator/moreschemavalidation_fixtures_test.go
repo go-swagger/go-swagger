@@ -2399,18 +2399,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile *AliasedNullableFile `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile *AliasedTypeNullableFile `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		todo,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -2426,18 +2425,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile io.ReadCloser `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile io.ReadCloser `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		noLines,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9303,10 +9301,12 @@ func initFixture1548() {
 		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
 		`	return (strfmt.Base64(m)).MarshalJSON(`,
 		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{"TODO",
+			"validate.FormatOf(",
+			`return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9329,11 +9329,14 @@ func initFixture1548() {
 	thisRun.AddExpectations("base64_array.go", []string{
 		`type Base64Array []strfmt.Base64`,
 		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
-		`	for i := 0; i < len(m); i++ {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	for i := 0; i < len(m); i++ {`,
+			`		return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9343,13 +9346,14 @@ func initFixture1548() {
 		`type Base64Model struct {`,
 		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
 		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateProp1(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-		`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.Prop1) {`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	if err := m.validateProp1(formats); err != nil {`,
+			`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
+		},
 		// output in log
 		noLines,
 		noLines)

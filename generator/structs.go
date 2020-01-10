@@ -355,6 +355,8 @@ type GenItems struct {
 
 	// instructs generator to skip the splitting and parsing from CollectionFormat
 	SkipParse bool
+	// instructs generator that some nested structure needs an higher level loop index
+	NeedsIndex bool
 }
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
