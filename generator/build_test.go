@@ -20,6 +20,7 @@ const (
 	defaultAPIPackage    = "operations"
 	defaultClientPackage = "client"
 	defaultModelPackage  = "models"
+	//defaultServerPackage = "restapi"
 )
 
 func TestGenerateAndBuild(t *testing.T) {

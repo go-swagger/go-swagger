@@ -93,6 +93,12 @@ func Test_GenerateClient(t *testing.T) {
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
+	// no operations selected
+	opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
+	err = GenerateClient("test", []string{}, []string{"wrongOperationID"}, opts)
+	assert.Error(t, err)
+
+	opts = testClientGenOpts()
 	// generate remote spec
 	opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
 	cwd, _ := os.Getwd()

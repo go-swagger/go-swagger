@@ -515,7 +515,6 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 
 func TestShared_GatherModel(t *testing.T) {
 	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
-
 	specDoc, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
