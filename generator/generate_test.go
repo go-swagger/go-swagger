@@ -2,13 +2,14 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateAndTest(t *testing.T) {
@@ -31,6 +32,11 @@ func TestGenerateAndTest(t *testing.T) {
 	for name, cas := range cases {
 		var captureLog bytes.Buffer
 		log.SetOutput(&captureLog)
+		defer func() {
+			if t.Failed() {
+				t.Logf("ERROR: generation failed:\n%s", captureLog.String())
+			}
+		}()
 
 		thisCas := cas
 
@@ -44,27 +50,31 @@ func TestGenerateAndTest(t *testing.T) {
 			opts.Spec = spec
 			opts.ExcludeSpec = false
 
-			fmt.Println(opts.Target)
-
-			t.Log("generating test server")
-			err := GenerateServer("", nil, nil, &opts)
+			t.Logf("generating test server at: %s", opts.Target)
+			err := GenerateServer("", nil, nil, opts)
 			defer func() { _ = os.RemoveAll(opts.Target + "/models") }()
 			defer func() { _ = os.RemoveAll(opts.Target + "/restapi") }()
 
 			if err != nil {
-				t.Fatalf("Execute()=%s", err)
+				if !assert.NoError(t, err, "Execute()=%s", err) {
+					return
+				}
 			}
 
 			packages := filepath.Join(opts.Target, "...")
 			testPrg := filepath.Join(opts.Target, "datarace_test.go")
 
 			if p, err := exec.Command("go", "get", packages).CombinedOutput(); err != nil {
-				t.Fatalf("go get %s: %s\n%s", packages, err, p)
+				if !assert.NoError(t, err, "go get %s: %s\n%s", packages, err, p) {
+					return
+				}
 			}
 
 			t.Log("running data race test on generated server")
 			if p, err := exec.Command("go", "test", "-v", "-race", testPrg).CombinedOutput(); err != nil {
-				t.Fatalf("go test -race %s: %s\n%s", packages, err, p)
+				if !assert.NoError(t, err, "go test -race %s: %s\n%s", packages, err, p) {
+					return
+				}
 			}
 		})
 	}

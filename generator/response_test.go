@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSimpleResponseRender(t *testing.T) {
@@ -316,51 +317,43 @@ func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 
 func TestGenResponses_Issue718_Required(t *testing.T) {
 	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "if payload == nil", string(ff))
-					assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	assertInCode(t, "if payload == nil", string(ff))
+	assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
 }
 
 // Issue776 includes references that span multiple files. Flattening or Expanding is required
 func TestGenResponses_Issue776_Spec(t *testing.T) {
-	//spec.Debug = true
 	log.SetOutput(ioutil.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
-		//spec.Debug = false
 	}()
 
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/spec.yaml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					// This should be models.Item if flat works correctly
-					assertInCode(t, "Payload *models.Item", string(ff))
-					assertNotInCode(t, "type GetItemOKBody struct", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	// This should be models.Item if flat works correctly
+	assertInCode(t, "Payload *models.Item", string(ff))
+	assertNotInCode(t, "type GetItemOKBody struct", string(ff))
 }
 
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
@@ -372,96 +365,83 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 	}()
 
 	b, err := opBuilderWithFlatten("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "Payload *models.Error", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	assertInCode(t, "Payload *models.Error", string(ff))
 }
 
 func TestIssue846(t *testing.T) {
 	// do it 8 times, to ensure it's always in the same order
 	for i := 0; i < 8; i++ {
 		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
-		if assert.NoError(t, err) {
-			op, err := b.MakeOperation()
-			if assert.NoError(t, err) {
-				var buf bytes.Buffer
-				opts := opts()
-				if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
-					ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						// sorted by code
-						assert.Regexp(t, "(?s)"+
-							"GetFooOK struct.+"+
-							"GetFooNotFound struct.+"+
-							"GetFooInternalServerError struct", string(ff))
-						// sorted by name
-						assert.Regexp(t, "(?s)"+
-							"GetFooInternalServerErrorBody struct.+"+
-							"GetFooNotFoundBody struct.+"+
-							"GetFooOKBody struct", string(ff))
-					} else {
-						fmt.Println(buf.String())
-					}
-				}
-			}
+		require.NoError(t, err)
+		op, err := b.MakeOperation()
+		require.NoError(t, err)
+		var buf bytes.Buffer
+		opts := opts()
+		require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+		ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+		if err != nil {
+			fmt.Println(buf.String())
 		}
+		require.NoError(t, err)
+		// sorted by code
+		assert.Regexp(t, "(?s)"+
+			"GetFooOK struct.+"+
+			"GetFooNotFound struct.+"+
+			"GetFooInternalServerError struct", string(ff))
+		// sorted by name
+		assert.Regexp(t, "(?s)"+
+			"GetFooInternalServerErrorBody struct.+"+
+			"GetFooNotFoundBody struct.+"+
+			"GetFooOKBody struct", string(ff))
 	}
 }
 
 func TestIssue881(t *testing.T) {
 	b, err := opBuilder("getFoo", "../fixtures/bugs/881/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
-		}
-	}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
 }
 
 func TestIssue881Deep(t *testing.T) {
 	b, err := opBuilder("getFoo", "../fixtures/bugs/881/deep.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
-		}
-	}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
 }
 
 func TestGenResponses_XGoName(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/specs/response_name.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "const PutTestingAlternateNameCode int =", string(ff))
-					assertInCode(t, "type PutTestingAlternateName struct {", string(ff))
-					assertInCode(t, "func NewPutTestingAlternateName() *PutTestingAlternateName {", string(ff))
-					assertInCode(t, "func (o *PutTestingAlternateName) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("put_testing_responses.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	assertInCode(t, "const PutTestingAlternateNameCode int =", string(ff))
+	assertInCode(t, "type PutTestingAlternateName struct {", string(ff))
+	assertInCode(t, "func NewPutTestingAlternateName() *PutTestingAlternateName {", string(ff))
+	assertInCode(t, "func (o *PutTestingAlternateName) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {", string(ff))
 }
 
 func TestGenResponses_Issue892(t *testing.T) {

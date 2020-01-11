@@ -17,7 +17,6 @@ package generator
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"testing"
 
@@ -26,9 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-}
+// testing utilities for codegen assertions
 
 func reqm(str string) *regexp.Regexp {
 	return regexp.MustCompile(regexp.QuoteMeta(str))

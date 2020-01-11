@@ -1,4 +1,5 @@
 // Copyright 2015 go-swagger maintainers
+
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,20 +20,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
-	goruntime "runtime"
 	"sort"
-	"strings"
-
-	yaml "gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 )
@@ -56,57 +50,18 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOp
 }
 
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
-	if opts == nil {
-		return nil, errors.New("gen opts are required")
-	}
 	if err := opts.CheckOpts(); err != nil {
 		return nil, err
 	}
 
-	templates.LoadDefaults()
-	if opts.Template != "" {
-		if err := templates.LoadContrib(opts.Template); err != nil {
-			return nil, err
-		}
-	}
-
-	templates.SetAllowOverride(opts.AllowTemplateOverride)
-
-	if opts.TemplateDir != "" {
-		if err := templates.LoadDir(opts.TemplateDir); err != nil {
-			return nil, err
-		}
-	}
-
-	// Load the spec
-	var err error
-	var specDoc *loads.Document
-
-	opts.Spec, err = findSwaggerSpec(opts.Spec)
-	if err != nil {
+	if err := opts.setTemplates(); err != nil {
 		return nil, err
 	}
 
-	if !filepath.IsAbs(opts.Spec) {
-		cwd, _ := os.Getwd()
-		opts.Spec = filepath.Join(cwd, opts.Spec)
-	}
-
-	if opts.PropertiesSpecOrder {
-		opts.Spec = WithAutoXOrder(opts.Spec)
-	}
-
-	opts.Spec, specDoc, err = loadSpec(opts.Spec)
+	specDoc, analyzed, err := opts.analyzeSpec()
 	if err != nil {
 		return nil, err
 	}
-
-	specDoc, err = validateAndFlattenSpec(opts, specDoc)
-	if err != nil {
-		return nil, err
-	}
-
-	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {
@@ -114,27 +69,13 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	}
 
 	operations := gatherOperations(analyzed, operationIDs)
+
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")
 	}
 
-	defaultScheme := opts.DefaultScheme
-	if defaultScheme == "" {
-		defaultScheme = "http"
-	}
-
-	defaultProduces := opts.DefaultProduces
-	if defaultProduces == "" {
-		defaultProduces = runtime.JSONMime
-	}
-
-	defaultConsumes := opts.DefaultConsumes
-	if defaultConsumes == "" {
-		defaultConsumes = runtime.JSONMime
-	}
-
-	opts.Name = appNameOrDefault(specDoc, name, "swagger")
-	apiPackage := opts.LanguageOpts.ManglePackagePath(opts.APIPackage, "api")
+	opts.Name = appNameOrDefault(specDoc, name, defaultServerName)
+	apiPackage := opts.LanguageOpts.ManglePackagePath(opts.APIPackage, defaultOperationsTarget)
 	return &appGenerator{
 		Name:              opts.Name,
 		Receiver:          "o",
@@ -144,16 +85,16 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Operations:        operations,
 		Target:            opts.Target,
 		DumpData:          opts.DumpData,
-		Package:           opts.LanguageOpts.ManglePackageName(apiPackage, "api"),
+		Package:           opts.LanguageOpts.ManglePackageName(apiPackage, defaultOperationsTarget),
 		APIPackage:        apiPackage,
-		ModelsPackage:     opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "definitions"),
-		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, "server"),
-		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, "client"),
-		OperationsPackage: filepath.Join(opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, "server"), apiPackage),
+		ModelsPackage:     opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, defaultModelsTarget),
+		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget),
+		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
+		OperationsPackage: filepath.Join(opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget), apiPackage),
 		Principal:         opts.Principal,
-		DefaultScheme:     defaultScheme,
-		DefaultProduces:   defaultProduces,
-		DefaultConsumes:   defaultConsumes,
+		DefaultScheme:     opts.DefaultScheme,
+		DefaultProduces:   opts.DefaultProduces,
+		DefaultConsumes:   opts.DefaultConsumes,
 		GenOpts:           opts,
 	}, nil
 }
@@ -180,122 +121,14 @@ type appGenerator struct {
 	GenOpts           *GenOpts
 }
 
-// WithAutoXOrder amends the spec to specify property order as they appear
-// in the spec (supports yaml documents only).
-func WithAutoXOrder(specPath string) string {
-	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
-		if slice, ok := ele.(yaml.MapSlice); ok {
-			for _, v := range slice {
-				if v.Key == key {
-					if slice, ok := v.Value.(yaml.MapSlice); ok {
-						return slice, ok
-					}
-				}
-			}
-		}
-		return nil, false
-	}
-
-	var addXOrder func(interface{})
-	addXOrder = func(element interface{}) {
-		if props, ok := lookFor(element, "properties"); ok {
-			for i, prop := range props {
-				if pSlice, ok := prop.Value.(yaml.MapSlice); ok {
-					isObject := false
-					xOrderIndex := -1 //Find if x-order already exists
-
-					for i, v := range pSlice {
-						if v.Key == "type" && v.Value == object {
-							isObject = true
-						}
-						if v.Key == xOrder {
-							xOrderIndex = i
-							break
-						}
-					}
-
-					if xOrderIndex > -1 { //Override existing x-order
-						pSlice[xOrderIndex] = yaml.MapItem{Key: xOrder, Value: i}
-					} else { // append new x-order
-						pSlice = append(pSlice, yaml.MapItem{Key: xOrder, Value: i})
-					}
-					prop.Value = pSlice
-					props[i] = prop
-
-					if isObject {
-						addXOrder(pSlice)
-					}
-				}
-			}
-		}
-	}
-
-	yamlDoc, err := swag.YAMLData(specPath)
-	if err != nil {
-		panic(err)
-	}
-
-	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
-		for _, def := range defs {
-			addXOrder(def.Value)
-		}
-	}
-
-	addXOrder(yamlDoc)
-
-	out, err := yaml.Marshal(yamlDoc)
-	if err != nil {
-		panic(err)
-	}
-
-	tmpFile, err := ioutil.TempFile("", filepath.Base(specPath))
-	if err != nil {
-		panic(err)
-	}
-	if err := ioutil.WriteFile(tmpFile.Name(), out, 0); err != nil {
-		panic(err)
-	}
-	return tmpFile.Name()
-}
-
-// 1. Checks if the child path and parent path coincide.
-// 2. If they do return child path  relative to parent path.
-// 3. Everything else return false
-func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string) {
-	// Windows (local) file systems - NTFS, as well as FAT and variants
-	// are case insensitive.
-	cp, pp := childpath, parentpath
-	if goruntime.GOOS == "windows" {
-		cp = strings.ToLower(cp)
-		pp = strings.ToLower(pp)
-	}
-
-	if strings.HasPrefix(cp, pp) {
-		pth, err := filepath.Rel(parentpath, childpath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		return true, pth
-	}
-
-	return false, ""
-
-}
-
 func (a *appGenerator) Generate() error {
-
 	app, err := a.makeCodegenApp()
 	if err != nil {
 		return err
 	}
 
 	if a.DumpData {
-		bb, err := json.MarshalIndent(app, "", "  ")
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(os.Stdout, string(bb))
-		return nil
+		return dumpData(app)
 	}
 
 	// NOTE: relative to previous implem with chan.
@@ -325,7 +158,7 @@ func (a *appGenerator) Generate() error {
 					return err
 				}
 			}
-			// Optional OperationGroups templates generation
+			// optional OperationGroups templates generation
 			opGroup := opg
 			opGroup.DefaultImports = app.DefaultImports
 			if err := a.GenOpts.renderOperationGroup(&opGroup); err != nil {
@@ -346,6 +179,7 @@ func (a *appGenerator) Generate() error {
 func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	app := ap
 	if ap == nil {
+		// allows for calling GenerateSupport standalone
 		ca, err := a.makeCodegenApp()
 		if err != nil {
 			return err
@@ -353,10 +187,10 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
-	importPath := path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
+	importPath := path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
 	app.DefaultImports = append(
 		app.DefaultImports,
-		path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, "")),
+		path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, "")),
 		importPath,
 	)
 
@@ -388,8 +222,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
-	//sort.Sort(consumes) // TODO(fred): done inside
-	//sort.Sort(produces) // TODO(fred): done inside
 	security := a.makeSecuritySchemes()
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	var imports = make(map[string]string)
@@ -397,9 +229,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	var genMods GenDefinitions
 	importPath := a.GenOpts.ExistingModels
 	if a.GenOpts.ExistingModels == "" {
-		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, "models")] = path.Join(
-			filepath.ToSlash(baseImport),
-			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, "models"))
+		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, defaultModelsTarget)] = path.Join(
+			baseImport,
+			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, defaultModelsTarget))
 	}
 	if importPath != "" {
 		defaultImports = append(defaultImports, importPath)
@@ -439,30 +271,30 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
 
-		var bldr codeGenOpBuilder
-		bldr.ModelsPackage = a.ModelsPackage
-		bldr.Principal = a.Principal
-		bldr.Target = a.Target
-		bldr.DefaultImports = defaultImports
-		bldr.Imports = imports
-		bldr.DefaultScheme = a.DefaultScheme
-		bldr.Doc = a.SpecDoc
-		bldr.Analyzed = a.Analyzed
-		bldr.BasePath = a.SpecDoc.BasePath()
-		bldr.GenOpts = a.GenOpts
+		bldr := codeGenOpBuilder{
+			ModelsPackage:    a.ModelsPackage,
+			Principal:        a.Principal,
+			Target:           a.Target,
+			DefaultImports:   defaultImports,
+			Imports:          imports,
+			DefaultScheme:    a.DefaultScheme,
+			Doc:              a.SpecDoc,
+			Analyzed:         a.Analyzed,
+			BasePath:         a.SpecDoc.BasePath(),
+			GenOpts:          a.GenOpts,
+			Name:             on, // TODO: change operation name to something safe
+			Operation:        *o,
+			Method:           opp.Method,
+			Path:             opp.Path,
+			IncludeValidator: true,
+			APIPackage:       a.APIPackage, // defaults to main operations package
+		}
 
-		// TODO: change operation name to something safe
-		bldr.Name = on
-		bldr.Operation = *o
-		bldr.Method = opp.Method
-		bldr.Path = opp.Path
 		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
 		bldr.Security = a.Analyzed.SecurityRequirementsFor(o)
 		bldr.SecurityDefinitions = a.Analyzed.SecurityDefinitionsFor(o)
-		bldr.RootAPIPackage = a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, "server")
-		bldr.IncludeValidator = true
+		bldr.RootAPIPackage = a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget)
 
-		bldr.APIPackage = a.APIPackage
 		st := o.Tags
 		if a.GenOpts != nil {
 			st = a.GenOpts.Tags
@@ -491,7 +323,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	for k := range tns {
 		importPath := filepath.ToSlash(
 			path.Join(
-				filepath.ToSlash(baseImport),
+				baseImport,
 				a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""),
 				swag.ToFileName(k)))
 		defaultImports = append(defaultImports, importPath)
@@ -528,7 +360,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
 				Copyright:        a.GenOpts.Copyright,
-				TargetImportPath: filepath.ToSlash(baseImport),
+				TargetImportPath: baseImport,
 			},
 			Name:           k,
 			Operations:     vv,
@@ -540,9 +372,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opGroups = append(opGroups, opGroup)
 		var importPath string
 		if k == a.APIPackage {
-			importPath = path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
+			importPath = path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
 		} else {
-			importPath = path.Join(filepath.ToSlash(baseImport), a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""), k)
+			importPath = path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""), k)
 		}
 		defaultImports = append(defaultImports, importPath)
 	}
@@ -572,9 +404,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	return GenApp{
 		GenCommon: GenCommon{
 			Copyright:        a.GenOpts.Copyright,
-			TargetImportPath: filepath.ToSlash(baseImport),
+			TargetImportPath: baseImport,
 		},
-		APIPackage:          a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, "server"),
+		APIPackage:          a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget),
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,

@@ -82,7 +82,8 @@ func TestGenerateModel_Sanity(t *testing.T) {
 }
 
 func TestGenerateModel_DocString(t *testing.T) {
-	templ := template.Must(template.New("docstring").Funcs(FuncMap).Parse(string(assets["docstring.gotmpl"])))
+	funcMap := FuncMapFunc(DefaultLanguageFunc())
+	templ := template.Must(template.New("docstring").Funcs(funcMap).Parse(string(assets["docstring.gotmpl"])))
 	tt := templateTest{t, templ}
 
 	var gmp GenSchema
@@ -104,7 +105,8 @@ func TestGenerateModel_DocString(t *testing.T) {
 }
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
-	templ := template.Must(template.New("propertyValidationDocString").Funcs(FuncMap).Parse(string(assets["validation/structfield.gotmpl"])))
+	funcMap := FuncMapFunc(DefaultLanguageFunc())
+	templ := template.Must(template.New("propertyValidationDocString").Funcs(funcMap).Parse(string(assets["validation/structfield.gotmpl"])))
 	tt := templateTest{t, templ}
 
 	var gmp GenSchema
@@ -949,7 +951,6 @@ func TestGenerateModel_Statix(t *testing.T) {
 		schema := definitions[k]
 		opts := opts()
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		// spew.Dump(genModel)
 		if assert.NoError(t, err) {
 			buf := bytes.NewBuffer(nil)
 			err := templates.MustGet("model").Execute(buf, genModel)

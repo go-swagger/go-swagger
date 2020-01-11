@@ -21,35 +21,6 @@ import (
 
 const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
 
-// Perform common initialization of template repository before running tests.
-// This allows to run tests unitarily (e.g. go test -run xxx ).
-func TestMain(m *testing.M) {
-	templates.LoadDefaults()
-	os.Exit(m.Run())
-}
-
-func testGenOpts() (g GenOpts) {
-	g.Target = "."
-	g.APIPackage = defaultAPIPackage
-	g.ModelPackage = defaultModelPackage
-	g.ServerPackage = defaultServerPackage
-	g.ClientPackage = defaultClientPackage
-	g.Principal = ""
-	g.DefaultScheme = "http"
-	g.IncludeModel = true
-	g.IncludeValidator = true
-	g.IncludeHandler = true
-	g.IncludeParameters = true
-	g.IncludeResponses = true
-	g.IncludeMain = false
-	g.IncludeSupport = true
-	g.ExcludeSpec = true
-	g.TemplateDir = ""
-	g.DumpData = false
-	_ = g.EnsureDefaults()
-	return
-}
-
 func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error) {
 	specDoc, err := loads.Spec(specPath)
 	if !assert.NoError(t, err) {
@@ -89,7 +60,7 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 		DefaultScheme:   "http",
 		DefaultProduces: runtime.JSONMime,
 		DefaultConsumes: runtime.JSONMime,
-		GenOpts:         &opts,
+		GenOpts:         opts,
 	}, nil
 }
 
@@ -161,7 +132,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = invalidSpecExample
 	opts.ValidateSpec = true
-	assert.Error(t, GenerateServer("foo", nil, nil, &opts))
+	assert.Error(t, GenerateServer("foo", nil, nil, opts))
 }
 
 func TestServer_TrailingSlash(t *testing.T) {
@@ -481,7 +452,7 @@ func TestServer_Issue1746(t *testing.T) {
 	opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "1746", "fixture-1746.yaml")
 	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
 
-	err = GenerateServer("", nil, nil, &opts)
+	err = GenerateServer("", nil, nil, opts)
 	assert.NoError(t, err)
 	gulp, err := ioutil.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
 	assert.NoError(t, err)
