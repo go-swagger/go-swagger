@@ -483,12 +483,12 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 			def, ok := pkg.TypesInfo.Defs[ts.Name]
 			if !ok {
 				debugLog("couldn't find type info for %s", ts.Name)
-				//continue
+				continue
 			}
 			nt, isNamed := def.Type().(*types.Named)
 			if !isNamed {
 				debugLog("%s is not a named type but a %T", ts.Name, def.Type())
-				//continue
+				continue
 			}
 			decl := &entityDecl{
 				Comments: gd.Doc,
