@@ -13,7 +13,7 @@ RUN set -e -x \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/aktau/github-release \
   && go get -u github.com/mitchellh/gox \
-  && gem install --no-ri --no-rdoc fpm etc \
+  && gem install --no-document fpm etc \
   && gem sources -c
 
 VOLUME /usr/share/coverage
