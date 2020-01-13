@@ -72,11 +72,17 @@ func (ht responseTypable) Schema() *spec.Schema {
 func (ht responseTypable) SetSchema(schema *spec.Schema) {
 	ht.response.Schema = schema
 }
+
 func (ht responseTypable) CollectionOf(items *spec.Items, format string) {
 	ht.header.CollectionOf(items, format)
 }
+
 func (ht responseTypable) AddExtension(key string, value interface{}) {
 	ht.response.AddExtension(key, value)
+}
+
+func (ht responseTypable) WithEnum(values ...interface{}) {
+	ht.header.WithEnum(values)
 }
 
 type headerValidations struct {

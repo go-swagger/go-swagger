@@ -3,6 +3,7 @@ package codescan
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"go/types"
 	"log"
 	"os"
@@ -350,6 +351,36 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 		}
 	}
 	return nil, false
+}
+
+func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, _ bool) {
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			gd, ok := d.(*ast.GenDecl)
+			if !ok {
+				continue
+			}
+
+			if gd.Tok != token.CONST {
+				continue
+			}
+
+			for _, s := range gd.Specs {
+				if vs, ok := s.(*ast.ValueSpec); ok {
+					if vsIdent, ok := vs.Type.(*ast.Ident); ok {
+						if vsIdent.Name == enumName {
+							if len(vs.Values) > 0 {
+								if bl, ok := vs.Values[0].(*ast.BasicLit); ok {
+									list = append(list, getEnumBasicLitValue(bl))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return list, true
 }
 
 func newTypeIndex(pkgs []*packages.Package,
