@@ -108,21 +108,22 @@
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
   {{ if .HasAdditionalProperties }}
     {{- if  .AdditionalProperties.HasValidations }}
+    {{- $validatedValues := .ValueExpression }}{{ $keyVar := .AdditionalProperties.KeyVar }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
       {{ with .AdditionalProperties }}
         {{- if and (not .Required) .IsNullable }}{{/* skip when nul type is accepted */}}
-      if swag.IsZero({{ .ValueExpression }}) { // not required
+      if swag.IsZero({{ $validatedValues }}[{{ $keyVar }}]) { // not required
         continue
       }
         {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
-      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
         {{- end }}
         {{- if .IsPrimitive }}
           {{- if .IsAliased }}
             {{- if not .IsAnonymous }}
-      if val, ok := {{ .ValueExpression }}; ok {
+      if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
               {{- if and .IsNullable (not .IsMapNullOverride) }}
         if val != nil {
               {{- end }}
@@ -164,13 +165,13 @@
         {{ else if .IsMap }}
           {{ template "mapvalidator" . }}
           {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
           {{- end }}
         {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
           {{- if not .IsAnonymous }}
-    if val, ok := {{ .ValueExpression }}; ok {
+    if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
             {{- if and .IsNullable (not .IsMapNullOverride) }}
       if val != nil {
             {{- end }}
@@ -306,7 +307,7 @@
     {{- end }}
   {{- else if .IsArray }}
     {{ template "slicevalidator" . }}
-    {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}{{/* except for interface, the renderinf for aliased maps is performed by objectvalidator */}}
+  {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}{{/* except for interface, the renderinf for aliased maps is performed by objectvalidator */}}
     {{ template "mapvalidator" . }}
   {{- else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
     {{ template "objectvalidator" . }}
