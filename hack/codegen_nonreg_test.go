@@ -134,6 +134,12 @@ func gobuild(t *testing.T, runOpts ...icmd.CmdOp) {
 	started := measure(t, nil)
 	cmd := icmd.Command("go", "build")
 	res := icmd.RunCmd(cmd, runOpts...)
+	if res.ExitCode == 127 {
+		// assume a transient error (e.g. memory): retry
+		warn(t, "build failure, assuming transitory issue and retrying")
+		time.Sleep(2 * time.Second)
+		res = icmd.RunCmd(cmd, runOpts...)
+	}
 	if !assert.Equal(t, 0, res.ExitCode) {
 		failure(t, "go build failed")
 		t.Log(res.Stderr())
