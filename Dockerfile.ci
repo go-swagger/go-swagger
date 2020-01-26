@@ -18,7 +18,7 @@ RUN set -e -x \
   && go get -u github.com/aktau/github-release \
   && go get -u github.com/mitchellh/gox \
   && go get -u gotest.tools/gotestsum \
-  && gem install --no-ri --no-rdoc fpm etc \
+  && gem install --no-document fpm etc \
   && gem sources -c
 
 VOLUME /usr/share/coverage
