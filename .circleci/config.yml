@@ -222,7 +222,7 @@ jobs:
 
       - run:
           name: Test codegen builds
-          command: go test -v -timeout 60m -parallel 4 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
+          command: go test -v -timeout 20m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
           no_output_timeout: 30m
 
   canary_tests:
@@ -246,7 +246,7 @@ jobs:
 
       - run:
           name: Test canary builds
-          command: go test -v -timeout 60m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
+          command: go test -v -timeout 20m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
           no_output_timeout: 30m
 
   publish_release:
