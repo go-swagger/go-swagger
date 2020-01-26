@@ -23,25 +23,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
-	defaultAPIPackage    = "operations"
-	defaultClientPackage = "client"
-	defaultModelPackage  = "models"
-	defaultServerPackage = "restapi"
-
 	basicFixture = "../fixtures/petstores/petstore.json"
 )
 
-func testClientGenOpts() (g GenOpts) {
+func testClientGenOpts() *GenOpts {
+	g := &GenOpts{}
 	g.Target = "."
 	g.APIPackage = defaultAPIPackage
 	g.ModelPackage = defaultModelPackage
 	g.ServerPackage = defaultServerPackage
 	g.ClientPackage = defaultClientPackage
 	g.Principal = ""
-	g.DefaultScheme = "http"
 	g.IncludeModel = true
 	g.IncludeValidator = true
 	g.IncludeHandler = true
@@ -51,8 +47,10 @@ func testClientGenOpts() (g GenOpts) {
 	g.TemplateDir = ""
 	g.DumpData = false
 	g.IsClient = true
-	_ = g.EnsureDefaults()
-	return
+	if err := g.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+	return g
 }
 
 func Test_GenerateClient(t *testing.T) {
@@ -64,28 +62,34 @@ func Test_GenerateClient(t *testing.T) {
 
 	opts := testClientGenOpts()
 	opts.TemplateDir = "dir/nowhere"
-	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, &opts)
+	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, opts)
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
 	opts.TemplateDir = "http://nowhere.com"
-	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, &opts)
+	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, opts)
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
 	opts.Spec = "dir/nowhere.yaml"
-	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, &opts)
+	err = GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, opts)
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
 	opts.Spec = basicFixture
-	err = GenerateClient("test", []string{"model1"}, []string{}, &opts)
+	err = GenerateClient("test", []string{"model1"}, []string{}, opts)
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
 	// bad content in spec (HTML...)
 	opts.Spec = "https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v2.0/json/petstore.json"
-	err = GenerateClient("test", []string{}, []string{}, &opts)
+	err = GenerateClient("test", []string{}, []string{}, opts)
+	assert.Error(t, err)
+
+	opts = testClientGenOpts()
+	// no operations selected
+	opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
+	err = GenerateClient("test", []string{}, []string{"wrongOperationID"}, opts)
 	assert.Error(t, err)
 
 	opts = testClientGenOpts()
@@ -98,12 +102,12 @@ func Test_GenerateClient(t *testing.T) {
 	}()
 	opts.Target = tft
 	opts.IsClient = true
-	DefaultSectionOpts(&opts)
+	DefaultSectionOpts(opts)
 
 	defer func() {
 		_ = os.RemoveAll(opts.Target)
 	}()
-	err = GenerateClient("test", []string{}, []string{}, &opts)
+	err = GenerateClient("test", []string{}, []string{}, opts)
 	assert.NoError(t, err)
 
 	// just checks this does not fail
@@ -117,18 +121,25 @@ func Test_GenerateClient(t *testing.T) {
 	}()
 	os.Stdout, _ = os.Create(filepath.Join(tgt, "stdout"))
 	opts.DumpData = true
-	err = GenerateClient("test", []string{}, []string{}, &opts)
+	err = GenerateClient("test", []string{}, []string{}, opts)
 	assert.NoError(t, err)
 	_, err = os.Stat(filepath.Join(tgt, "stdout"))
 	assert.NoError(t, err)
 }
 
 func TestClient(t *testing.T) {
-	targetdir, err := ioutil.TempDir(os.TempDir(), "swagger_nogo")
-	if err != nil {
-		t.Fatalf("Failed to create a test target directory: %v", err)
-	}
 	log.SetOutput(ioutil.Discard)
+	base := os.Getenv("GOPATH")
+	if base == "" {
+		base = "."
+	} else {
+		base = filepath.Join(base, "src")
+		err := os.MkdirAll(base, 0755)
+		require.NoError(t, err)
+	}
+	targetdir, err := ioutil.TempDir(base, "swagger_nogo")
+	require.NoError(t, err, "Failed to create a test target directory: %v", err)
+
 	defer func() {
 		_ = os.RemoveAll(targetdir)
 		log.SetOutput(os.Stdout)
@@ -149,7 +160,10 @@ func TestClient(t *testing.T) {
 			},
 		},
 		{
-			name:      "BaseImportDisabled",
+			name: "BaseImportDisabled",
+			prepare: func(opts *GenOpts) {
+				opts.LanguageOpts.BaseImportFunc = nil
+			},
 			wantError: false,
 		},
 		{
@@ -169,14 +183,13 @@ func TestClient(t *testing.T) {
 			opts := testClientGenOpts()
 			opts.Target = targetdir
 			opts.Spec = basicFixture
-			opts.LanguageOpts.BaseImportFunc = nil
 			opts.Template = tt.template
 
 			if tt.prepare != nil {
-				tt.prepare(&opts)
+				tt.prepare(opts)
 			}
 
-			err := GenerateClient("foo", nil, nil, &opts)
+			err := GenerateClient("foo", nil, nil, opts)
 			if tt.wantError {
 				assert.Error(t, err)
 			} else {
@@ -203,7 +216,7 @@ func TestGenClient_1518(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(opts.Target)
 	}()
-	err := GenerateClient("client", []string{}, []string{}, &opts)
+	err := GenerateClient("client", []string{}, []string{}, opts)
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}

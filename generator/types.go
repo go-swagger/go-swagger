@@ -37,7 +37,6 @@ const (
 	str     = "string"
 	object  = "object"
 	binary  = "binary"
-	sHTTP   = "http"
 	body    = "body"
 	b64     = "byte"
 )
@@ -56,10 +55,10 @@ const (
 	xGoJSONString = "x-go-json-string"
 )
 
-// swaggerTypeMapping contains a mapping from go type to swagger type or format
+// swaggerTypeName contains a mapping from go type to swagger type or format
 var swaggerTypeName map[string]string
 
-func init() {
+func initTypes() {
 	swaggerTypeName = make(map[string]string)
 	for k, v := range typeMapping {
 		swaggerTypeName[v] = k

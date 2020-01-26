@@ -28,108 +28,110 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUniqueOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		sp := doc.Spec()
-		sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
-		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
-		sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
-		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
-		analyzed := analysis.New(sp)
+	require.NoError(t, err)
 
-		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 6)
-		_, exists := ops["saveTask"]
-		assert.True(t, exists)
-		_, exists = ops["PutTasksID"]
-		assert.True(t, exists)
-	}
+	sp := doc.Spec()
+	sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
+	sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+	sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
+	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+	analyzed := analysis.New(sp)
+
+	ops := gatherOperations(analyzed, nil)
+	assert.Len(t, ops, 6)
+	_, exists := ops["saveTask"]
+	assert.True(t, exists)
+	_, exists = ops["PutTasksID"]
+	assert.True(t, exists)
 }
 
 func TestEmptyOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		sp := doc.Spec()
-		sp.Paths.Paths["/tasks"].Post.ID = ""
-		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
-		sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
-		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
-		analyzed := analysis.New(sp)
+	require.NoError(t, err)
 
-		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 6)
-		_, exists := ops["PostTasks"]
-		assert.True(t, exists)
-		_, exists = ops["PutTasksID"]
-		assert.True(t, exists)
-	}
+	sp := doc.Spec()
+	sp.Paths.Paths["/tasks"].Post.ID = ""
+	sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+	sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
+	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+	analyzed := analysis.New(sp)
+
+	ops := gatherOperations(analyzed, nil)
+	assert.Len(t, ops, 6)
+	_, exists := ops["PostTasks"]
+	assert.True(t, exists)
+	_, exists = ops["PutTasksID"]
+	assert.True(t, exists)
 }
 
 func TestMakeResponseHeader(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
-		gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
-		if assert.NoError(t, er) {
-			assert.True(t, gh.IsPrimitive)
-			assert.Equal(t, "int32", gh.GoType)
-			assert.Equal(t, "X-Rate-Limit", gh.Name)
-		}
-	}
+	require.NoError(t, err)
+
+	hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
+	gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
+	require.NoError(t, er)
+
+	assert.True(t, gh.IsPrimitive)
+	assert.Equal(t, "int32", gh.GoType)
+	assert.Equal(t, "X-Rate-Limit", gh.Name)
 }
 
 func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		var testCases = []struct {
-			name         string      // input
-			typeStr      string      // expected type
-			defaultValue interface{} // expected result
-		}{
-			{"Access-Control-Allow-Origin", "string", "*"},
-			{"X-Rate-Limit", "int32", nil},
-			{"X-Rate-Limit-Remaining", "int32", float64(42)},
-			{"X-Rate-Limit-Reset", "int32", "1449875311"},
-			{"X-Rate-Limit-Reset-Human", "string", "3 days"},
-			{"X-Rate-Limit-Reset-Human-Number", "string", float64(3)},
-		}
+	require.NoError(t, err)
 
-		for _, tc := range testCases {
-			// t.Logf("tc: %+v", tc)
-			hdr := findResponseHeader(&b.Operation, 200, tc.name)
-			assert.NotNil(t, hdr)
-			gh, er := b.MakeHeader("a", tc.name, *hdr)
-			if assert.NoError(t, er) {
-				assert.True(t, gh.IsPrimitive)
-				assert.Equal(t, tc.typeStr, gh.GoType)
-				assert.Equal(t, tc.name, gh.Name)
-				assert.Exactly(t, tc.defaultValue, gh.Default)
-			}
-		}
+	var testCases = []struct {
+		name         string      // input
+		typeStr      string      // expected type
+		defaultValue interface{} // expected result
+	}{
+		{"Access-Control-Allow-Origin", "string", "*"},
+		{"X-Rate-Limit", "int32", nil},
+		{"X-Rate-Limit-Remaining", "int32", float64(42)},
+		{"X-Rate-Limit-Reset", "int32", "1449875311"},
+		{"X-Rate-Limit-Reset-Human", "string", "3 days"},
+		{"X-Rate-Limit-Reset-Human-Number", "string", float64(3)},
+	}
+
+	for _, tc := range testCases {
+		// t.Logf("tc: %+v", tc)
+		hdr := findResponseHeader(&b.Operation, 200, tc.name)
+		require.NotNil(t, hdr)
+
+		gh, er := b.MakeHeader("a", tc.name, *hdr)
+		require.NoError(t, er)
+
+		assert.True(t, gh.IsPrimitive)
+		assert.Equal(t, tc.typeStr, gh.GoType)
+		assert.Equal(t, tc.name, gh.Name)
+		assert.Exactly(t, tc.defaultValue, gh.Default)
 	}
 }
 
 func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
-		if assert.NoError(t, err) {
-			assert.Len(t, gO.Headers, 6)
-			assert.NotNil(t, gO.Schema)
-			assert.True(t, gO.Schema.IsArray)
-			assert.NotNil(t, gO.Schema.Items)
-			assert.False(t, gO.Schema.IsAnonymous)
-			assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
-		}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
 	}
+	gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
+	require.NoError(t, err)
+
+	assert.Len(t, gO.Headers, 6)
+	assert.NotNil(t, gO.Schema)
+	assert.True(t, gO.Schema.IsArray)
+	assert.NotNil(t, gO.Schema.Items)
+	assert.False(t, gO.Schema.IsAnonymous)
+	assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
@@ -288,16 +290,18 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 }
 
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
-
-	specDoc, err := loads.Spec(fname)
+	o := opts()
+	o.Spec = fname
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-
-	analyzed := analysis.New(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -316,29 +320,25 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       opts(),
+		GenOpts:       o,
 	}, nil
 }
 
 // methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening
 func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	specDoc, err := loads.Spec(fname)
-	if err != nil {
-		return codeGenOpBuilder{}, err
-	}
-
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
-
-	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	o.Spec = fname
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-
-	analyzed := analysis.New(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -363,31 +363,19 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 
 // opBuilderWithOpts prepares the making of an operation with spec flattening options
 func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		// default fixture
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	if !filepath.IsAbs(fname) {
-		cwd, _ := os.Getwd()
-		fname = filepath.Join(cwd, fname)
-	}
-
-	specDoc, err := loads.Spec(fname)
-	if err != nil {
-		return codeGenOpBuilder{}, err
-	}
 	o.Spec = fname
-
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-	log.SetOutput(os.Stdout)
-
-	analyzed := analysis.New(specDoc.Spec())
 
 	method, path, op, ok := analyzed.OperationForName(name)
 	if !ok {
@@ -408,19 +396,21 @@ func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error)
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       o, // opts()??
+		GenOpts:       o,
 	}, nil
 }
 
 func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) (opts *GenOpts) {
 	opts = &GenOpts{}
-	if erd := opts.EnsureDefaults(); erd != nil {
+	opts.ValidateSpec = true
+	opts.FlattenOpts = &analysis.FlattenOpts{
+		Expand:  !withFlatten,
+		Minimal: withMinimalFlatten,
+	}
+	opts.Spec = specName
+	if err := opts.EnsureDefaults(); err != nil {
 		panic("Cannot initialize GenOpts")
 	}
-	opts.ValidateSpec = true
-	opts.FlattenOpts.Expand = !withFlatten
-	opts.FlattenOpts.Minimal = withMinimalFlatten
-	opts.Spec = specName
 	return
 }
 
@@ -429,6 +419,14 @@ func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
 	return opBuilderWithOpts(name, fname, o)
 }
+
+/*
+// opBuilderWithMinimalFlatten prepares the making of an operation with spec minimal flattening prior to rendering
+func opBuilderWithMinimalFlatten(name, fname string) (codeGenOpBuilder, error) {
+	o := opBuildGetOpts(fname, true, true) // flatten: true, minimal: true
+	return opBuilderWithOpts(name, fname, o)
+}
+*/
 
 // opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering
 func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
@@ -793,7 +791,7 @@ func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	opts.FlattenOpts.Minimal = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
@@ -854,7 +852,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	opts.FlattenOpts.Minimal = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
@@ -903,7 +901,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// New: Now if flatten is false, expand takes over so server generation should resume normally
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
@@ -948,7 +946,7 @@ func TestGenServerWithTemplate(t *testing.T) {
 		wantError bool
 	}{
 		{
-			name: "None_existing_contributor_tempalte",
+			name: "None_existing_contributor_template",
 			opts: &GenOpts{
 				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 				IncludeModel:      true,
@@ -1021,7 +1019,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// same here: now if flatten doesn't resume, expand takes over
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 // This tests that securityDefinitions generate stable code
@@ -1383,12 +1381,12 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 }
 
 func makeClientTimeoutNameTest() []struct {
-	seenIds  map[string]bool
+	seenIds  map[string]interface{}
 	name     string
 	expected string
 } {
 	return []struct {
-		seenIds  map[string]bool
+		seenIds  map[string]interface{}
 		name     string
 		expected string
 	}{
@@ -1398,14 +1396,14 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "witness",
 		},
 		{
-			seenIds: map[string]bool{
+			seenIds: map[string]interface{}{
 				"id": true,
 			},
 			name:     "timeout",
 			expected: "timeout",
 		},
 		{
-			seenIds: map[string]bool{
+			seenIds: map[string]interface{}{
 				"timeout":        true,
 				"requesttimeout": true,
 			},
@@ -1413,7 +1411,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "httpRequestTimeout",
 		},
 		{
-			seenIds: map[string]bool{
+			seenIds: map[string]interface{}{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1425,7 +1423,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "operTimeout",
 		},
 		{
-			seenIds: map[string]bool{
+			seenIds: map[string]interface{}{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1445,8 +1443,36 @@ func TestRenameTimeout(t *testing.T) {
 	for i, toPin := range makeClientTimeoutNameTest() {
 		testCase := toPin
 		t.Run(testCase.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 			assert.Equalf(t, testCase.expected, renameTimeout(testCase.seenIds, testCase.name), "unexpected deconflicting value [%d]", i)
 		})
 	}
+}
+
+func testInvalidParams() map[string]spec.Parameter {
+	return map[string]spec.Parameter{
+		"query#param1": *spec.QueryParam("param1"),
+		"path#param1":  *spec.PathParam("param1"),
+		"body#param1":  *spec.BodyParam("param1", &spec.Schema{}),
+	}
+}
+
+func TestParamMappings(t *testing.T) {
+	// Test deconfliction of duplicate param names across param locations
+	mappings, _ := paramMappings(testInvalidParams())
+	require.Contains(t, mappings, "query")
+	require.Contains(t, mappings, "path")
+	require.Contains(t, mappings, "body")
+	q := mappings["query"]
+	p := mappings["path"]
+	b := mappings["body"]
+	require.Len(t, q, 1)
+	require.Len(t, p, 1)
+	require.Len(t, b, 1)
+	require.Containsf(t, q, "param1", "unexpected content of %#v", q)
+	require.Containsf(t, p, "param1", "unexpected content of %#v", p)
+	require.Containsf(t, b, "param1", "unexpected content of %#v", b)
+	assert.Equalf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
+	assert.Equalf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
+	assert.Equalf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
 }

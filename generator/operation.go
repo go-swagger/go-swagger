@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -59,36 +58,18 @@ func sortedResponses(input map[int]spec.Response) responses {
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation
 func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
-	if opts == nil {
-		return errors.New("gen opts are required")
-	}
-	templates.LoadDefaults()
-
-	templates.SetAllowOverride(opts.AllowTemplateOverride)
-
-	if opts.TemplateDir != "" {
-		if err := templates.LoadDir(opts.TemplateDir); err != nil {
-			return err
-		}
-	}
-
 	if err := opts.CheckOpts(); err != nil {
 		return err
 	}
 
-	// Load the spec
-	_, specDoc, err := loadSpec(opts.Spec)
-	if err != nil {
+	if err := opts.setTemplates(); err != nil {
 		return err
 	}
 
-	// Validate and Expand. specDoc is in/out param.
-	specDoc, err = validateAndFlattenSpec(opts, specDoc)
+	specDoc, analyzed, err := opts.analyzeSpec()
 	if err != nil {
 		return err
 	}
-
-	analyzed := analysis.New(specDoc.Spec())
 
 	ops := gatherOperations(analyzed, operationNames)
 	if len(ops) == 0 {
@@ -97,28 +78,16 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 
 	for operationName, opRef := range ops {
 		method, path, operation := opRef.Method, opRef.Path, opRef.Op
-		defaultScheme := opts.DefaultScheme
-		if defaultScheme == "" {
-			defaultScheme = sHTTP
-		}
-		defaultProduces := opts.DefaultProduces
-		if defaultProduces == "" {
-			defaultProduces = runtime.JSONMime
-		}
-		defaultConsumes := opts.DefaultConsumes
-		if defaultConsumes == "" {
-			defaultConsumes = runtime.JSONMime
-		}
 
-		serverPackage := opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, "server")
+		serverPackage := opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget)
 		generator := operationGenerator{
 			Name:                 operationName,
 			Method:               method,
 			Path:                 path,
 			BasePath:             specDoc.BasePath(),
-			APIPackage:           opts.LanguageOpts.ManglePackagePath(opts.APIPackage, "api"),
-			ModelsPackage:        opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, "definitions"),
-			ClientPackage:        opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, "client"),
+			APIPackage:           opts.LanguageOpts.ManglePackagePath(opts.APIPackage, defaultOperationsTarget),
+			ModelsPackage:        opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, defaultModelsTarget),
+			ClientPackage:        opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
 			ServerPackage:        serverPackage,
 			Operation:            *operation,
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
@@ -132,9 +101,9 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			IncludeResponses:     opts.IncludeResponses,
 			IncludeValidator:     true, // we no more support the CLI option to disable validation
 			DumpData:             opts.DumpData,
-			DefaultScheme:        defaultScheme,
-			DefaultProduces:      defaultProduces,
-			DefaultConsumes:      defaultConsumes,
+			DefaultScheme:        opts.DefaultScheme,
+			DefaultProduces:      opts.DefaultProduces,
+			DefaultConsumes:      opts.DefaultConsumes,
 			Doc:                  specDoc,
 			Analyzed:             analyzed,
 			GenOpts:              opts,
@@ -177,19 +146,6 @@ type operationGenerator struct {
 	GenOpts              *GenOpts
 }
 
-func intersectTags(left, right []string) (filtered []string) {
-	if len(right) == 0 {
-		filtered = left
-		return
-	}
-	for _, l := range left {
-		if containsString(right, l) {
-			filtered = append(filtered, l)
-		}
-	}
-	return
-}
-
 func (o *operationGenerator) Generate() error {
 	// Build a list of codegen operations based on the tags,
 	// the tag decides the actual package for an operation
@@ -213,7 +169,7 @@ func (o *operationGenerator) Generate() error {
 	bldr.Analyzed = o.Analyzed
 	bldr.DefaultScheme = o.DefaultScheme
 	bldr.DefaultProduces = o.DefaultProduces
-	bldr.RootAPIPackage = o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, "server")
+	bldr.RootAPIPackage = o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, defaultServerTarget)
 	bldr.GenOpts = o.GenOpts
 	bldr.DefaultConsumes = o.DefaultConsumes
 	bldr.IncludeValidator = o.IncludeValidator
@@ -222,7 +178,7 @@ func (o *operationGenerator) Generate() error {
 	if o.GenOpts.ExistingModels == "" {
 		bldr.DefaultImports = []string{
 			path.Join(
-				filepath.ToSlash(o.GenOpts.LanguageOpts.baseImport(o.Base)),
+				o.GenOpts.LanguageOpts.baseImport(o.Base),
 				o.GenOpts.LanguageOpts.ManglePackagePath(o.ModelsPackage, "")),
 		}
 	}
@@ -247,8 +203,7 @@ func (o *operationGenerator) Generate() error {
 
 	for _, op := range operations {
 		if o.GenOpts.DumpData {
-			bb, _ := json.MarshalIndent(swag.ToDynamicJSON(op), "", " ")
-			fmt.Fprintln(os.Stdout, string(bb))
+			_ = dumpData(swag.ToDynamicJSON(op))
 			continue
 		}
 		if err := o.GenOpts.renderOperation(&op); err != nil {
@@ -287,12 +242,43 @@ type codeGenOpBuilder struct {
 	GenOpts             *GenOpts
 }
 
+// paramMappings yields a map of safe parameter names for an operation
+func paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string) {
+	idMapping := map[string]map[string]string{
+		"query":    make(map[string]string, len(params)),
+		"path":     make(map[string]string, len(params)),
+		"formData": make(map[string]string, len(params)),
+		"header":   make(map[string]string, len(params)),
+		"body":     make(map[string]string, len(params)),
+	}
+
+	// In order to avoid unstable generation, adopt same naming convention
+	// for all parameters with same name across locations.
+	seenIds := make(map[string]interface{}, len(params))
+	for id, p := range params {
+		if val, ok := seenIds[p.Name]; ok {
+			previous := val.(struct{ id, in string })
+			idMapping[p.In][p.Name] = swag.ToGoName(id)
+			// rewrite the previously found one
+			idMapping[previous.in][p.Name] = swag.ToGoName(previous.id)
+		} else {
+			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
+		}
+		seenIds[strings.ToLower(idMapping[p.In][p.Name])] = struct{ id, in string }{id: id, in: p.In}
+	}
+
+	// pick a deconflicted private name for timeout for this operation
+	timeoutName := renameTimeout(seenIds, "timeout")
+
+	return idMapping, timeoutName
+}
+
 // renameTimeout renames the variable in use by client template to avoid conflicting
 // with param names.
 //
 // NOTE: this merely protects the timeout field in the client parameter struct,
 // fields "Context" and "HTTPClient" remain exposed to name conflicts.
-func renameTimeout(seenIds map[string]bool, timeoutName string) string {
+func renameTimeout(seenIds map[string]interface{}, timeoutName string) string {
 	if seenIds == nil {
 		return timeoutName
 	}
@@ -333,7 +319,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	//
 	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
 	// we take from there the spec possibly already transformed by the GenDefinitions stage.
-	resolver := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(b.ModelsPackage, "models"), b.Doc)
+	resolver := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(b.ModelsPackage, defaultModelsTarget), b.Doc)
 	receiver := "o"
 
 	operation := b.Operation
@@ -341,24 +327,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 
-	idMapping := map[string]map[string]string{
-		"query":    make(map[string]string, len(paramsForOperation)),
-		"path":     make(map[string]string, len(paramsForOperation)),
-		"formData": make(map[string]string, len(paramsForOperation)),
-		"header":   make(map[string]string, len(paramsForOperation)),
-		"body":     make(map[string]string, len(paramsForOperation)),
-	}
-
-	seenIds := make(map[string]bool, len(paramsForOperation))
-	for id, p := range paramsForOperation {
-		if _, ok := seenIds[p.Name]; ok {
-			idMapping[p.In][p.Name] = swag.ToGoName(id)
-		} else {
-			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
-		}
-		seenIds[strings.ToLower(idMapping[p.In][p.Name])] = true
-	}
-	timeoutName := renameTimeout(seenIds, "timeout")
+	idMapping, timeoutName := paramMappings(paramsForOperation)
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
@@ -496,9 +465,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	return GenOperation{
 		GenCommon: GenCommon{
 			Copyright:        b.GenOpts.Copyright,
-			TargetImportPath: filepath.ToSlash(b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target)),
+			TargetImportPath: b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target),
 		},
-		Package:              b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
+		Package:              b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
 		Method:               b.Method,
@@ -580,7 +549,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	res := GenResponse{
-		Package:        b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
+		Package:        b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
 		ModelsPackage:  b.ModelsPackage,
 		ReceiverName:   receiver,
 		Name:           name,
@@ -622,7 +591,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	res := GenHeader{
 		sharedValidations: sharedValidationsFromSimple(hdr.CommonValidations, true), // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
 		resolvedType:      tpe,
-		Package:           b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "api"),
+		Package:           b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
 		ReceiverName:      receiver,
 		ID:                id,
 		Name:              name,
@@ -1036,7 +1005,7 @@ func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *sp
 	if b.PristineDoc == nil {
 		b.PristineDoc = b.Doc.Pristine()
 	}
-	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models"), b.PristineDoc)
+	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget), b.PristineDoc)
 
 	return rslv, b.cloneSchema(schema)
 }
@@ -1054,7 +1023,7 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec
 	sc.Schema = *bs
 
 	pg := sc.shallowClone()
-	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, "models")
+	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget)
 	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(pkg)
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
 
@@ -1168,4 +1137,17 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		}
 	}
 	return schema, nil
+}
+
+func intersectTags(left, right []string) (filtered []string) {
+	if len(right) == 0 {
+		filtered = left
+		return
+	}
+	for _, l := range left {
+		if swag.ContainsStrings(right, l) {
+			filtered = append(filtered, l)
+		}
+	}
+	return
 }

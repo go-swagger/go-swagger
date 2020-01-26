@@ -15,11 +15,8 @@
 package generator
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -51,24 +48,15 @@ Every action that happens tracks the path which is a linked list of refs
 
 // GenerateDefinition generates a model file for a schema definition.
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
-	if opts == nil {
-		return errors.New("gen opts are required")
-	}
-
-	templates.SetAllowOverride(opts.AllowTemplateOverride)
-
-	if opts.TemplateDir != "" {
-		if err := templates.LoadDir(opts.TemplateDir); err != nil {
-			return err
-		}
-	}
-
 	if err := opts.CheckOpts(); err != nil {
 		return err
 	}
 
-	// Load the spec
-	specPath, specDoc, err := loadSpec(opts.Spec)
+	if err := opts.setTemplates(); err != nil {
+		return err
+	}
+
+	specDoc, _, err := opts.analyzeSpec()
 	if err != nil {
 		return err
 	}
@@ -83,7 +71,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		// lookup schema
 		model, ok := specDoc.Spec().Definitions[modelName]
 		if !ok {
-			return fmt.Errorf("model %q not found in definitions given by %q", modelName, specPath)
+			return fmt.Errorf("model %q not found in definitions given by %q", modelName, opts.Spec)
 		}
 
 		// generate files
@@ -121,9 +109,7 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.DumpData {
-		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
-		fmt.Fprintln(os.Stdout, string(bb))
-		return nil
+		return dumpData(swag.ToDynamicJSON(mod))
 	}
 
 	if m.opts.IncludeModel {
@@ -346,7 +332,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
-			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
+			TargetImportPath: opts.LanguageOpts.baseImport(opts.Target),
 		},
 		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
 		GenSchema:      pg.GenSchema,
@@ -712,7 +698,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
+		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
 		if sg.Schema.Discriminator == k {
 			tpe.IsNullable = false
 		}
