@@ -14,6 +14,76 @@
 
 package generator
 
+func initFixture2116() {
+	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("case1_fail_omitempty_false_not_hoisted_by_ref.go", []string{
+		"Body *ObjectWithOmitemptyFalse `json:\"Body\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case2_fail_omitempty_false_not_overridden_by_ref_sibling.go", []string{
+		"Body *ObjectWithOmitemptyTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case3_pass_object_nullable_false_hoisted_by_ref.go", []string{
+		"Body ObjectWithNullableFalse `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case4_pass_object_nullable_false_overriden_by_ref_sibling.go", []string{
+		"Body *ObjectWithNullableTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_default.go", []string{
+		"type ArrayWithDefault []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_no_omit_empty.go", []string{
+		"type ArrayWithNoOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable.go", []string{
+		"type ArrayWithNullable []string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable_items.go", []string{
+		"type ArrayWithNullableItems []*string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty.go", []string{
+		"type ArrayWithOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_arrays.go", []string{
+		"Array0 ArrayWithDefault `json:\"array0,omitempty\"`",
+		"Array1 []string `json:\"array1\"`",
+		"Array11 []string `json:\"array11,omitempty\"`",
+		"Array12 []string `json:\"array12\"`",
+		"Array2 ArrayWithOmitEmpty `json:\"array2,omitempty\"`",
+		"Array3 ArrayWithNoOmitEmpty `json:\"array3\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty_items.go", []string{
+		"type ArrayWithOmitEmptyItems []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+}
+
 func initFixture2071() {
 	f := newModelFixture("../fixtures/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)

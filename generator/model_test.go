@@ -2487,7 +2487,7 @@ func TestGenModel_Issue1623(t *testing.T) {
 	assertInCode(t, "GeneralHasOmitEmptyFalse string `json:\"generalHasOmitEmptyFalse\"`", res)
 	assertInCode(t, "GeneralHasOmitEmptyTrue string `json:\"generalHasOmitEmptyTrue,omitempty\"`", res)
 	assertInCode(t, "GeneralNoOmitEmpty string `json:\"generalNoOmitEmpty,omitempty\"`", res)
-	assertInCode(t, "RefHasOmitEmptyFalse Bar `json:\"refHasOmitEmptyFalse\"`", res)
+	assertInCode(t, "RefHasOmitEmptyFalse Bar `json:\"refHasOmitEmptyFalse,omitempty\"`", res)
 	assertInCode(t, "RefHasOmitEmptyTrue Bar `json:\"refHasOmitEmptyTrue,omitempty\"`", res)
 	assertInCode(t, "RefNoOmitEmpty Bar `json:\"refNoOmitEmpty,omitempty\"`", res)
 	assertInCode(t, "IntHasJSONString int64 `json:\"intHasJsonString,omitempty,string\"`", res)

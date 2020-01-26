@@ -49,10 +49,10 @@ definitions:
         x-omitempty: false
       generalNoOmitEmpty:
         type: string
-      refHasOmitEmptyTrue:
+      refHasOmitEmptyTrue: # <- discarded ($ref siblings are ignored, however, true is the default)
         x-omitempty: true
         $ref: "#/definitions/bar"
-      refHasOmitEmptyFalse:
+      refHasOmitEmptyFalse:  # <- discarded ($ref siblings are ignored)
         x-omitempty: false
         $ref: "#/definitions/bar"
       refNoOmitEmpty:

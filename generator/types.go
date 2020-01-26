@@ -222,40 +222,38 @@ func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
-	if schema.Ref.String() != "" {
-		debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
-		returns = true
-		var ref *spec.Schema
-		var er error
-
-		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
-		if er != nil {
-			debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
-			err = er
-			return
-		}
-		res, er := t.ResolveSchema(ref, false, isRequired)
-		if er != nil {
-			err = er
-			return
-		}
-		result = res
-
-		tn := filepath.Base(schema.Ref.GetURL().Fragment)
-		tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
-		debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
-		if tpe != "" {
-			result.GoType = tpe
-			result.Pkg = pkg
-			result.PkgAlias = alias
-		}
-		result.HasDiscriminator = res.HasDiscriminator
-		result.IsBaseType = result.HasDiscriminator
-		result.IsNullable = t.IsNullable(ref)
-		//result.IsAliased = true
+	if schema.Ref.String() == "" {
 		return
-
 	}
+	debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
+	returns = true
+	var ref *spec.Schema
+	var er error
+
+	ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+	if er != nil {
+		debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
+		err = er
+		return
+	}
+	res, er := t.ResolveSchema(ref, false, isRequired)
+	if er != nil {
+		err = er
+		return
+	}
+	result = res
+
+	tn := filepath.Base(schema.Ref.GetURL().Fragment)
+	tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
+	debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
+	if tpe != "" {
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
+	}
+	result.HasDiscriminator = res.HasDiscriminator
+	result.IsBaseType = result.HasDiscriminator
+	result.IsNullable = t.IsNullable(ref)
 	return
 }
 
@@ -327,32 +325,6 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 		return nullable
 	}
 	return len(schema.Properties) > 0
-}
-
-func setIsEmptyOmitted(result *resolvedType, schema *spec.Schema, tpe string) {
-	defaultValue := true
-	if tpe == array {
-		defaultValue = false
-	}
-	v, found := schema.Extensions[xOmitEmpty]
-	if !found {
-		result.IsEmptyOmitted = defaultValue
-		return
-	}
-
-	omitted, cast := v.(bool)
-	result.IsEmptyOmitted = omitted && cast
-}
-
-func setIsJSONString(result *resolvedType, schema *spec.Schema, tpe string) {
-
-	_, found := schema.Extensions[xGoJSONString]
-	if !found {
-		result.IsJSONString = false
-		return
-	}
-
-	result.IsJSONString = true
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -652,9 +624,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	tpe := t.firstType(schema)
-	defer setIsEmptyOmitted(&result, schema, tpe)
-
 	var returns bool
+
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
 		if !isAnonymous {
@@ -665,7 +636,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		debugLog("returning after ref")
 		return
 	}
-	defer setIsJSONString(&result, schema, tpe)
+	defer func() {
+		result.setIsEmptyOmitted(schema, tpe)
+		result.setIsJSONString(schema, tpe)
+	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
@@ -817,4 +791,23 @@ func (rt *resolvedType) Zero() string {
 	}
 
 	return ""
+}
+
+func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
+	if v, found := schema.Extensions[xOmitEmpty]; found {
+		omitted, cast := v.(bool)
+		rt.IsEmptyOmitted = omitted && cast
+		return
+	}
+	// array of primitives are by default not empty-omitted, but arrays of aliased type are
+	rt.IsEmptyOmitted = (tpe != array) || (tpe == array && rt.IsAliased)
+}
+
+func (rt *resolvedType) setIsJSONString(schema *spec.Schema, tpe string) {
+	_, found := schema.Extensions[xGoJSONString]
+	if !found {
+		rt.IsJSONString = false
+		return
+	}
+	rt.IsJSONString = true
 }
