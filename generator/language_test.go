@@ -36,6 +36,11 @@ func TestGolang_ManglePackage(t *testing.T) {
 		{tested: "x", expectedPath: "x", expectedName: "x"},
 		{tested: "a/b/c-d/e_f/g", expectedPath: "a/b/c-d/e_f/g", expectedName: "g"},
 		{tested: "a/b/c-d/e_f/g-h", expectedPath: "a/b/c-d/e_f/g_h", expectedName: "g_h"},
+		{tested: "a/b/c-d/e_f/2A", expectedPath: "a/b/c-d/e_f/nr2_a", expectedName: "nr2_a"},
+		{tested: "a/b/c-d/e_f/#", expectedPath: "a/b/c-d/e_f/hash_tag", expectedName: "hash_tag"},
+		{tested: "#help", expectedPath: "hash_tag_help", expectedName: "hash_tag_help"},
+		{tested: "vendor", expectedPath: "vendor_swagger", expectedName: "vendor_swagger"},
+		{tested: "internal", expectedPath: "internal_swagger", expectedName: "internal_swagger"},
 	} {
 		res := o.ManglePackagePath(v.tested, "default")
 		assert.Equal(t, v.expectedPath, res)

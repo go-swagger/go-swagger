@@ -23,6 +23,7 @@ import (
 
 type serverOptions struct {
 	ServerPackage string `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
+	MainTarget    string `long:"main-package" short:"" description:"the location of the generated main. Defaults to cmd/{name}-server" default:""`
 }
 
 func (cs serverOptions) apply(opts *generator.GenOpts) {
@@ -80,6 +81,7 @@ func (s Server) apply(opts *generator.GenOpts) {
 	opts.RegenerateConfigureAPI = s.RegenerateConfigureAPI
 
 	opts.Name = s.Name
+	opts.MainPackage = s.MainTarget
 }
 
 func (s *Server) generate(opts *generator.GenOpts) error {

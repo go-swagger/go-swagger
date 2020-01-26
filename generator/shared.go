@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -36,6 +37,7 @@ import (
 )
 
 //go:generate go-bindata -mode 420 -modtime 1482416923 -pkg=generator -ignore=.*\.sw? -ignore=.*\.md ./templates/...
+
 const (
 	// default generation targets structure
 	defaultModelsTarget     = "models"
@@ -86,14 +88,13 @@ func DefaultSectionOpts(gen *GenOpts) {
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				},
 			}
-
 		} else {
 			ops := []TemplateOpts{}
 			if gen.IncludeParameters {
 				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package)  }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package)  }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
@@ -101,7 +102,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "urlbuilder",
 					Source:   "asset:serverUrlbuilder",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
 				})
 			}
@@ -109,7 +110,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
 			}
@@ -117,7 +118,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
 			}
@@ -162,7 +163,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "main",
 					Source:   "asset:serverMain",
-					Target:   "{{ joinFilePath .Target \"cmd\" (dasherize (pascalize .Name)) }}-server",
+					Target:   "{{ joinFilePath .Target \"cmd\" .MainPackage }}",
 					FileName: "main.go",
 				},
 				{
@@ -259,6 +260,8 @@ type GenOpts struct {
 	CompatibilityMode      string
 	ExistingModels         string
 	Copyright              string
+	SkipTagPackages        bool
+	MainPackage            string
 }
 
 // CheckOpts carries out some global consistency checks on options.
@@ -272,6 +275,7 @@ func (g *GenOpts) CheckOpts() error {
 			return fmt.Errorf("could not locate target %s: %v", g.Target, err)
 		}
 	}
+
 	if filepath.IsAbs(g.ServerPackage) {
 		return fmt.Errorf("you shouldn't specify an absolute path in --server-package: %s", g.ServerPackage)
 	}
@@ -415,6 +419,12 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		tags = tagsF.Interface().([]string)
 	}
 
+	var useTags bool
+	useTagsF := v.FieldByName("UseTags")
+	if useTagsF.IsValid() {
+		useTags = useTagsF.Interface().(bool)
+	}
+
 	funcMap := FuncMapFunc(g.LanguageOpts)
 
 	pthTpl, err := template.New(t.Name + "-target").Funcs(funcMap).Parse(t.Target)
@@ -428,9 +438,10 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	}
 
 	d := struct {
-		Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, Target string
-		Tags                                                                          []string
-		Context                                                                       interface{}
+		Name, Package, APIPackage, ServerPackage, ClientPackage, ModelPackage, MainPackage, Target string
+		Tags                                                                                       []string
+		UseTags                                                                                    bool
+		Context                                                                                    interface{}
 	}{
 		Name:          name,
 		Package:       pkg,
@@ -438,8 +449,10 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 		ServerPackage: g.ServerPackage,
 		ClientPackage: g.ClientPackage,
 		ModelPackage:  g.ModelPackage,
+		MainPackage:   g.MainPackage,
 		Target:        g.Target,
 		Tags:          tags,
+		UseTags:       useTags,
 		Context:       data,
 	}
 
@@ -662,6 +675,35 @@ func (g *GenOpts) setTemplates() error {
 	return nil
 }
 
+// defaultImports produces a default map for imports with models
+func (g *GenOpts) defaultImports() map[string]string {
+	baseImport := g.LanguageOpts.baseImport(g.Target)
+	defaultImports := make(map[string]string, 50)
+
+	if g.ExistingModels == "" {
+		importPath := path.Join(
+			baseImport,
+			g.LanguageOpts.ManglePackagePath(g.ModelPackage, defaultModelsTarget))
+		defaultImports[g.LanguageOpts.ManglePackageName(g.ModelPackage, defaultModelsTarget)] = importPath
+	} else {
+		// TODO(fredbi): mangle existing model pkg aliases
+		importPath := g.LanguageOpts.ManglePackagePath(g.ExistingModels, "")
+		defaultImports[importAlias(importPath)] = importPath
+	}
+	return defaultImports
+}
+
+// initImports produces a default map for import with the specified root for operations
+func (g *GenOpts) initImports(operationsPackage string) map[string]string {
+	baseImport := g.LanguageOpts.baseImport(g.Target)
+
+	imports := make(map[string]string, 50)
+	imports[g.LanguageOpts.ManglePackageName(operationsPackage, defaultOperationsTarget)] = path.Join(
+		baseImport,
+		g.LanguageOpts.ManglePackagePath(operationsPackage, defaultOperationsTarget))
+	return imports
+}
+
 func fileExists(target, name string) bool {
 	_, err := os.Stat(filepath.Join(target, name))
 	return !os.IsNotExist(err)
@@ -696,7 +738,8 @@ func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec
 	return models, nil
 }
 
-func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
+// titleOrDefault infers a name for the app from the title of the spec
+func titleOrDefault(specDoc *loads.Document, name, defaultName string) string {
 	if strings.TrimSpace(name) == "" {
 		if specDoc.Spec().Info != nil && strings.TrimSpace(specDoc.Spec().Info.Title) != "" {
 			name = specDoc.Spec().Info.Title
@@ -704,7 +747,17 @@ func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string 
 			name = defaultName
 		}
 	}
-	return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(swag.ToGoName(name), "Test"), "API"), "Test")
+	return swag.ToGoName(name)
+}
+
+func mainNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
+	// _test won't do as main server name
+	return strings.TrimSuffix(titleOrDefault(specDoc, name, defaultName), "Test")
+}
+
+func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
+	// _test_api, _api_test, _test, _api won't do as app names
+	return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(titleOrDefault(specDoc, name, defaultName), "Test"), "API"), "Test")
 }
 
 type opRef struct {
@@ -874,4 +927,9 @@ func dumpData(data interface{}) error {
 	}
 	fmt.Fprintln(os.Stdout, string(bb))
 	return nil
+}
+
+func importAlias(pkg string) string {
+	_, k := path.Split(pkg)
+	return k
 }

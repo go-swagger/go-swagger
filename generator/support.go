@@ -75,6 +75,11 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 	}
 
 	opts.Name = appNameOrDefault(specDoc, name, defaultServerName)
+	if opts.IncludeMain && opts.MainPackage == "" {
+		// default target for the generated main
+		opts.MainPackage = swag.ToCommandName(mainNameOrDefault(specDoc, name, defaultServerName) + "-server")
+	}
+
 	apiPackage := opts.LanguageOpts.ManglePackagePath(opts.APIPackage, defaultOperationsTarget)
 	return &appGenerator{
 		Name:              opts.Name,
@@ -110,6 +115,7 @@ type appGenerator struct {
 	ServerPackage     string
 	ClientPackage     string
 	OperationsPackage string
+	MainPackage       string
 	Principal         string
 	Models            map[string]spec.Schema
 	Operations        map[string]opRef
@@ -137,10 +143,9 @@ func (a *appGenerator) Generate() error {
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
-			modCopy := mod
-			modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
-			modCopy.IncludeModel = true
-			if err := a.GenOpts.renderDefinition(&modCopy); err != nil {
+			mod.IncludeModel = true
+			mod.IncludeValidator = true // we systematically include model validation code (previous CLI flag to skip this is gone)
+			if err := a.GenOpts.renderDefinition(&mod); err != nil {
 				return err
 			}
 		}
@@ -149,19 +154,14 @@ func (a *appGenerator) Generate() error {
 	if a.GenOpts.IncludeHandler {
 		log.Printf("rendering %d operation groups (tags)", app.OperationGroups.Len())
 		for _, opg := range app.OperationGroups {
-			opgCopy := opg
 			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
-			for _, op := range opgCopy.Operations {
-				opCopy := op
-
-				if err := a.GenOpts.renderOperation(&opCopy); err != nil {
+			for _, op := range opg.Operations {
+				if err := a.GenOpts.renderOperation(&op); err != nil {
 					return err
 				}
 			}
 			// optional OperationGroups templates generation
-			opGroup := opg
-			opGroup.DefaultImports = app.DefaultImports
-			if err := a.GenOpts.renderOperationGroup(&opGroup); err != nil {
+			if err := a.GenOpts.renderOperationGroup(&opg); err != nil {
 				return fmt.Errorf("error while rendering operation group: %v", err)
 			}
 		}
@@ -186,13 +186,11 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		}
 		app = &ca
 	}
+
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
-	importPath := path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
-	app.DefaultImports = append(
-		app.DefaultImports,
-		path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, "")),
-		importPath,
-	)
+	serverPath := path.Join(baseImport,
+		a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, defaultServerTarget))
+	app.DefaultImports[importAlias(serverPath)] = serverPath
 
 	return a.GenOpts.renderApplication(app)
 }
@@ -212,34 +210,25 @@ func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("building a plan for generation")
+
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
-
-	var defaultImports []string
-
-	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
-	flatjsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
 
 	consumes, _ := a.makeConsumes()
 	produces, _ := a.makeProduces()
 	security := a.makeSecuritySchemes()
-	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
-	var imports = make(map[string]string)
 
-	var genMods GenDefinitions
-	importPath := a.GenOpts.ExistingModels
-	if a.GenOpts.ExistingModels == "" {
-		imports[a.GenOpts.LanguageOpts.ManglePackageName(a.ModelsPackage, defaultModelsTarget)] = path.Join(
-			baseImport,
-			a.GenOpts.LanguageOpts.ManglePackagePath(a.GenOpts.ModelPackage, defaultModelsTarget))
-	}
-	if importPath != "" {
-		defaultImports = append(defaultImports, importPath)
-	}
+	log.Println("generation target", a.Target)
+
+	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
+	defaultImports := a.GenOpts.defaultImports()
+	imports := a.GenOpts.initImports(a.OperationsPackage)
 
 	log.Println("planning definitions")
+
+	genModels := make(GenDefinitions, 0, len(a.Models))
 	for mn, m := range a.Models {
-		mod, err := makeGenDefinition(
+		model, err := makeGenDefinition(
 			mn,
 			a.ModelsPackage,
 			m,
@@ -249,26 +238,26 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		if err != nil {
 			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
 		}
-		if mod != nil {
-			if !mod.External {
-				genMods = append(genMods, *mod)
+		if model != nil {
+			if !model.External {
+				genModels = append(genModels, *model)
 			}
 
 			// Copy model imports to operation imports
-			for alias, pkg := range mod.Imports {
+			// TODO(fredbi): mangle model pkg aliases
+			for alias, pkg := range model.Imports {
 				target := a.GenOpts.LanguageOpts.ManglePackageName(alias, "")
 				imports[target] = pkg
 			}
 		}
 	}
-	sort.Sort(genMods)
+	sort.Sort(genModels)
 
 	log.Println("planning operations")
-	tns := make(map[string]struct{})
-	var genOps GenOperations
+
+	genOps := make(GenOperations, 0, len(a.Operations))
 	for on, opp := range a.Operations {
 		o := opp.Op
-		o.Tags = pruneEmpty(o.Tags)
 		o.ID = on
 
 		bldr := codeGenOpBuilder{
@@ -288,6 +277,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Path:             opp.Path,
 			IncludeValidator: true,
 			APIPackage:       a.APIPackage, // defaults to main operations package
+			DefaultProduces:  a.DefaultProduces,
+			DefaultConsumes:  a.DefaultConsumes,
+		}
+
+		tag, tags, ok := bldr.analyzeTags()
+		if !ok {
+			continue // operation filtered according to CLI params
 		}
 
 		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
@@ -304,42 +300,35 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			continue
 		}
 
-		if len(intersected) > 0 {
-			tag := intersected[0]
-			bldr.APIPackage = a.GenOpts.LanguageOpts.ManglePackagePath(tag, a.APIPackage)
-			for _, t := range intersected {
-				tns[t] = struct{}{}
-			}
-		}
 		op, err := bldr.MakeOperation()
 		if err != nil {
 			return GenApp{}, err
 		}
+
 		op.ReceiverName = receiver
-		op.Tags = intersected
+		op.Tags = tags // ordered tags for this operation, possibly filtered by CLI params
 		genOps = append(genOps, op)
 
-	}
-	for k := range tns {
-		importPath := filepath.ToSlash(
-			path.Join(
-				baseImport,
-				a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""),
-				swag.ToFileName(k)))
-		defaultImports = append(defaultImports, importPath)
+		if !a.GenOpts.SkipTagPackages && tag != "" {
+			importPath := filepath.ToSlash(
+				path.Join(
+					baseImport,
+					a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, defaultOperationsTarget),
+					a.GenOpts.LanguageOpts.ManglePackageName(bldr.APIPackage, defaultOperationsTarget),
+				))
+			defaultImports[bldr.APIPackageAlias] = importPath
+		}
 	}
 	sort.Sort(genOps)
 
 	log.Println("grouping operations into packages")
-	opsGroupedByPackage := make(map[string]GenOperations)
+
+	opsGroupedByPackage := make(map[string]GenOperations, len(genOps))
 	for _, operation := range genOps {
-		if operation.Package == "" {
-			operation.Package = a.Package
-		}
-		opsGroupedByPackage[operation.Package] = append(opsGroupedByPackage[operation.Package], operation)
+		opsGroupedByPackage[operation.PackageAlias] = append(opsGroupedByPackage[operation.PackageAlias], operation)
 	}
 
-	var opGroups GenOperationGroups
+	opGroups := make(GenOperationGroups, 0, len(opsGroupedByPackage))
 	for k, v := range opsGroupedByPackage {
 		sort.Sort(v)
 		// trim duplicate extra schemas within the same package
@@ -356,13 +345,20 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			op.ExtraSchemas = uniqueExtraSchemas
 			vv = append(vv, op)
 		}
+		var pkg string
+		if len(vv) > 0 {
+			pkg = vv[0].Package
+		} else {
+			pkg = k
+		}
 
 		opGroup := GenOperationGroup{
 			GenCommon: GenCommon{
 				Copyright:        a.GenOpts.Copyright,
 				TargetImportPath: baseImport,
 			},
-			Name:           k,
+			Name:           pkg,
+			PackageAlias:   k,
 			Operations:     vv,
 			DefaultImports: defaultImports,
 			Imports:        imports,
@@ -370,13 +366,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			GenOpts:        a.GenOpts,
 		}
 		opGroups = append(opGroups, opGroup)
-		var importPath string
-		if k == a.APIPackage {
-			importPath = path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""))
-		} else {
-			importPath = path.Join(baseImport, a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, ""), k)
-		}
-		defaultImports = append(defaultImports, importPath)
 	}
 	sort.Sort(opGroups)
 
@@ -401,6 +390,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		basePath = sw.BasePath
 	}
 
+	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
+	flatjsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
+
 	return GenApp{
 		GenCommon: GenCommon{
 			Copyright:        a.GenOpts.Copyright,
@@ -423,13 +415,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		DefaultImports:      defaultImports,
 		Imports:             imports,
 		SecurityDefinitions: security,
-		Models:              genMods,
+		Models:              genModels,
 		Operations:          genOps,
 		OperationGroups:     opGroups,
 		Principal:           a.Principal,
 		SwaggerJSON:         generateReadableSpec(jsonb),
 		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
-		ExcludeSpec:         a.GenOpts != nil && a.GenOpts.ExcludeSpec,
+		ExcludeSpec:         a.GenOpts.ExcludeSpec,
 		GenOpts:             a.GenOpts,
 	}, nil
 }

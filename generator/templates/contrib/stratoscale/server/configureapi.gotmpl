@@ -19,10 +19,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/runtime/security"
 
-	{{range .DefaultImports}}{{printf "%q" .}}
-	{{end}}
-	{{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
-	{{end}}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 {{ $package := .Package }}
 
@@ -144,7 +142,8 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	{{ end -}}
 
 	{{ range .Operations -}}
-	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler = {{.Package}}.{{ pascalize .Name }}HandlerFunc(func(params {{.Package}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
+	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler =
+    {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)

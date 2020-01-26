@@ -522,7 +522,6 @@ func TestBuilder_Issue1703(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -564,7 +563,6 @@ func TestBuilder_Issue287(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -603,7 +601,6 @@ func TestBuilder_Issue465(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -644,7 +641,6 @@ func TestBuilder_Issue500(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -739,7 +735,6 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -801,7 +796,6 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -862,7 +856,6 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -911,7 +904,6 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -950,7 +942,6 @@ func TestGenServerWithTemplate(t *testing.T) {
 			opts: &GenOpts{
 				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 				IncludeModel:      true,
-				IncludeValidator:  true,
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -971,7 +962,6 @@ func TestGenServerWithTemplate(t *testing.T) {
 			opts: &GenOpts{
 				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 				IncludeModel:      true,
-				IncludeValidator:  true,
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -1031,7 +1021,6 @@ func TestBuilder_Issue1214(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1223,7 +1212,6 @@ func TestGenerateServerOperation(t *testing.T) {
 		_ = os.RemoveAll(tgt)
 	}()
 	o := &GenOpts{
-		IncludeValidator:  true,
 		ValidateSpec:      false,
 		IncludeModel:      true,
 		IncludeHandler:    true,
@@ -1289,7 +1277,6 @@ func TestBuilder_Issue1646(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1330,7 +1317,6 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1475,4 +1461,15 @@ func TestParamMappings(t *testing.T) {
 	assert.Equalf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
 	assert.Equalf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
 	assert.Equalf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
+}
+
+func TestDeconflictTag(t *testing.T) {
+	assert.Equal(t, "runtimeops", deconflictTag(nil, "runtime"))
+	assert.Equal(t, "apiops", deconflictTag([]string{"tag1"}, "api"))
+	assert.Equal(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, "api"))
+	assert.Equal(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
+	assert.Equal(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
+
+	assert.Equal(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
+	assert.Equal(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
 }

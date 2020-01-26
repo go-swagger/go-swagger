@@ -295,10 +295,8 @@ import (
 
   strfmt "github.com/go-openapi/strfmt"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
@@ -319,7 +317,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
               {{- else if .IsArray -}}{{- /* Do not initialize from possible defaults in nested arrays */ -}}
                   {{- if and .Child.IsPrimitive .Child.IsCustomFormatter }}{{ .Zero }}{{/* initialization strategy with UnmarshalText() */}}
                   {{- else if .Child.IsArray -}}{{ .Zero }}{{/* initialization strategy with json.Unmarshal() */}}
-                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- goSliceInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
+                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- arrayInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
                   {{- else }}{{ printf "%#v" .Default }}{{/* all other cases (e.g. schema) [should not occur] */}}
                   {{- end }}
               {{- else }}{{ printf "%#v" .Default }}{{/* case .Schema */}}
@@ -451,7 +449,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- else }}
     defer r.Body.Close()
       {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .GoType (toPackageName .ModelsPackage) }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ dropPackage .GoType }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {

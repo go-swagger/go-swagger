@@ -291,7 +291,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   if err := {{ if .IsBaseType}}Unmarshal{{ .GoType }}(bytes.NewBuffer(raw), &{{ varname .Name }}){{ else }} swag.ReadJSON(raw, &{{ varname .Name }}){{ end }}; err != nil {
     return err
   }
-  {{ .ReceiverName }}.{{ stripPackage .GoType "" }} = {{ varname .Name }}
+  {{ .ReceiverName }}.{{ dropPackage .GoType }} = {{ varname .Name }}
     {{ end }}
   {{ end }}
   {{- if .Properties }}
@@ -377,7 +377,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   _parts = append(_parts, {{ varname .Name }})
     {{- end }}
     {{ if not .IsAnonymous }}
-  {{ varname .Name }}, err := swag.WriteJSON({{ $receiverName }}.{{ stripPackage .GoType "" }})
+  {{ varname .Name }}, err := swag.WriteJSON({{ $receiverName }}.{{ dropPackage .GoType }})
   if err != nil {
     return nil, err
   }

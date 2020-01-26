@@ -61,7 +61,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   {{ if .Schema }}
   {{ if .Schema.IsBaseType }}
   // response payload as interface type
-  payload, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType ( toPackageName .ModelsPackage ) }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
+  payload, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ dropPackage .Schema.GoType }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
   if err != nil {
     return err
   }
@@ -100,10 +100,8 @@ import (
 
   strfmt "github.com/go-openapi/strfmt"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // {{ pascalize .Name }}Reader is a Reader for the {{ pascalize .Name }} structure.

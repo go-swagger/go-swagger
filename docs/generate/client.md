@@ -52,6 +52,7 @@ Help Options:
       -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
           --tags=                                                                 the tags to include, if not specified defaults to all
       -a, --api-package=                                                          the package to save the operations (default: operations)
+          --skip-tag-packages                                                     skips the generation of tag-based operation packages, resulting in a flat generation
 ```
 
 ### Build a client

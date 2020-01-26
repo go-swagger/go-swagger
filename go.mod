@@ -7,7 +7,6 @@ replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190313153728-d0100b
 require (
 	github.com/corbym/gocrest v1.0.3
 	github.com/coreos/go-oidc v2.1.0+incompatible
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-openapi/analysis v0.19.6
 	github.com/go-openapi/errors v0.19.2

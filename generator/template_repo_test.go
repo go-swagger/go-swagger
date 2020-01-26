@@ -33,14 +33,11 @@ Humanize={{ humanize "WeArePonies_Of_the_round table" }}
 PluralizeFirstWord={{ pluralizeFirstWord "pony of the round table" }}
 PluralizeFirstOfOneWord={{ pluralizeFirstWord "dwarf" }}
 PluralizeFirstOfNoWord={{ pluralizeFirstWord "" }}
-StripPackage={{ stripPackage "prefix.suffix" "xyz"}}
-StripNoPackage={{ stripPackage "suffix" "xyz"}}
-StripEmptyPackage={{ stripPackage "" "xyz" }}
 DropPackage={{ dropPackage "prefix.suffix" }}
 DropNoPackage={{ dropPackage "suffix" }}
 DropEmptyPackage={{ dropPackage "" }}
-ImportRuntime={{ contains .DefaultImports "github.com/go-openapi/runtime"}}
-DoNotImport={{ contains .DefaultImports "github.com/go-openapi/xruntime"}}
+ContainsString={{ contains .DependsOn "x"}}
+DoesNotContainString={{ contains .DependsOn "y"}}
 PadSurround1={{ padSurround "padme" "-" 3 12}}
 PadSurround2={{ padSurround "padme" "-" 0 12}}
 Json={{ json .DefaultImports }}
@@ -381,9 +378,6 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 // Exercises FuncMap
 // Just running basic tests to make sure the function map works and all functions are available as expected.
 // More complete unit tests are provided by go-openapi/swag.
-// NOTE: We note that functions StripPackage() and DropPackage() behave the same way... and StripPackage()
-// function is not sensitive to its second arg... Probably not what was intended in the first place but not
-// blocking anyone for now.
 func TestTemplates_FuncMap(t *testing.T) {
 	log.SetOutput(os.Stdout)
 	funcTpl := testFuncTpl()
@@ -399,6 +393,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
 	require.NoError(t, err)
 
+	genModel.DependsOn = []string{"x", "z"}
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
 	require.NoError(t, err)
@@ -409,18 +404,15 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "PluralizeFirstWord=ponies of the round table\n")
 	assert.Contains(t, rendered.String(), "PluralizeFirstOfOneWord=dwarves\n")
 	assert.Contains(t, rendered.String(), "PluralizeFirstOfNoWord=\n")
-	assert.Contains(t, rendered.String(), "StripPackage=suffix\n")
-	assert.Contains(t, rendered.String(), "StripNoPackage=suffix\n")
-	assert.Contains(t, rendered.String(), "StripEmptyPackage=\n")
 	assert.Contains(t, rendered.String(), "DropPackage=suffix\n")
 	assert.Contains(t, rendered.String(), "DropNoPackage=suffix\n")
 	assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
 	assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
-	assert.Contains(t, rendered.String(), "ImportRuntime=true\n")
-	assert.Contains(t, rendered.String(), "DoNotImport=false\n")
+	assert.Contains(t, rendered.String(), "ContainsString=true\n")
+	assert.Contains(t, rendered.String(), "DoesNotContainString=false\n")
 	assert.Contains(t, rendered.String(), "PadSurround1=-,-,-,padme,-,-,-,-,-,-,-,-\n")
 	assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
-	assert.Contains(t, rendered.String(), "Json=[\"github.com/go-openapi/errors\",\"github.com/go-openapi/runtime\",\"github.com/go-openapi/swag\",\"github.com/go-openapi/validate\"]")
+	assert.Contains(t, rendered.String(), `Json={"errors":"github.com/go-openapi/errors","runtime":"github.com/go-openapi/runtime","swag":"github.com/go-openapi/swag","validate":"github.com/go-openapi/validate"}`)
 	assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
 	assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
 	assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")

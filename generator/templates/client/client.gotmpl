@@ -11,17 +11,15 @@ package {{ .Name }}
 
 import (
   "net/http"
+
   "github.com/go-openapi/errors"
-  "github.com/go-openapi/swag"
   "github.com/go-openapi/runtime"
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
   "github.com/go-openapi/validate"
 
-  strfmt "github.com/go-openapi/strfmt"
-
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New creates a new {{ humanize .Name }} API client.
@@ -50,9 +48,9 @@ type ClientService interface {
 
 {{ range .Operations }}
 /*
-{{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
+  {{ pascalize .Name }} {{ if .Summary }}{{ pluralizeFirstWord (humanize .Summary) }}{{ if .Description }}
 
-{{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
+  {{ blockcomment .Description }}{{ end }}{{ else if .Description}}{{ blockcomment .Description }}{{ else }}{{ humanize .Name }} API{{ end }}
 */
 func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }} {
   // TODO: Validate the params before sending

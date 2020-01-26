@@ -53,6 +53,8 @@ const (
 	xSchemes      = "x-schemes" // additional schemes supported for operations (server generation)
 	xOrder        = "x-order"   // sort order for properties (or any schema)
 	xGoJSONString = "x-go-json-string"
+
+	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )
 
 // swaggerTypeName contains a mapping from go type to swagger type or format

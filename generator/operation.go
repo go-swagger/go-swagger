@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -72,6 +71,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	}
 
 	ops := gatherOperations(analyzed, operationNames)
+
 	if len(ops) == 0 {
 		return errors.New("no operations were selected")
 	}
@@ -146,58 +146,49 @@ type operationGenerator struct {
 	GenOpts              *GenOpts
 }
 
+// Generate a single operation
 func (o *operationGenerator) Generate() error {
-	// Build a list of codegen operations based on the tags,
-	// the tag decides the actual package for an operation
-	// the user specified package serves as root for generating the directory structure
-	var operations GenOperations
-	authed := len(o.SecurityRequirements) > 0
 
-	var bldr codeGenOpBuilder
-	bldr.Name = o.Name
-	bldr.Method = o.Method
-	bldr.Path = o.Path
-	bldr.BasePath = o.BasePath
-	bldr.ModelsPackage = o.ModelsPackage
-	bldr.Principal = o.Principal
-	bldr.Target = o.Target
-	bldr.Operation = o.Operation
-	bldr.Authed = authed
-	bldr.Security = o.SecurityRequirements
-	bldr.SecurityDefinitions = o.SecurityDefinitions
-	bldr.Doc = o.Doc
-	bldr.Analyzed = o.Analyzed
-	bldr.DefaultScheme = o.DefaultScheme
-	bldr.DefaultProduces = o.DefaultProduces
-	bldr.RootAPIPackage = o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, defaultServerTarget)
-	bldr.GenOpts = o.GenOpts
-	bldr.DefaultConsumes = o.DefaultConsumes
-	bldr.IncludeValidator = o.IncludeValidator
+	defaultImports := o.GenOpts.defaultImports()
 
-	bldr.DefaultImports = []string{o.GenOpts.ExistingModels}
-	if o.GenOpts.ExistingModels == "" {
-		bldr.DefaultImports = []string{
-			path.Join(
-				o.GenOpts.LanguageOpts.baseImport(o.Base),
-				o.GenOpts.LanguageOpts.ManglePackagePath(o.ModelsPackage, "")),
-		}
+	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
+	imports := o.GenOpts.initImports(
+		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage))
+
+	bldr := codeGenOpBuilder{
+		ModelsPackage:       o.ModelsPackage,
+		Principal:           o.Principal,
+		Target:              o.Target,
+		DefaultImports:      defaultImports,
+		Imports:             imports,
+		DefaultScheme:       o.DefaultScheme,
+		Doc:                 o.Doc,
+		Analyzed:            o.Analyzed,
+		BasePath:            o.BasePath,
+		GenOpts:             o.GenOpts,
+		Name:                o.Name,
+		Operation:           o.Operation,
+		Method:              o.Method,
+		Path:                o.Path,
+		IncludeValidator:    o.IncludeValidator,
+		APIPackage:          o.APIPackage, // defaults to main operations package
+		DefaultProduces:     o.DefaultProduces,
+		DefaultConsumes:     o.DefaultConsumes,
+		Authed:              len(o.Analyzed.SecurityRequirementsFor(&o.Operation)) > 0,
+		Security:            o.Analyzed.SecurityRequirementsFor(&o.Operation),
+		SecurityDefinitions: o.Analyzed.SecurityDefinitionsFor(&o.Operation),
+		RootAPIPackage:      o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, defaultServerTarget),
 	}
 
-	bldr.APIPackage = o.APIPackage
-	st := o.Tags
-	if o.GenOpts != nil {
-		st = o.GenOpts.Tags
-	}
-	intersected := intersectTags(o.Operation.Tags, st)
-	if len(intersected) > 0 {
-		tag := intersected[0]
-		bldr.APIPackage = o.GenOpts.LanguageOpts.ManglePackagePath(tag, o.APIPackage)
-	}
+	_, tags, _ := bldr.analyzeTags()
+
 	op, err := bldr.MakeOperation()
 	if err != nil {
 		return err
 	}
-	op.Tags = intersected
+
+	op.Tags = tags
+	operations := make(GenOperations, 0, 1)
 	operations = append(operations, op)
 	sort.Sort(operations)
 
@@ -223,6 +214,7 @@ type codeGenOpBuilder struct {
 	Path                string
 	BasePath            string
 	APIPackage          string
+	APIPackageAlias     string
 	RootAPIPackage      string
 	ModelsPackage       string
 	Principal           string
@@ -231,7 +223,7 @@ type codeGenOpBuilder struct {
 	Doc                 *loads.Document
 	PristineDoc         *loads.Document
 	Analyzed            *analysis.Spec
-	DefaultImports      []string
+	DefaultImports      map[string]string
 	Imports             map[string]string
 	DefaultScheme       string
 	DefaultProduces     string
@@ -468,12 +460,14 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			TargetImportPath: b.GenOpts.LanguageOpts.baseImport(b.GenOpts.Target),
 		},
 		Package:              b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
+		PackageAlias:         b.APIPackageAlias,
 		RootPackage:          b.RootAPIPackage,
 		Name:                 b.Name,
 		Method:               b.Method,
 		Path:                 b.Path,
 		BasePath:             b.BasePath,
 		Tags:                 operation.Tags,
+		UseTags:              len(operation.Tags) > 0 && !b.GenOpts.SkipTagPackages,
 		Description:          trimBOM(operation.Description),
 		ReceiverName:         receiver,
 		DefaultImports:       b.DefaultImports,
@@ -1139,15 +1133,98 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 	return schema, nil
 }
 
-func intersectTags(left, right []string) (filtered []string) {
-	if len(right) == 0 {
-		filtered = left
-		return
-	}
+func intersectTags(left, right []string) []string {
+	// dedupe
+	uniqueTags := make(map[string]struct{}, maxInt(len(left), len(right)))
 	for _, l := range left {
-		if swag.ContainsStrings(right, l) {
-			filtered = append(filtered, l)
+		if len(right) == 0 || swag.ContainsStrings(right, l) {
+			uniqueTags[l] = struct{}{}
 		}
 	}
-	return
+	filtered := make([]string, 0, len(uniqueTags))
+	// stable output across generations, preserving original order
+	for _, k := range left {
+		if _, ok := uniqueTags[k]; !ok {
+			continue
+		}
+		filtered = append(filtered, k)
+		delete(uniqueTags, k)
+	}
+	return filtered
+}
+
+// analyze tags for an operation
+func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
+	var (
+		filter         []string
+		tag            string
+		hasTagOverride bool
+	)
+	if b.GenOpts != nil {
+		filter = b.GenOpts.Tags
+	}
+	intersected := intersectTags(pruneEmpty(b.Operation.Tags), filter)
+	if !b.GenOpts.SkipTagPackages && len(intersected) > 0 {
+		// override generation with: x-go-operation-tag
+		tag, hasTagOverride = b.Operation.Extensions.GetString(xGoOperationTag)
+		if !hasTagOverride {
+			// TODO(fred): this part should be delegated to some new TagsFor(operation) in go-openapi/analysis
+			tag = intersected[0]
+			gtags := b.Doc.Spec().Tags
+			for _, gtag := range gtags {
+				if gtag.Name != tag {
+					continue
+				}
+				//  honor x-go-name in tag
+				if name, hasGoName := gtag.Extensions.GetString(xGoName); hasGoName {
+					tag = name
+					break
+				}
+				//  honor x-go-operation-tag in tag
+				if name, hasOpName := gtag.Extensions.GetString(xGoOperationTag); hasOpName {
+					tag = name
+					break
+				}
+			}
+		}
+	}
+	if tag == b.APIPackage {
+		// confict with "operations" package is handled separately
+		tag = renameOperationPackage(intersected, tag)
+	}
+	b.APIPackage = b.GenOpts.LanguageOpts.ManglePackageName(tag, b.APIPackage) // actual package name
+	b.APIPackageAlias = deconflictTag(intersected, b.APIPackage)               // deconflicted import alias
+	return tag, intersected, len(filter) == 0 || len(filter) > 0 && len(intersected) > 0
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// deconflictTag ensures generated packages for operations based on tags do not conflict
+// with other imports
+func deconflictTag(seenTags []string, pkg string) string {
+	switch pkg {
+	case "api", "httptransport":
+		fallthrough
+	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
+		fallthrough
+	case "tls", "http", "fmt", "strings", "log":
+		return renameOperationPackage(seenTags, pkg)
+	}
+	return pkg
+}
+
+func renameOperationPackage(seenTags []string, pkg string) string {
+	current := strings.ToLower(pkg) + "ops"
+	if len(seenTags) == 0 {
+		return current
+	}
+	for swag.ContainsStringsCI(seenTags, current) {
+		current += "1"
+	}
+	return current
 }
