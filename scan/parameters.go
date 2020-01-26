@@ -40,6 +40,10 @@ func (pt paramTypable) Typed(tpe, format string) {
 	pt.param.Typed(tpe, format)
 }
 
+func (pt paramTypable) WithEnum(values ...interface{}) {
+	pt.param.WithEnum(values...);
+}
+
 func (pt paramTypable) SetRef(ref spec.Ref) {
 	pt.param.Ref = ref
 }
@@ -68,6 +72,10 @@ func (pt paramTypable) Schema() *spec.Schema {
 	return pt.param.Schema
 }
 
+func (pt paramTypable) WithEnum(values ...interface{}) {
+	pt.param.WithEnum(values...)
+}
+
 type itemsTypable struct {
 	items *spec.Items
 	level int
@@ -83,6 +91,10 @@ func (pt itemsTypable) SetRef(ref spec.Ref) {
 	pt.items.Ref = ref
 }
 
+func (pt itemsTypable) WithEnum(values ...interface{}) {
+	pt.items.WithEnum(values...);
+}
+
 func (pt itemsTypable) Schema() *spec.Schema {
 	return nil
 }
@@ -93,6 +105,10 @@ func (pt itemsTypable) Items() swaggerTypable {
 	}
 	pt.items.Type = "array"
 	return itemsTypable{pt.items.Items, pt.level + 1}
+}
+
+func (pt itemsTypable) WithEnum(values ...interface{}) {
+	pt.items.WithEnum(values...)
 }
 
 type paramValidations struct {

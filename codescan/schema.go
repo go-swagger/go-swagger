@@ -65,9 +65,15 @@ func (st schemaTypable) AdditionalProperties() swaggerTypable {
 	st.schema.Typed("object", "")
 	return schemaTypable{st.schema.AdditionalProperties.Schema, st.level + 1}
 }
+
 func (st schemaTypable) Level() int { return st.level }
+
 func (st schemaTypable) AddExtension(key string, value interface{}) {
 	addExtension(&st.schema.VendorExtensible, key, value)
+}
+
+func (st schemaTypable) WithEnum(values ...interface{}) {
+	st.schema.WithEnum(values...)
 }
 
 type schemaValidations struct {
@@ -302,7 +308,12 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			}
 
 			if enumName, ok := enumName(cmt); ok {
-				debugLog(enumName)
+				enumValues, _ := s.ctx.FindEnumValues(pkg, enumName)
+				if len(enumValues) > 0 {
+					tgt.WithEnum(enumValues...)
+					enumTypeName := reflect.TypeOf(enumValues[0]).String()
+					_ = swaggerSchemaForType(enumTypeName, tgt)
+				}
 				return nil
 			}
 
