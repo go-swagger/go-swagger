@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations/todos"
@@ -41,13 +41,16 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams) middleware.Responder {
-			return middleware.NotImplemented("operation TodosAddOne has not yet been implemented")
-		}), TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
-			return middleware.NotImplemented("operation TodosDestroyOne has not yet been implemented")
-		}), TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
-			return middleware.NotImplemented("operation TodosFindTodos has not yet been implemented")
-		}), TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
-			return middleware.NotImplemented("operation TodosUpdateOne has not yet been implemented")
+			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
+		}),
+		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams) middleware.Responder {
+			return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
+		}),
+		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
+			return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
+		}),
+		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams) middleware.Responder {
+			return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 		}),
 	}
 }
@@ -88,7 +91,6 @@ type TodoListAPI struct {
 	TodosFindTodosHandler todos.FindTodosHandler
 	// TodosUpdateOneHandler sets the operation handler for the update one operation
 	TodosUpdateOneHandler todos.UpdateOneHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -156,19 +158,19 @@ func (o *TodoListAPI) Validate() error {
 	}
 
 	if o.TodosAddOneHandler == nil {
-		unregistered = append(unregistered, "todos.AddOneHandler")
+		unregistered = append(unregistered, "Todos.AddOneHandler")
 	}
 
 	if o.TodosDestroyOneHandler == nil {
-		unregistered = append(unregistered, "todos.DestroyOneHandler")
+		unregistered = append(unregistered, "Todos.DestroyOneHandler")
 	}
 
 	if o.TodosFindTodosHandler == nil {
-		unregistered = append(unregistered, "todos.FindTodosHandler")
+		unregistered = append(unregistered, "Todos.FindTodosHandler")
 	}
 
 	if o.TodosUpdateOneHandler == nil {
-		unregistered = append(unregistered, "todos.UpdateOneHandler")
+		unregistered = append(unregistered, "Todos.UpdateOneHandler")
 	}
 
 	if len(unregistered) > 0 {

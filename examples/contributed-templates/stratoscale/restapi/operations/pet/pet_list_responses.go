@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
+	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
 // PetListOKCode is the HTTP code returned for type PetListOK

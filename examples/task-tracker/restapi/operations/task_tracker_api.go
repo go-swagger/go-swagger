@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
@@ -42,23 +42,29 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		MultipartformConsumer: runtime.DiscardConsumer,
 		JSONProducer:          runtime.JSONProducer(),
 		TasksAddCommentToTaskHandler: tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksAddCommentToTask has not yet been implemented")
-		}), TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksCreateTask has not yet been implemented")
-		}), TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksDeleteTask has not yet been implemented")
-		}), TasksGetTaskCommentsHandler: tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksGetTaskComments has not yet been implemented")
-		}), TasksGetTaskDetailsHandler: tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksGetTaskDetails has not yet been implemented")
-		}), TasksListTasksHandler: tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksListTasks has not yet been implemented")
-		}), TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksUpdateTask has not yet been implemented")
-		}), TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksUploadTaskFile has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 		}),
-		// Applies when the "token" query is set
+		TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
+		}),
+		TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
+		}),
+		TasksGetTaskCommentsHandler: tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
+		}),
+		TasksGetTaskDetailsHandler: tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
+		}),
+		TasksListTasksHandler: tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
+		}),
+		TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
+		}),
+		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
+			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
+		}), // Applies when the "token" query is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 		},
@@ -136,7 +142,6 @@ type TaskTrackerAPI struct {
 	TasksUpdateTaskHandler tasks.UpdateTaskHandler
 	// TasksUploadTaskFileHandler sets the operation handler for the upload task file operation
 	TasksUploadTaskFileHandler tasks.UploadTaskFileHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -216,35 +221,35 @@ func (o *TaskTrackerAPI) Validate() error {
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.AddCommentToTaskHandler")
+		unregistered = append(unregistered, "Tasks.AddCommentToTaskHandler")
 	}
 
 	if o.TasksCreateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.CreateTaskHandler")
+		unregistered = append(unregistered, "Tasks.CreateTaskHandler")
 	}
 
 	if o.TasksDeleteTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.DeleteTaskHandler")
+		unregistered = append(unregistered, "Tasks.DeleteTaskHandler")
 	}
 
 	if o.TasksGetTaskCommentsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskCommentsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskCommentsHandler")
 	}
 
 	if o.TasksGetTaskDetailsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskDetailsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskDetailsHandler")
 	}
 
 	if o.TasksListTasksHandler == nil {
-		unregistered = append(unregistered, "tasks.ListTasksHandler")
+		unregistered = append(unregistered, "Tasks.ListTasksHandler")
 	}
 
 	if o.TasksUpdateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.UpdateTaskHandler")
+		unregistered = append(unregistered, "Tasks.UpdateTaskHandler")
 	}
 
 	if o.TasksUploadTaskFileHandler == nil {
-		unregistered = append(unregistered, "tasks.UploadTaskFileHandler")
+		unregistered = append(unregistered, "Tasks.UploadTaskFileHandler")
 	}
 
 	if len(unregistered) > 0 {

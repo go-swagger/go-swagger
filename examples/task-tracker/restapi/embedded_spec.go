@@ -1376,6 +1376,28 @@ func init() {
         }
       }
     },
+    "MilestoneStats": {
+      "description": "This object contains counts for the remaining open issues and the amount of issues that have been closed.\n",
+      "type": "object",
+      "title": "Some counters for this milestone.",
+      "properties": {
+        "closed": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The closed issues."
+        },
+        "open": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The remaining open issues."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "title": "The total number of issues for this milestone."
+        }
+      }
+    },
     "Task": {
       "description": "A Task is the main entity in this application. Everything revolves around tasks and managing them.\n",
       "type": "object",
@@ -1392,42 +1414,7 @@ func init() {
               "type": "object",
               "title": "The attached files.",
               "additionalProperties": {
-                "type": "object",
-                "maxProperties": 20,
-                "properties": {
-                  "contentType": {
-                    "description": "The content type of the file is inferred from the upload request.\n",
-                    "type": "string",
-                    "title": "The content type of the file.",
-                    "readOnly": true
-                  },
-                  "description": {
-                    "description": "This is a free form text field with support for github flavored markdown.\n",
-                    "type": "string",
-                    "title": "Extra information to attach to the file.",
-                    "minLength": 3
-                  },
-                  "name": {
-                    "description": "This name is inferred from the upload request.\n",
-                    "type": "string",
-                    "title": "The name of the file.",
-                    "readOnly": true
-                  },
-                  "size": {
-                    "description": "This property was generated during the upload request of the file.",
-                    "type": "number",
-                    "format": "float64",
-                    "title": "The file size in bytes.",
-                    "readOnly": true
-                  },
-                  "url": {
-                    "description": "This URL is generated on the server, based on where it was able to store the file when it was uploaded.\n",
-                    "type": "string",
-                    "format": "uri",
-                    "title": "The url to download or view the file.",
-                    "readOnly": true
-                  }
-                }
+                "$ref": "#/definitions/TaskAttachmentsAnon"
               }
             },
             "comments": {
@@ -1455,6 +1442,44 @@ func init() {
           }
         }
       ]
+    },
+    "TaskAttachmentsAnon": {
+      "type": "object",
+      "maxProperties": 20,
+      "properties": {
+        "contentType": {
+          "description": "The content type of the file is inferred from the upload request.\n",
+          "type": "string",
+          "title": "The content type of the file.",
+          "readOnly": true
+        },
+        "description": {
+          "description": "This is a free form text field with support for github flavored markdown.\n",
+          "type": "string",
+          "title": "Extra information to attach to the file.",
+          "minLength": 3
+        },
+        "name": {
+          "description": "This name is inferred from the upload request.\n",
+          "type": "string",
+          "title": "The name of the file.",
+          "readOnly": true
+        },
+        "size": {
+          "description": "This property was generated during the upload request of the file.",
+          "type": "number",
+          "format": "float64",
+          "title": "The file size in bytes.",
+          "readOnly": true
+        },
+        "url": {
+          "description": "This URL is generated on the server, based on where it was able to store the file when it was uploaded.\n",
+          "type": "string",
+          "format": "uri",
+          "title": "The url to download or view the file.",
+          "readOnly": true
+        }
+      }
     },
     "TaskCard": {
       "description": "A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.\n",

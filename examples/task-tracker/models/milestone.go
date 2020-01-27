@@ -6,16 +6,15 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Milestone A milestone is a particular goal that is important to the project for this issue tracker.
 //
-// Milestones can have a description and due date.
+// Milestones can have a escription and due date.
 // This can be useful for filters and such.
 //
 // swagger:model Milestone

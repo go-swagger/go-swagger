@@ -43,7 +43,6 @@ func main() {
 	api := operations.NewTodoListAPI(swaggerSpec)
 	// get server with flag values filled out
 	server = restapi.NewServer(api)
-
 	defer server.Shutdown()
 
 	server.ConfigureAPI()

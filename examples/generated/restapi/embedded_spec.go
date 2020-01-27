@@ -867,8 +867,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -911,8 +911,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -951,8 +951,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -999,8 +999,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -1050,8 +1050,8 @@ func init() {
           },
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -1094,8 +1094,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],
@@ -1144,8 +1144,8 @@ func init() {
         "security": [
           {
             "petstore_auth": [
-              "write_pets",
-              "read_pets"
+              "read_pets",
+              "write_pets"
             ]
           }
         ],

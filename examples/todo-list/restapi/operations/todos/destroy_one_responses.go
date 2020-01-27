@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/go-swagger/go-swagger/examples/todo-list/models"
+	"github.com/go-swagger/go-swagger/examples/todo-list/models"
 )
 
 // DestroyOneNoContentCode is the HTTP code returned for type DestroyOneNoContent
