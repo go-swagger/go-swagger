@@ -6,9 +6,9 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
@@ -40,11 +40,15 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	api.XMLProducer = runtime.XMLProducer()
 
 	// Applies when the "api_key" header is set
-	api.APIKeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
+	if api.APIKeyAuth == nil {
+		api.APIKeyAuth = func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
+		}
 	}
-	api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
-		return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
+	if api.PetstoreAuthAuth == nil {
+		api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
+		}
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()

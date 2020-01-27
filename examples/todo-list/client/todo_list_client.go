@@ -6,10 +6,10 @@ package client
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/client/todos"
 )
@@ -56,9 +56,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *TodoList {
 
 	cli := new(TodoList)
 	cli.Transport = transport
-
 	cli.Todos = todos.New(transport, formats)
-
 	return cli
 }
 
@@ -111,7 +109,5 @@ type TodoList struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *TodoList) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
 	c.Todos.SetTransport(transport)
-
 }

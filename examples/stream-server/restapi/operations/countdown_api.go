@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -39,7 +39,7 @@ func NewCountdownAPI(spec *loads.Document) *CountdownAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		ElapseHandler: ElapseHandlerFunc(func(params ElapseParams) middleware.Responder {
-			return middleware.NotImplemented("operation Elapse has not yet been implemented")
+			return middleware.NotImplemented("operation operations.Elapse has not yet been implemented")
 		}),
 	}
 }
@@ -74,7 +74,6 @@ type CountdownAPI struct {
 
 	// ElapseHandler sets the operation handler for the elapse operation
 	ElapseHandler ElapseHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -142,7 +141,7 @@ func (o *CountdownAPI) Validate() error {
 	}
 
 	if o.ElapseHandler == nil {
-		unregistered = append(unregistered, "ElapseHandler")
+		unregistered = append(unregistered, "Operations.ElapseHandler")
 	}
 
 	if len(unregistered) > 0 {

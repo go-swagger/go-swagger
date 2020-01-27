@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	models "github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
+	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
 // PetCreateReader is a Reader for the PetCreate structure.

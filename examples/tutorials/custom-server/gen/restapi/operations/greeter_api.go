@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -39,7 +39,7 @@ func NewGreeterAPI(spec *loads.Document) *GreeterAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		TxtProducer:         runtime.TextProducer(),
 		GetGreetingHandler: GetGreetingHandlerFunc(func(params GetGreetingParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetGreeting has not yet been implemented")
+			return middleware.NotImplemented("operation operations.GetGreeting has not yet been implemented")
 		}),
 	}
 }
@@ -74,7 +74,6 @@ type GreeterAPI struct {
 
 	// GetGreetingHandler sets the operation handler for the get greeting operation
 	GetGreetingHandler GetGreetingHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -142,7 +141,7 @@ func (o *GreeterAPI) Validate() error {
 	}
 
 	if o.GetGreetingHandler == nil {
-		unregistered = append(unregistered, "GetGreetingHandler")
+		unregistered = append(unregistered, "Operations.GetGreetingHandler")
 	}
 
 	if len(unregistered) > 0 {

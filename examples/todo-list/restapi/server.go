@@ -279,8 +279,6 @@ func (s *Server) Serve() (err error) {
 	go handleInterrupt(once, s)
 
 	servers := []*http.Server{}
-	wg.Add(1)
-	go s.handleShutdown(wg, &servers)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -429,6 +427,9 @@ func (s *Server) Serve() (err error) {
 			s.Logf("Stopped serving todo list at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 	}
+
+	wg.Add(1)
+	go s.handleShutdown(wg, &servers)
 
 	wg.Wait()
 	return nil

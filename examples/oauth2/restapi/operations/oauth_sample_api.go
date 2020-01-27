@@ -10,18 +10,17 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/go-swagger/go-swagger/examples/oauth2/models"
 	"github.com/go-swagger/go-swagger/examples/oauth2/restapi/operations/customers"
-
-	models "github.com/go-swagger/go-swagger/examples/oauth2/models"
 )
 
 // NewOauthSampleAPI creates a new OauthSample instance
@@ -43,15 +42,17 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
-		}), GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetLogin has not yet been implemented")
-		}), CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation CustomersCreate has not yet been implemented")
-		}), CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation CustomersGetID has not yet been implemented")
+			return middleware.NotImplemented("operation operations.GetAuthCallback has not yet been implemented")
 		}),
-		OauthSecurityAuth: func(token string, scopes []string) (*models.Principal, error) {
+		GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
+			return middleware.NotImplemented("operation operations.GetLogin has not yet been implemented")
+		}),
+		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
+		}),
+		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
+		}), OauthSecurityAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (OauthSecurity) has not yet been implemented")
 		},
 
@@ -103,7 +104,6 @@ type OauthSampleAPI struct {
 	CustomersCreateHandler customers.CreateHandler
 	// CustomersGetIDHandler sets the operation handler for the get Id operation
 	CustomersGetIDHandler customers.GetIDHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -175,19 +175,19 @@ func (o *OauthSampleAPI) Validate() error {
 	}
 
 	if o.GetAuthCallbackHandler == nil {
-		unregistered = append(unregistered, "GetAuthCallbackHandler")
+		unregistered = append(unregistered, "Operations.GetAuthCallbackHandler")
 	}
 
 	if o.GetLoginHandler == nil {
-		unregistered = append(unregistered, "GetLoginHandler")
+		unregistered = append(unregistered, "Operations.GetLoginHandler")
 	}
 
 	if o.CustomersCreateHandler == nil {
-		unregistered = append(unregistered, "customers.CreateHandler")
+		unregistered = append(unregistered, "Customers.CreateHandler")
 	}
 
 	if o.CustomersGetIDHandler == nil {
-		unregistered = append(unregistered, "customers.GetIDHandler")
+		unregistered = append(unregistered, "Customers.GetIDHandler")
 	}
 
 	if len(unregistered) > 0 {

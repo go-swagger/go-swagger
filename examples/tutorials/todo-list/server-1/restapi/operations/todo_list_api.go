@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-1/restapi/operations/todos"
@@ -41,7 +41,7 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
-			return middleware.NotImplemented("operation TodosFindTodos has not yet been implemented")
+			return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
 		}),
 	}
 }
@@ -76,7 +76,6 @@ type TodoListAPI struct {
 
 	// TodosFindTodosHandler sets the operation handler for the find todos operation
 	TodosFindTodosHandler todos.FindTodosHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -144,7 +143,7 @@ func (o *TodoListAPI) Validate() error {
 	}
 
 	if o.TodosFindTodosHandler == nil {
-		unregistered = append(unregistered, "todos.FindTodosHandler")
+		unregistered = append(unregistered, "Todos.FindTodosHandler")
 	}
 
 	if len(unregistered) > 0 {

@@ -10,16 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	"github.com/go-swagger/go-swagger/examples/composed-auth/models"
 )
 
 // NewMultiAuthExampleAPI creates a new MultiAuthExample instance
@@ -41,17 +41,20 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		AddOrderHandler: AddOrderHandlerFunc(func(params AddOrderParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation AddOrder has not yet been implemented")
-		}), GetAccountHandler: GetAccountHandlerFunc(func(params GetAccountParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation GetAccount has not yet been implemented")
-		}), GetItemsHandler: GetItemsHandlerFunc(func(params GetItemsParams) middleware.Responder {
-			return middleware.NotImplemented("operation GetItems has not yet been implemented")
-		}), GetOrderHandler: GetOrderHandlerFunc(func(params GetOrderParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation GetOrder has not yet been implemented")
-		}), GetOrdersForItemHandler: GetOrdersForItemHandlerFunc(func(params GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation GetOrdersForItem has not yet been implemented")
+			return middleware.NotImplemented("operation operations.AddOrder has not yet been implemented")
 		}),
-		HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
+		GetAccountHandler: GetAccountHandlerFunc(func(params GetAccountParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation operations.GetAccount has not yet been implemented")
+		}),
+		GetItemsHandler: GetItemsHandlerFunc(func(params GetItemsParams) middleware.Responder {
+			return middleware.NotImplemented("operation operations.GetItems has not yet been implemented")
+		}),
+		GetOrderHandler: GetOrderHandlerFunc(func(params GetOrderParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation operations.GetOrder has not yet been implemented")
+		}),
+		GetOrdersForItemHandler: GetOrdersForItemHandlerFunc(func(params GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
+			return middleware.NotImplemented("operation operations.GetOrdersForItem has not yet been implemented")
+		}), HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (hasRole) has not yet been implemented")
 		},
 
@@ -157,7 +160,6 @@ type MultiAuthExampleAPI struct {
 	GetOrderHandler GetOrderHandler
 	// GetOrdersForItemHandler sets the operation handler for the get orders for item operation
 	GetOrdersForItemHandler GetOrdersForItemHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -241,23 +243,23 @@ func (o *MultiAuthExampleAPI) Validate() error {
 	}
 
 	if o.AddOrderHandler == nil {
-		unregistered = append(unregistered, "AddOrderHandler")
+		unregistered = append(unregistered, "Operations.AddOrderHandler")
 	}
 
 	if o.GetAccountHandler == nil {
-		unregistered = append(unregistered, "GetAccountHandler")
+		unregistered = append(unregistered, "Operations.GetAccountHandler")
 	}
 
 	if o.GetItemsHandler == nil {
-		unregistered = append(unregistered, "GetItemsHandler")
+		unregistered = append(unregistered, "Operations.GetItemsHandler")
 	}
 
 	if o.GetOrderHandler == nil {
-		unregistered = append(unregistered, "GetOrderHandler")
+		unregistered = append(unregistered, "Operations.GetOrderHandler")
 	}
 
 	if o.GetOrdersForItemHandler == nil {
-		unregistered = append(unregistered, "GetOrdersForItemHandler")
+		unregistered = append(unregistered, "Operations.GetOrdersForItemHandler")
 	}
 
 	if len(unregistered) > 0 {
