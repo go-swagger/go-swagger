@@ -29,6 +29,7 @@ Help Options:
 [server command options]
       -s, --server-package=                                                       the package to save the server specific code (default: restapi)
           --main-package=                                                         the location of the generated main. Defaults to cmd/{name}-server
+          --with-client                                                           generates a client alongside the generated server
       -P, --principal=                                                            the model to use for the security principal
           --default-scheme=                                                       the default scheme for this API (default: http)
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)

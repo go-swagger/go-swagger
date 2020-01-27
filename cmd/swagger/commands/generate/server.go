@@ -24,10 +24,12 @@ import (
 type serverOptions struct {
 	ServerPackage string `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
 	MainTarget    string `long:"main-package" short:"" description:"the location of the generated main. Defaults to cmd/{name}-server" default:""`
+	WithClient    bool   `long:"with-client" short:"" description:"generates a client alongside the generate server"`
 }
 
 func (cs serverOptions) apply(opts *generator.GenOpts) {
 	opts.ServerPackage = cs.ServerPackage
+	opts.MainPackage = cs.MainTarget
 }
 
 // Server the command to generate an entire server application
@@ -39,6 +41,7 @@ type Server struct {
 	serverOptions
 	schemeOptions
 	mediaOptions
+	clientOptions
 
 	SkipModels             bool   `long:"skip-models" description:"no models will be generated when this flag is specified"`
 	SkipOperations         bool   `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
@@ -50,7 +53,6 @@ type Server struct {
 	RegenerateConfigureAPI bool   `long:"regenerate-configureapi" description:"Force regeneration of configureapi.go"`
 
 	Name string `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
-	// TODO(fredbi): CmdName string `long:"cmd-name" short:"A" description:"the name of the server command, when main is generated (defaults to {name}-server)"`
 
 	//deprecated flags
 	WithContext bool `long:"with-context" description:"handlers get a context as first arg (deprecated)"`
@@ -67,6 +69,9 @@ func (s Server) apply(opts *generator.GenOpts) {
 	s.serverOptions.apply(opts)
 	s.schemeOptions.apply(opts)
 	s.mediaOptions.apply(opts)
+	if s.WithClient {
+		s.clientOptions.apply(opts)
+	}
 
 	opts.IncludeModel = !s.SkipModels
 	opts.IncludeValidator = !s.SkipModels
@@ -81,11 +86,29 @@ func (s Server) apply(opts *generator.GenOpts) {
 	opts.RegenerateConfigureAPI = s.RegenerateConfigureAPI
 
 	opts.Name = s.Name
-	opts.MainPackage = s.MainTarget
 }
 
 func (s *Server) generate(opts *generator.GenOpts) error {
-	return generator.GenerateServer(s.Name, s.Models.Models, s.Operations.Operations, opts)
+	err := generator.GenerateServer(s.Name, s.Models.Models, s.Operations.Operations, opts)
+	if err != nil {
+		return err
+	}
+	if s.WithClient {
+		// generate client in the same go, without already generated models
+		log.Printf(`Generating client`)
+		client := &Client{
+			SkipModels:     true,
+			SkipOperations: s.SkipOperations,
+			//ExistingModels: s. ?? (TODO(fred))
+		}
+		client.Shared = s.Shared
+		client.clientOptions = s.clientOptions
+		client.schemeOptions = s.schemeOptions
+		client.mediaOptions = s.mediaOptions
+		client.apply(opts)
+		err = createSwagger(client)
+	}
+	return err
 }
 
 func (s Server) log(rp string) {

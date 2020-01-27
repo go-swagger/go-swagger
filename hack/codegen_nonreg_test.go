@@ -32,6 +32,7 @@ const (
 	MinimalFlatten = "--with-flatten=minimal"
 	Expand         = "--with-flatten=expand"
 	SkipValidation = "--skip-validation"
+	WithClient     = "--with-client"
 )
 
 // skipT indicates known failures to skip in the test suite
@@ -52,6 +53,8 @@ type skipT struct {
 	SkipServer      bool `yaml:"skipServer,omitempty"`
 	SkipFullFlatten bool `yaml:"skipFullFlatten,omitempty"`
 	SkipValidation  bool `yaml:"skipValidation,omitempty"`
+
+	ExtraArgs []string `yaml:"extraArgs,omitempty"`
 }
 
 // fixtureT describe a spec and what _not_ to do with it
@@ -94,18 +97,24 @@ func (f fixturesT) Update(key string, in skipT) {
 	if in.SkipExpand {
 		out.SkipExpand = true
 	}
+	if len(in.ExtraArgs) > 0 {
+		out.ExtraArgs = append(out.ExtraArgs, in.ExtraArgs...)
+	}
 	f[key] = out
 }
 
 // runT describes a test run with given options and generation targets
 type runT struct {
-	Name      string
-	GenOpts   []string
-	Target    string
-	Skip      bool
-	GenClient bool
-	GenServer bool
-	GenModel  bool
+	Name        string
+	GenOpts     []string
+	Target      string
+	Skip        bool
+	GenClient   bool
+	GenServer   bool
+	GenModel    bool
+	BuildServer bool
+	BuildModel  bool
+	BuildClient bool
 }
 
 func (r runT) Opts() []string {
@@ -152,7 +161,10 @@ func gobuild(t *testing.T, runOpts ...icmd.CmdOp) {
 
 func generateModel(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...string) {
 	started := measure(t, nil)
-	cmd := icmd.Command("swagger", append([]string{"generate", "model", "--spec", spec, "--quiet"}, opts...)...)
+	args := []string{"generate", "model", "--spec", spec, "--quiet"}
+	args = append(args, opts...)
+	info(t, "%s: swagger %v", spec, args)
+	cmd := icmd.Command("swagger", args...)
 	res := icmd.RunCmd(cmd, runOpts...)
 	if !assert.Equal(t, 0, res.ExitCode) {
 		failure(t, "model generation failed for %s", spec)
@@ -165,12 +177,16 @@ func generateModel(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...stri
 }
 
 func buildModel(t *testing.T, target string) {
+	info(t, "building models at %s", target)
 	gobuild(t, icmd.Dir(filepath.Join(target, "models")))
 }
 
 func generateServer(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...string) {
 	started := measure(t, nil)
-	cmd := icmd.Command("swagger", append([]string{"generate", "server", "--spec", spec, "--name", serverName, "--quiet"}, opts...)...)
+	args := []string{"generate", "server", "--spec", spec, "--name", serverName, "--quiet"}
+	args = append(args, opts...)
+	info(t, "%s: swagger %v", spec, args)
+	cmd := icmd.Command("swagger", args...)
 	res := icmd.RunCmd(cmd, runOpts...)
 	if !assert.Equal(t, 0, res.ExitCode) {
 		failure(t, "server generation failed for %s", spec)
@@ -183,12 +199,16 @@ func generateServer(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...str
 }
 
 func buildServer(t *testing.T, target string) {
+	info(t, "building server at %s", target)
 	gobuild(t, icmd.Dir(filepath.Join(target, "cmd", serverName+"-server")))
 }
 
 func generateClient(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...string) {
 	started := measure(t, nil)
-	cmd := icmd.Command("swagger", append([]string{"generate", "client", "--spec", spec, "--name", serverName, "--quiet"}, opts...)...)
+	args := []string{"generate", "client", "--spec", spec, "--name", serverName, "--quiet"}
+	args = append(args, opts...)
+	info(t, "%s: swagger %v", spec, args)
+	cmd := icmd.Command("swagger", args...)
 	res := icmd.RunCmd(cmd, runOpts...)
 	if !assert.Equal(t, 0, res.ExitCode) {
 		failure(t, "client generation failed for %s", spec)
@@ -201,6 +221,7 @@ func generateClient(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...str
 }
 
 func buildClient(t *testing.T, target string) {
+	info(t, "building client at %s", target)
 	gobuild(t, icmd.Dir(filepath.Join(target, "client")))
 }
 
@@ -301,6 +322,18 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 		warn(t, "known server generation failure: skipped for %s", spec)
 		template.GenServer = false
 	}
+
+	// default builds planned
+	template.BuildClient = template.GenClient
+	template.BuildServer = template.GenServer
+	template.BuildModel = template.GenModel
+
+	if template.GenClient && template.GenServer {
+		// generate server and client in one go, build both
+		template.GenClient = false
+		template.GenOpts = append(template.GenOpts, WithClient)
+	}
+	// TODO(fred): avoid building specifically models when already done with client or server???
 
 	if !skip.KnownExpandFailure && !globalOpts.SkipExpand && !skip.SkipExpand {
 		// safeguard: avoid discriminator use case for expand
@@ -466,17 +499,23 @@ func TestCodegen(t *testing.T) {
 
 					info(t, "run %s for %s", run.Name, spec)
 
-					if run.GenModel {
-						generateModel(t, spec, cmdOpts, run.Opts()...)
-						buildModel(t, run.Target)
-					}
 					if run.GenServer {
 						generateServer(t, spec, cmdOpts, run.Opts()...)
+					}
+					if run.BuildServer {
 						buildServer(t, run.Target)
 					}
 					if run.GenClient {
 						generateClient(t, spec, cmdOpts, run.Opts()...)
+					}
+					if run.BuildClient {
 						buildClient(t, run.Target)
+					}
+					if run.GenModel {
+						generateModel(t, spec, cmdOpts, run.Opts()...)
+					}
+					if run.BuildModel {
+						buildModel(t, run.Target)
 					}
 				})
 			}
