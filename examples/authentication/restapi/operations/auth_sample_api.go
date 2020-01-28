@@ -39,18 +39,22 @@ func NewAuthSampleAPI(spec *loads.Document) *AuthSampleAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		}),
 		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
-		}), // Applies when the "x-token" header is set
+		}),
+
+		// Applies when the "x-token" header is set
 		KeyAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -77,9 +81,11 @@ type AuthSampleAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/keyauth.api.v1+json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/keyauth.api.v1+json
 	JSONProducer runtime.Producer
@@ -166,11 +172,10 @@ func (o *AuthSampleAPI) Validate() error {
 	}
 
 	if o.CustomersCreateHandler == nil {
-		unregistered = append(unregistered, "Customers.CreateHandler")
+		unregistered = append(unregistered, "customers.CreateHandler")
 	}
-
 	if o.CustomersGetIDHandler == nil {
-		unregistered = append(unregistered, "Customers.GetIDHandler")
+		unregistered = append(unregistered, "customers.GetIDHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -187,13 +192,10 @@ func (o *AuthSampleAPI) ServeErrorFor(operationID string) func(http.ResponseWrit
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *AuthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "key":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.KeyAuth(token)
@@ -202,14 +204,11 @@ func (o *AuthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *AuthSampleAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -273,7 +272,6 @@ func (o *AuthSampleAPI) Context() *middleware.Context {
 
 func (o *AuthSampleAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -282,12 +280,10 @@ func (o *AuthSampleAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/customers"] = customers.NewCreate(o.context, o.CustomersCreateHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/customers"] = customers.NewGetID(o.context, o.CustomersGetIDHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP

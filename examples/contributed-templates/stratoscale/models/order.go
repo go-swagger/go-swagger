@@ -15,6 +15,7 @@ import (
 )
 
 // Order order
+//
 // swagger:model Order
 type Order struct {
 

@@ -381,6 +381,7 @@ definitions:
           - sold
         x-go-custom-tag: query:"filter,sort"
   ApiResponse:
+    title: is the response to an API call
     type: object
     properties:
       code:

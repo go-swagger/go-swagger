@@ -10,6 +10,7 @@ import (
 )
 
 // Item item
+//
 // swagger:model Item
 type Item string
 

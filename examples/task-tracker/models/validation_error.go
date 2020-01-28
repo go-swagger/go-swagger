@@ -12,6 +12,7 @@ import (
 )
 
 // ValidationError validation error
+//
 // swagger:model ValidationError
 type ValidationError struct {
 	Error
@@ -51,7 +52,6 @@ func (m ValidationError) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
-
 	var dataAO1 struct {
 		Field string `json:"field,omitempty"`
 	}
@@ -63,7 +63,6 @@ func (m ValidationError) MarshalJSON() ([]byte, error) {
 		return nil, errAO1
 	}
 	_parts = append(_parts, jsonDataAO1)
-
 	return swag.ConcatJSON(_parts...), nil
 }
 

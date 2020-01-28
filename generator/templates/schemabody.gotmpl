@@ -19,17 +19,27 @@
         {{ end }}
       {{ end }}
       {{- if .HasAdditionalProperties }}
-        {{- if .AdditionalProperties -}}
+        {{- if .AdditionalProperties }}
           // {{ template "docstring" .AdditionalProperties }}
           {{- template "propertyValidationDocString" .AdditionalProperties}}
-          {{ if and .IsExported (not .IsSubType) -}}{{ pascalize .AdditionalProperties.Name }}{{- else -}}{{ .AdditionalProperties.Name }}{{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-        {{ end }}
-      {{ end}}
-      {{ if .AdditionalItems -}}
+          {{- if and .IsExported (not .IsSubType) }}
+            {{ pascalize .AdditionalProperties.Name -}}
+          {{- else if or (not .AdditionalProperties.IsExported) (.AdditionalProperties.IsBaseType) }}
+            {{ camelize .AdditionalProperties.Name }}Field{{ printf ""  -}}
+          {{- else }}
+            {{ .AdditionalProperties.Name -}}
+          {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+        {{- end }}
+      {{- end }}
+      {{- if .AdditionalItems }}
         // {{ template "docstring" .AdditionalItems }}
         {{- template "propertyValidationDocString" .AdditionalItems}}
-        {{ if and .IsExported (not $.IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-      {{ end }}
+        {{- if and .IsExported (not $.IsSubType) }}{{/* TODO(fred): make sure inherited AdditionalItems are camelized */}}
+          {{ pascalize .AdditionalItems.Name -}}
+        {{- else }}
+          {{ .AdditionalItems.Name }}
+        {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+      {{- end }}
     {{ else }}{{/* named type composition */}}
       {{ if not (and $.IsBaseType .IsExported) }}{{ .GoType }}{{ end }}
     {{ end }}
@@ -39,37 +49,98 @@
       {{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
   {{ end }}
   {{ if .HasAdditionalProperties }}
-    {{- if .AdditionalProperties -}}
+    {{- if .AdditionalProperties }}
     // {{ template "docstring" .AdditionalProperties }}
     {{- template "propertyValidationDocString" .AdditionalProperties}}
-      {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+      {{- if and .IsExported (not .IsSubType) }}
+        {{ pascalize .AdditionalProperties.Name -}}
+      {{- else }}
+        {{ pascalize .AdditionalProperties.Name }}Field{{ printf "" -}}
+      {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
     {{ end }}
   {{- end }}
-  {{ if .AdditionalItems -}}
+  {{- if .AdditionalItems }}
     // {{ template "docstring" .AdditionalItems }}
     {{- template "propertyValidationDocString" .AdditionalItems}}
     {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }
 {{- end }}
+
 {{ define "subTypeBody" }}struct {
-  {{ range .AllOf }}
-  {{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
-  {{ if not $.IsExported }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
-  {{ end }}{{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}{{ if .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}{{ end }}
-  {{ if .AdditionalItems }}{{ if and .IsExported }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-  {{ end }}
-  {{ else }}
-  {{ if not (and .IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
-  {{ end }}
-  {{range .Properties}}
-  {{ if not $.IsExported }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
-  {{end}}
-  {{ if .HasAdditionalProperties }}{{ if .AdditionalProperties }}{{ if and .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`{{ end }}
-  {{ end }}
-  {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-  {{ end }}
-}{{ end }}
+  {{- range .AllOf }}
+    {{- if or (and .IsBaseType .IsExported) .IsAnonymous }}
+      {{- range .Properties }}
+        {{- if not $.IsExported }}
+          {{- if $.IsTuple }}
+            {{- template "privtuplefield" . }}
+          {{- else }}
+            {{- template "privstructfield" . }}
+          {{- end }}
+        {{- else }}
+          {{- if $.IsTuple }}
+            {{- template "tuplefield" . }}
+          {{- else }}
+            {{- template "structfield" . }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .HasAdditionalProperties }}
+        {{- if .AdditionalProperties }}
+          {{- if .IsExported }}
+            {{ pascalize .AdditionalProperties.Name -}}
+          {{- else }}
+            {{ .AdditionalProperties.Name -}}
+          {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+        {{- end }}
+      {{- end }}
+      {{- if .AdditionalItems }}
+        {{- if .IsExported }}
+          {{ pascalize .AdditionalItems.Name -}}
+        {{- else }}
+          {{ .AdditionalItems.Name -}}
+        {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+      {{- end }}
+    {{- else }}
+      {{- if not (and .IsBaseType .IsExported) }}
+        {{ .GoType }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{ range .Properties }}
+    {{- if not $.IsExported }}
+      {{- if $.IsTuple }}
+        {{ template "privtuplefield" . }}
+      {{- else }}
+        {{ template "privstructfield" . }}
+      {{- end }}
+    {{- else }}
+      {{- if $.IsTuple }}
+        {{ template "tuplefield" . }}
+      {{- else }}
+        {{ template "structfield" . }}
+      {{- end }}
+    {{- end}}
+  {{- end }}
+  {{- if .HasAdditionalProperties }}
+    {{- if .AdditionalProperties }}
+      {{- if and .IsExported }}
+        {{ pascalize .AdditionalProperties.Name -}}
+      {{- else }}
+        {{ pascalize .AdditionalProperties.Name }}Field{{ printf "" -}}
+      {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+    {{- end }}
+  {{- end }}
+  {{- if .AdditionalItems }}
+    {{- if and .IsExported (not .IsSubType) }}
+      {{ pascalize .AdditionalItems.Name -}}
+    {{- else }}
+      {{ pascalize .AdditionalItems.Name -}}Field{{ printf "" -}}
+    {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+  {{- end }}
+}
+{{- end }}
+
 {{ define "withBaseTypeBody" }}struct {
   {{ range .AllOf }}
   {{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
@@ -87,7 +158,8 @@
   {{ end }}
   {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
-}{{ end }}
+}
+{{- end }}
 
 {{ define "withoutBaseTypeBody" }}struct {
   {{ range .AllOf }}
@@ -131,7 +203,8 @@
   {{ if .HasAdditionalProperties }}
     {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}
-}{{ end }}
+}
+{{- end }}
 
 {{ define "withoutBaseTypeBodyOrNonExported" }}struct {
   {{ range .AllOf }}
@@ -190,7 +263,7 @@
     {{ end }}
   {{ end }}
   },
-{{ end }}
+{{- end }}
 
 {{ define "withBaseTypeBodyAndNonExported" }}struct{
   {{ range .AllOf }}
@@ -222,7 +295,7 @@
       {{ pascalize .Name }}: {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
     {{ end }}
   {{ end }} },
-{{ end }}
+{{- end }}
 
 {{ define "withoutAdditionalBody" }}struct {
   {{ range .AllOf }}
@@ -235,7 +308,8 @@
   {{range .Properties}}
   {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
   {{end}}
-}{{end}}
+}
+{{- end }}
 
 {{ define "JustBaseTypeBody" }}struct {
   /* Just the base type fields. Used for unmashalling polymorphic types.*/
@@ -252,5 +326,5 @@
       {{ end }}
     {{ end }}
   {{ end }}
-}{{end}}
-
+}
+{{- end }}
