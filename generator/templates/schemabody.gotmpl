@@ -50,8 +50,9 @@
     {{- template "propertyValidationDocString" .AdditionalItems}}
     {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
-} 
+}
 {{- end }}
+
 {{ define "subTypeBody" }}struct {
   {{ range .AllOf }}
   {{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
@@ -69,7 +70,9 @@
   {{ end }}
   {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
-}{{ end }}
+}
+{{- end }}
+
 {{ define "withBaseTypeBody" }}struct {
   {{ range .AllOf }}
   {{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
@@ -87,7 +90,8 @@
   {{ end }}
   {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
-}{{ end }}
+}
+{{- end }}
 
 {{ define "withoutBaseTypeBody" }}struct {
   {{ range .AllOf }}
@@ -131,7 +135,8 @@
   {{ if .HasAdditionalProperties }}
     {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}
-}{{ end }}
+}
+{{- end }}
 
 {{ define "withoutBaseTypeBodyOrNonExported" }}struct {
   {{ range .AllOf }}
@@ -190,7 +195,7 @@
     {{ end }}
   {{ end }}
   },
-{{ end }}
+{{- end }}
 
 {{ define "withBaseTypeBodyAndNonExported" }}struct{
   {{ range .AllOf }}
@@ -222,7 +227,7 @@
       {{ pascalize .Name }}: {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
     {{ end }}
   {{ end }} },
-{{ end }}
+{{- end }}
 
 {{ define "withoutAdditionalBody" }}struct {
   {{ range .AllOf }}
@@ -235,7 +240,8 @@
   {{range .Properties}}
   {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}{{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
   {{end}}
-}{{end}}
+}
+{{- end }}
 
 {{ define "JustBaseTypeBody" }}struct {
   /* Just the base type fields. Used for unmashalling polymorphic types.*/
@@ -252,5 +258,6 @@
       {{ end }}
     {{ end }}
   {{ end }}
-}{{end}}
+}
+{{- end }}
 

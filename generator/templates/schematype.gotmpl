@@ -8,7 +8,7 @@
   {{- end}}
 {{- end }}
 
-{{- define "dereffedSchemaType" }}
+{{ define "dereffedSchemaType" }}
   {{- if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}
     {{- template "schemaBody" . }}
   {{- else }}
@@ -16,7 +16,7 @@
   {{- end}}
 {{- end }}
 
-{{- define "typeSchemaType"}}
+{{ define "typeSchemaType" }}
   {{- if and (or ((len .AllOf) gt 0) .IsAnonymous) ( not .IsMap) }}
     {{- template "schemaBody" . }}
   {{- else }}

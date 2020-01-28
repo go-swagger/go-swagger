@@ -1952,6 +1952,21 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	sg.buildMapOfNullable(nil)
 
+	// extra serializers & interfaces
+
+	// generate MarshalBinary for:
+	// - tuple
+	// - struct
+	// - map
+	// - aliased primitive of a formatter type which is not a stringer
+	//
+	// but not for:
+	// - interface{}
+	// - io.Reader
+	gs := sg.GenSchema
+	sg.GenSchema.WantsMarshalBinary = !(gs.IsInterface || gs.IsStream || gs.IsBaseType) &&
+		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties || (gs.IsPrimitive && gs.IsAliased && gs.IsCustomFormatter && !strings.Contains(gs.Zero(), `("`)))
+
 	debugLog("finished gen schema for %q", sg.Name)
 	return nil
 }

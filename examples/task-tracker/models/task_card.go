@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -18,6 +18,7 @@ import (
 // TaskCard a card for a task
 //
 // A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
+//
 //
 // swagger:model TaskCard
 type TaskCard struct {

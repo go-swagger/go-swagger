@@ -242,9 +242,9 @@ func GoLangOpts() *LanguageOpts {
 		for k, v := range imports {
 			_, name := path.Split(v)
 			if name != k {
-				result = append(result, fmt.Sprintf("%s %q", k, v))
+				result = append(result, fmt.Sprintf("\t%s %q", k, v))
 			} else {
-				result = append(result, fmt.Sprintf("%q", v))
+				result = append(result, fmt.Sprintf("\t%q", v))
 			}
 		}
 		sort.Strings(result)

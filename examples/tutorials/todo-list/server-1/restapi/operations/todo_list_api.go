@@ -38,8 +38,11 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
 			return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
 		}),
@@ -67,13 +70,14 @@ type TodoListAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/io.goswagger.examples.todo-list.v1+json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/io.goswagger.examples.todo-list.v1+json
 	JSONProducer runtime.Producer
-
 	// TodosFindTodosHandler sets the operation handler for the find todos operation
 	TodosFindTodosHandler todos.FindTodosHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -143,7 +147,7 @@ func (o *TodoListAPI) Validate() error {
 	}
 
 	if o.TodosFindTodosHandler == nil {
-		unregistered = append(unregistered, "Todos.FindTodosHandler")
+		unregistered = append(unregistered, "todos.FindTodosHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -160,16 +164,12 @@ func (o *TodoListAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *TodoListAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *TodoListAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -233,7 +233,6 @@ func (o *TodoListAPI) Context() *middleware.Context {
 
 func (o *TodoListAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -242,7 +241,6 @@ func (o *TodoListAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"][""] = todos.NewFindTodos(o.context, o.TodosFindTodosHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP

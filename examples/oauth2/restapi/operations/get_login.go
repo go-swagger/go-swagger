@@ -60,6 +60,7 @@ func (o *GetLogin) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetLoginOKBody get login o k body
+//
 // swagger:model GetLoginOKBody
 type GetLoginOKBody struct {
 

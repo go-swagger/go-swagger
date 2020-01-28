@@ -7,7 +7,7 @@ package models
 
 import (
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -15,6 +15,7 @@ import (
 // UserCard A minimal representation of a user.
 //
 // This representation of a user is mainly meant for inclusion in other models, or for list views.
+//
 //
 // swagger:model UserCard
 type UserCard struct {

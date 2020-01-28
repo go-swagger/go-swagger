@@ -7,7 +7,7 @@ package models
 
 import (
 	"github.com/go-openapi/errors"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -15,6 +15,7 @@ import (
 // Comment A comment for an issue.
 //
 // Users can comment on issues to discuss plans for resolution etc.
+//
 //
 // swagger:model Comment
 type Comment struct {

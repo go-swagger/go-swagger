@@ -39,8 +39,11 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		StoreInventoryGetHandler: store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation store.InventoryGet has not yet been implemented")
 		}),
@@ -70,11 +73,12 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		}),
 		PetPetUploadImageHandler: pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation pet.PetUploadImage has not yet been implemented")
-		}), // Applies when the "X-Auth-Roles" header is set
+		}),
+
+		// Applies when the "X-Auth-Roles" header is set
 		RolesAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (roles) X-Auth-Roles from header param [X-Auth-Roles] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -101,9 +105,11 @@ type PetstoreAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
@@ -114,7 +120,6 @@ type PetstoreAPI struct {
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
-
 	// StoreInventoryGetHandler sets the operation handler for the inventory get operation
 	StoreInventoryGetHandler store.InventoryGetHandler
 	// StoreOrderCreateHandler sets the operation handler for the order create operation
@@ -206,43 +211,34 @@ func (o *PetstoreAPI) Validate() error {
 	}
 
 	if o.StoreInventoryGetHandler == nil {
-		unregistered = append(unregistered, "Store.InventoryGetHandler")
+		unregistered = append(unregistered, "store.InventoryGetHandler")
 	}
-
 	if o.StoreOrderCreateHandler == nil {
-		unregistered = append(unregistered, "Store.OrderCreateHandler")
+		unregistered = append(unregistered, "store.OrderCreateHandler")
 	}
-
 	if o.StoreOrderDeleteHandler == nil {
-		unregistered = append(unregistered, "Store.OrderDeleteHandler")
+		unregistered = append(unregistered, "store.OrderDeleteHandler")
 	}
-
 	if o.StoreOrderGetHandler == nil {
-		unregistered = append(unregistered, "Store.OrderGetHandler")
+		unregistered = append(unregistered, "store.OrderGetHandler")
 	}
-
 	if o.PetPetCreateHandler == nil {
-		unregistered = append(unregistered, "Pet.PetCreateHandler")
+		unregistered = append(unregistered, "pet.PetCreateHandler")
 	}
-
 	if o.PetPetDeleteHandler == nil {
-		unregistered = append(unregistered, "Pet.PetDeleteHandler")
+		unregistered = append(unregistered, "pet.PetDeleteHandler")
 	}
-
 	if o.PetPetGetHandler == nil {
-		unregistered = append(unregistered, "Pet.PetGetHandler")
+		unregistered = append(unregistered, "pet.PetGetHandler")
 	}
-
 	if o.PetPetListHandler == nil {
-		unregistered = append(unregistered, "Pet.PetListHandler")
+		unregistered = append(unregistered, "pet.PetListHandler")
 	}
-
 	if o.PetPetUpdateHandler == nil {
-		unregistered = append(unregistered, "Pet.PetUpdateHandler")
+		unregistered = append(unregistered, "pet.PetUpdateHandler")
 	}
-
 	if o.PetPetUploadImageHandler == nil {
-		unregistered = append(unregistered, "Pet.PetUploadImageHandler")
+		unregistered = append(unregistered, "pet.PetUploadImageHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -259,27 +255,21 @@ func (o *PetstoreAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "roles":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.RolesAuth)
 
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -343,7 +333,6 @@ func (o *PetstoreAPI) Context() *middleware.Context {
 
 func (o *PetstoreAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -352,52 +341,42 @@ func (o *PetstoreAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/store/inventory"] = store.NewInventoryGet(o.context, o.StoreInventoryGetHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/store/order"] = store.NewOrderCreate(o.context, o.StoreOrderCreateHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/store/order/{orderId}"] = store.NewOrderDelete(o.context, o.StoreOrderDeleteHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/store/order/{orderId}"] = store.NewOrderGet(o.context, o.StoreOrderGetHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pet"] = pet.NewPetCreate(o.context, o.PetPetCreateHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/pet/{petId}"] = pet.NewPetDelete(o.context, o.PetPetDeleteHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pet/{petId}"] = pet.NewPetGet(o.context, o.PetPetGetHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pet"] = pet.NewPetList(o.context, o.PetPetListHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/pet"] = pet.NewPetUpdate(o.context, o.PetPetUpdateHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pet/{petId}/image"] = pet.NewPetUploadImage(o.context, o.PetPetUploadImageHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP

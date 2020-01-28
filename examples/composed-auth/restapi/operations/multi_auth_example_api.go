@@ -38,31 +38,34 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		AddOrderHandler: AddOrderHandlerFunc(func(params AddOrderParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation operations.AddOrder has not yet been implemented")
+			return middleware.NotImplemented("operation AddOrder has not yet been implemented")
 		}),
 		GetAccountHandler: GetAccountHandlerFunc(func(params GetAccountParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetAccount has not yet been implemented")
+			return middleware.NotImplemented("operation GetAccount has not yet been implemented")
 		}),
 		GetItemsHandler: GetItemsHandlerFunc(func(params GetItemsParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetItems has not yet been implemented")
+			return middleware.NotImplemented("operation GetItems has not yet been implemented")
 		}),
 		GetOrderHandler: GetOrderHandlerFunc(func(params GetOrderParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetOrder has not yet been implemented")
+			return middleware.NotImplemented("operation GetOrder has not yet been implemented")
 		}),
 		GetOrdersForItemHandler: GetOrdersForItemHandlerFunc(func(params GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetOrdersForItem has not yet been implemented")
-		}), HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
+			return middleware.NotImplemented("operation GetOrdersForItem has not yet been implemented")
+		}),
+
+		HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (hasRole) has not yet been implemented")
 		},
-
 		// Applies when the Authorization header is set with the Basic scheme
 		IsRegisteredAuth: func(user string, pass string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("basic auth  (isRegistered) has not yet been implemented")
 		},
-
 		// Applies when the "X-Custom-Key" header is set
 		IsResellerAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (isReseller) X-Custom-Key from header param [X-Custom-Key] has not yet been implemented")
@@ -71,7 +74,6 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		IsResellerQueryAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (isResellerQuery) CustomKeyAsQuery from query param [CustomKeyAsQuery] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -124,9 +126,11 @@ type MultiAuthExampleAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
@@ -149,7 +153,6 @@ type MultiAuthExampleAPI struct {
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
-
 	// AddOrderHandler sets the operation handler for the add order operation
 	AddOrderHandler AddOrderHandler
 	// GetAccountHandler sets the operation handler for the get account operation
@@ -229,37 +232,30 @@ func (o *MultiAuthExampleAPI) Validate() error {
 	if o.HasRoleAuth == nil {
 		unregistered = append(unregistered, "HasRoleAuth")
 	}
-
 	if o.IsRegisteredAuth == nil {
 		unregistered = append(unregistered, "IsRegisteredAuth")
 	}
-
 	if o.IsResellerAuth == nil {
 		unregistered = append(unregistered, "XCustomKeyAuth")
 	}
-
 	if o.IsResellerQueryAuth == nil {
 		unregistered = append(unregistered, "CustomKeyAsQueryAuth")
 	}
 
 	if o.AddOrderHandler == nil {
-		unregistered = append(unregistered, "Operations.AddOrderHandler")
+		unregistered = append(unregistered, "AddOrderHandler")
 	}
-
 	if o.GetAccountHandler == nil {
-		unregistered = append(unregistered, "Operations.GetAccountHandler")
+		unregistered = append(unregistered, "GetAccountHandler")
 	}
-
 	if o.GetItemsHandler == nil {
-		unregistered = append(unregistered, "Operations.GetItemsHandler")
+		unregistered = append(unregistered, "GetItemsHandler")
 	}
-
 	if o.GetOrderHandler == nil {
-		unregistered = append(unregistered, "Operations.GetOrderHandler")
+		unregistered = append(unregistered, "GetOrderHandler")
 	}
-
 	if o.GetOrdersForItemHandler == nil {
-		unregistered = append(unregistered, "Operations.GetOrdersForItemHandler")
+		unregistered = append(unregistered, "GetOrdersForItemHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -276,13 +272,10 @@ func (o *MultiAuthExampleAPI) ServeErrorFor(operationID string) func(http.Respon
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "hasRole":
-
 			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
 				return o.HasRoleAuth(token, scopes)
 			})
@@ -293,14 +286,12 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 			})
 
 		case "isReseller":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerAuth(token)
 			})
 
 		case "isResellerQuery":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerQueryAuth(token)
@@ -309,14 +300,11 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *MultiAuthExampleAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -380,7 +368,6 @@ func (o *MultiAuthExampleAPI) Context() *middleware.Context {
 
 func (o *MultiAuthExampleAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -389,27 +376,22 @@ func (o *MultiAuthExampleAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/order/add"] = NewAddOrder(o.context, o.AddOrderHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account"] = NewGetAccount(o.context, o.GetAccountHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/items"] = NewGetItems(o.context, o.GetItemsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/order/{orderID}"] = NewGetOrder(o.context, o.GetOrderHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/orders/{itemID}"] = NewGetOrdersForItem(o.context, o.GetOrdersForItemHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP

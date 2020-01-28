@@ -36,10 +36,13 @@ func NewCountdownAPI(spec *loads.Document) *CountdownAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		ElapseHandler: ElapseHandlerFunc(func(params ElapseParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.Elapse has not yet been implemented")
+			return middleware.NotImplemented("operation Elapse has not yet been implemented")
 		}),
 	}
 }
@@ -65,13 +68,14 @@ type CountdownAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// JSONProducer registers a producer for the following mime types:
 	//   - application/json
 	JSONProducer runtime.Producer
-
 	// ElapseHandler sets the operation handler for the elapse operation
 	ElapseHandler ElapseHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -141,7 +145,7 @@ func (o *CountdownAPI) Validate() error {
 	}
 
 	if o.ElapseHandler == nil {
-		unregistered = append(unregistered, "Operations.ElapseHandler")
+		unregistered = append(unregistered, "ElapseHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -158,16 +162,12 @@ func (o *CountdownAPI) ServeErrorFor(operationID string) func(http.ResponseWrite
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *CountdownAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *CountdownAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -231,7 +231,6 @@ func (o *CountdownAPI) Context() *middleware.Context {
 
 func (o *CountdownAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -240,7 +239,6 @@ func (o *CountdownAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/elapse/{length}"] = NewElapse(o.context, o.ElapseHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP

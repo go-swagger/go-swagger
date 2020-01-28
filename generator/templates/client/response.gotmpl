@@ -159,5 +159,5 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
 /*{{ pascalize .Name }} {{ template "docstring" . }}
 swagger:model {{ .Name }}
 */
-{{ template "schema" . }}
-{{ end }}
+{{- template "schema" . }}
+{{- end }}

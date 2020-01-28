@@ -36,10 +36,13 @@ func NewGreeterAPI(spec *loads.Document) *GreeterAPI {
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		TxtProducer:         runtime.TextProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		TxtProducer: runtime.TextProducer(),
+
 		GetGreetingHandler: GetGreetingHandlerFunc(func(params GetGreetingParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetGreeting has not yet been implemented")
+			return middleware.NotImplemented("operation GetGreeting has not yet been implemented")
 		}),
 	}
 }
@@ -65,13 +68,14 @@ type GreeterAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
 	// JSONConsumer registers a consumer for the following mime types:
 	//   - application/json
 	JSONConsumer runtime.Consumer
+
 	// TxtProducer registers a producer for the following mime types:
 	//   - text/plain
 	TxtProducer runtime.Producer
-
 	// GetGreetingHandler sets the operation handler for the get greeting operation
 	GetGreetingHandler GetGreetingHandler
 	// ServeError is called when an error is received, there is a default handler
@@ -141,7 +145,7 @@ func (o *GreeterAPI) Validate() error {
 	}
 
 	if o.GetGreetingHandler == nil {
-		unregistered = append(unregistered, "Operations.GetGreetingHandler")
+		unregistered = append(unregistered, "GetGreetingHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -158,16 +162,12 @@ func (o *GreeterAPI) ServeErrorFor(operationID string) func(http.ResponseWriter,
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *GreeterAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *GreeterAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -231,7 +231,6 @@ func (o *GreeterAPI) Context() *middleware.Context {
 
 func (o *GreeterAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -240,7 +239,6 @@ func (o *GreeterAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/hello"] = NewGetGreeting(o.context, o.GetGreetingHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
