@@ -14,6 +14,26 @@
 
 package generator
 
+func initFixture2220() {
+	// NOTE(fred): this test merely asserts that template refactoring (essentially dealing with hite space gobbling etc)
+	// properly runs against the case of base type with additionalProperties.
+	//
+	// TODO(fred): should actually fix the problem in base type model rendering
+	f := newModelFixture("../fixtures/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("object.go", []string{
+		// This asserts our template announcement about forthcoming fix (used to  be a func commented out of luck)
+		`// AdditionalProperties in base type shoud be handled just like regular properties`,
+		`// At this moment, the base type property is pushed down to the subtype`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("component.go", []string{
+		// This asserts the current schema layout, which works but does not honour inheritance from the base type
+		"ObjectAdditionalProperties map[string]interface{} `json:\"-\"`",
+	}, todo, noLines, noLines)
+}
+
 func initFixture2116() {
 	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -5239,14 +5259,14 @@ func initFixture607() {
 		`	var b1, b2, b3 []byte`,
 		`	var err error`,
 		`	b1, err = json.Marshal(struct {`,
-		`	}{},`,
+		`	}{})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Config []Filter `json:\"config\"`",
 		`	}{`,
 		`		Config: m.configField,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5298,14 +5318,14 @@ func initFixture607() {
 		`		AndFilterAllOf1`,
 		`	}{`,
 		`		AndFilterAllOf1: m.AndFilterAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Type string `json:\"type\"`",
 		`	}{`,
 		`		Type: m.Type(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5351,14 +5371,14 @@ func initFixture607() {
 		`		RangeFilterAllOf1`,
 		`	}{`,
 		`		RangeFilterAllOf1: m.RangeFilterAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Type string `json:\"type\"`",
 		`	}{`,
 		`		Type: m.Type(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5498,14 +5518,14 @@ func initFixture1336() {
 		`	var b1, b2, b3 []byte`,
 		`	var err error`,
 		`	b1, err = json.Marshal(struct {`,
-		`	}{},`,
+		`	}{})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Nodes []Node `json:\"Nodes\"`",
 		`	}{`,
 		`		Nodes: m.nodesField,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5563,14 +5583,14 @@ func initFixture1336() {
 		`		DocBlockNodeAllOf1`,
 		`	}{`,
 		`		DocBlockNodeAllOf1: m.DocBlockNodeAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		NodeType string `json:\"NodeType\"`",
 		`	}{`,
 		`		NodeType: m.NodeType(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5616,14 +5636,14 @@ func initFixture1336() {
 		`		CodeBlockNodeAllOf1`,
 		`	}{`,
 		`		CodeBlockNodeAllOf1: m.CodeBlockNodeAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		NodeType string `json:\"NodeType\"`",
 		`	}{`,
 		`		NodeType: m.NodeType(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,

@@ -9,7 +9,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
   var rcv {{ pascalize .Name }}
   {{ range .Properties }}
   rcv.{{ pascalize .Name }} = stage1.{{ pascalize .Name }}
-  {{ end }}
+  {{- end }}
   *{{ .ReceiverName }} = rcv
 
   // stage 2, remove properties and add to map
@@ -20,9 +20,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
 
   {{ range .Properties }}
   delete(stage2, {{ printf "%q" .Name }})
-  {{ end }}
+  {{- end }}
 
-  {{ if .AdditionalProperties }}
+  {{- if .AdditionalProperties }}
   // stage 3, add additional properties values
   if len(stage2) > 0 {
     result := make(map[string]{{ template "schemaType" .AdditionalProperties }})
@@ -35,9 +35,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
     }
     {{ .ValueExpression }} = result
   }
-  {{ else }}
+  {{- else }}
   {{ .ValueExpression }} = stage2
-  {{ end }}
+  {{- end }}
 
   return nil
 }
@@ -47,7 +47,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   var stage1 {{ template "withoutAdditionalBody" . }}
   {{ range .Properties }}
   stage1.{{ pascalize .Name }} = {{ .ValueExpression }}
-  {{ end }}
+  {{- end }}
 
   // make JSON object for known properties
   props, err := json.Marshal(stage1)
@@ -73,7 +73,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   props[len(props)-1] = ','
   return append(props, additional[1:]...), nil
 }
-{{ end }}
+{{- end }}
 
 {{ define "noAdditionalPropertiesSerializer" }}
 // UnmarshalJSON unmarshals this object while disallowing additional properties from JSON
@@ -88,8 +88,8 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error
 
   {{- $rcv :=  .ReceiverName }}
   {{ range .Properties }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = props.{{ pascalize .Name }}
-  {{ end }}
+    {{ .ReceiverName }}.{{ pascalize .Name }} = props.{{ pascalize .Name }}
+  {{- end }}
   return nil
 }
-{{ end }}
+{{- end }}

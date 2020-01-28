@@ -145,7 +145,7 @@
               {{ end }}
             {{- end }}
             {{ if and .IsTuple .AdditionalItems }}
-      // TODO: validating additional items should go here, if you see this raise an issue
+      // TODO: validating additional items should go here, if you see this raise an issue{{/* TODO(fred): investigate the case to remove that comment: AdditionalItems shouldn't come in maps. Upstream validation is needed to guard against this */}}
       // at https://github.com/go-swagger/go-swagger/issues
             {{ end }}
           {{ else }}

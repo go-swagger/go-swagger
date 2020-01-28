@@ -1,29 +1,27 @@
 {{ template "header" . }}
-
-{{ if .IncludeModel }}
-  {{- if eq .Name "ApiResponse" }}// APIResponse is the response to an API call.
-  {{- else }}
-    {{- if .IsExported -}}
-      // {{ pascalize .Name }} {{ template "docstring" . }}
-      {{- if not .IsBaseType }}
-// swagger:model {{ .Name }}
-      {{- else }}
-// swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
-      {{- end }}
-    {{- end }}
+{{- if .IncludeModel }}
+  {{- if .IsExported }}
+// {{ pascalize .Name }} {{ template "docstring" . }}
+    {{- template "annotations" . }}
+  {{- end }}
+  {{- template "schema" . }}
 {{- end }}
-{{- end }}
-{{ template "schema" . }}
 
 {{ range .ExtraSchemas }}
-  {{- if .IsExported }}
-{{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
+  {{- if .IncludeModel }}
+    {{- if .IsExported }}
+// {{ pascalize .Name }} {{ template "docstring" . }}
+      {{- template "annotations" . }}
+    {{- end }}
+    {{- template "schema" . }}
+  {{- end }}
+{{- end }}
+{{- define "annotations" }}{{/* annotations to generate spec from source */}}
   {{- if not .IsBaseType }}
+//
 // swagger:model {{ .Name }}
   {{- else }}
+//
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
   {{- end }}
-{{- end}}
 {{- end }}
-{{ template "schema" . }}
-{{ end }}

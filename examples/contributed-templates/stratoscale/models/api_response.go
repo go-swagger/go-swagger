@@ -10,7 +10,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// APIResponse is the response to an API call.
+// APIResponse is the response to an API call
+//
+// swagger:model ApiResponse
 type APIResponse struct {
 
 	// code

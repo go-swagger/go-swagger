@@ -60,6 +60,7 @@ func (o *GetAuthCallback) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetAuthCallbackOKBody get auth callback o k body
+//
 // swagger:model GetAuthCallbackOKBody
 type GetAuthCallbackOKBody struct {
 

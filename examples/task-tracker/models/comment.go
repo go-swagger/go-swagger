@@ -16,6 +16,7 @@ import (
 //
 // Users can comment on issues to discuss plans for resolution etc.
 //
+//
 // swagger:model Comment
 type Comment struct {
 

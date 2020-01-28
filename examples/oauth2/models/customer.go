@@ -13,6 +13,7 @@ import (
 )
 
 // Customer customer
+//
 // swagger:model customer
 type Customer struct {
 

@@ -82,6 +82,7 @@ func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 //
 // These values can have github flavored markdown.
 //
+//
 // swagger:model AddCommentToTaskBody
 type AddCommentToTaskBody struct {
 

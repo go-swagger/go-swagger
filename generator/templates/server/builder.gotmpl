@@ -46,7 +46,7 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     BasicAuthenticator:     security.BasicAuth,
     APIKeyAuthenticator:    security.APIKeyAuth,
     BearerAuthenticator:    security.BearerAuth,
-    {{- range .Consumes }}
+    {{ range .Consumes }}
       {{- if .Implementation }}
         {{ pascalize .Name }}Consumer: {{ .Implementation }},
       {{- else }}
@@ -55,7 +55,7 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
         }),
       {{- end }}
     {{- end }}
-    {{- range .Produces }}
+    {{ range .Produces }}
       {{- if .Implementation }}
         {{ pascalize .Name }}Producer: {{ .Implementation }},
       {{- else }}
@@ -64,29 +64,36 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
         }),
       {{- end }}
     {{- end }}
-    {{- range .Operations }}
+    {{ range .Operations }}
       {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler:
         {{- if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}HandlerFunc(func(params {{ if ne .Package $package }}{{ .PackageAlias }}.{{end }}
         {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
-      return middleware.NotImplemented("operation {{ .Package }}.{{pascalize .Name}} has not yet been implemented")
+      return middleware.NotImplemented("operation {{ if ne .Package $package }}{{ .Package }}.{{ end }}{{pascalize .Name}} has not yet been implemented")
     }),
     {{- end }}
-    {{- range .SecurityDefinitions}}{{if .IsBasicAuth}}// Applies when the Authorization header is set with the Basic scheme
+    {{ range .SecurityDefinitions }}
+      {{- if .IsBasicAuth }}
+      // Applies when the Authorization header is set with the Basic scheme
     {{ pascalize .ID }}Auth: func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
     },
-    {{end}}{{if .IsAPIKeyAuth}}// Applies when the "{{ .Name }}" {{ .Source }} is set
+      {{- end }}
+      {{- if .IsAPIKeyAuth }}
+      // Applies when the "{{ .Name }}" {{ .Source }} is set
     {{ pascalize .ID }}Auth: func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} param [{{ .Name }}] has not yet been implemented")
-    },{{end}}{{if .IsOAuth2}}{{ pascalize .ID }}Auth: func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    },
+      {{- end }}
+      {{- if .IsOAuth2 }}
+    {{ pascalize .ID }}Auth: func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("oauth2 bearer auth ({{ .ID }}) has not yet been implemented")
     },
-    {{end}}
-    {{end}}
-    {{if .SecurityDefinitions}}
+      {{- end }}
+    {{- end }}
+    {{- if .SecurityDefinitions }}
     // default authorizer is authorized meaning no requests are blocked
     APIAuthorizer:    security.Authorized(),
-    {{end}}
+    {{- end }}
   }
 }
 
@@ -111,41 +118,49 @@ type {{ pascalize .Name }}API struct {
   // BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
   BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-  {{- range .Consumes }}
+  {{ range .Consumes }}
   // {{ pascalize .Name }}Consumer registers a consumer for the following mime types:
     {{- range .AllSerializers }}
   //   - {{ .MediaType }}
     {{- end }}
     {{ pascalize .Name }}Consumer runtime.Consumer
   {{- end }}
-  {{- range .Produces}}
+  {{ range .Produces}}
   // {{ pascalize .Name }}Producer registers a producer for the following mime types:
     {{- range .AllSerializers }}
   //   - {{ .MediaType }}
     {{- end }}
     {{ pascalize .Name }}Producer runtime.Producer
   {{- end }}
-  {{range .SecurityDefinitions}}
-  {{if .IsBasicAuth}}// {{ pascalize .ID }}Auth registers a function that takes username and password and returns a principal
+  {{ range .SecurityDefinitions}}
+    {{- if .IsBasicAuth}}
+
+  // {{ pascalize .ID }}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
   {{ pascalize .ID }}Auth func(string, string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{end}}{{if .IsAPIKeyAuth}}// {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
+    {{- end }}
+    {{- if .IsAPIKeyAuth}}
+
+  // {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
   {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{end}}{{ if .IsOAuth2 }}// {{ pascalize .ID }}Auth registers a function that takes an access token and a collection of required scopes and returns a principal
+    {{- end }}
+    {{- if .IsOAuth2 }}
+
+  // {{ pascalize .ID }}Auth registers a function that takes an access token and a collection of required scopes and returns a principal
   // it performs authentication based on an oauth2 bearer token provided in the request
   {{ pascalize .ID }}Auth func(string, []string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
-  {{ end }}
-  {{end}}
-  {{if .SecurityDefinitions}}
+    {{- end }}
+  {{- end }}
+  {{- if .SecurityDefinitions }}
+
   // APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
   APIAuthorizer runtime.Authorizer
-  {{end}}
+  {{- end }}
   {{- $package := .Package }}
-  {{- range .Operations }}
-  // {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
-  {{ if ne  .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}Handler
+  {{ range .Operations }}
+    // {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
+    {{ if ne  .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}Handler
   {{- end }}
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
@@ -204,26 +219,26 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterFormat(name string, f
 // Validate validates the registrations in the {{ pascalize .Name }}API
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) Validate() error {
   var unregistered []string
-  {{range .Consumes}}
+  {{ range .Consumes }}
   if {{.ReceiverName}}.{{ pascalize .Name }}Consumer == nil {
     unregistered = append(unregistered, "{{ pascalize .Name }}Consumer")
   }
-  {{end}}
-  {{range .Produces}}
+  {{- end }}
+  {{ range .Produces }}
   if {{.ReceiverName}}.{{ pascalize .Name }}Producer == nil {
     unregistered = append(unregistered, "{{ pascalize .Name }}Producer")
   }
-  {{end}}
-  {{range .SecurityDefinitions}}
+  {{- end }}
+  {{ range .SecurityDefinitions }}
   if {{.ReceiverName}}.{{ pascalize .ID }}Auth == nil {
     unregistered = append(unregistered, "{{if .IsAPIKeyAuth }}{{ pascalize .Name }}{{ else }}{{ pascalize .ID }}{{ end }}Auth")
   }
-  {{end}}
-  {{range .Operations}}
+  {{- end }}
+  {{ range .Operations }}
   if {{.ReceiverName}}.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler == nil {
-    unregistered = append(unregistered, "{{ pascalize .Package }}.{{ pascalize .Name }}Handler")
+    unregistered = append(unregistered, "{{ if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Handler")
   }
-  {{end}}
+  {{- end }}
 
   if len(unregistered) > 0 {
     return fmt.Errorf("missing registration: %s", strings.Join(unregistered, ", "))
@@ -237,38 +252,44 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ServeErrorFor(operationID str
 }
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-  {{if .SecurityDefinitions}}
+  {{- if .SecurityDefinitions }}
   result := make(map[string]runtime.Authenticator)
   for name := range schemes {
     switch name {
-      {{range .SecurityDefinitions}}
+      {{- range .SecurityDefinitions }}
       case "{{.ID}}":
-        {{if .IsBasicAuth}}result[name] = {{.ReceiverName}}.BasicAuthenticator({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
+        {{- if .IsBasicAuth }}
+        result[name] = {{.ReceiverName}}.BasicAuthenticator({{ if not ( eq .Principal "interface{}" ) }}func(username, password string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(username, password)
-        }{{ end }}){{end}}
-        {{if .IsAPIKeyAuth}}scheme := schemes[name]
+        }{{ end }})
+        {{- end }}
+        {{- if .IsAPIKeyAuth }}
+        scheme := schemes[name]
           result[name] = {{.ReceiverName}}.APIKeyAuthenticator(scheme.Name, scheme.In, {{ if not ( eq .Principal "interface{}" ) }}func(token string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token)
-        }{{ end }}){{end}}
-        {{if .IsOAuth2}}result[name] = {{.ReceiverName}}.BearerAuthenticator(name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
+        }{{ end }})
+        {{- end }}
+        {{- if .IsOAuth2 }}
+        result[name] = {{.ReceiverName}}.BearerAuthenticator(name, {{ if not ( eq .Principal "interface{}" ) }}func(token string, scopes []string) (interface{}, error) {
           return {{ end }}{{.ReceiverName}}.{{ pascalize .ID }}Auth{{ if not ( eq .Principal "interface{}" ) }}(token, scopes)
-        }{{ end }}){{end}}
+        }{{ end }})
+        {{- end }}
       {{end}}
     }
   }
   return result
-  {{else}}
+  {{- else }}
   return nil
-  {{end}}
+  {{- end }}
 }
 
 // Authorizer returns the registered authorizer
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) Authorizer() runtime.Authorizer {
-  {{if .SecurityDefinitions}}
+  {{- if .SecurityDefinitions }}
   return {{.ReceiverName}}.APIAuthorizer
-  {{else}}
+  {{- else }}
   return nil
-  {{end}}
+  {{- end }}
 }
 
 // ConsumersFor gets the consumers for the specified media types.
@@ -348,17 +369,17 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Context() *middleware.Context
 
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) initHandlerCache() {
   {{.ReceiverName}}.Context() // don't care about the result, just that the initialization happened
-  {{if .Operations}}
+  {{- if .Operations }}
   if {{ .ReceiverName }}.handlers == nil {
     {{.ReceiverName}}.handlers = make(map[string]map[string]http.Handler)
   }
-  {{range .Operations}}
+    {{ range .Operations }}
   if {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] == nil {
     {{ .ReceiverName }}.handlers[{{ printf "%q" (upper .Method) }}] = make(map[string]http.Handler)
   }
   {{.ReceiverName}}.handlers[{{ printf "%q" (upper .Method) }}][{{ if eq .Path "/" }}""{{ else }}{{ printf "%q" (cleanPath .Path) }}{{ end }}] = {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}New{{ pascalize .Name }}({{.ReceiverName}}.context, {{.ReceiverName}}.{{if ne .Package $package}}{{ pascalize .Package }}{{end}}{{ pascalize .Name }}Handler)
-  {{end}}
-  {{end}}
+    {{- end }}
+  {{- end }}
 }
 
 // Serve creates a http handler to serve the API over HTTP

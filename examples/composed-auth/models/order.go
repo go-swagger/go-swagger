@@ -15,6 +15,7 @@ import (
 )
 
 // Order order
+//
 // swagger:model Order
 type Order struct {
 
@@ -97,6 +98,7 @@ func (m *Order) UnmarshalBinary(b []byte) error {
 }
 
 // OrderLine order line
+//
 // swagger:model orderLine
 type OrderLine struct {
 

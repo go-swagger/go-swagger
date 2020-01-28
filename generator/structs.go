@@ -91,6 +91,7 @@ type GenSchema struct {
 	IncludeValidator           bool
 	IncludeModel               bool
 	Default                    interface{}
+	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }

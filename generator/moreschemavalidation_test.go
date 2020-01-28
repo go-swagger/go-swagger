@@ -209,6 +209,9 @@ func initModelFixtures() {
 
 	// x-omitempty
 	initFixture2116()
+
+	// additionalProperties in base type (pending fix, non regression assertion only atm)
+	initFixture2220()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

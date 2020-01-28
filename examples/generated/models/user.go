@@ -11,6 +11,7 @@ import (
 )
 
 // User user
+//
 // swagger:model User
 type User struct {
 
