@@ -108,8 +108,6 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              ignore: /.*/
 
       - publish_release_docker:
           requires:
@@ -119,8 +117,6 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-            branches:
-              ignore: /.*/
 
 jobs:
   build:
