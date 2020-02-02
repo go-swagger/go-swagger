@@ -27,6 +27,7 @@ type modelOptions struct {
 	ExistingModels             string   `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 	StrictAdditionalProperties bool     `long:"strict-additional-properties" description:"disallow extra properties when additionalProperties is set to false"`
 	KeepSpecOrder              bool     `long:"keep-spec-order" description:"keep schema properties order identical to spec file"`
+	AllDefinitions             bool     `long:"all-definitions" description:"generate all model definitions regardless of usage in operations"`
 }
 
 func (mo modelOptions) apply(opts *generator.GenOpts) {
@@ -35,6 +36,7 @@ func (mo modelOptions) apply(opts *generator.GenOpts) {
 	opts.ExistingModels = mo.ExistingModels
 	opts.StrictAdditionalProperties = mo.StrictAdditionalProperties
 	opts.PropertiesSpecOrder = mo.KeepSpecOrder
+	opts.IgnoreOperations = mo.AllDefinitions
 }
 
 // WithModels adds the model options group

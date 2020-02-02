@@ -262,6 +262,7 @@ type GenOpts struct {
 	Copyright              string
 	SkipTagPackages        bool
 	MainPackage            string
+	IgnoreOperations       bool
 }
 
 // CheckOpts carries out some global consistency checks on options.
