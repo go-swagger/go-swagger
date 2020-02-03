@@ -291,7 +291,7 @@ func (s *scanCtx) FindModel(pkgPath, name string) (*entityDecl, bool) {
 		}
 	}
 	if decl, found := s.FindDecl(pkgPath, name); found {
-		s.app.Models[decl.Ident] = decl
+		s.app.ExtraModels[decl.Ident] = decl
 		return decl, true
 	}
 	return nil, false
@@ -390,6 +390,7 @@ func newTypeIndex(pkgs []*packages.Package,
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*entityDecl),
+		ExtraModels: make(map[*ast.Ident]*entityDecl),
 		excludeDeps: excludeDeps,
 		includeTags: includeTags,
 		excludeTags: excludeTags,
@@ -405,6 +406,7 @@ func newTypeIndex(pkgs []*packages.Package,
 type typeIndex struct {
 	AllPackages map[string]*packages.Package
 	Models      map[*ast.Ident]*entityDecl
+	ExtraModels map[*ast.Ident]*entityDecl
 	Meta        []metaSection
 	Routes      []parsedPathContent
 	Operations  []parsedPathContent
