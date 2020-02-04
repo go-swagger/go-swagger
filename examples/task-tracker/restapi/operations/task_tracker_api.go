@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
@@ -31,6 +31,7 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		defaultProduces:       "application/json",
 		customConsumers:       make(map[string]runtime.Consumer),
 		customProducers:       make(map[string]runtime.Producer),
+		PreServerShutdown:     func() {},
 		ServerShutdown:        func() {},
 		spec:                  spec,
 		ServeError:            errors.ServeError,
@@ -41,31 +42,29 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 		MultipartformConsumer: runtime.DiscardConsumer,
 		JSONProducer:          runtime.JSONProducer(),
 		TasksAddCommentToTaskHandler: tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksAddCommentToTask has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 		}),
 		TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksCreateTask has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
 		}),
 		TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksDeleteTask has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
 		}),
 		TasksGetTaskCommentsHandler: tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksGetTaskComments has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
 		}),
 		TasksGetTaskDetailsHandler: tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksGetTaskDetails has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
 		}),
 		TasksListTasksHandler: tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
-			return middleware.NotImplemented("operation TasksListTasks has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
 		}),
 		TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksUpdateTask has not yet been implemented")
+			return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
 		}),
 		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TasksUploadTaskFile has not yet been implemented")
-		}),
-
-		// Applies when the "token" query is set
+			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
+		}), // Applies when the "token" query is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 		},
@@ -106,13 +105,14 @@ type TaskTrackerAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/vnd.goswagger.examples.task-tracker.v1+json
 	JSONConsumer runtime.Consumer
-	// MultipartformConsumer registers a consumer for a "multipart/form-data" mime type
+	// MultipartformConsumer registers a consumer for the following mime types:
+	//   - multipart/form-data
 	MultipartformConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/vnd.goswagger.examples.task-tracker.v1+json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/vnd.goswagger.examples.task-tracker.v1+json
 	JSONProducer runtime.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
@@ -142,10 +142,13 @@ type TaskTrackerAPI struct {
 	TasksUpdateTaskHandler tasks.UpdateTaskHandler
 	// TasksUploadTaskFileHandler sets the operation handler for the upload task file operation
 	TasksUploadTaskFileHandler tasks.UploadTaskFileHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -218,35 +221,35 @@ func (o *TaskTrackerAPI) Validate() error {
 	}
 
 	if o.TasksAddCommentToTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.AddCommentToTaskHandler")
+		unregistered = append(unregistered, "Tasks.AddCommentToTaskHandler")
 	}
 
 	if o.TasksCreateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.CreateTaskHandler")
+		unregistered = append(unregistered, "Tasks.CreateTaskHandler")
 	}
 
 	if o.TasksDeleteTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.DeleteTaskHandler")
+		unregistered = append(unregistered, "Tasks.DeleteTaskHandler")
 	}
 
 	if o.TasksGetTaskCommentsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskCommentsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskCommentsHandler")
 	}
 
 	if o.TasksGetTaskDetailsHandler == nil {
-		unregistered = append(unregistered, "tasks.GetTaskDetailsHandler")
+		unregistered = append(unregistered, "Tasks.GetTaskDetailsHandler")
 	}
 
 	if o.TasksListTasksHandler == nil {
-		unregistered = append(unregistered, "tasks.ListTasksHandler")
+		unregistered = append(unregistered, "Tasks.ListTasksHandler")
 	}
 
 	if o.TasksUpdateTaskHandler == nil {
-		unregistered = append(unregistered, "tasks.UpdateTaskHandler")
+		unregistered = append(unregistered, "Tasks.UpdateTaskHandler")
 	}
 
 	if o.TasksUploadTaskFileHandler == nil {
-		unregistered = append(unregistered, "tasks.UploadTaskFileHandler")
+		unregistered = append(unregistered, "Tasks.UploadTaskFileHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -291,19 +294,16 @@ func (o *TaskTrackerAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/vnd.goswagger.examples.task-tracker.v1+json":
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONConsumer
-
 		case "multipart/form-data":
 			result["multipart/form-data"] = o.MultipartformConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -311,19 +311,16 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *TaskTrackerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/vnd.goswagger.examples.task-tracker.v1+json":
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -331,7 +328,6 @@ func (o *TaskTrackerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

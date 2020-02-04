@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	goruntime "runtime"
-	"strings"
 	"testing"
 )
 
@@ -52,7 +51,7 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
 		if goruntime.GOOS == "windows" {
-			item.path = strings.Replace(item.path, "/", "\\", -1)
+			item.path = filepath.FromSlash(item.path)
 		}
 
 		switch {
@@ -77,6 +76,7 @@ func TestBaseImport(t *testing.T) {
 	// 3. Check results.
 
 	oldgopath := os.Getenv("GOPATH")
+	golang := GoLangOpts()
 	defer func() {
 		_ = os.Setenv("GOPATH", oldgopath)
 		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
@@ -96,12 +96,8 @@ func TestBaseImport(t *testing.T) {
 			// Create Symlink
 			if err := os.Symlink(item.symlinkdest, item.symlinksrc); err == nil {
 
-				// Test
+				// Test (baseImport always with /)
 				actualpath := golang.baseImport(item.targetpath)
-
-				if goruntime.GOOS == "windows" {
-					item.expectedpath = strings.Replace(item.expectedpath, "/", "\\", -1)
-				}
 
 				if actualpath != item.expectedpath {
 					t.Errorf("baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)

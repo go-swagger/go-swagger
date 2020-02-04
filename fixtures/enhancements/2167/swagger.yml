@@ -1,0 +1,37 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Example
+schemes:
+  - http
+produces:
+  - text/plain
+paths:
+  /test/{test_name}/on/{test_region}:
+    get:
+      operationId: xGoNameInParams
+      summary: Says hello
+      parameters:
+        - in: path
+          name: test_name
+          x-go-name: MyPathName
+          required: true
+          type: string
+        - in: path
+          name: test_region
+          required: true
+          type: string
+        - in: query
+          name: test_count
+          x-go-name: MyQueryCount
+          required: false
+          type: integer
+        - in: query
+          name: test_limit
+          required: false
+          type: integer
+      responses:
+        200:
+          description: A hello world string
+          schema:
+            type: string

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/template"
 	"text/template/parse"
+	"unicode"
 
 	"log"
 
@@ -19,180 +20,150 @@ import (
 	"github.com/kr/pretty"
 )
 
-var templates *Repository
+var (
+	assets             map[string][]byte
+	protectedTemplates map[string]bool
 
-// FuncMap is a map with default functions for use n the templates.
+	// FuncMapFunc yields a map with all functions for templates
+	FuncMapFunc func(*LanguageOpts) template.FuncMap
+
+	templates *Repository
+)
+
+func initTemplateRepo() {
+	FuncMapFunc = DefaultFuncMap
+
+	// this makes the ToGoName func behave with the special
+	// prefixing rule above
+	swag.GoNamePrefixFunc = prefixForName
+
+	assets = defaultAssets()
+	protectedTemplates = defaultProtectedTemplates()
+	templates = NewRepository(FuncMapFunc(DefaultLanguageFunc()))
+}
+
+// DefaultFuncMap yields a map with default functions for use n the templates.
 // These are available in every template
-var FuncMap template.FuncMap = map[string]interface{}{
-	"pascalize": pascalize,
-	"camelize":  swag.ToJSONName,
-	"varname":   golang.MangleVarName,
-	"humanize":  swag.ToHumanNameLower,
-	"snakize":   golang.MangleFileName,
-	"toPackagePath": func(name string) string {
-		return filepath.FromSlash(golang.ManglePackagePath(name, ""))
-	},
-	"toPackage": func(name string) string {
-		return golang.ManglePackagePath(name, "")
-	},
-	"toPackageName": func(name string) string {
-		return golang.ManglePackageName(name, "")
-	},
-	"dasherize": swag.ToCommandName,
-	"pluralizeFirstWord": func(arg string) string {
-		sentence := strings.Split(arg, " ")
-		if len(sentence) == 1 {
-			return inflect.Pluralize(arg)
-		}
-
-		return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
-	},
-	"json":       asJSON,
-	"prettyjson": asPrettyJSON,
-	"hasInsecure": func(arg []string) bool {
-		return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
-	},
-	"hasSecure": func(arg []string) bool {
-		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
-	},
-	// TODO: simplify redundant functions
-	"stripPackage": func(str, pkg string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
-	"dropPackage": func(str string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
-	"upper": strings.ToUpper,
-	"contains": func(coll []string, arg string) bool {
-		for _, v := range coll {
-			if v == arg {
-				return true
-			}
-		}
-		return false
-	},
-	"padSurround": func(entry, padWith string, i, ln int) string {
-		var res []string
-		if i > 0 {
-			for j := 0; j < i; j++ {
-				res = append(res, padWith)
-			}
-		}
-		res = append(res, entry)
-		tot := ln - i - 1
-		for j := 0; j < tot; j++ {
-			res = append(res, padWith)
-		}
-		return strings.Join(res, ",")
-	},
-	"joinFilePath": filepath.Join,
-	"comment": func(str string, pads ...string) string {
-		// pads specifes padding to indent multi line comments.Defaults to one space
-		pad := " "
-		lines := strings.Split(str, "\n")
-		if len(pads) > 0 {
-			pad = strings.Join(pads, "")
-		}
-		return (strings.Join(lines, "\n//"+pad))
-	},
-	"blockcomment": func(str string) string {
-		return strings.Replace(str, "*/", "[*]/", -1)
-	},
-	"inspect":            pretty.Sprint,
-	"cleanPath":          path.Clean,
-	"mediaTypeName":      mediaMime,
-	"goSliceInitializer": goSliceInitializer,
-	"hasPrefix":          strings.HasPrefix,
-	"stringContains":     strings.Contains,
+func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
+	return template.FuncMap(map[string]interface{}{
+		"pascalize": pascalize,
+		"camelize":  swag.ToJSONName,
+		"varname":   lang.MangleVarName,
+		"humanize":  swag.ToHumanNameLower,
+		"snakize":   lang.MangleFileName,
+		"toPackagePath": func(name string) string {
+			return filepath.FromSlash(lang.ManglePackagePath(name, ""))
+		},
+		"toPackage": func(name string) string {
+			return lang.ManglePackagePath(name, "")
+		},
+		"toPackageName": func(name string) string {
+			return lang.ManglePackageName(name, "")
+		},
+		"dasherize":          swag.ToCommandName,
+		"pluralizeFirstWord": pluralizeFirstWord,
+		"json":               asJSON,
+		"prettyjson":         asPrettyJSON,
+		"hasInsecure": func(arg []string) bool {
+			return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws")
+		},
+		"hasSecure": func(arg []string) bool {
+			return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
+		},
+		"dropPackage":      dropPackage,
+		"upper":            strings.ToUpper,
+		"contains":         swag.ContainsStrings,
+		"padSurround":      padSurround,
+		"joinFilePath":     filepath.Join,
+		"comment":          padComment,
+		"blockcomment":     blockComment,
+		"inspect":          pretty.Sprint,
+		"cleanPath":        path.Clean,
+		"mediaTypeName":    mediaMime,
+		"arrayInitializer": lang.arrayInitializer,
+		"hasPrefix":        strings.HasPrefix,
+		"stringContains":   strings.Contains,
+		"imports":          lang.imports,
+	})
 }
 
-func init() {
-	templates = NewRepository(FuncMap)
+func defaultAssets() map[string][]byte {
+	return map[string][]byte{
+		"validation/primitive.gotmpl":           MustAsset("templates/validation/primitive.gotmpl"),
+		"validation/customformat.gotmpl":        MustAsset("templates/validation/customformat.gotmpl"),
+		"docstring.gotmpl":                      MustAsset("templates/docstring.gotmpl"),
+		"validation/structfield.gotmpl":         MustAsset("templates/validation/structfield.gotmpl"),
+		"modelvalidator.gotmpl":                 MustAsset("templates/modelvalidator.gotmpl"),
+		"structfield.gotmpl":                    MustAsset("templates/structfield.gotmpl"),
+		"tupleserializer.gotmpl":                MustAsset("templates/tupleserializer.gotmpl"),
+		"additionalpropertiesserializer.gotmpl": MustAsset("templates/additionalpropertiesserializer.gotmpl"),
+		"schematype.gotmpl":                     MustAsset("templates/schematype.gotmpl"),
+		"schemabody.gotmpl":                     MustAsset("templates/schemabody.gotmpl"),
+		"schema.gotmpl":                         MustAsset("templates/schema.gotmpl"),
+		"schemavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
+		"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
+		"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
+		"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
+
+		"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
+		"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),
+		"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
+		"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
+		"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
+		"server/server.gotmpl":       MustAsset("templates/server/server.gotmpl"),
+		"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
+		"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
+		"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
+
+		"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
+		"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
+		"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
+		"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
+	}
 }
 
-var assets = map[string][]byte{
-	"validation/primitive.gotmpl":           MustAsset("templates/validation/primitive.gotmpl"),
-	"validation/customformat.gotmpl":        MustAsset("templates/validation/customformat.gotmpl"),
-	"docstring.gotmpl":                      MustAsset("templates/docstring.gotmpl"),
-	"validation/structfield.gotmpl":         MustAsset("templates/validation/structfield.gotmpl"),
-	"modelvalidator.gotmpl":                 MustAsset("templates/modelvalidator.gotmpl"),
-	"structfield.gotmpl":                    MustAsset("templates/structfield.gotmpl"),
-	"tupleserializer.gotmpl":                MustAsset("templates/tupleserializer.gotmpl"),
-	"additionalpropertiesserializer.gotmpl": MustAsset("templates/additionalpropertiesserializer.gotmpl"),
-	"schematype.gotmpl":                     MustAsset("templates/schematype.gotmpl"),
-	"schemabody.gotmpl":                     MustAsset("templates/schemabody.gotmpl"),
-	"schema.gotmpl":                         MustAsset("templates/schema.gotmpl"),
-	"schemavalidator.gotmpl":                MustAsset("templates/schemavalidator.gotmpl"),
-	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
-	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
-	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
-
-	"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
-	"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),
-	"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
-	"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
-	"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
-	"server/server.gotmpl":       MustAsset("templates/server/server.gotmpl"),
-	"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
-	"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
-	"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
-
-	"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
-	"client/response.gotmpl":  MustAsset("templates/client/response.gotmpl"),
-	"client/client.gotmpl":    MustAsset("templates/client/client.gotmpl"),
-	"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
-}
-
-var protectedTemplates = map[string]bool{
-	"schemabody":                     true,
-	"privtuplefield":                 true,
-	"withoutBaseTypeBody":            true,
-	"swaggerJsonEmbed":               true,
-	"validationCustomformat":         true,
-	"tuplefield":                     true,
-	"header":                         true,
-	"withBaseTypeBody":               true,
-	"primitivefieldvalidator":        true,
-	"mapvalidator":                   true,
-	"propertyValidationDocString":    true,
-	"typeSchemaType":                 true,
-	"docstring":                      true,
-	"dereffedSchemaType":             true,
-	"model":                          true,
-	"modelvalidator":                 true,
-	"privstructfield":                true,
-	"schemavalidator":                true,
-	"tuplefieldIface":                true,
-	"tupleSerializer":                true,
-	"tupleserializer":                true,
-	"schemaSerializer":               true,
-	"propertyvalidator":              true,
-	"structfieldIface":               true,
-	"schemaBody":                     true,
-	"objectvalidator":                true,
-	"schematype":                     true,
-	"additionalpropertiesserializer": true,
-	"slicevalidator":                 true,
-	"validationStructfield":          true,
-	"validationPrimitive":            true,
-	"schemaType":                     true,
-	"subTypeBody":                    true,
-	"schema":                         true,
-	"additionalPropertiesSerializer": true,
-	"serverDoc":                      true,
-	"structfield":                    true,
-	"hasDiscriminatedSerializer":     true,
-	"discriminatedSerializer":        true,
+func defaultProtectedTemplates() map[string]bool {
+	return map[string]bool{
+		"schemabody":                     true,
+		"privtuplefield":                 true,
+		"withoutBaseTypeBody":            true,
+		"swaggerJsonEmbed":               true,
+		"validationCustomformat":         true,
+		"tuplefield":                     true,
+		"header":                         true,
+		"withBaseTypeBody":               true,
+		"primitivefieldvalidator":        true,
+		"mapvalidator":                   true,
+		"propertyValidationDocString":    true,
+		"typeSchemaType":                 true,
+		"docstring":                      true,
+		"dereffedSchemaType":             true,
+		"model":                          true,
+		"modelvalidator":                 true,
+		"privstructfield":                true,
+		"schemavalidator":                true,
+		"tuplefieldIface":                true,
+		"tupleSerializer":                true,
+		"tupleserializer":                true,
+		"schemaSerializer":               true,
+		"propertyvalidator":              true,
+		"structfieldIface":               true,
+		"schemaBody":                     true,
+		"objectvalidator":                true,
+		"schematype":                     true,
+		"additionalpropertiesserializer": true,
+		"slicevalidator":                 true,
+		"validationStructfield":          true,
+		"validationPrimitive":            true,
+		"schemaType":                     true,
+		"subTypeBody":                    true,
+		"schema":                         true,
+		"additionalPropertiesSerializer": true,
+		"serverDoc":                      true,
+		"structfield":                    true,
+		"hasDiscriminatedSerializer":     true,
+		"discriminatedSerializer":        true,
+	}
 }
 
 // AddFile adds a file to the default repository. It will create a new template based on the filename.
@@ -203,36 +174,6 @@ var protectedTemplates = map[string]bool{
 // If the file contains a definition for a template that is protected the whole file will not be added
 func AddFile(name, data string) error {
 	return templates.addFile(name, data, false)
-}
-
-func asJSON(data interface{}) (string, error) {
-	b, err := json.Marshal(data)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func asPrettyJSON(data interface{}) (string, error) {
-	b, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func goSliceInitializer(data interface{}) (string, error) {
-	// goSliceInitializer constructs a Go literal initializer from interface{} literals.
-	// e.g. []interface{}{"a", "b"} is transformed in {"a","b",}
-	// e.g. map[string]interface{}{ "a": "x", "b": "y"} is transformed in {"a":"x","b":"y",}.
-	//
-	// NOTE: this is currently used to construct simple slice intializers for default values.
-	// This allows for nicer slice initializers for slices of primitive types and avoid systematic use for json.Unmarshal().
-	b, err := json.Marshal(data)
-	if err != nil {
-		return "", err
-	}
-	return strings.Replace(strings.Replace(strings.Replace(string(b), "}", ",}", -1), "[", "{", -1), "]", ",}", -1), nil
 }
 
 // NewRepository creates a new template repository with the provided functions defined
@@ -276,8 +217,6 @@ func (t *Repository) LoadDir(templatePath string) error {
 			if assetName, e := filepath.Rel(templatePath, path); e == nil {
 				if data, e := ioutil.ReadFile(path); e == nil {
 					if ee := t.AddFile(assetName, string(data)); ee != nil {
-						// Fatality is decided by caller
-						// log.Fatal(ee)
 						return fmt.Errorf("could not add template: %v", ee)
 					}
 				}
@@ -517,4 +456,96 @@ func (t *Repository) DumpTemplates() {
 		fmt.Fprintln(buf, "\n---")
 	}
 	log.Println(buf.String())
+}
+
+// FuncMap functions
+
+func asJSON(data interface{}) (string, error) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func asPrettyJSON(data interface{}) (string, error) {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func pluralizeFirstWord(arg string) string {
+	sentence := strings.Split(arg, " ")
+	if len(sentence) == 1 {
+		return inflect.Pluralize(arg)
+	}
+
+	return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
+}
+
+func dropPackage(str string) string {
+	parts := strings.Split(str, ".")
+	return parts[len(parts)-1]
+}
+
+func padSurround(entry, padWith string, i, ln int) string {
+	var res []string
+	if i > 0 {
+		for j := 0; j < i; j++ {
+			res = append(res, padWith)
+		}
+	}
+	res = append(res, entry)
+	tot := ln - i - 1
+	for j := 0; j < tot; j++ {
+		res = append(res, padWith)
+	}
+	return strings.Join(res, ",")
+}
+
+func padComment(str string, pads ...string) string {
+	// pads specifes padding to indent multi line comments.Defaults to one space
+	pad := " "
+	lines := strings.Split(str, "\n")
+	if len(pads) > 0 {
+		pad = strings.Join(pads, "")
+	}
+	return (strings.Join(lines, "\n//"+pad))
+}
+
+func blockComment(str string) string {
+	return strings.Replace(str, "*/", "[*]/", -1)
+}
+
+func pascalize(arg string) string {
+	runes := []rune(arg)
+	switch len(runes) {
+	case 0:
+		return "Empty"
+	case 1: // handle special case when we have a single rune that is not handled by swag.ToGoName
+		switch runes[0] {
+		case '+', '-', '#', '_': // those cases are handled differently than swag utility
+			return prefixForName(arg)
+		}
+	}
+	return swag.ToGoName(swag.ToGoName(arg)) // want to remove spaces
+}
+
+func prefixForName(arg string) string {
+	first := []rune(arg)[0]
+	if len(arg) == 0 || unicode.IsLetter(first) {
+		return ""
+	}
+	switch first {
+	case '+':
+		return "Plus"
+	case '-':
+		return "Minus"
+	case '#':
+		return "HashTag"
+		// other cases ($,@ etc..) handled by swag.ToGoName
+	}
+	return "Nr"
 }

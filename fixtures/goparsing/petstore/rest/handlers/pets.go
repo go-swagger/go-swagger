@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware/denco"
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/enums"
 	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/models"
 )
 
@@ -51,7 +52,7 @@ type ValidationError struct {
 // swagger:parameters listPets
 type PetQueryFlags struct {
 	// Status
-	Status string `json:"status"`
+	Status enums.Status `json:"status"`
 
 	// Birthday
 	//

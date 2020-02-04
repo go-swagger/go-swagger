@@ -8,15 +8,66 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
-	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-const testPath = "a/b/c"
+const (
+	defaultAPIPackage    = "operations"
+	defaultClientPackage = "client"
+	defaultModelPackage  = "models"
+	defaultServerPackage = "restapi"
+)
+
+// Perform common initialization of template repository before running tests.
+// This allows to run tests unitarily (e.g. go test -run xxx ).
+func TestMain(m *testing.M) {
+	// initializations to run tests in this package
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	templates.LoadDefaults()
+	initSchemaValidationTest()
+	os.Exit(m.Run())
+}
+
+func opts() *GenOpts {
+	var opts GenOpts
+	opts.IncludeValidator = true
+	opts.IncludeModel = true
+	if err := opts.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+	return &opts
+}
+
+func testGenOpts() *GenOpts {
+	g := &GenOpts{}
+	g.Target = "."
+	g.APIPackage = defaultAPIPackage
+	g.ModelPackage = defaultModelPackage
+	g.ServerPackage = defaultServerPackage
+	g.ClientPackage = defaultClientPackage
+	g.Principal = ""
+	g.DefaultScheme = "http"
+	g.IncludeModel = true
+	g.IncludeValidator = true
+	g.IncludeModel = true
+	g.IncludeHandler = true
+	g.IncludeParameters = true
+	g.IncludeResponses = true
+	g.IncludeMain = false
+	g.IncludeSupport = true
+	g.ExcludeSpec = true
+	g.TemplateDir = ""
+	g.DumpData = false
+
+	if err := g.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+	return g
+}
 
 // TODO: there is a catch, since these methods are sensitive
 // to the CWD of the current swagger command (or go
@@ -27,12 +78,15 @@ const testPath = "a/b/c"
 // Windows style path is difficult to test on unix
 // since the filepath pkg is platform dependent
 func TestShared_CheckOpts(t *testing.T) {
+	testPath := filepath.Join("a", "b", "b")
+
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	var opts = new(GenOpts)
 	_ = opts.EnsureDefaults()
 	cwd, _ := os.Getwd()
+	opts.Spec = "../fixtures/codegen/simplesearch.yml"
 
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = filepath.Join(cwd, "a", "b", "c")
@@ -41,26 +95,46 @@ func TestShared_CheckOpts(t *testing.T) {
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
+	opts.Spec = filepath.Join(cwd, "nowhere", "swagger.yaml")
+	err = opts.CheckOpts()
+	assert.Error(t, err)
+
+	opts.Target = filepath.Join(cwd, "a", "b", "c")
+	opts.ServerPackage = testPath
+	opts.Spec = "https://ab/c"
 	err = opts.CheckOpts()
 	assert.NoError(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
-	opts.Spec = "https:/ab/c"
-	err = opts.CheckOpts()
-	assert.NoError(t, err)
-
-	opts.Target = filepath.Join(cwd, "a", "b", "c")
-	opts.ServerPackage = testPath
-	opts.Spec = "http:/ab/c"
+	opts.Spec = "http://ab/c"
 	err = opts.CheckOpts()
 	assert.NoError(t, err)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
-	opts.Spec = filepath.Join(cwd, "x")
+	opts.Spec = filepath.Join(cwd, "..", "fixtures", "codegen", "swagger-codegen-tests.json")
 	err = opts.CheckOpts()
 	assert.NoError(t, err)
+
+	opts.Target = filepath.Join("a", "b", "c")
+	opts.ServerPackage = testPath
+	opts.Spec = filepath.Join("..", "fixtures", "codegen", "swagger-codegen-tests.json")
+	err = opts.CheckOpts()
+	assert.NoError(t, err)
+
+	opts = nil
+	err = opts.CheckOpts()
+	assert.Error(t, err)
+}
+
+func TestShared_EnsureDefaults(t *testing.T) {
+	opts := &GenOpts{}
+	_ = opts.EnsureDefaults()
+	assert.True(t, opts.defaultsEnsured)
+	opts.DefaultConsumes = "https"
+	_ = opts.EnsureDefaults()
+	assert.Equal(t, "https", opts.DefaultConsumes)
 }
 
 // TargetPath and SpecPath are used in server.gotmpl
@@ -416,7 +490,6 @@ func TestShared_LoadTemplate(t *testing.T) {
 	}
 
 	buf, err := opts.render(&tplOpts, nil)
-	//spew.Dump(err)
 	assert.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open File")
 	assert.Contains(t, err.Error(), "error while opening")
@@ -424,7 +497,6 @@ func TestShared_LoadTemplate(t *testing.T) {
 
 	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
 	buf, err = opts.render(&tplOpts, nil)
-	//spew.Dump(err)
 	assert.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
 	assert.Contains(t, err.Error(), "error while opening")
@@ -432,137 +504,59 @@ func TestShared_LoadTemplate(t *testing.T) {
 
 }
 
-func TestShared_Issue1429(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	// acknowledge fix in go-openapi/spec
-	specPath := filepath.Join("..", "fixtures", "bugs", "1429", "swagger-1429.yaml")
+func TestShared_AppNameOrDefault(t *testing.T) {
+	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
 	specDoc, err := loads.Spec(specPath)
-	assert.NoError(t, err)
-
-	opts := testGenOpts()
-	opts.Spec = specPath
-	_, err = validateAndFlattenSpec(&opts, specDoc)
-	assert.NoError(t, err)
-
-	// more aggressive fixture on $refs, with validation errors, but flatten ok
-	specPath = filepath.Join("..", "fixtures", "bugs", "1429", "swagger.yaml")
-	specDoc, err = loads.Spec(specPath)
-	assert.NoError(t, err)
-
-	opts.Spec = specPath
-	opts.FlattenOpts.BasePath = specDoc.SpecFilePath()
-	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
-	opts.FlattenOpts.Minimal = true
-	err = analysis.Flatten(*opts.FlattenOpts)
-	assert.NoError(t, err)
-
-	specDoc, _ = loads.Spec(specPath) // needs reload
-	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
-	opts.FlattenOpts.Minimal = false
-	err = analysis.Flatten(*opts.FlattenOpts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, specDoc.Spec().Info)
+	specDoc.Spec().Info.Title = "    "
+	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 }
 
-func TestShared_MangleFileName(t *testing.T) {
-	// standard : swag.ToFileName()
-	o := LanguageOpts{}
-	o.Init()
-	res := o.MangleFileName("aFileEndingInOsNameWindows")
-	assert.True(t, strings.HasSuffix(res, "_windows"))
+func TestShared_GatherModel(t *testing.T) {
+	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
 
-	// golang specific
-	res = golang.MangleFileName("aFileEndingInOsNameWindows")
-	assert.True(t, strings.HasSuffix(res, "_windows_swagger"))
-	res = golang.MangleFileName("aFileEndingInOsNameWindowsAmd64")
-	assert.True(t, strings.HasSuffix(res, "_windows_amd64_swagger"))
-	res = golang.MangleFileName("aFileEndingInTest")
-	assert.True(t, strings.HasSuffix(res, "_test_swagger"))
+	specDoc, err := loads.Spec(specPath)
+	require.NoError(t, err)
+
+	_, err = gatherModels(specDoc, []string{"unknown"})
+	assert.Error(t, err)
+
+	res, err := gatherModels(specDoc, []string{"Image", "Application"})
+	require.NoError(t, err)
+	assert.Len(t, res, 2)
+
+	res, err = gatherModels(specDoc, []string{"Image", "Application"})
+	require.NoError(t, err)
+	assert.Len(t, res, 2)
+
+	res, err = gatherModels(specDoc, []string{})
+	require.NoError(t, err)
+	assert.Len(t, res, 4)
 }
 
-func TestShared_ManglePackage(t *testing.T) {
-	o := GoLangOpts()
-	o.Init()
-
-	for _, v := range []struct {
-		tested       string
-		expectedPath string
-		expectedName string
+func TestShared_DumpWrongData(t *testing.T) {
+	assert.Error(t, dumpData(struct {
+		A func() string
+		B string
 	}{
-		{tested: "", expectedPath: "default", expectedName: "default"},
-		{tested: "select", expectedPath: "select_default", expectedName: "select_default"},
-		{tested: "x", expectedPath: "x", expectedName: "x"},
-		{tested: "a/b/c-d/e_f/g", expectedPath: "a/b/c-d/e_f/g", expectedName: "g"},
-		{tested: "a/b/c-d/e_f/g-h", expectedPath: "a/b/c-d/e_f/g_h", expectedName: "g_h"},
-	} {
-		res := o.ManglePackagePath(v.tested, "default")
-		assert.Equal(t, v.expectedPath, res)
-		res = o.ManglePackageName(v.tested, "default")
-		assert.Equal(t, v.expectedName, res)
-	}
-}
+		A: func() string { return "" },
+		B: "xyz",
+	}))
 
-func TestShared_Issue1621(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	assert.NoError(t, dumpData(struct {
+		A func() string `json:"-"`
+		B string
+	}{
+		A: func() string { return "" },
+		B: "xyz",
+	}))
 
-	// acknowledge fix in go-openapi/spec
-	specPath := filepath.Join("..", "fixtures", "bugs", "1621", "fixture-1621.yaml")
-	specDoc, err := loads.Spec(specPath)
-	assert.NoError(t, err)
-
-	opts := testGenOpts()
-	opts.Spec = specPath
-	opts.ValidateSpec = true
-	//t.Logf("path: %s", specDoc.SpecFilePath())
-	_, err = validateAndFlattenSpec(&opts, specDoc)
-	assert.NoError(t, err)
-}
-
-func TestShared_Issue1614(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	// acknowledge fix in go-openapi/spec
-	specPath := filepath.Join("..", "fixtures", "bugs", "1614", "gitea.json")
-	specDoc, err := loads.Spec(specPath)
-	assert.NoError(t, err)
-
-	opts := testGenOpts()
-	opts.Spec = specPath
-	opts.ValidateSpec = true
-	t.Logf("path: %s", specDoc.SpecFilePath())
-	_, err = validateAndFlattenSpec(&opts, specDoc)
-	assert.NoError(t, err)
-}
-
-func TestPascalize(t *testing.T) {
-	assert.Equal(t, "Plus1", pascalize("+1"))
-	assert.Equal(t, "Plus", pascalize("+"))
-	assert.Equal(t, "Minus1", pascalize("-1"))
-	assert.Equal(t, "Minus", pascalize("-"))
-	assert.Equal(t, "Nr8", pascalize("8"))
-
-	assert.Equal(t, "Hello", pascalize("+hello"))
-
-	// other values from swag rules
-	assert.Equal(t, "At8", pascalize("@8"))
-	assert.Equal(t, "AtHello", pascalize("@hello"))
-	assert.Equal(t, "Bang8", pascalize("!8"))
-	assert.Equal(t, "At", pascalize("@"))
-
-	// # values
-	assert.Equal(t, "Hello", pascalize("#hello"))
-	assert.Equal(t, "BangHello", pascalize("#!hello"))
-	assert.Equal(t, "HashTag8", pascalize("#8"))
-	assert.Equal(t, "HashTag", pascalize("#"))
-
-	// single '_'
-	assert.Equal(t, "Nr", pascalize("_"))
-	assert.Equal(t, "Hello", pascalize("_hello"))
-
-	// remove spaces
-	assert.Equal(t, "HelloWorld", pascalize("# hello world"))
-	assert.Equal(t, "HashTag8HelloWorld", pascalize("# 8 hello world"))
+	assert.NoError(t, dumpData(struct {
+		a func() string
+		B string
+	}{
+		a: func() string { return "" },
+		B: "xyz",
+	}))
 }

@@ -14,7 +14,11 @@
 
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/enums"
+)
 
 // A Pet is the main product in the store.
 // It is used to describe the animals available in the store.
@@ -41,7 +45,7 @@ type Pet struct {
 	PhotoURLs []string `json:"photoUrls,omitempty"`
 
 	// The current status of the pet in the store.
-	Status string `json:"status,omitempty"`
+	Status enums.Status `json:"status,omitempty"`
 
 	// Extra bits of information attached to this pet.
 	//

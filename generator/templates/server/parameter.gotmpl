@@ -225,14 +225,10 @@ if err := validate.Enum(
   {{- if .IsPrimitive }}
     {{ template "validationPrimitive" . }}
   {{- end }}
-  {{- if and .IsCustomFormatter (not .IsStream) }}
-    {{- if ne .SwaggerFormat "byte" }}
+  {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }
-    {{- else }}
-  // Format "byte" (base64 string) is already validated when parsed
-    {{- end }}
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
     {{ template "sliceparamvalidator" . }}
@@ -244,7 +240,7 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 
 {{ define "sliceparambinder" }}
 var {{ varname .Child.ValueExpression }}R {{ .GoType }}
-for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
+for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
   {{- if .Child.IsArray }}{{/* recursive resolution of arrays in params */}}
     {{- if not .Child.SkipParse }}
     // {{ .Child.ItemsDepth }}CollectionFormat: {{ .Child.CollectionFormat }}
@@ -299,10 +295,8 @@ import (
 
   strfmt "github.com/go-openapi/strfmt"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
@@ -323,7 +317,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
               {{- else if .IsArray -}}{{- /* Do not initialize from possible defaults in nested arrays */ -}}
                   {{- if and .Child.IsPrimitive .Child.IsCustomFormatter }}{{ .Zero }}{{/* initialization strategy with UnmarshalText() */}}
                   {{- else if .Child.IsArray -}}{{ .Zero }}{{/* initialization strategy with json.Unmarshal() */}}
-                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- goSliceInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
+                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- arrayInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
                   {{- else }}{{ printf "%#v" .Default }}{{/* all other cases (e.g. schema) [should not occur] */}}
                   {{- end }}
               {{- else }}{{ printf "%#v" .Default }}{{/* case .Schema */}}
@@ -455,7 +449,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- else }}
     defer r.Body.Close()
       {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .GoType (toPackageName .ModelsPackage) }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ dropPackage .GoType }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {

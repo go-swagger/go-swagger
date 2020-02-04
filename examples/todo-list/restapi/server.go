@@ -279,8 +279,6 @@ func (s *Server) Serve() (err error) {
 	go handleInterrupt(once, s)
 
 	servers := []*http.Server{}
-	wg.Add(1)
-	go s.handleShutdown(wg, &servers)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -430,6 +428,9 @@ func (s *Server) Serve() (err error) {
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 	}
 
+	wg.Add(1)
+	go s.handleShutdown(wg, &servers)
+
 	wg.Wait()
 	return nil
 }
@@ -525,6 +526,9 @@ func (s *Server) handleShutdown(wg *sync.WaitGroup, serversPtr *[]*http.Server) 
 	ctx, cancel := context.WithTimeout(context.TODO(), s.GracefulTimeout)
 	defer cancel()
 
+	// first execute the pre-shutdown hook
+	s.api.PreServerShutdown()
+
 	shutdownChan := make(chan bool)
 	for i := range servers {
 		server := servers[i]
@@ -594,7 +598,7 @@ func (s *Server) TLSListener() (net.Listener, error) {
 
 func handleInterrupt(once *sync.Once, s *Server) {
 	once.Do(func() {
-		for _ = range s.interrupt {
+		for range s.interrupt {
 			if s.interrupted {
 				s.Logf("Server already shutting down")
 				continue

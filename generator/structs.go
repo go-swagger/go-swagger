@@ -28,7 +28,7 @@ type GenDefinition struct {
 	GenSchema
 	Package        string
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	ExtraSchemas   GenSchemaList
 	DependsOn      []string
 	External       bool
@@ -167,7 +167,7 @@ type GenResponse struct {
 	AllowsForStreaming bool
 
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 
 	Extensions map[string]interface{}
 }
@@ -355,6 +355,8 @@ type GenItems struct {
 
 	// instructs generator to skip the splitting and parsing from CollectionFormat
 	SkipParse bool
+	// instructs generator that some nested structure needs an higher level loop index
+	NeedsIndex bool
 }
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
@@ -378,9 +380,10 @@ type GenOperationGroup struct {
 	Summary        string
 	Description    string
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	RootPackage    string
 	GenOpts        *GenOpts
+	PackageAlias   string
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -446,11 +449,13 @@ type GenOperation struct {
 	Path         string
 	BasePath     string
 	Tags         []string
+	UseTags      bool
 	RootPackage  string
 
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	ExtraSchemas   GenSchemaList
+	PackageAlias   string
 
 	Authorized          bool
 	Security            []GenSecurityRequirements
@@ -509,7 +514,7 @@ type GenApp struct {
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
-	DefaultImports      []string
+	DefaultImports      map[string]string
 	Schemes             []string
 	ExtraSchemes        []string
 	Consumes            GenSerGroups

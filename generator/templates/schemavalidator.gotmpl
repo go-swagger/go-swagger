@@ -36,11 +36,11 @@
   {{ end }}
   {{ if .Enum }}
   // value enum
-  if err := {{.ReceiverName }}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
+  if err := {{.ReceiverName }}.validate{{ pascalize .Name }}{{ .Suffix }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
     return err
   }
   {{ end }}
-  {{ if .IsCustomFormatter }}{{/* the .IsStream case (ioReadCloser) is already excluded, since it does not resolve as primitive */}}
+  {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
     {{ template "validationCustomformat" . }}
   {{ end }}
 {{ end }}
@@ -108,21 +108,22 @@
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
   {{ if .HasAdditionalProperties }}
     {{- if  .AdditionalProperties.HasValidations }}
+    {{- $validatedValues := .ValueExpression }}{{ $keyVar := .AdditionalProperties.KeyVar }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
       {{ with .AdditionalProperties }}
         {{- if and (not .Required) .IsNullable }}{{/* skip when nul type is accepted */}}
-      if swag.IsZero({{ .ValueExpression }}) { // not required
+      if swag.IsZero({{ $validatedValues }}[{{ $keyVar }}]) { // not required
         continue
       }
         {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
-      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
         {{- end }}
         {{- if .IsPrimitive }}
           {{- if .IsAliased }}
             {{- if not .IsAnonymous }}
-      if val, ok := {{ .ValueExpression }}; ok {
+      if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
               {{- if and .IsNullable (not .IsMapNullOverride) }}
         if val != nil {
               {{- end }}
@@ -156,7 +157,7 @@
     return err
   }
           {{- end }}
-          {{- if not .IsStream }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+          {{- if and (not .IsStream) (not .IsBase64) }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
             {{ template "validationCustomformat" . }}
           {{- end }}
         {{ else if .IsArray }}
@@ -164,13 +165,13 @@
         {{ else if .IsMap }}
           {{ template "mapvalidator" . }}
           {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
           {{- end }}
         {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
           {{- if not .IsAnonymous }}
-    if val, ok := {{ .ValueExpression }}; ok {
+    if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
             {{- if and .IsNullable (not .IsMapNullOverride) }}
       if val != nil {
             {{- end }}
@@ -301,12 +302,12 @@
     return err
   }
     {{- end }}
-    {{- if not .IsStream }}
+    {{- if and (not .IsStream) (not .IsBase64) }}
       {{ template "validationCustomformat" . }}
     {{- end }}
   {{- else if .IsArray }}
     {{ template "slicevalidator" . }}
-    {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}{{/* except for interface, the renderinf for aliased maps is performed by objectvalidator */}}
+  {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}{{/* except for interface, the renderinf for aliased maps is performed by objectvalidator */}}
     {{ template "mapvalidator" . }}
   {{- else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
     {{ template "objectvalidator" . }}
@@ -322,7 +323,7 @@
     return err
   }
     {{- end }}
-    {{- if not .IsStream }}
+    {{- if and (not .IsStream) (not .IsBase64) }}
       {{ template "validationCustomformat" . }}
     {{- end }}
   {{- else if .IsArray }}

@@ -7,12 +7,11 @@ package todos
 
 import (
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new todos API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -24,8 +23,21 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientService is the interface for Client methods
+type ClientService interface {
+	AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter) (*AddOneCreated, error)
+
+	DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter) (*DestroyOneNoContent, error)
+
+	Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter) (*FindOK, error)
+
+	UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateOneOK, error)
+
+	SetTransport(transport runtime.ClientTransport)
+}
+
 /*
-AddOne add one API
+  AddOne add one API
 */
 func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
@@ -59,7 +71,7 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-DestroyOne destroy one API
+  DestroyOne destroy one API
 */
 func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
@@ -93,7 +105,7 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 }
 
 /*
-Find find API
+  Find find API
 */
 func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter) (*FindOK, error) {
 	// TODO: Validate the params before sending
@@ -127,7 +139,7 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter)
 }
 
 /*
-UpdateOne update one API
+  UpdateOne update one API
 */
 func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending

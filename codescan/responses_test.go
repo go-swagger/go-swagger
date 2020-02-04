@@ -262,3 +262,22 @@ func TestParseResponses_Issue2011(t *testing.T) {
 
 	require.True(t, resp.Schema.Type.Contains("object"))
 }
+
+func TestParseResponses_Issue2145(t *testing.T) {
+	sctx, err := newScanCtx(&Options{
+		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/product/..."},
+	})
+	require.NoError(t, err)
+	responses := make(map[string]spec.Response)
+	td := getResponse(sctx, "GetProductsResponse")
+	prs := &responseBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(responses))
+	resp := responses["GetProductsResponse"]
+	require.Len(t, resp.Headers, 0)
+	require.NotNil(t, resp.Schema)
+
+	assert.NotEqual(t, 0, len(prs.postDecls)) // should have Product
+}

@@ -37,27 +37,30 @@ const (
 	str     = "string"
 	object  = "object"
 	binary  = "binary"
-	sHTTP   = "http"
 	body    = "body"
+	b64     = "byte"
 )
 
 // Extensions supported by go-swagger
 const (
-	xClass       = "x-class"         // class name used by discriminator
-	xGoCustomTag = "x-go-custom-tag" // additional tag for serializers on struct fields
-	xGoName      = "x-go-name"       // name of the generated go variable
-	xGoType      = "x-go-type"       // reuse existing type (do not generate)
-	xIsNullable  = "x-isnullable"
-	xNullable    = "x-nullable" // turns the schema into a pointer
-	xOmitEmpty   = "x-omitempty"
-	xSchemes     = "x-schemes" // additional schemes supported for operations (server generation)
-	xOrder       = "x-order"   // sort order for properties (or any schema)
+	xClass        = "x-class"         // class name used by discriminator
+	xGoCustomTag  = "x-go-custom-tag" // additional tag for serializers on struct fields
+	xGoName       = "x-go-name"       // name of the generated go variable
+	xGoType       = "x-go-type"       // reuse existing type (do not generate)
+	xIsNullable   = "x-isnullable"
+	xNullable     = "x-nullable" // turns the schema into a pointer
+	xOmitEmpty    = "x-omitempty"
+	xSchemes      = "x-schemes" // additional schemes supported for operations (server generation)
+	xOrder        = "x-order"   // sort order for properties (or any schema)
+	xGoJSONString = "x-go-json-string"
+
+	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )
 
-// swaggerTypeMapping contains a mapping from go type to swagger type or format
+// swaggerTypeName contains a mapping from go type to swagger type or format
 var swaggerTypeName map[string]string
 
-func init() {
+func initTypes() {
 	swaggerTypeName = make(map[string]string)
 	for k, v := range typeMapping {
 		swaggerTypeName[v] = k
@@ -86,6 +89,8 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 				// special case of swagger format "binary", rendered as io.ReadCloser interface
 				// TODO(fredbi): should set IsCustomFormatter=false when binary
 				result.IsStream = fmt == binary
+				// special case of swagger format "byte", rendered as a strfmt.Base64 type: no validation
+				result.IsBase64 = fmt == b64
 				return
 			}
 		}
@@ -218,40 +223,38 @@ func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
 }
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
-	if schema.Ref.String() != "" {
-		debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
-		returns = true
-		var ref *spec.Schema
-		var er error
-
-		ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
-		if er != nil {
-			debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
-			err = er
-			return
-		}
-		res, er := t.ResolveSchema(ref, false, isRequired)
-		if er != nil {
-			err = er
-			return
-		}
-		result = res
-
-		tn := filepath.Base(schema.Ref.GetURL().Fragment)
-		tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
-		debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
-		if tpe != "" {
-			result.GoType = tpe
-			result.Pkg = pkg
-			result.PkgAlias = alias
-		}
-		result.HasDiscriminator = res.HasDiscriminator
-		result.IsBaseType = result.HasDiscriminator
-		result.IsNullable = t.IsNullable(ref)
-		//result.IsAliased = true
+	if schema.Ref.String() == "" {
 		return
-
 	}
+	debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
+	returns = true
+	var ref *spec.Schema
+	var er error
+
+	ref, er = spec.ResolveRef(t.Doc.Spec(), &schema.Ref)
+	if er != nil {
+		debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
+		err = er
+		return
+	}
+	res, er := t.ResolveSchema(ref, false, isRequired)
+	if er != nil {
+		err = er
+		return
+	}
+	result = res
+
+	tn := filepath.Base(schema.Ref.GetURL().Fragment)
+	tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
+	debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
+	if tpe != "" {
+		result.GoType = tpe
+		result.Pkg = pkg
+		result.PkgAlias = alias
+	}
+	result.HasDiscriminator = res.HasDiscriminator
+	result.IsBaseType = result.HasDiscriminator
+	result.IsNullable = t.IsNullable(ref)
 	return
 }
 
@@ -293,6 +296,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 		// TODO: should set IsCustomFormatter=false in this case.
 		result.IsPrimitive = schFmt != binary
 		result.IsStream = schFmt == binary
+		result.IsBase64 = schFmt == b64
 		// propagate extensions in resolvedType
 		result.Extensions = schema.Extensions
 
@@ -322,21 +326,6 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 		return nullable
 	}
 	return len(schema.Properties) > 0
-}
-
-func setIsEmptyOmitted(result *resolvedType, schema *spec.Schema, tpe string) {
-	defaultValue := true
-	if tpe == array {
-		defaultValue = false
-	}
-	v, found := schema.Extensions[xOmitEmpty]
-	if !found {
-		result.IsEmptyOmitted = defaultValue
-		return
-	}
-
-	omitted, cast := v.(bool)
-	result.IsEmptyOmitted = omitted && cast
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -636,9 +625,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	tpe := t.firstType(schema)
-	defer setIsEmptyOmitted(&result, schema, tpe)
-
 	var returns bool
+
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 	if returns {
 		if !isAnonymous {
@@ -649,6 +637,10 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		debugLog("returning after ref")
 		return
 	}
+	defer func() {
+		result.setIsEmptyOmitted(schema, tpe)
+		result.setIsJSONString(schema, tpe)
+	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
 	if t.firstType(schema) == file {
@@ -736,6 +728,8 @@ type resolvedType struct {
 	IsNullable        bool
 	IsStream          bool
 	IsEmptyOmitted    bool
+	IsJSONString      bool
+	IsBase64          bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool
@@ -798,4 +792,23 @@ func (rt *resolvedType) Zero() string {
 	}
 
 	return ""
+}
+
+func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
+	if v, found := schema.Extensions[xOmitEmpty]; found {
+		omitted, cast := v.(bool)
+		rt.IsEmptyOmitted = omitted && cast
+		return
+	}
+	// array of primitives are by default not empty-omitted, but arrays of aliased type are
+	rt.IsEmptyOmitted = (tpe != array) || (tpe == array && rt.IsAliased)
+}
+
+func (rt *resolvedType) setIsJSONString(schema *spec.Schema, tpe string) {
+	_, found := schema.Extensions[xGoJSONString]
+	if !found {
+		rt.IsJSONString = false
+		return
+	}
+	rt.IsJSONString = true
 }

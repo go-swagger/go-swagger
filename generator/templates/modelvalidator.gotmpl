@@ -10,10 +10,8 @@ package {{.Package}}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-  {{range .DefaultImports}}{{printf "%q" .}}
-  {{end}}
-  {{range $key, $value := .Imports}}{{$key}} {{ printf "%q" $value}}
-  {{end}}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 {{ template "schemavalidations" . }}
