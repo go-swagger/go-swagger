@@ -11,11 +11,9 @@ package {{.Package}}
 
 import (
   strfmt "github.com/go-openapi/strfmt"
-{{if or .Imports .DefaultImports }}
+{{- if or .Imports .DefaultImports }}
   goruntime "runtime"
-  {{range .DefaultImports }}{{ printf "%q" .}}
-  {{end}}
-  {{range $key, $value := .Imports}}{{ $key }} {{ printf "%q" $value}}
-  {{end}}
-{{end}}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
+{{- end }}
 )

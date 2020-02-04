@@ -200,7 +200,7 @@ To name but a few... (feel free to sign in there if you are using this project):
 [CheckR](https://github.com/checkr/flagr)  
 [Cilium](https://github.com/cilium/cilium)  
 [CoreOS](https://github.com/coreos/go-quay)  
-[DigitalOcean](https://github.com/digitalocean/go-netbox)  
+[NetBox Community](https://github.com/netbox-community/go-netbox)  
 [EVE Central](https://github.com/evecentral)  
 Iron.io
 [JaegerTracing](https://github.com/jaegertracing/jaeger)  

@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/restapi/operations/pet"
@@ -32,6 +32,7 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -41,37 +42,35 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		StoreInventoryGetHandler: store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation StoreInventoryGet has not yet been implemented")
+			return middleware.NotImplemented("operation store.InventoryGet has not yet been implemented")
 		}),
 		StoreOrderCreateHandler: store.OrderCreateHandlerFunc(func(params store.OrderCreateParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation StoreOrderCreate has not yet been implemented")
+			return middleware.NotImplemented("operation store.OrderCreate has not yet been implemented")
 		}),
 		StoreOrderDeleteHandler: store.OrderDeleteHandlerFunc(func(params store.OrderDeleteParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation StoreOrderDelete has not yet been implemented")
+			return middleware.NotImplemented("operation store.OrderDelete has not yet been implemented")
 		}),
 		StoreOrderGetHandler: store.OrderGetHandlerFunc(func(params store.OrderGetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation StoreOrderGet has not yet been implemented")
+			return middleware.NotImplemented("operation store.OrderGet has not yet been implemented")
 		}),
 		PetPetCreateHandler: pet.PetCreateHandlerFunc(func(params pet.PetCreateParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetCreate has not yet been implemented")
+			return middleware.NotImplemented("operation pet.PetCreate has not yet been implemented")
 		}),
 		PetPetDeleteHandler: pet.PetDeleteHandlerFunc(func(params pet.PetDeleteParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetDelete has not yet been implemented")
+			return middleware.NotImplemented("operation pet.PetDelete has not yet been implemented")
 		}),
 		PetPetGetHandler: pet.PetGetHandlerFunc(func(params pet.PetGetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetGet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.PetGet has not yet been implemented")
 		}),
 		PetPetListHandler: pet.PetListHandlerFunc(func(params pet.PetListParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetList has not yet been implemented")
+			return middleware.NotImplemented("operation pet.PetList has not yet been implemented")
 		}),
 		PetPetUpdateHandler: pet.PetUpdateHandlerFunc(func(params pet.PetUpdateParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetUpdate has not yet been implemented")
+			return middleware.NotImplemented("operation pet.PetUpdate has not yet been implemented")
 		}),
 		PetPetUploadImageHandler: pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetPetUploadImage has not yet been implemented")
-		}),
-
-		// Applies when the "X-Auth-Roles" header is set
+			return middleware.NotImplemented("operation pet.PetUploadImage has not yet been implemented")
+		}), // Applies when the "X-Auth-Roles" header is set
 		RolesAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (roles) X-Auth-Roles from header param [X-Auth-Roles] has not yet been implemented")
 		},
@@ -102,11 +101,11 @@ type PetstoreAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// RolesAuth registers a function that takes a token and returns a principal
@@ -136,10 +135,13 @@ type PetstoreAPI struct {
 	PetPetUpdateHandler pet.PetUpdateHandler
 	// PetPetUploadImageHandler sets the operation handler for the pet upload image operation
 	PetPetUploadImageHandler pet.PetUploadImageHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -204,43 +206,43 @@ func (o *PetstoreAPI) Validate() error {
 	}
 
 	if o.StoreInventoryGetHandler == nil {
-		unregistered = append(unregistered, "store.InventoryGetHandler")
+		unregistered = append(unregistered, "Store.InventoryGetHandler")
 	}
 
 	if o.StoreOrderCreateHandler == nil {
-		unregistered = append(unregistered, "store.OrderCreateHandler")
+		unregistered = append(unregistered, "Store.OrderCreateHandler")
 	}
 
 	if o.StoreOrderDeleteHandler == nil {
-		unregistered = append(unregistered, "store.OrderDeleteHandler")
+		unregistered = append(unregistered, "Store.OrderDeleteHandler")
 	}
 
 	if o.StoreOrderGetHandler == nil {
-		unregistered = append(unregistered, "store.OrderGetHandler")
+		unregistered = append(unregistered, "Store.OrderGetHandler")
 	}
 
 	if o.PetPetCreateHandler == nil {
-		unregistered = append(unregistered, "pet.PetCreateHandler")
+		unregistered = append(unregistered, "Pet.PetCreateHandler")
 	}
 
 	if o.PetPetDeleteHandler == nil {
-		unregistered = append(unregistered, "pet.PetDeleteHandler")
+		unregistered = append(unregistered, "Pet.PetDeleteHandler")
 	}
 
 	if o.PetPetGetHandler == nil {
-		unregistered = append(unregistered, "pet.PetGetHandler")
+		unregistered = append(unregistered, "Pet.PetGetHandler")
 	}
 
 	if o.PetPetListHandler == nil {
-		unregistered = append(unregistered, "pet.PetListHandler")
+		unregistered = append(unregistered, "Pet.PetListHandler")
 	}
 
 	if o.PetPetUpdateHandler == nil {
-		unregistered = append(unregistered, "pet.PetUpdateHandler")
+		unregistered = append(unregistered, "Pet.PetUpdateHandler")
 	}
 
 	if o.PetPetUploadImageHandler == nil {
-		unregistered = append(unregistered, "pet.PetUploadImageHandler")
+		unregistered = append(unregistered, "Pet.PetUploadImageHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -280,16 +282,14 @@ func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -297,19 +297,16 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -317,7 +314,6 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

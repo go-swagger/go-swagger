@@ -156,6 +156,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	prop, ok = mod.Properties["status"]
 	assert.True(t, ok)
 	assert.Equal(t, "The current status of the pet in the store.", prop.Description)
+	assert.Equal(t, []interface{}{"available", "pending", "sold"}, prop.Enum)
 
 	assertProperty(t, &mod, "string", "birthday", "date", "Birthday")
 	prop, ok = mod.Properties["birthday"]
@@ -253,6 +254,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "query", sparam.In)
 	assert.Equal(t, "string", sparam.Type)
 	assert.Equal(t, "", sparam.Format)
+	assert.Equal(t, []interface{}{"available", "pending", "sold"}, sparam.Enum)
 	assert.False(t, sparam.Required)
 	assert.Equal(t, "Status", sparam.Extensions["x-go-name"])
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())

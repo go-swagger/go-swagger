@@ -15,11 +15,8 @@
 package generator
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -51,24 +48,15 @@ Every action that happens tracks the path which is a linked list of refs
 
 // GenerateDefinition generates a model file for a schema definition.
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
-	if opts == nil {
-		return errors.New("gen opts are required")
-	}
-
-	templates.SetAllowOverride(opts.AllowTemplateOverride)
-
-	if opts.TemplateDir != "" {
-		if err := templates.LoadDir(opts.TemplateDir); err != nil {
-			return err
-		}
-	}
-
 	if err := opts.CheckOpts(); err != nil {
 		return err
 	}
 
-	// Load the spec
-	specPath, specDoc, err := loadSpec(opts.Spec)
+	if err := opts.setTemplates(); err != nil {
+		return err
+	}
+
+	specDoc, _, err := opts.analyzeSpec()
 	if err != nil {
 		return err
 	}
@@ -83,7 +71,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		// lookup schema
 		model, ok := specDoc.Spec().Definitions[modelName]
 		if !ok {
-			return fmt.Errorf("model %q not found in definitions given by %q", modelName, specPath)
+			return fmt.Errorf("model %q not found in definitions given by %q", modelName, opts.Spec)
 		}
 
 		// generate files
@@ -121,9 +109,7 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.DumpData {
-		bb, _ := json.MarshalIndent(swag.ToDynamicJSON(mod), "", " ")
-		fmt.Fprintln(os.Stdout, string(bb))
-		return nil
+		return dumpData(swag.ToDynamicJSON(mod))
 	}
 
 	if m.opts.IncludeModel {
@@ -175,7 +161,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 	if sch.IsStream || sch.IsInterface { // these types have no validation - aliased types on those do not implement the Validatable interface
 		return false
 	}
-	if sch.Required || sch.IsCustomFormatter && !sch.IsStream {
+	if sch.Required || hasFormatValidation(sch.resolvedType) {
 		return true
 	}
 	if sch.MaxLength != nil || sch.MinLength != nil || sch.Pattern != "" || sch.MultipleOf != nil || sch.Minimum != nil || sch.Maximum != nil || len(sch.Enum) > 0 || len(sch.ItemsEnum) > 0 {
@@ -336,17 +322,17 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 
 	}
 
-	defaultImports := []string{
-		"github.com/go-openapi/errors",
-		"github.com/go-openapi/runtime",
-		"github.com/go-openapi/swag",
-		"github.com/go-openapi/validate",
+	defaultImports := map[string]string{
+		"errors":   "github.com/go-openapi/errors",
+		"runtime":  "github.com/go-openapi/runtime",
+		"swag":     "github.com/go-openapi/swag",
+		"validate": "github.com/go-openapi/validate",
 	}
 
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
-			TargetImportPath: filepath.ToSlash(opts.LanguageOpts.baseImport(opts.Target)),
+			TargetImportPath: opts.LanguageOpts.baseImport(opts.Target),
 		},
 		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
 		GenSchema:      pg.GenSchema,
@@ -621,6 +607,16 @@ func hasValidations(model *spec.Schema, isRequired bool) (hasValidation bool) {
 	return
 }
 
+func hasFormatValidation(tpe resolvedType) bool {
+	if tpe.IsCustomFormatter && !tpe.IsStream && !tpe.IsBase64 {
+		return true
+	}
+	if tpe.IsArray && tpe.ElemType != nil {
+		return hasFormatValidation(*tpe.ElemType)
+	}
+	return false
+}
+
 // handleFormatConflicts handles all conflicting model properties when a format is set
 func handleFormatConflicts(model *spec.Schema) {
 	switch model.Format {
@@ -702,7 +698,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || containsString(sg.Schema.Required, k))
+		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
 		if sg.Schema.Discriminator == k {
 			tpe.IsNullable = false
 		}
@@ -754,7 +750,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		}
 
 		// generates format validation on property
-		emprop.GenSchema.HasValidations = emprop.GenSchema.HasValidations || (tpe.IsCustomFormatter && !tpe.IsStream) || (tpe.IsArray && tpe.ElemType.IsCustomFormatter && !tpe.ElemType.IsStream)
+		emprop.GenSchema.HasValidations = emprop.GenSchema.HasValidations || hasFormatValidation(tpe)
 
 		if emprop.Schema.Ref.String() != "" {
 			// expand the schema of this property, so we take informed decisions about its type
@@ -804,7 +800,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			hv := hasValidations(sch, false)
 
 			// include format validation, excluding binary
-			hv = hv || (ttpe.IsCustomFormatter && !ttpe.IsStream) || (ttpe.IsArray && ttpe.ElemType.IsCustomFormatter && !ttpe.ElemType.IsStream)
+			hv = hv || hasFormatValidation(ttpe)
 
 			// a base type property is always validated against the base type
 			// exception: for the base type definition itself (see shallowValidationLookup())
@@ -1419,10 +1415,8 @@ func (sg *schemaGenContext) buildArray() error {
 	schemaCopy.Required = false
 
 	// validations of items
-	hv := hasValidations(sg.Schema.Items.Schema, false)
-
-	// include format validation, excluding binary
-	hv = hv || (schemaCopy.IsCustomFormatter && !schemaCopy.IsStream) || (schemaCopy.IsArray && schemaCopy.ElemType.IsCustomFormatter && !schemaCopy.ElemType.IsStream)
+	// include format validation, excluding binary and base64 format validation
+	hv := hasValidations(sg.Schema.Items.Schema, false) || hasFormatValidation(schemaCopy.resolvedType)
 
 	// base types of polymorphic types must be validated
 	// NOTE: IsNullable is not useful to figure out a validation: we use Refed and IsAliased below instead
@@ -1893,7 +1887,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.HasDiscriminator = tpe.HasDiscriminator
 
 	// include format validations, excluding binary
-	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || (tpe.IsCustomFormatter && !tpe.IsStream) || (tpe.IsArray && tpe.ElemType != nil && tpe.ElemType.IsCustomFormatter && !tpe.ElemType.IsStream)
+	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || hasFormatValidation(tpe)
 
 	// usage of a polymorphic base type is rendered with getter funcs on private properties.
 	// In the case of aliased types, the value expression remains unchanged to the receiver.

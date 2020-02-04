@@ -28,7 +28,7 @@ type GenDefinition struct {
 	GenSchema
 	Package        string
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	ExtraSchemas   GenSchemaList
 	DependsOn      []string
 	External       bool
@@ -167,7 +167,7 @@ type GenResponse struct {
 	AllowsForStreaming bool
 
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 
 	Extensions map[string]interface{}
 }
@@ -355,6 +355,8 @@ type GenItems struct {
 
 	// instructs generator to skip the splitting and parsing from CollectionFormat
 	SkipParse bool
+	// instructs generator that some nested structure needs an higher level loop index
+	NeedsIndex bool
 }
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
@@ -378,9 +380,10 @@ type GenOperationGroup struct {
 	Summary        string
 	Description    string
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	RootPackage    string
 	GenOpts        *GenOpts
+	PackageAlias   string
 }
 
 // GenOperationGroups is a sorted collection of operation groups
@@ -446,11 +449,13 @@ type GenOperation struct {
 	Path         string
 	BasePath     string
 	Tags         []string
+	UseTags      bool
 	RootPackage  string
 
 	Imports        map[string]string
-	DefaultImports []string
+	DefaultImports map[string]string
 	ExtraSchemas   GenSchemaList
+	PackageAlias   string
 
 	Authorized          bool
 	Security            []GenSecurityRequirements
@@ -509,7 +514,7 @@ type GenApp struct {
 	Info                *spec.Info
 	ExternalDocs        *spec.ExternalDocumentation
 	Imports             map[string]string
-	DefaultImports      []string
+	DefaultImports      map[string]string
 	Schemes             []string
 	ExtraSchemes        []string
 	Consumes            GenSerGroups
@@ -521,7 +526,7 @@ type GenApp struct {
 	SwaggerJSON         string
 	// Embedded specs: this is important for when the generated server adds routes.
 	// NOTE: there is a distinct advantage to having this in runtime rather than generated code.
-	// We are noti ever going to generate the router.
+	// We are not ever going to generate the router.
 	// If embedding spec is an issue (e.g. memory usage), this can be excluded with the --exclude-spec
 	// generation option. Alternative methods to serve spec (e.g. from disk, ...) may be implemented by
 	// adding a middleware to the generated API.
@@ -563,16 +568,14 @@ type GenSerGroups []GenSerGroup
 
 func (g GenSerGroups) Len() int           { return len(g) }
 func (g GenSerGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSerGroups) Less(i, j int) bool { return g[i].MediaType < g[j].MediaType }
+func (g GenSerGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
-// GenSerGroup represents a group of serializers, most likely this is a media type to a list of
-// prioritized serializers.
+// GenSerGroup represents a group of serializers: this links a serializer to a list of
+// prioritized media types (mime).
 type GenSerGroup struct {
-	ReceiverName   string
-	AppName        string
-	Name           string
-	MediaType      string
-	Implementation string
+	GenSerializer
+
+	// All media types for this serializer. The redundant representation allows for easier use in templates
 	AllSerializers GenSerializers
 }
 
@@ -585,11 +588,12 @@ func (g GenSerializers) Less(i, j int) bool { return g[i].MediaType < g[j].Media
 
 // GenSerializer represents a single serializer for a particular media type
 type GenSerializer struct {
+	AppName        string // Application name
 	ReceiverName   string
-	AppName        string
-	Name           string
-	MediaType      string
-	Implementation string
+	Name           string   // Name of the Producer/Consumer (e.g. json, yaml, txt, bin)
+	MediaType      string   // mime
+	Implementation string   // func implementing the Producer/Consumer
+	Parameters     []string // parameters supported by this serializer
 }
 
 // GenSecurityScheme represents a security scheme for code generation

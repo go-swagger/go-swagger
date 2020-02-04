@@ -152,7 +152,7 @@ var (
 	warning     []string
 )
 
-func init() {
+func initSchemaValidationTest() {
 	testedModels = make([]*modelFixture, 0, 50)
 	noLines = []string{}
 	todo = []string{`TODO`}
@@ -206,6 +206,9 @@ func initModelFixtures() {
 
 	// allOf marshallers
 	initFixture2071()
+
+	// x-omitempty
+	initFixture2116()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -314,15 +317,10 @@ func TestMoreModelValidations(t *testing.T) {
 				// workaround race condition with underlying pkg: go-openapi/spec works with a global cache
 				// which does not support concurrent use for different specs.
 				//modelTestMutex.Lock()
-				specDoc, err := loads.Spec(fixtureSpec)
-				if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-					//modelTestMutex.Unlock()
-					t.FailNow()
-					return
-				}
 				opts := fixtureRun.FixtureOpts
+				opts.Spec = fixtureSpec
 				// this is the expanded or flattened spec
-				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
+				newSpecDoc, er0 := opts.validateAndFlattenSpec()
 				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
 					//modelTestMutex.Unlock()
 					t.FailNow()
@@ -338,7 +336,8 @@ func TestMoreModelValidations(t *testing.T) {
 						// please do not inject fixtures with case conflicts on defs...
 						// this one is just easier to retrieve model back from file names when capturing
 						// the generated code.
-						if strings.EqualFold(def, k) {
+						mangled := swag.ToJSONName(def)
+						if strings.EqualFold(mangled, k) {
 							schema = &s
 							definitionName = def
 							break

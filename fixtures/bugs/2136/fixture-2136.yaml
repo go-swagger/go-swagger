@@ -1,0 +1,265 @@
+swagger: "2.0"
+info:
+  description: Test
+  title: Test
+  version: "0.0.1"
+basePath: /v1
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /getMap:
+    get:
+      parameters:
+        - name: b1
+          in: query
+          type: string
+          format: byte
+        - name: b2
+          in: query
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+              format: byte
+        - name: b3
+          in: query
+          type: array
+          items:
+            type: array
+            maxItems: 10
+            items:
+              type: string
+              format: byte
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/b64Map"
+
+  /getOpeMap:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+              format: byte
+    put:
+      parameters:
+        - name: a3
+          in: body
+          schema:
+            type: array
+            items:
+              type: array
+              maxItems: 10
+              items:
+                type: string
+                format: byte
+      responses:
+        204:
+          description: OK
+
+  /getNestedMap:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                z:
+                  type: string
+                  format: byte
+                zz:
+                  type: string
+                  format: uuid
+              additionalProperties:
+                type: object
+                properties:
+                  x:
+                    type: string
+                    format: byte
+                  xx:
+                    type: string
+                    format: uuid
+
+    put:
+      parameters:
+        - name: m1
+          in: body
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: string
+                format: byte
+      responses:
+        204:
+          description: OK
+
+  /getOpeMapObject:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/b64Alias'
+
+  /getArray:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/b64Array"
+
+    put:
+      parameters:
+        - name: a4
+          in: body
+          required: true
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: array
+                maxItems: 10
+                items:
+                  type: string
+                  format: byte
+      responses:
+        204:
+          description: OK
+
+  /getOpeArray:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/b64Object"
+
+  /getNestedArray:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: array
+              maxItems: 10
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+                  format: byte
+
+  /getNestedModelArray:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/nestedModelArray'
+
+    put:
+      parameters:
+        - name: m5
+          in: body
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              maxItems: 10
+              items:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                    format: byte
+      responses:
+        204:
+          description: OK
+
+definitions:
+  nestedModelArray:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        minItems: 1
+        items:
+          type: string
+          format: byte
+
+  b64Alias:
+    type: string
+    format: byte
+
+  b64Object:
+    type: object
+    properties:
+      x:
+        type: string
+        format: byte
+
+  b64ObjectWithValidations:
+    type: object
+    properties:
+      x:
+        type: string
+        format: byte
+        maxLength: 100
+      z:
+        type: string
+        format: uuid
+
+  b64Map:
+    type: object
+    properties:
+      a:
+        additionalProperties:
+          type: string
+          format: byte
+
+  b64MapWithValidations:
+    type: object
+    properties:
+      a:
+        additionalProperties:
+          type: string
+          format: byte
+          minLength: 10
+
+  b64Array:
+    type: array
+    items:
+      type: string
+      format: byte
+
+  b64ArrayWithValidations:
+    type: array
+    maxItems: 10
+    items:
+      type: string
+      format: byte

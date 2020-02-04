@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/generated/models"
+	"github.com/go-swagger/go-swagger/examples/generated/models"
 )
 
 // NewCreateUsersWithArrayInputParams creates a new CreateUsersWithArrayInputParams object

@@ -21,10 +21,8 @@ import (
 
   strfmt "github.com/go-openapi/strfmt"
 
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object

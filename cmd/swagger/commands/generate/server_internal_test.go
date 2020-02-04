@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-swagger/go-swagger/generator"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +17,6 @@ func TestDeprecated(t *testing.T) {
 	s := Server{
 		WithContext: true,
 	}
-	_, err := s.getOpts()
-	assert.NoError(t, err)
+	s.apply(new(generator.GenOpts))
 	assert.Contains(t, buf.String(), "warning")
 }

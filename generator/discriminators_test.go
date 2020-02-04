@@ -11,10 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// func init() {
-// 	loads.AddLoader(fmts.YAMLMatcher, fmts.YAMLDoc)
-// }
-
 func TestBuildDiscriminatorMap(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	if assert.NoError(t, err) {
@@ -23,16 +19,6 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 		assert.Len(t, di.Discriminators["#/definitions/Pet"].Children, 2)
 		assert.Len(t, di.Discriminated, 2)
 	}
-}
-
-func opts() *GenOpts {
-	var opts GenOpts
-	opts.IncludeValidator = true
-	opts.IncludeModel = true
-	if err := opts.EnsureDefaults(); err != nil {
-		panic(err)
-	}
-	return &opts
 }
 
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {

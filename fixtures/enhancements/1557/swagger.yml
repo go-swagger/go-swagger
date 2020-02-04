@@ -10,8 +10,10 @@ paths:
       summary: Accepts and returns a pdf file
       consumes:
         - application/pdf
+        - application/dummy
       produces:
         - application/pdf
+        - application/dummy
       responses:
         200:
           description: A pdf file

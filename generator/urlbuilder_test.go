@@ -276,3 +276,41 @@ func testArrayQueryParams(t testing.TB, filePath, basePath string) {
 		}
 	}
 }
+
+func TestURLBuilder_Issue2167(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverUrlbuilder").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("get_test_test_name_urlbuilder.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertRegexpInCode(t, `(?m)^\tMyPathName\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestRegion\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tMyQueryCount\s+\*int64$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestLimit\s+\*int64$`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestURLBuilder_Issue2167_Error(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger-error.yml")
+	if assert.NoError(err) {
+		_, err := gen.MakeOperation()
+		if assert.Error(err) {
+			assert.Equal(`GET /test/{test_name}, parameter "test_name": "x-go-name" field must be a string, not a []interface {}`, err.Error())
+		}
+	}
+}

@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
@@ -33,6 +33,7 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -45,61 +46,59 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		JSONProducer:        runtime.JSONProducer(),
 		XMLProducer:         runtime.XMLProducer(),
 		PetAddPetHandler: pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetAddPet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 		}),
 		UserCreateUserHandler: user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
 		}),
 		UserCreateUsersWithArrayInputHandler: user.CreateUsersWithArrayInputHandlerFunc(func(params user.CreateUsersWithArrayInputParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUsersWithArrayInput has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUsersWithArrayInput has not yet been implemented")
 		}),
 		UserCreateUsersWithListInputHandler: user.CreateUsersWithListInputHandlerFunc(func(params user.CreateUsersWithListInputParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUsersWithListInput has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUsersWithListInput has not yet been implemented")
 		}),
 		StoreDeleteOrderHandler: store.DeleteOrderHandlerFunc(func(params store.DeleteOrderParams) middleware.Responder {
-			return middleware.NotImplemented("operation StoreDeleteOrder has not yet been implemented")
+			return middleware.NotImplemented("operation store.DeleteOrder has not yet been implemented")
 		}),
 		PetDeletePetHandler: pet.DeletePetHandlerFunc(func(params pet.DeletePetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetDeletePet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.DeletePet has not yet been implemented")
 		}),
 		UserDeleteUserHandler: user.DeleteUserHandlerFunc(func(params user.DeleteUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserDeleteUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.DeleteUser has not yet been implemented")
 		}),
 		PetFindPetsByStatusHandler: pet.FindPetsByStatusHandlerFunc(func(params pet.FindPetsByStatusParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetFindPetsByStatus has not yet been implemented")
+			return middleware.NotImplemented("operation pet.FindPetsByStatus has not yet been implemented")
 		}),
 		PetFindPetsByTagsHandler: pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetFindPetsByTags has not yet been implemented")
+			return middleware.NotImplemented("operation pet.FindPetsByTags has not yet been implemented")
 		}),
 		StoreGetOrderByIDHandler: store.GetOrderByIDHandlerFunc(func(params store.GetOrderByIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation StoreGetOrderByID has not yet been implemented")
+			return middleware.NotImplemented("operation store.GetOrderByID has not yet been implemented")
 		}),
 		PetGetPetByIDHandler: pet.GetPetByIDHandlerFunc(func(params pet.GetPetByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetGetPetByID has not yet been implemented")
+			return middleware.NotImplemented("operation pet.GetPetByID has not yet been implemented")
 		}),
 		UserGetUserByNameHandler: user.GetUserByNameHandlerFunc(func(params user.GetUserByNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserGetUserByName has not yet been implemented")
+			return middleware.NotImplemented("operation user.GetUserByName has not yet been implemented")
 		}),
 		UserLoginUserHandler: user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserLoginUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		}),
 		UserLogoutUserHandler: user.LogoutUserHandlerFunc(func(params user.LogoutUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserLogoutUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.LogoutUser has not yet been implemented")
 		}),
 		StorePlaceOrderHandler: store.PlaceOrderHandlerFunc(func(params store.PlaceOrderParams) middleware.Responder {
-			return middleware.NotImplemented("operation StorePlaceOrder has not yet been implemented")
+			return middleware.NotImplemented("operation store.PlaceOrder has not yet been implemented")
 		}),
 		PetUpdatePetHandler: pet.UpdatePetHandlerFunc(func(params pet.UpdatePetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetUpdatePet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.UpdatePet has not yet been implemented")
 		}),
 		PetUpdatePetWithFormHandler: pet.UpdatePetWithFormHandlerFunc(func(params pet.UpdatePetWithFormParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetUpdatePetWithForm has not yet been implemented")
+			return middleware.NotImplemented("operation pet.UpdatePetWithForm has not yet been implemented")
 		}),
 		UserUpdateUserHandler: user.UpdateUserHandlerFunc(func(params user.UpdateUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserUpdateUser has not yet been implemented")
-		}),
-
-		// Applies when the "api_key" header is set
+			return middleware.NotImplemented("operation user.UpdateUser has not yet been implemented")
+		}), // Applies when the "api_key" header is set
 		APIKeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
 		},
@@ -138,17 +137,20 @@ type PetstoreAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
-	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
+	// UrlformConsumer registers a consumer for the following mime types:
+	//   - application/x-www-form-urlencoded
 	UrlformConsumer runtime.Consumer
-	// XMLConsumer registers a consumer for a "application/xml" mime type
+	// XMLConsumer registers a consumer for the following mime types:
+	//   - application/xml
 	XMLConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
-	// XMLProducer registers a producer for a "application/xml" mime type
+	// XMLProducer registers a producer for the following mime types:
+	//   - application/xml
 	XMLProducer runtime.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
@@ -198,10 +200,13 @@ type PetstoreAPI struct {
 	PetUpdatePetWithFormHandler pet.UpdatePetWithFormHandler
 	// UserUpdateUserHandler sets the operation handler for the update user operation
 	UserUpdateUserHandler user.UpdateUserHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -282,75 +287,75 @@ func (o *PetstoreAPI) Validate() error {
 	}
 
 	if o.PetAddPetHandler == nil {
-		unregistered = append(unregistered, "pet.AddPetHandler")
+		unregistered = append(unregistered, "Pet.AddPetHandler")
 	}
 
 	if o.UserCreateUserHandler == nil {
-		unregistered = append(unregistered, "user.CreateUserHandler")
+		unregistered = append(unregistered, "User.CreateUserHandler")
 	}
 
 	if o.UserCreateUsersWithArrayInputHandler == nil {
-		unregistered = append(unregistered, "user.CreateUsersWithArrayInputHandler")
+		unregistered = append(unregistered, "User.CreateUsersWithArrayInputHandler")
 	}
 
 	if o.UserCreateUsersWithListInputHandler == nil {
-		unregistered = append(unregistered, "user.CreateUsersWithListInputHandler")
+		unregistered = append(unregistered, "User.CreateUsersWithListInputHandler")
 	}
 
 	if o.StoreDeleteOrderHandler == nil {
-		unregistered = append(unregistered, "store.DeleteOrderHandler")
+		unregistered = append(unregistered, "Store.DeleteOrderHandler")
 	}
 
 	if o.PetDeletePetHandler == nil {
-		unregistered = append(unregistered, "pet.DeletePetHandler")
+		unregistered = append(unregistered, "Pet.DeletePetHandler")
 	}
 
 	if o.UserDeleteUserHandler == nil {
-		unregistered = append(unregistered, "user.DeleteUserHandler")
+		unregistered = append(unregistered, "User.DeleteUserHandler")
 	}
 
 	if o.PetFindPetsByStatusHandler == nil {
-		unregistered = append(unregistered, "pet.FindPetsByStatusHandler")
+		unregistered = append(unregistered, "Pet.FindPetsByStatusHandler")
 	}
 
 	if o.PetFindPetsByTagsHandler == nil {
-		unregistered = append(unregistered, "pet.FindPetsByTagsHandler")
+		unregistered = append(unregistered, "Pet.FindPetsByTagsHandler")
 	}
 
 	if o.StoreGetOrderByIDHandler == nil {
-		unregistered = append(unregistered, "store.GetOrderByIDHandler")
+		unregistered = append(unregistered, "Store.GetOrderByIDHandler")
 	}
 
 	if o.PetGetPetByIDHandler == nil {
-		unregistered = append(unregistered, "pet.GetPetByIDHandler")
+		unregistered = append(unregistered, "Pet.GetPetByIDHandler")
 	}
 
 	if o.UserGetUserByNameHandler == nil {
-		unregistered = append(unregistered, "user.GetUserByNameHandler")
+		unregistered = append(unregistered, "User.GetUserByNameHandler")
 	}
 
 	if o.UserLoginUserHandler == nil {
-		unregistered = append(unregistered, "user.LoginUserHandler")
+		unregistered = append(unregistered, "User.LoginUserHandler")
 	}
 
 	if o.UserLogoutUserHandler == nil {
-		unregistered = append(unregistered, "user.LogoutUserHandler")
+		unregistered = append(unregistered, "User.LogoutUserHandler")
 	}
 
 	if o.StorePlaceOrderHandler == nil {
-		unregistered = append(unregistered, "store.PlaceOrderHandler")
+		unregistered = append(unregistered, "Store.PlaceOrderHandler")
 	}
 
 	if o.PetUpdatePetHandler == nil {
-		unregistered = append(unregistered, "pet.UpdatePetHandler")
+		unregistered = append(unregistered, "Pet.UpdatePetHandler")
 	}
 
 	if o.PetUpdatePetWithFormHandler == nil {
-		unregistered = append(unregistered, "pet.UpdatePetWithFormHandler")
+		unregistered = append(unregistered, "Pet.UpdatePetWithFormHandler")
 	}
 
 	if o.UserUpdateUserHandler == nil {
-		unregistered = append(unregistered, "user.UpdateUserHandler")
+		unregistered = append(unregistered, "User.UpdateUserHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -394,22 +399,18 @@ func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		case "application/x-www-form-urlencoded":
 			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -417,22 +418,18 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -440,7 +437,6 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

@@ -7,12 +7,11 @@ package customers
 
 import (
 	"github.com/go-openapi/runtime"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 )
 
 // New creates a new customers API client.
-func New(transport runtime.ClientTransport, formats strfmt.Registry) *Client {
+func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientService {
 	return &Client{transport: transport, formats: formats}
 }
 
@@ -24,8 +23,17 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientService is the interface for Client methods
+type ClientService interface {
+	Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter) (*CreateCreated, error)
+
+	GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetIDOK, error)
+
+	SetTransport(transport runtime.ClientTransport)
+}
+
 /*
-Create creates a new customer to track
+  Create creates a new customer to track
 */
 func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter) (*CreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -59,7 +67,7 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-GetID gets a customer Id given an s s n
+  GetID gets a customer Id given an s s n
 */
 func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetIDOK, error) {
 	// TODO: Validate the params before sending

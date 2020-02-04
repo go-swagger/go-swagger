@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
@@ -31,6 +31,7 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
 		ServeError:          errors.ServeError,
@@ -40,19 +41,17 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		JSONConsumer:        runtime.JSONConsumer(),
 		JSONProducer:        runtime.JSONProducer(),
 		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TodosAddOne has not yet been implemented")
+			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 		}),
 		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TodosDestroyOne has not yet been implemented")
+			return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
 		}),
 		TodosFindHandler: todos.FindHandlerFunc(func(params todos.FindParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TodosFind has not yet been implemented")
+			return middleware.NotImplemented("operation todos.Find has not yet been implemented")
 		}),
 		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation TodosUpdateOne has not yet been implemented")
-		}),
-
-		// Applies when the "x-todolist-token" header is set
+			return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
+		}), // Applies when the "x-todolist-token" header is set
 		KeyAuth: func(token string) (interface{}, error) {
 			return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
 		},
@@ -62,7 +61,10 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 	}
 }
 
-/*TodoListAPI the todo list API */
+/*TodoListAPI This is a simple todo list API
+illustrating go-swagger codegen
+capabilities.
+*/
 type TodoListAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
@@ -83,11 +85,11 @@ type TodoListAPI struct {
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
-
-	// JSONConsumer registers a consumer for a "application/io.swagger.examples.todo-list.v1+json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/io.swagger.examples.todo-list.v1+json
 	JSONConsumer runtime.Consumer
-
-	// JSONProducer registers a producer for a "application/io.swagger.examples.todo-list.v1+json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/io.swagger.examples.todo-list.v1+json
 	JSONProducer runtime.Producer
 
 	// KeyAuth registers a function that takes a token and returns a principal
@@ -105,10 +107,13 @@ type TodoListAPI struct {
 	TodosFindHandler todos.FindHandler
 	// TodosUpdateOneHandler sets the operation handler for the update one operation
 	TodosUpdateOneHandler todos.UpdateOneHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -173,19 +178,19 @@ func (o *TodoListAPI) Validate() error {
 	}
 
 	if o.TodosAddOneHandler == nil {
-		unregistered = append(unregistered, "todos.AddOneHandler")
+		unregistered = append(unregistered, "Todos.AddOneHandler")
 	}
 
 	if o.TodosDestroyOneHandler == nil {
-		unregistered = append(unregistered, "todos.DestroyOneHandler")
+		unregistered = append(unregistered, "Todos.DestroyOneHandler")
 	}
 
 	if o.TodosFindHandler == nil {
-		unregistered = append(unregistered, "todos.FindHandler")
+		unregistered = append(unregistered, "Todos.FindHandler")
 	}
 
 	if o.TodosUpdateOneHandler == nil {
-		unregistered = append(unregistered, "todos.UpdateOneHandler")
+		unregistered = append(unregistered, "Todos.UpdateOneHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -225,16 +230,14 @@ func (o *TodoListAPI) Authorizer() runtime.Authorizer {
 
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/io.swagger.examples.todo-list.v1+json":
 			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -242,19 +245,16 @@ func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/io.swagger.examples.todo-list.v1+json":
 			result["application/io.swagger.examples.todo-list.v1+json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -262,7 +262,6 @@ func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path

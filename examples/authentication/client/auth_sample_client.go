@@ -6,10 +6,10 @@ package client
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/authentication/client/customers"
 )
@@ -56,9 +56,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AuthSample
 
 	cli := new(AuthSample)
 	cli.Transport = transport
-
 	cli.Customers = customers.New(transport, formats)
-
 	return cli
 }
 
@@ -103,7 +101,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // AuthSample is a client for auth sample
 type AuthSample struct {
-	Customers *customers.Client
+	Customers customers.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -111,7 +109,5 @@ type AuthSample struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *AuthSample) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
 	c.Customers.SetTransport(transport)
-
 }

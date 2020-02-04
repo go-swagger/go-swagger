@@ -1,7 +1,23 @@
 swagger: '2.0'
+basePath: /
+host: localhost
 info:
   version: 0.1.0
   title: Simple To Do List API
+  description: |
+    This is a simple todo list API
+    illustrating go-swagger codegen
+    capabilities.
+  termsOfService: |
+    There are actually none.
+    This is for demonstration purpose only.
+  license:
+    name: 'Apache 2.0'
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: go-openapi maintainers
+    email: nowhere@example.com
+    url: https://github.com/go-openapi
 securityDefinitions:
   key:
     type: apiKey

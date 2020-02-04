@@ -14,6 +14,76 @@
 
 package generator
 
+func initFixture2116() {
+	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("case1_fail_omitempty_false_not_hoisted_by_ref.go", []string{
+		"Body *ObjectWithOmitemptyFalse `json:\"Body\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case2_fail_omitempty_false_not_overridden_by_ref_sibling.go", []string{
+		"Body *ObjectWithOmitemptyTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case3_pass_object_nullable_false_hoisted_by_ref.go", []string{
+		"Body ObjectWithNullableFalse `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case4_pass_object_nullable_false_overriden_by_ref_sibling.go", []string{
+		"Body *ObjectWithNullableTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_default.go", []string{
+		"type ArrayWithDefault []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_no_omit_empty.go", []string{
+		"type ArrayWithNoOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable.go", []string{
+		"type ArrayWithNullable []string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable_items.go", []string{
+		"type ArrayWithNullableItems []*string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty.go", []string{
+		"type ArrayWithOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_arrays.go", []string{
+		"Array0 ArrayWithDefault `json:\"array0,omitempty\"`",
+		"Array1 []string `json:\"array1\"`",
+		"Array11 []string `json:\"array11,omitempty\"`",
+		"Array12 []string `json:\"array12\"`",
+		"Array2 ArrayWithOmitEmpty `json:\"array2,omitempty\"`",
+		"Array3 ArrayWithNoOmitEmpty `json:\"array3\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty_items.go", []string{
+		"type ArrayWithOmitEmptyItems []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+}
+
 func initFixture2071() {
 	f := newModelFixture("../fixtures/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -2399,18 +2469,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile *AliasedNullableFile `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile *AliasedTypeNullableFile `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		todo,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -2426,18 +2495,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile io.ReadCloser `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile io.ReadCloser `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		noLines,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9303,10 +9371,12 @@ func initFixture1548() {
 		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
 		`	return (strfmt.Base64(m)).MarshalJSON(`,
 		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{"TODO",
+			"validate.FormatOf(",
+			`return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9329,11 +9399,14 @@ func initFixture1548() {
 	thisRun.AddExpectations("base64_array.go", []string{
 		`type Base64Array []strfmt.Base64`,
 		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
-		`	for i := 0; i < len(m); i++ {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	for i := 0; i < len(m); i++ {`,
+			`		return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9343,13 +9416,14 @@ func initFixture1548() {
 		`type Base64Model struct {`,
 		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
 		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateProp1(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-		`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.Prop1) {`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	if err := m.validateProp1(formats); err != nil {`,
+			`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
+		},
 		// output in log
 		noLines,
 		noLines)
