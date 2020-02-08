@@ -8,7 +8,7 @@ package user
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // CreateUsersWithListInputHandlerFunc turns a function with the right signature into a create users with list input handler

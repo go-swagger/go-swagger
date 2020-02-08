@@ -8,7 +8,7 @@ package user
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // LoginUserHandlerFunc turns a function with the right signature into a login user handler

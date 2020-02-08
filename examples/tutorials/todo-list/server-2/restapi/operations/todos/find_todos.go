@@ -8,7 +8,7 @@ package todos
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // FindTodosHandlerFunc turns a function with the right signature into a find todos handler

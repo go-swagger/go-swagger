@@ -96,12 +96,12 @@ package {{ .Package }}
 import (
   "fmt"
   "errors"
+  "net/url"
   golangswaggerpaths "path"
   "strings"
-  "net/url"
 
-  "github.com/go-openapi/swag"
   "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
 )
 
 // {{ pascalize .Name }}URL generates an URL for the {{ humanize .Name }} operation
