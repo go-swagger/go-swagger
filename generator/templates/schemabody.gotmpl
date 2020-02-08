@@ -50,7 +50,7 @@
     {{- template "propertyValidationDocString" .AdditionalItems}}
     {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
-} 
+}
 {{- end }}
 {{ define "subTypeBody" }}struct {
   {{ range .AllOf }}

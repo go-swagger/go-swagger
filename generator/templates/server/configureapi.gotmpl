@@ -8,8 +8,9 @@ package {{ .APIPackage }}
 import (
   "context"
   "crypto/tls"
-  "net/http"
+  "io"
   "log"
+  "net/http"
 
   "github.com/go-openapi/errors"
   "github.com/go-openapi/runtime"

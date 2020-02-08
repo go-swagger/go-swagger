@@ -7,11 +7,12 @@
 package main
 
 import (
+  "fmt"
   "log"
-  "os"
   "net/http"
+  "os"
 
-  loads "github.com/go-openapi/loads"
+  "github.com/go-openapi/loads"
 	{{ if .UseGoStructFlags }}flags "github.com/jessevdk/go-flags"
   {{ end -}}
   {{ if .UsePFlags }}flag "github.com/spf13/pflag"
@@ -67,7 +68,7 @@ func main() {
   server.SetAPI(api)
     {{- else }}
 
- 	api :={{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
+ 	api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	// get server with flag values filled out
 	server = {{ .APIPackage }}.NewServer(api)
     {{- end }}
@@ -168,7 +169,7 @@ func main() {
   api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
   server.SetAPI(api)
     {{- else }}
- 	api :={{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
+ 	api := {{.Package}}.New{{ pascalize .Name }}API(swaggerSpec)
 	// get server with flag values filled out
 	server = {{ .APIPackage }}.NewServer(api)
     {{- end }}

@@ -8,7 +8,7 @@ package tasks
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetTaskDetailsHandlerFunc turns a function with the right signature into a get task details handler

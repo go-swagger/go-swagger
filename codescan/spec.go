@@ -202,9 +202,7 @@ func (s *specBuilder) buildModels() error {
 		}
 	}
 
-	s.joinExtraModels()
-
-	return nil
+	return s.joinExtraModels()
 }
 
 func (s *specBuilder) joinExtraModels() error {

@@ -10,17 +10,14 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the generate command
 
 import (
-  "context"
   "net/http"
-  "strings"
-  "fmt"
 
-  errors "github.com/go-openapi/errors"
-  middleware "github.com/go-openapi/runtime/middleware"
-  security "github.com/go-openapi/runtime/security"
-  strfmt "github.com/go-openapi/strfmt"
-  validate "github.com/go-openapi/validate"
-  swag "github.com/go-openapi/swag"
+  "github.com/go-openapi/errors"
+  "github.com/go-openapi/runtime/middleware"
+  "github.com/go-openapi/runtime/security"
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/validate"
 
   {{ imports .DefaultImports }}
   {{ imports .Imports }}

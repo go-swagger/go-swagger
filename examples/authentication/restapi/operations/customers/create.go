@@ -8,7 +8,7 @@ package customers
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/authentication/models"
 )

@@ -35,6 +35,7 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.4.0
 	github.com/toqueteos/webbrowser v1.2.0
+	github.com/tylerb/graceful v1.2.15
 	go.mongodb.org/mongo-driver v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20200128174031-69ecbb4d6d5d // indirect
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
