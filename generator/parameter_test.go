@@ -1213,7 +1213,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 		"1": { // fixture index
 			"serverParameter": { // executed template
 				// expected code lines
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`NotAnOption1 *strfmt.DateTime`,
 				`NotAnOption2 *strfmt.UUID`,
 				`NotAnOption3 *models.ContainerConfig`,
@@ -1258,7 +1258,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`IsAnOption2 [][]strfmt.UUID`,
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`IsAnOptionalHeader [][]strfmt.UUID`,
@@ -1336,7 +1336,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`IsAnOption2 [][]strfmt.UUID`,
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`NotAnOption1 [][]strfmt.DateTime`,

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-openapi/spec"
 	"log"
 	"net"
 	"net/http"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/gorilla/handlers"
 	"github.com/toqueteos/webbrowser"

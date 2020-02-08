@@ -8,7 +8,7 @@ package pet
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PetUploadImageHandlerFunc turns a function with the right signature into a pet upload image handler
