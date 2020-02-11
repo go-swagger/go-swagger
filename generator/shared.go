@@ -780,10 +780,9 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 
 	for method, pathItem := range specDoc.Operations() {
 		for path, operation := range pathItem {
-			// nm := ensureUniqueName(operation.ID, method, path, operations)
 			vv := *operation
 			oprefs = append(oprefs, opRef{
-				Key:    swag.ToGoName(strings.ToLower(method) + " " + path),
+				Key:    swag.ToGoName(strings.ToLower(method) + " " + strings.Title(path)),
 				Method: method,
 				Path:   path,
 				ID:     vv.ID,

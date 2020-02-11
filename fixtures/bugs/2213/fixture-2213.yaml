@@ -1,0 +1,15 @@
+swagger: "2.0"
+info:
+  version: "1"
+  title: a-foo
+paths:
+  /foo:
+    get:
+      responses:
+        200:
+          description: foo
+  /a-foo:
+    get:
+      responses:
+        200:
+          description: a-foo
