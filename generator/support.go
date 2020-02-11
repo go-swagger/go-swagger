@@ -256,9 +256,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("planning operations")
 
 	genOps := make(GenOperations, 0, len(a.Operations))
-	for on, opp := range a.Operations {
+	for operationName, opp := range a.Operations {
 		o := opp.Op
-		o.ID = on
+		o.ID = operationName
 
 		bldr := codeGenOpBuilder{
 			ModelsPackage:    a.ModelsPackage,
@@ -271,7 +271,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Analyzed:         a.Analyzed,
 			BasePath:         a.SpecDoc.BasePath(),
 			GenOpts:          a.GenOpts,
-			Name:             on, // TODO: change operation name to something safe
+			Name:             operationName,
 			Operation:        *o,
 			Method:           opp.Method,
 			Path:             opp.Path,
