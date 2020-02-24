@@ -405,7 +405,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterConsumer(mediaType st
   {{.ReceiverName}}.customConsumers[mediaType] = consumer
 }
 
-// RegisterProducer allows you to add (or override) a producer for a media type.
+// RegisterProducer allowsAA you to add (or override) a producer for a media type.
 func ({{.ReceiverName}} *{{ pascalize .Name }}API) RegisterProducer(mediaType string, producer runtime.Producer) {
   {{.ReceiverName}}.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	if h, ok := {{.ReceiverName}}.handlers[method][path]; ok {
+		{{.ReceiverName}}.handlers[method][path] = builder(h)
+	}
 }
