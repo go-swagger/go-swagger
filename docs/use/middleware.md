@@ -23,7 +23,7 @@ specification at that path.
 
 ### Add middleware
 
-The generated server allows for 2 extension points to inject middleware in its middleware chain. These have to do with
+The generated server allows for 3 extension points to inject middleware in its middleware chain. These have to do with
 the lifecycle of a request. You can find those hooks in the configure_xxx_api.go file.
 
 The first one is to add middleware all the way to the top of the middleware stack. To do this you add them in the
@@ -43,6 +43,14 @@ to this point by editing the `setupMiddlewares` method in configure_xxx_api.go
 ```go
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
+}
+```
+
+The third point allows you to set the middleware for existing handler by its route and HTTP method. It can be done in the `configureAPI` function by calling `api.AddMiddlewareFor` method.
+
+```go
+func configureAPI(api *operations.SomeAPI) http.Handler {
+    api.AddMiddlewareFor('GET', '/', customMiddlewareFunc)
 }
 ```
 
@@ -113,3 +121,19 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 ```
 
 And with this you've added rate limiting to your application.
+
+#### Add middleware to certain routes
+
+You can add standard `net/http` middleware to certain routes.
+
+```go
+func myMiddleware(handler http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+    		// do some middleware logic here
+    		handler.ServeHTTP(w, r)
+    	})
+}
+
+...
+api.AddMiddlewareFor("POST", "/example", myMiddleware)
+```
