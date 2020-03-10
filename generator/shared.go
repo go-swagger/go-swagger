@@ -249,6 +249,7 @@ type GenOpts struct {
 	DefaultScheme          string
 	DefaultProduces        string
 	DefaultConsumes        string
+	WithXML                bool
 	TemplateDir            string
 	Template               string
 	RegenerateConfigureAPI bool
