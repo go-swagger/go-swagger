@@ -10,17 +10,18 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-openapi/analysis v0.19.10
-	github.com/go-openapi/errors v0.19.3
+	github.com/go-openapi/errors v0.19.4
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.19.5
-	github.com/go-openapi/runtime v0.19.11
-	github.com/go-openapi/spec v0.19.6
-	github.com/go-openapi/strfmt v0.19.4
-	github.com/go-openapi/swag v0.19.7
-	github.com/go-openapi/validate v0.19.6
+	github.com/go-openapi/runtime v0.19.12
+	github.com/go-openapi/spec v0.19.7
+	github.com/go-openapi/strfmt v0.19.5
+	github.com/go-openapi/swag v0.19.8
+	github.com/go-openapi/validate v0.19.7
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
-	github.com/golang/protobuf v1.3.4 // indirect
+	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/handlers v1.4.2
 	github.com/jessevdk/go-flags v1.4.0
@@ -37,15 +38,16 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/toqueteos/webbrowser v1.2.0
 	github.com/tylerb/graceful v1.2.15
-	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
+	go.mongodb.org/mongo-driver v1.3.1 // indirect
+	golang.org/x/crypto v0.0.0-20200311171314-f7b00557c8c4 // indirect
 	golang.org/x/mod v0.2.0 // indirect
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
-	golang.org/x/tools v0.0.0-20200228135638-5c7c66ced534
+	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
+	golang.org/x/tools v0.0.0-20200313205530-4303120df7d8
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
-	gopkg.in/ini.v1 v1.52.0 // indirect
+	gopkg.in/ini.v1 v1.54.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.4.1 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 )
