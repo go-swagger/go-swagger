@@ -31,6 +31,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestUniqueOperationNameMangling(t *testing.T) {
+	doc, err := loads.Spec("../fixtures/bugs/2213/fixture-2213.yaml")
+	require.NoError(t, err)
+	analyzed := analysis.New(doc.Spec())
+	ops := gatherOperations(analyzed, nil)
+	assert.Contains(t, ops, "GetFoo")
+	assert.Contains(t, ops, "GetAFoo")
+}
+
 func TestUniqueOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
 	require.NoError(t, err)
