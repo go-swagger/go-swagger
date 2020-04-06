@@ -227,6 +227,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		IncludeValidator:           opts.IncludeValidator,
 		IncludeModel:               opts.IncludeModel,
 		StrictAdditionalProperties: opts.StrictAdditionalProperties,
+		WithXML:                    opts.WithXML,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
@@ -404,6 +405,7 @@ type schemaGenContext struct {
 	IncludeValidator           bool
 	IncludeModel               bool
 	StrictAdditionalProperties bool
+	WithXML                    bool
 	Index                      int
 
 	Path         string
@@ -1575,16 +1577,21 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 	return nil
 }
 
-func (sg *schemaGenContext) buildXMLName() error {
-	if sg.Schema.XML == nil {
-		return nil
-	}
-	sg.GenSchema.XMLName = sg.Name
+func (sg *schemaGenContext) buildXMLNameWithTags() error {
+	if sg.WithXML || sg.Schema.XML != nil {
+		sg.GenSchema.XMLName = sg.Name
 
-	if sg.Schema.XML.Name != "" {
-		sg.GenSchema.XMLName = sg.Schema.XML.Name
-		if sg.Schema.XML.Attribute {
-			sg.GenSchema.XMLName += ",attr"
+		if sg.Schema.XML != nil {
+			if sg.Schema.XML.Name != "" {
+				sg.GenSchema.XMLName = sg.Schema.XML.Name
+			}
+			if sg.Schema.XML.Attribute {
+				sg.GenSchema.XMLName += ",attr"
+			}
+		}
+
+		if !sg.GenSchema.Required && sg.GenSchema.IsEmptyOmitted {
+			sg.GenSchema.XMLName += ",omitempty"
 		}
 	}
 	return nil
@@ -1934,7 +1941,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	if err := sg.buildXMLName(); err != nil {
+	if err := sg.buildXMLNameWithTags(); err != nil {
 		return err
 	}
 

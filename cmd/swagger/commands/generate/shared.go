@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
@@ -94,6 +95,9 @@ type mediaOptions struct {
 func (m mediaOptions) apply(opts *generator.GenOpts) {
 	opts.DefaultProduces = m.DefaultProduces
 	opts.DefaultConsumes = m.DefaultConsumes
+
+	const xmlIdentifier = "xml"
+	opts.WithXML = strings.Contains(opts.DefaultProduces, xmlIdentifier) || strings.Contains(opts.DefaultConsumes, xmlIdentifier)
 }
 
 // WithShared adds the shared options group

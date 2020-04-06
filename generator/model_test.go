@@ -2595,3 +2595,62 @@ func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 		}
 	}
 }
+
+func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/xml-model.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "XmlWithAttribute"
+		opts := opts()
+		opts.WithXML = true
+
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("xml_with_attribute.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Author *string `json:\"author\" xml:\"author\"`", res)
+					assertInCode(t, "Children []*XMLChild `json:\"children\" xml:\"children\"`", res)
+					assertInCode(t, "ID int64 `json:\"id,omitempty\" xml:\"id,attr,omitempty\"`", res)
+					assertInCode(t, "IsPublished *bool `json:\"isPublished\" xml:\"published,attr\"`", res)
+					assertInCode(t, "SingleChild *XMLChild `json:\"singleChild,omitempty\" xml:\"singleChild,omitempty\"`", res)
+					assertInCode(t, "Title string `json:\"title,omitempty\" xml:\"xml-title,omitempty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/xml-model.yml")
+	if assert.NoError(t, err) {
+		definitions := specDoc.Spec().Definitions
+		k := "XmlWithAttribute"
+		opts := opts()
+
+		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+		if assert.NoError(t, err) {
+			buf := bytes.NewBuffer(nil)
+			err := templates.MustGet("model").Execute(buf, genModel)
+			if assert.NoError(t, err) {
+				ct, err := opts.LanguageOpts.FormatContent("xml_with_attribute.go", buf.Bytes())
+				if assert.NoError(t, err) {
+					res := string(ct)
+					assertInCode(t, "Author *string `json:\"author\"`", res)
+					assertInCode(t, "Children []*XMLChild `json:\"children\"`", res)
+					assertInCode(t, "ID int64 `json:\"id,omitempty\" xml:\"id,attr,omitempty\"`", res)
+					assertInCode(t, "IsPublished *bool `json:\"isPublished\" xml:\"published,attr\"`", res)
+					assertInCode(t, "SingleChild *XMLChild `json:\"singleChild,omitempty\"`", res)
+					assertInCode(t, "Title string `json:\"title,omitempty\" xml:\"xml-title,omitempty\"`", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
