@@ -119,7 +119,7 @@ if code <= 0 {
   {{- end }}
   )
 
-{{ range .Headers }}{{ if .HasDefault -}}{{- /* carry on UnmarshalText initialization strategy */ -}}
+{{ range .Headers }}{{ if .HasDefault -}}{{- /* carry out UnmarshalText initialization strategy */ -}}
       {{ if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"")) }}{{ varname .ID}}Default.UnmarshalText([]byte({{ printf "%q" .Default }}))
       {{ else if .IsArray -}}
           {{ if or ( and .Child.IsPrimitive .Child.IsCustomFormatter ) .Child.IsArray -}}

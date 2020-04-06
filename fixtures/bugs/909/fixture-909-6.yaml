@@ -13,14 +13,17 @@ paths:
   /optional:
     get:
       parameters:
-        # Known issues with binary (IsStream: true).
-        #- name: aBinary
-        #in: query
-        #type: string
-        #format: binary
-        #required: false
-        # default for binary stream?
-        #default: 'af03f6'
+      # Known issues with binary (IsStream: true).
+      #- name: aBinary
+      #  in: query
+      #  type: string
+      #  format: binary
+      #  required: false
+      #  # default for binary stream?
+      #  default: 'af03f6'
+      - name: hasNoDefault
+        in: query
+        type: string
       - name: aByte
         in: query
         type: string
@@ -30,13 +33,13 @@ paths:
       - name: aBool
         in: query
         type: boolean
-        required: false
+        required: true
         default: true
       - name: aFloat
         in: query
         type: number
         format: float
-        required: false
+        required: true
         default: 99.99
       - name: aDouble
         in: query
@@ -200,6 +203,11 @@ paths:
         format: uuid5
         required: false
         default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
+      - name: bodyWithDefault
+        in: body
+        schema:
+          type: string
+          default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
       responses:
         200:
           description: "empty response"
@@ -324,4 +332,4 @@ paths:
               type: string
               format: uuid5
               default: '886313e1-3b8a-5372-9b90-0c9aee199e5d'
-      
+

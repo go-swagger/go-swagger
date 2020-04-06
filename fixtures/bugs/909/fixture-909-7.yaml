@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  title: fixture for issue#909
+  version: '1.0.0'
+host: localhost
+basePath: /
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /multi:
+    get:
+      operationId: getMulti
+      parameters:
+      - name: multi1
+        in: query
+        type: array
+        collectionFormat: multi
+        items:
+          type: string
+          format: date-time
+      - name: multi2
+        in: query
+        type: array
+        collectionFormat: multi
+        required: true
+        items:
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+      - name: multi3
+        in: query
+        type: array
+        collectionFormat: multi
+        required: true
+        items:
+          type: array
+          collectionFormat: csv
+          items:
+            type: string
+            format: date-time
+      responses:
+        200:
+          description: collection format multi

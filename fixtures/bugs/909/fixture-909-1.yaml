@@ -13,6 +13,10 @@ paths:
     get:
       operationId: getOptional
       parameters:
+      - name: notAnOption0
+        in: query
+        type: string
+        required: true
       - name: notAnOption1
         in: query
         type: string

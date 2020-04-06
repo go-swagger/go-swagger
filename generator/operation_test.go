@@ -483,7 +483,17 @@ func TestDateFormat_Spec2(t *testing.T) {
 	require.NoErrorf(t, err, buf.String())
 
 	res := string(ff)
-	assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
+	assertInCode(t, "o.TestingThis != nil {", res)
+	assertInCode(t, "joinedTestingThis := o.bindParamTestingThis(reg)", res)
+	assertInCode(t, `if err := r.SetFormParam("testingThis", joinedTestingThis...); err != nil {`, res)
+	assertInCode(t, "func (o *PutTestingParams) bindParamTestingThis(formats strfmt.Registry) []string {", res)
+	assertInCode(t, "testingThisIR := o.TestingThis", res)
+	assertInCode(t, "var testingThisIC []string", res)
+	assertInCode(t, "for _, testingThisIIR := range testingThisIR {", res)
+	assertInCode(t, "testingThisIIV := testingThisIIR.String()", res)
+	assertInCode(t, "testingThisIC = append(testingThisIC, testingThisIIV)", res)
+	assertInCode(t, `testingThisIS := swag.JoinByFormat(testingThisIC, "")`, res)
+	assertInCode(t, "return testingThisIS", res)
 }
 
 func TestBuilder_Issue1703(t *testing.T) {

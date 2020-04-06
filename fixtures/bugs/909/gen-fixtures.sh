@@ -1,81 +1,32 @@
-#! /bin/bash 
-if [[ ${1} == "--clean" ]] ; then
-    clean=1
-fi
+#! /bin/bash
 # A small utility to build fixture servers
-testcases="1 2 3 4 5 6"
+testcases="fixture-909-1.yaml fixture-909-2.yaml fixture-909-3.yaml fixture-909-4.yaml fixture-909-5.yaml fixture-909-6.yaml"
+testcases="${testcases} gentest.yaml gentest2.yaml gentest3.yaml fixture-1414.json"
+
 for testcase in ${testcases} ; do
-    target=./gen${testcase}
-    spec=./fixture-909-${testcase}.yaml
-    serverName="fixture-for-issue909-server"
-    rm -rf ${target}
-    mkdir ${target}
-    swagger generate server --spec ${spec} --target ${target} --quiet
-    if [[ $? != 0 ]] ; then
-        echo "Generation failed for ${spec}"
-        exit 1
-    fi
-    echo "${spec}: Generation OK"
-    (cd ${target}/cmd/${serverName}; go build)
-    if [[ $? != 0 ]] ; then
-        echo "Build failed for ${spec}"
-        exit 1
-    fi
-    echo "${spec}: Build OK"
-    if [[ -n ${clean} ]] ; then 
-        rm -rf ${target}
-    fi
-done
-# Non reg codegen
-# NOTE(fredbi): 
-# - azure: invalid spec 
-# - bitbucket: model does not compile
-# - issue72: invalid spec
-# - todolist.discriminator: known issue with schemavalidator
-testcases=`cd ../../codegen;ls -1|grep -vE 'azure|bitbucket|existing-model|issue72|todolist.discriminator|todolist.simple.yml'`
-for testcase in ${testcases} ; do
-    target=./gen-${testcase%.*}
-    spec=../../codegen/${testcase}
-    serverName="nrcodegen"
-    rm -rf ${target}
-    mkdir ${target}
-    swagger generate server --skip-validation --spec ${spec} --target ${target} --quiet --name=${serverName}
-    if [[ $? != 0 ]] ; then
-        echo "Generation failed for ${spec}"
-        exit 1
-    fi
-    echo "${spec}: Generation OK"
-    (cd ${target}/cmd/${serverName}"-server"; go build)
-    if [[ $? != 0 ]] ; then
-        echo "Build failed for ${spec}"
-        exit 1
-    fi
-    echo "${spec}: Build OK"
-    if [[ -n ${clean} ]] ; then 
-        rm -rf ${target}
-    fi
-done
-# More advanced tests
-testcases="gentest.yaml gentest2.yaml gentest3.yaml fixture-1414.json"
-for testcase in ${testcases} ; do
-    target=./gen-${testcase%.*}
-    spec=./${testcase}
+    target="./gen-${testcase%.*}"
+    spec="${testcase}"
     serverName="bugfix"
-    rm -rf ${target}
-    mkdir ${target}
-    swagger generate server --spec ${spec} --target ${target} --quiet --name=${serverName}
-    if [[ $? != 0 ]] ; then
-        echo "Generation failed for ${spec}"
+
+    rm -rf "${target}"
+    mkdir "${target}"
+
+    if ! swagger generate client --skip-validation --spec "${spec}" --target "${target}" ; then
+        echo "Client generation failed for ${spec}"
         exit 1
     fi
-    echo "${spec}: Generation OK"
-    (cd ${target}/cmd/${serverName}"-server"; go build)
-    if [[ $? != 0 ]] ; then
-        echo "Build failed for ${spec}"
+    echo "${spec}: Client generation OK"
+    if ! (cd "${target}/client"; go build) ; then
+        echo "Client build failed for ${spec}"
         exit 1
     fi
-    echo "${spec}: Build OK"
-    if [[ -n ${clean} ]] ; then 
-        rm -rf ${target}
+    echo "${spec}: Client build OK"
+    if ! swagger generate server --skip-validation --spec "${spec}" --target "${target}" --name "${serverName}"; then
+        echo "Server generation failed for ${spec}"
+        exit 1
+    fi
+    if ! (cd "${target}/cmd/${serverName}-server"; go build) ; then
+        echo "Server build failed for ${spec}"
+        exit 1
     fi
 done
