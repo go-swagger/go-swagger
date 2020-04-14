@@ -134,7 +134,7 @@ const (
 
 // prop value enum
 func (m *Pet) validateStatusEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, petTypeStatusPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, petTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil

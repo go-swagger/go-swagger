@@ -582,6 +582,51 @@ func TestGenParameter_Issue248(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Issue303(t *testing.T) {
+	services := map[string][]string{
+		"giveFruit": {
+			`	if err := validate.EnumCase("fruit", "query", o.Fruit, []interface{}{"Apple", "Pear", "Plum"}, false); err != nil {`,
+		},
+		"giveFruitBasket": {
+			`		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "fruit", i), "query", fruitIIC, []interface{}{[]interface{}{"Strawberry", "Raspberry"}, []interface{}{"Blueberry", "Cranberry"}}, false); err != nil {`,
+			`				if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "fruit", i), ii), "query", fruitII, []interface{}{"Peach", "Apricot"}, false); err != nil {`,
+			`	if err := validate.EnumCase("fruit", "query", o.Fruit, []interface{}{[]interface{}{[]interface{}{"Banana", "Pineapple"}}, []interface{}{[]interface{}{"Orange", "Grapefruit"}, []interface{}{"Lemon", "Lime"}}}, false); err != nil {`,
+		},
+	}
+
+	for service, codelines := range services {
+		gen, err := opBuilder(service, "../fixtures/enhancements/303/swagger.yml")
+		if assert.NoError(t, err) {
+			op, err := gen.MakeOperation()
+			if assert.NoError(t, err) {
+				param := op.Params[0]
+				assert.Equal(t, "fruit", param.Name)
+				assert.True(t, param.IsEnumCI)
+				extension := param.Extensions["x-go-enum-ci"]
+				assert.NotNil(t, extension)
+				xGoEnumCI, ok := extension.(bool)
+				assert.True(t, ok)
+				assert.True(t, xGoEnumCI)
+
+				buf := bytes.NewBuffer(nil)
+				err = templates.MustGet("serverParameter").Execute(buf, op)
+				if assert.NoError(t, err) {
+					opts := opts()
+					ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_parameter.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						for _, codeline := range codelines {
+							assertInCode(t, codeline, res)
+						}
+					} else {
+						fmt.Println(buf.String())
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestGenParameter_Issue350(t *testing.T) {
 	b, err := opBuilder("withBoolDefault", "../fixtures/codegen/todolist.allparams.yml")
 	if assert.NoError(t, err) {
@@ -1290,7 +1335,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
 				`value, err := formats.Parse("uuid", isAnOption4IIIV)`,
 				`isAnOption4III := *(value.(*strfmt.UUID))`,
-				`if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}); err != nil {`,
+				`if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}, true); err != nil {`,
 				`if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", "uuid", isAnOption4III.String(), formats); err != nil {`,
 				`isAnOption4IIIR = append(isAnOption4IIIR, isAnOption4III)`,
 				`isAnOption4IIR = append(isAnOption4IIR, isAnOption4IIIR)`,
@@ -1367,7 +1412,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
 				`value, err := formats.Parse("uuid", isAnOption4IIIV)`,
 				`isAnOption4III := *(value.(*strfmt.UUID))`,
-				`if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}); err != nil {`,
+				`if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}, true); err != nil {`,
 				`if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", "uuid", isAnOption4III.String(), formats); err != nil {`,
 				`isAnOption4IIIR = append(isAnOption4IIIR, isAnOption4III)`,
 				`isAnOption4IIR = append(isAnOption4IIR, isAnOption4IIIR)`,
@@ -1613,7 +1658,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`		return errors.CompositeValidationError(res...)`,
 				`	return nil`,
 				`func (o *PostBodybuilder26Params) validateMyObjectBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("myObject", "body", o.MyObject.String(), []interface{}{"1992-01-01", "2012-01-01"}); err != nil {`,
+				`	if err := validate.EnumCase("myObject", "body", o.MyObject.String(), []interface{}{"1992-01-01", "2012-01-01"}, true); err != nil {`,
 				`	if err := validate.FormatOf("myObject", "body", "date", o.MyObject.String(), formats); err != nil {`,
 			},
 		},
@@ -1635,7 +1680,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`	if len(res) > 0 {`,
 				`		return errors.CompositeValidationError(res...)`,
 				`func (o *PostBodybuilder27Params) validateMyObjectBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("myObject", "body", o.MyObject, []interface{}{[]interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}}); err != nil {`,
+				`	if err := validate.EnumCase("myObject", "body", o.MyObject, []interface{}{[]interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}},`,
+				`		true); err != nil {`,
 				`		return err`,
 				`	myObjectIC := o.MyObject`,
 				`	var myObjectIR [][]strfmt.Date`,
@@ -1645,14 +1691,15 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`			var myObjectIIR []strfmt.Date`,
 				`			for ii, myObjectIIV := range myObjectIIC {`,
 				`				myObjectII := myObjectIIV`,
-				`				if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", myObjectII.String(), []interface{}{"1992-01-01", "2012-01-01"}); err != nil {`,
+				`				if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", myObjectII.String(), []interface{}{"1992-01-01", "2012-01-01"}, true); err != nil {`,
 				`					return err`,
 				`				if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", "date", myObjectII.String(), formats); err != nil {`,
 				`					return err`,
 				`				myObjectIIR = append(myObjectIIR, myObjectII)`,
 				`			myObjectIR = append(myObjectIR, myObjectIIR)`,
 				// fixed missing enum validation
-				`		if err := validate.Enum(fmt.Sprintf("%s.%v", "myObject", i), "body", myObjectIIC, []interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}); err != nil {`,
+				`		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "myObject", i), "body", myObjectIIC, []interface{}{[]interface{}{"1992-01-01", "2012-01-01"}},`,
+				`			true); err != nil {`,
 				`	o.MyObject = myObjectIR`,
 			},
 		},
@@ -2201,7 +2248,8 @@ func TestGenParameter_Issue15362(t *testing.T) {
 				`			if err := o.validateSimpleArrayWithSliceValidationBody(route.Formats); err != nil {`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetSimpleArrayWithSliceValidationParams) validateSimpleArrayWithSliceValidationBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("simpleArrayWithSliceValidation", "body", o.SimpleArrayWithSliceValidation, []interface{}{[]interface{}{1, 2, 3}, []interface{}{4, 5, 6}}); err != nil {`,
+				`	if err := validate.EnumCase("simpleArrayWithSliceValidation", "body", o.SimpleArrayWithSliceValidation, []interface{}{[]interface{}{1, 2, 3}, []interface{}{4, 5, 6}},`,
+				`		true); err != nil {`,
 			},
 		},
 

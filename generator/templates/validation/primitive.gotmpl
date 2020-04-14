@@ -29,7 +29,7 @@ if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ pri
 }
 {{end}}
 {{if .Enum}}
-if err := validate.Enum({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if .IsCustomFormatter }}.String(){{ end }}, {{ printf "%#v" .Enum}}); err != nil {
+if err := validate.EnumCase({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if .IsCustomFormatter }}.String(){{ end }}, {{ printf "%#v" .Enum}}, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
   return err
 }
 {{end}}

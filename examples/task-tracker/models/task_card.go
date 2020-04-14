@@ -271,7 +271,7 @@ const (
 
 // prop value enum
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, taskCardTypeStatusPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, taskCardTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil

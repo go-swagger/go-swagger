@@ -139,7 +139,7 @@ if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if a
 {{ end }}
 {{ if .Enum }}
 // {{ .ItemsDepth }}Enum: {{ .Enum }}
-if err := validate.Enum(
+if err := validate.EnumCase(
   {{- .Path }}, {{ printf "%q" .Location }},
   {{- if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end -}}
   {{- if .Child -}}
@@ -149,8 +149,7 @@ if err := validate.Enum(
       {{- .ValueExpression -}}{{- if .Child.IsCustomFormatter }}.String(){{ end -}}
     {{- end -}}
   {{- end -}},
-  {{- printf "%#v" .Enum -}}
-    ); err != nil {
+  {{- printf "%#v" .Enum -}}, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
   return err
   }
 {{ end }}
