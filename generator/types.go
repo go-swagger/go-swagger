@@ -53,6 +53,7 @@ const (
 	xSchemes      = "x-schemes" // additional schemes supported for operations (server generation)
 	xOrder        = "x-order"   // sort order for properties (or any schema)
 	xGoJSONString = "x-go-json-string"
+	xGoEnumCI     = "x-go-enum-ci" // make string enumeration case-insensitive
 
 	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )
@@ -255,6 +256,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
 	result.IsNullable = t.IsNullable(ref)
+	result.IsEnumCI = false
 	return
 }
 
@@ -385,6 +387,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	result.ElemType = &rt
 	result.SwaggerType = array
 	result.SwaggerFormat = ""
+	result.IsEnumCI = hasEnumCI(&schema.VendorExtensible)
 	t.inferAliasing(&result, schema, isAnonymous, isRequired)
 	result.Extensions = schema.Extensions
 
@@ -616,6 +619,17 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 	return nil
 }
 
+func hasEnumCI(ve *spec.VendorExtensible) bool {
+	v, ok := ve.Extensions[xGoEnumCI]
+	if !ok {
+		return false
+	}
+
+	isEnumCI, ok := v.(bool)
+	// All enumeration types are case-sensitive by default
+	return ok && isEnumCI
+}
+
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	debugLog("resolving schema (anon: %t, req: %t) %s", isAnonymous, isRequired, t.ModelName)
 	if schema == nil {
@@ -640,6 +654,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	defer func() {
 		result.setIsEmptyOmitted(schema, tpe)
 		result.setIsJSONString(schema, tpe)
+		result.IsEnumCI = hasEnumCI(&schema.VendorExtensible)
 	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
@@ -729,6 +744,7 @@ type resolvedType struct {
 	IsStream          bool
 	IsEmptyOmitted    bool
 	IsJSONString      bool
+	IsEnumCI          bool
 	IsBase64          bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name

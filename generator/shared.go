@@ -264,6 +264,7 @@ type GenOpts struct {
 	SkipTagPackages        bool
 	MainPackage            string
 	IgnoreOperations       bool
+	AllowEnumCI            bool
 }
 
 // CheckOpts carries out some global consistency checks on options.

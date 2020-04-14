@@ -1,0 +1,109 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Test Issue 303
+schemes:
+  - http
+paths:
+  /giveFruit:
+    get:
+      operationId: giveFruit
+      summary: Give some fruit
+      description: The service "consumes" some fruit and returns successfully if it tastes pretty good :).
+      parameters:
+        - name: fruit
+          in: query
+          description: |
+            Fruit types:
+            * `Apple`
+            * `Pear`
+            * `Plum`
+          required: true
+          type: string
+          enum:
+            - Apple
+            - Pear
+            - Plum
+          x-nullable: false
+          x-go-enum-ci: true
+      responses:
+        200:
+          description: The fruit tasted good :-P.
+  /giveFruitBasket:
+    get:
+      operationId: giveFruitBasket
+      summary: Give several kinds of fruit
+      description: The service accepts several kinds of fruit in a wicker basket as a present :-D.
+      parameters:
+        - name: fruit
+          in: query
+          description: |
+            Fruit types:
+            * `Peach`
+            * `Apricot`
+            * `Strawberry`
+            * `Raspberry`
+            * `Blueberry`
+            * `Cranberry`
+            * `Banana`
+            * `Pineapple`
+            * `Orange`
+            * `Grapefruit`
+            * `Lemon`
+            * `Lime`
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+              enum:
+                - Peach
+                - Apricot
+              collectionFormat: csv
+              uniqueItems: true
+              x-nullable: false
+              x-go-enum-ci: true
+            enum:
+              -
+                - Strawberry
+                - Raspberry
+              -
+                - Blueberry
+                - Cranberry
+            collectionFormat: tsv
+            uniqueItems: true
+            x-nullable: false
+            x-go-enum-ci: true
+          enum:
+            -
+              -
+                - Banana
+                - Pineapple
+            -
+              -
+                - Orange
+                - Grapefruit
+              -
+                - Lemon
+                - Lime
+          collectionFormat: pipes
+          uniqueItems: true
+          x-nullable: false
+          x-go-enum-ci: true
+      responses:
+        200:
+          description: A wicker fruit basket?! Excellent! X-D
+definitions:
+  Vegetable:
+    description: |
+      Vegetable types:
+      * `Tomato`
+      * `Cucumber`
+      * `Pepper`
+    type: string
+    enum:
+      - Tomato
+      - Cucumber
+      - Pepper
+    x-nullable: false
+    x-go-enum-ci: true

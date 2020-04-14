@@ -81,7 +81,7 @@ func (o *PetListParams) bindStatus(rawData []string, hasKey bool, formats strfmt
 	for i, statusIV := range statusIC {
 		statusI := statusIV
 
-		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"available", "pending", "sold"}); err != nil {
+		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"available", "pending", "sold"}, true); err != nil {
 			return err
 		}
 

@@ -433,6 +433,40 @@ func TestEnum_Issue265(t *testing.T) {
 	}
 }
 
+func TestGenerateModel_Issue303(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/enhancements/303/swagger.yml")
+	if assert.NoError(t, err) {
+		opts := opts()
+		tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+		definitions := specDoc.Spec().Definitions
+		for name, schema := range definitions {
+			genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
+			if assert.NoError(t, err) {
+				assert.Equal(t, name, genModel.Name)
+				assert.Equal(t, name, genModel.GoType)
+				assert.True(t, genModel.IsEnumCI)
+				extension := genModel.Extensions["x-go-enum-ci"]
+				assert.NotNil(t, extension)
+				xGoEnumCI, ok := extension.(bool)
+				assert.True(t, ok)
+				assert.True(t, xGoEnumCI)
+
+				buf := bytes.NewBuffer(nil)
+				err = tt.template.Execute(buf, genModel)
+				if assert.NoError(t, err) {
+					ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_definition.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						assertInCode(t, `		if err := validate.EnumCase(path, location, value, vegetableEnum, false); err != nil {`, res)
+					} else {
+						fmt.Println(buf.String())
+					}
+				}
+			}
+		}
+	}
+}
+
 func TestEnum_Issue325(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/sodabooths.json")
 	if assert.NoError(t, err) {
@@ -449,7 +483,7 @@ func TestEnum_Issue325(t *testing.T) {
 				if assert.NoError(t, ferr) {
 					res := string(ff)
 					assertInCode(t, "var sodaBrandEnum []interface{}", res)
-					assertInCode(t, "err := validate.Enum(path, location, value, sodaBrandEnum)", res)
+					assertInCode(t, "err := validate.EnumCase(path, location, value, sodaBrandEnum, true)", res)
 					assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
 				}
 			}
@@ -466,7 +500,7 @@ func TestEnum_Issue325(t *testing.T) {
 				if assert.NoError(t, err) {
 					res := string(ff)
 					assertInCode(t, "var sodaTypeBrandPropEnum []interface{}", res)
-					assertInCode(t, "err := validate.Enum(path, location, value, sodaTypeBrandPropEnum)", res)
+					assertInCode(t, "err := validate.EnumCase(path, location, value, sodaTypeBrandPropEnum, true)", res)
 					assert.Equal(t, 1, strings.Count(res, "m.validateBrandEnum"))
 				}
 			}

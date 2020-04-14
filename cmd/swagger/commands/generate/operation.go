@@ -25,6 +25,7 @@ type operationOptions struct {
 	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple (defaults to all)"`
 	Tags       []string `long:"tags" description:"the tags to include, if not specified defaults to all" group:"operations"`
 	APIPackage string   `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
+	WithEnumCI bool     `long:"with-enum-ci" description:"allow case-insensitive enumerations"`
 
 	// tags handling
 	SkipTagPackages bool `long:"skip-tag-packages" description:"skips the generation of tag-based operation packages, resulting in a flat generation"`
@@ -34,6 +35,7 @@ func (oo operationOptions) apply(opts *generator.GenOpts) {
 	opts.Operations = oo.Operations
 	opts.Tags = oo.Tags
 	opts.APIPackage = oo.APIPackage
+	opts.AllowEnumCI = oo.WithEnumCI
 	opts.SkipTagPackages = oo.SkipTagPackages
 }
 
