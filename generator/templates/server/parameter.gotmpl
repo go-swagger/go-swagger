@@ -546,7 +546,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
-  {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsStream) (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
+  {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsStream) (not .IsNullable) }}*{{ end }}(value.({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsStream) (not .IsNullable) }}*{{ end }}{{ .GoType }}))
       {{else}}{{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}raw
       {{ end }}
       {{if .HasValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
