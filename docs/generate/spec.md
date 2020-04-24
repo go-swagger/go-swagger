@@ -14,7 +14,7 @@ Help Options:
   -h, --help                   Show this help message
 
 [spec command options]
-      -b, --base-path=         the base path to use (default: .)
+      -w, --work-dir=          the base path to use (default: .)
       -t, --tags=              build tags
       -m, --scan-models        includes models that were annotated with 'swagger:model'
           --compact            when present, doesn't prettify the json
@@ -24,6 +24,7 @@ Help Options:
       -x, --exclude=           exclude packages matching pattern
           --include-tag=       include routes having specified tags (can be specified many times)
           --exclude-tag=       exclude routes having specified tags (can be specified many times)
+          --exclude-deps       exclude all dependencies of project
 ```
 
 See code annotation rules [here](../use/spec.md)
