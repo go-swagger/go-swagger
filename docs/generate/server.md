@@ -64,6 +64,7 @@ Help Options:
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
           --keep-spec-order                                                       keep schema properties order identical to spec file
+          --struct-tags                                                           specify custom struct tags for third-party libraries, repeat for multiple (defaults to json)
 
     Options for operation generation:
       -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)

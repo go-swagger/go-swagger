@@ -3,15 +3,20 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
   {{- end}}
-{{ pascalize .Name}} {{ template "schemaType" . }} `json:"
-{{- if $.HasBaseType -}}
-  -
-{{- else }}
-  {{- .OriginalName }}
-  {{- if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}
-{{- end }}"
-{{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
-{{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
+{{ pascalize .Name}} {{ template "schemaType" . }} `
+  {{- $prop := . }}
+  {{- range $i, $structTag := $.StructTags }}
+    {{- if gt $i 0 }} {{ end }}
+    {{- $structTag }}:"
+    {{- if $.HasBaseType -}}
+      -
+    {{- else }}
+      {{- $prop.OriginalName }}
+      {{- if and (not $prop.Required) $prop.IsEmptyOmitted }},omitempty{{ end }}{{ if $prop.IsJSONString }},string{{ end }}
+    {{- end }}"
+  {{- end }}
+  {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
+  {{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
 {{ end }}
 
 {{- define "tuplefield" }}

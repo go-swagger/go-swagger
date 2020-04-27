@@ -256,6 +256,7 @@ type GenOpts struct {
 	Operations             []string
 	Models                 []string
 	Tags                   []string
+	StructTags             []string
 	Name                   string
 	FlagStrategy           string
 	CompatibilityMode      string
