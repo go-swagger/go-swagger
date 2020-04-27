@@ -603,3 +603,17 @@ func TestFuncMap_AsJSON(t *testing.T) {
 		require.Error(t, err)
 	}
 }
+
+func TestFuncMap_Dict(t *testing.T) {
+	d, err := dict("a", "b", "c", "d")
+	require.NoError(t, err)
+	assert.Equal(t, map[string]interface{}{"a": "b", "c": "d"}, d)
+
+	// odd number of arguments
+	_, err = dict("a", "b", "c")
+	require.Error(t, err)
+
+	// none-string key
+	_, err = dict("a", "b", 3, "d")
+	require.Error(t, err)
+}
