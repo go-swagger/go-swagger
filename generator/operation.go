@@ -1069,6 +1069,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		IncludeValidator:           true,
 		StrictAdditionalProperties: b.GenOpts.StrictAdditionalProperties,
 		ExtraSchemas:               make(map[string]GenSchema),
+		StructTags:                 b.GenOpts.StructTags,
 	}
 
 	var (

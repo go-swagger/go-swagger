@@ -28,6 +28,7 @@ type modelOptions struct {
 	StrictAdditionalProperties bool     `long:"strict-additional-properties" description:"disallow extra properties when additionalProperties is set to false"`
 	KeepSpecOrder              bool     `long:"keep-spec-order" description:"keep schema properties order identical to spec file"`
 	AllDefinitions             bool     `long:"all-definitions" description:"generate all model definitions regardless of usage in operations"`
+	StructTags                 []string `long:"struct-tags" description:"the struct tags to generate, repeat for multiple" default:"json"`
 }
 
 func (mo modelOptions) apply(opts *generator.GenOpts) {
