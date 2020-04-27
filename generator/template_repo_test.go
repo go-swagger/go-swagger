@@ -55,6 +55,8 @@ PascalizeSpecialChar2={{ pascalize "-1" }}
 PascalizeSpecialChar3={{ pascalize "1" }}
 PascalizeSpecialChar4={{ pascalize "-" }}
 PascalizeSpecialChar5={{ pascalize "+" }}
+Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture" "table" }}
+{{ define "dictTemplate" }}{{ .Animal }} of the {{ .Shape }} {{ .Furniture }}{{ end }}
 `
 }
 
@@ -427,6 +429,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
+	assert.Contains(t, rendered.String(), "Dict=Pony of the round table\n")
 }
 
 // AddFile() global package function (protected vs unprotected)
