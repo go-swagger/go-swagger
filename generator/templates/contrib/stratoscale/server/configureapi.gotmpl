@@ -31,13 +31,16 @@ const AuthKey contextKey = "Auth"
 {{ range .OperationGroups -}}
 //go:generate mockery -name {{ pascalize .Name}}API -inpkg
 
-// {{ pascalize .Name }}API {{ .Description }}
+/* {{ pascalize .Name }}API {{ .Description }} */
 type {{ pascalize .Name }}API interface {
 {{ range .Operations -}}
-	{{ if .Description -}}
-	// {{ pascalize .Name }} is {{ .Description }}
+	{{ if .Summary -}}
+	/* {{ pascalize .Name }} {{ .Summary }} */
+	{{ else if .Description -}}
+	/* {{ pascalize .Name }} {{ .Description }} */
 	{{ end -}}
 	{{ pascalize .Name }}(ctx context.Context, params {{.Package}}.{{ pascalize .Name }}Params) middleware.Responder
+
 {{ end -}}
 }
 {{ end }}
