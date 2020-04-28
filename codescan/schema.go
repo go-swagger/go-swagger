@@ -708,6 +708,11 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			break
 		}
 
+		if afld == nil {
+			debugLog("can't find source associated with %s", fld.String())
+			continue
+		}
+
 		// if the field is annotated with swagger:ignore, ignore it
 		if ignored(afld.Doc) {
 			continue
