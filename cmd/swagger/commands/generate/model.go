@@ -38,6 +38,7 @@ func (mo modelOptions) apply(opts *generator.GenOpts) {
 	opts.StrictAdditionalProperties = mo.StrictAdditionalProperties
 	opts.PropertiesSpecOrder = mo.KeepSpecOrder
 	opts.IgnoreOperations = mo.AllDefinitions
+	opts.StructTags = mo.StructTags
 }
 
 // WithModels adds the model options group
