@@ -4432,3 +4432,26 @@ func TestGenParameter_Issue2167(t *testing.T) {
 		}
 	}
 }
+func TestGenParameter_Issue2273(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("postSnapshot", "../fixtures/bugs/2273/swagger.json")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					fmt.Println(res)
+					assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
