@@ -1,0 +1,73 @@
+{
+  "swagger": "2.0",
+  "host": "localhost:5007",
+  "info": {
+    "description": "None",
+    "version": "3.0.0",
+    "title": "None"
+  },
+  "tags": [
+    {
+      "name": "general",
+      "description": "General settings and information"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/expert/v3/snapshot/{instanceID}": {
+      "post": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Restores a saved snapshot for specified instanceID",
+        "operationId": "postSnapshot",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "instanceID",
+            "in": "path",
+            "description": "instance identifier",
+            "required": true,
+            "type": "string",
+            "maxLength": 32,
+            "pattern": "[A-Za-z0-9]+"
+          },
+          {
+            "name": "snapshot",
+            "in": "formData",
+            "description": "Snapshot file to be restored",
+            "required": true,
+            "type": "string",
+            "format": "binary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/definitions/Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "uint16"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
