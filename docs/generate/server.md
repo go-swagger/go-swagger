@@ -210,6 +210,8 @@ func configureAPI(api *operations.ToDoListAPI) http.Handler {
 When you look at the code for the configureAPI method then you'll notice that the api object has properties for consumers.
 A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.
 
+Often, this will be JSON. If you want to use XML, additionally you have to enable XML compatible models when generating the server. For that, you have to set the command options `--default-consumes` or `--default-produces` to an XML mime type like `application/xml`. For more details on using XML, also see the [client generation](client.md).
+
 The interface definitions for consumers and producers look like this:
 
 ```go

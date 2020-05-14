@@ -173,3 +173,50 @@ func main() {
   fmt.Printf("%#v\n", resp.Payload)
 }
 ```
+
+### Consuming an XML API
+
+In order to enable XML support, you need to set the command options `--default-consumes` or `--default-produces` to an XML mime type like `application/xml` when generating the client:
+
+```
+swagger generate client -f [http-url|filepath] -A [application-name] --default-consumes application/xml
+```
+
+This is necessary regardless of whether your swagger specification already specifies XML in the consumes and produces properties.
+
+An example using the generated client with default Bearer authentication:
+
+```go
+import (
+  "os"
+
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/runtime"
+
+  apiclient "github.com/myproject/client"
+  httptransport "github.com/go-openapi/runtime/client"
+)
+
+func main() {
+  r := httptransport.New(apiclient.DefaultHost, apiclient.DefaultBasePath, apiclient.DefaultSchemes)
+  r.DefaultAuthentication = httptransport.BearerToken(os.Getenv("API_ACCESS_TOKEN"))
+  /*
+  r.DefaultMediaType = runtime.XMLMime
+  r.Consumers = map[string]runtime.Consumer{
+    runtime.XMLMime: runtime.XMLConsumer(),
+  }
+  r.Producers = map[string]runtime.Producer{
+    "application/xhtml+xml": runtime.XMLProducer(),
+  }
+  */
+  client := apiclient.New(r, strfmt.Default)
+
+  resp, err := client.Operations.MyGreatEndpoint()
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf("%#v\n", resp.Payload)
+}
+```
+
+It can under certain circumstances be necessary to manually set the DefaultMediaType and the Consumers and Producers similar to the commented-out code above, particularly if you're using special mime types like `application/xhtml+xml`.
