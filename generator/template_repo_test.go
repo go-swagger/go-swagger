@@ -55,6 +55,8 @@ PascalizeSpecialChar2={{ pascalize "-1" }}
 PascalizeSpecialChar3={{ pascalize "1" }}
 PascalizeSpecialChar4={{ pascalize "-" }}
 PascalizeSpecialChar5={{ pascalize "+" }}
+Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture" "table" }}
+{{ define "dictTemplate" }}{{ .Animal }} of the {{ .Shape }} {{ .Furniture }}{{ end }}
 `
 }
 
@@ -427,6 +429,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
+	assert.Contains(t, rendered.String(), "Dict=Pony of the round table\n")
 }
 
 // AddFile() global package function (protected vs unprotected)
@@ -599,4 +602,18 @@ func TestFuncMap_AsJSON(t *testing.T) {
 		}{A: "good", B: func() string { return "" }})
 		require.Error(t, err)
 	}
+}
+
+func TestFuncMap_Dict(t *testing.T) {
+	d, err := dict("a", "b", "c", "d")
+	require.NoError(t, err)
+	assert.Equal(t, map[string]interface{}{"a": "b", "c": "d"}, d)
+
+	// odd number of arguments
+	_, err = dict("a", "b", "c")
+	require.Error(t, err)
+
+	// none-string key
+	_, err = dict("a", "b", 3, "d")
+	require.Error(t, err)
 }

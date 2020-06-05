@@ -84,6 +84,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"hasPrefix":        strings.HasPrefix,
 		"stringContains":   strings.Contains,
 		"imports":          lang.imports,
+		"dict":             dict,
 	})
 }
 
@@ -563,4 +564,19 @@ func prefixForName(arg string) string {
 		// other cases ($,@ etc..) handled by swag.ToGoName
 	}
 	return "Nr"
+}
+
+func dict(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, fmt.Errorf("Expected even number of arguments, got %d", len(values))
+	}
+	dict := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, fmt.Errorf("Expected string key, got %+v", values[i])
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
 }

@@ -3,17 +3,27 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
   {{- end}}
-{{ pascalize .Name}} {{ template "schemaType" . }} `json:"
-{{- if $.HasBaseType -}}
-  -
-{{- else }}
-  {{- .OriginalName }}
-  {{- if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}
-{{- end }}"
-{{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
-{{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
+{{ pascalize .Name}} {{ template "schemaType" . }} `
+  {{- $prop := . }}
+  {{- range $i, $structTag := $.StructTags }}
+    {{- if gt $i 0 }} {{ end }}
+    {{- template "structTag" dict "Tag" $structTag "Schema" $prop }}
+  {{- else }}
+    {{- template "structTag" dict "Tag" "json" "Schema" $prop }}
+  {{- end }}
+  {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
+  {{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
 {{ end }}
 
+{{- define "structTag" }}
+  {{- .Tag }}:"
+  {{- if $.HasBaseType -}}
+    -
+  {{- else }}
+    {{- .Schema.OriginalName }}
+    {{- if and (not .Schema.Required) .Schema.IsEmptyOmitted }},omitempty{{ end }}{{ if .Schema.IsJSONString }},string{{ end }}
+  {{- end }}"
+{{- end }}
 {{- define "tuplefield" }}
   {{- if not $.IsBaseType -}}
     // {{ template "docstring" . }}

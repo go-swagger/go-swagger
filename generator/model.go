@@ -228,6 +228,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		IncludeModel:               opts.IncludeModel,
 		StrictAdditionalProperties: opts.StrictAdditionalProperties,
 		WithXML:                    opts.WithXML,
+		StructTags:                 opts.StructTags,
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
@@ -419,6 +420,7 @@ type schemaGenContext struct {
 	Container    string
 	Schema       spec.Schema
 	TypeResolver *typeResolver
+	StructTags   []string
 
 	GenSchema      GenSchema
 	Dependencies   []string // NOTE: Dependencies is actually set nowhere
@@ -536,7 +538,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	if pg.Container == "" {
 		pg.Container = sg.Name
 	}
-	pg.GenSchema = GenSchema{}
+	pg.GenSchema = GenSchema{StructTags: sg.StructTags}
 	pg.Dependencies = nil
 	pg.Named = false
 	pg.Index = 0
@@ -1309,7 +1311,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		}
 
 		hasMapNullOverride := sg.GenSchema.IsMapNullOverride
-		sg.GenSchema = GenSchema{}
+		sg.GenSchema = GenSchema{StructTags: sg.StructTags}
 		sg.Schema = *spec.RefProperty("#/definitions/" + newObj.Name)
 		if err := sg.makeGenSchema(); err != nil {
 			return err
@@ -1354,6 +1356,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		IncludeValidator:           sg.IncludeValidator,
 		IncludeModel:               sg.IncludeModel,
 		StrictAdditionalProperties: sg.StrictAdditionalProperties,
+		StructTags:                 sg.StructTags,
 	}
 	if schema.Ref.String() == "" {
 		pg.TypeResolver = sg.TypeResolver.NewWithModelName(name)
@@ -1853,6 +1856,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IncludeModel = sg.IncludeModel
 	sg.GenSchema.StrictAdditionalProperties = sg.StrictAdditionalProperties
 	sg.GenSchema.Default = sg.Schema.Default
+	sg.GenSchema.StructTags = sg.StructTags
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()
