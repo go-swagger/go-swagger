@@ -266,6 +266,7 @@ type GenOpts struct {
 	MainPackage            string
 	IgnoreOperations       bool
 	AllowEnumCI            bool
+	StrictResponders       bool
 }
 
 // CheckOpts carries out some global consistency checks on options.

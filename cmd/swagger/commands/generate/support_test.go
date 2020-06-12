@@ -12,6 +12,14 @@ import (
 )
 
 func TestGenerateSupport(t *testing.T) {
+	testGenerateSupport(t, false)
+}
+
+func TestGenerateSupportStrict(t *testing.T) {
+	testGenerateSupport(t, true)
+}
+
+func testGenerateSupport(t *testing.T, strict bool) {
 	specs := []string{
 		"tasklist.basic.yml",
 	}
@@ -36,6 +44,7 @@ func TestGenerateSupport(t *testing.T) {
 			_, _ = flags.Parse(m)
 			m.Shared.Spec = flags.Filename(path)
 			m.Shared.Target = flags.Filename(generated)
+			m.Shared.StrictResponders = strict
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)

@@ -502,6 +502,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExtraSchemes:         extraSchemes,
 		TimeoutName:          timeoutName,
 		Extensions:           operation.Extensions,
+		StrictResponders:     b.GenOpts.StrictResponders,
 	}, nil
 }
 
@@ -544,18 +545,20 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	res := GenResponse{
-		Package:        b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
-		ModelsPackage:  b.ModelsPackage,
-		ReceiverName:   receiver,
-		Name:           name,
-		Description:    trimBOM(resp.Description),
-		DefaultImports: b.DefaultImports,
-		Imports:        b.Imports,
-		IsSuccess:      isSuccess,
-		Code:           code,
-		Method:         b.Method,
-		Path:           b.Path,
-		Extensions:     resp.Extensions,
+		Package:          b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
+		ModelsPackage:    b.ModelsPackage,
+		ReceiverName:     receiver,
+		Name:             name,
+		Description:      trimBOM(resp.Description),
+		DefaultImports:   b.DefaultImports,
+		Imports:          b.Imports,
+		IsSuccess:        isSuccess,
+		Code:             code,
+		Method:           b.Method,
+		Path:             b.Path,
+		Extensions:       resp.Extensions,
+		StrictResponders: b.GenOpts.StrictResponders,
+		OperationName:    b.Name,
 	}
 
 	// prepare response headers
