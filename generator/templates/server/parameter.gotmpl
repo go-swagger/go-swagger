@@ -26,7 +26,7 @@
       {{- if .Schema.Items.IsNullable }}
     if body[{{ .IndexVar }}] == nil {
         {{- if .Schema.Items.Required }}
-        res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}))
+        res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, body[{{ .IndexVar }}]))
         break
         {{- else }}
       continue
@@ -62,7 +62,7 @@
       {{- if and .Schema.AdditionalProperties.IsNullable (not .IsMapNullOverride) }}
     if body[{{ .KeyVar }}] == nil {
         {{- if .Schema.AdditionalProperties.Required }}
-        res = append(res, errors.Required({{ .Path }}, {{ printf "%q" .Location }}))
+        res = append(res, errors.Required({{ .Path }}, {{ printf "%q" .Location }}, body[{{ .KeyVar }}]))
         break
         {{- else }}
         continue
@@ -208,7 +208,7 @@ if err := validate.EnumCase(
       {{- if and .Child.IsNullable }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
-       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})
+       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, {{ varname .Child.ValueExpression }}V)
        {{- else }}
         continue
        {{- end }}
@@ -260,7 +260,7 @@ for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .C
     {{- if and .Child.IsNullable (not .IsMapNullOverride) }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
-       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})
+       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, {{ varname .Child.ValueExpression }}V)
        {{- else }}
         continue
        {{- end }}
@@ -453,7 +453,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {
-        err = errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+        err = errors.Required({{ .Path }}, {{ printf "%q" .Location }}, "")
       }
         {{- end }}
     res = append(res, err)
@@ -462,7 +462,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     if err := route.Consumer.Consume(r.Body, &body); err != nil {
         {{- if .Required }}
       if err == io.EOF {
-        res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+        res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, ""))
       } else {
         {{- end }}
       res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
@@ -476,7 +476,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- end }}
   }
     {{- if .Required }} else {
-    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, ""))
   }
     {{- end }}
   {{- end }}
@@ -516,7 +516,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{- if and (not .IsPathParam) .Required }}
     if !hasKey {
-        return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+        return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
     }
       {{- end }}
     var raw string
@@ -561,7 +561,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 // Arrays are parsed according to CollectionFormat: "{{ .CollectionFormat }}" (defaults to "csv" when empty).
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{if .Required }}if !hasKey {
-    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
   }
       {{ end }}
       {{ if eq .CollectionFormat "multi" -}}
@@ -577,7 +577,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
       {{if and .Required (not .AllowEmptyValue) }}
   if len({{ varname .Child.ValueExpression }}C) == 0 {
-    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ varname .Child.ValueExpression }}C)
   }
       {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 { {{ if .HasDefault }}
     // Default values have been previously initialized by New{{ $className }}Params(){{ end }}

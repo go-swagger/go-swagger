@@ -2,4 +2,4 @@
 
 package restapi
 
-// this file is intentionally empty. otherwise go-swagger will generate a server witch we don't want
+// this file is intentionally empty. Otherwise go-swagger will generate a server which we don't want

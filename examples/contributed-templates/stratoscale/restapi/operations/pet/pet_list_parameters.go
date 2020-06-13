@@ -67,14 +67,14 @@ func (o *PetListParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 // Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *PetListParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("status", "query")
+		return errors.Required("status", "query", rawData)
 	}
 
 	// CollectionFormat: multi
 	statusIC := rawData
 
 	if len(statusIC) == 0 {
-		return errors.Required("status", "query")
+		return errors.Required("status", "query", statusIC)
 	}
 
 	var statusIR []string

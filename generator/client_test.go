@@ -148,6 +148,7 @@ func assertImports(t testing.TB, baseImport, code string) {
 
 func TestClient(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
+
 	base := os.Getenv("GOPATH")
 	if base == "" {
 		base = "."

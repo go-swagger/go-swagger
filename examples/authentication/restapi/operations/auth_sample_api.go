@@ -313,3 +313,15 @@ func (o *AuthSampleAPI) RegisterConsumer(mediaType string, consumer runtime.Cons
 func (o *AuthSampleAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *AuthSampleAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
+}

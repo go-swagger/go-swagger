@@ -24,25 +24,41 @@ const AuthKey contextKey = "Auth"
 
 //go:generate mockery -name PetAPI -inpkg
 
-// PetAPI
+/* PetAPI  */
 type PetAPI interface {
+	/* PetCreate Add a new pet to the store */
 	PetCreate(ctx context.Context, params pet.PetCreateParams) middleware.Responder
+
+	/* PetDelete Deletes a pet */
 	PetDelete(ctx context.Context, params pet.PetDeleteParams) middleware.Responder
+
+	/* PetGet Get pet by it's ID */
 	PetGet(ctx context.Context, params pet.PetGetParams) middleware.Responder
+
+	/* PetList List pets */
 	PetList(ctx context.Context, params pet.PetListParams) middleware.Responder
+
+	/* PetUpdate Update an existing pet */
 	PetUpdate(ctx context.Context, params pet.PetUpdateParams) middleware.Responder
+
+	/* PetUploadImage uploads an image */
 	PetUploadImage(ctx context.Context, params pet.PetUploadImageParams) middleware.Responder
 }
 
 //go:generate mockery -name StoreAPI -inpkg
 
-// StoreAPI
+/* StoreAPI  */
 type StoreAPI interface {
+	/* InventoryGet Returns pet inventories by status */
 	InventoryGet(ctx context.Context, params store.InventoryGetParams) middleware.Responder
+
+	/* OrderCreate Place an order for a pet */
 	OrderCreate(ctx context.Context, params store.OrderCreateParams) middleware.Responder
-	// OrderDelete is For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
+
+	/* OrderDelete Delete purchase order by ID */
 	OrderDelete(ctx context.Context, params store.OrderDeleteParams) middleware.Responder
-	// OrderGet is For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+
+	/* OrderGet Find purchase order by ID */
 	OrderGet(ctx context.Context, params store.OrderGetParams) middleware.Responder
 }
 
