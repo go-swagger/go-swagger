@@ -60,7 +60,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 		var body models.Task
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
+				res = append(res, errors.Required("body", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("body", "body", "", err))
 			}
@@ -75,7 +75,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 			}
 		}
 	} else {
-		res = append(res, errors.Required("body", "body"))
+		res = append(res, errors.Required("body", "body", ""))
 	}
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {

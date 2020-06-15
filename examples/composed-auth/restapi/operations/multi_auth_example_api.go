@@ -422,3 +422,15 @@ func (o *MultiAuthExampleAPI) RegisterConsumer(mediaType string, consumer runtim
 func (o *MultiAuthExampleAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
 }
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *MultiAuthExampleAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
+}
