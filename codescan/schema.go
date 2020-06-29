@@ -188,8 +188,8 @@ func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) err
 		debugLog("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
 	case *types.Named:
 		o := tpe.Obj()
-		debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
 		if o != nil {
+			debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
 			if o.Pkg().Name() == "time" && o.Name() == "Time" {
 				schema.Typed("string", "date-time")
 				return nil
