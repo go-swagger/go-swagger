@@ -748,6 +748,7 @@ func fileExists(target, name string) bool {
 }
 
 func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec.Schema, error) {
+	modelNames = pruneEmpty(modelNames)
 	models, mnc := make(map[string]spec.Schema), len(modelNames)
 	defs := specDoc.Spec().Definitions
 
@@ -817,6 +818,7 @@ func (o opRefs) Swap(i, j int)      { o[i], o[j] = o[j], o[i] }
 func (o opRefs) Less(i, j int) bool { return o[i].Key < o[j].Key }
 
 func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]opRef {
+	operationIDs = pruneEmpty(operationIDs)
 	var oprefs opRefs
 
 	for method, pathItem := range specDoc.Operations() {

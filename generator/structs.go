@@ -403,13 +403,20 @@ func (g GenStatusCodeResponses) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenStatusCodeResponses) Less(i, j int) bool { return g[i].Code < g[j].Code }
 
 // MarshalJSON marshals these responses to json
+//
+// This is used by DumpData.
 func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	if g == nil {
 		return nil, nil
 	}
+	responses := make(GenStatusCodeResponses, len(g))
+	copy(responses, g)
+	// order marshalled output
+	sort.Sort(responses)
+
 	var buf bytes.Buffer
 	buf.WriteRune('{')
-	for i, v := range g {
+	for i, v := range responses {
 		rb, err := json.Marshal(v)
 		if err != nil {
 			return nil, err
