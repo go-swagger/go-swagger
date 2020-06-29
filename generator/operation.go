@@ -92,7 +92,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			Operation:            *operation,
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
 			SecurityDefinitions:  analyzed.SecurityDefinitionsFor(operation),
-			Principal:            opts.Principal,
+			Principal:            opts.PrincipalAlias(),
 			Target:               filepath.Join(opts.Target, filepath.FromSlash(serverPackage)),
 			Base:                 opts.Target,
 			Tags:                 opts.Tags,
@@ -157,7 +157,7 @@ func (o *operationGenerator) Generate() error {
 
 	bldr := codeGenOpBuilder{
 		ModelsPackage:       o.ModelsPackage,
-		Principal:           o.Principal,
+		Principal:           o.GenOpts.PrincipalAlias(),
 		Target:              o.Target,
 		DefaultImports:      defaultImports,
 		Imports:             imports,
@@ -1211,13 +1211,29 @@ func maxInt(a, b int) int {
 // deconflictTag ensures generated packages for operations based on tags do not conflict
 // with other imports
 func deconflictTag(seenTags []string, pkg string) string {
+	return deconflictPkg(pkg, func(pkg string) string { return renameOperationPackage(seenTags, pkg) })
+}
+
+// deconflictPrincipal ensures that whenever an external principal package is added, it doesn't conflict
+// with standard inports
+func deconflictPrincipal(pkg string) string {
+	switch pkg {
+	case "principal":
+		return renamePrincipalPackage(pkg)
+	default:
+		return deconflictPkg(pkg, renamePrincipalPackage)
+	}
+}
+
+// deconflictPkg renames package names which conflict with standard imports
+func deconflictPkg(pkg string, renamer func(string) string) string {
 	switch pkg {
 	case "api", "httptransport":
 		fallthrough
 	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
 		fallthrough
 	case "tls", "http", "fmt", "strings", "log":
-		return renameOperationPackage(seenTags, pkg)
+		return renamer(pkg)
 	}
 	return pkg
 }
@@ -1231,4 +1247,8 @@ func renameOperationPackage(seenTags []string, pkg string) string {
 		current += "1"
 	}
 	return current
+}
+
+func renamePrincipalPackage(pkg string) string {
+	return "auth"
 }

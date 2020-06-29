@@ -397,6 +397,10 @@ func (g *GenOpts) EnsureDefaults() error {
 	// always include validator with models
 	g.IncludeValidator = g.IncludeModel
 
+	if g.Principal == "" {
+		g.Principal = iface
+	}
+
 	g.defaultsEnsured = true
 	return nil
 }
@@ -685,14 +689,26 @@ func (g *GenOpts) defaultImports() map[string]string {
 	defaultImports := make(map[string]string, 50)
 
 	if g.ExistingModels == "" {
+		// generated models
 		importPath := path.Join(
 			baseImport,
 			g.LanguageOpts.ManglePackagePath(g.ModelPackage, defaultModelsTarget))
 		defaultImports[g.LanguageOpts.ManglePackageName(g.ModelPackage, defaultModelsTarget)] = importPath
 	} else {
-		// TODO(fredbi): mangle existing model pkg aliases
+		// external models
 		importPath := g.LanguageOpts.ManglePackagePath(g.ExistingModels, "")
-		defaultImports[importAlias(importPath)] = importPath
+		defaultImports["models"] = importPath
+	}
+
+	alias, _, target := g.resolvePrincipal()
+	if alias != "" {
+		if pth, _ := path.Split(target); pth != "" {
+			// if principal is specified with an path, generate this import
+			defaultImports[alias] = target
+		} else {
+			// if principal is specified with a relative path, assume it is located in generated target
+			defaultImports[alias] = path.Join(baseImport, target)
+		}
 	}
 	return defaultImports
 }
@@ -706,6 +722,24 @@ func (g *GenOpts) initImports(operationsPackage string) map[string]string {
 		baseImport,
 		g.LanguageOpts.ManglePackagePath(operationsPackage, defaultOperationsTarget))
 	return imports
+}
+
+// PrincipalAlias returns an aliased type to the principal
+func (g *GenOpts) PrincipalAlias() string {
+	_, principal, _ := g.resolvePrincipal()
+	return principal
+}
+
+func (g *GenOpts) resolvePrincipal() (string, string, string) {
+	dotLocation := strings.LastIndex(g.Principal, ".")
+	if dotLocation < 0 {
+		return "", g.Principal, ""
+	}
+
+	// handle possible conflicts with injected principal package
+	// NOTE(fred): we do not check here for conflicts with packages created from operation tags, only standard imports
+	alias := deconflictPrincipal(importAlias(g.Principal[:dotLocation]))
+	return alias, alias + g.Principal[dotLocation:], g.Principal[:dotLocation]
 }
 
 func fileExists(target, name string) bool {

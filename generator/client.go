@@ -59,7 +59,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget),
 		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
 		OperationsPackage: opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
-		Principal:         opts.Principal,
+		Principal:         opts.PrincipalAlias(),
 		DefaultScheme:     opts.DefaultScheme,
 		DefaultProduces:   opts.DefaultProduces,
 		DefaultConsumes:   opts.DefaultConsumes,
