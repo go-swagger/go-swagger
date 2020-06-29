@@ -96,7 +96,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget),
 		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
 		OperationsPackage: filepath.Join(opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget), apiPackage),
-		Principal:         opts.Principal,
+		Principal:         opts.PrincipalAlias(),
 		DefaultScheme:     opts.DefaultScheme,
 		DefaultProduces:   opts.DefaultProduces,
 		DefaultConsumes:   opts.DefaultConsumes,
@@ -196,9 +196,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 }
 
 func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
-	if a.Principal == "" {
-		a.Principal = "interface{}"
-	}
 	requiredSecuritySchemes := make(map[string]spec.SecurityScheme, len(a.Analyzed.RequiredSecuritySchemes()))
 	for _, scheme := range a.Analyzed.RequiredSecuritySchemes() {
 		if req, ok := a.SpecDoc.Spec().SecurityDefinitions[scheme]; ok && req != nil {
@@ -262,7 +259,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 		bldr := codeGenOpBuilder{
 			ModelsPackage:    a.ModelsPackage,
-			Principal:        a.Principal,
+			Principal:        a.GenOpts.PrincipalAlias(),
 			Target:           a.Target,
 			DefaultImports:   defaultImports,
 			Imports:          imports,
@@ -418,7 +415,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Models:              genModels,
 		Operations:          genOps,
 		OperationGroups:     opGroups,
-		Principal:           a.Principal,
+		Principal:           a.GenOpts.PrincipalAlias(),
 		SwaggerJSON:         generateReadableSpec(jsonb),
 		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts.ExcludeSpec,

@@ -560,3 +560,127 @@ func TestShared_DumpWrongData(t *testing.T) {
 		B: "xyz",
 	}))
 }
+
+func TestResolvePrincipal(t *testing.T) {
+	for _, toPin := range []struct {
+		Title     string
+		Principal string
+		Expected  []string
+	}{
+		{
+			Title: "defaults", Principal: "",
+			Expected: []string{"", "interface{}", ""},
+		},
+		{
+			Title: "with base import", Principal: "auth.Principal",
+			Expected: []string{"auth", "auth.Principal", "auth"},
+		},
+		{
+			Title: "with full import", Principal: "github.com/myproject/auth.Principal",
+			Expected: []string{"auth", "auth.Principal", "github.com/myproject/auth"},
+		},
+		{
+			Title: "with name conflict", Principal: "github.com/myproject/middleware.Principal",
+			Expected: []string{"auth", "auth.Principal", "github.com/myproject/middleware"},
+		},
+		{
+			Title: "with name conflict (2)", Principal: "github.com/myproject/principal.Principal",
+			Expected: []string{"auth", "auth.Principal", "github.com/myproject/principal"},
+		},
+	} {
+		fixture := toPin
+		t.Run(fixture.Title, func(t *testing.T) {
+			t.Parallel()
+			opts := &GenOpts{Principal: fixture.Principal}
+			err := opts.EnsureDefaults()
+			require.NoError(t, err)
+			alias, principal, target := opts.resolvePrincipal()
+			require.Equal(t, fixture.Expected[0], alias)
+			require.Equal(t, fixture.Expected[1], principal)
+			require.Equal(t, fixture.Expected[2], target)
+		})
+	}
+}
+
+func TestDefaultImports(t *testing.T) {
+	for i, toPin := range []struct {
+		Title    string
+		Opts     *GenOpts
+		Expected map[string]string
+	}{
+		{
+			Title: "defaults",
+			Opts:  &GenOpts{},
+			Expected: map[string]string{
+				"models": "github.com/go-swagger/go-swagger/generator/models",
+			},
+		},
+		{
+			Title: "with base import",
+			Opts: &GenOpts{
+				Principal: "ext.Principal",
+			},
+			Expected: map[string]string{
+				"ext":    "github.com/go-swagger/go-swagger/generator/ext",
+				"models": "github.com/go-swagger/go-swagger/generator/models",
+			},
+		},
+		{
+			Title: "with full import",
+			Opts: &GenOpts{
+				Principal: "github.com/myproject/identity.Principal",
+			},
+			Expected: map[string]string{
+				"identity": "github.com/myproject/identity",
+				"models":   "github.com/go-swagger/go-swagger/generator/models",
+			},
+		},
+		{
+			Title: "with name conflict",
+			Opts: &GenOpts{
+				Principal: "github.com/myproject/middleware.Principal",
+			},
+			Expected: map[string]string{
+				"auth":   "github.com/myproject/middleware",
+				"models": "github.com/go-swagger/go-swagger/generator/models",
+			},
+		},
+		{
+			Title: "with name conflict (2)",
+			Opts: &GenOpts{
+				Principal: "github.com/myproject/principal.Principal",
+			},
+			Expected: map[string]string{
+				"auth":   "github.com/myproject/principal",
+				"models": "github.com/go-swagger/go-swagger/generator/models",
+			},
+		},
+		{
+			Title: "alternate target for models",
+			Opts: &GenOpts{
+				ModelPackage: "target/bespoke",
+			},
+			Expected: map[string]string{
+				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
+			},
+		},
+		{
+			Title: "with existing models",
+			Opts: &GenOpts{
+				ExistingModels: "github.com/myproject/target/bespoke",
+			},
+			Expected: map[string]string{
+				"models": "github.com/myproject/target/bespoke",
+			},
+		},
+	} {
+		fixture := toPin
+		t.Run(fixture.Title, func(t *testing.T) {
+			t.Parallel()
+			err := fixture.Opts.EnsureDefaults()
+			require.NoError(t, err)
+			imports := fixture.Opts.defaultImports()
+			require.EqualValuesf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
+		})
+	}
+}
