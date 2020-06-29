@@ -137,7 +137,7 @@ jobs:
             - go-mod-v1-{{ checksum "go.sum" }}
       - run:
           name: Install golangci-lint
-          command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.24.0
+          command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - run:
           name: Run unit tests
           command: golangci-lint run --timeout 2m --new-from-rev master
