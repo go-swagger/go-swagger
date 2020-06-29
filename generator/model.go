@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path"
@@ -278,7 +279,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				if err != nil {
 					return nil, err
 				}
-				ref = rsch.Ref
 				if rsch != nil && rsch.Ref.String() != "" {
 					ref = rsch.Ref
 					continue
@@ -768,7 +768,9 @@ func (sg *schemaGenContext) buildProperties() error {
 				if err != nil {
 					return err
 				}
-				ref = rsch.Ref
+				if rsch == nil {
+					return errors.New("spec.ResolveRef returned nil schema")
+				}
 				if rsch != nil && rsch.Ref.String() != "" {
 					ref = rsch.Ref
 					continue
