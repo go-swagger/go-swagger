@@ -1238,7 +1238,7 @@ func deconflictPrincipal(pkg string) string {
 // deconflictPkg renames package names which conflict with standard imports
 func deconflictPkg(pkg string, renamer func(string) string) string {
 	switch pkg {
-	case "api", "httptransport":
+	case "api", "httptransport", "formats":
 		fallthrough
 	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
 		fallthrough
