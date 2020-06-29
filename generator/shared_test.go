@@ -511,6 +511,8 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	require.NotNil(t, specDoc.Spec().Info)
 	specDoc.Spec().Info.Title = "    "
 	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
+	specDoc.Spec().Info.Title = "test"
+	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 }
 
 func TestShared_GatherModel(t *testing.T) {

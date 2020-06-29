@@ -1,0 +1,25 @@
+---
+swagger: "2.0"
+info:
+  title: foo api
+  version: "1.0.0"
+paths:
+  /version:
+    get:
+      responses:
+        "200":
+          description: foo version
+          schema:
+            type: string
+      summary: foo version
+      operationId: showVersion
+  /withtags:
+    get:
+      tags: [ "sometag" ]
+      responses:
+        "200":
+          description: foo tagged version
+          schema:
+            type: string
+      summary: foo tagged version
+      operationId: showTaggedVersion

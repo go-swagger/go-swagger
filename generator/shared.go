@@ -755,13 +755,17 @@ func titleOrDefault(specDoc *loads.Document, name, defaultName string) string {
 }
 
 func mainNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
-	// _test won't do as main server name
+	// *_test won't do as main server name
 	return strings.TrimSuffix(titleOrDefault(specDoc, name, defaultName), "Test")
 }
 
 func appNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
-	// _test_api, _api_test, _test, _api won't do as app names
-	return strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(titleOrDefault(specDoc, name, defaultName), "Test"), "API"), "Test")
+	// *_test won't do as app names
+	name = strings.TrimSuffix(titleOrDefault(specDoc, name, defaultName), "Test")
+	if name == "" {
+		name = swag.ToGoName(defaultName)
+	}
+	return name
 }
 
 type opRef struct {

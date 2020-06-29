@@ -266,6 +266,11 @@ func TestClient(t *testing.T) {
 				assert.True(t, fileExists(target, "operations"))
 			},
 		},
+		{
+			name:      "name with trailing API",
+			spec:      filepath.Join("..", "fixtures", "bugs", "2278", "fixture-2278.yaml"),
+			wantError: false,
+		},
 	}
 
 	for i, tt := range tests {
