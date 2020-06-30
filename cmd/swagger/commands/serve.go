@@ -43,7 +43,6 @@ func (s *ServeCmd) Execute(args []string) error {
 	}
 
 	if s.Flatten {
-		var err error
 		specDoc, err = specDoc.Expanded(&spec.ExpandOptions{
 			SkipSchemas:         false,
 			ContinueOnError:     true,
