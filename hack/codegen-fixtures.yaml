@@ -205,3 +205,6 @@
   skipped:
     knownExpandFailure: true
     knownFlattenMinimalFailure: true
+- dir: fixtures/bugs/2306
+  skipped:
+    skipModel: true

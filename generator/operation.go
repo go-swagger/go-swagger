@@ -1018,19 +1018,23 @@ func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *sp
 // these ExtraSchemas in the operation's package.
 // We need to rebuild the schema with a new type resolver to reflect this change in the
 // models package.
-func (b *codeGenOpBuilder) liftExtraSchemas(resolver, br *typeResolver, bs *spec.Schema, sc *schemaGenContext) (schema *GenSchema, err error) {
+func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *spec.Schema, sc *schemaGenContext) (schema *GenSchema, err error) {
 	// restore resolving state before previous call to makeGenSchema()
-	rslv := br
 	sc.Schema = *bs
 
 	pg := sc.shallowClone()
 	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget)
+
+	// make a resolver for current package (i.e. operations)
 	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(pkg)
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
+	pg.UseContainerInName = true
 
+	// rebuild schema within local package
 	if err = pg.makeGenSchema(); err != nil {
 		return
 	}
+
 	// lift nested extra schemas (inlined types)
 	if b.ExtraSchemas == nil {
 		b.ExtraSchemas = make(map[string]GenSchema, len(pg.ExtraSchemas))
@@ -1080,8 +1084,10 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		br *typeResolver
 		bs *spec.Schema
 	)
-	// these backups are not needed when sch has name.
+
 	if sch.Ref.String() == "" {
+		// backup the type resolver context
+		// (not needed when the schema has a name)
 		br, bs = b.saveResolveContext(rslv, sch)
 	}
 
@@ -1232,7 +1238,7 @@ func deconflictPrincipal(pkg string) string {
 // deconflictPkg renames package names which conflict with standard imports
 func deconflictPkg(pkg string, renamer func(string) string) string {
 	switch pkg {
-	case "api", "httptransport":
+	case "api", "httptransport", "formats":
 		fallthrough
 	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
 		fallthrough
