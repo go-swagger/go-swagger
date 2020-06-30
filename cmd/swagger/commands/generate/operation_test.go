@@ -14,6 +14,14 @@ import (
 )
 
 func TestGenerateOperation(t *testing.T) {
+	testGenerateOperation(t, false)
+}
+
+func TestGenerateOperationStrict(t *testing.T) {
+	testGenerateOperation(t, true)
+}
+
+func testGenerateOperation(t *testing.T, strict bool) {
 	specs := []string{
 		"tasklist.basic.yml",
 	}
@@ -38,6 +46,7 @@ func TestGenerateOperation(t *testing.T) {
 			_, _ = flags.ParseArgs(m, []string{"--name=listTasks"})
 			m.Shared.Spec = flags.Filename(path)
 			m.Shared.Target = flags.Filename(generated)
+			m.Shared.StrictResponders = strict
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)

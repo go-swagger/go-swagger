@@ -120,6 +120,7 @@ type sharedOptions struct {
 	AllowTemplateOverride bool           `long:"allow-template-override" description:"allows overriding protected templates" group:"shared"`
 	SkipValidation        bool           `long:"skip-validation" description:"skips validation of spec prior to generation" group:"shared"`
 	DumpData              bool           `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files" group:"shared"`
+	StrictResponders      bool           `long:"strict-responders" description:"Use strict type for the handler return value"`
 	FlattenCmdOptions
 }
 
@@ -133,6 +134,7 @@ func (s sharedOptions) apply(opts *generator.GenOpts) {
 	opts.DumpData = s.DumpData
 	opts.FlattenOpts = s.FlattenCmdOptions.SetFlattenOptions(opts.FlattenOpts)
 	opts.Copyright = string(s.CopyrightFile)
+	opts.StrictResponders = s.StrictResponders
 
 	swag.AddInitialisms(s.AdditionalInitialisms...)
 }
