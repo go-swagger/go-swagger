@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"bytes"
+	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,91 +12,86 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
-
-	"github.com/corbym/gocrest/is"
-	"github.com/corbym/gocrest/then"
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var assertThat = then.AssertThat
-var equals = is.EqualTo
-
-const (
-	basePath = "../../../fixtures/diff"
-)
+func fixturePath(file string, parts ...string) string {
+	return filepath.Join("..", "..", "..", "fixtures", "diff", strings.Join(append([]string{file}, parts...), ""))
+}
 
 type testCaseData struct {
-	name          string
-	oldSpec       string
-	newSpec       string
-	expectedLines string
+	name            string
+	oldSpec         string
+	newSpec         string
+	expectedError   bool
+	expectedWarning bool
+	expectedLines   io.ReadCloser
+	expectedFile    string
 }
 
 // TestDiffForVariousCombinations - computes the diffs for a number
 // of scenarios and compares the computed diff with expected diffs
 func TestDiffForVariousCombinations(t *testing.T) {
 
-	diffRootPath := basePath + "/"
-	pattern := diffRootPath + "*.diff.txt"
+	pattern := fixturePath("*.diff.txt")
 
 	// To filter cases for debugging poke an individual case here eg "path", "enum" etc
 	// see the test cases in fixtures/diff
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
-	matches := []string{"path"}
-
 	allTests, err := filepath.Glob(pattern)
+	require.NoErrorf(t, err, "could not find test files")
+	require.False(t, len(allTests) == 0, "could not find test files")
 
-	if err != nil || len(allTests) == 0 {
-		t.Fatalf("Couldn't find files")
-	}
+	testCases := makeTestCases(t, allTests)
 
-	if len(matches) == 0 {
-		matches = allTests
-	}
-
-	testCases := []testCaseData{}
-
-	for _, eachFile := range matches {
-		base := filepath.Base(eachFile)
-		parts := strings.Split(base, ".diff.txt")
-		namePart := parts[0]
-		testCases = append(
-			testCases, testCaseData{
-				name:          namePart,
-				oldSpec:       diffRootPath + namePart + ".v1.json",
-				newSpec:       diffRootPath + namePart + ".v2.json",
-				expectedLines: LinesInFile(diffRootPath + namePart + ".diff.txt"),
-			})
-
-	}
-	for _, tc := range testCases {
+	for i, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			cmd := DiffCommand{}
+			cmd.Args.OldSpec = tc.oldSpec
+			cmd.Args.NewSpec = tc.newSpec
+			diffs, err := cmd.getDiffs()
 
-			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
+			if tc.expectedError {
+				// edge cases with error
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
 
-			assertThat(t, err, is.Nil())
+			out, err, warn := diffs.ReportAllDiffs(false)
+			require.NoError(t, err)
 
-			if err == nil {
+			// breaking changes reported with a warning
+			if tc.expectedWarning {
+				assert.Error(t, warn)
+			} else {
+				assert.NoError(t, warn)
+			}
 
-				diffsStr := catchStdOut(t, func() {
-					err = diffs.ReportAllDiffs(false)
-					assertThat(t, err, is.Not(is.Nil()))
-				})
-				assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
+			if !cmdtest.AssertReadersContent(t, true, tc.expectedLines, out) {
+				t.Logf("unexpected content for fixture %q[%d] (file: %s)", tc.name, i, tc.expectedFile)
 			}
 		})
 	}
 }
 
-func TestReadIgnores(t *testing.T) {
+func TestDiffReadIgnores(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
 
-	diffRootPath := basePath + "/"
-	ignorePath := diffRootPath + "ignoreFile.json"
-	ignores, err := readIgnores(ignorePath)
+	cmd := DiffCommand{
+		IgnoreFile: fixturePath("ignoreFile.json"),
+	}
 
-	assertThat(t, err, is.Nil())
-	assertThat(t, len(ignores), is.Not(equals(0)))
+	ignores, err := cmd.readIgnores()
+	require.NoError(t, err)
+	require.True(t, len(ignores) > 0)
 
 	isIn := diff.SpecDifference{DifferenceLocation: diff.DifferenceLocation{
 		Method:   "get",
@@ -105,66 +103,192 @@ func TestReadIgnores(t *testing.T) {
 		Compatibility: diff.NonBreaking,
 		DiffInfo:      "extrovert",
 	}
-	assertThat(t, ignores.Contains(isIn), equals(true))
+	assert.Contains(t, ignores, isIn)
 
-}
-
-func dieOn(err error, t *testing.T) {
-	if err != nil {
-		t.Fatal(err)
+	// edge case
+	cmd = DiffCommand{
+		IgnoreFile: "/someplace/wrong",
 	}
+	_, err = cmd.readIgnores()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "/someplace/wrong")
 }
 
-func TestProcessIgnores(t *testing.T) {
-	diffRootPath := basePath + "/"
-	namePart := "enum"
+func TestDiffProcessIgnores(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	const namePart = "enum"
 	tc := testCaseData{
 		name:          namePart,
-		oldSpec:       diffRootPath + namePart + ".v1.json",
-		newSpec:       diffRootPath + namePart + ".v2.json",
-		expectedLines: LinesInFile(diffRootPath + "ignoreDiffs.json"),
+		oldSpec:       fixturePath(namePart, ".v1.json"),
+		newSpec:       fixturePath(namePart, ".v2.json"),
+		expectedLines: linesInFile(t, fixturePath("ignoreDiffs.json")),
 	}
+
+	reportFile, err := ioutil.TempFile("", "report.txt")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.Remove(reportFile.Name())
+	}()
 
 	cmd := DiffCommand{
-		Format:     "json",
-		IgnoreFile: diffRootPath + "ignoreFile.json",
+		Format:      "json",
+		IgnoreFile:  fixturePath("ignoreFile.json"),
+		Destination: reportFile.Name(),
 	}
+	cmd.Args.OldSpec = tc.oldSpec
+	cmd.Args.NewSpec = tc.newSpec
 
-	diffsStr := catchStdOut(t, func() {
-		err := cmd.Execute([]string{tc.oldSpec, tc.newSpec})
-		assertThat(t, err, is.Nil())
-	})
-	assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
+	err = cmd.Execute([]string{tc.oldSpec, tc.newSpec})
+	require.NoError(t, err)
+
+	output, err := os.Open(cmd.Destination)
+	require.NoError(t, err)
+	defer func() {
+		_ = output.Close()
+	}()
+
+	cmdtest.AssertReadersContent(t, true, tc.expectedLines, output)
 }
 
-func TestNoArgs(t *testing.T) {
+func TestDiffNoArgs(t *testing.T) {
 
 	cmd := DiffCommand{
 		Format:     "json",
 		IgnoreFile: "",
 	}
+	require.Error(t, cmd.Execute(nil))
 
-	err := cmd.Execute([]string{})
-	assertThat(t, err, is.Not(is.Nil()))
+	cmd.Args.NewSpec = "x"
+	require.Error(t, cmd.Execute(nil))
 }
 
-func LinesInFile(fileName string) string {
-	bytes, _ := ioutil.ReadFile(fileName)
-	return string(bytes)
+func TestDiffCannotReport(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	cmd := DiffCommand{
+		OnlyBreakingChanges: true,
+		Format:              "txt",
+		IgnoreFile:          "",
+		Destination:         "/someplace/wrong",
+	}
+	const namePart = "enum"
+	cmd.Args.OldSpec = fixturePath(namePart, ".v1.json")
+	cmd.Args.NewSpec = fixturePath(namePart, ".v2.json")
+	err := cmd.Execute(nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "/someplace/wrong")
 }
 
-func catchStdOut(t *testing.T, runnable func()) string {
+func TestDiffOnlyBreaking(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
 
-	realStdout := os.Stdout
-	defer func() { os.Stdout = realStdout }()
-	r, fakeStdout, err := os.Pipe()
-	dieOn(err, t)
-	os.Stdout = fakeStdout
-	runnable()
-	// need to close here, otherwise ReadAll never gets "EOF".
-	dieOn(fakeStdout.Close(), t)
-	newOutBytes, err := ioutil.ReadAll(r)
-	dieOn(err, t)
-	dieOn(r.Close(), t)
-	return string(newOutBytes)
+	reportDir, err := ioutil.TempDir("", "diff-reports")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(reportDir)
+	}()
+	txtReport := filepath.Join(reportDir, "report.txt")
+
+	cmd := DiffCommand{
+		OnlyBreakingChanges: true,
+		Format:              "txt",
+		IgnoreFile:          "",
+		Destination:         txtReport,
+	}
+
+	const namePart = "enum"
+	cmd.Args.OldSpec = fixturePath(namePart, ".v1.json")
+	cmd.Args.NewSpec = fixturePath(namePart, ".v2.json")
+	err = cmd.Execute(nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "compatibility test FAILED")
+
+	actual, err := os.Open(txtReport)
+	require.NoError(t, err)
+	defer func() {
+		_ = actual.Close()
+	}()
+
+	expected, err := os.Open(fixturePath("enum", ".diff.breaking.txt"))
+	require.NoError(t, err)
+	defer func() {
+		_ = expected.Close()
+	}()
+
+	cmdtest.AssertReadersContent(t, true, expected, actual)
+
+	// assert stdout just the same (we do it just once, so there is no race condition on os.Stdout)
+	cmd.Destination = ""
+	output, err := cmdtest.CatchStdOut(t, func() error { return cmd.Execute(nil) })
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "compatibility test FAILED")
+
+	expected.Seek(0, os.SEEK_SET)
+	result := bytes.NewBuffer(output)
+	cmdtest.AssertReadersContent(t, true, expected, result)
+}
+
+func fixturePart(file string) string {
+	base := filepath.Base(file)
+	parts := strings.Split(base, ".diff.txt")
+	return parts[0]
+}
+
+func hasFixtureBreaking(part string) bool {
+	// these fixtures expect some breaking changes
+	switch part {
+	case "enum", "kitchensink", "param", "path", "response":
+		return true
+	default:
+		return false
+	}
+}
+
+func makeTestCases(t testing.TB, matches []string) []testCaseData {
+	testCases := make([]testCaseData, 0, len(matches)+2)
+	for _, eachFile := range matches {
+		namePart := fixturePart(eachFile)
+
+		testCases = append(
+			testCases, testCaseData{
+				name:            namePart,
+				oldSpec:         fixturePath(namePart, ".v1.json"),
+				newSpec:         fixturePath(namePart, ".v2.json"),
+				expectedLines:   linesInFile(t, fixturePath(namePart, ".diff.txt")),
+				expectedFile:    fixturePath(namePart, ".diff.txt"), // only for debugging failed tests
+				expectedWarning: hasFixtureBreaking(namePart),
+			})
+	}
+
+	// edge cases with errors
+	testCases = append(testCases, testCaseData{
+		name:          "failure to load old spec",
+		oldSpec:       "nowhere.json",
+		newSpec:       fixturePath("enum", ".v2.json"),
+		expectedError: true,
+	},
+		testCaseData{
+			name:          "failure to load new spec",
+			oldSpec:       fixturePath("enum", ".v1.json"),
+			newSpec:       "nowhere.json",
+			expectedError: true,
+		},
+	)
+	return testCases
+}
+
+func linesInFile(t testing.TB, fileName string) io.ReadCloser {
+	file, err := os.Open(fileName)
+	require.NoError(t, err)
+	return file
 }
