@@ -1,111 +1,72 @@
 package diff
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/corbym/gocrest/is"
 	"github.com/go-openapi/loads"
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
+	"github.com/stretchr/testify/require"
 )
 
-const (
-	basePath = "../../../../fixtures/diff"
-)
+func fixturePath(file string, parts ...string) string {
+	return filepath.Join("..", "..", "..", "..", "fixtures", "diff", strings.Join(append([]string{file}, parts...), ""))
+}
 
 type testCaseData struct {
 	name          string
 	oldSpec       string
 	newSpec       string
-	expectedLines string
+	expectedLines io.Reader
+	expectedFile  string
+}
+
+func fixturePart(file string) string {
+	base := filepath.Base(file)
+	parts := strings.Split(base, ".diff.txt")
+	return parts[0]
 }
 
 // TestDiffForVariousCombinations - computes the diffs for a number
 // of scenarios and compares the computed diff with expected diffs
 func TestDiffForVariousCombinations(t *testing.T) {
 
-	diffRootPath := basePath + "/"
-	pattern := diffRootPath + "*.diff.txt"
+	pattern := fixturePath("*.diff.txt")
+	allTests, err := filepath.Glob(pattern)
+	require.NoError(t, err)
+	require.True(t, len(allTests) > 0)
 
 	// To filter cases for debugging poke an individual case here eg "path", "enum" etc
 	// see the test cases in fixtures/diff
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
-	matches := []string{}
+	matches := allTests
 
-	allTests, err := filepath.Glob(pattern)
+	testCases := makeTestCases(t, matches)
 
-	if err != nil || len(allTests) == 0 {
-		t.Fatalf("Couldn't find files")
-	}
-
-	if len(matches) == 0 {
-		matches = allTests
-	}
-
-	testCases := []testCaseData{}
-
-	for _, eachFile := range matches {
-		base := filepath.Base(eachFile)
-		parts := strings.Split(base, ".diff.txt")
-		namePart := parts[0]
-		testCases = append(
-			testCases, testCaseData{
-				name:          namePart,
-				oldSpec:       diffRootPath + namePart + ".v1.json",
-				newSpec:       diffRootPath + namePart + ".v2.json",
-				expectedLines: LinesInFile(diffRootPath + namePart + ".diff.txt"),
-			})
-
-	}
-	for _, tc := range testCases {
+	for i, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
-			assertThat(t, err, is.Nil())
+			require.NoError(t, err)
 
-			if err == nil {
-				diffsStr := catchStdOut(t, func() {
-					err = diffs.ReportAllDiffs(false)
-					if diffs.BreakingChangeCount() > 0 {
-						assertThat(t, err, is.Not(is.Nil()))
-					}
-				})
-				assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
+			out, err, warn := diffs.ReportAllDiffs(false)
+			require.NoError(t, err)
+
+			if !cmdtest.AssertReadersContent(t, true, tc.expectedLines, out) {
+				t.Logf("unexpected content for fixture %q[%d] (file: %s)", tc.name, i, tc.expectedFile)
+			}
+
+			if diffs.BreakingChangeCount() > 0 {
+				require.Error(t, warn)
 			}
 		})
 	}
 
-	assertThat(t, len(matches), is.EqualTo(len(allTests)).Reason("All test cases were not run. Remove filter."))
-}
-
-func LinesInFile(fileName string) string {
-	bytes, _ := ioutil.ReadFile(fileName)
-	return string(bytes)
-}
-
-func catchStdOut(t *testing.T, runnable func()) string {
-
-	realStdout := os.Stdout
-	defer func() { os.Stdout = realStdout }()
-	r, fakeStdout, err := os.Pipe()
-	dieOn(err, t)
-	os.Stdout = fakeStdout
-	runnable()
-	// need to close here, otherwise ReadAll never gets "EOF".
-	dieOn(fakeStdout.Close(), t)
-	newOutBytes, err := ioutil.ReadAll(r)
-	dieOn(err, t)
-	dieOn(r.Close(), t)
-	return string(newOutBytes)
-}
-
-func dieOn(err error, t *testing.T) {
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Equalf(t, len(matches), len(allTests), "All test cases were not run. Remove filter")
 }
 
 func getDiffs(oldSpecPath, newSpecPath string) (SpecDifferences, error) {
@@ -123,4 +84,25 @@ func getDiffs(oldSpecPath, newSpecPath string) (SpecDifferences, error) {
 	}
 
 	return Compare(specDoc1.Spec(), specDoc2.Spec())
+}
+
+func makeTestCases(t testing.TB, matches []string) []testCaseData {
+	testCases := make([]testCaseData, 0, len(matches))
+	for _, eachFile := range matches {
+		namePart := fixturePart(eachFile)
+		testCases = append(
+			testCases, testCaseData{
+				name:          namePart,
+				oldSpec:       fixturePath(namePart, ".v1.json"),
+				newSpec:       fixturePath(namePart, ".v2.json"),
+				expectedLines: linesInFile(t, fixturePath(namePart, ".diff.txt")),
+			})
+	}
+	return testCases
+}
+
+func linesInFile(t testing.TB, fileName string) io.ReadCloser {
+	file, err := os.Open(fileName)
+	require.NoError(t, err)
+	return file
 }

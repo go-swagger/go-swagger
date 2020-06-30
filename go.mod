@@ -3,7 +3,6 @@ module github.com/go-swagger/go-swagger
 go 1.14
 
 require (
-	github.com/corbym/gocrest v1.0.3
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
