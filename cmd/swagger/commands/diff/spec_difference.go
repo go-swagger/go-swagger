@@ -139,7 +139,7 @@ func (sd *SpecDifferences) ReportCompatibility(w io.Writer) error {
 		sd.reportChanges(w, Breaking)
 		return fmt.Errorf("compatibility Test FAILED: %d Breaking changes detected", breakingCount)
 	}
-	fmt.Fprintln(w, "Compatibility test OK. No breaking changes identified.")
+	log.Println("Compatibility test OK. No breaking changes identified.")
 	return nil
 }
 
