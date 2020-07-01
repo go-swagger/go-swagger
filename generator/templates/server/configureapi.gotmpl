@@ -39,6 +39,7 @@ import (
 {{- if not .IncludeMain }} --exclude-main{{ end }}
 {{- if .ExcludeSpec }} --exclude-spec{{ end }}
 {{- if .DumpData }} --dump-data{{ end }}
+{{- if .StrictResponders }} --strict-responders{{ end }}
 {{ end }}
 func configureFlags(api *{{.Package}}.{{ pascalize .Name }}API) {
   // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -108,8 +109,13 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   if api.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler == nil {
     api.{{ if ne .Package $package }}{{pascalize .Package}}{{ end }}{{ pascalize .Name }}Handler =
     {{- .PackageAlias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ .PackageAlias }}.{{- pascalize .Name }}Params
+  {{- if $.GenOpts.StrictResponders }}
+    {{- if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{.Package}}.{{ pascalize .Name }}Responder {
+     return {{.Package}}.{{ pascalize .Name }}NotImplemented()
+  {{ else }}
     {{- if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
       return middleware.NotImplemented("operation {{ .Package}}.{{pascalize .Name}} has not yet been implemented")
+  {{ end -}}
     })
   }
   {{- end }}

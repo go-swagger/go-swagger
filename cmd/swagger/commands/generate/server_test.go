@@ -14,6 +14,14 @@ import (
 )
 
 func TestGenerateServer(t *testing.T) {
+	testGenerateServer(t, false)
+}
+
+func TestGenerateServerStrict(t *testing.T) {
+	testGenerateServer(t, true)
+}
+
+func testGenerateServer(t *testing.T, strict bool) {
 	specs := []string{
 		"billforward.discriminators.yml",
 		"todolist.simplequery.yml",
@@ -46,6 +54,7 @@ func TestGenerateServer(t *testing.T) {
 			}
 			m.Shared.Spec = flags.Filename(path)
 			m.Shared.Target = flags.Filename(generated)
+			m.Shared.StrictResponders = strict
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)

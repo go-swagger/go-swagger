@@ -162,9 +162,9 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 					prop := body.Properties[0]
 					assert.Equal(t, "data", prop.Name)
 					// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
-					assert.Equal(t, "[]*DataItems0", prop.GoType)
+					assert.Equal(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
 				}
-				items := b.ExtraSchemas["DataItems0"]
+				items := b.ExtraSchemas["GetMediaSearchBodyDataItems0"]
 				if assert.NotEmpty(t, items.AllOf) {
 					media := items.AllOf[0]
 					// expect #definitions/media to be captured and reused by ExtraSchema
@@ -233,8 +233,8 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 					assertInCode(t, "type GetMediaSearchOKBody struct {", res)
 					// codegen does not assumes objects are only in models
 					// this is inlined
-					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
-					assertInCode(t, "type DataItems0 struct {", res)
+					assertInCode(t, "Data []*GetMediaSearchOKBodyDataItems0 `json:\"data\"`", res)
+					assertInCode(t, "type GetMediaSearchOKBodyDataItems0 struct {", res)
 					// this is a definition: expect this definition to be reused from the models pkg
 					assertInCode(t, "models.Media", res)
 				} else {

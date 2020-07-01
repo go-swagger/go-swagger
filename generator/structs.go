@@ -172,6 +172,9 @@ type GenResponse struct {
 	DefaultImports map[string]string
 
 	Extensions map[string]interface{}
+
+	StrictResponders bool
+	OperationName    string
 }
 
 // GenHeader represents a header on a response for code generation
@@ -497,6 +500,8 @@ type GenOperation struct {
 	TimeoutName        string
 
 	Extensions map[string]interface{}
+
+	StrictResponders bool
 }
 
 // GenOperations represents a list of operations to generate

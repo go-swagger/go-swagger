@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path"
@@ -278,7 +279,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				if err != nil {
 					return nil, err
 				}
-				ref = rsch.Ref
 				if rsch != nil && rsch.Ref.String() != "" {
 					ref = rsch.Ref
 					continue
@@ -428,6 +428,9 @@ type schemaGenContext struct {
 	Discriminator  *discor
 	Discriminated  *discee
 	Discrimination *discInfo
+
+	// force to use container in inlined definitions (for deconflicting)
+	UseContainerInName bool
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -714,7 +717,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		var hasValidation bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			// this is an anonymous complex construct: build a new new type for it
-			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
+			pg := sg.makeNewStruct(sg.makeRefName()+swag.ToGoName(k), v)
 			pg.IsTuple = sg.IsTuple
 			if sg.Path != "" {
 				pg.Path = sg.Path + "+ \".\"+" + fmt.Sprintf("%q", k)
@@ -768,7 +771,9 @@ func (sg *schemaGenContext) buildProperties() error {
 				if err != nil {
 					return err
 				}
-				ref = rsch.Ref
+				if rsch == nil {
+					return errors.New("spec.ResolveRef returned nil schema")
+				}
 				if rsch != nil && rsch.Ref.String() != "" {
 					ref = rsch.Ref
 					continue
@@ -898,7 +903,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 			// - nested allOf: this one is itself a AllOf: build a new type for it
 			// - anonymous simple types for edge cases: array, primitive, interface{}
 			// NOTE: when branches are aliased or anonymous, the nullable property in the branch type is lost.
-			name := swag.ToVarName(goName(&sch, sg.Name+"AllOf"+strconv.Itoa(i)))
+			name := swag.ToVarName(goName(&sch, sg.makeRefName()+"AllOf"+strconv.Itoa(i)))
 			debugLog("building anonymous nested allOf in %s: %s", sg.Name, name)
 			ng := sg.makeNewStruct(name, sch)
 			if err := ng.makeGenSchema(); err != nil {
@@ -991,7 +996,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 			//reached the end of the rabbit hole
 			if tpe.IsComplexObject && tpe.IsAnonymous {
 				// found an anonymous object: create the struct from a newly created definition
-				nw := l.Context.makeNewStruct(l.Context.Name+" Anon", *l.Type.AdditionalProperties.Schema)
+				nw := l.Context.makeNewStruct(l.Context.makeRefName()+" Anon", *l.Type.AdditionalProperties.Schema)
 				sch := spec.RefProperty("#/definitions/" + nw.Name)
 				l.NewObj = nw
 
@@ -1216,7 +1221,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 
 		if tpe.IsComplexObject && tpe.IsAnonymous {
 			// if the AdditionalProperties is an anonymous complex object, generate a new type for it
-			pg := sg.makeNewStruct(sg.Name+" Anon", *addp.Schema)
+			pg := sg.makeNewStruct(sg.makeRefName()+" Anon", *addp.Schema)
 			if err := pg.makeGenSchema(); err != nil {
 				return err
 			}
@@ -1375,7 +1380,7 @@ func (sg *schemaGenContext) buildArray() error {
 
 	// check if the element is a complex object, if so generate a new type for it
 	if tpe.IsComplexObject && tpe.IsAnonymous {
-		pg := sg.makeNewStruct(sg.Name+" items"+strconv.Itoa(sg.Index), *sg.Schema.Items.Schema)
+		pg := sg.makeNewStruct(sg.makeRefName()+" items"+strconv.Itoa(sg.Index), *sg.Schema.Items.Schema)
 		if err := pg.makeGenSchema(); err != nil {
 			return err
 		}
@@ -1477,7 +1482,7 @@ func (sg *schemaGenContext) buildItems() error {
 				}
 				if tpe.IsComplexObject && tpe.IsAnonymous {
 					// if the tuple element is an anonymous complex object, build a new type for it
-					pg := sg.makeNewStruct(sg.Name+" Items"+strconv.Itoa(i), s)
+					pg := sg.makeNewStruct(sg.makeRefName()+" Items"+strconv.Itoa(i), s)
 					if err := pg.makeGenSchema(); err != nil {
 						return err
 					}
@@ -1545,7 +1550,7 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 			return err
 		}
 		if tpe.IsComplexObject && tpe.IsAnonymous {
-			pg := sg.makeNewStruct(sg.Name+" Items", *sg.Schema.AdditionalItems.Schema)
+			pg := sg.makeNewStruct(sg.makeRefName()+" Items", *sg.Schema.AdditionalItems.Schema)
 			if err := pg.makeGenSchema(); err != nil {
 				return err
 			}
@@ -1766,6 +1771,15 @@ func (sg *schemaGenContext) buildAliased() error {
 		sg.GenSchema.IsAliased = !strings.HasPrefix(sg.GenSchema.GoType, "[]")
 	}
 	return nil
+}
+
+func (sg schemaGenContext) makeRefName() string {
+	// figure out a longer name for deconflicting anonymous models.
+	// This is used when makeNewStruct() is followed by the creation of a new ref to definitions
+	if sg.UseContainerInName && sg.Container != sg.Name {
+		return sg.Container + swag.ToGoName(sg.Name)
+	}
+	return sg.Name
 }
 
 func (sg *schemaGenContext) GoName() string {

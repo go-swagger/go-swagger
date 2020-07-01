@@ -4433,6 +4433,10 @@ func TestGenParameter_Issue2167(t *testing.T) {
 	}
 }
 func TestGenParameter_Issue2273(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
 	assert := assert.New(t)
 
 	gen, err := opBuilder("postSnapshot", "../fixtures/bugs/2273/swagger.json")
@@ -4446,7 +4450,6 @@ func TestGenParameter_Issue2273(t *testing.T) {
 				ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
 				if assert.NoError(err) {
 					res := string(ff)
-					fmt.Println(res)
 					assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", res)
 				} else {
 					fmt.Println(buf.String())

@@ -126,7 +126,7 @@ func Test_Shared_ReadConfig(t *testing.T) {
 	tmpConfig := tmpFile.Name()
 	errio = ioutil.WriteFile(tmpConfig, []byte(`param: 123
 other: abc
-`), 0644)
+`), 0600)
 	require.NoError(t, errio)
 	_ = tmpFile.Close()
 
