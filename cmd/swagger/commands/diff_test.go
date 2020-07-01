@@ -77,13 +77,47 @@ func TestDiffForVariousCombinations(t *testing.T) {
 			if err == nil {
 
 				diffsStr := catchStdOut(t, func() {
-					err = diffs.ReportAllDiffs(false)
+					err = diffs.ReportAllDiffs(os.Stdout, false)
 					assertThat(t, err, is.Not(is.Nil()))
 				})
 				assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(tc.expectedLines))
 			}
 		})
 	}
+}
+
+func TestDestParamRedirectsToFile(t *testing.T) {
+	// create a random filename
+	tmpfile, err := ioutil.TempFile("", "example")
+	if err != nil {
+		t.Error(err)
+	}
+	tmpfile.Close()
+	os.Remove(tmpfile.Name()) // clean up
+
+	diffRootPath := basePath + "/"
+	// do a diff with that set to the output
+	// should be not much sent to std out
+	// output should be infile
+	cmd := DiffCommand{
+		Destination: tmpfile.Name(),
+	}
+
+	namePart := "enum"
+	spec1 := diffRootPath + namePart + ".v1.json"
+	spec2 := diffRootPath + namePart + ".v2.json"
+	expectedDiffContent := LinesInFile(diffRootPath + namePart + ".diff.txt")
+
+	diffsStr := catchStdOut(t, func() {
+		err := cmd.Execute([]string{spec1, spec2})
+		assertThat(t, err, is.Not(is.Nil()))
+	})
+
+	diffsInFile := LinesInFile(cmd.Destination)
+
+	assertThat(t, diffsInFile, is.EqualToIgnoringWhitespace(expectedDiffContent))
+	assertThat(t, diffsStr, is.EqualToIgnoringWhitespace(""))
+
 }
 
 func TestReadIgnores(t *testing.T) {

@@ -2,6 +2,7 @@ package diff
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"sort"
 )
@@ -131,18 +132,18 @@ func (sd SpecDifferences) addDiff(diff SpecDifference) SpecDifferences {
 }
 
 // ReportCompatibility lists and spec
-func (sd *SpecDifferences) ReportCompatibility() error {
+func (sd *SpecDifferences) ReportCompatibility(w io.Writer) error {
 	breakingCount := sd.BreakingChangeCount()
 	if breakingCount > 0 {
-		fmt.Printf("\nBREAKING CHANGES:\n=================\n")
-		sd.reportChanges(Breaking)
+		fmt.Fprintln(w, "\nBREAKING CHANGES:\n=================")
+		sd.reportChanges(w, Breaking)
 		return fmt.Errorf("compatibility Test FAILED: %d Breaking changes detected", breakingCount)
 	}
-	log.Printf("Compatibility test OK. No breaking changes identified.")
+	fmt.Fprintln(w, "Compatibility test OK. No breaking changes identified.")
 	return nil
 }
 
-func (sd SpecDifferences) reportChanges(compat Compatibility) {
+func (sd SpecDifferences) reportChanges(w io.Writer, compat Compatibility) {
 	toReportList := []string{}
 
 	for _, diff := range sd {
@@ -156,12 +157,12 @@ func (sd SpecDifferences) reportChanges(compat Compatibility) {
 	})
 
 	for _, eachDiff := range toReportList {
-		fmt.Println(eachDiff)
+		fmt.Fprintln(w, eachDiff)
 	}
 }
 
 // ReportAllDiffs lists all the diffs between two specs
-func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) error {
+func (sd SpecDifferences) ReportAllDiffs(output io.Writer, fmtJSON bool) error {
 	if fmtJSON {
 
 		b, err := JSONMarshal(sd)
@@ -172,19 +173,19 @@ func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) error {
 		if err != nil {
 			log.Fatalf("Couldn't print results: %v", err)
 		}
-		fmt.Println(string(pretty))
+		fmt.Fprintln(output, string(pretty))
 		return nil
 	}
 	numDiffs := len(sd)
 	if numDiffs == 0 {
-		fmt.Println("No changes identified")
+		fmt.Fprintln(output, "No changes identified")
 		return nil
 	}
 
 	if numDiffs != sd.BreakingChangeCount() {
-		fmt.Println("NON-BREAKING CHANGES:\n=====================")
-		sd.reportChanges(NonBreaking)
+		fmt.Fprintln(output, "NON-BREAKING CHANGES:\n=====================")
+		sd.reportChanges(output, NonBreaking)
 	}
 
-	return sd.ReportCompatibility()
+	return sd.ReportCompatibility(output)
 }

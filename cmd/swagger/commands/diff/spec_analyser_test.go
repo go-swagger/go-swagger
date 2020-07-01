@@ -68,7 +68,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 
 			if err == nil {
 				diffsStr := catchStdOut(t, func() {
-					err = diffs.ReportAllDiffs(false)
+					err = diffs.ReportAllDiffs(os.Stdout, false)
 					if diffs.BreakingChangeCount() > 0 {
 						assertThat(t, err, is.Not(is.Nil()))
 					}

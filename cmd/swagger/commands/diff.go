@@ -39,33 +39,51 @@ func (c *DiffCommand) Execute(args []string) error {
 	log.Printf("IgnoreFile (-i) :%s", c.IgnoreFile)
 	log.Printf("Diff Report Destination (-d) :%s", c.Destination)
 
+	log.Println("Calc diffs")
 	diffs, err := getDiffs(args[0], args[1])
 	if err != nil {
 		return err
 	}
 
-	ignores, err := readIgnores(c.IgnoreFile)
-	if err != nil {
-		return err
-	}
-	diffs = diffs.FilterIgnores(ignores)
-	if len(ignores) > 0 {
-		log.Printf("Diff Report Ignored Items from IgnoreFile")
-		for _, eachItem := range ignores {
-			log.Printf("%s", eachItem.String())
+	if len(c.IgnoreFile) > 0 {
+		log.Println("Read ignores")
+		ignores, err := readIgnores(c.IgnoreFile)
+		if err != nil {
+			return err
 		}
+		diffs = diffs.FilterIgnores(ignores)
+		if len(ignores) > 0 {
+			log.Printf("Diff Report Ignored Items from IgnoreFile")
+			for _, eachItem := range ignores {
+				log.Printf("%s", eachItem.String())
+			}
+		}
+	}
+	output := os.Stdout
+
+	if c.Destination != "stdout" {
+		log.Println("Create file output")
+
+		fOut, err := os.Create(c.Destination)
+		if err != nil {
+			log.Printf("Could not create file %s", c.Destination)
+			return err
+		}
+		defer fOut.Close()
+		output = fOut
+
 	}
 
 	if c.Format == JSONFormat {
-		err = diffs.ReportAllDiffs(true)
+		err = diffs.ReportAllDiffs(output, true)
 		if err != nil {
 			return err
 		}
 	} else {
 		if c.OnlyBreakingChanges {
-			err = diffs.ReportCompatibility()
+			err = diffs.ReportCompatibility(output)
 		} else {
-			err = diffs.ReportAllDiffs(false)
+			err = diffs.ReportAllDiffs(output, false)
 		}
 	}
 	return err
