@@ -62,7 +62,7 @@ func (c *DiffCommand) Execute(args []string) error {
 	output := os.Stdout
 
 	if c.Destination != "stdout" {
-		log.Println("Create file output")
+		log.Printf("Create file output <%s>\n", c.Destination)
 
 		fOut, err := os.Create(c.Destination)
 		if err != nil {

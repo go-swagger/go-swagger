@@ -160,8 +160,9 @@ func TestProcessIgnores(t *testing.T) {
 	}
 
 	cmd := DiffCommand{
-		Format:     "json",
-		IgnoreFile: diffRootPath + "ignoreFile.json",
+		Format:      "json",
+		IgnoreFile:  diffRootPath + "ignoreFile.json",
+		Destination: "stdout",
 	}
 
 	diffsStr := catchStdOut(t, func() {
