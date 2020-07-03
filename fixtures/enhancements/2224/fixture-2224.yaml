@@ -1,0 +1,106 @@
+swagger: "2.0"
+info:
+  title: "external types with hints"
+  version: "0.0.1"
+paths:
+  "/":
+    post:
+      tags:
+      - hotspot
+      summary: Create a Hotspot
+      operationId: "CreateHotspot"
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: Hotspot
+        required: false
+        schema:
+          $ref: '#/definitions/Hotspot'
+      responses:
+        201:
+          description: Hotspot created.
+          schema:
+            $ref: '#/definitions/Hotspot'
+        400:
+          description: Bad request.
+          schema:
+            $ref: '#/definitions/Error'
+        422:
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/Error'
+        500:
+          description: Unexpected error.
+          schema:
+            $ref: '#/definitions/Error'
+  "/embedded":
+    get:
+      tags:
+      - embedded
+      responses:
+        201:
+          description: embedded type
+          schema:
+            $ref: '#/definitions/Embedded'
+
+definitions:
+  Error:
+    type: object
+
+  Hotspot:
+    x-go-type:
+      type: Hotspot
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+      hints:
+        kind: object
+    x-nullable: true
+
+  HotspotNoHint:
+    type: object
+    x-go-type:
+      type: Hotspot
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+    x-nullable: true
+
+  ExternalArray:
+    x-go-type:
+      type: HotArray
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+        hints:
+          kind: array
+    x-nullable: true
+
+  ExternalArrayNoHint:
+    type: array
+    items:
+      type: object
+    x-go-type:
+      type: HotArray
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+    x-nullable: true
+
+  ExternalPrimitive:
+    x-go-type:
+      type: Time
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+        hints:
+          kind: primitive
+    x-nullable: true
+
+  Embedded:
+    x-go-type:
+      type: Hotspot
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+      hints:
+        kind: object
+      embedded: true
+    x-go-name: "externalWithEmbed"
