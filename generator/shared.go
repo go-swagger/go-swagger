@@ -267,6 +267,7 @@ type GenOpts struct {
 	IgnoreOperations       bool
 	AllowEnumCI            bool
 	StrictResponders       bool
+	AcceptDefinitionsOnly  bool
 }
 
 // CheckOpts carries out some global consistency checks on options.
@@ -396,7 +397,7 @@ func (g *GenOpts) EnsureDefaults() error {
 	}
 
 	// always include validator with models
-	g.IncludeValidator = g.IncludeModel
+	g.IncludeValidator = true
 
 	if g.Principal == "" {
 		g.Principal = iface

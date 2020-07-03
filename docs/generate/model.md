@@ -15,8 +15,8 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [model command options]
-          --skip-struct                                                           when present will not generate the model struct
       -n, --name=                                                                 the model to generate, repeat for multiple (defaults to all). Same as --models
+          --accept-definitions-only                                               accepts a partial swagger spec wih only the definitions key
 
     Options common to all code generation commands:
       -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
@@ -29,6 +29,7 @@ Help Options:
           --allow-template-override                                               allows overriding protected templates
           --skip-validation                                                       skips validation of spec prior to generation
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --strict-responders                                                     Use strict type for the handler return value
           --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
           --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
 
@@ -38,6 +39,7 @@ Help Options:
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
           --keep-spec-order                                                       keep schema properties order identical to spec file
+          --struct-tags=                                                          the struct tags to generate, repeat for multiple (defaults to json)
 ```
 
 Schema generation rules are detailed [here](../use/model.md).

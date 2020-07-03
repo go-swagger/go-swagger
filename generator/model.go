@@ -47,7 +47,23 @@ Every action that happens tracks the path which is a linked list of refs
 
 */
 
-// GenerateDefinition generates a model file for a schema definition.
+// GenerateModels generates all model files for some schema definitions
+func GenerateModels(modelNames []string, opts *GenOpts) error {
+	// overide any default or incompatible options setting
+	opts.IncludeModel = true
+	opts.IgnoreOperations = true
+	opts.ExistingModels = ""
+	opts.IncludeHandler = false
+	opts.IncludeMain = false
+	opts.IncludeSupport = false
+	generator, err := newAppGenerator("", modelNames, nil, opts)
+	if err != nil {
+		return err
+	}
+	return generator.Generate()
+}
+
+// GenerateDefinition generates a single model file for some schema definitions
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	if err := opts.CheckOpts(); err != nil {
 		return err
@@ -62,6 +78,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		return err
 	}
 
+	modelNames = pruneEmpty(modelNames)
 	if len(modelNames) == 0 {
 		for k := range specDoc.Spec().Definitions {
 			modelNames = append(modelNames, k)

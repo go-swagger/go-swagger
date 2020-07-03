@@ -100,7 +100,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			IncludeHandler:       opts.IncludeHandler,
 			IncludeParameters:    opts.IncludeParameters,
 			IncludeResponses:     opts.IncludeResponses,
-			IncludeValidator:     true, // we no more support the CLI option to disable validation
+			IncludeValidator:     opts.IncludeValidator,
 			DumpData:             opts.DumpData,
 			DefaultScheme:        opts.DefaultScheme,
 			DefaultProduces:      opts.DefaultProduces,
@@ -1074,7 +1074,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		TypeResolver:               rslv,
 		Named:                      false,
 		IncludeModel:               true,
-		IncludeValidator:           true,
+		IncludeValidator:           b.GenOpts.IncludeValidator,
 		StrictAdditionalProperties: b.GenOpts.StrictAdditionalProperties,
 		ExtraSchemas:               make(map[string]GenSchema),
 		StructTags:                 b.GenOpts.StructTags,
