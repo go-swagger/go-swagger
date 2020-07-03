@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,24 +15,53 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenerateAndTest(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		// don't run race tests on Appveyor CI
-		t.SkipNow()
+type generateFixture struct {
+	name   string
+	spec   string
+	target string
+	//template  string
+	wantError bool
+	prepare   func(opts *GenOpts)
+	verify    func(testing.TB, string)
+}
+
+func (f generateFixture) prepareTarget(name, base string, opts *GenOpts) func() {
+	if name == "" {
+		name = f.name
 	}
+	spec := filepath.FromSlash(f.spec)
+	if f.target == "" {
+		opts.Target = filepath.Join(filepath.Dir(spec), opts.LanguageOpts.ManglePackageName(name, base))
+	} else {
+		opts.Target = f.target
+	}
+	opts.Spec = spec
+	_ = os.Mkdir(opts.Target, 0700)
+	return func() {
+		if f.target == "" {
+			_ = os.RemoveAll(filepath.Join(opts.Target))
+			return
+		}
+		_ = os.RemoveAll(filepath.Join(f.target, defaultServerTarget))
+		_ = os.RemoveAll(filepath.Join(f.target, "cmd"))
+		_ = os.RemoveAll(filepath.Join(f.target, defaultModelsTarget))
+	}
+}
+
+func (f generateFixture) warnFailed(t testing.TB, buf fmt.Stringer) func() {
+	return func() {
+		if t.Failed() {
+			t.Logf("ERROR: generation failed:\n%s", buf.String())
+		}
+	}
+}
+
+func TestGenerateAndTest(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
 
-	cases := map[string]struct {
-		name      string
-		spec      string
-		target    string
-		template  string
-		wantError bool
-		prepare   func(opts *GenOpts)
-		verify    func(testing.TB, string)
-	}{
+	cases := map[string]generateFixture{
 		"issue 1943": {
 			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
 			target: "../fixtures/bugs/1943",
@@ -39,6 +69,11 @@ func TestGenerateAndTest(t *testing.T) {
 				opts.ExcludeSpec = false
 			},
 			verify: func(t testing.TB, target string) {
+				if runtime.GOOS == "windows" {
+					// don't run race tests on Appveyor CI
+					t.Logf("warn: race test skipped on windows")
+					return
+				}
 				packages := filepath.Join(target, "...")
 				testPrg := filepath.Join(target, "datarace_test.go")
 
@@ -210,35 +245,14 @@ func TestGenerateAndTest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var captureLog bytes.Buffer
 			log.SetOutput(&captureLog)
+			defer thisCas.warnFailed(t, &captureLog)
 
-			defer func() {
-				if t.Failed() {
-					t.Logf("ERROR: generation failed:\n%s", captureLog.String())
-				}
-			}()
-			spec := filepath.FromSlash(thisCas.spec)
 			opts := testGenOpts()
-			if thisCas.target == "" {
-				opts.Target = filepath.Join(filepath.Dir(spec), opts.LanguageOpts.ManglePackageName(name, "server_test"))
-			} else {
-				opts.Target = thisCas.target
-			}
-			_ = os.Mkdir(opts.Target, 0755)
-
-			opts.Spec = spec
+			defer thisCas.prepareTarget(name, "server_test", opts)()
 
 			if thisCas.prepare != nil {
 				thisCas.prepare(opts)
 			}
-			defer func() {
-				if thisCas.target == "" {
-					_ = os.RemoveAll(filepath.Join(opts.Target))
-				} else {
-					_ = os.RemoveAll(filepath.Join(opts.Target, defaultServerTarget))
-					_ = os.RemoveAll(filepath.Join(opts.Target, "cmd"))
-					_ = os.RemoveAll(filepath.Join(opts.Target, defaultModelsTarget))
-				}
-			}()
 
 			t.Logf("generating test server at: %s", opts.Target)
 			err := GenerateServer("", nil, nil, opts)

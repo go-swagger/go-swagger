@@ -144,7 +144,7 @@ func (a *appGenerator) Generate() error {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, mod := range app.Models {
 			mod.IncludeModel = true
-			mod.IncludeValidator = true // we systematically include model validation code (previous CLI flag to skip this is gone)
+			mod.IncludeValidator = a.GenOpts.IncludeValidator
 			if err := a.GenOpts.renderDefinition(&mod); err != nil {
 				return err
 			}
@@ -272,7 +272,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Operation:        *o,
 			Method:           opp.Method,
 			Path:             opp.Path,
-			IncludeValidator: true,
+			IncludeValidator: a.GenOpts.IncludeValidator,
 			APIPackage:       a.APIPackage, // defaults to main operations package
 			DefaultProduces:  a.DefaultProduces,
 			DefaultConsumes:  a.DefaultConsumes,

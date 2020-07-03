@@ -27,7 +27,7 @@ type modelOptions struct {
 	ExistingModels             string   `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 	StrictAdditionalProperties bool     `long:"strict-additional-properties" description:"disallow extra properties when additionalProperties is set to false"`
 	KeepSpecOrder              bool     `long:"keep-spec-order" description:"keep schema properties order identical to spec file"`
-	AllDefinitions             bool     `long:"all-definitions" description:"generate all model definitions regardless of usage in operations"`
+	AllDefinitions             bool     `long:"all-definitions" description:"generate all model definitions regardless of usage in operations" hidden:"deprecated"`
 	StructTags                 []string `long:"struct-tags" description:"the struct tags to generate, repeat for multiple (defaults to json)"`
 }
 
@@ -41,19 +41,23 @@ func (mo modelOptions) apply(opts *generator.GenOpts) {
 	opts.StructTags = mo.StructTags
 }
 
-// WithModels adds the model options group
+// WithModels adds the model options group.
+//
+// This group is available to all commands that need some model generation.
 type WithModels struct {
 	Models modelOptions `group:"Options for model generation"`
 }
 
-// Model the generate model file command
+// Model the generate model file command.
+//
+// Define the options that are specific to the "swagger generate model" command.
 type Model struct {
 	WithShared
 	WithModels
 
-	NoStruct bool `long:"skip-struct" description:"when present will not generate the model struct"`
-
-	Name []string `long:"name" short:"n" description:"the model to generate, repeat for multiple (defaults to all). Same as --models"`
+	NoStruct              bool     `long:"skip-struct" description:"when present will not generate the model struct" hidden:"deprecated"`
+	Name                  []string `long:"name" short:"n" description:"the model to generate, repeat for multiple (defaults to all). Same as --models"`
+	AcceptDefinitionsOnly bool     `long:"accept-definitions-only" description:"accepts a partial swagger spec wih only the definitions key"`
 }
 
 func (m Model) apply(opts *generator.GenOpts) {
@@ -62,6 +66,7 @@ func (m Model) apply(opts *generator.GenOpts) {
 
 	opts.IncludeModel = !m.NoStruct
 	opts.IncludeValidator = !m.NoStruct
+	opts.AcceptDefinitionsOnly = m.AcceptDefinitionsOnly
 }
 
 func (m Model) log(rp string) {
@@ -77,17 +82,13 @@ You can get these now with: go get -u -f %s/...
 }
 
 func (m *Model) generate(opts *generator.GenOpts) error {
-	// NOTE: at the moment, the model generator (generator.GenerateDefinition)
-	// is not standalone: use server generator as a proxy
-	opts.IncludeSupport = false
-	opts.IncludeMain = false
-	return generator.GenerateServer("", append(m.Name, m.Models.Models...), nil, opts)
+	return generator.GenerateModels(append(m.Name, m.Models.Models...), opts)
 }
 
 // Execute generates a model file
 func (m *Model) Execute(args []string) error {
 
-	if m.Shared.DumpData && (len(m.Name) > 1 || len(m.Models.Models) > 1) {
+	if m.Shared.DumpData && len(append(m.Name, m.Models.Models...)) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
 

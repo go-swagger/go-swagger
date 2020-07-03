@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type templateTest struct {
@@ -2653,5 +2655,67 @@ func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestGenerateModels(t *testing.T) {
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	cases := map[string]generateFixture{
+		"allDefinitions": {
+			spec:   "../fixtures/bugs/1042/fixture-1042.yaml",
+			target: "../fixtures/bugs/1042",
+			verify: func(t testing.TB, target string) {
+				target = filepath.Join(target, defaultModelsTarget)
+				require.True(t, fileExists(target, ""))
+				assert.True(t, fileExists(target, "a.go"))
+				assert.True(t, fileExists(target, "b.go"))
+			},
+		},
+		"acceptDefinitions": {
+			spec:   "../fixtures/enhancements/2333/fixture-definitions.yaml",
+			target: "../fixtures/enhancements/2333",
+			prepare: func(opts *GenOpts) {
+				opts.AcceptDefinitionsOnly = true
+			},
+			verify: func(t testing.TB, target string) {
+				target = filepath.Join(target, defaultModelsTarget)
+				require.True(t, fileExists(target, ""))
+				assert.True(t, fileExists(target, "model_interface.go"))
+				assert.True(t, fileExists(target, "records_model.go"))
+				assert.True(t, fileExists(target, "records_model_with_max.go"))
+				assert.False(t, fileExists(target, "restapi"))
+			},
+		},
+	}
+	for name, cas := range cases {
+		thisCas := cas
+
+		t.Run(name, func(t *testing.T) {
+			var captureLog bytes.Buffer
+			log.SetOutput(&captureLog)
+			defer thisCas.warnFailed(t, &captureLog)
+
+			opts := testGenOpts()
+			defer thisCas.prepareTarget(name, "model_test", opts)()
+
+			if thisCas.prepare != nil {
+				thisCas.prepare(opts)
+			}
+
+			t.Logf("generating test models at: %s", opts.Target)
+			err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
+			if thisCas.wantError {
+				require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
+			} else {
+				require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
+			}
+
+			if thisCas.verify != nil {
+				thisCas.verify(t, opts.Target)
+			}
+		})
 	}
 }
