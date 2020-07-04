@@ -173,6 +173,10 @@ func shallowValidationLookup(sch GenSchema) bool {
 	// and NeedsValidation (e.g. should have a Validate method with something in it).
 	// The latter was almost not used anyhow.
 
+	if sch.HasAdditionalProperties && sch.AdditionalProperties == nil {
+		log.Printf("warning: schema for additional properties in schema %q is empty. skipped", sch.Name)
+	}
+
 	if sch.IsArray && sch.HasValidations {
 		return true
 	}
@@ -200,11 +204,11 @@ func shallowValidationLookup(sch GenSchema) bool {
 	if sch.IsTuple && (sch.AdditionalItems != nil && (sch.AdditionalItems.HasValidations || sch.AdditionalItems.Required)) {
 		return true
 	}
-	if sch.HasAdditionalProperties && (sch.AdditionalProperties.IsInterface || sch.AdditionalProperties.IsStream) {
+	if sch.HasAdditionalProperties && sch.AdditionalProperties != nil && (sch.AdditionalProperties.IsInterface || sch.AdditionalProperties.IsStream) {
 		return false
 	}
 
-	if sch.HasAdditionalProperties && (sch.AdditionalProperties.HasValidations || sch.AdditionalProperties.Required || sch.AdditionalProperties.IsAliased && !(sch.AdditionalProperties.IsInterface || sch.AdditionalProperties.IsStream)) {
+	if sch.HasAdditionalProperties && sch.AdditionalProperties != nil && (sch.AdditionalProperties.HasValidations || sch.AdditionalProperties.Required || sch.AdditionalProperties.IsAliased && !(sch.AdditionalProperties.IsInterface || sch.AdditionalProperties.IsStream)) {
 		return true
 	}
 
@@ -288,6 +292,10 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		// replace the ref with this new genschema
 		swsp := specDoc.Spec()
 		for i, ss := range schema.AllOf {
+			if pg.GenSchema.AllOf == nil {
+				log.Printf("warning: resolved schema for subtype %q.AllOf[%d] is empty. skipped", name, i)
+				continue
+			}
 			ref := ss.Ref
 			for ref.String() != "" {
 				var rsch *spec.Schema

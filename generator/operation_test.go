@@ -1482,3 +1482,56 @@ func TestDeconflictTag(t *testing.T) {
 	assert.Equal(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
 	assert.Equal(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
 }
+
+func TestGenServer_2161_panic(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
+		IncludeModel:      true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+		IsClient:          false,
+	}
+	if err := opts.EnsureDefaults(); err != nil {
+		panic(err)
+	}
+
+	opts.StrictAdditionalProperties = true
+
+	appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	var selectedOp int
+	for i := range op.Operations {
+		if op.Operations[i].Name == "configuration_update_configuration_module" {
+			selectedOp = i
+		}
+	}
+	require.NotEmpty(t, selectedOp, "dev error: invalid test vs fixture")
+
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp])
+	require.NoError(t, err)
+
+	_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
+	require.NoError(t, err)
+
+	// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
+	// The test with this fix simply asserts that there is no panic / internal error with building this.
+
+	if t.Failed() {
+		fmt.Println(buf.String())
+	}
+}
