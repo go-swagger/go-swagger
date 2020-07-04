@@ -364,11 +364,10 @@ func TestGenClient_1518(t *testing.T) {
 
 	for fileToInspect, expectedCode := range fixtureConfig {
 		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
-		if assert.NoError(t, err) {
-			for line, codeLine := range expectedCode {
-				if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
-					t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
-				}
+		require.NoError(t, err)
+		for line, codeLine := range expectedCode {
+			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
 			}
 		}
 	}

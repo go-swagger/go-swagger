@@ -8,38 +8,38 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Statix"
-		schema := definitions[k]
+	require.NoError(t, err)
 
-		tr := newTypeResolver("models", specDoc)
-		specDoc.Spec().Definitions["StatixItems0"] = *schema.Items.Schema.Items.Schema.Items.Schema
-		schema.Items.Schema.Items.Schema.Items.Schema = spec.RefProperty("#/definitions/StatixItems0")
-		tr.KnownDefs["StatixItems0"] = struct{}{}
-		tr.ModelName = k
-		rt, err := tr.ResolveSchema(&schema, false, false)
-		if assert.NoError(t, err) {
-			assert.Equal(t, "[][][]models.StatixItems0", rt.AliasedType)
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "Statix"
+	schema := definitions[k]
+
+	tr := newTypeResolver("models", specDoc)
+	specDoc.Spec().Definitions["StatixItems0"] = *schema.Items.Schema.Items.Schema.Items.Schema
+	schema.Items.Schema.Items.Schema.Items.Schema = spec.RefProperty("#/definitions/StatixItems0")
+	tr.KnownDefs["StatixItems0"] = struct{}{}
+	tr.ModelName = k
+	rt, err := tr.ResolveSchema(&schema, false, false)
+	require.NoError(t, err)
+
+	assert.Equal(t, "[][][]models.StatixItems0", rt.AliasedType)
 }
 
 func TestTypeResolver_PointerLifting(t *testing.T) {
 	_, resolver, err := basicTaskListResolver(t)
+	require.NoError(t, err)
 
-	if assert.NoError(t, err) {
-		testPointToPrimitives(t, *resolver, false /* not aliased */)
-		testPointToPrimitives(t, *resolver, true /* aliased */)
-		testPointToSliceElements(t, *resolver, false /* not aliased */)
-		testPointToSliceElements(t, *resolver, true /* aliased */)
-		testPointToAdditionalPropertiesElements(t, *resolver, false /* not aliased */)
-		testPointToAdditionalPropertiesElements(t, *resolver, true /* aliased */)
-	}
+	testPointToPrimitives(t, *resolver, false /* not aliased */)
+	testPointToPrimitives(t, *resolver, true /* aliased */)
+	testPointToSliceElements(t, *resolver, false /* not aliased */)
+	testPointToSliceElements(t, *resolver, true /* aliased */)
+	testPointToAdditionalPropertiesElements(t, *resolver, false /* not aliased */)
+	testPointToAdditionalPropertiesElements(t, *resolver, true /* aliased */)
 }
 
 type builtinVal struct {
@@ -537,31 +537,30 @@ func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int,
 	sch.MaxLength = val.MaxLength
 
 	rt, err := resolver.ResolveSchema(sch, !aliased, val.Required)
-	if assert.NoError(t, err) {
-		if val.Nullable {
-			if !assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
-				return false
-			}
-		} else {
-			if !assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
-				return false
-			}
-		}
-		if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type", val.Type, val.Format) {
+	require.NoError(t, err)
+	if val.Nullable {
+		if !assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i) {
+			// fmt.Println("isRequired:", val.Required)
+			// pretty.Println(sch)
 			return false
 		}
-		if val.Aliased {
-			if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType) {
-				return false
-			}
-		}
-		if !assertBuiltinResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+	} else {
+		if !assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
+			// fmt.Println("isRequired:", val.Required)
+			// pretty.Println(sch)
 			return false
 		}
+	}
+	if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type", val.Type, val.Format) {
+		return false
+	}
+	if val.Aliased {
+		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType) {
+			return false
+		}
+	}
+	if !assertBuiltinResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+		return false
 	}
 	return true
 }
@@ -583,7 +582,6 @@ func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, 
 		val.Expected = "models.MyAliasedThing"
 	}
 
-	// fmt.Println("nullable:", val.Nullable)
 	items := new(spec.Schema)
 	items.Typed(val.Type, val.Format)
 	items.Default = val.Default
@@ -598,30 +596,29 @@ func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, 
 	sch := spec.ArrayProperty(items)
 
 	rt, err := resolver.ResolveSchema(sch, !aliased, val.Required)
-	if assert.NoError(t, err) {
+	require.NoError(t, err)
 
-		if val.Nullable {
-			if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
-				return false
-			}
-		} else {
-			if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
-				return false
-			}
-		}
-
-		if val.Aliased {
-			if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at: %d", val.Type, val.Format, i) {
-				return false
-			}
-			if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
-				return false
-			}
-		}
-
-		if !assertBuiltinSliceElemnResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+	if val.Nullable {
+		if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
 			return false
 		}
+	} else {
+		if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
+			return false
+		}
+	}
+
+	if val.Aliased {
+		if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at: %d", val.Type, val.Format, i) {
+			return false
+		}
+		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
+			return false
+		}
+	}
+
+	if !assertBuiltinSliceElemnResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+		return false
 	}
 	return true
 }
@@ -657,35 +654,30 @@ func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver,
 	sch := spec.MapProperty(items)
 
 	rt, err := resolver.ResolveSchema(sch, !aliased, val.Required)
-	if assert.NoError(t, err) {
-		// pretty.Println(rt)
-		if val.Nullable {
-			if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
-				return false
-			}
-		} else {
-			if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
-				return false
-			}
-		}
+	require.NoError(t, err)
 
-		if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at %d", val.Type, val.Format, i) {
+	if val.Nullable {
+		if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
 			return false
 		}
-
-		if val.Aliased {
-			if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
-				return false
-			}
-		}
-
-		if !assertBuiltinSliceElemnResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+	} else {
+		if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
 			return false
 		}
+	}
+
+	if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at %d", val.Type, val.Format, i) {
+		return false
+	}
+
+	if val.Aliased {
+		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
+			return false
+		}
+	}
+
+	if !assertBuiltinSliceElemnResolve(t, val.Type, val.Format, val.Expected, rt, i) {
+		return false
 	}
 	return true
 }

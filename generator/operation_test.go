@@ -17,7 +17,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -109,7 +108,6 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		// t.Logf("tc: %+v", tc)
 		hdr := findResponseHeader(&b.Operation, 200, tc.name)
 		require.NotNil(t, hdr)
 
@@ -145,74 +143,70 @@ func TestMakeResponse(t *testing.T) {
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
-		if assert.NoError(t, err) {
-			if assert.NotNil(t, gO.Schema) {
-				assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
-			}
-			if assert.NotEmpty(t, b.ExtraSchemas) {
-				body := b.ExtraSchemas["GetMediaSearchBody"]
-				if assert.NotEmpty(t, body.Properties) {
-					prop := body.Properties[0]
-					assert.Equal(t, "data", prop.Name)
-					// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
-					assert.Equal(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
-				}
-				items := b.ExtraSchemas["GetMediaSearchBodyDataItems0"]
-				if assert.NotEmpty(t, items.AllOf) {
-					media := items.AllOf[0]
-					// expect #definitions/media to be captured and reused by ExtraSchema
-					assert.Equal(t, "models.Media", media.GoType)
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
 	}
+	gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
+	require.NoError(t, err)
+
+	require.NotNil(t, gO.Schema)
+	assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
+
+	require.NotEmpty(t, b.ExtraSchemas)
+	body := b.ExtraSchemas["GetMediaSearchBody"]
+	require.NotEmpty(t, body.Properties)
+
+	prop := body.Properties[0]
+	assert.Equal(t, "data", prop.Name)
+	// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
+	assert.Equal(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
+
+	items := b.ExtraSchemas["GetMediaSearchBodyDataItems0"]
+	require.NotEmpty(t, items.AllOf)
+
+	media := items.AllOf[0]
+	// expect #definitions/media to be captured and reused by ExtraSchema
+	assert.Equal(t, "models.Media", media.GoType)
 }
 
 func TestMakeOperationParam(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
-		if assert.NoError(t, err) {
-			assert.Equal(t, "size", gO.Name)
-			assert.True(t, gO.IsPrimitive)
-		}
-	}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, "size", gO.Name)
+	assert.True(t, gO.IsPrimitive)
 }
 
 func TestMakeOperationParamItem(t *testing.T) {
 	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
-		if assert.NoError(t, err) {
-			assert.Nil(t, gO.Parent)
-			assert.True(t, gO.IsPrimitive)
-		}
-	}
+	require.NoError(t, err)
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
+	require.NoError(t, err)
+	assert.Nil(t, gO.Parent)
+	assert.True(t, gO.IsPrimitive)
 }
 
 func TestMakeOperation(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		gO, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			assert.Equal(t, "getTasks", gO.Name)
-			assert.Equal(t, "GET", gO.Method)
-			assert.Equal(t, "/tasks", gO.Path)
-			assert.Len(t, gO.Params, 2)
-			assert.Len(t, gO.Responses, 1)
-			assert.NotNil(t, gO.DefaultResponse)
-			assert.NotNil(t, gO.SuccessResponse)
-		}
-	}
+	require.NoError(t, err)
+	gO, err := b.MakeOperation()
+	require.NoError(t, err)
+	assert.Equal(t, "getTasks", gO.Name)
+	assert.Equal(t, "GET", gO.Method)
+	assert.Equal(t, "/tasks", gO.Path)
+	assert.Len(t, gO.Params, 2)
+	assert.Len(t, gO.Responses, 1)
+	assert.NotNil(t, gO.DefaultResponse)
+	assert.NotNil(t, gO.SuccessResponse)
 }
 
 func TestRenderOperation_InstagramSearch(t *testing.T) {
@@ -220,82 +214,66 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
 
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		gO, ero := b.MakeOperation()
-		if assert.NoError(t, ero) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			ert := templates.MustGet("serverOperation").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertInCode(t, "type GetMediaSearchOKBody struct {", res)
-					// codegen does not assumes objects are only in models
-					// this is inlined
-					assertInCode(t, "Data []*GetMediaSearchOKBodyDataItems0 `json:\"data\"`", res)
-					assertInCode(t, "type GetMediaSearchOKBodyDataItems0 struct {", res)
-					// this is a definition: expect this definition to be reused from the models pkg
-					assertInCode(t, "models.Media", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
+	require.NoError(t, err)
 
-			buf = bytes.NewBuffer(nil)
-			ert = templates.MustGet("serverResponses").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("response.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					// codegen does not assumes objects are only in models
-					assertInCode(t, "type GetMediaSearchOK struct {", res)
-					assertInCode(t, "GetMediaSearchOKBody", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
-		}
-	}
+	gO, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opt := opts()
+	err = templates.MustGet("serverOperation").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err := opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "type GetMediaSearchOKBody struct {", res)
+	// codegen does not assumes objects are only in models
+	// this is inlined
+	assertInCode(t, "Data []*GetMediaSearchOKBodyDataItems0 `json:\"data\"`", res)
+	assertInCode(t, "type GetMediaSearchOKBodyDataItems0 struct {", res)
+	// this is a definition: expect this definition to be reused from the models pkg
+	assertInCode(t, "models.Media", res)
+
+	buf = bytes.NewBuffer(nil)
+	err = templates.MustGet("serverResponses").Execute(buf, gO)
+	require.NoError(t, err)
+	ff, err = opt.LanguageOpts.FormatContent("response.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	// codegen does not assumes objects are only in models
+	assertInCode(t, "type GetMediaSearchOK struct {", res)
+	assertInCode(t, "GetMediaSearchOKBody", res)
+
 	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		gO, ero := b.MakeOperation()
-		if assert.NoError(t, ero) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			ert := templates.MustGet("serverOperation").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertNotInCode(t, "DataItems0", res)
-					assertNotInCode(t, "models", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
-			buf = bytes.NewBuffer(nil)
-			ert = templates.MustGet("serverResponses").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	gO, err = b.MakeOperation()
+	require.NoError(t, err)
+
+	buf = bytes.NewBuffer(nil)
+	opt = opts()
+	err = templates.MustGet("serverOperation").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	assertNotInCode(t, "DataItems0", res)
+	assertNotInCode(t, "models", res)
+
+	buf = bytes.NewBuffer(nil)
+	err = templates.MustGet("serverResponses").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
 }
 
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
@@ -474,59 +452,53 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 
 func TestDateFormat_Spec1(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec1.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "frTestingThis.String()", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "frTestingThis.String()", res)
 }
 
 func TestDateFormat_Spec2(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec2.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	assert.NoError(t, err)
+
+	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
 }
 
 func TestBuilder_Issue1703(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 	dr, err := os.Getwd()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
@@ -542,25 +514,24 @@ func TestBuilder_Issue1703(t *testing.T) {
 		Target:            dr,
 	}
 	err = opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("x-go-type-import-bug", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			for _, o := range op.Operations {
-				buf := bytes.NewBuffer(nil)
-				err := templates.MustGet("serverResponses").Execute(buf, o)
-				if assert.NoError(t, err) {
-					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(ff)
-						assertInCode(t, "jwk \"github.com/user/package\"", res)
-					} else {
-						fmt.Println(buf.String())
-					}
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	for _, o := range op.Operations {
+		buf := bytes.NewBuffer(nil)
+		err = templates.MustGet("serverResponses").Execute(buf, o)
+		require.NoError(t, err)
+
+		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res := string(ff)
+		assertInCode(t, "jwk \"github.com/user/package\"", res)
 	}
 }
 
@@ -583,24 +554,23 @@ func TestBuilder_Issue287(t *testing.T) {
 		Target:            dr,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverBuilder").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "case \"text/plain\":", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverBuilder").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "case \"text/plain\":", res)
 }
 
 func TestBuilder_Issue465(t *testing.T) {
@@ -622,25 +592,23 @@ func TestBuilder_Issue465(t *testing.T) {
 		IsClient:          true,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
-	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
+	require.NoError(t, err)
 
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("clientFacade").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "/v1/fancyAPI", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("clientFacade").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "/v1/fancyAPI", res)
 }
 
 func TestBuilder_Issue500(t *testing.T) {
@@ -661,80 +629,82 @@ func TestBuilder_Issue500(t *testing.T) {
 		Target:            dr,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverBuilder").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertNotInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = NewGetPaymentByID(o.context, o.GetPaymentByIDHandler)`, res)
-					assertInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = invoices.NewGetPaymentByID(o.context, o.InvoicesGetPaymentByIDHandler)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverBuilder").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertNotInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = NewGetPaymentByID(o.context, o.GetPaymentByIDHandler)`, res)
+	assertInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = invoices.NewGetPaymentByID(o.context, o.InvoicesGetPaymentByIDHandler)`, res)
 }
 
 func TestGenClient_IllegalBOM(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientResponse").Execute(buf, op)
-			assert.NoError(t, err)
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientResponse").Execute(buf, op)
+	require.NoError(t, err)
 }
 
 func TestGenClient_CustomFormatPath(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../fixtures/bugs/789/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	require.NoError(t, err)
+
+	assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
 }
 
 func TestGenClient_Issue733(t *testing.T) {
 	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../fixtures/bugs/733/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientResponse").Execute(buf, op)
-			if assert.NoError(t, err) {
-				assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientResponse").Execute(buf, op)
+	require.NoError(t, err)
+
+	assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
 }
 
 func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
@@ -759,27 +729,26 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 
 	//Testing Server Generation
 	err := opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	// Full flattening
 	opts.FlattenOpts.Expand = false
 	opts.FlattenOpts.Minimal = false
-	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(filecontent)
-					assertInCode(t, "GetHealthCheck", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(filecontent)
+	assertInCode(t, "GetHealthCheck", res)
 }
 
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
@@ -819,26 +788,25 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 
 	//Testing Server Generation
 	err := opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	// full flattening
 	opts.FlattenOpts.Minimal = false
-	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(filecontent)
-					assertInCode(t, "GetHealthCheck", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(filecontent)
+	assertInCode(t, "GetHealthCheck", res)
 }
 
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
@@ -992,9 +960,10 @@ func TestGenServerWithTemplate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			//Testing Server Generation
 			err := tt.opts.EnsureDefaults()
+			require.NoError(t, err)
+
 			// minimal flattening
 			tt.opts.FlattenOpts.Minimal = true
-			assert.NoError(t, err)
 			_, err = newAppGenerator("JsonRefOperation", nil, nil, tt.opts)
 			if tt.wantError {
 				assert.Error(t, err)
@@ -1041,76 +1010,68 @@ func TestBuilder_Issue1214(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
-	appGen, err := newAppGenerator("fixture-1214", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			for i := 0; i < 5; i++ {
-				buf := bytes.NewBuffer(nil)
-				ert := templates.MustGet("serverConfigureapi").Execute(buf, op)
-				if assert.NoError(t, ert) {
-					ff, erf := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
-					if assert.NoError(t, erf) {
-						res := string(ff)
-						assertRegexpInCode(t, any+
-							`api\.AAuth = func\(user string, pass string\)`+any+
-							`api\.BAuth = func\(token string\)`+any+
-							`api\.CAuth = func\(token string\)`+any+
-							`api\.DAuth = func\(token string\)`+any+
-							`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
-					} else {
-						fmt.Println(buf.String())
-						break
-					}
-				} else {
-					break
-				}
-				buf = bytes.NewBuffer(nil)
-				err = templates.MustGet("serverBuilder").Execute(buf, op)
-				if assert.NoError(t, err) {
-					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(ff)
-						assertRegexpInCode(t, any+
-							`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
-							`BAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`CAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`DAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+	e := opts.EnsureDefaults()
+	require.NoError(t, e)
 
-							`AAuth func\(string, string\) \(interface{}, error\)`+any+
-							`BAuth func\(string\) \(interface{}, error\)`+any+
-							`CAuth func\(string\) \(interface{}, error\)`+any+
-							`DAuth func\(string\) \(interface{}, error\)`+any+
-							`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+	appGen, e := newAppGenerator("fixture-1214", nil, nil, opts)
+	require.NoError(t, e)
 
-							`if o\.AAuth == nil {`+any+
-							`unregistered = append\(unregistered, "AAuth"\)`+any+
-							`if o\.BAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K1Auth"\)`+any+
-							`if o\.CAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K2Auth"\)`+any+
-							`if o\.DAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K3Auth"\)`+any+
-							`if o\.EAuth == nil {`+any+
-							`unregistered = append\(unregistered, "EAuth"\)`+any+
+	op, e := appGen.makeCodegenApp()
+	require.NoError(t, e)
 
-							`case "A":`+any+
-							`case "B":`+any+
-							`case "C":`+any+
-							`case "D":`+any+
-							`case "E":`+any, res)
-					} else {
-						fmt.Println(buf.String())
-						break
-					}
-				} else {
-					break
-				}
-			}
-		}
+	for i := 0; i < 5; i++ {
+		buf := bytes.NewBuffer(nil)
+		err := templates.MustGet("serverConfigureapi").Execute(buf, op)
+		require.NoError(t, err)
+
+		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res := string(ff)
+		assertRegexpInCode(t, any+
+			`api\.AAuth = func\(user string, pass string\)`+any+
+			`api\.BAuth = func\(token string\)`+any+
+			`api\.CAuth = func\(token string\)`+any+
+			`api\.DAuth = func\(token string\)`+any+
+			`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
+
+		buf = bytes.NewBuffer(nil)
+		err = templates.MustGet("serverBuilder").Execute(buf, op)
+		require.NoError(t, err)
+
+		ff, err = appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res = string(ff)
+		assertRegexpInCode(t, any+
+			`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
+			`BAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`CAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`DAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+
+			`AAuth func\(string, string\) \(interface{}, error\)`+any+
+			`BAuth func\(string\) \(interface{}, error\)`+any+
+			`CAuth func\(string\) \(interface{}, error\)`+any+
+			`DAuth func\(string\) \(interface{}, error\)`+any+
+			`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+
+			`if o\.AAuth == nil {`+any+
+			`unregistered = append\(unregistered, "AAuth"\)`+any+
+			`if o\.BAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K1Auth"\)`+any+
+			`if o\.CAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K2Auth"\)`+any+
+			`if o\.DAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K3Auth"\)`+any+
+			`if o\.EAuth == nil {`+any+
+			`unregistered = append\(unregistered, "EAuth"\)`+any+
+
+			`case "A":`+any+
+			`case "B":`+any+
+			`case "C":`+any+
+			`case "D":`+any+
+			`case "E":`+any, res)
 	}
 }
 
@@ -1118,10 +1079,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		operation := "asecOp"
 		b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-		if !assert.NoError(t, err) {
-			t.FailNow()
-			return
-		}
+		require.NoError(t, err)
+
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 		genRequirements := b.makeSecurityRequirements("o")
 		assert.Len(t, genRequirements, 2)
@@ -1158,10 +1117,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 		operation = "bsecOp"
 		b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-		if !assert.NoError(t, err) {
-			t.FailNow()
-			return
-		}
+		require.NoError(t, err)
+
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 		genRequirements = b.makeSecurityRequirements("o")
 		assert.Len(t, genRequirements, 2)
@@ -1191,10 +1148,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 	operation := "csecOp"
 	b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements := b.makeSecurityRequirements("o")
 	assert.NotNil(t, genRequirements)
@@ -1202,10 +1157,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 	operation = "nosecOp"
 	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements = b.makeSecurityRequirements("o")
 	assert.Nil(t, genRequirements)
@@ -1230,19 +1183,18 @@ func TestGenerateServerOperation(t *testing.T) {
 		Spec:              fname,
 		Target:            tgt,
 	}
-	if err := o.EnsureDefaults(); err != nil {
-		panic(err)
-	}
+	err := o.EnsureDefaults()
+	require.NoError(t, err)
 
-	err := GenerateServerOperation([]string{"createTask"}, nil)
+	err = GenerateServerOperation([]string{"createTask"}, nil)
 	assert.Error(t, err)
 
 	d := o.TemplateDir
 	o.TemplateDir = "./nowhere"
 	err = GenerateServerOperation([]string{"notFound"}, o)
 	assert.Error(t, err)
-	o.TemplateDir = d
 
+	o.TemplateDir = d
 	d = o.Spec
 	o.Spec = "nowhere.yaml"
 	err = GenerateServerOperation([]string{"notFound"}, o)
@@ -1253,10 +1205,8 @@ func TestGenerateServerOperation(t *testing.T) {
 	assert.Error(t, err)
 
 	err = GenerateServerOperation([]string{"createTask"}, o)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	// check expected files are generated and that's it
 	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
 	assert.NoError(t, err)
@@ -1298,24 +1248,23 @@ func TestBuilder_Issue1646(t *testing.T) {
 		IsClient:          false,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	appGen, err := newAppGenerator("fixture-1646", nil, nil, opts)
+	require.NoError(t, err)
 
-	if assert.NoError(t, err) {
-		preCons, preConj := appGen.makeConsumes()
-		preProds, preProdj := appGen.makeProduces()
-		assert.True(t, preConj)
-		assert.True(t, preProdj)
-		for i := 0; i < 5; i++ {
-			cons, conj := appGen.makeConsumes()
-			prods, prodj := appGen.makeProduces()
-			assert.True(t, conj)
-			assert.True(t, prodj)
-			assert.Equal(t, preConj, conj)
-			assert.Equal(t, preProdj, prodj)
-			assert.Equal(t, preCons, cons)
-			assert.Equal(t, preProds, prods)
-		}
+	preCons, preConj := appGen.makeConsumes()
+	preProds, preProdj := appGen.makeProduces()
+	assert.True(t, preConj)
+	assert.True(t, preProdj)
+	for i := 0; i < 5; i++ {
+		cons, conj := appGen.makeConsumes()
+		prods, prodj := appGen.makeProduces()
+		assert.True(t, conj)
+		assert.True(t, prodj)
+		assert.Equal(t, preConj, conj)
+		assert.Equal(t, preProdj, prodj)
+		assert.Equal(t, preCons, cons)
+		assert.Equal(t, preProds, prods)
 	}
 }
 
@@ -1337,41 +1286,37 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	if err := opts.EnsureDefaults(); err != nil {
-		panic(err)
-	}
+	err := opts.EnsureDefaults()
+	require.NoError(t, err)
 
 	opts.StrictAdditionalProperties = true
 
 	appGen, err := newAppGenerator("StrictAdditionalProperties", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					for _, tt := range []struct {
-						name      string
-						assertion func(testing.TB, string, string) bool
-					}{
-						{"PostTestBody", assertInCode},
-						{"PostTestParamsBodyExplicit", assertInCode},
-						{"PostTestParamsBodyImplicit", assertInCode},
-						{"PostTestParamsBodyDisabled", assertNotInCode},
-					} {
-						fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
-						if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
-							tt.assertion(t, "dec.DisallowUnknownFields()", fn)
-						}
-					}
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	for _, tt := range []struct {
+		name      string
+		assertion func(testing.TB, string, string) bool
+	}{
+		{"PostTestBody", assertInCode},
+		{"PostTestParamsBodyExplicit", assertInCode},
+		{"PostTestParamsBodyImplicit", assertInCode},
+		{"PostTestParamsBodyDisabled", assertNotInCode},
+	} {
+		fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
+		require.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name)
+		tt.assertion(t, "dec.DisallowUnknownFields()", fn)
 	}
 }
 

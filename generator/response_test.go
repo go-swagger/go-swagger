@@ -30,127 +30,114 @@ import (
 
 func TestSimpleResponseRender(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("update_task_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "o.XErrorCode", string(ff))
-					assertInCode(t, "o.Payload", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("update_task_responses.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	assertInCode(t, "o.XErrorCode", string(ff))
+	assertInCode(t, "o.Payload", string(ff))
 }
 
 func TestDefaultResponseRender(t *testing.T) {
 	b, err := opBuilder("getAllParameters", "../fixtures/codegen/todolist.responses.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "type GetAllParametersDefault struct", res)
-					assertInCode(t, `if response.Code()/100 == 2`, res)
-					assertNotInCode(t, `switch response.Code()`, res)
-					assertNotInCode(t, "o.Payload", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "type GetAllParametersDefault struct", res)
+	assertInCode(t, `if response.Code()/100 == 2`, res)
+	assertNotInCode(t, `switch response.Code()`, res)
+	assertNotInCode(t, "o.Payload", res)
 }
 
 func TestSimpleResponses(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
-	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		if assert.NotNil(t, op.Responses.Default) {
-			resp, err := spec.ResolveResponse(b.Doc.Spec(), op.Responses.Default.Ref)
-			if assert.NoError(t, err) {
-				defCtx := responseTestContext{
-					OpID: "updateTask",
-					Name: "default",
-				}
-				res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, *resp)
-				if assert.NoError(t, err) {
-					if defCtx.Assert(t, *resp, res) {
-						for code, response := range op.Responses.StatusCodeResponses {
-							sucCtx := responseTestContext{
-								OpID:      "updateTask",
-								Name:      "success",
-								IsSuccess: code/100 == 2,
-							}
-							res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
-							if assert.NoError(t, err) {
-								if !sucCtx.Assert(t, response, res) {
-									return
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+	require.True(t, ok)
+	require.NotNil(t, op)
+	require.NotNil(t, op.Responses)
 
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	require.NotNil(t, op.Responses.Default)
+
+	resp, err := spec.ResolveResponse(b.Doc.Spec(), op.Responses.Default.Ref)
+	require.NoError(t, err)
+
+	defCtx := responseTestContext{
+		OpID: "updateTask",
+		Name: "default",
+	}
+	res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, *resp)
+	require.NoError(t, err)
+
+	defCtx.Require(t, *resp, res)
+
+	for code, response := range op.Responses.StatusCodeResponses {
+		sucCtx := responseTestContext{
+			OpID:      "updateTask",
+			Name:      "success",
+			IsSuccess: code/100 == 2,
+		}
+		res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
+		require.NoError(t, err)
+		sucCtx.Require(t, response, res)
+	}
 }
+
 func TestInlinedSchemaResponses(t *testing.T) {
 	b, err := opBuilder("getTasks", "../fixtures/codegen/todolist.responses.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("getTasks")
-	if assert.True(t, ok) && assert.NotNil(t, op) && assert.NotNil(t, op.Responses) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		if assert.NotNil(t, op.Responses.Default) {
-			resp := *op.Responses.Default
-			defCtx := responseTestContext{
-				OpID: "getTasks",
-				Name: "default",
-			}
-			res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, resp)
-			if assert.NoError(t, err) {
-				if defCtx.Assert(t, resp, res) {
-					for code, response := range op.Responses.StatusCodeResponses {
-						sucCtx := responseTestContext{
-							OpID:      "getTasks",
-							Name:      "success",
-							IsSuccess: code/100 == 2,
-						}
-						res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
-						if assert.NoError(t, err) {
-							if !sucCtx.Assert(t, response, res) {
-								return
-							}
-						}
-						assert.Len(t, b.ExtraSchemas, 1)
-						// ExtraSchema is not a definition: it is rendered in current operations package
-						assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
-					}
-				}
-			}
-		}
-	}
+	require.True(t, ok)
+	require.NotNil(t, op)
+	require.NotNil(t, op.Responses)
 
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	require.NotNil(t, op.Responses.Default)
+
+	resp := *op.Responses.Default
+	defCtx := responseTestContext{
+		OpID: "getTasks",
+		Name: "default",
+	}
+	res, err := b.MakeResponse("a", defCtx.Name, false, resolver, -1, resp)
+	require.NoError(t, err)
+
+	defCtx.Require(t, resp, res)
+
+	for code, response := range op.Responses.StatusCodeResponses {
+		sucCtx := responseTestContext{
+			OpID:      "getTasks",
+			Name:      "success",
+			IsSuccess: code/100 == 2,
+		}
+		res, err := b.MakeResponse("a", sucCtx.Name, sucCtx.IsSuccess, resolver, code, response)
+		require.NoError(t, err)
+		sucCtx.Require(t, response, res)
+		assert.Len(t, b.ExtraSchemas, 1)
+		// ExtraSchema is not a definition: it is rendered in current operations package
+		assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
+	}
 }
 
 type responseTestContext struct {
@@ -212,6 +199,12 @@ func (ctx *responseTestContext) Assert(t testing.TB, response spec.Response, res
 	}
 
 	return true
+}
+
+func (ctx *responseTestContext) Require(t testing.TB, response spec.Response, res GenResponse) {
+	if !ctx.Assert(t, response, res) {
+		t.FailNow()
+	}
 }
 
 type respHeaderTestContext struct {
@@ -277,42 +270,38 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr G
 
 func TestGenResponses_Issue540(t *testing.T) {
 	b, err := opBuilder("postPet", "../fixtures/bugs/540/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("post_pet_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "func (o *PostPetOK) WithPayload(payload models.Pet) *PostPetOK {", string(ff))
-					assertInCode(t, "func (o *PostPetOK) SetPayload(payload models.Pet) {", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_pet_responses.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	assertInCode(t, "func (o *PostPetOK) WithPayload(payload models.Pet) *PostPetOK {", string(ff))
+	assertInCode(t, "func (o *PostPetOK) SetPayload(payload models.Pet) {", string(ff))
 }
 
 func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "if payload == nil", string(ff))
-					assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	assertInCode(t, "if payload == nil", string(ff))
+	assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
 }
 
 func TestGenResponses_Issue718_Required(t *testing.T) {
@@ -446,56 +435,48 @@ func TestGenResponses_XGoName(t *testing.T) {
 
 func TestGenResponses_Issue892(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/bugs/982/swagger.yaml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "o.Media = aO0", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	assertInCode(t, "o.Media = aO0", string(ff))
 }
 
 func TestGenResponses_Issue1013(t *testing.T) {
-	b, erp := methodPathOpBuilder("get", "/test", "../fixtures/bugs/1013/fixture-1013.yaml")
-	if assert.NoError(t, erp) {
-		op, erm := b.MakeOperation()
-		if assert.NoError(t, erm) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
-	b, erp = methodPathOpBuilder("get", "/test2", "../fixtures/bugs/1013/fixture-1013.yaml")
-	if assert.NoError(t, erp) {
-		op, erm := b.MakeOperation()
-		if assert.NoError(t, erm) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	b, err := methodPathOpBuilder("get", "/test", "../fixtures/bugs/1013/fixture-1013.yaml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opt := opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+
+	ff, err := opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+	assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
+
+	buf.Reset()
+	b, err = methodPathOpBuilder("get", "/test2", "../fixtures/bugs/1013/fixture-1013.yaml")
+	require.NoError(t, err)
+
+	op, err = b.MakeOperation()
+	require.NoError(t, err)
+
+	opt = opts()
+	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	ff, err = opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+	assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
 }
 
 func TestGenResponse_15362_WithExpand(t *testing.T) {

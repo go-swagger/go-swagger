@@ -3,7 +3,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
@@ -67,140 +67,135 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 func TestServer_UrlEncoded(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assert.Regexp(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-			buf = bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_search_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertInCode(t, "api.UrlformConsumer = runtime.DiscardConsumer", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(formatted)
+	assert.Regexp(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
+
+	buf = bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app))
+
+	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_search_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(formatted)
+	assertInCode(t, "api.UrlformConsumer = runtime.DiscardConsumer", res)
 }
 
 func TestServer_MultipartForm(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/codegen/shipyard.yml", "shipyard")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assert.Regexp(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-			buf = bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertInCode(t, "api.MultipartformConsumer = runtime.DiscardConsumer", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(formatted)
+	assert.Regexp(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", res)
+
+	buf = bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app))
+
+	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(formatted)
+	assertInCode(t, "api.MultipartformConsumer = runtime.DiscardConsumer", res)
 }
 
 func TestServer_InvalidSpec(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	opts := testGenOpts()
 	opts.Spec = invalidSpecExample
 	opts.ValidateSpec = true
+
 	assert.Error(t, GenerateServer("foo", nil, nil, opts))
 }
 
 func TestServer_TrailingSlash(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertInCode(t, `o.handlers["GET"]["/trailingslashpath"]`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoError(t, err, buf.String())
+
+	res := string(formatted)
+	assertInCode(t, `o.handlers["GET"]["/trailingslashpath"]`, res)
 }
 
 func TestServer_Issue987(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/bugs/987/swagger.yml", "deeper consumes produces")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertRegexpInCode(t, `JSONConsumer:\s+runtime.JSONConsumer()`, res)
-					assertRegexpInCode(t, `JSONProducer:\s+runtime.JSONProducer()`, res)
-					assertInCode(t, `result["application/json"] = o.JSONConsumer`, res)
-					assertInCode(t, `result["application/json"] = o.JSONProducer`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(formatted)
+	assertRegexpInCode(t, `JSONConsumer:\s+runtime.JSONConsumer()`, res)
+	assertRegexpInCode(t, `JSONProducer:\s+runtime.JSONProducer()`, res)
+	assertInCode(t, `result["application/json"] = o.JSONConsumer`, res)
+	assertInCode(t, `result["application/json"] = o.JSONProducer`, res)
 }
 
 func TestServer_FilterByTag(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
-	if assert.NoError(t, err) {
-		gen.GenOpts.Tags = []string{"search"}
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertInCode(t, `o.handlers["POST"]["/search"]`, res)
-					assertNotInCode(t, `o.handlers["POST"]["/tasks"]`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	gen.GenOpts.Tags = []string{"search"}
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("search_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(formatted)
+	assertInCode(t, `o.handlers["POST"]["/search"]`, res)
+	assertNotInCode(t, `o.handlers["POST"]["/tasks"]`, res)
 }
 
 // Checking error handling code: panic on mismatched template
@@ -270,181 +265,161 @@ func TestServer_OperationGroups(t *testing.T) {
 	}()
 
 	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
-	if assert.NoError(t, err) {
-		gen.GenOpts.Tags = []string{"search", "tasks"}
-		gen.GenOpts.IncludeModel = false
-		gen.GenOpts.IncludeHandler = true
-		gen.GenOpts.Sections.OperationGroups = []TemplateOpts{
-			{
-				Name:     "opGroupTest",
-				Source:   "asset:opGroupTest",
-				Target:   "{{ joinFilePath .Target .Name }}",
-				FileName: "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
-			},
-		}
-		err := gen.Generate()
-		// This attempts fails: template not declared
-		assert.Error(t, err)
-		// Tolerates case variations on error message
-		assert.Contains(t, strings.ToLower(err.Error()), "template doesn't exist")
+	require.NoError(t, err)
 
-		var opGroupTpl = `
+	gen.GenOpts.Tags = []string{"search", "tasks"}
+	gen.GenOpts.IncludeModel = false
+	gen.GenOpts.IncludeHandler = true
+	gen.GenOpts.Sections.OperationGroups = []TemplateOpts{
+		{
+			Name:     "opGroupTest",
+			Source:   "asset:opGroupTest",
+			Target:   "{{ joinFilePath .Target .Name }}",
+			FileName: "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
+		},
+	}
+	err = gen.Generate()
+	require.Error(t, err)                                                      // This attempts fails: template not declared
+	assert.Contains(t, strings.ToLower(err.Error()), "template doesn't exist") // Tolerates case variations on error message
+
+	var opGroupTpl = `
 // OperationGroupName={{.Name}}
 // RootPackage={{.RootPackage}}
 {{ range .Operations }}
 	// OperationName={{.Name}}
 {{end}}`
-		_ = templates.AddFile("opGroupTest", opGroupTpl)
-		err = gen.Generate()
-		assert.NoError(t, err)
-		//buf := bytes.NewBuffer(nil)
-		genContent, erf := ioutil.ReadFile("./search/search_opgroup_test.gol")
-		assert.NoError(t, erf, "Generator should have written a file")
-		assert.Contains(t, string(genContent), "// OperationGroupName=search")
-		assert.Contains(t, string(genContent), "// RootPackage=operations")
-		assert.Contains(t, string(genContent), "// OperationName=search")
+	_ = templates.AddFile("opGroupTest", opGroupTpl)
+	err = gen.Generate()
+	require.NoError(t, err)
+	genContent, erf := ioutil.ReadFile("./search/search_opgroup_test.gol")
+	assert.NoError(t, erf, "Generator should have written a file")
+	assert.Contains(t, string(genContent), "// OperationGroupName=search")
+	assert.Contains(t, string(genContent), "// RootPackage=operations")
+	assert.Contains(t, string(genContent), "// OperationName=search")
 
-		genContent, erf = ioutil.ReadFile("./tasks/tasks_opgroup_test.gol")
-		assert.NoError(t, erf, "Generator should have written a file")
-		assert.Contains(t, string(genContent), "// OperationGroupName=tasks")
-		assert.Contains(t, string(genContent), "// RootPackage=operations")
-		assert.Contains(t, string(genContent), "// OperationName=createTask")
-		assert.Contains(t, string(genContent), "// OperationName=deleteTask")
-		assert.Contains(t, string(genContent), "// OperationName=getTasks")
-		assert.Contains(t, string(genContent), "// OperationName=updateTask")
-	}
+	genContent, erf = ioutil.ReadFile("./tasks/tasks_opgroup_test.gol")
+	require.NoError(t, erf, "Generator should have written a file")
+	assert.Contains(t, string(genContent), "// OperationGroupName=tasks")
+	assert.Contains(t, string(genContent), "// RootPackage=operations")
+	assert.Contains(t, string(genContent), "// OperationName=createTask")
+	assert.Contains(t, string(genContent), "// OperationName=deleteTask")
+	assert.Contains(t, string(genContent), "// OperationName=getTasks")
+	assert.Contains(t, string(genContent), "// OperationName=updateTask")
 }
 
 func TestServer_Issue1301(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/enhancements/1301/swagger.yml", "custom producers")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
+	require.NoError(t, err)
 
-					// initialisation in New<Name>API function
-					assertInCode(t, `customConsumers:     make(map[string]runtime.Consumer)`, res)
-					assertInCode(t, `customProducers:     make(map[string]runtime.Producer)`, res)
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
 
-					// declaration in struct
-					assertInCode(t, `customConsumers map[string]runtime.Consumer`, res)
-					assertInCode(t, `customProducers map[string]runtime.Producer`, res)
-					assertRegexpInCode(t, `if c, ok := o\.customConsumers\[mt\]; ok \{\s+result\[mt\] = c\s+\}`, res)
-					assertRegexpInCode(t, `if p, ok := o\.customProducers\[mt\]; ok \{\s+result\[mt\] = p\s+\}`, res)
-					assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterConsumer\(mediaType string, consumer runtime\.Consumer\) \{\s+	o\.customConsumers\[mediaType\] = consumer\s+\}`, res)
-					assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterProducer\(mediaType string, producer runtime\.Producer\) \{\s+	o\.customProducers\[mediaType\] = producer\s+\}`, res)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+	res := string(formatted)
 
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	// initialisation in New<Name>API function
+	assertInCode(t, `customConsumers:     make(map[string]runtime.Consumer)`, res)
+	assertInCode(t, `customProducers:     make(map[string]runtime.Producer)`, res)
+
+	// declaration in struct
+	assertInCode(t, `customConsumers map[string]runtime.Consumer`, res)
+	assertInCode(t, `customProducers map[string]runtime.Producer`, res)
+	assertRegexpInCode(t, `if c, ok := o\.customConsumers\[mt\]; ok \{\s+result\[mt\] = c\s+\}`, res)
+	assertRegexpInCode(t, `if p, ok := o\.customProducers\[mt\]; ok \{\s+result\[mt\] = p\s+\}`, res)
+	assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterConsumer\(mediaType string, consumer runtime\.Consumer\) \{\s+	o\.customConsumers\[mediaType\] = consumer\s+\}`, res)
+	assertRegexpInCode(t, `func \(o \*CustomProducersAPI\) RegisterProducer\(mediaType string, producer runtime\.Producer\) \{\s+	o\.customProducers\[mediaType\] = producer\s+\}`, res)
 }
 
 func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/enhancements/2108/swagger.yml", "pre server shutdown")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			// check the serverBuilder output
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
+	require.NoError(t, err)
 
-					assertInCode(t, `PreServerShutdown:   func() {},`, res)
-					assertInCode(t, `PreServerShutdown func()`, res)
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
 
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-			buf = bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
+	// check the serverBuilder output
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
 
-					// initialisation in New<Name>API function
-					assertInCode(t, `api.PreServerShutdown = func() {}`, res)
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
 
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	res := string(formatted)
+	assertInCode(t, `PreServerShutdown:   func() {},`, res)
+	assertInCode(t, `PreServerShutdown func()`, res)
+
+	buf = bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app))
+
+	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(formatted)
+	// initialisation in New<Name>API function
+	assertInCode(t, `api.PreServerShutdown = func() {}`, res)
 }
 
 func TestServer_Issue1557(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/enhancements/1557/swagger.yml", "generate consumer/producer handlers that are not whitelisted")
-	if assert.NoError(t, err) {
-		app, err := gen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			if assert.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app)) {
-				formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(formatted)
-					assertInCode(t, `ApplicationDummyConsumer runtime.Consumer`, res)
-					assertInCode(t, `ApplicationDummyProducer runtime.Producer`, res)
-					assertInCode(t, `ApplicationDummyConsumer: runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {`, res)
-					assertInCode(t, `ApplicationDummyProducer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {`, res)
-					assertInCode(t, `BinConsumer: runtime.ByteStreamConsumer(),`, res)
-					assertInCode(t, `BinProducer: runtime.ByteStreamProducer(),`, res)
-					assertInCode(t, `result["application/pdf"] = o.BinConsumer`, res)
-					assertInCode(t, `result["application/pdf"] = o.BinProducer`, res)
-					assertInCode(t, `result["application/dummy"] = o.ApplicationDummyConsumer`, res)
-					assertInCode(t, `result["application/dummy"] = o.ApplicationDummyProducer`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(formatted)
+	assertInCode(t, `ApplicationDummyConsumer runtime.Consumer`, res)
+	assertInCode(t, `ApplicationDummyProducer runtime.Producer`, res)
+	assertInCode(t, `ApplicationDummyConsumer: runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {`, res)
+	assertInCode(t, `ApplicationDummyProducer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {`, res)
+	assertInCode(t, `BinConsumer: runtime.ByteStreamConsumer(),`, res)
+	assertInCode(t, `BinProducer: runtime.ByteStreamProducer(),`, res)
+	assertInCode(t, `result["application/pdf"] = o.BinConsumer`, res)
+	assertInCode(t, `result["application/pdf"] = o.BinProducer`, res)
+	assertInCode(t, `result["application/dummy"] = o.ApplicationDummyConsumer`, res)
+	assertInCode(t, `result["application/dummy"] = o.ApplicationDummyProducer`, res)
 }
 
 func TestServer_Issue1648(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
+
 	gen, err := testAppGenerator(t, "../fixtures/bugs/1648/fixture-1648.yaml", "generate format with missing type in model")
-	if assert.NoError(t, err) {
-		_, err := gen.makeCodegenApp()
-		assert.NoError(t, err)
-	}
+	require.NoError(t, err)
+
+	_, err = gen.makeCodegenApp()
+	require.NoError(t, err)
 }
 
 func TestServer_Issue1746(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	targetdir, err := ioutil.TempDir(".", "swagger_server")
-	if err != nil {
-		t.Fatalf("failed to create a test target directory: %v", err)
-	}
+	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
 	err = os.Chdir(targetdir)
-	if err != nil {
-		t.Fatalf("failed to create a test target directory: %v", err)
-	}
+	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
 	defer func() {
-		if err = os.Chdir(".."); err != nil {
-			t.Log("failed test exist: ", err)
-		}
 		log.SetOutput(os.Stdout)
-		if err = os.RemoveAll(targetdir); err != nil {
-			t.Log("failed test exist: ", err)
-		}
+		_ = os.Chdir("..")
+		_ = os.RemoveAll(targetdir)
 	}()
+
 	opts := testGenOpts()
 
 	opts.Target = filepath.Join("x")
@@ -453,38 +428,37 @@ func TestServer_Issue1746(t *testing.T) {
 	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
 
 	err = GenerateServer("", nil, nil, opts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	gulp, err := ioutil.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	tgtPath := regexp.QuoteMeta(filepath.Join("..", "..", opts.Target))
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-target `+tgtPath, string(gulp))
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-name\s+ExampleSwaggerServer`, string(gulp))
 	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, string(gulp))
 }
 
-func doGenAppTemplate(t *testing.T, fixture, template string) string {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+func doGenAppTemplate(t testing.TB, fixture, template string) string {
 	gen, err := testAppGenerator(t, fixture, "generate: "+fixture)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
+
 	app, err := gen.makeCodegenApp()
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
+
 	buf := bytes.NewBuffer(nil)
-	if !assert.NoError(t, templates.MustGet(template).Execute(buf, app)) {
-		t.FailNow()
-	}
+	require.NoError(t, templates.MustGet(template).Execute(buf, app))
+
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
+
 	return string(formatted)
 }
 
 func TestServer_Issue1816(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	// fixed regression: gob encoding in $ref
 	res := doGenAppTemplate(t, "../fixtures/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
 	assertNotInCode(t, `"$ref": "#"`, res)
