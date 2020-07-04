@@ -28,6 +28,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // modelExpectations is a test structure to capture expected codegen lines of code
@@ -253,45 +254,45 @@ func TestModelGenerateDefinition(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(gendir)
 	}()
-	if assert.NoError(erd) {
-		opts := &GenOpts{}
-		opts.IncludeValidator = true
-		opts.IncludeModel = true
-		opts.ValidateSpec = false
-		opts.Spec = fixtureSpec
-		opts.ModelPackage = "models"
-		opts.Target = gendir
-		if err := opts.EnsureDefaults(); err != nil {
-			panic(err)
-		}
-		// sets gen options (e.g. flatten vs expand) - flatten is the default setting
-		opts.FlattenOpts.Minimal = false
+	require.NoError(t, erd)
 
-		err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		err = GenerateDefinition(nil, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		opts.TemplateDir = gendir
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, nil)
-		assert.Errorf(err, "Expected GenerateDefinition() return an error when no option is passed")
-
-		opts.TemplateDir = "templates"
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to croak about protected templates")
-
-		opts.TemplateDir = ""
-		err = GenerateDefinition([]string{"myAbsentDefinition"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to return an error when the model is not in spec")
-
-		opts.Spec = "pathToNowhere"
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to return an error when the spec is not reachable")
+	opts := &GenOpts{}
+	opts.IncludeValidator = true
+	opts.IncludeModel = true
+	opts.ValidateSpec = false
+	opts.Spec = fixtureSpec
+	opts.ModelPackage = "models"
+	opts.Target = gendir
+	if err := opts.EnsureDefaults(); err != nil {
+		panic(err)
 	}
+	// sets gen options (e.g. flatten vs expand) - flatten is the default setting
+	opts.FlattenOpts.Minimal = false
+
+	err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	err = GenerateDefinition(nil, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	opts.TemplateDir = gendir
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, nil)
+	assert.Errorf(err, "Expected GenerateDefinition() return an error when no option is passed")
+
+	opts.TemplateDir = "templates"
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to croak about protected templates")
+
+	opts.TemplateDir = ""
+	err = GenerateDefinition([]string{"myAbsentDefinition"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the model is not in spec")
+
+	opts.Spec = "pathToNowhere"
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the spec is not reachable")
 }
 
 func TestMoreModelValidations(t *testing.T) {

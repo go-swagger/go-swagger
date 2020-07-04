@@ -31,6 +31,7 @@ func TestDebug(t *testing.T) {
 	// test debugLog()
 	tmpFile, _ := ioutil.TempFile("", "debug-test")
 	tmpName := tmpFile.Name()
+	logMutex.Lock()
 	defer func() {
 		Debug = false
 		// mutex for -race
@@ -39,7 +40,6 @@ func TestDebug(t *testing.T) {
 	}()
 
 	// mutex for -race
-	logMutex.Lock()
 	Debug = true
 	debugOptions()
 	defer func() {
@@ -85,6 +85,7 @@ func TestDebug(t *testing.T) {
 
 func TestDebugAsJSON(t *testing.T) {
 	t.SkipNow()
+
 	var body struct {
 		A string `json:"a"`
 		B int    `json:"b"`
