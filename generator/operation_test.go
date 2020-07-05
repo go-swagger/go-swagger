@@ -462,6 +462,8 @@ func TestDateFormat_Spec1(t *testing.T) {
 	opts.defaultsEnsured = false
 	opts.IsClient = true
 	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	err = templates.MustGet("clientParameter").Execute(buf, op)
 	require.NoError(t, err)
 
@@ -484,8 +486,10 @@ func TestDateFormat_Spec2(t *testing.T) {
 	opts.defaultsEnsured = false
 	opts.IsClient = true
 	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	err = templates.MustGet("clientParameter").Execute(buf, op)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1471,12 +1475,7 @@ func TestGenServer_2161_panic(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
-	require.NoError(t, err)
-
+	require.NoErrorf(t, err, buf.String())
 	// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
 	// The test with this fix simply asserts that there is no panic / internal error with building this.
-
-	if t.Failed() {
-		fmt.Println(buf.String())
-	}
 }
