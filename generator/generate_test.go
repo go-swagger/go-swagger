@@ -237,6 +237,47 @@ func TestGenerateAndTest(t *testing.T) {
 				assert.True(t, fileExists(filepath.Join(target, "cmd", "custom-api"), "main.go"))
 			},
 		},
+		"external_model": {
+			spec:   "../fixtures/bugs/1897/fixture-1897.yaml",
+			target: "../fixtures/bugs/1897/codegen",
+			prepare: func(opts *GenOpts) {
+				modelOpts := testGenOpts()
+				modelOpts.AcceptDefinitionsOnly = true
+				modelOpts.Spec = "../fixtures/bugs/1897/model.yaml"
+				modelOpts.Spec = "../fixtures/bugs/1897/model.yaml"
+				modelOpts.Target = "../fixtures/bugs/1897"
+				modelOpts.ModelPackage = "external"
+				err := GenerateModels(nil, modelOpts)
+				require.NoError(t, err)
+				t.Logf("generated external model")
+				opts.IncludeMain = true
+			},
+			verify: func(t testing.TB, target string) {
+				defer func() {
+					_ = os.RemoveAll(target)
+				}()
+				require.True(t, fileExists(target, filepath.Join("..", "external")))
+				defer func() {
+					_ = os.RemoveAll(filepath.Join(target, "..", "external"))
+				}()
+
+				require.True(t, fileExists(target, filepath.Join("..", "external", "error.go")))
+				require.True(t, fileExists(target, filepath.Join("cmd", "repro1897-server")))
+
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				err = os.Chdir(filepath.Join(target, "cmd", "repro1897-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+		},
 	}
 
 	for name, cas := range cases {
