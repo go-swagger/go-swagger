@@ -11,7 +11,6 @@
 // templates/docstring.gotmpl (270B)
 // templates/header.gotmpl (432B)
 // templates/model.gotmpl (700B)
-// templates/modelvalidator.gotmpl (370B)
 // templates/schema.gotmpl (5.422kB)
 // templates/schemabody.gotmpl (14.007kB)
 // templates/schemapolymorphic.gotmpl (2.061kB)
@@ -324,26 +323,6 @@ func templatesModelGotmpl() (*asset, error) {
 
 	info := bindataFileInfo{name: "templates/model.gotmpl", size: 700, mode: os.FileMode(0644), modTime: time.Unix(1482416923, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x5e, 0x6d, 0x2, 0xfe, 0x4b, 0x92, 0x36, 0x80, 0x72, 0x80, 0x1b, 0x63, 0x6b, 0x82, 0x52, 0xe1, 0x99, 0x3b, 0x93, 0x6d, 0x55, 0x34, 0x94, 0xb5, 0x61, 0x84, 0xc5, 0x29, 0x2f, 0x60, 0x8b, 0x6d}}
-	return a, nil
-}
-
-var _templatesModelvalidatorGotmpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x5c\x50\xb1\x72\xeb\x20\x10\xec\xf9\x8a\x1d\x57\xef\x15\x82\x0f\x48\x69\xb9\x70\x13\xa7\xd0\x0f\x10\x71\x42\x4c\x04\x68\xe0\x64\x8f\x86\xe1\xdf\x33\x92\x9d\x4c\xec\x8e\x65\xf7\x76\xf7\x4e\x29\x1c\xa3\x21\x58\x0a\x94\x34\x93\xc1\xe7\x0a\x1b\x9b\x7c\xd3\xd6\x52\x7a\x43\x7b\xc1\xfb\xa5\xc3\xa9\x3d\x77\x52\x08\x51\x0a\xdc\x00\x79\x8c\xf3\x9a\x9c\x1d\x19\x4d\xad\x4a\xa1\x14\xf4\xd1\x7b\x0a\xfc\xc2\x95\x02\x0a\x06\xb5\x0a\x21\x66\xdd\x7f\x69\x4b\x28\x45\x7e\xdc\x9f\xdb\xb7\x52\xe8\x46\x97\x31\xb8\x89\x70\xd3\xf9\xb9\x0a\x8f\x84\x47\x17\x70\x8c\x93\xdc\xf4\x27\xe3\xd8\x05\x0b\xfe\x9d\xf3\x7b\xde\x9c\xe2\x95\x30\x2c\xbc\x5b\x8d\x14\xb0\xc6\x05\x89\x9a\xb4\x84\x27\xa7\x9f\x88\xbd\xb4\x0e\x46\x08\xe7\xe7\x98\x18\xff\x04\xb6\x5d\xee\x28\x43\xb6\x34\xe8\x65\xe2\xf3\x03\xd7\xfa\xc2\xff\x21\xfe\xef\xc7\x61\xf2\xf3\xb4\x39\x1f\x72\x3f\x92\xd7\x57\x3d\x39\xa3\xd9\xc5\x90\x0f\x90\x9b\xee\x3b\x00\x00\xff\xff\x37\x21\xf7\x4f\x72\x01\x00\x00")
-
-func templatesModelvalidatorGotmplBytes() ([]byte, error) {
-	return bindataRead(
-		_templatesModelvalidatorGotmpl,
-		"templates/modelvalidator.gotmpl",
-	)
-}
-
-func templatesModelvalidatorGotmpl() (*asset, error) {
-	bytes, err := templatesModelvalidatorGotmplBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "templates/modelvalidator.gotmpl", size: 370, mode: os.FileMode(0644), modTime: time.Unix(1482416923, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2f, 0x2, 0x6d, 0xeb, 0x66, 0x72, 0x2d, 0x57, 0x85, 0x33, 0xc5, 0xc9, 0x3, 0x39, 0xf1, 0x13, 0x2d, 0x15, 0x1d, 0x64, 0xd4, 0x7f, 0x8c, 0x4c, 0xbe, 0x5d, 0x77, 0x59, 0xb4, 0x33, 0xff, 0x94}}
 	return a, nil
 }
 
@@ -989,7 +968,6 @@ var _bindata = map[string]func() (*asset, error){
 	"templates/docstring.gotmpl":                                  templatesDocstringGotmpl,
 	"templates/header.gotmpl":                                     templatesHeaderGotmpl,
 	"templates/model.gotmpl":                                      templatesModelGotmpl,
-	"templates/modelvalidator.gotmpl":                             templatesModelvalidatorGotmpl,
 	"templates/schema.gotmpl":                                     templatesSchemaGotmpl,
 	"templates/schemabody.gotmpl":                                 templatesSchemabodyGotmpl,
 	"templates/schemapolymorphic.gotmpl":                          templatesSchemapolymorphicGotmpl,
@@ -1085,7 +1063,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"docstring.gotmpl":         &bintree{templatesDocstringGotmpl, map[string]*bintree{}},
 		"header.gotmpl":            &bintree{templatesHeaderGotmpl, map[string]*bintree{}},
 		"model.gotmpl":             &bintree{templatesModelGotmpl, map[string]*bintree{}},
-		"modelvalidator.gotmpl":    &bintree{templatesModelvalidatorGotmpl, map[string]*bintree{}},
 		"schema.gotmpl":            &bintree{templatesSchemaGotmpl, map[string]*bintree{}},
 		"schemabody.gotmpl":        &bintree{templatesSchemabodyGotmpl, map[string]*bintree{}},
 		"schemapolymorphic.gotmpl": &bintree{templatesSchemapolymorphicGotmpl, map[string]*bintree{}},

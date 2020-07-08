@@ -94,7 +94,6 @@ func defaultAssets() map[string][]byte {
 		"validation/primitive.gotmpl":    MustAsset("templates/validation/primitive.gotmpl"),
 		"validation/customformat.gotmpl": MustAsset("templates/validation/customformat.gotmpl"),
 		"validation/structfield.gotmpl":  MustAsset("templates/validation/structfield.gotmpl"),
-		"modelvalidator.gotmpl":          MustAsset("templates/modelvalidator.gotmpl"),
 		"structfield.gotmpl":             MustAsset("templates/structfield.gotmpl"),
 		"schemavalidator.gotmpl":         MustAsset("templates/schemavalidator.gotmpl"),
 		"schemapolymorphic.gotmpl":       MustAsset("templates/schemapolymorphic.gotmpl"),
