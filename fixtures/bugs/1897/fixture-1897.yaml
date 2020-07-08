@@ -1,0 +1,75 @@
+---
+swagger: "2.0"
+info:
+  title: "repro #1897"
+  version: "0.0.1"
+  description: "repro issue #1897"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  "/as-schema":
+    get:
+      responses:
+        201:
+          description: ok
+          schema:
+            $ref: "#/definitions/Partial"
+
+  "/inline1":
+    get:
+      responses:
+        201:
+          description: ok
+          schema:
+            type: object
+            required: [a, errors]
+            properties:
+              a:
+                $ref: "#/definitions/A"
+              errors:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/definitions/Error"
+                  errorAs:
+                    type: array
+                    items:
+                      type: string
+
+        400:
+          description: ok
+          schema:
+            $ref: "#/definitions/Error"
+
+definitions:
+  A:
+    type: string
+
+  Partial:
+    type: object
+    required: [a, errors]
+    properties:
+      a:
+        $ref: "#/definitions/A"
+      errors:
+        type: object
+        properties:
+          errors:
+            $ref: "#/definitions/Error"
+          errorAs:
+            type: array
+            items:
+              type: string
+  Error:
+    type: object
+    required: [code]
+    properties:
+      code:
+        type: integer
+    x-go-type:
+      type: Error
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/bugs/1897/external
+        alias: swaggermodels
+

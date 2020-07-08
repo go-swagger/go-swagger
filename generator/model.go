@@ -417,6 +417,9 @@ func findImports(sch *GenSchema) map[string]string {
 			}
 		}
 	}
+	for k, v := range sch.ExtraImports {
+		imp[k] = v
+	}
 	return imp
 }
 
@@ -717,6 +720,14 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 	}
 	if other.GenSchema.IsMapNullOverride {
 		sg.GenSchema.IsMapNullOverride = true
+	}
+
+	// lift extra imports
+	if other.GenSchema.Pkg != "" && other.GenSchema.PkgAlias != "" {
+		sg.GenSchema.ExtraImports[other.GenSchema.PkgAlias] = other.GenSchema.Pkg
+	}
+	for k, v := range other.GenSchema.ExtraImports {
+		sg.GenSchema.ExtraImports[k] = v
 	}
 }
 
@@ -1896,6 +1907,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.StrictAdditionalProperties = sg.StrictAdditionalProperties
 	sg.GenSchema.Default = sg.Schema.Default
 	sg.GenSchema.StructTags = sg.StructTags
+	sg.GenSchema.ExtraImports = make(map[string]string)
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()
