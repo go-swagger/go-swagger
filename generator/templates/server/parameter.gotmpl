@@ -500,12 +500,12 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
     {{- end }}
     {{- if .MinLength}}
     if size < {{.MinLength}} {
-        return errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false)
+        return errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false, size)
     }
     {{- end }}
     {{- if .MaxLength}}
     if size > {{.MaxLength}} {
-        return errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false)
+        return errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false, size)
     }
     {{- end }}
     return nil
