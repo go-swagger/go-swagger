@@ -73,6 +73,13 @@ type Config struct {
 	Auth{{ pascalize .ID }} func(token string, scopes []string) (interface{}, error)
 	{{ end -}}
 	{{ end -}}
+
+	// Authenticator to use for all APIKey authentication
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// Authenticator to use for all Bearer authentication
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// Authenticator to use for all Basic authentication
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 }
 
 // Handler returns an http.Handler given the handler configuration
@@ -93,6 +100,16 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	api := {{.Package}}.New{{ pascalize .Name }}API(spec)
 	api.ServeError = errors.ServeError
 	api.Logger = c.Logger
+
+	if c.APIKeyAuthenticator != nil {
+		api.APIKeyAuthenticator = c.APIKeyAuthenticator
+	}
+	if c.BasicAuthenticator  != nil {
+		api.BasicAuthenticator  = c.BasicAuthenticator
+	}
+	if c.BearerAuthenticator  != nil {
+		api.BearerAuthenticator  = c.BearerAuthenticator
+	}
 
 	{{ range .Consumes -}}
 	{{ if .Implementation -}}
