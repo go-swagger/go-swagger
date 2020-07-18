@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
 
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/restapi/operations/pet"
@@ -77,6 +78,13 @@ type Config struct {
 
 	// AuthRoles Applies when the "X-Auth-Roles" header is set
 	AuthRoles func(token string) (interface{}, error)
+
+	// Authenticator to use for all APIKey authentication
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// Authenticator to use for all Bearer authentication
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// Authenticator to use for all Basic authentication
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 }
 
 // Handler returns an http.Handler given the handler configuration
@@ -97,6 +105,16 @@ func HandlerAPI(c Config) (http.Handler, *operations.PetstoreAPI, error) {
 	api := operations.NewPetstoreAPI(spec)
 	api.ServeError = errors.ServeError
 	api.Logger = c.Logger
+
+	if c.APIKeyAuthenticator != nil {
+		api.APIKeyAuthenticator = c.APIKeyAuthenticator
+	}
+	if c.BasicAuthenticator != nil {
+		api.BasicAuthenticator = c.BasicAuthenticator
+	}
+	if c.BearerAuthenticator != nil {
+		api.BearerAuthenticator = c.BearerAuthenticator
+	}
 
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.JSONProducer = runtime.JSONProducer()

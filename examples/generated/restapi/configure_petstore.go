@@ -16,7 +16,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger.json
+//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger.json --principal interface{}
 
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -31,6 +31,10 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	//
 	// Example:
 	// api.Logger = log.Printf
+
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.UrlformConsumer = runtime.DiscardConsumer

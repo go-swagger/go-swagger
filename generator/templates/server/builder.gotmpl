@@ -42,6 +42,7 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     PreServerShutdown:      func() {  },
     ServerShutdown:         func() {  },
     spec:                   spec,
+    useSwaggerUI:           false,
     ServeError:             errors.ServeError,
     BasicAuthenticator:     security.BasicAuth,
     APIKeyAuthenticator:    security.APIKeyAuth,
@@ -113,6 +114,7 @@ type {{ pascalize .Name }}API struct {
   defaultConsumes string
   defaultProduces string
   Middleware      func(middleware.Builder) http.Handler
+  useSwaggerUI    bool
 
   // BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -184,6 +186,16 @@ type {{ pascalize .Name }}API struct {
 
   // User defined logger function.
   Logger          func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) UseRedoc() {
+	{{.ReceiverName}}.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func ({{.ReceiverName}} *{{ pascalize .Name }}API) UseSwaggerUI() {
+	{{.ReceiverName}}.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -394,6 +406,9 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) Serve(builder middleware.Buil
 
   if {{ .ReceiverName}}.Middleware != nil {
     return {{ .ReceiverName }}.Middleware(builder)
+  }
+  if {{.ReceiverName}}.useSwaggerUI {
+    return {{.ReceiverName}}.context.APIHandlerSwaggerUI(builder)
   }
   return {{.ReceiverName}}.context.APIHandler(builder)
 }
