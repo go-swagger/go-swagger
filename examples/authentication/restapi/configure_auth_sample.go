@@ -31,6 +31,10 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
+
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
