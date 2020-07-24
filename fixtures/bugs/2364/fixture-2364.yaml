@@ -1,0 +1,65 @@
+swagger: "2.0"
+info:
+  title: "repro #2364"
+  version: "0.0.1"
+  description: "repro issue 2364"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  /getRecords:
+    get:
+      operationId: getRecords
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: '#/definitions/BundleAttributesResponse'
+
+definitions:
+  BundleAttributesResponse:
+      properties:
+        type:
+          $ref: "#/definitions/BundleType"
+        items:
+          description: Array of bundle items in the root of the bundle.
+          type: array
+          items:
+            $ref: "#/definitions/BundleItemResponse"
+        sections:
+          description: Array of bundle section in the root of the bundle.
+          type: array
+          items:
+            $ref: "#/definitions/ItemBundleSectionResponse"
+
+  BundleType:
+    type: string
+
+  BundleItemResponse:
+    type: object
+    properties:
+      id:
+        type: string
+    x-nullable: false
+
+  BundleSectionResponse:
+    type: object
+    x-omitempty: false
+    properties:
+      id:
+        type: string
+        x-omitempty: false
+        example: 5dfb977429ec145dd6f9c307
+
+  ItemBundleSectionResponse:
+    allOf:
+      - $ref: "#/definitions/BundleSectionResponse"
+      - type: object
+        x-omitempty: false
+        properties:
+          items:
+            description: Array of bundle items inside a section of the bundle
+            type: array
+            items:
+              $ref: "#/definitions/BundleItemResponse"
+    x-nullable: false
