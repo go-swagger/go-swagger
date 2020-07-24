@@ -236,19 +236,6 @@ func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *ty
 	return t
 }
 
-// IsNullable hints the generator as to render the type with a pointer or not.
-//
-// A schema is deemed nullable (i.e. rendered by a pointer) when:
-// - a custom extension says it has to be so
-// - it is an object with properties
-// - it is a composed object (allOf)
-//
-// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
-func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
-	nullable := t.isNullable(schema)
-	return nullable || len(schema.AllOf) > 0
-}
-
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() == "" {
 		return
@@ -281,7 +268,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	}
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
-	result.IsNullable = t.IsNullable(ref)
+	result.IsNullable = t.isNullable(ref)
 	result.IsEnumCI = false
 	return
 }
@@ -334,12 +321,20 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 		case number, integer:
 			result.IsNullable = nullableNumber(schema, isRequired)
 		default:
-			result.IsNullable = t.IsNullable(schema)
+			result.IsNullable = t.isNullable(schema)
 		}
 	}
 	return
 }
 
+// isNullable hints the generator as to render the type with a pointer or not.
+//
+// A schema is deemed nullable (i.e. rendered by a pointer) when:
+// - a custom extension says it has to be so
+// - it is an object with properties
+// - it is a composed object (allOf)
+//
+// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	check := func(extension string) (bool, bool) {
 		v, found := schema.Extensions[extension]
@@ -353,7 +348,7 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	if nullable, ok := check(xNullable); ok {
 		return nullable
 	}
-	return len(schema.Properties) > 0
+	return len(schema.Properties) > 0 || len(schema.AllOf) > 0
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -404,7 +399,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	}
 	// override the general nullability rule from ResolveSchema():
 	// only complex items are nullable (when not discriminated, not forced by x-nullable)
-	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
+	rt.IsNullable = t.isNullable(schema.Items.Schema) && !rt.HasDiscriminator
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
@@ -458,7 +453,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.IsComplexObject = true
 		var isNullable bool
 		for _, p := range schema.AllOf {
-			if t.IsNullable(&p) {
+			if t.isNullable(&p) {
 				isNullable = true
 			}
 		}
@@ -471,7 +466,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
 	if len(schema.Properties) > 0 {
-		result.IsNullable = t.IsNullable(schema)
+		result.IsNullable = t.isNullable(schema)
 		result.IsComplexObject = true
 		// no return here, still need to check for additional properties
 	}
@@ -664,7 +659,7 @@ func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extTy
 	result.Pkg = pkg
 	result.PkgAlias = alias
 	result.setKind(extType.Hints.Kind)
-	result.IsNullable = t.IsNullable(schema)
+	result.IsNullable = t.isNullable(schema)
 
 	// other extensions
 	if result.IsArray {
