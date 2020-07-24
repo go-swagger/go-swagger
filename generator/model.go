@@ -1730,7 +1730,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	tpe.IsMap = false
 	tpe.IsArray = false
 	tpe.IsAnonymous = false
-	tpe.IsNullable = sg.TypeResolver.IsNullable(&sg.Schema)
+	tpe.IsNullable = sg.TypeResolver.isNullable(&sg.Schema)
 
 	item := sg.NewCompositionBranch(sg.Schema, 0)
 	if err := item.makeGenSchema(); err != nil {
@@ -1765,7 +1765,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 		if err != nil {
 			return err
 		}
-		if sg.TypeResolver.IsNullable(&sch) {
+		if sg.TypeResolver.isNullable(&sch) {
 			seenNullable = true
 		}
 		if len(sch.Type) > 0 || len(sch.Properties) > 0 || sch.Ref.GetURL() != nil || len(sch.AllOf) > 0 {
