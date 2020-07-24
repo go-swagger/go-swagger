@@ -216,7 +216,7 @@ Iron.io
 [ScaleFT](https://github.com/authclub/billforward)  
 [StratoScale](https://github.com/Stratoscale/swagger)  
 [Terraform Provider OpenAPI](https://github.com/dikhan/terraform-provider-openapi)  
-[VMWare](https://github.com/vmware/dispatch)  
+[VMware](https://github.com/vmware/dispatch)  
 ...
 
 ## Note to users migrating from older releases
