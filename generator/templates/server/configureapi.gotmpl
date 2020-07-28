@@ -55,6 +55,10 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // Example:
   // api.Logger = log.Printf
 
+  api.UseSwaggerUI()
+  // To continue using redoc as your UI, uncomment the following line
+  // api.UseRedoc()
+
   {{ range .Consumes }}
     {{- if .Implementation }}
   api.{{ pascalize .Name }}Consumer = {{ .Implementation }}

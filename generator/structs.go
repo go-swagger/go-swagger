@@ -93,6 +93,7 @@ type GenSchema struct {
 	Default                    interface{}
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 	StructTags                 []string
+	ExtraImports               map[string]string // non-standard imports detected when using external types
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }
