@@ -208,3 +208,6 @@
 - dir: fixtures/bugs/2306
   skipped:
     skipModel: true
+- dir: fixtures/bugs/2342
+  skipped:
+    skipModel: true

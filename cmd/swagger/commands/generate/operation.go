@@ -54,6 +54,8 @@ type Operation struct {
 	schemeOptions
 	mediaOptions
 
+	ModelPackage string `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
+
 	NoHandler    bool `long:"skip-handler" description:"when present will not generate an operation handler"`
 	NoStruct     bool `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
 	NoResponses  bool `long:"skip-responses" description:"when present will not generate the response model struct"`
@@ -70,6 +72,7 @@ func (o Operation) apply(opts *generator.GenOpts) {
 	o.schemeOptions.apply(opts)
 	o.mediaOptions.apply(opts)
 
+	opts.ModelPackage = o.ModelPackage
 	opts.IncludeHandler = !o.NoHandler
 	opts.IncludeResponses = !o.NoResponses
 	opts.IncludeParameters = !o.NoStruct

@@ -98,10 +98,161 @@ It should be equivalent to the original spec but might miss some default values 
 Models can be generated independently from other components of your API.
 Internal model structures may thus be safely regenerated if the contract at your endpoints does not change.
 
+##### Reusing previous generations
+
 Previously generated models can be reused when constructing a new API server or client (e.g. using `swagger generate server --model=[my existing package]`).
 
 The generator makes every effort to keep the go code readable, idiomatic and commented: models may thus be manually customized or extended.
 Such customized types may be later on reused in other specs, using the `x-go-type` extension.
+
+##### Using custom types
+
+NOTE: what follows only applies to _schema_ models, not simple types used a query parameters or headers.
+
+You can bind models to external type definitions. The latter may have been generated models or bespoke types.
+
+This is done with the `x-go-type` extension.
+
+Examples:
+
+This example replaces all references to `myModel` by `github.com/example/models/MyCustomModel`
+```yaml
+definitions:
+  myModel:
+    type: object
+    x-go-type:
+      type: MyCustomModel
+      import:
+        package: github.com/example/models
+```
+
+Note that the external model must implement the `github.com/go-openapi/runtime.Validatable` interface: it must know how to validate a schema.
+No model is generated for this definition.
+
+Sometimes, it is impractical to impose this constraint on the external type. You can then use the "embedded" option to create an embedded type
+based on the external model.
+
+Example:
+```yaml
+definitions:
+  Time:
+    type: string
+    format: date-time         # <- documentary only (external types takes over). This has no impact on generation.
+    x-go-type:
+      type: Time
+      import:
+        package: time
+      embedded: true
+```
+
+This example generates a type in the package model with a `Validate` method like this:
+
+```go
+import (
+	"time"
+
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+)
+
+// Time time
+//
+// swagger:model Time
+type Time struct {
+	time.Time
+}
+
+func (m Time) Validate(formats strfmt.Registry) error {
+	var f interface{} = m.Time
+	if v, ok := f.(runtime.Validatable); ok {
+		return v.Validate(formats)
+	}
+	return nil
+}
+```
+
+The generated `Validate` method uses any existing `Validate` method or just returns `nil` (i.e. data is valid).
+
+NOTE: at the moment, we do not support the `format` specification over the embedded type. Format will be documentary only in that case.
+
+Other examples:
+```yaml 
+  Raw:
+    x-go-type:
+      type: RawMessage
+      import:
+        package: encoding/json
+      hints:
+        kind: primitive
+      embedded: true
+```
+```go 
+type Raw struct {
+	json.RawMessage
+}
+
+func (m Raw) Validate(formats strfmt.Registry) error {
+	var f interface{} = m.RawMessage
+	if v, ok := f.(runtime.Validatable); ok {
+		return v.Validate(formats)
+	}
+	return nil
+}
+```
+
+You can embed types as pointers just the same.
+
+Example:
+```yaml
+definitions:
+  Time:
+    type: string
+    x-go-type:
+      type: Time
+      import:
+        package: time
+      hints:
+        nullable: true  # <- nullable here refers to the nullability of the embedded external type 
+      embedded: true
+```
+
+```go
+type Time struct {
+	*time.Time
+}
+```
+
+
+Using external types is powerful, but normally you still have to describe your type in the specification. That is expected,
+since this is how you document your API.
+
+If you don't (that is the type referred to doesn't correspond to the type in the spec), then the generator may fail to produce correct code,
+because it simply has no way to infer what _kind_ of object is being referred to.
+
+To solve this kind of problem, you may hint the generator to produce a correct usage of the external types, even though the specification
+doesn't reflect the correct nature of the object.
+
+Example:
+```yaml 
+definitions:
+  Error:
+    type: object
+
+  Hotspot:
+    x-go-type:
+      type: Hotspot
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+      hints:
+        kind: object
+    x-nullable: true
+```
+In this example, the `Hotspot` schema is empty in the specification. The generator therefore can only guess that this is some `interface{}` type.
+Now thanks to the hint `kind: object`, we instruct the generator to expect an object so as to correctly reference this object.
+
+At the moment, valid hints are: ` map|object|array|interface|primitive|tuple|stream`.
+
 
 ### Swagger vs JSONSchema
 

@@ -1,0 +1,23 @@
+---
+swagger: "2.0"
+info:
+  title: "repro #2342"
+  version: "0.0.1"
+  description: "repro issue #2342"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  /getRecords:
+    get:
+      operationId: getRecords
+      parameters:
+        - name: "file"
+          in: "formData"
+          description: "file to upload"
+          required: false
+          type: "file"
+          maxLength: 5242880 #5mb
+      responses:
+        200:
+          description: "OK"

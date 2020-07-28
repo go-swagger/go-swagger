@@ -5,6 +5,8 @@
   {{- if .IsBaseType }}
     {{ template "baseTypeSerializer" . }}{{/* When the alias redeclares a polymorphic type, define factory methods with this alias. */}}
   {{- end }}
+{{- else if .IsEmbedded }}
+  {{- template "schemaEmbedded" . }}
 {{- else }}
   {{- if or .IsComplexObject .IsTuple .IsAdditionalProperties }}{{/* TODO(fred): handle case of subtype inheriting from base type with AdditionalProperties, issue #2220 */}}
       {{ if .Name }}type {{ if not .IsExported }}{{ .Name }}{{ else }}{{ pascalize .Name }}{{ end }}{{ end }} {{ template "schemaBody" . }}
@@ -74,7 +76,7 @@
   {{- end }}
   {{ template "schemaSerializer" . }}
 {{- end }}
-{{- if and .IncludeValidator (not .IsSuperAlias) }}{{/* aliased types type A = B do not redefine methods */}}
+{{- if and .IncludeValidator (not .IsSuperAlias) (not .IsEmbedded) }}{{/* aliased types type A = B do not redefine methods */}}
   {{- if and (not (or .IsInterface .IsStream)) (or .Required .HasValidations .HasBaseType) }}
     {{ template "schemavalidator" . }}
   {{- else if not (or .IsInterface .IsStream) }}

@@ -213,6 +213,9 @@ func initModelFixtures() {
 
 	// additionalProperties in base type (pending fix, non regression assertion only atm)
 	initFixture2220()
+
+	// allOf can be forced to non-nullable
+	initFixture2364()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
