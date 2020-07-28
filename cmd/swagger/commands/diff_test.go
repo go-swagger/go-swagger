@@ -228,7 +228,7 @@ func TestDiffOnlyBreaking(t *testing.T) {
 	cmdtest.AssertReadersContent(t, true, expected, actual)
 
 	// assert stdout just the same (we do it just once, so there is no race condition on os.Stdout)
-	cmd.Destination = ""
+	cmd.Destination = "stdout"
 	output, err := cmdtest.CatchStdOut(t, func() error { return cmd.Execute(nil) })
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "compatibility test FAILED")
