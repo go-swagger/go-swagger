@@ -221,10 +221,13 @@ func shallowValidationLookup(sch GenSchema) bool {
 	return false
 }
 
+func isExternal(schema spec.Schema) bool {
+	extType, ok := hasExternalType(schema.Extensions)
+	return ok && !extType.Embedded
+}
+
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	// Check if model is imported from external package using x-go-type
-	_, external := schema.Extensions[xGoType]
-
 	receiver := "m"
 	// models are resolved in the current package
 	resolver := newTypeResolver("", specDoc)
@@ -367,7 +370,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		DefaultImports: defaultImports,
 		ExtraSchemas:   gatherExtraSchemas(pg.ExtraSchemas),
 		Imports:        findImports(&pg.GenSchema),
-		External:       external,
+		External:       isExternal(schema),
 	}, nil
 }
 
@@ -376,6 +379,11 @@ func findImports(sch *GenSchema) map[string]string {
 	t := sch.resolvedType
 	if t.Pkg != "" && t.PkgAlias != "" {
 		imp[t.PkgAlias] = t.Pkg
+	}
+	if t.IsEmbedded && t.ElemType != nil {
+		if t.ElemType.Pkg != "" && t.ElemType.PkgAlias != "" {
+			imp[t.ElemType.PkgAlias] = t.ElemType.Pkg
+		}
 	}
 	if sch.Items != nil {
 		sub := findImports(sch.Items)
@@ -1691,6 +1699,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 		tpe.IsNullable = tpx.IsNullable // TODO
 		tpe.IsInterface = tpx.IsInterface
 		tpe.IsStream = tpx.IsStream
+		tpe.IsEmbedded = tpx.IsEmbedded
 
 		tpe.SwaggerType = tpx.SwaggerType
 		sch := spec.Schema{}
@@ -1721,7 +1730,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	tpe.IsMap = false
 	tpe.IsArray = false
 	tpe.IsAnonymous = false
-	tpe.IsNullable = sg.TypeResolver.IsNullable(&sg.Schema)
+	tpe.IsNullable = sg.TypeResolver.isNullable(&sg.Schema)
 
 	item := sg.NewCompositionBranch(sg.Schema, 0)
 	if err := item.makeGenSchema(); err != nil {
@@ -1756,7 +1765,7 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 		if err != nil {
 			return err
 		}
-		if sg.TypeResolver.IsNullable(&sch) {
+		if sg.TypeResolver.isNullable(&sch) {
 			seenNullable = true
 		}
 		if len(sch.Type) > 0 || len(sch.Properties) > 0 || sch.Ref.GetURL() != nil || len(sch.AllOf) > 0 {

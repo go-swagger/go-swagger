@@ -25,6 +25,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/kr/pretty"
+	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -140,16 +141,15 @@ func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
 func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
 	debugLog("known def type: %q", def)
 	ext := schema.Extensions
-	if nm, ok := ext.GetString(xGoName); ok {
-		if clear == nil {
-			debugLog("known def type %s no clear: %q", xGoName, nm)
-			return nm, "", ""
-		}
-		debugLog("known def type %s clear: %q -> %q", xGoName, nm, clear(nm))
-		return clear(nm), "", ""
+	nm, hasGoName := ext.GetString(xGoName)
+
+	if hasGoName {
+		debugLog("known def type %s named from %s as %q", def, xGoName, nm)
+		def = nm
 	}
-	v, ok := ext[xGoType]
-	if !ok {
+	extType, isExternalType := hasExternalType(ext)
+
+	if !isExternalType || extType.Embedded {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
 			return def, "", ""
@@ -157,25 +157,51 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 		debugLog("known def type clear: %q -> %q", def, clear(def))
 		return clear(def), "", ""
 	}
-	xt := v.(map[string]interface{})
-	t := xt["type"].(string)
-	impIface, ok := xt["import"]
 
+	// external type definition trumps regular type resolution
+	log.Printf("type %s imported as external type %s.%s", def, extType.Import.Package, extType.Type)
+	return extType.Import.Alias + "." + extType.Type, extType.Import.Package, extType.Import.Alias
+}
+
+// x-go-type:
+//   type: mytype
+//   import:
+//     package:
+//     alias:
+//   hints:
+//     kind: map|object|array|interface|primitive|stream|tuple
+//     nullable: true|false
+//  embedded: true
+type externalTypeDefinition struct {
+	Type   string
+	Import struct {
+		Package string
+		Alias   string
+	}
+	Hints struct {
+		Kind     string
+		Nullable bool
+	}
+	Embedded bool
+}
+
+func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
+	v, ok := ext[xGoType]
 	if !ok {
-		return t, "", ""
+		return nil, false
 	}
-
-	imp := impIface.(map[string]interface{})
-	pkg := imp["package"].(string)
-	al, ok := imp["alias"]
-	var alias string
-	if ok {
-		alias = al.(string)
-	} else {
-		alias = path.Base(pkg)
+	var extType externalTypeDefinition
+	err := mapstructure.Decode(v, &extType)
+	if err != nil {
+		log.Printf("warning: x-go-type extension could not be decoded (%v). Skipped", v)
+		return nil, false
 	}
-	debugLog("known def type %s no clear: %q: pkg=%s, alias=%s", xGoType, alias+"."+t, pkg, alias)
-	return alias + "." + t, pkg, alias
+	if extType.Import.Package != "" && extType.Import.Alias == "" {
+		// NOTE(fred): possible name conflict here (TODO(fred): deconflict this default alias)
+		extType.Import.Alias = path.Base(extType.Import.Package)
+	}
+	debugLogAsJSON("known def external %s type", xGoType, extType)
+	return &extType, true
 }
 
 type typeResolver struct {
@@ -210,19 +236,6 @@ func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *ty
 	return t
 }
 
-// IsNullable hints the generator as to render the type with a pointer or not.
-//
-// A schema is deemed nullable (i.e. rendered by a pointer) when:
-// - a custom extension says it has to be so
-// - it is an object with properties
-// - it is a composed object (allOf)
-//
-// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
-func (t *typeResolver) IsNullable(schema *spec.Schema) bool {
-	nullable := t.isNullable(schema)
-	return nullable || len(schema.AllOf) > 0
-}
-
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() == "" {
 		return
@@ -255,7 +268,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	}
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
-	result.IsNullable = t.IsNullable(ref)
+	result.IsNullable = t.isNullable(ref)
 	result.IsEnumCI = false
 	return
 }
@@ -308,12 +321,20 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 		case number, integer:
 			result.IsNullable = nullableNumber(schema, isRequired)
 		default:
-			result.IsNullable = t.IsNullable(schema)
+			result.IsNullable = t.isNullable(schema)
 		}
 	}
 	return
 }
 
+// isNullable hints the generator as to render the type with a pointer or not.
+//
+// A schema is deemed nullable (i.e. rendered by a pointer) when:
+// - a custom extension says it has to be so
+// - it is an object with properties
+// - it is a composed object (allOf)
+//
+// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	check := func(extension string) (bool, bool) {
 		v, found := schema.Extensions[extension]
@@ -327,7 +348,7 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	if nullable, ok := check(xNullable); ok {
 		return nullable
 	}
-	return len(schema.Properties) > 0
+	return len(schema.Properties) > 0 || len(schema.AllOf) > 0
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -378,7 +399,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	}
 	// override the general nullability rule from ResolveSchema():
 	// only complex items are nullable (when not discriminated, not forced by x-nullable)
-	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
+	rt.IsNullable = t.isNullable(schema.Items.Schema) && !rt.HasDiscriminator
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
@@ -387,7 +408,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	result.ElemType = &rt
 	result.SwaggerType = array
 	result.SwaggerFormat = ""
-	result.IsEnumCI = hasEnumCI(&schema.VendorExtensible)
+	result.IsEnumCI = hasEnumCI(schema.Extensions)
 	t.inferAliasing(&result, schema, isAnonymous, isRequired)
 	result.Extensions = schema.Extensions
 
@@ -432,7 +453,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.IsComplexObject = true
 		var isNullable bool
 		for _, p := range schema.AllOf {
-			if t.IsNullable(&p) {
+			if t.isNullable(&p) {
 				isNullable = true
 			}
 		}
@@ -445,7 +466,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	// resolved type, this should also flag the object as anonymous,
 	// when a ref is found, the anonymous flag will be reset
 	if len(schema.Properties) > 0 {
-		result.IsNullable = t.IsNullable(schema)
+		result.IsNullable = t.isNullable(schema)
 		result.IsComplexObject = true
 		// no return here, still need to check for additional properties
 	}
@@ -619,8 +640,8 @@ func boolExtension(ext spec.Extensions, key string) *bool {
 	return nil
 }
 
-func hasEnumCI(ve *spec.VendorExtensible) bool {
-	v, ok := ve.Extensions[xGoEnumCI]
+func hasEnumCI(ve spec.Extensions) bool {
+	v, ok := ve[xGoEnumCI]
 	if !ok {
 		return false
 	}
@@ -630,31 +651,84 @@ func hasEnumCI(ve *spec.VendorExtensible) bool {
 	return ok && isEnumCI
 }
 
+func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extType *externalTypeDefinition, schema *spec.Schema) resolvedType {
+	// short circuit type resolution for external types
+	var result resolvedType
+	result.Extensions = schema.Extensions
+	result.GoType = tpe
+	result.Pkg = pkg
+	result.PkgAlias = alias
+	result.setKind(extType.Hints.Kind)
+	result.IsNullable = t.isNullable(schema)
+
+	// other extensions
+	if result.IsArray {
+		result.IsEmptyOmitted = false
+		tpe = "array"
+	}
+	result.setExtensions(schema, tpe)
+	return result
+}
+
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	debugLog("resolving schema (anon: %t, req: %t) %s", isAnonymous, isRequired, t.ModelName)
+	defer func() {
+		debugLog("returning after resolve schema: %s", pretty.Sprint(result))
+	}()
+
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = iface
 		return
 	}
 
+	extType, isExternalType := hasExternalType(schema.Extensions)
+	if isExternalType {
+		tpe, pkg, alias := knownDefGoType(t.ModelName, *schema, t.goTypeName)
+		debugLog("found type declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
+			pkg, tpe, extType.Hints.Kind != "", extType.Embedded)
+
+		if extType.Hints.Kind != "" && !extType.Embedded {
+			// use hint to qualify type
+			debugLog("short circuits external type resolution with hint for %s", tpe)
+			result = t.shortCircuitResolveExternal(tpe, pkg, alias, extType, schema)
+			return
+		}
+
+		// use spec to qualify type
+		debugLog("marking type %s as external embedded: %t", tpe, extType.Embedded)
+		// mark this type as an embedded external definition if requested
+		defer func() {
+			result.IsEmbedded = extType.Embedded
+			if result.IsEmbedded {
+				result.ElemType = &resolvedType{
+					GoType:     extType.Import.Alias + "." + extType.Type,
+					Pkg:        extType.Import.Package,
+					PkgAlias:   extType.Import.Alias,
+					IsNullable: extType.Hints.Nullable,
+				}
+				result.setKind(extType.Hints.Kind)
+			}
+		}()
+	}
+
 	tpe := t.firstType(schema)
 	var returns bool
 
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
+
 	if returns {
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
 			debugLog("not anonymous ref")
 		}
-		debugLog("returning after ref")
+		debugLog("anonymous after ref")
 		return
 	}
+
 	defer func() {
-		result.setIsEmptyOmitted(schema, tpe)
-		result.setIsJSONString(schema, tpe)
-		result.IsEnumCI = hasEnumCI(&schema.VendorExtensible)
+		result.setExtensions(schema, tpe)
 	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
@@ -669,7 +743,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 
 	returns, result, err = t.resolveFormat(schema, isAnonymous, isRequired)
 	if returns {
-		debugLog("returning after resolve format: %s", pretty.Sprint(result))
 		return
 	}
 
@@ -678,7 +751,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	switch tpe {
 	case array:
 		result, err = t.resolveArray(schema, isAnonymous, false)
-		return
 
 	case file, number, integer, boolean:
 		result.Extensions = schema.Extensions
@@ -697,7 +769,6 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsNullable = nullableNumber(schema, isRequired)
 		case file:
 		}
-		return
 
 	case str:
 		result.GoType = str
@@ -711,23 +782,21 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case object:
 		result, err = t.resolveObject(schema, isAnonymous)
 		if err != nil {
-			return resolvedType{}, err
+			result = resolvedType{}
+			break
 		}
 		result.HasDiscriminator = schema.Discriminator != ""
-		return
 
 	case "null":
 		result.GoType = iface
 		result.SwaggerType = object
 		result.IsNullable = false
 		result.IsInterface = true
-		return
 
 	default:
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
-		return
 	}
-	return result, err
+	return
 }
 
 // resolvedType is a swagger type that has been resolved and analyzed for usage
@@ -776,6 +845,11 @@ type resolvedType struct {
 	// IsSuperAlias indicates that the aliased type is really the same type,
 	// e.g. in golang, this translates to: type A = B
 	IsSuperAlias bool
+
+	// IsEmbedded applies to externally defined types. When embedded, a type
+	// is generated in models that embeds the external type, with the Validate
+	// method.
+	IsEmbedded bool
 }
 
 func (rt *resolvedType) Zero() string {
@@ -810,6 +884,12 @@ func (rt *resolvedType) Zero() string {
 	return ""
 }
 
+func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string) {
+	rt.IsEnumCI = hasEnumCI(schema.Extensions)
+	rt.setIsEmptyOmitted(schema, origType)
+	rt.setIsJSONString(schema, origType)
+}
+
 func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
 	if v, found := schema.Extensions[xOmitEmpty]; found {
 		omitted, cast := v.(bool)
@@ -827,4 +907,78 @@ func (rt *resolvedType) setIsJSONString(schema *spec.Schema, tpe string) {
 		return
 	}
 	rt.IsJSONString = true
+}
+
+func (rt *resolvedType) setKind(kind string) {
+	if kind != "" {
+		debugLog("overriding kind for %s as %s", rt.GoType, kind)
+	}
+	switch kind {
+	case "map":
+		rt.IsMap = true
+		rt.IsArray = false
+		rt.IsComplexObject = false
+		rt.IsInterface = false
+		rt.IsStream = false
+		rt.IsTuple = false
+		rt.IsPrimitive = false
+		rt.SwaggerType = object
+	case "array":
+		rt.IsMap = false
+		rt.IsArray = true
+		rt.IsComplexObject = false
+		rt.IsInterface = false
+		rt.IsStream = false
+		rt.IsTuple = false
+		rt.IsPrimitive = false
+		rt.SwaggerType = array
+	case "object":
+		rt.IsMap = false
+		rt.IsArray = false
+		rt.IsComplexObject = true
+		rt.IsInterface = false
+		rt.IsStream = false
+		rt.IsTuple = false
+		rt.IsPrimitive = false
+		rt.SwaggerType = object
+	case "interface", "null":
+		rt.IsMap = false
+		rt.IsArray = false
+		rt.IsComplexObject = false
+		rt.IsInterface = true
+		rt.IsStream = false
+		rt.IsTuple = false
+		rt.IsPrimitive = false
+		rt.SwaggerType = iface
+	case "stream":
+		rt.IsMap = false
+		rt.IsArray = false
+		rt.IsComplexObject = false
+		rt.IsInterface = false
+		rt.IsStream = true
+		rt.IsTuple = false
+		rt.IsPrimitive = false
+		rt.SwaggerType = file
+	case "tuple":
+		rt.IsMap = false
+		rt.IsArray = false
+		rt.IsComplexObject = false
+		rt.IsInterface = false
+		rt.IsStream = false
+		rt.IsTuple = true
+		rt.IsPrimitive = false
+		rt.SwaggerType = array
+	case "primitive":
+		rt.IsMap = false
+		rt.IsArray = false
+		rt.IsComplexObject = false
+		rt.IsInterface = false
+		rt.IsStream = false
+		rt.IsTuple = false
+		rt.IsPrimitive = true
+	case "":
+		break
+	default:
+		log.Printf("warning: unsupported hint value for external type: %q. Skipped", kind)
+	}
 }

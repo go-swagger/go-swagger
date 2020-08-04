@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"path"
 	"strconv"
 
@@ -87,17 +86,12 @@ func (s *ServeCmd) Execute(args []string) error {
 			}, handler)
 			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "docs"))
 		} else if visit != "" || s.Flavor == "swagger" {
-			if visit == "" {
-				visit = "http://petstore.swagger.io/"
-			}
-			u, err := url.Parse(visit)
-			if err != nil {
-				return err
-			}
-			q := u.Query()
-			q.Add("url", fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "swagger.json")))
-			u.RawQuery = q.Encode()
-			visit = u.String()
+			handler = middleware.SwaggerUI(middleware.SwaggerUIOpts{
+				BasePath: basePath,
+				SpecURL:  path.Join(basePath, "swagger.json"),
+				Path:     "docs",
+			}, handler)
+			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "docs"))
 		}
 	}
 

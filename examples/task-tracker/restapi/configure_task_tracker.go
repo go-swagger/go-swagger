@@ -14,7 +14,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
 )
 
-//go:generate swagger generate server --target ../../task-tracker --name TaskTracker --spec ../swagger.yml
+//go:generate swagger generate server --target ../../task-tracker --name TaskTracker --spec ../swagger.yml --principal interface{}
 
 func configureFlags(api *operations.TaskTrackerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -29,6 +29,10 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	//
 	// Example:
 	// api.Logger = log.Printf
+
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.MultipartformConsumer = runtime.DiscardConsumer

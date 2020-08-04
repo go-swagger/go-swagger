@@ -11082,3 +11082,20 @@ func initFixture1993() {
 		noLines,
 		noLines)
 }
+
+func initFixture2364() {
+	f := newModelFixture("../fixtures/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	thisRun.AddExpectations("bundle_attributes_response.go", []string{
+		`type BundleAttributesResponse struct {`,
+		`Items []BundleItemResponse`,
+		`Sections []ItemBundleSectionResponse`,
+		`Type BundleType`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+}

@@ -14,7 +14,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-2/restapi/operations/todos"
 )
 
-//go:generate swagger generate server --target ../../server-2 --name TodoList --spec ../swagger.yml
+//go:generate swagger generate server --target ../../server-2 --name TodoList --spec ../swagger.yml --principal interface{}
 
 func configureFlags(api *operations.TodoListAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -29,6 +29,10 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	//
 	// Example:
 	// api.Logger = log.Printf
+
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

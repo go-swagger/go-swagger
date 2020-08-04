@@ -13,7 +13,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../gen --name Greeter --spec ../../swagger/swagger.yml --exclude-main
+//go:generate swagger generate server --target ../../gen --name Greeter --spec ../../swagger/swagger.yml --principal interface{} --exclude-main
 
 func configureFlags(api *operations.GreeterAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -28,6 +28,10 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 	//
 	// Example:
 	// api.Logger = log.Printf
+
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
 	api.JSONConsumer = runtime.JSONConsumer()
 

@@ -97,6 +97,7 @@ func defaultAssets() map[string][]byte {
 		"structfield.gotmpl":             MustAsset("templates/structfield.gotmpl"),
 		"schemavalidator.gotmpl":         MustAsset("templates/schemavalidator.gotmpl"),
 		"schemapolymorphic.gotmpl":       MustAsset("templates/schemapolymorphic.gotmpl"),
+		"schemaembedded.gotmpl":          MustAsset("templates/schemaembedded.gotmpl"),
 
 		// schema serialization templates
 		"additionalpropertiesserializer.gotmpl": MustAsset("templates/serializers/additionalpropertiesserializer.gotmpl"),
