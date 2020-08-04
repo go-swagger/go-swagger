@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
 
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/restapi/operations/pet"
@@ -24,25 +25,41 @@ const AuthKey contextKey = "Auth"
 
 //go:generate mockery -name PetAPI -inpkg
 
-// PetAPI
+/* PetAPI  */
 type PetAPI interface {
+	/* PetCreate Add a new pet to the store */
 	PetCreate(ctx context.Context, params pet.PetCreateParams) middleware.Responder
+
+	/* PetDelete Deletes a pet */
 	PetDelete(ctx context.Context, params pet.PetDeleteParams) middleware.Responder
+
+	/* PetGet Get pet by it's ID */
 	PetGet(ctx context.Context, params pet.PetGetParams) middleware.Responder
+
+	/* PetList List pets */
 	PetList(ctx context.Context, params pet.PetListParams) middleware.Responder
+
+	/* PetUpdate Update an existing pet */
 	PetUpdate(ctx context.Context, params pet.PetUpdateParams) middleware.Responder
+
+	/* PetUploadImage uploads an image */
 	PetUploadImage(ctx context.Context, params pet.PetUploadImageParams) middleware.Responder
 }
 
 //go:generate mockery -name StoreAPI -inpkg
 
-// StoreAPI
+/* StoreAPI  */
 type StoreAPI interface {
+	/* InventoryGet Returns pet inventories by status */
 	InventoryGet(ctx context.Context, params store.InventoryGetParams) middleware.Responder
+
+	/* OrderCreate Place an order for a pet */
 	OrderCreate(ctx context.Context, params store.OrderCreateParams) middleware.Responder
-	// OrderDelete is For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
+
+	/* OrderDelete Delete purchase order by ID */
 	OrderDelete(ctx context.Context, params store.OrderDeleteParams) middleware.Responder
-	// OrderGet is For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+
+	/* OrderGet Find purchase order by ID */
 	OrderGet(ctx context.Context, params store.OrderGetParams) middleware.Responder
 }
 
@@ -61,6 +78,13 @@ type Config struct {
 
 	// AuthRoles Applies when the "X-Auth-Roles" header is set
 	AuthRoles func(token string) (interface{}, error)
+
+	// Authenticator to use for all APIKey authentication
+	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+	// Authenticator to use for all Bearer authentication
+	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+	// Authenticator to use for all Basic authentication
+	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 }
 
 // Handler returns an http.Handler given the handler configuration
@@ -81,6 +105,16 @@ func HandlerAPI(c Config) (http.Handler, *operations.PetstoreAPI, error) {
 	api := operations.NewPetstoreAPI(spec)
 	api.ServeError = errors.ServeError
 	api.Logger = c.Logger
+
+	if c.APIKeyAuthenticator != nil {
+		api.APIKeyAuthenticator = c.APIKeyAuthenticator
+	}
+	if c.BasicAuthenticator != nil {
+		api.BasicAuthenticator = c.BasicAuthenticator
+	}
+	if c.BearerAuthenticator != nil {
+		api.BearerAuthenticator = c.BearerAuthenticator
+	}
 
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.JSONProducer = runtime.JSONProducer()

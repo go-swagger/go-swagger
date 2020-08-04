@@ -9,9 +9,11 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var (
+const (
+	// Test template environment
 	singleTemplate        = `test`
 	multipleDefinitions   = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 	dependantTemplate     = `{{ template "T1" }}D1`
@@ -21,24 +23,21 @@ var (
 	customMultiple        = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
 	customNewTemplate     = `new template`
 	customExistingUsesNew = `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`
-	// Test template environment
-	copyright        = `{{ .Copyright }}`
-	targetImportPath = `{{ .TargetImportPath }}`
-	funcTpl          = `
+)
+
+func testFuncTpl() string {
+	return `
 Pascalize={{ pascalize "WeArePonies_Of_the_round table" }}
 Snakize={{ snakize "WeArePonies_Of_the_round table" }}
 Humanize={{ humanize "WeArePonies_Of_the_round table" }}
 PluralizeFirstWord={{ pluralizeFirstWord "pony of the round table" }}
 PluralizeFirstOfOneWord={{ pluralizeFirstWord "dwarf" }}
 PluralizeFirstOfNoWord={{ pluralizeFirstWord "" }}
-StripPackage={{ stripPackage "prefix.suffix" "xyz"}}
-StripNoPackage={{ stripPackage "suffix" "xyz"}}
-StripEmptyPackage={{ stripPackage "" "xyz" }}
 DropPackage={{ dropPackage "prefix.suffix" }}
 DropNoPackage={{ dropPackage "suffix" }}
 DropEmptyPackage={{ dropPackage "" }}
-ImportRuntime={{ contains .DefaultImports "github.com/go-openapi/runtime"}}
-DoNotImport={{ contains .DefaultImports "github.com/go-openapi/xruntime"}}
+ContainsString={{ contains .DependsOn "x"}}
+DoesNotContainString={{ contains .DependsOn "y"}}
 PadSurround1={{ padSurround "padme" "-" 3 12}}
 PadSurround2={{ padSurround "padme" "-" 0 12}}
 Json={{ json .DefaultImports }}
@@ -56,32 +55,32 @@ PascalizeSpecialChar2={{ pascalize "-1" }}
 PascalizeSpecialChar3={{ pascalize "1" }}
 PascalizeSpecialChar4={{ pascalize "-" }}
 PascalizeSpecialChar5={{ pascalize "+" }}
+Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture" "table" }}
+{{ define "dictTemplate" }}{{ .Animal }} of the {{ .Shape }} {{ .Furniture }}{{ end }}
 `
-)
+}
 
 func TestTemplates_CustomTemplates(t *testing.T) {
 
 	var buf bytes.Buffer
 	headerTempl, err := templates.Get("bindprimitiveparam")
-
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, buf)
 	assert.Equal(t, "\n", buf.String())
 
 	buf.Reset()
 	err = templates.AddFile("bindprimitiveparam", customHeader)
+	assert.NoError(t, err)
 
-	assert.Nil(t, err)
 	headerTempl, err = templates.Get("bindprimitiveparam")
-
-	assert.Nil(t, err)
+	assert.NoError(t, err)
+	assert.NotNil(t, headerTempl)
 
 	err = headerTempl.Execute(&buf, nil)
-
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "custom header", buf.String())
 
 }
@@ -90,15 +89,14 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("differentFileName", customMultiple)
+	assert.NoError(t, err)
 
-	assert.Nil(t, err)
 	headerTempl, err := templates.Get("bindprimitiveparam")
-
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
+	require.NoError(t, err)
 
-	assert.Nil(t, err)
 	assert.Equal(t, "custom primitive", buf.String())
 }
 
@@ -106,16 +104,16 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("newtemplate", customNewTemplate)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	headerTempl, err := templates.Get("bindprimitiveparam")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "new template", buf.String())
 }
@@ -128,14 +126,11 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("simple")
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	var b bytes.Buffer
-
 	err = templ.Execute(&b, nil)
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "test", b.String())
 }
@@ -149,16 +144,19 @@ func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("multiple")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
+
 	err = templ.Execute(&b, nil)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "", b.String())
 
 	templ, err = repo.Get("T1")
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, templ)
+
 	err = templ.Execute(&b, nil)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "T1", b.String())
 }
@@ -176,18 +174,18 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 
 	err := repo.AddFile("multiple", multipleDefinitions)
 	assert.NoError(t, err)
+
 	err = repo.AddFile("dependant", dependantTemplate)
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("dependant")
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, templ)
 
 	err = templ.Execute(&b, nil)
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, "T1D1", b.String())
-
 }
 
 func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
@@ -197,11 +195,14 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 
 	err := repo.AddFile("c1", cirularDeps1)
 	assert.NoError(t, err)
+
 	err = repo.AddFile("c2", cirularDeps2)
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("c1")
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, templ)
+
 	data := testData{
 		Name: "Root",
 		Children: []testData{
@@ -210,9 +211,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	}
 	expected := `Root: Children`
 	err = templ.Execute(&b, data)
-
-	assert.Nil(t, err)
-
+	require.NoError(t, err)
 	assert.Equal(t, expected, b.String())
 
 	data = testData{
@@ -227,8 +226,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	expected = `Root: Child1: Children`
 
 	err = templ.Execute(&b, data)
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected, b.String())
 
@@ -244,8 +242,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	expected = `Root: Children`
 
 	err = templ.Execute(&b, data)
-
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected, b.String())
 }
@@ -255,6 +252,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 
 // Test copyright definition
 func TestTemplates_DefinitionCopyright(t *testing.T) {
+	const copyright = `{{ .Copyright }}`
 	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
@@ -263,7 +261,8 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("copyright")
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, templ)
 
 	opts := opts()
 	opts.Copyright = "My copyright clause"
@@ -271,22 +270,23 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 
 	// executes template against model definitions
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, genModel)
 
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
-	assert.Nil(t, err)
-
+	assert.NoError(t, err)
 	assert.Equal(t, expected, rendered.String())
 
 	// executes template against operations definitions
 	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, genOperation)
 
 	rendered.Reset()
 
 	err = templ.Execute(rendered, genOperation)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
 
@@ -294,6 +294,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 
 // Test TargetImportPath definition
 func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
+	const targetImportPath = `{{ .TargetImportPath }}`
 	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
@@ -302,7 +303,8 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	assert.NoError(t, err)
 
 	templ, err := repo.Get("targetimportpath")
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, templ)
 
 	opts := opts()
 	// Non existing target would panic: to be tested too, but in another module
@@ -311,22 +313,24 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 
 	// executes template against model definitions
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, genModel)
 
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
 
 	// executes template against operations definitions
 	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
-	assert.Nil(t, err)
+	require.NoError(t, err)
+	require.NotNil(t, genOperation)
 
 	rendered.Reset()
 
 	err = templ.Execute(rendered, genOperation)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
 
@@ -376,59 +380,56 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 // Exercises FuncMap
 // Just running basic tests to make sure the function map works and all functions are available as expected.
 // More complete unit tests are provided by go-openapi/swag.
-// NOTE: We note that functions StripPackage() and DropPackage() behave the same way... and StripPackage()
-// function is not sensitive to its second arg... Probably not what was intended in the first place but not
-// blocking anyone for now.
 func TestTemplates_FuncMap(t *testing.T) {
 	log.SetOutput(os.Stdout)
+	funcTpl := testFuncTpl()
 
 	err := templates.AddFile("functpl", funcTpl)
-	if assert.NoError(t, err) {
-		templ, err := templates.Get("functpl")
-		if assert.Nil(t, err) {
-			opts := opts()
-			// executes template against model definitions
-			genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
-			if assert.Nil(t, err) {
-				rendered := bytes.NewBuffer(nil)
-				err = templ.Execute(rendered, genModel)
-				if assert.Nil(t, err) {
-					assert.Contains(t, rendered.String(), "Pascalize=WeArePoniesOfTheRoundTable\n")
-					assert.Contains(t, rendered.String(), "Snakize=we_are_ponies_of_the_round_table\n")
-					assert.Contains(t, rendered.String(), "Humanize=we are ponies of the round table\n")
-					assert.Contains(t, rendered.String(), "PluralizeFirstWord=ponies of the round table\n")
-					assert.Contains(t, rendered.String(), "PluralizeFirstOfOneWord=dwarves\n")
-					assert.Contains(t, rendered.String(), "PluralizeFirstOfNoWord=\n")
-					assert.Contains(t, rendered.String(), "StripPackage=suffix\n")
-					assert.Contains(t, rendered.String(), "StripNoPackage=suffix\n")
-					assert.Contains(t, rendered.String(), "StripEmptyPackage=\n")
-					assert.Contains(t, rendered.String(), "DropPackage=suffix\n")
-					assert.Contains(t, rendered.String(), "DropNoPackage=suffix\n")
-					assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
-					assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
-					assert.Contains(t, rendered.String(), "ImportRuntime=true\n")
-					assert.Contains(t, rendered.String(), "DoNotImport=false\n")
-					assert.Contains(t, rendered.String(), "PadSurround1=-,-,-,padme,-,-,-,-,-,-,-,-\n")
-					assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
-					assert.Contains(t, rendered.String(), "Json=[\"github.com/go-openapi/errors\",\"github.com/go-openapi/runtime\",\"github.com/go-openapi/swag\",\"github.com/go-openapi/validate\"]")
-					assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
-					assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
-					assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
-					assert.Contains(t, rendered.String(), "Snakize3=ending_in_test_swagger\n")
-					assert.Contains(t, rendered.String(), "toPackage1=a/b-c/d_e\n")
-					assert.Contains(t, rendered.String(), "toPackage2=a.a/b_c/d_e\n")
-					assert.Contains(t, rendered.String(), "toPackage3=d_e\n")
-					assert.Contains(t, rendered.String(), "toPackage4=d_e\n")
-					assert.Contains(t, rendered.String(), "toPackageName=f_g\n")
-					assert.Contains(t, rendered.String(), "PascalizeSpecialChar1=Plus1\n")
-					assert.Contains(t, rendered.String(), "PascalizeSpecialChar2=Minus1\n")
-					assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
-					assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
-					assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	templ, err := templates.Get("functpl")
+	require.NoError(t, err)
+
+	opts := opts()
+	// executes template against model definitions
+	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	require.NoError(t, err)
+
+	genModel.DependsOn = []string{"x", "z"}
+	rendered := bytes.NewBuffer(nil)
+	err = templ.Execute(rendered, genModel)
+	require.NoError(t, err)
+
+	assert.Contains(t, rendered.String(), "Pascalize=WeArePoniesOfTheRoundTable\n")
+	assert.Contains(t, rendered.String(), "Snakize=we_are_ponies_of_the_round_table\n")
+	assert.Contains(t, rendered.String(), "Humanize=we are ponies of the round table\n")
+	assert.Contains(t, rendered.String(), "PluralizeFirstWord=ponies of the round table\n")
+	assert.Contains(t, rendered.String(), "PluralizeFirstOfOneWord=dwarves\n")
+	assert.Contains(t, rendered.String(), "PluralizeFirstOfNoWord=\n")
+	assert.Contains(t, rendered.String(), "DropPackage=suffix\n")
+	assert.Contains(t, rendered.String(), "DropNoPackage=suffix\n")
+	assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
+	assert.Contains(t, rendered.String(), "DropEmptyPackage=\n")
+	assert.Contains(t, rendered.String(), "ContainsString=true\n")
+	assert.Contains(t, rendered.String(), "DoesNotContainString=false\n")
+	assert.Contains(t, rendered.String(), "PadSurround1=-,-,-,padme,-,-,-,-,-,-,-,-\n")
+	assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
+	assert.Contains(t, rendered.String(), `Json={"errors":"github.com/go-openapi/errors","runtime":"github.com/go-openapi/runtime","swag":"github.com/go-openapi/swag","validate":"github.com/go-openapi/validate"}`)
+	assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
+	assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
+	assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
+	assert.Contains(t, rendered.String(), "Snakize3=ending_in_test_swagger\n")
+	assert.Contains(t, rendered.String(), "toPackage1=a/b-c/d_e\n")
+	assert.Contains(t, rendered.String(), "toPackage2=a.a/b_c/d_e\n")
+	assert.Contains(t, rendered.String(), "toPackage3=d_e\n")
+	assert.Contains(t, rendered.String(), "toPackage4=d_e\n")
+	assert.Contains(t, rendered.String(), "toPackageName=f_g\n")
+	assert.Contains(t, rendered.String(), "PascalizeSpecialChar1=Plus1\n")
+	assert.Contains(t, rendered.String(), "PascalizeSpecialChar2=Minus1\n")
+	assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
+	assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
+	assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
+	assert.Contains(t, rendered.String(), "Dict=Pony of the round table\n")
 }
 
 // AddFile() global package function (protected vs unprotected)
@@ -436,16 +437,18 @@ func TestTemplates_FuncMap(t *testing.T) {
 // is generally preferred.
 func TestTemplates_AddFile(t *testing.T) {
 	log.SetOutput(os.Stdout)
+	funcTpl := testFuncTpl()
 
 	// unprotected
 	err := AddFile("functpl", funcTpl)
-	if assert.NoError(t, err) {
-		_, erg := templates.Get("functpl")
-		assert.Nil(t, erg)
-	}
+	require.NoError(t, err)
+
+	_, err = templates.Get("functpl")
+	require.NoError(t, err)
+
 	// protected
 	err = AddFile("schemabody", funcTpl)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot overwrite protected template")
 }
 
@@ -455,12 +458,12 @@ func TestTemplates_LoadDir(t *testing.T) {
 
 	// Fails
 	err := templates.LoadDir("")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "could not complete")
 
 	// Fails again (from any dir?)
 	err = templates.LoadDir("templates")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot overwrite protected template")
 
 	// TODO: success case
@@ -474,7 +477,7 @@ func TestTemplates_LoadDir(t *testing.T) {
 	}()
 
 	protectedTemplates = make(map[string]bool)
-	repo := NewRepository(FuncMap)
+	repo := NewRepository(FuncMapFunc(DefaultLanguageFunc()))
 	err = repo.LoadDir("templates")
 	assert.NoError(t, err)
 }
@@ -486,6 +489,7 @@ func TestTemplates_SetAllowOverride(t *testing.T) {
 	// adding protected file with allowOverride set to false fails
 	templates.SetAllowOverride(false)
 	err := templates.AddFile("schemabody", "some data")
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot overwrite protected template schemabody")
 
 	// adding protected file with allowOverride set to true should not fail
@@ -502,7 +506,7 @@ func TestTemplates_LoadContrib(t *testing.T) {
 		wantError bool
 	}{
 		{
-			name:      "None_existing_contributor_tempalte",
+			name:      "None_existing_contributor_template",
 			template:  "NonExistingContributorTemplate",
 			wantError: true,
 		},
@@ -540,23 +544,76 @@ func TestTemplates_DumpTemplates(t *testing.T) {
 	assert.Contains(t, buf.String(), "## tupleSerializer")
 	assert.Contains(t, buf.String(), "Defined in `tupleserializer.gotmpl`")
 	assert.Contains(t, buf.String(), "####requires \n - schemaType")
-	//fmt.Println(buf)
 }
 
-// Go literal initializer func
-func TestTemplates_GoSliceInitializer(t *testing.T) {
-	a0 := []interface{}{"a", "b"}
-	res, err := goSliceInitializer(a0)
-	assert.NoError(t, err)
-	assert.Equal(t, `{"a","b",}`, res)
+func TestFuncMap_Pascalize(t *testing.T) {
+	assert.Equal(t, "Plus1", pascalize("+1"))
+	assert.Equal(t, "Plus", pascalize("+"))
+	assert.Equal(t, "Minus1", pascalize("-1"))
+	assert.Equal(t, "Minus", pascalize("-"))
+	assert.Equal(t, "Nr8", pascalize("8"))
 
-	a1 := []interface{}{[]interface{}{"a", "b"}, []interface{}{"c", "d"}}
-	res, err = goSliceInitializer(a1)
-	assert.NoError(t, err)
-	assert.Equal(t, `{{"a","b",},{"c","d",},}`, res)
+	assert.Equal(t, "Hello", pascalize("+hello"))
 
-	a2 := map[string]interface{}{"a": "y", "b": "z"}
-	res, err = goSliceInitializer(a2)
-	assert.NoError(t, err)
-	assert.Equal(t, `{"a":"y","b":"z",}`, res)
+	// other values from swag rules
+	assert.Equal(t, "At8", pascalize("@8"))
+	assert.Equal(t, "AtHello", pascalize("@hello"))
+	assert.Equal(t, "Bang8", pascalize("!8"))
+	assert.Equal(t, "At", pascalize("@"))
+
+	// # values
+	assert.Equal(t, "Hello", pascalize("#hello"))
+	assert.Equal(t, "BangHello", pascalize("#!hello"))
+	assert.Equal(t, "HashTag8", pascalize("#8"))
+	assert.Equal(t, "HashTag", pascalize("#"))
+
+	// single '_'
+	assert.Equal(t, "Nr", pascalize("_"))
+	assert.Equal(t, "Hello", pascalize("_hello"))
+
+	// remove spaces
+	assert.Equal(t, "HelloWorld", pascalize("# hello world"))
+	assert.Equal(t, "HashTag8HelloWorld", pascalize("# 8 hello world"))
+
+	assert.Equal(t, "Empty", pascalize(""))
+}
+
+func TestFuncMap_DropPackage(t *testing.T) {
+	assert.Equal(t, "trail", dropPackage("base.trail"))
+	assert.Equal(t, "trail", dropPackage("base.another.trail"))
+	assert.Equal(t, "trail", dropPackage("trail"))
+}
+
+func TestFuncMap_AsJSON(t *testing.T) {
+	for _, jsonFunc := range []func(interface{}) (string, error){
+		asJSON,
+		asPrettyJSON,
+	} {
+		res, err := jsonFunc(struct {
+			A string `json:"a"`
+			B int
+		}{A: "good", B: 3})
+		require.NoError(t, err)
+		assert.JSONEq(t, `{"a":"good","B":3}`, res)
+
+		_, err = jsonFunc(struct {
+			A string `json:"a"`
+			B func() string
+		}{A: "good", B: func() string { return "" }})
+		require.Error(t, err)
+	}
+}
+
+func TestFuncMap_Dict(t *testing.T) {
+	d, err := dict("a", "b", "c", "d")
+	require.NoError(t, err)
+	assert.Equal(t, map[string]interface{}{"a": "b", "c": "d"}, d)
+
+	// odd number of arguments
+	_, err = dict("a", "b", "c")
+	require.Error(t, err)
+
+	// none-string key
+	_, err = dict("a", "b", 3, "d")
+	require.Error(t, err)
 }

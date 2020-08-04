@@ -6,13 +6,13 @@ The toolkit has a command that will let you find the changes in a spec.
 
 ```
 Usage:
-  swagger [OPTIONS] diff [diff-OPTIONS] spec1 spec2
+  swagger [OPTIONS] diff [diff-OPTIONS] {original spec} {spec}
 
-diff two swagger spec files
+diff specs showing which changes will break existing clients
 
 Application Options:
   -q, --quiet                    silence logs
-  -o, --output=LOG-FILE          redirect logs to file
+      --log-output=LOG-FILE      redirect logs to file
 
 Help Options:
   -h, --help                     Show this help message
@@ -20,10 +20,8 @@ Help Options:
 [diff command options]
       -b, --break                When present, only shows incompatible changes
       -f, --format=[txt|json]    When present, writes output as json (default: txt)
-      -i, --ignore=              Exception file of diffs to ignore (copy output from json diff format) (default: none
-                                 specified)
+      -i, --ignore=              Exception file of diffs to ignore (copy output from json diff format) (default: none specified)
       -d, --dest=                Output destination file or stdout (default: stdout)
-
 ```
 
 ### Diff output

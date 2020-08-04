@@ -10,16 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	"github.com/go-swagger/go-swagger/examples/composed-auth/models"
 )
 
 // NewMultiAuthExampleAPI creates a new MultiAuthExample instance
@@ -31,14 +31,19 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		AddOrderHandler: AddOrderHandlerFunc(func(params AddOrderParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation AddOrder has not yet been implemented")
 		}),
@@ -58,12 +63,10 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (hasRole) has not yet been implemented")
 		},
-
 		// Applies when the Authorization header is set with the Basic scheme
 		IsRegisteredAuth: func(user string, pass string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("basic auth  (isRegistered) has not yet been implemented")
 		},
-
 		// Applies when the "X-Custom-Key" header is set
 		IsResellerAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (isReseller) X-Custom-Key from header param [X-Custom-Key] has not yet been implemented")
@@ -72,7 +75,6 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		IsResellerQueryAuth: func(token string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("api key auth (isResellerQuery) CustomKeyAsQuery from query param [CustomKeyAsQuery] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -115,6 +117,7 @@ type MultiAuthExampleAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -126,10 +129,12 @@ type MultiAuthExampleAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// HasRoleAuth registers a function that takes an access token and a collection of required scopes and returns a principal
@@ -161,10 +166,13 @@ type MultiAuthExampleAPI struct {
 	GetOrderHandler GetOrderHandler
 	// GetOrdersForItemHandler sets the operation handler for the get orders for item operation
 	GetOrdersForItemHandler GetOrdersForItemHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -175,6 +183,16 @@ type MultiAuthExampleAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *MultiAuthExampleAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *MultiAuthExampleAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -227,15 +245,12 @@ func (o *MultiAuthExampleAPI) Validate() error {
 	if o.HasRoleAuth == nil {
 		unregistered = append(unregistered, "HasRoleAuth")
 	}
-
 	if o.IsRegisteredAuth == nil {
 		unregistered = append(unregistered, "IsRegisteredAuth")
 	}
-
 	if o.IsResellerAuth == nil {
 		unregistered = append(unregistered, "XCustomKeyAuth")
 	}
-
 	if o.IsResellerQueryAuth == nil {
 		unregistered = append(unregistered, "CustomKeyAsQueryAuth")
 	}
@@ -243,19 +258,15 @@ func (o *MultiAuthExampleAPI) Validate() error {
 	if o.AddOrderHandler == nil {
 		unregistered = append(unregistered, "AddOrderHandler")
 	}
-
 	if o.GetAccountHandler == nil {
 		unregistered = append(unregistered, "GetAccountHandler")
 	}
-
 	if o.GetItemsHandler == nil {
 		unregistered = append(unregistered, "GetItemsHandler")
 	}
-
 	if o.GetOrderHandler == nil {
 		unregistered = append(unregistered, "GetOrderHandler")
 	}
-
 	if o.GetOrdersForItemHandler == nil {
 		unregistered = append(unregistered, "GetOrdersForItemHandler")
 	}
@@ -274,13 +285,10 @@ func (o *MultiAuthExampleAPI) ServeErrorFor(operationID string) func(http.Respon
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "hasRole":
-
 			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
 				return o.HasRoleAuth(token, scopes)
 			})
@@ -291,14 +299,12 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 			})
 
 		case "isReseller":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerAuth(token)
 			})
 
 		case "isResellerQuery":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.IsResellerQueryAuth(token)
@@ -307,26 +313,21 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *MultiAuthExampleAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *MultiAuthExampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -334,19 +335,16 @@ func (o *MultiAuthExampleAPI) ConsumersFor(mediaTypes []string) map[string]runti
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *MultiAuthExampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -354,7 +352,6 @@ func (o *MultiAuthExampleAPI) ProducersFor(mediaTypes []string) map[string]runti
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -384,7 +381,6 @@ func (o *MultiAuthExampleAPI) Context() *middleware.Context {
 
 func (o *MultiAuthExampleAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -393,27 +389,22 @@ func (o *MultiAuthExampleAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/order/add"] = NewAddOrder(o.context, o.AddOrderHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account"] = NewGetAccount(o.context, o.GetAccountHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/items"] = NewGetItems(o.context, o.GetItemsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/order/{orderID}"] = NewGetOrder(o.context, o.GetOrderHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/orders/{itemID}"] = NewGetOrdersForItem(o.context, o.GetOrdersForItemHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -423,6 +414,9 @@ func (o *MultiAuthExampleAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -442,4 +436,16 @@ func (o *MultiAuthExampleAPI) RegisterConsumer(mediaType string, consumer runtim
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *MultiAuthExampleAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *MultiAuthExampleAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

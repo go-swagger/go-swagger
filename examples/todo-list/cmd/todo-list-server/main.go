@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/loads"
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi"
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 	flag "github.com/spf13/pflag"
@@ -31,7 +31,7 @@ func main() {
 
 		title := "Simple To Do List API"
 		fmt.Fprint(os.Stderr, title+"\n\n")
-		desc := swaggerSpec.Spec().Info.Description
+		desc := "This is a simple todo list API\nillustrating go-swagger codegen\ncapabilities.\n"
 		if desc != "" {
 			fmt.Fprintf(os.Stderr, desc+"\n\n")
 		}
@@ -43,7 +43,6 @@ func main() {
 	api := operations.NewTodoListAPI(swaggerSpec)
 	// get server with flag values filled out
 	server = restapi.NewServer(api)
-
 	defer server.Shutdown()
 
 	server.ConfigureAPI()

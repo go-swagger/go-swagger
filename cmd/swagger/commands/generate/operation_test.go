@@ -14,6 +14,14 @@ import (
 )
 
 func TestGenerateOperation(t *testing.T) {
+	testGenerateOperation(t, false)
+}
+
+func TestGenerateOperationStrict(t *testing.T) {
+	testGenerateOperation(t, true)
+}
+
+func testGenerateOperation(t *testing.T, strict bool) {
 	specs := []string{
 		"tasklist.basic.yml",
 	}
@@ -33,11 +41,12 @@ func TestGenerateOperation(t *testing.T) {
 			}()
 			m := &generate.Operation{}
 			if i == 0 {
-				m.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+				m.Shared.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
 			}
 			_, _ = flags.ParseArgs(m, []string{"--name=listTasks"})
-			m.Spec = flags.Filename(path)
-			m.Target = flags.Filename(generated)
+			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Target = flags.Filename(generated)
+			m.Shared.StrictResponders = strict
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)
@@ -52,7 +61,7 @@ func TestGenerateOperation_Check(t *testing.T) {
 
 	m := &generate.Operation{}
 	_, _ = flags.ParseArgs(m, []string{"--name=op1", "--name=op2"})
-	m.DumpData = true
+	m.Shared.DumpData = true
 	m.Name = []string{"op1", "op2"}
 	err := m.Execute([]string{})
 	assert.Error(t, err)

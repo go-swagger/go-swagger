@@ -8,7 +8,7 @@ package store
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PlaceOrderHandlerFunc turns a function with the right signature into a place order handler

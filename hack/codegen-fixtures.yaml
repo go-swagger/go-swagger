@@ -1,0 +1,213 @@
+#
+# codegen CI configuration file
+#
+#- dir: {directory where to fetch specs (*.yaml, *.yml, *.json)}
+#  spec: {a specific spec file to fetch}
+#  skipped:
+#    knownFailure: true // won't generate anything
+#    knownValidationFailure: true // adds --skip-validation option
+#    knownClientFailure: true // won't generate a client
+#    knownExpandFailure: true // won't generate with expanded spec
+#    knownFlattenMinimalFailure: true // won't generate with --flatten=minimal but only with --flatten=full
+#
+#    Entries which resolve with same spec will be merged.
+#
+- dir: fixtures/bugs/1621
+  spec: fixture-1621.yaml
+- dir: fixtures/bugs/1774
+  spec: def_api.yaml
+- dir: fixtures/bugs/1767
+  spec: fixture-1767.yaml
+- dir: fixtures/bugs/1260
+  spec: fixture-realiased-types.yaml
+- dir: fixtures/bugs/1260
+  spec: test3-bis-swagger.yaml
+- dir: fixtures/bugs/1260
+  spec: test3-swagger.yaml
+- dir: fixtures/bugs/1260
+  spec: test3-ter-swagger-flat.json
+- dir: fixtures/bugs/1260
+  spec: test3-ter-swagger.yaml
+- dir: fixtures/bugs/1851
+  spec: fixture-1851.yaml
+- dir: fixtures/bugs/2092
+  spec: fixture-2092.yaml
+- dir: fixtures/codegen
+- dir: fixtures/bugs/909
+- dir: fixtures/bugs/1437
+- dir: fixtures/bugs/1314
+- dir: fixtures/bugs/1062
+  spec: eve-online-esi.json
+  skipped:
+    knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
+- dir: fixtures/bugs/1392
+- dir: fixtures/bugs/1277
+- dir: fixtures/bugs/1536
+- dir: fixtures/bugs/1487
+- dir: fixtures/bugs/1571
+- dir: fixtures/bugs/957
+- dir: fixtures/bugs/1614
+- dir: fixtures/bugs/931
+- dir: fixtures/bugs/1683
+- dir: fixtures/bugs/1796
+- dir: fixtures/bugs/1839
+- dir: fixtures/bugs/1719
+- dir: fixtures/bugs/1859
+- dir: fixtures/bugs/1490
+- dir: fixtures/bugs/973
+  skipped:
+    skipModel: true  # no models to generate here
+- dir: fixtures/bugs/1020
+- dir: fixtures/bugs/1339
+- dir: fixtures/bugs/1893
+- dir: fixtures/bugs/1518
+- dir: fixtures/bugs/1993
+- dir: fixtures/bugs/1937
+- dir: fixtures/bugs/2050
+- dir: fixtures/bugs/1557
+- dir: fixtures/bugs/1663
+- dir: fixtures/bugs/2136
+  skipped:
+    knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
+- dir: fixtures/bugs/2111
+- dir: fixtures/bugs/2223
+#
+# The following specs fail to generate:
+# - existing-model.yml requires pregeneration (not supported yet by this script)
+# - issue72: model works with --skip-validation. Invalid spec (duplicate operationID)
+# - todolist.simple.yml: invalid default values put on purpose for UT (provided fixed version for testing)
+# - fixture-basetypes.yaml: exhibits some edge case failures with discriminator (e.g. using a base type in tuple...)
+# - fixture-polymorphism.yaml: idem
+- dir: fixtures/codegen
+  spec: existing-model.yml
+  skipped:
+    knownFailure: true
+- dir: fixtures/codegen
+  spec: issue72.json
+  skipped:
+    knownFailure: true
+- dir: fixtures/codegen
+  spec: todolist.simple.yml
+  skipped:
+    knownFailure: true
+- dir: fixtures/bugs/1487
+  spec: fixture-basetypes.yaml
+  skipped:
+    knownFailure: true
+- dir: fixtures/bugs/1487
+  spec: fixture-polymorphism.yaml
+  skipped:
+    knownFailure: true
+# The following ones requires some checks to be skipped:
+# - azure-text-analyis.json: works with --skip-validation. Invalid specification with duplicate property in allOf construct (provided fixed version for testing)
+# - swagger-gsma.json: idem
+- spec: todolist.enums.yml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.enums.flattened.json
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.models.yml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.schemavalidation.yml
+  skipped:
+    knownValidationFailure: true
+- spec: azure-text-analyis.json
+  skipped:
+    knownValidationFailure: true
+- spec: swagger-gsma.json
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-844-variations.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-allOf.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-errors.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-itching.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-tuple.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-simple-tuple.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.arrayform.yml
+  skipped:
+    knownClientFailure: true
+- spec: todolist.arrayquery.yml
+  skipped:
+    knownClientFailure: true
+- spec: todolist.url.basepath.yml
+  skipped:
+    knownClientFailure: true
+- spec: todolist.url.simple.yml
+  skipped:
+    knownClientFailure: true
+- spec: swagger-codegen-tests.json
+  skipped:
+    knownClientFailure: true
+- spec: fixture-1414.json
+  skipped:
+    knownClientFailure: true
+- spec: fixture-909-3.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-909-4.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-909-5.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-909-6.yaml
+  skipped:
+    knownClientFailure: true
+- spec: gentest2.yaml
+  skipped:
+    knownClientFailure: true
+- spec: gentest3.yaml
+  skipped:
+    knownClientFailure: true
+- spec: gentest.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-1437-4.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-1392-2.yaml
+  skipped:
+    knownClientFailure: true
+- spec: fixture-1392-3.yaml
+  skipped:
+    knownClientFailure: true
+# known fixtures not supporting expand mode (not including the discriminator case).
+# Normally, this is because of duplicate names constructed during codegen of anonymous structures.
+# This should be solved with proper analysis of names before codegen.
+- spec: bitbucket.json
+  dir: fixtures/codegen
+  skipped:
+    knownExpandFailure: true
+- spec: todolist.enums.flattened.json
+  dir: fixtures/codegen
+  skipped:
+    knownExpandFailure: true
+- spec: fixture-1479.yaml
+  dir: fixtures/bugs/1479
+  skipped:
+    knownExpandFailure: true
+- spec: fixture-1767.yaml
+  dir: fixtures/bugs/1767
+  skipped:
+    knownExpandFailure: true
+    knownFlattenMinimalFailure: true
+- dir: fixtures/bugs/2306
+  skipped:
+    skipModel: true
+- dir: fixtures/bugs/2342
+  skipped:
+    skipModel: true

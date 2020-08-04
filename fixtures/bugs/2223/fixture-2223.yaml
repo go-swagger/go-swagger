@@ -1,0 +1,850 @@
+produces:
+- application/vnd.cia.v1+json
+schemes:
+- http
+swagger: "2.0"
+info:
+  description: Manages provisioning of GCP resources
+  title: GCP Service
+  version: 0.2.0
+basePath: /v1
+paths:
+  /gcp/accounts:
+    get:
+      description: List all Accounts, with optional query parameters.
+      tags:
+      - gcp
+      summary: List Accounts
+      operationId: listAccounts
+      parameters:
+      - minLength: 3
+        type: string
+        description: filter list by name
+        name: name
+        in: query
+      - enum:
+        - NEW
+        - ACTIVE
+        - FAILED
+        - CREATING
+        - UPDATING
+        - DELETING
+        - SUSPENDED
+        type: string
+        description: filter list by status
+        name: status
+        in: query
+      - uniqueItems: true
+        type: array
+        items:
+          type: string
+        description: filter the fields in each returned record. (comma-delimited)
+        name: fields
+        in: query
+      - minimum: 0
+        type: integer
+        description: max number of records to return.
+        name: limit
+        in: query
+      - minimum: 0
+        type: integer
+        description: segment of records to return incremented by limit.
+        name: offset
+        in: query
+      - uniqueItems: true
+        type: array
+        items:
+          pattern: '[-]?\w+'
+          type: string
+        description: sort by fields that determines the order of the results. (comma-delimited)
+        name: sort
+        in: query
+      responses:
+        "200":
+          description: List of Accounts
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/account_view'
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifier associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "403":
+          $ref: '#/responses/403'
+        default:
+          $ref: '#/responses/500'
+    post:
+      description: Create a GCP Account in GCP Organization
+      consumes:
+      - application/vnd.cia.v1+json
+      tags:
+      - gcp
+      summary: Create GCP Account
+      operationId: createAccount
+      parameters:
+      - description: GCP Account details
+        name: Account
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/account'
+      responses:
+        "201":
+          description: Account Created
+          headers:
+            Location:
+              type: string
+              description: URL of the created account
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifier associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "402":
+          $ref: '#/responses/402'
+        "403":
+          $ref: '#/responses/403'
+        "409":
+          $ref: '#/responses/409'
+        default:
+          $ref: '#/responses/500'
+    parameters:
+    - type: string
+      format: uuid
+      description: Unique identifier associated with request
+      name: X-Request-Id
+      in: header
+      required: true
+    - type: string
+      format: uuid
+      description: Parent tenant ID
+      name: X-Tenant-Id
+      in: header
+      required: true
+  /gcp/accounts/{accountId}:
+    get:
+      description: View a account by Id
+      tags:
+      - gcp
+      summary: Get Account
+      operationId: viewAccount
+      responses:
+        "200":
+          description: Account details
+          schema:
+            $ref: '#/definitions/account_view'
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifer associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "403":
+          $ref: '#/responses/403'
+        "404":
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+    delete:
+      description: Delete account by ID
+      tags:
+      - gcp
+      summary: Delete account
+      operationId: deleteAccount
+      responses:
+        "204":
+          description: Account deleted
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifier associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "403":
+          $ref: '#/responses/403'
+        "404":
+          $ref: '#/responses/404'
+        "409":
+          $ref: '#/responses/409'
+        default:
+          $ref: '#/responses/500'
+    patch:
+      description: Applies changes to Account by ID
+      consumes:
+      - application/vnd.cia.v1+json
+      tags:
+      - gcp
+      summary: Update Account
+      operationId: updateAccount
+      parameters:
+      - description: body of account
+        name: account_partial
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/account_partial'
+      responses:
+        "204":
+          description: Account
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifier associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "402":
+          $ref: '#/responses/402'
+        "403":
+          $ref: '#/responses/403'
+        "404":
+          $ref: '#/responses/404'
+        "409":
+          $ref: '#/responses/409'
+        "422":
+          $ref: '#/responses/422'
+        default:
+          $ref: '#/responses/500'
+    parameters:
+    - type: string
+      format: uuid
+      description: Unqiue ID of the Account
+      name: accountId
+      in: path
+      required: true
+    - type: string
+      format: uuid
+      description: Unique identifier associated with request
+      name: X-Request-Id
+      in: header
+      required: true
+    - type: string
+      format: uuid
+      description: Parent tenant ID
+      name: X-Tenant-Id
+      in: header
+      required: true
+  /gcp/accounts/{accountId}/admins:
+    x-visibility: private
+    get:
+      security:
+      - internal: []
+      description: Check if queried user is admin of the GCP project or not, if yes,
+        return the user CEC_ID in reponse
+      tags:
+      - gcp
+      summary: Check if user is and admin of the GCP project or not
+      operationId: getAdmins
+      parameters:
+      - minLength: 3
+        type: string
+        description: CEC ID of the user
+        name: user
+        in: query
+        required: true
+      responses:
+        "200":
+          description: Admin details
+          schema:
+            type: array
+            items:
+              type: string
+            example:
+            - admin
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifer associated with request
+        "400":
+          $ref: '#/responses/400'
+        "401":
+          $ref: '#/responses/401'
+        "403":
+          $ref: '#/responses/403'
+        "404":
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+    parameters:
+    - type: string
+      format: uuid
+      description: Unqiue ID of the Account
+      name: accountId
+      in: path
+      required: true
+    - type: string
+      format: uuid
+      description: Unique identifier associated with request
+      name: X-Request-Id
+      in: header
+      required: true
+    - type: string
+      format: uuid
+      description: Parent tenant ID
+      name: X-Tenant-Id
+      in: header
+      required: true
+  /gcp/workflows/{accountId}:
+    x-visibility: private
+    patch:
+      security: []
+      description: Update workflow for an existing account
+      consumes:
+      - application/vnd.cia.v1+json
+      tags:
+      - gcp
+      summary: Update workflow
+      operationId: updateWorkflow
+      parameters:
+      - description: Workflow Operation
+        name: workflow
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/workflow'
+      responses:
+        "204":
+          description: Workflow operation accepted.
+          headers:
+            X-Request-Id:
+              type: string
+              format: uuid
+              description: Unique identifer associated with request
+        "400":
+          $ref: '#/responses/400'
+        "404":
+          $ref: '#/responses/404'
+        default:
+          $ref: '#/responses/500'
+    parameters:
+    - type: string
+      format: uuid
+      description: Unqiue ID of the account
+      name: accountId
+      in: path
+      required: true
+    - type: string
+      format: uuid
+      description: Unique identifer associated with request
+      name: X-Request-Id
+      in: header
+      required: true
+    - type: string
+      format: uuid
+      description: Parent tenant ID
+      name: X-Tenant-Id
+      in: header
+      required: true
+definitions:
+  account:
+    description: Account details.
+    type: object
+    title: Account
+    required:
+    - name
+    - estimated_cost
+    - lifecycle
+    - user_attribution
+    properties:
+      audit:
+        $ref: '#/definitions/audit'
+      cloud_registration_id:
+        description: Cloud Registration Id of a GCP account
+        type: string
+        title: Cloud Registration Id
+        example: abc123
+      estimated_cost:
+        description: An estimated cost (amount) to allocate for a GCP account
+        type: number
+        format: double
+        title: Estimated Cost
+        minimum: 0
+        example: 1230.456
+      id:
+        description: Unique ID identifying the account
+        type: string
+        format: uuid
+        title: Account ID
+        readOnly: true
+        example: 1234f6e7-dd55-4639-bc54-65646fde2adc
+      lifecycle:
+        description: Lifcycle of a GCP account
+        type: string
+        title: Lifecycle
+        enum:
+        - NONPROD
+        - PROD
+      metadata:
+        description: Metadata associated with the account
+        type: object
+        title: Metadata
+        additionalProperties:
+          type: string
+        readOnly: true
+      name:
+        description: Name of the account
+        type: string
+        title: account name
+        maxLength: 30
+        minLength: 4
+        pattern: ^[a-zA-Z0-9][a-zA-Z0-9-!'" ]+[a-zA-Z0-9!]$
+        example: Widget Adapter
+      status:
+        description: status of the account
+        type: string
+        title: account status
+        enum:
+        - NEW
+        - ACTIVE
+        - FAILED
+        - CREATING
+        - UPDATING
+        - DELETING
+        - SUSPENDED
+        readOnly: true
+        example: ACTIVE
+      tags:
+        description: Tags associated with the account
+        type: array
+        title: Account tags
+        items:
+          type: string
+        x-omitempty: true
+        example:
+        - build
+        - jenkins
+      user_attribution:
+        $ref: '#/definitions/user_attribution'
+  account_partial:
+    description: Partial account captures fields for account updates
+    type: object
+    title: Partial account
+    properties:
+      admin:
+        description: Username of the user who wants to add as project owner
+        type: string
+        title: Admin Username
+        example: crobbins
+      cloud_registration_id:
+        description: Cloud Registration Id of a GCP account
+        type: string
+        title: Cloud Registration Id
+        example: abc123
+      estimated_cost:
+        description: An estimated cost (amount) to allocate for a GCP account
+        type: number
+        format: double
+        title: Estimated Cost
+        minimum: 0
+        example: 1230.456
+      lifecycle:
+        description: Lifecycle of a GCP account
+        type: string
+        title: Lifecycle
+        enum:
+        - NONPROD
+        - PROD
+      name:
+        description: Name of the account
+        type: string
+        title: Account Name
+        maxLength: 30
+        minLength: 4
+        pattern: ^[a-zA-Z0-9][a-zA-Z0-9-!'" ]+[a-zA-Z0-9!]$
+        example: Sample GCP Account
+      status:
+        description: cancel the approval request by passing status CANCELED
+        type: string
+        title: account status
+        enum:
+        - CANCELED
+        - ACTIVE
+      user_attribution:
+        description: User Attribution for a GCP account
+        type: object
+        title: User Attribution
+        properties:
+          business_application_name:
+            description: Business Application Name
+            type: string
+            title: Business Application Name
+            x-nullable: true
+          business_contact:
+            description: Business contact for this GCP account
+            type: string
+            title: Business Contact
+            x-nullable: true
+          data_classification:
+            description: Technical contact for this GCP account
+            type: string
+            title: Data Classification
+            enum:
+            - CONFIDENTIAL
+            - HIGHLYCONFIDENTIAL
+            - PUBLIC
+            - RESTRICTED
+            x-nullable: true
+          technical_contact:
+            description: Technical contact for this GCP account
+            type: string
+            title: Technical Contact
+            x-nullable: true
+  account_view:
+    description: Account details.
+    type: object
+    title: Account View
+    properties:
+      audit:
+        $ref: '#/definitions/audit'
+      cloud_registration_id:
+        description: Cloud Registration Id of a GCP account
+        type: string
+        title: Cloud Registration Id
+        example: abc123
+      estimated_cost:
+        description: An estimated cost (amount) to allocate for a GCP account
+        type: number
+        format: double
+        title: Estimated Cost
+        minimum: 0
+        example: 1230.456
+      id:
+        description: Unique ID identifying the account
+        type: string
+        format: uuid
+        title: Account ID
+        readOnly: true
+        example: 1234f6e7-dd55-4639-bc54-65646fde2adc
+      lifecycle:
+        description: Lifcycle of a GCP account
+        type: string
+        title: Lifecycle
+        enum:
+        - NONPROD
+        - PROD
+        readOnly: true
+      metadata:
+        description: Metadata associated with the account
+        type: object
+        title: Metadata
+        additionalProperties:
+          type: string
+        readOnly: true
+      name:
+        description: Name of the account
+        type: string
+        title: account name
+        readOnly: true
+        example: Widget Adapter
+      status:
+        description: status of the account
+        type: string
+        title: account status
+        enum:
+        - NEW
+        - ACTIVE
+        - FAILED
+        - CREATING
+        - UPDATING
+        - DELETING
+        - SUSPENDED
+        readOnly: true
+        example: ACTIVE
+      tags:
+        description: Tags associated with the Account
+        type: array
+        title: Account tags
+        items:
+          type: string
+        x-omitempty: true
+        readOnly: true
+        example:
+        - build
+        - jenkins
+      user_attribution:
+        $ref: '#/definitions/user_attribution'
+  audit:
+    description: Audit trail details
+    type: object
+    title: Audit
+    properties:
+      created_at:
+        description: timestamp when the record was created
+        type: string
+        format: date-time
+        title: Created At
+        readOnly: true
+      created_by:
+        description: entity that created the record
+        type: string
+        title: Created By
+        readOnly: true
+        example: user-cec
+      updated_at:
+        description: timestamp when the record was updated
+        type: string
+        format: date-time
+        title: Updated At
+        readOnly: true
+      updated_by:
+        description: entity that updated the record
+        type: string
+        title: Updated By
+        readOnly: true
+        example: user-cec
+    readOnly: true
+  error:
+    description: |
+      An error provides information about why the request failed.
+    type: object
+    title: Error
+    required:
+    - code
+    - message
+    properties:
+      code:
+        description: |
+          Code identifies a specific type of error.
+        type: string
+        title: Code
+      message:
+        description: |
+          The message provides details about the failure.
+        type: string
+        title: Message
+  user:
+    description: |
+      A User is the authenticated person performing actions.
+    type: object
+    title: User Structure
+    required:
+    - name
+    properties:
+      client_id:
+        description: client_id is created via PingID
+        type: string
+        title: oauth2 client_id
+      display:
+        description: formal name used when greeting a person
+        type: string
+        title: display name
+      name:
+        description: human readable identifier
+        type: string
+        title: login name
+      token:
+        description: token used during authentication
+        type: string
+        title: authentication token
+    x-visibility: private
+  user_attribution:
+    description: User Attribution for a GCP account
+    type: object
+    title: User Attribution
+    required:
+    - business_application_name
+    - business_contact
+    - technical_contact
+    - data_classification
+    properties:
+      business_application_name:
+        description: Business Application Name
+        type: string
+        title: Business Application Name
+        x-nullable: true
+      business_contact:
+        description: Business contact for this GCP account
+        type: string
+        title: Business Contact
+        x-nullable: true
+      data_classification:
+        description: Technical contact for this GCP account
+        type: string
+        title: Data Classification
+        enum:
+        - CONFIDENTIAL
+        - HIGHLYCONFIDENTIAL
+        - PUBLIC
+        - RESTRICTED
+        x-nullable: true
+      technical_contact:
+        description: Technical contact for this GCP account
+        type: string
+        title: Technical Contact
+        x-nullable: true
+  workflow:
+    description: Workflow operations to perform
+    type: object
+    title: Workflow
+    required:
+    - operation
+    properties:
+      operation:
+        description: Operation to perform on workflow
+        type: string
+        title: Operation
+        enum:
+        - CREATE_RESTART
+        example: CREATE_RESTART
+    x-visibility: private
+responses:
+  "400":
+    description: |
+      Invalid Request Error. Check error message in the response body for details.
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-001
+        message: Missing required attribute 'name'.
+  "401":
+    description: |
+      Authentication Failure
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-002
+        message: Authentication failed bad password.
+  "402":
+    description: |
+      Insufficient Funds
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-003
+        message: Insufficient Funds to cover the cost of resource.
+  "403":
+    description: |
+      Authorization Failure
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-004
+        message: Not authorized to perform action.
+  "404":
+    description: |
+      Resource not found
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-005
+        message: Resource <id> does not exist.
+  "409":
+    description: |
+      Conflict
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-006
+        message: Resource already exists.
+  "422":
+    description: |
+      Unprocessable Entity Failure
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-007
+        message: Resource is not able to be updated.
+  "500":
+    description: |
+      Internal Server Error. Check error entity in the response body for details.
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-009
+        message: Internal server error.
+  "503":
+    description: |
+      Service Unavailable
+    schema:
+      $ref: '#/definitions/error'
+    headers:
+      X-Request-Id:
+        type: string
+        format: uuid
+        description: Unique identifer associated with request
+    examples:
+      application/json:
+        code: EXAMPLE-010
+        message: Service Unavailable.
+securityDefinitions:
+  internal:
+    type: apiKey
+    name: X-API-Key
+    in: header
+  token:
+    type: apiKey
+    name: WAMAUTH
+    in: header
+security:
+- token: []
+- internal: []
+tags:
+- description: GCP Account Operations
+  name: gcp
+x-mcmp-component-type: public-cloud

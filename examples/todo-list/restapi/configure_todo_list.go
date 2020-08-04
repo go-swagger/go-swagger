@@ -6,15 +6,15 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/todo-list/restapi/operations/todos"
 )
 
-//go:generate swagger generate server --target ../../todo-list --name TodoList --spec ../swagger.yml
+//go:generate swagger generate server --target ../../todo-list --name TodoList --spec ../swagger.yml --principal interface{}
 
 func configureFlags(api *operations.TodoListAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -30,13 +30,19 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
+
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-todolist-token" header is set
-	api.KeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
+	if api.KeyAuth == nil {
+		api.KeyAuth = func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
+		}
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -64,6 +70,8 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 			return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 		})
 	}
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 

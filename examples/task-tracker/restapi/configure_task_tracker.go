@@ -6,15 +6,15 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations/tasks"
 )
 
-//go:generate swagger generate server --target ../../task-tracker --name TaskTracker --spec ../swagger.yml
+//go:generate swagger generate server --target ../../task-tracker --name TaskTracker --spec ../swagger.yml --principal interface{}
 
 func configureFlags(api *operations.TaskTrackerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -30,19 +30,26 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
-	api.JSONConsumer = runtime.JSONConsumer()
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
 
+	api.JSONConsumer = runtime.JSONConsumer()
 	api.MultipartformConsumer = runtime.DiscardConsumer
 
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "token" query is set
-	api.APIKeyAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
+	if api.APIKeyAuth == nil {
+		api.APIKeyAuth = func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
+		}
 	}
 	// Applies when the "X-Token" header is set
-	api.TokenHeaderAuth = func(token string) (interface{}, error) {
-		return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
+	if api.TokenHeaderAuth == nil {
+		api.TokenHeaderAuth = func(token string) (interface{}, error) {
+			return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
+		}
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -90,6 +97,8 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
 		})
 	}
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 

@@ -8,9 +8,8 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -18,6 +17,7 @@ import (
 // Task a structure describing a complete task.
 //
 // A Task is the main entity in this application. Everything revolves around tasks and managing them.
+//
 //
 // swagger:model Task
 type Task struct {
@@ -99,7 +99,6 @@ func (m Task) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
-
 	var dataAO1 struct {
 		Attachments map[string]TaskAttachmentsAnon `json:"attachments,omitempty"`
 
@@ -127,7 +126,6 @@ func (m Task) MarshalJSON() ([]byte, error) {
 		return nil, errAO1
 	}
 	_parts = append(_parts, jsonDataAO1)
-
 	return swag.ConcatJSON(_parts...), nil
 }
 
@@ -281,6 +279,7 @@ func (m *Task) UnmarshalBinary(b []byte) error {
 }
 
 // TaskAttachmentsAnon task attachments anon
+//
 // swagger:model TaskAttachmentsAnon
 type TaskAttachmentsAnon struct {
 

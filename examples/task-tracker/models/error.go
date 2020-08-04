@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -17,6 +16,7 @@ import (
 //
 // Contains all the properties any error response from the API will contain.
 // Some properties are optional so might be empty most of the time
+//
 //
 // swagger:model Error
 type Error struct {

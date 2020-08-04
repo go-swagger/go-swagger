@@ -8,7 +8,7 @@ package user
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // LogoutUserHandlerFunc turns a function with the right signature into a logout user handler

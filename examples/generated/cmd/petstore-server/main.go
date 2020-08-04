@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/loads"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi"
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations"
 	flags "github.com/jessevdk/go-flags"
@@ -29,7 +29,6 @@ func main() {
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "Swagger Petstore"
 	parser.LongDescription = "This is a sample server Petstore server.\n\n[Learn about Swagger](http://swagger.wordnik.com) or join the IRC channel '#swagger' on irc.freenode.net.\n\nFor this sample, you can use the api key 'special-key' to test the authorization filters\n"
-
 	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		_, err := parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

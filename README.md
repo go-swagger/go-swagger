@@ -200,7 +200,7 @@ To name but a few... (feel free to sign in there if you are using this project):
 [CheckR](https://github.com/checkr/flagr)  
 [Cilium](https://github.com/cilium/cilium)  
 [CoreOS](https://github.com/coreos/go-quay)  
-[DigitalOcean](https://github.com/digitalocean/go-netbox)  
+[NetBox Community](https://github.com/netbox-community/go-netbox)  
 [EVE Central](https://github.com/evecentral)  
 Iron.io
 [JaegerTracing](https://github.com/jaegertracing/jaeger)  
@@ -216,29 +216,19 @@ Iron.io
 [ScaleFT](https://github.com/authclub/billforward)  
 [StratoScale](https://github.com/Stratoscale/swagger)  
 [Terraform Provider OpenAPI](https://github.com/dikhan/terraform-provider-openapi)  
-[VMWare](https://github.com/vmware/dispatch)  
+[VMware](https://github.com/vmware/dispatch)  
 ...
 
 ## Note to users migrating from older releases
 
-### Using 0.5.0
+### Migrating from 0.24 to [master]
 
-Because 0.5.0 and master have diverged significantly, you should checkout the tag 0.5.0 for go-swagger when you use the currently released version.
+The options for `generate model --all-definitions` and `--skip-struct` are marked for deprecation. 
 
-### Migrating from 0.5.0 to 0.6.0
+For now, the CLI continues to accept these options. They will be removed in a future version.
 
-You will have to rename some imports:
-
-```
-github.com/go-swagger/go-swagger/httpkit/validate to github.com/go-openapi/validate
-github.com/go-swagger/go-swagger/httpkit to github.com/go-openapi/runtime
-github.com/naoina/denco to github.com/go-openapi/runtime/middleware/denco
-github.com/go-swagger/go-swagger to github.com/go-openapi
-```
-
-### Migrating from 0.12 to 0.13
-
-Spec flattening and $ref resolution brought breaking changes in model generation, since all complex things generate their own definitions.
+Generating all definitions is now the default behavior when no other option filters the generation scope.
+The `--skip-struct` option had no effect.
 
 ### Migrating from 0.14 to 0.15
 
@@ -252,3 +242,22 @@ Spec flattening now defaults to minimal changes to models and should be workable
 Users who prefer to stick to 0.13 and 0.14 default flattening mode may now use the `--with-flatten=full` option.
 
 Note that the `--skip-flatten` option has been phased out and replaced by the more explicit `--with-expand` option.
+
+### Migrating from 0.12 to 0.13
+
+Spec flattening and $ref resolution brought breaking changes in model generation, since all complex things generate their own definitions.
+
+### Migrating from 0.5.0 to 0.6.0
+
+You will have to rename some imports:
+
+```
+github.com/go-swagger/go-swagger/httpkit/validate to github.com/go-openapi/validate
+github.com/go-swagger/go-swagger/httpkit to github.com/go-openapi/runtime
+github.com/naoina/denco to github.com/go-openapi/runtime/middleware/denco
+github.com/go-swagger/go-swagger to github.com/go-openapi
+```
+
+### Using 0.5.0
+
+Because 0.5.0 and master have diverged significantly, you should checkout the tag 0.5.0 for go-swagger when you use the currently released version.

@@ -12,19 +12,16 @@ package {{ .Package }}
 
 import (
   "net/http"
-  "github.com/go-openapi/runtime"
-  httptransport "github.com/go-openapi/runtime/client"
-  "github.com/go-openapi/swag"
-  "github.com/go-openapi/spec"
+
   "github.com/go-openapi/errors"
   "github.com/go-openapi/runtime"
+  httptransport "github.com/go-openapi/runtime/client"
+  "github.com/go-openapi/spec"
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
 
-  strfmt "github.com/go-openapi/strfmt"
-
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // Default {{ humanize .Name }} HTTP client.
@@ -69,9 +66,9 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *{{ pascali
 
   cli := new({{ pascalize .Name }})
   cli.Transport = transport
-  {{ range .OperationGroups }}
-  cli.{{ pascalize .Name }} = {{ .Name }}.New(transport, formats)
-  {{ end }}
+  {{- range .OperationGroups }}
+  cli.{{ pascalize .Name }} = {{ .PackageAlias }}.New(transport, formats)
+  {{- end }}
   return cli
 }
 
@@ -117,7 +114,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 // {{ pascalize .Name }} is a client for {{ humanize .Name }}
 type {{ pascalize .Name }} struct {
   {{ range .OperationGroups }}
-  {{ pascalize .Name }} *{{ .Name }}.Client
+    {{ pascalize .Name }} {{ .PackageAlias }}.ClientService
   {{ end }}
   Transport runtime.ClientTransport
 }
@@ -126,7 +123,7 @@ type {{ pascalize .Name }} struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *{{pascalize .Name}}) SetTransport(transport runtime.ClientTransport) {
   c.Transport = transport
-  {{ range .OperationGroups }}
+  {{- range .OperationGroups }}
   c.{{ pascalize .Name }}.SetTransport(transport)
-  {{ end }}
+  {{- end }}
 }

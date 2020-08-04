@@ -61,7 +61,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   {{ if .Schema }}
   {{ if .Schema.IsBaseType }}
   // response payload as interface type
-  payload, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .Schema.GoType ( toPackageName .ModelsPackage ) }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
+  payload, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ dropPackage .Schema.GoType }}{{ if .Schema.IsArray}}Slice{{ end }}(response.Body(), consumer)
   if err != nil {
     return err
   }
@@ -92,18 +92,14 @@ import (
   "io"
   "net/http"
 
-  "github.com/go-openapi/runtime"
-  "github.com/go-openapi/swag"
   "github.com/go-openapi/errors"
-  "github.com/go-openapi/validate"
   "github.com/go-openapi/runtime"
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/validate"
 
-  strfmt "github.com/go-openapi/strfmt"
-
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // {{ pascalize .Name }}Reader is a Reader for the {{ pascalize .Name }} structure.
@@ -143,7 +139,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
     {{ if $.Responses}}
     default:
     {{- end }}
-      return nil, runtime.NewAPIError("unknown error", response, response.Code())
+      return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
   {{- end }}
   {{- if .Responses}}
   }
@@ -161,5 +157,5 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
 /*{{ pascalize .Name }} {{ template "docstring" . }}
 swagger:model {{ .Name }}
 */
-{{ template "schema" . }}
-{{ end }}
+{{- template "schema" . }}
+{{- end }}

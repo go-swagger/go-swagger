@@ -1,0 +1,13 @@
+definitions:
+  modelInterface:
+    type: object
+    additionalProperties: true
+  recordsModel:
+    type: array
+    items:
+      type: object
+  recordsModelWithMax:
+    type: array
+    maxItems: 10
+    items:
+      type: object

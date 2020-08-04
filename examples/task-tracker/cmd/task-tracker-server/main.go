@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/loads"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
 	flags "github.com/jessevdk/go-flags"
@@ -29,7 +29,6 @@ func main() {
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "Issue Tracker API"
 	parser.LongDescription = "This application implements a very simple issue tracker.\nIt's implemented as an API which is described by this swagger spec document.\n\nThe go-swagger project uses this specification to test the code generation.\nThis document contains all possible values for a swagger definition.\nThis means that it exercises the framework relatively well.\n"
-
 	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		_, err := parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

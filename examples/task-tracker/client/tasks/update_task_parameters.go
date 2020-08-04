@@ -13,11 +13,10 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/go-swagger/go-swagger/examples/task-tracker/models"
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // NewUpdateTaskParams creates a new UpdateTaskParams object

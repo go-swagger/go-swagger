@@ -12,9 +12,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPetListParams creates a new PetListParams object
@@ -68,21 +67,21 @@ func (o *PetListParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 // Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *PetListParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("status", "query")
+		return errors.Required("status", "query", rawData)
 	}
 
 	// CollectionFormat: multi
 	statusIC := rawData
 
 	if len(statusIC) == 0 {
-		return errors.Required("status", "query")
+		return errors.Required("status", "query", statusIC)
 	}
 
 	var statusIR []string
 	for i, statusIV := range statusIC {
 		statusI := statusIV
 
-		if err := validate.Enum(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"available", "pending", "sold"}); err != nil {
+		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"available", "pending", "sold"}, true); err != nil {
 			return err
 		}
 

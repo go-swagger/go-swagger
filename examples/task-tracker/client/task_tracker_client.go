@@ -8,8 +8,7 @@ package client
 import (
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
-
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/client/tasks"
 )
@@ -56,9 +55,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *TaskTracke
 
 	cli := new(TaskTracker)
 	cli.Transport = transport
-
 	cli.Tasks = tasks.New(transport, formats)
-
 	return cli
 }
 
@@ -103,7 +100,7 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // TaskTracker is a client for task tracker
 type TaskTracker struct {
-	Tasks *tasks.Client
+	Tasks tasks.ClientService
 
 	Transport runtime.ClientTransport
 }
@@ -111,7 +108,5 @@ type TaskTracker struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *TaskTracker) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
-
 	c.Tasks.SetTransport(transport)
-
 }

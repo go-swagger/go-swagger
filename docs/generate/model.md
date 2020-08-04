@@ -15,25 +15,31 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [model command options]
+      -n, --name=                                                                 the model to generate, repeat for multiple (defaults to all). Same as --models
+          --accept-definitions-only                                               accepts a partial swagger spec wih only the definitions key
+
+    Options common to all code generation commands:
       -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=                                                          the package to save the operations (default: operations)
-      -m, --model-package=                                                        the package to save the models (default: models)
-      -s, --server-package=                                                       the package to save the server specific code (default: restapi)
-      -c, --client-package=                                                       the package to save the client specific code (default: client)
       -t, --target=                                                               the base directory for generating the files (default: ./)
-          --template=[stratoscale]                                                Load contributed templates
+          --template=[stratoscale]                                                load contributed templates
       -T, --template-dir=                                                         alternative template override directory
-          --allow-template-override                                               allows overriding protected templates
       -C, --config-file=                                                          configuration file to use for overriding template options
       -r, --copyright-file=                                                       copyright file used to add copyright header
-          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --allow-template-override                                               allows overriding protected templates
+          --skip-validation                                                       skips validation of spec prior to generation
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --strict-responders                                                     Use strict type for the handler return value
           --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
           --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
-      -n, --name=                                                                 the model to generate
-          --skip-struct                                                           when present will not generate the model struct
-          --dump-data                                                             when present dumps the json for the template generator instead of generating files
-          --skip-validation                                                       skips validation of spec prior to generation
+
+    Options for model generation:
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -M, --model=                                                                specify a model to include in generation, repeat for multiple (defaults to all)
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
+          --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
+          --keep-spec-order                                                       keep schema properties order identical to spec file
+          --struct-tags=                                                          the struct tags to generate, repeat for multiple (defaults to json)
 ```
 
 Schema generation rules are detailed [here](../use/model.md).

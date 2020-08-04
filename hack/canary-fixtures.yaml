@@ -1,0 +1,26 @@
+- dir: fixtures/canary/bitbucket.org
+  #skipped:
+  #  knownFailure: true
+# Known bug in doc.go with */* media types (garbled generated comment)
+- dir: fixtures/canary/kubernetes
+  spec: swagger.json
+- dir: fixtures/canary/docker
+  skipped:
+    knownValidationFailure: true
+- dir: fixtures/canary/docker-fixed
+- dir: fixtures/canary/ms-cog-sci
+  skipped:
+    knownValidationFailure: true
+- dir: fixtures/canary/ms-cog-sci-fixed
+- dir: fixtures/canary/petstore
+- dir: fixtures/canary/quay.io
+# failure to properly generate enum when value is empty
+# plus some spec validation errors...
+- dir: fixtures/canary/docker-v1.41
+  spec: swagger.yaml
+  skipped:
+    knownFailure: true
+# fixing : the x-nullable on array
+# is enough to proceed
+- dir: fixtures/canary/docker-v1.41
+  spec: swagger-fixed.yaml

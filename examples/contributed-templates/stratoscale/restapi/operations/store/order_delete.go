@@ -8,7 +8,7 @@ package store
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // OrderDeleteHandlerFunc turns a function with the right signature into a order delete handler

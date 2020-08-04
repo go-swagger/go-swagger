@@ -6,14 +6,13 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
 
+	"github.com/go-swagger/go-swagger/examples/authentication/models"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations"
 	"github.com/go-swagger/go-swagger/examples/authentication/restapi/operations/customers"
-
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
 //go:generate swagger generate server --target ../../authentication --name AuthSample --spec ../swagger.yml --principal models.Principal
@@ -32,13 +31,19 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	// Example:
 	// api.Logger = log.Printf
 
+	api.UseSwaggerUI()
+	// To continue using redoc as your UI, uncomment the following line
+	// api.UseRedoc()
+
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-token" header is set
-	api.KeyAuth = func(token string) (*models.Principal, error) {
-		return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
+	if api.KeyAuth == nil {
+		api.KeyAuth = func(token string) (*models.Principal, error) {
+			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
+		}
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -56,6 +61,8 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
 		})
 	}
+
+	api.PreServerShutdown = func() {}
 
 	api.ServerShutdown = func() {}
 

@@ -28,6 +28,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // modelExpectations is a test structure to capture expected codegen lines of code
@@ -152,7 +153,7 @@ var (
 	warning     []string
 )
 
-func init() {
+func initSchemaValidationTest() {
 	testedModels = make([]*modelFixture, 0, 50)
 	noLines = []string{}
 	todo = []string{`TODO`}
@@ -206,6 +207,15 @@ func initModelFixtures() {
 
 	// allOf marshallers
 	initFixture2071()
+
+	// x-omitempty
+	initFixture2116()
+
+	// additionalProperties in base type (pending fix, non regression assertion only atm)
+	initFixture2220()
+
+	// allOf can be forced to non-nullable
+	initFixture2364()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -247,45 +257,45 @@ func TestModelGenerateDefinition(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(gendir)
 	}()
-	if assert.NoError(erd) {
-		opts := &GenOpts{}
-		opts.IncludeValidator = true
-		opts.IncludeModel = true
-		opts.ValidateSpec = false
-		opts.Spec = fixtureSpec
-		opts.ModelPackage = "models"
-		opts.Target = gendir
-		if err := opts.EnsureDefaults(); err != nil {
-			panic(err)
-		}
-		// sets gen options (e.g. flatten vs expand) - flatten is the default setting
-		opts.FlattenOpts.Minimal = false
+	require.NoError(t, erd)
 
-		err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		err = GenerateDefinition(nil, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		opts.TemplateDir = gendir
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
-
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, nil)
-		assert.Errorf(err, "Expected GenerateDefinition() return an error when no option is passed")
-
-		opts.TemplateDir = "templates"
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to croak about protected templates")
-
-		opts.TemplateDir = ""
-		err = GenerateDefinition([]string{"myAbsentDefinition"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to return an error when the model is not in spec")
-
-		opts.Spec = "pathToNowhere"
-		err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-		assert.Errorf(err, "Expected GenerateDefinition() to return an error when the spec is not reachable")
+	opts := &GenOpts{}
+	opts.IncludeValidator = true
+	opts.IncludeModel = true
+	opts.ValidateSpec = false
+	opts.Spec = fixtureSpec
+	opts.ModelPackage = "models"
+	opts.Target = gendir
+	if err := opts.EnsureDefaults(); err != nil {
+		panic(err)
 	}
+	// sets gen options (e.g. flatten vs expand) - flatten is the default setting
+	opts.FlattenOpts.Minimal = false
+
+	err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	err = GenerateDefinition(nil, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	opts.TemplateDir = gendir
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, nil)
+	assert.Errorf(err, "Expected GenerateDefinition() return an error when no option is passed")
+
+	opts.TemplateDir = "templates"
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to croak about protected templates")
+
+	opts.TemplateDir = ""
+	err = GenerateDefinition([]string{"myAbsentDefinition"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the model is not in spec")
+
+	opts.Spec = "pathToNowhere"
+	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
+	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the spec is not reachable")
 }
 
 func TestMoreModelValidations(t *testing.T) {
@@ -314,15 +324,10 @@ func TestMoreModelValidations(t *testing.T) {
 				// workaround race condition with underlying pkg: go-openapi/spec works with a global cache
 				// which does not support concurrent use for different specs.
 				//modelTestMutex.Lock()
-				specDoc, err := loads.Spec(fixtureSpec)
-				if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-					//modelTestMutex.Unlock()
-					t.FailNow()
-					return
-				}
 				opts := fixtureRun.FixtureOpts
+				opts.Spec = fixtureSpec
 				// this is the expanded or flattened spec
-				newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
+				newSpecDoc, er0 := opts.validateAndFlattenSpec()
 				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
 					//modelTestMutex.Unlock()
 					t.FailNow()
@@ -338,7 +343,8 @@ func TestMoreModelValidations(t *testing.T) {
 						// please do not inject fixtures with case conflicts on defs...
 						// this one is just easier to retrieve model back from file names when capturing
 						// the generated code.
-						if strings.EqualFold(def, k) {
+						mangled := swag.ToJSONName(def)
+						if strings.EqualFold(mangled, k) {
 							schema = &s
 							definitionName = def
 							break

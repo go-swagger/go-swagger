@@ -21,7 +21,6 @@ import (
 	"syscall"
 	"time"
 
-
   "github.com/go-openapi/swag"
   {{ if .UseGoStructFlags }}flags "github.com/jessevdk/go-flags"
   {{ end -}}
@@ -33,10 +32,8 @@ import (
   {{ end -}}
   "golang.org/x/net/netutil"
 
-  {{ range .DefaultImports }}{{ printf "%q" . }}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 const (
@@ -323,8 +320,6 @@ func (s *Server) Serve() (err error) {
 	go handleInterrupt(once, s)
 
 	servers := []*http.Server{}
-	wg.Add(1)
-	go s.handleShutdown(wg, &servers)
 
 	if s.hasScheme(schemeUnix) {
 		domainSocket := new(http.Server)
@@ -475,6 +470,9 @@ func (s *Server) Serve() (err error) {
 			s.Logf("Stopped serving {{ humanize .Name }} at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 	}
+
+	wg.Add(1)
+	go s.handleShutdown(wg, &servers)
 
 	wg.Wait()
 	return nil

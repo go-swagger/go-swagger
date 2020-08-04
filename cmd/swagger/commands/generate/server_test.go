@@ -14,8 +14,17 @@ import (
 )
 
 func TestGenerateServer(t *testing.T) {
+	testGenerateServer(t, false)
+}
+
+func TestGenerateServerStrict(t *testing.T) {
+	testGenerateServer(t, true)
+}
+
+func testGenerateServer(t *testing.T, strict bool) {
 	specs := []string{
 		"billforward.discriminators.yml",
+		"todolist.simplequery.yml",
 		"todolist.simplequery.yml",
 	}
 	log.SetOutput(ioutil.Discard)
@@ -35,13 +44,17 @@ func TestGenerateServer(t *testing.T) {
 			m := &generate.Server{}
 			_, _ = flags.Parse(m)
 			if i == 0 {
-				m.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+				m.Shared.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
 			}
-			if i == 1 {
+			switch i {
+			case 1:
 				m.FlagStrategy = "pflag"
+			case 2:
+				m.FlagStrategy = "flag"
 			}
-			m.Spec = flags.Filename(path)
-			m.Target = flags.Filename(generated)
+			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Target = flags.Filename(generated)
+			m.Shared.StrictResponders = strict
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)
@@ -56,7 +69,7 @@ func TestGenerateServer_Checks(t *testing.T) {
 
 	m := &generate.Server{}
 	_, _ = flags.Parse(m)
-	m.CopyrightFile = "nowhere"
+	m.Shared.CopyrightFile = "nowhere"
 	err := m.Execute([]string{})
 	assert.Error(t, err)
 }

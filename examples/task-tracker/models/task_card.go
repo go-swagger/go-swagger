@@ -9,9 +9,8 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -19,6 +18,7 @@ import (
 // TaskCard a card for a task
 //
 // A task card is a minimalistic representation of a task. Useful for display in list views, like a card list.
+//
 //
 // swagger:model TaskCard
 type TaskCard struct {
@@ -271,7 +271,7 @@ const (
 
 // prop value enum
 func (m *TaskCard) validateStatusEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, taskCardTypeStatusPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, taskCardTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil

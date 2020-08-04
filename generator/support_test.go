@@ -1,70 +1,97 @@
 package generator
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	goruntime "runtime"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var checkprefixandfetchrelativepathtests = []struct {
+type relativePathTest struct {
 	childpath  string
 	parentpath string
 	ok         bool
 	path       string
-}{
-	// Positive
-	{"/", "/", true, "."},
-	{"/User/Gopher", "/", true, "User/Gopher"},
-	{"/User/Gopher/Go", "/User/Gopher/Go", true, "."},
-	{"/User/../User/Gopher", "/", true, "User/Gopher"},
-	// Negative cases
-	{"/", "/var", false, ""},
-	{"/User/Gopher", "/User/SomethingElse", false, ""},
-	{"/var", "/etc", false, ""},
-	{"/mnt/dev3", "/mnt/dev3/dir", false, ""},
 }
 
-var tempdir = os.TempDir()
+func prefixAndFetchRelativePathFixtures() []relativePathTest {
+	return []relativePathTest{
+		// Positive
+		{"/", "/", true, "."},
+		{"/User/Gopher", "/", true, "User/Gopher"},
+		{"/User/Gopher/Go", "/User/Gopher/Go", true, "."},
+		{"/User/../User/Gopher", "/", true, "User/Gopher"},
+		// Negative cases
+		{"/", "/var", false, ""},
+		{"/User/Gopher", "/User/SomethingElse", false, ""},
+		{"/var", "/etc", false, ""},
+		{"/mnt/dev3", "/mnt/dev3/dir", false, ""},
+	}
+}
 
-var checkbaseimporttest = []struct {
+type baseImportTest struct {
+	title        string
 	path         []string
 	gopath       string
 	targetpath   string
 	symlinksrc   string
 	symlinkdest  string // symlink is the last dir in targetpath
 	expectedpath string
-}{
-	// No sym link. Positive Test Case
-	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/go/src/github.com/go-swagger", "", "", "github.com/go-swagger"},
-	// Symlink points inside GOPATH
-	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/symlink", tempdir + "/root/symlink", tempdir + "/root/go/src/", "."},
-	// Symlink points inside GOPATH
-	{[]string{tempdir + "/root/go/src/github.com/go-swagger"}, tempdir + "/root/go/", tempdir + "/root/symlink", tempdir + "/root/symlink", tempdir + "/root/go/src/github.com", "github.com"},
-	// Symlink point outside GOPATH : Targets Case 1: in baseImport implementation.
-	{[]string{tempdir + "/root/go/src/github.com/go-swagger", tempdir + "/root/gopher/go/"}, tempdir + "/root/go/", tempdir + "/root/go/src/github.com/gopher", tempdir + "/root/go/src/github.com/gopher", tempdir + "/root/gopher/go", "github.com/gopher"},
+}
+
+func baseImportTestFixtures(tempdir string) []baseImportTest {
+	return []baseImportTest{
+		{
+			title:        "No sym link. Positive Test Case",
+			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
+			gopath:       tempdir + "/root/go/",
+			targetpath:   tempdir + "/root/go/src/github.com/go-swagger",
+			symlinksrc:   "",
+			symlinkdest:  "",
+			expectedpath: "github.com/go-swagger",
+		},
+		{
+			title:        "Symlink points inside GOPATH",
+			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
+			gopath:       tempdir + "/root/go/",
+			targetpath:   tempdir + "/root/symlink",
+			symlinksrc:   tempdir + "/root/symlink",
+			symlinkdest:  tempdir + "/root/go/src/",
+			expectedpath: ".",
+		},
+		{
+			title:        "Symlink points inside GOPATH (2)",
+			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
+			gopath:       tempdir + "/root/go/",
+			targetpath:   tempdir + "/root/symlink",
+			symlinksrc:   tempdir + "/root/symlink",
+			symlinkdest:  tempdir + "/root/go/src/github.com",
+			expectedpath: "github.com",
+		},
+		{
+			title:        "Symlink point outside GOPATH : Targets Case 1: in baseImport implementation",
+			path:         []string{tempdir + "/root/go/src/github.com/go-swagger", tempdir + "/root/gopher/go/"},
+			gopath:       tempdir + "/root/go/",
+			targetpath:   tempdir + "/root/go/src/github.com/gopher",
+			symlinksrc:   tempdir + "/root/go/src/github.com/gopher",
+			symlinkdest:  tempdir + "/root/gopher/go",
+			expectedpath: "github.com/gopher",
+		},
+	}
 }
 
 func TestCheckPrefixFetchRelPath(t *testing.T) {
-
-	for _, item := range checkprefixandfetchrelativepathtests {
+	for _, item := range prefixAndFetchRelativePathFixtures() {
 		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
-		if goruntime.GOOS == "windows" {
-			item.path = strings.Replace(item.path, "/", "\\", -1)
-		}
+		item.path = filepath.FromSlash(item.path)
 
-		switch {
-		case actualok != item.ok:
-			t.Errorf("checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
-		case actualpath != item.path:
-			t.Errorf("checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
-		default:
-			continue
-		}
+		assert.Equalf(t, item.ok, actualok, "checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
+		assert.Equal(t, item.path, actualpath, "checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
 	}
-
 }
 
 func TestBaseImport(t *testing.T) {
@@ -79,41 +106,46 @@ func TestBaseImport(t *testing.T) {
 	oldgopath := os.Getenv("GOPATH")
 	defer func() {
 		_ = os.Setenv("GOPATH", oldgopath)
-		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
 	}()
 
-	for _, item := range checkbaseimporttest {
+	tempdir, err := ioutil.TempDir("", "test-baseimport")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tempdir)
+	}()
+
+	golang := GoLangOpts()
+
+	for _, item := range baseImportTestFixtures(tempdir) {
+		t.Logf("TestBaseImport(%q)", item.title)
 
 		// Create Paths
 		for _, paths := range item.path {
-			_ = os.MkdirAll(paths, 0777)
+			err = os.MkdirAll(paths, 0700)
+			require.NoError(t, err)
 		}
+
+		if item.symlinksrc == "" {
+			continue
+		}
+
+		// Create Symlink
+		err := os.Symlink(item.symlinkdest, item.symlinksrc)
+		require.NoErrorf(t, err,
+			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v\n%s",
+			item.symlinksrc, item.symlinkdest, err,
+			"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",
+		)
 
 		// Change GOPATH
 		_ = os.Setenv("GOPATH", item.gopath)
 
-		if item.symlinksrc != "" {
-			// Create Symlink
-			if err := os.Symlink(item.symlinkdest, item.symlinksrc); err == nil {
+		// Test (baseImport always with /)
+		actualpath := golang.baseImport(item.targetpath)
 
-				// Test
-				actualpath := golang.baseImport(item.targetpath)
+		require.Equalf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 
-				if goruntime.GOOS == "windows" {
-					item.expectedpath = strings.Replace(item.expectedpath, "/", "\\", -1)
-				}
-
-				if actualpath != item.expectedpath {
-					t.Errorf("baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
-				}
-
-				_ = os.RemoveAll(filepath.Join(tempdir, "root"))
-
-			} else {
-				t.Logf("WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v", item.symlinksrc, item.symlinkdest, err)
-				t.Logf("WARNING:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)")
-			}
-		}
+		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
 	}
 
 }

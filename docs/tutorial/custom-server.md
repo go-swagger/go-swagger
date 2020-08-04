@@ -89,9 +89,9 @@ there would be a `models` folder as well in our `gen` folder,
 containing the generated models for those definitions.
 But as we don't have any definitions to share, you won't find it in this tutorial.
 
-For more information, read through through the generated code.
+For more information, read through the generated code.
 It might help to keep the `swagger/swagger.yml` definition next to you,
-to help you what is defined, for what and where.
+to help you realize what is defined, for what and where.
 
 So now that we have the generated server, it is time to write our actual main file.
 In it we'll parse some simple flags that can be used to configure the server,

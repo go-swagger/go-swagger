@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
+	"github.com/go-swagger/go-swagger/examples/composed-auth/models"
 )
 
 // NewAddOrderParams creates a new AddOrderParams object
@@ -53,7 +53,7 @@ func (o *AddOrderParams) BindRequest(r *http.Request, route *middleware.MatchedR
 		var body models.Order
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("order", "body"))
+				res = append(res, errors.Required("order", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("order", "body", "", err))
 			}
@@ -68,7 +68,7 @@ func (o *AddOrderParams) BindRequest(r *http.Request, route *middleware.MatchedR
 			}
 		}
 	} else {
-		res = append(res, errors.Required("order", "body"))
+		res = append(res, errors.Required("order", "body", ""))
 	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

@@ -10,7 +10,7 @@ NON-BREAKING CHANGES:
             /a/:get Request - Query.changeMaxInt - Widened type <Maximum 200.000000->300.000000>
             /a/:get Request - Query.removeMaxInt - Widened type <Exclusive Maximum Removed:true->false>
             /a/:get Request - Query.wideryString - Widened type <integer -> string>
-            
+
             BREAKING CHANGES:
             =================
              Metadata - Spec Metadata - Changed base path </api -> /apibaby>
@@ -24,4 +24,5 @@ NON-BREAKING CHANGES:
             /a/:get Request - Query.changeMinInt - Narrowed type <Minimum 200.000000->300.000000>
             /a/:get Request - Query.changeyPattern - Changed type <Pattern Changed:*->anewpattern>
             /a/:get Request - Query.primToObj : A2 - Changed type <integer -> obj>
-            
+
+compatibility test FAILED: 11 breaking changes detected

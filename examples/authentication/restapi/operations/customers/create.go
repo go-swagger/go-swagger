@@ -8,9 +8,9 @@ package customers
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/go-swagger/go-swagger/examples/authentication/models"
+	"github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
 // CreateHandlerFunc turns a function with the right signature into a create handler

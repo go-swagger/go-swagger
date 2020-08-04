@@ -8,14 +8,14 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Order order
+//
 // swagger:model Order
 type Order struct {
 
@@ -97,7 +97,7 @@ const (
 
 // prop value enum
 func (m *Order) validateStatusEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, orderTypeStatusPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, orderTypeStatusPropEnum, true); err != nil {
 		return err
 	}
 	return nil

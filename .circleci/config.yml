@@ -1,4 +1,56 @@
-version: 2
+version: 2.1
+commands:
+  download_dependencies:
+    description: "download dependencies including test dependencies"
+    parameters:
+      test:
+        type: boolean
+        default: false
+    steps:
+      - run:
+          name: download dependencies
+          command: |
+            n=0
+            until [ $n -ge 5 ]
+            do
+                go mod download && break
+                n=$[$n+1]
+                sleep 1
+            done
+            <<# parameters.test >>
+            # test dependencies
+            go get -u gotest.tools/gotestsum gotest.tools/icmd github.com/logrusorgru/aurora
+            <</ parameters.test >>
+
+  prepare_directory_layout:
+    description: "prepare directory layout to run tests"
+    parameters:
+      dir:
+        type: string
+        default: "/usr/share/testresults"
+    steps:
+      - run:
+          name: Prepare directory layout
+          command: |
+             mkdir -p <<parameters.dir>>
+
+  build_statically_linked_binary:
+    description: "builds a statically linked binary"
+    parameters:
+      target:
+        type: string
+        default: "./dist/swagger-musl"
+    steps:
+      - run:
+          name: Build statically linked binary
+          command: |
+            rm -rf dist
+            mkdir -p dist
+            LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
+            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
+            go build -o <<parameters.target>> -ldflags "$LDFLAGS" -a  ./cmd/swagger
+
 workflows:
   version: 2
   weekly:
@@ -15,10 +67,12 @@ workflows:
 
   build_and_test:
     jobs:
+      - lint
       - build
 
       - test:
           requires:
+            - lint
             - build
           filters:
             tags:
@@ -26,6 +80,7 @@ workflows:
 
       - codegen_tests:
           requires:
+            - lint
             - build
           filters:
             tags:
@@ -36,6 +91,7 @@ workflows:
             tags:
               only: /^v.*/
           requires:
+            - lint
             - build
 
       - publish_dev:
@@ -71,6 +127,22 @@ workflows:
               ignore: /.*/
 
 jobs:
+  lint:
+    docker:
+      - image: goswagger/builder:debian
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+      - run:
+          name: Install golangci-lint
+          command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - run:
+          name: Run unit tests
+          command: golangci-lint run --timeout 2m --new-from-rev master
+          no_output_timeout: 2m
+
   build:
     docker:
       - image: goswagger/builder:debian
@@ -81,29 +153,15 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies:
+          test: true
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
 
-      - run:
-          name: Prepare directory layout
-          command: |
-            testresultsdir="/usr/share/testresults"
-            if [[ ! -d ${testresultsdir} ]] ; then
-                mkdir -p ${testresultsdir}
-            fi
+      - prepare_directory_layout
 
       - run:
           name: Run unit tests
@@ -126,32 +184,19 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies:
+          test: true
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
-      - run:
-          name: Prepare directory layout
-          command: |
-            coveragedir="/usr/share/coverage"
-            if [[ ! -d ${coveragedir} ]] ; then
-                mkdir -p ${coveragedir}
-            fi
-            testresultsdir="/usr/share/testresults"
-            if [[ ! -d ${testresultsdir} ]] ; then
-                mkdir -p ${testresultsdir}
-            fi
+
+      - prepare_directory_layout:
+          dir: /usr/share/coverage
+
+      - prepare_directory_layout:
+          dir: /usr/share/testresults
 
       # - run:
       #     name: Run tests with race detection
@@ -185,16 +230,8 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies:
+          test: true
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
@@ -205,7 +242,8 @@ jobs:
 
       - run:
           name: Test codegen builds
-          command: ./hack/codegen-nonreg.sh --circleci
+          command: go test -v -timeout 20m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
+          no_output_timeout: 30m
 
   canary_tests:
     docker:
@@ -217,16 +255,8 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies:
+          test: true
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
@@ -236,7 +266,8 @@ jobs:
 
       - run:
           name: Test canary builds
-          command: ./hack/run-canary.sh
+          command: go test -v -timeout 20m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
+          no_output_timeout: 30m
 
   publish_release:
     docker:
@@ -255,16 +286,7 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
@@ -293,32 +315,21 @@ jobs:
           name: Upload to bintray
           command: |
             nver="${CIRCLE_TAG:1}"
-            curl \
-              --retry 10 \
-              --retry-delay 5 \
+            opts="--retry 10 --retry-delay 5 -u ${API_USERNAME}:${BINTRAY_TOKEN}"
+            curl ${opts} \
               -T ./dist/build/swagger-${nver//-/_}-1.x86_64.rpm \
-              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/swagger-${nver//-/_}-1.x86_64.rpm
 
-            curl \
-              --retry 10 \
-              --retry-delay 5 \
+            curl ${opts} \
               -XPOST \
-              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-rpm/swagger/${nver}/publish
 
-            curl \
-              --retry 10 \
-              --retry-delay 5 \
+            curl ${opts} \
               -T ./dist/build/swagger_${nver}_amd64.deb \
-              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               "https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/swagger_${nver}_amd64.deb;deb_distribution=ubuntu;deb_component=main;deb_architecture=amd64"
 
-            curl \
-              --retry 10 \
-              --retry-delay 5 \
+            curl ${opts} \
               -XPOST \
-              -u ${API_USERNAME}:${BINTRAY_TOKEN} \
               https://api.bintray.com/content/go-swagger/goswagger-debian/swagger/${nver}/publish
 
       - run:
@@ -349,28 +360,14 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
           paths:
             - "/go/pkg/mod"
-      - run:
-          name: Build statically linked binary
-          command: |
-            LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
-            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
-            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
-            go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
+
+      - build_statically_linked_binary
 
       - run:
           name: Build container
@@ -399,16 +396,7 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-          name: download dependencies
-          command: |
-            n=0
-            until [ $n -ge 5 ]
-            do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
-            done
+      - download_dependencies
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
@@ -417,15 +405,7 @@ jobs:
 
       - setup_remote_docker
 
-      - run:
-          name: Build statically linked binary
-          command: |
-            rm -rf dist
-            mkdir -p dist
-            LDFLAGS="-s -w -linkmode external -extldflags \"-static\""
-            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
-            LDFLAGS="$LDFLAGS -X github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
-            go build -o ./dist/swagger-musl -ldflags "$LDFLAGS" -a  ./cmd/swagger
+      - build_statically_linked_binary
 
       - run:
           name: Build container

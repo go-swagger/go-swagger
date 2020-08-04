@@ -12,11 +12,10 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/go-swagger/go-swagger/examples/task-tracker/models"
+	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
 // NewUpdateTaskParams creates a new UpdateTaskParams object
@@ -61,7 +60,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 		var body models.Task
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			if err == io.EOF {
-				res = append(res, errors.Required("body", "body"))
+				res = append(res, errors.Required("body", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("body", "body", "", err))
 			}
@@ -76,7 +75,7 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 			}
 		}
 	} else {
-		res = append(res, errors.Required("body", "body"))
+		res = append(res, errors.Required("body", "body", ""))
 	}
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {

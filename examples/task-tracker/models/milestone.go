@@ -6,9 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
@@ -17,6 +16,7 @@ import (
 //
 // Milestones can have a escription and due date.
 // This can be useful for filters and such.
+//
 //
 // swagger:model Milestone
 type Milestone struct {
@@ -143,6 +143,7 @@ func (m *Milestone) UnmarshalBinary(b []byte) error {
 // MilestoneStats Some counters for this milestone.
 //
 // This object contains counts for the remaining open issues and the amount of issues that have been closed.
+//
 //
 // swagger:model MilestoneStats
 type MilestoneStats struct {

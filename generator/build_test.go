@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
@@ -20,7 +21,6 @@ const (
 	defaultAPIPackage    = "operations"
 	defaultClientPackage = "client"
 	defaultModelPackage  = "models"
-	defaultServerPackage = "restapi"
 )
 
 func TestGenerateAndBuild(t *testing.T) {
@@ -40,6 +40,12 @@ func TestGenerateAndBuild(t *testing.T) {
 		"issue 1216": {
 			"../fixtures/bugs/1216/swagger.yml",
 		},
+		"issue 2111": {
+			"../fixtures/bugs/2111/fixture-2111.yaml",
+		},
+		"issue 2278": {
+			"../fixtures/bugs/2278/fixture-2278.yaml",
+		},
 	}
 
 	for name, cas := range cases {
@@ -56,36 +62,29 @@ func TestGenerateAndBuild(t *testing.T) {
 			defer func() { _ = os.RemoveAll(generated) }()
 
 			err = newTestClient(spec, generated).Execute(nil)
-			if err != nil {
-				t.Fatalf("Execute()=%s", err)
-			}
+			require.NoErrorf(t, err, "Execute()=%s", err)
 
-			//fmt.Println(captureLog.String())
 			assert.Contains(t, strings.ToLower(captureLog.String()), "generation completed")
 
 			packages := filepath.Join(generated, "...")
 
-			if p, err := exec.Command("go", "get", packages).CombinedOutput(); err != nil {
-				t.Fatalf("go get %s: %s\n%s", packages, err, p)
-			}
+			p, err := exec.Command("go", "get", packages).CombinedOutput()
+			require.NoErrorf(t, err, "go get %s: %s\n%s", packages, err, p)
 
-			if p, err := exec.Command("go", "build", packages).CombinedOutput(); err != nil {
-				t.Fatalf("go build %s: %s\n%s", packages, err, p)
-			}
+			p, err = exec.Command("go", "build", packages).CombinedOutput()
+			require.NoErrorf(t, err, "go build %s: %s\n%s", packages, err, p)
 		})
 	}
 }
 
 func newTestClient(input, output string) *generate.Client {
-	c := &generate.Client{
-		DefaultScheme:   "http",
-		DefaultProduces: "application/json",
-	}
-	c.Spec = flags.Filename(input)
-	c.Target = flags.Filename(output)
-	c.APIPackage = defaultAPIPackage
-	c.ModelPackage = defaultModelPackage
-	c.ServerPackage = defaultServerPackage
+	c := &generate.Client{}
+	c.DefaultScheme = "http"
+	c.DefaultProduces = "application/json"
+	c.Shared.Spec = flags.Filename(input)
+	c.Shared.Target = flags.Filename(output)
+	c.Operations.APIPackage = defaultAPIPackage
+	c.Models.ModelPackage = defaultModelPackage
 	c.ClientPackage = defaultClientPackage
 	return c
 }

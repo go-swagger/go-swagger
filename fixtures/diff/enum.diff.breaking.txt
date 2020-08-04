@@ -1,0 +1,8 @@
+            BREAKING CHANGES:
+            =================
+            /a/:get -> 200 Response - array[A1].personality : string - Added possible enumeration(s) <sane>
+            /a/:get Request - Query.personality - Deleted possible enumeration(s) <saucy>
+            /a/{id}:get -> 200 Response - array[A1].personality : string - Added possible enumeration(s) <sane>
+            /b/:get -> 200 Response - array[A1].personality : string - Added possible enumeration(s) <sane>
+
+compatibility test FAILED: 4 breaking changes detected

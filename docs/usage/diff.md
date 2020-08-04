@@ -8,7 +8,7 @@ To diff specifications:
 
 ```
 Usage:
-  swagger [OPTIONS] diff [diff-OPTIONS]
+  swagger [OPTIONS] diff [diff-OPTIONS] {original spec} {spec}
 
 diff specs showing which changes will break existing clients
 

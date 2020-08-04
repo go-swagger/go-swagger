@@ -10,18 +10,17 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/go-swagger/go-swagger/examples/oauth2/models"
 	"github.com/go-swagger/go-swagger/examples/oauth2/restapi/operations/customers"
-
-	models "github.com/go-swagger/go-swagger/examples/oauth2/models"
 )
 
 // NewOauthSampleAPI creates a new OauthSample instance
@@ -33,14 +32,19 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+
 		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
 		}),
@@ -48,16 +52,15 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 			return middleware.NotImplemented("operation GetLogin has not yet been implemented")
 		}),
 		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation CustomersCreate has not yet been implemented")
+			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		}),
 		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
-			return middleware.NotImplemented("operation CustomersGetID has not yet been implemented")
+			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
 		}),
 
 		OauthSecurityAuth: func(token string, scopes []string) (*models.Principal, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (OauthSecurity) has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -74,6 +77,7 @@ type OauthSampleAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -85,10 +89,12 @@ type OauthSampleAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// OauthSecurityAuth registers a function that takes an access token and a collection of required scopes and returns a principal
@@ -106,10 +112,13 @@ type OauthSampleAPI struct {
 	CustomersCreateHandler customers.CreateHandler
 	// CustomersGetIDHandler sets the operation handler for the get Id operation
 	CustomersGetIDHandler customers.GetIDHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -120,6 +129,16 @@ type OauthSampleAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *OauthSampleAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *OauthSampleAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -176,15 +195,12 @@ func (o *OauthSampleAPI) Validate() error {
 	if o.GetAuthCallbackHandler == nil {
 		unregistered = append(unregistered, "GetAuthCallbackHandler")
 	}
-
 	if o.GetLoginHandler == nil {
 		unregistered = append(unregistered, "GetLoginHandler")
 	}
-
 	if o.CustomersCreateHandler == nil {
 		unregistered = append(unregistered, "customers.CreateHandler")
 	}
-
 	if o.CustomersGetIDHandler == nil {
 		unregistered = append(unregistered, "customers.GetIDHandler")
 	}
@@ -203,13 +219,10 @@ func (o *OauthSampleAPI) ServeErrorFor(operationID string) func(http.ResponseWri
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *OauthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "OauthSecurity":
-
 			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
 				return o.OauthSecurityAuth(token, scopes)
 			})
@@ -217,26 +230,21 @@ func (o *OauthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *OauthSampleAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -244,19 +252,16 @@ func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -264,7 +269,6 @@ func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -294,7 +298,6 @@ func (o *OauthSampleAPI) Context() *middleware.Context {
 
 func (o *OauthSampleAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -303,22 +306,18 @@ func (o *OauthSampleAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/auth/callback"] = NewGetAuthCallback(o.context, o.GetAuthCallbackHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/login"] = NewGetLogin(o.context, o.GetLoginHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/customers"] = customers.NewCreate(o.context, o.CustomersCreateHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/customers"] = customers.NewGetID(o.context, o.CustomersGetIDHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -328,6 +327,9 @@ func (o *OauthSampleAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -347,4 +349,16 @@ func (o *OauthSampleAPI) RegisterConsumer(mediaType string, consumer runtime.Con
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *OauthSampleAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *OauthSampleAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

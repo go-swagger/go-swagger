@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/loads"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi"
 	"github.com/go-swagger/go-swagger/examples/tutorials/todo-list/server-complete/restapi/operations"
 	flags "github.com/jessevdk/go-flags"
@@ -29,7 +29,6 @@ func main() {
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "A To Do list application"
 	parser.LongDescription = "The product of a tutorial on goswagger.io"
-
 	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		_, err := parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)

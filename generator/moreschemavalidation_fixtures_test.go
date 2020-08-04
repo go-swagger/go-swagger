@@ -14,6 +14,96 @@
 
 package generator
 
+func initFixture2220() {
+	// NOTE(fred): this test merely asserts that template refactoring (essentially dealing with hite space gobbling etc)
+	// properly runs against the case of base type with additionalProperties.
+	//
+	// TODO(fred): should actually fix the problem in base type model rendering
+	f := newModelFixture("../fixtures/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("object.go", []string{
+		// This asserts our template announcement about forthcoming fix (used to  be a func commented out of luck)
+		`// AdditionalProperties in base type shoud be handled just like regular properties`,
+		`// At this moment, the base type property is pushed down to the subtype`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("component.go", []string{
+		// This asserts the current schema layout, which works but does not honour inheritance from the base type
+		"ObjectAdditionalProperties map[string]interface{} `json:\"-\"`",
+	}, todo, noLines, noLines)
+}
+
+func initFixture2116() {
+	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("case1_fail_omitempty_false_not_hoisted_by_ref.go", []string{
+		"Body *ObjectWithOmitemptyFalse `json:\"Body\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case2_fail_omitempty_false_not_overridden_by_ref_sibling.go", []string{
+		"Body *ObjectWithOmitemptyTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case3_pass_object_nullable_false_hoisted_by_ref.go", []string{
+		"Body ObjectWithNullableFalse `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("case4_pass_object_nullable_false_overriden_by_ref_sibling.go", []string{
+		"Body *ObjectWithNullableTrue `json:\"Body,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_default.go", []string{
+		"type ArrayWithDefault []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_no_omit_empty.go", []string{
+		"type ArrayWithNoOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable.go", []string{
+		"type ArrayWithNullable []string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_nullable_items.go", []string{
+		"type ArrayWithNullableItems []*string",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty.go", []string{
+		"type ArrayWithOmitEmpty []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_arrays.go", []string{
+		"Array0 ArrayWithDefault `json:\"array0,omitempty\"`",
+		"Array1 []string `json:\"array1\"`",
+		"Array11 []string `json:\"array11,omitempty\"`",
+		"Array12 []string `json:\"array12\"`",
+		"Array2 ArrayWithOmitEmpty `json:\"array2,omitempty\"`",
+		"Array3 ArrayWithNoOmitEmpty `json:\"array3\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_nullable_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_false.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_omitempty_true.go", []string{
+		"Data interface{} `json:\"Data,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_with_omit_empty_items.go", []string{
+		"type ArrayWithOmitEmptyItems []string",
+	}, append(todo, "omitempty"), noLines, noLines)
+}
+
 func initFixture2071() {
 	f := newModelFixture("../fixtures/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -113,7 +203,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		containerConfigExposedPortsValueEnum = append(containerConfigExposedPortsValueEnum, v`,
 		`func (m *ContainerConfig) validateExposedPortsValueEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, containerConfigExposedPortsValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerConfigExposedPortsValueEnum, true); err != nil {`,
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
@@ -134,7 +224,7 @@ func initFixture1479Part() {
 		`	ContainerConfigRichModeSbinInit string = "sbin-init"`,
 		`	ContainerConfigRichModeSystemd string = "systemd"`,
 		`func (m *ContainerConfig) validateRichModeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, containerConfigTypeRichModePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerConfigTypeRichModePropEnum, true); err != nil {`,
 		`func (m *ContainerConfig) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
@@ -144,7 +234,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		containerConfigVolumesValueEnum = append(containerConfigVolumesValueEnum, v`,
 		`func (m *ContainerConfig) validateVolumesValueEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, containerConfigVolumesValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerConfigVolumesValueEnum, true); err != nil {`,
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
@@ -182,7 +272,7 @@ func initFixture1479Part() {
 		`	HostConfigAllOf0LogConfigTypeEtwlogs string = "etwlogs"`,
 		`	HostConfigAllOf0LogConfigTypeNone string = "none"`,
 		`func (m *HostConfigAllOf0LogConfig) validateTypeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigAllOf0LogConfigTypeTypePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigAllOf0LogConfigTypeTypePropEnum, true); err != nil {`,
 		`func (m *HostConfigAllOf0LogConfig) validateType(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Type) {`,
 		`	if err := m.validateTypeEnum("Type", "body", m.Type); err != nil {`,
@@ -294,7 +384,7 @@ func initFixture1479Part() {
 		`	HostConfigAllOf0IsolationProcess string = "process"`,
 		`	HostConfigAllOf0IsolationHyperv string = "hyperv"`,
 		`func (m *HostConfigAllOf0) validateIsolationEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigAllOf0TypeIsolationPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigAllOf0TypeIsolationPropEnum, true); err != nil {`,
 		`func (m *HostConfigAllOf0) validateIsolation(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Isolation) {`,
 		`	if err := m.validateIsolationEnum("Isolation", "body", m.Isolation); err != nil {`,
@@ -323,7 +413,7 @@ func initFixture1479Part() {
 		`	HostConfigAllOf0RichModeSbinInit string = "sbin-init"`,
 		`	HostConfigAllOf0RichModeSystemd string = "systemd"`,
 		`func (m *HostConfigAllOf0) validateRichModeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigAllOf0TypeRichModePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigAllOf0TypeRichModePropEnum, true); err != nil {`,
 		`func (m *HostConfigAllOf0) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
@@ -422,7 +512,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		hostConfigTypeIsolationPropEnum = append(hostConfigTypeIsolationPropEnum, v`,
 		`func (m *HostConfig) validateIsolationEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigTypeIsolationPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigTypeIsolationPropEnum, true); err != nil {`,
 		`func (m *HostConfig) validateIsolation(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Isolation) {`,
 		`	if err := m.validateIsolationEnum("Isolation", "body", m.Isolation); err != nil {`,
@@ -448,7 +538,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		hostConfigTypeRichModePropEnum = append(hostConfigTypeRichModePropEnum, v`,
 		`func (m *HostConfig) validateRichModeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigTypeRichModePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigTypeRichModePropEnum, true); err != nil {`,
 		`func (m *HostConfig) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
@@ -480,7 +570,7 @@ func initFixture1479Part() {
 		`	HostConfigAO0LogConfigTypeEtwlogs string = "etwlogs"`,
 		`	HostConfigAO0LogConfigTypeNone string = "none"`,
 		`func (m *HostConfigAO0LogConfig) validateTypeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, hostConfigAO0LogConfigTypeTypePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, hostConfigAO0LogConfigTypeTypePropEnum, true); err != nil {`,
 		`func (m *HostConfigAO0LogConfig) validateType(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Type) {`,
 		`	if err := m.validateTypeEnum("LogConfig"+"."+"Type", "body", m.Type); err != nil {`,
@@ -603,7 +693,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		containerCreateConfigExposedPortsValueEnum = append(containerCreateConfigExposedPortsValueEnum, v`,
 		`func (m *ContainerCreateConfig) validateExposedPortsValueEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, containerCreateConfigExposedPortsValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerCreateConfigExposedPortsValueEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
@@ -621,7 +711,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		containerCreateConfigTypeRichModePropEnum = append(containerCreateConfigTypeRichModePropEnum, v`,
 		`func (m *ContainerCreateConfig) validateRichModeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, containerCreateConfigTypeRichModePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerCreateConfigTypeRichModePropEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfig) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
@@ -631,7 +721,7 @@ func initFixture1479Part() {
 		`	for _, v := range res {`,
 		`		containerCreateConfigVolumesValueEnum = append(containerCreateConfigVolumesValueEnum, v`,
 		`func (m *ContainerCreateConfig) validateVolumesValueEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, containerCreateConfigVolumesValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerCreateConfigVolumesValueEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
@@ -733,7 +823,7 @@ func initFixture1479Part() {
 		`	ContainerCreateConfigHostConfigAO0LogConfigTypeEtwlogs string = "etwlogs"`,
 		`	ContainerCreateConfigHostConfigAO0LogConfigTypeNone string = "none"`,
 		`func (m *ContainerCreateConfigHostConfigAO0LogConfig) validateTypeEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfigHostConfigAO0LogConfig) validateType(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Type) {`,
 		`	if err := m.validateTypeEnum("HostConfig"+"."+"LogConfig"+"."+"Type", "body", m.Type); err != nil {`,
@@ -2399,18 +2489,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile *AliasedNullableFile `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile *AliasedTypeNullableFile `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		todo,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -2426,18 +2515,17 @@ func initFixtureItching() {
 		"	ThisNullableAliasedFile io.ReadCloser `json:\"thisNullableAliasedFile,omitempty\"`",
 		"	ThisNullableAlternateAliasedFile io.ReadCloser `json:\"thisNullableAlternateAliasedFile,omitempty\"`",
 		`func (m *GoodOldFormatIssue) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateMyBytes(formats); err != nil {`,
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.MyBytes) {`,
-		// Fixed this: we don't want to call validate.FormatOf() for base64
-		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
 		// not expected
-		noLines,
+		[]string{
+			`	if err := m.validateMyBytes(formats); err != nil {`,
+			`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
+			`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -2733,14 +2821,14 @@ func initFixtureItching() {
 		`	for _, v := range res {`,
 		`		enumsWithAdditionalPropsEnum = append(enumsWithAdditionalPropsEnum, v`,
 		`func (m *EnumsWithAdditionalProps) validateEnumsWithAdditionalPropsEnum(path, location string, value EnumsWithAdditionalProps) error {`,
-		`	if err := validate.Enum(path, location, value, enumsWithAdditionalPropsEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, enumsWithAdditionalPropsEnum, true); err != nil {`,
 		`var enumsWithAdditionalPropsValueEnum []interface{`,
 		`	var res []interface{`,
 		"	if err := json.Unmarshal([]byte(`[\"{ \\\"b\\\": 2 }\",\"{ \\\"b\\\": 4 }\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		enumsWithAdditionalPropsValueEnum = append(enumsWithAdditionalPropsValueEnum, v`,
 		`func (m *EnumsWithAdditionalProps) validateEnumsWithAdditionalPropsValueEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, enumsWithAdditionalPropsValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, enumsWithAdditionalPropsValueEnum, true); err != nil {`,
 		`func (m EnumsWithAdditionalProps) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		`		if err := m.validateEnumsWithAdditionalPropsValueEnum(k, "body", m[k]); err != nil {`,
@@ -3003,7 +3091,7 @@ func initFixtureAdditionalProps() {
 		`	for _, v := range res {`,
 		`		additionalThingsValueEnum = append(additionalThingsValueEnum, v`,
 		`func (m *AdditionalThings) validateAdditionalThingsValueEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsValueEnum, true); err != nil {`,
 		`func (m *AdditionalThings) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	if err := m.validateStatus(formats); err != nil {`,
@@ -3022,7 +3110,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsOriginCollection string = "collection"`,
 		`	AdditionalThingsOriginMuseum string = "museum"`,
 		`func (m *AdditionalThings) validateOriginEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsTypeOriginPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsTypeOriginPropEnum, true); err != nil {`,
 		`func (m *AdditionalThings) validateOrigin(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("origin", "body", m.Origin); err != nil {`,
 		`	if err := m.validateOriginEnum("origin", "body", *m.Origin); err != nil {`,
@@ -3034,7 +3122,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsStatusOK string = "OK"`,
 		`	AdditionalThingsStatusKO string = "KO"`,
 		`func (m *AdditionalThings) validateStatusEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsTypeStatusPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsTypeStatusPropEnum, true); err != nil {`,
 		`func (m *AdditionalThings) validateStatus(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Status) {`,
 		`	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {`,
@@ -3335,7 +3423,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsNestedAdditionalPropertiesPrinterCountryCA string = "CA"`,
 		`	AdditionalThingsNestedAdditionalPropertiesPrinterCountryDE string = "DE"`,
 		`func (m *AdditionalThingsNestedAdditionalProperties) validatePrinterCountryEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsNestedAdditionalPropertiesTypePrinterCountryPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsNestedAdditionalPropertiesTypePrinterCountryPropEnum, true); err != nil {`,
 		`func (m *AdditionalThingsNestedAdditionalProperties) validatePrinterCountry(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.PrinterCountry) {`,
 		`	if err := m.validatePrinterCountryEnum("printerCountry", "body", m.PrinterCountry); err != nil {`,
@@ -3723,7 +3811,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsNestedOriginGoCollection string = "goCollection"`,
 		`	AdditionalThingsNestedOriginGoMuseum string = "goMuseum"`,
 		`func (m *AdditionalThingsNested) validateOriginEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsNestedTypeOriginPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsNestedTypeOriginPropEnum, true); err != nil {`,
 		`func (m *AdditionalThingsNested) validateOrigin(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Origin) {`,
 		`	if err := m.validateOriginEnum("origin", "body", m.Origin); err != nil {`,
@@ -3755,7 +3843,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsNestedOriginGoCollection string = "goCollection"`,
 		`	AdditionalThingsNestedOriginGoMuseum string = "goMuseum"`,
 		`func (m *AdditionalThingsNested) validateOriginEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsNestedTypeOriginPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsNestedTypeOriginPropEnum, true); err != nil {`,
 		`func (m *AdditionalThingsNested) validateOrigin(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Origin) {`,
 		`	if err := m.validateOriginEnum("origin", "body", m.Origin); err != nil {`,
@@ -3784,7 +3872,7 @@ func initFixtureAdditionalProps() {
 		`	AdditionalThingsNestedAnonPrinterCountryCA string = "CA"`,
 		`	AdditionalThingsNestedAnonPrinterCountryDE string = "DE"`,
 		`func (m *AdditionalThingsNestedAnon) validatePrinterCountryEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, additionalThingsNestedAnonTypePrinterCountryPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, additionalThingsNestedAnonTypePrinterCountryPropEnum, true); err != nil {`,
 		`func (m *AdditionalThingsNestedAnon) validatePrinterCountry(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.PrinterCountry) {`,
 		`	if err := m.validatePrinterCountryEnum("printerCountry", "body", m.PrinterCountry); err != nil {`,
@@ -4254,7 +4342,7 @@ func initFixtureTuple() {
 		`	ClassicsClassicsItemsTuple0P0TitleSherlockHolmes string = "Sherlock Holmes"`,
 		`	ClassicsClassicsItemsTuple0P0TitleSiddhartha string = "Siddhartha"`,
 		`func (m *ClassicsClassicsItemsTuple0P0) validateTitleEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsClassicsItemsTuple0P0TypeTitlePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsClassicsItemsTuple0P0TypeTitlePropEnum, true); err != nil {`,
 		`func (m *ClassicsClassicsItemsTuple0P0) validateTitle(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Title) {`,
 		`	if err := m.validateTitleEnum("P0"+"."+"title", "body", *m.Title); err != nil {`,
@@ -4267,7 +4355,7 @@ func initFixtureTuple() {
 		`	for _, v := range res {`,
 		`		classicsClassicsItemsTuple0P2ValueEnum = append(classicsClassicsItemsTuple0P2ValueEnum, v`,
 		`func (m *ClassicsClassicsItemsTuple0P2) validateClassicsClassicsItemsTuple0P2ValueEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsClassicsItemsTuple0P2ValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsClassicsItemsTuple0P2ValueEnum, true); err != nil {`,
 		`func (m *ClassicsClassicsItemsTuple0P2) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsClassicsItemsTuple0P2 {`,
@@ -4285,7 +4373,7 @@ func initFixtureTuple() {
 		`	ClassicsClassicsItemsTuple0P2OriginCollection string = "collection"`,
 		`	ClassicsClassicsItemsTuple0P2OriginMuseum string = "museum"`,
 		`func (m *ClassicsClassicsItemsTuple0P2) validateOriginEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsClassicsItemsTuple0P2TypeOriginPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsClassicsItemsTuple0P2TypeOriginPropEnum, true); err != nil {`,
 		`func (m *ClassicsClassicsItemsTuple0P2) validateOrigin(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Origin) {`,
 		`	if err := m.validateOriginEnum("P2"+"."+"origin", "body", *m.Origin); err != nil {`,
@@ -4450,7 +4538,7 @@ func initFixtureTuple() {
 		`	for _, v := range res {`,
 		`		classicsItemsAdditionalItemsItems2ValueEnum = append(classicsItemsAdditionalItemsItems2ValueEnum, v`,
 		`func (m *ClassicsItemsAdditionalItemsItems2) validateClassicsItemsAdditionalItemsItems2ValueEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsItemsAdditionalItemsItems2ValueEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsItemsAdditionalItemsItems2ValueEnum, true); err != nil {`,
 		`func (m *ClassicsItemsAdditionalItemsItems2) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsItemsAdditionalItemsItems2 {`,
@@ -4468,7 +4556,7 @@ func initFixtureTuple() {
 		`	ClassicsItemsAdditionalItemsItems2OriginCollection string = "collection"`,
 		`	ClassicsItemsAdditionalItemsItems2OriginMuseum string = "museum"`,
 		`func (m *ClassicsItemsAdditionalItemsItems2) validateOriginEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsItemsAdditionalItemsItems2TypeOriginPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsItemsAdditionalItemsItems2TypeOriginPropEnum, true); err != nil {`,
 		`func (m *ClassicsItemsAdditionalItemsItems2) validateOrigin(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Origin) {`,
 		`	if err := m.validateOriginEnum("origin", "body", m.Origin); err != nil {`,
@@ -4587,7 +4675,7 @@ func initFixtureTuple() {
 		`	ClassicsItemsAdditionalItemsItems0TitleSherlockHolmes string = "Sherlock Holmes"`,
 		`	ClassicsItemsAdditionalItemsItems0TitleSiddhartha string = "Siddhartha"`,
 		`func (m *ClassicsItemsAdditionalItemsItems0) validateTitleEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, classicsItemsAdditionalItemsItems0TypeTitlePropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, classicsItemsAdditionalItemsItems0TypeTitlePropEnum, true); err != nil {`,
 		`func (m *ClassicsItemsAdditionalItemsItems0) validateTitle(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Title) {`,
 		`	if err := m.validateTitleEnum("title", "body", m.Title); err != nil {`,
@@ -5171,14 +5259,14 @@ func initFixture607() {
 		`	var b1, b2, b3 []byte`,
 		`	var err error`,
 		`	b1, err = json.Marshal(struct {`,
-		`	}{},`,
+		`	}{})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Config []Filter `json:\"config\"`",
 		`	}{`,
 		`		Config: m.configField,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5230,14 +5318,14 @@ func initFixture607() {
 		`		AndFilterAllOf1`,
 		`	}{`,
 		`		AndFilterAllOf1: m.AndFilterAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Type string `json:\"type\"`",
 		`	}{`,
 		`		Type: m.Type(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5283,14 +5371,14 @@ func initFixture607() {
 		`		RangeFilterAllOf1`,
 		`	}{`,
 		`		RangeFilterAllOf1: m.RangeFilterAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Type string `json:\"type\"`",
 		`	}{`,
 		`		Type: m.Type(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5430,14 +5518,14 @@ func initFixture1336() {
 		`	var b1, b2, b3 []byte`,
 		`	var err error`,
 		`	b1, err = json.Marshal(struct {`,
-		`	}{},`,
+		`	}{})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		Nodes []Node `json:\"Nodes\"`",
 		`	}{`,
 		`		Nodes: m.nodesField,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5495,14 +5583,14 @@ func initFixture1336() {
 		`		DocBlockNodeAllOf1`,
 		`	}{`,
 		`		DocBlockNodeAllOf1: m.DocBlockNodeAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		NodeType string `json:\"NodeType\"`",
 		`	}{`,
 		`		NodeType: m.NodeType(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -5548,14 +5636,14 @@ func initFixture1336() {
 		`		CodeBlockNodeAllOf1`,
 		`	}{`,
 		`		CodeBlockNodeAllOf1: m.CodeBlockNodeAllOf1,`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	b2, err = json.Marshal(struct {`,
 		"		NodeType string `json:\"NodeType\"`",
 		`	}{`,
 		`		NodeType: m.NodeType(),`,
-		`	},`,
+		`	})`,
 		`	if err != nil {`,
 		`		return nil, err`,
 		`	return swag.ConcatJSON(b1, b2, b3), nil`,
@@ -6663,7 +6751,7 @@ func initTodolistSchemavalidation() {
 		`	PetStatusPending string = "pending"`,
 		`	PetStatusSold string = "sold"`,
 		`func (m *Pet) validateStatusEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, petTypeStatusPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, petTypeStatusPropEnum, true); err != nil {`,
 		`func (m *Pet) validateStatus(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Status) {`,
 		`	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {`,
@@ -6720,7 +6808,7 @@ func initTodolistSchemavalidation() {
 		`	PetStatusPending string = "pending"`,
 		`	PetStatusSold string = "sold"`,
 		`func (m *Pet) validateStatusEnum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, petTypeStatusPropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, petTypeStatusPropEnum, true); err != nil {`,
 		`func (m *Pet) validateStatus(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Status) {`,
 		`	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {`,
@@ -8141,7 +8229,7 @@ func initFixture844Variations() {
 		`	for _, v := range res {`,
 		`		variation3Prop1ItemsEnum = append(variation3Prop1ItemsEnum, v`,
 		`func (m *Variation3) validateProp1ItemsEnum(path, location string, value interface{}) error {`,
-		`	if err := validate.Enum(path, location, value, variation3Prop1ItemsEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, variation3Prop1ItemsEnum, true); err != nil {`,
 		`func (m *Variation3) validateProp1(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop1) {`,
 		`	iProp1Size := int64(len(m.Prop1)`,
@@ -9303,10 +9391,12 @@ func initFixture1548() {
 		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
 		`	return (strfmt.Base64(m)).MarshalJSON(`,
 		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{"TODO",
+			"validate.FormatOf(",
+			`return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9329,11 +9419,14 @@ func initFixture1548() {
 	thisRun.AddExpectations("base64_array.go", []string{
 		`type Base64Array []strfmt.Base64`,
 		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
-		`	for i := 0; i < len(m); i++ {`,
-		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	for i := 0; i < len(m); i++ {`,
+			`		return errors.CompositeValidationError(res...`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9343,13 +9436,14 @@ func initFixture1548() {
 		`type Base64Model struct {`,
 		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
 		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
-		`	if err := m.validateProp1(formats); err != nil {`,
-		`		return errors.CompositeValidationError(res...`,
-		`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
-		`	if swag.IsZero(m.Prop1) {`,
 	},
 		// not expected
-		[]string{"TODO", "validate.FormatOf("},
+		[]string{
+			"TODO",
+			"validate.FormatOf(",
+			`	if err := m.validateProp1(formats); err != nil {`,
+			`func (m *Base64Model) validateProp1(formats strfmt.Registry) error {`,
+		},
 		// output in log
 		noLines,
 		noLines)
@@ -9658,7 +9752,7 @@ func initFixtureSimpleTuple() {
 		`	TupleThingP0CONST1 string = "CONST1"`,
 		`	TupleThingP0CONST2 string = "CONST2"`,
 		`func (m *TupleThing) validateP0Enum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, tupleThingTypeP0PropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, tupleThingTypeP0PropEnum, true); err != nil {`,
 		`func (m *TupleThing) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := m.validateP0Enum("0", "body", *m.P0); err != nil {`,
@@ -9670,7 +9764,7 @@ func initFixtureSimpleTuple() {
 		`	TupleThingP1CONST3 string = "CONST3"`,
 		`	TupleThingP1CONST4 string = "CONST4"`,
 		`func (m *TupleThing) validateP1Enum(path, location string, value string) error {`,
-		`	if err := validate.Enum(path, location, value, tupleThingTypeP1PropEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, tupleThingTypeP1PropEnum, true); err != nil {`,
 		`func (m *TupleThing) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	if err := m.validateP1Enum("1", "body", *m.P1); err != nil {`,
@@ -9745,7 +9839,7 @@ func initFixtureSimpleTuple() {
 		`		tupleThingWithAdditionalItemsItemsEnum = append(tupleThingWithAdditionalItemsItemsEnum, v`,
 		`func (m *TupleThingWithAdditionalItems) validateTupleThingWithAdditionalItemsItemsEnum(path,` +
 			` location string, value int64) error {`,
-		`	if err := validate.Enum(path, location, value, tupleThingWithAdditionalItemsItemsEnum); err != nil {`,
+		`	if err := validate.EnumCase(path, location, value, tupleThingWithAdditionalItemsItemsEnum, true); err != nil {`,
 		`func (m *TupleThingWithAdditionalItems) validateTupleThingWithAdditionalItemsItems(formats strfmt.Registry)` +
 			` error {`,
 		`	for i := range m.TupleThingWithAdditionalItemsItems {`,
@@ -10981,6 +11075,23 @@ func initFixture1993() {
 	// load expectations for model: empty_house.go
 	thisRun.AddExpectations("empty_house.go", []string{
 		`if swag.IsZero(m.Pet())`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+}
+
+func initFixture2364() {
+	f := newModelFixture("../fixtures/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	thisRun.AddExpectations("bundle_attributes_response.go", []string{
+		`type BundleAttributesResponse struct {`,
+		`Items []BundleItemResponse`,
+		`Sections []ItemBundleSectionResponse`,
+		`Type BundleType`,
 	},
 		// not expected
 		todo,

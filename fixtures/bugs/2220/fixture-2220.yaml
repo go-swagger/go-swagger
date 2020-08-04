@@ -1,0 +1,117 @@
+swagger: '2.0'
+info:
+  version: '2.0'
+  contact:
+    url: 'https://example.org/support'
+    name: 'Example Support'
+    email: support@example.org
+  description: 'Test case inspired by bitbucket API to demonstrate polymorphism with inherited additional properties'
+  title: 'test case polymorphism with additional props'
+paths:
+  '/repositories/component/{id}':
+    parameters:
+      - required: true
+        type: string
+        name: id
+        in: path
+    get:
+      responses:
+        default:
+          description: 'Unexpected component.'
+          schema:
+            $ref: '#/definitions/component'
+  '/repositories/components':
+    get:
+      responses:
+        default:
+          description: 'Unexpected component.'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/component'
+    put:
+      parameters:
+        - required: true
+          in: body
+          name: components
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/component'
+      responses:
+        default:
+          description: 'Unexpected component.'
+          schema:
+  '/repositories/object/{id}':
+    parameters:
+      - required: true
+        type: string
+        name: id
+        in: path
+    get:
+      responses:
+        default:
+          description: 'Unexpected object.'
+          schema:
+            $ref: '#/definitions/object'
+
+  '/repositories/object':
+    get:
+      responses:
+        default:
+          description: 'Unexpected object.'
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/object'
+    put:
+      parameters:
+        - required: true
+          in: body
+          name: components
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/object'
+      responses:
+        default:
+          description: 'Unexpected component.'
+          schema:
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+definitions:
+  object:
+    description: 'Base type for most resource objects. It defines the common `type` element that identifies an object''s type. It also identifies the element as Swagger''s `discriminator`.'
+    required:
+      - type
+    additionalProperties: true
+    discriminator: type
+    type: object
+    properties:
+      type:
+        type: string
+  component:
+    allOf:
+      -
+        $ref: '#/definitions/object'
+      -
+        additionalProperties: true
+        type: object
+        description: 'A component as defined in a repository''s issue tracker.'
+        properties:
+          name:
+            type: string
+          links:
+            additionalProperties: false
+            type: object
+            properties:
+              self:
+                additionalProperties: false
+                type: object
+                properties:
+                  href: {type: string, format: uri}
+          id:
+            type: integer

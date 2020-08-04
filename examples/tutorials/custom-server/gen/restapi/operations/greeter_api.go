@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
@@ -29,14 +29,19 @@ func NewGreeterAPI(spec *loads.Document) *GreeterAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		TxtProducer:         runtime.TextProducer(),
+
+		JSONConsumer: runtime.JSONConsumer(),
+
+		TxtProducer: runtime.TextProducer(),
+
 		GetGreetingHandler: GetGreetingHandlerFunc(func(params GetGreetingParams) middleware.Responder {
 			return middleware.NotImplemented("operation GetGreeting has not yet been implemented")
 		}),
@@ -54,6 +59,7 @@ type GreeterAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -65,18 +71,23 @@ type GreeterAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
 
-	// TxtProducer registers a producer for a "text/plain" mime type
+	// TxtProducer registers a producer for the following mime types:
+	//   - text/plain
 	TxtProducer runtime.Producer
 
 	// GetGreetingHandler sets the operation handler for the get greeting operation
 	GetGreetingHandler GetGreetingHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -87,6 +98,16 @@ type GreeterAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *GreeterAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *GreeterAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -154,28 +175,22 @@ func (o *GreeterAPI) ServeErrorFor(operationID string) func(http.ResponseWriter,
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *GreeterAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	return nil
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *GreeterAPI) Authorizer() runtime.Authorizer {
-
 	return nil
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -183,19 +198,16 @@ func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *GreeterAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "text/plain":
 			result["text/plain"] = o.TxtProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -203,7 +215,6 @@ func (o *GreeterAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produc
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -233,7 +244,6 @@ func (o *GreeterAPI) Context() *middleware.Context {
 
 func (o *GreeterAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -242,7 +252,6 @@ func (o *GreeterAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/hello"] = NewGetGreeting(o.context, o.GetGreetingHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -252,6 +261,9 @@ func (o *GreeterAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -271,4 +283,16 @@ func (o *GreeterAPI) RegisterConsumer(mediaType string, consumer runtime.Consume
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *GreeterAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *GreeterAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

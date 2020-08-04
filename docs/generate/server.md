@@ -27,40 +27,51 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [server command options]
-      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=                                                          the package to save the operations (default: operations)
-      -m, --model-package=                                                        the package to save the models (default: models)
       -s, --server-package=                                                       the package to save the server specific code (default: restapi)
-      -c, --client-package=                                                       the package to save the client specific code (default: client)
-      -t, --target=                                                               the base directory for generating the files (default: ./)
-          --template=[stratoscale]                                                Load contributed templates
-      -T, --template-dir=                                                         alternative template override directory
-          --allow-template-override                                               allows overriding protected templates
-      -C, --config-file=                                                          configuration file to use for overriding template options
-      -r, --copyright-file=                                                       copyright file used to add copyright header
-          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
-          --additional-initialism=                                                consecutive capitals that should be considered intialisms
-          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
-      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
-      -O, --operation=                                                            specify an operation to include, repeat for multiple
-          --tags=                                                                 the tags to include, if not specified defaults to all
+          --main-package=                                                         the location of the generated main. Defaults to cmd/{name}-server
       -P, --principal=                                                            the model to use for the security principal
           --default-scheme=                                                       the default scheme for this API (default: http)
-      -M, --model=                                                                specify a model to include, repeat for multiple
+          --default-produces=                                                     the default mime type that API operations produce (default: application/json)
+          --default-consumes=                                                     the default mime type that API operations consume (default: application/json)
           --skip-models                                                           no models will be generated when this flag is specified
           --skip-operations                                                       no operations will be generated when this flag is specified
           --skip-support                                                          no supporting files will be generated when this flag is specified
           --exclude-main                                                          exclude main function, so just generate the library
           --exclude-spec                                                          don't embed the swagger specification
-          --with-context                                                          handlers get a context as first arg (deprecated)
-          --dump-data                                                             when present dumps the json for the template generator instead of generating files
           --flag-strategy=[go-flags|pflag|flag]                                   the strategy to provide flags for the server (default: go-flags)
           --compatibility-mode=[modern|intermediate]                              the compatibility mode for the tls server (default: modern)
-          --skip-validation                                                       skips validation of spec prior to generation
           --regenerate-configureapi                                               Force regeneration of configureapi.go
-          --keep-spec-order                                                       Keep schema properties order identical to spec file
+      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
+          --with-context                                                          handlers get a context as first arg (deprecated)
+
+    Options common to all code generation commands:
+      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
+      -t, --target=                                                               the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                load contributed templates
+      -T, --template-dir=                                                         alternative template override directory
+      -C, --config-file=                                                          configuration file to use for overriding template options
+      -r, --copyright-file=                                                       copyright file used to add copyright header
+          --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --allow-template-override                                               allows overriding protected templates
+          --skip-validation                                                       skips validation of spec prior to generation
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+
+    Options for model generation:
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -M, --model=                                                                specify a model to include in generation, repeat for multiple (defaults to all)
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
+          --keep-spec-order                                                       keep schema properties order identical to spec file
+          --struct-tags                                                           specify custom struct tags for third-party libraries, repeat for multiple (defaults to json)
+
+    Options for operation generation:
+      -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
+          --tags=                                                                 the tags to include, if not specified defaults to all
+      -a, --api-package=                                                          the package to save the operations (default: operations)
+          --with-enum-ci                                                          set all enumerations case-insensitive by default
+          --skip-tag-packages                                                     skips the generation of tag-based operation packages, resulting in a flat generation
 ```
 
 ### Build a server
@@ -70,12 +81,26 @@ The server application gets generated with all the handlers stubbed out with a n
 The generated server allows for a number of command line parameters to customize it.
 
 ```
---host=            the IP to listen on (default: localhost) [$HOST]
---port=            the port to listen on for insecure connections, defaults to a random value [$PORT]
---tls-host=        the IP to listen on for tls, when not specified it's the same as --host [$TLS_HOST]
---tls-port=        the port to listen on for secure connections, defaults to a random value [$TLS_PORT]
---tls-certificate= the certificate to use for secure connections [$TLS_CERTIFICATE]
---tls-key=         the private key to use for secure connections [$TLS_PRIVATE_KEY]
+      --cleanup-timeout duration     grace period for which to wait before killing idle connections (default 10s)
+      --graceful-timeout duration    grace period for which to wait before shutting down the server (default 15s)
+      --host string                  the IP to listen on (default "localhost")
+      --keep-alive duration          sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download) (default 3m0s)
+      --listen-limit int             limit the number of outstanding requests
+      --max-header-size byte-size    controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body (default 1MB)
+      --port int                     the port to listen on for insecure connections, defaults to a random value
+      --read-timeout duration        maximum duration before timing out read of the request (default 30s)
+      --scheme strings               the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec (default [http,https,unix])
+      --socket-path string           the unix socket to listen on (default "/var/run/todo-list.sock")
+      --tls-ca string                the certificate authority certificate file to be used with mutual tls auth
+      --tls-certificate string       the certificate file to use for secure connections
+      --tls-host string              the IP to listen on (default "localhost")
+      --tls-keep-alive duration      sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download) (default 3m0s)
+      --tls-key string               the private key file to use for secure connections (without passphrase)
+      --tls-listen-limit int         limit the number of outstanding requests
+      --tls-port int                 the port to listen on for secure connections, defaults to a random value
+      --tls-read-timeout duration    maximum duration before timing out read of the request (default 30s)
+      --tls-write-timeout duration   maximum duration before timing out write of the response (default 30s)
+      --write-timeout duration       maximum duration before timing out write of the response (default 30s)
 ```
 
 The server takes care of a number of things when a request arrives:
@@ -184,6 +209,8 @@ func configureAPI(api *operations.ToDoListAPI) http.Handler {
 
 When you look at the code for the configureAPI method then you'll notice that the api object has properties for consumers.
 A consumer is an object that can marshal things from a wireformat to an object.  Consumers and their counterpart producers who write objects get their names generated from the consumes and produces properties on a swagger specification.
+
+Often, this will be JSON. If you want to use XML, additionally you have to enable XML compatible models when generating the server. For that, you have to set the command options `--default-consumes` or `--default-produces` to an XML mime type like `application/xml`. For more details on using XML, also see the [client generation](client.md).
 
 The interface definitions for consumers and producers look like this:
 

@@ -95,6 +95,8 @@ Annotation | Format
 package classification
 ```
 
+> **NOTE:** If there is whitespace line between the comment and package (or type, function), swagger will generate an empty specification. This is due to the violation of the convention for Godoc. For more details refer [here](https://blog.golang.org/godoc)
+
 ##### Result
 
 ```yaml

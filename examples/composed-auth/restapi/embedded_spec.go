@@ -593,25 +593,28 @@ func init() {
         "orderLines": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": [
-              "quantity",
-              "purchasedItem"
-            ],
-            "properties": {
-              "purchasedItem": {
-                "$ref": "#/definitions/Item"
-              },
-              "quantity": {
-                "type": "integer",
-                "format": "int32",
-                "minimum": 1
-              }
-            },
-            "x-go-name": "orderLine"
+            "$ref": "#/definitions/OrderOrderLinesItems0"
           }
         }
       }
+    },
+    "OrderOrderLinesItems0": {
+      "type": "object",
+      "required": [
+        "quantity",
+        "purchasedItem"
+      ],
+      "properties": {
+        "purchasedItem": {
+          "$ref": "#/definitions/Item"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 1
+        }
+      },
+      "x-go-name": "orderLine"
     },
     "principal": {
       "type": "object",

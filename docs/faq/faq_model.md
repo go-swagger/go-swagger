@@ -190,7 +190,9 @@ You just have to define the format as in:
 
 The `go-openapi/strfmt` package supports many additional string formats for validation.
 
-Check out for more in [this document](../generate/spec/strfmt.md).
+Check out for more in [this repo](https://github.com/go-openapi/strfmt/tree/master/README.md). The full API
+is documented [here](https://godoc.org/github.com/go-openapi/strfmt).
+
 Regarding dates, this package extends validation to [RFC3339](https://tools.ietf.org/html/rfc3339) full-date format (e.g. "2006-01-02").
 
 Originally from issue [#643](https://github.com/go-swagger/go-swagger/issues/643).

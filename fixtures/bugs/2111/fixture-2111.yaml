@@ -1,0 +1,177 @@
+---
+  swagger: "2.0"
+  info:
+    title: "unsafe tag names"
+    version: "0.0.1"
+    description: "repro issue 2111"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+  tags:
+    - name: "gentle"
+      description: a reusable tag with some go target enforced
+      x-go-name: gtl # all operations with this tag are created in pkg "gtl"
+    - name: "!+nasty"
+      description: a reusable tag with some go target enforced, with mangling
+      x-go-name: 12nasty
+    - name: compat
+      description: this also works with x-go-operation-tag
+      x-go-operation-tag: forced
+
+  paths:
+    /test:
+      get:
+        tags:
+        - 123abc
+        operationId: testId
+        responses:
+          200:
+            description: Expected response to a valid request
+            schema:
+              type: object
+
+    /reserved:
+      get:
+        tags:
+        - abc_test
+        responses:
+          200:
+            description: yay
+            schema:
+              type: object
+
+    /otherReserved:
+      get:
+        tags:
+        - abc_linux
+        responses:
+          200:
+            description: wow
+            schema:
+              type: object
+
+    /multiple:
+      get:
+        tags:
+        - abc_linux
+        - ignored-tag
+        responses:
+          200:
+            description: ':smile:'
+            schema:
+              type: object
+
+    /unsafe:
+      get:
+        tags:
+        - '#donuts'
+        responses:
+          200:
+            description: great
+            schema:
+              type: object
+
+    /otherUnsafe:
+      get:
+        tags:
+        - '+donuts'
+        responses:
+          200:
+            description: awesome
+            schema:
+              type: object
+
+    /yetAnotherUnsafe:
+      get:
+        tags:
+        - '@donuts'
+        responses:
+          200:
+            description: nice
+            schema:
+              type: object
+
+    /custom:
+      get:
+        tags:
+        - ignored-tag
+        x-go-operation-tag: custom
+        responses:
+          200:
+            description: ride on
+            schema:
+              type: object
+
+    /conflict:
+      get:
+        tags:
+        - api
+        responses:
+          200:
+            description: brilliant
+            schema:
+              type: object
+
+    /notag:
+      get:
+        responses:
+          200:
+            description: excellent
+            schema:
+              type: object
+
+    /anotherConflict:
+      get:
+        tags:
+        - strfmt
+        responses:
+          200:
+            description: well done
+            schema:
+              type: object
+
+    /rootConflict:
+      get:
+        tags:
+        - operations
+        responses:
+          200:
+            description: heee ah
+            schema:
+              type: object
+
+    /test-override:
+      get:
+        tags:
+        - gentle
+        responses:
+          200:
+            description: Expected response to a valid request
+            schema:
+              type: object
+      put:
+        tags:
+        - "!+nasty"
+        responses:
+          200:
+            description: Expected response to a valid request
+            schema:
+              type: object
+      post:
+        tags:
+        - compat
+        responses:
+          200:
+            description: Expected response to a valid request
+            schema:
+              type: object
+      delete:
+        tags:
+        - compat
+        x-go-operation-tag: override # local override for operation
+        responses:
+          200:
+            description: Expected response to a valid request
+            schema:
+              type: object

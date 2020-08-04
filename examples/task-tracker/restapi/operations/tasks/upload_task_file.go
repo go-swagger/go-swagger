@@ -8,7 +8,7 @@ package tasks
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // UploadTaskFileHandlerFunc turns a function with the right signature into a upload task file handler

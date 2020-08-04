@@ -10,10 +10,9 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewDeletePetParams creates a new DeletePetParams object
@@ -71,7 +70,7 @@ func (o *DeletePetParams) BindRequest(r *http.Request, route *middleware.Matched
 // bindAPIKey binds and validates parameter APIKey from header.
 func (o *DeletePetParams) bindAPIKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("api_key", "header")
+		return errors.Required("api_key", "header", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

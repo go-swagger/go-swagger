@@ -18,32 +18,42 @@ Help Options:
   -h, --help                                                                      Show this help message
 
 [client command options]
-      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
-      -a, --api-package=                                                          the package to save the operations (default: operations)
-      -m, --model-package=                                                        the package to save the models (default: models)
-      -s, --server-package=                                                       the package to save the server specific code (default: restapi)
       -c, --client-package=                                                       the package to save the client specific code (default: client)
-      -t, --target=                                                               the base directory for generating the files (default: ./)
-          --template=[stratoscale]                                                Load contributed templates
-      -T, --template-dir=                                                         alternative template override directory
-          --allow-template-override                                               allows overriding protected templates
-      -C, --config-file=                                                          configuration file to use for overriding template options
-      -r, --copyright-file=                                                       copyright file used to add copyright header
-          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
-          --additional-initialism=                                                consecutive capitals that should be considered intialisms
-          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
-      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
-      -O, --operation=                                                            specify an operation to include, repeat for multiple
-          --tags=                                                                 the tags to include, if not specified defaults to all
       -P, --principal=                                                            the model to use for the security principal
-      -M, --model=                                                                specify a model to include, repeat for multiple
-          --default-scheme=                                                       the default scheme for this client (default: http)
+          --default-scheme=                                                       the default scheme for this API (default: http)
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)
+          --default-consumes=                                                     the default mime type that API operations consume (default: application/json)
           --skip-models                                                           no models will be generated when this flag is specified
           --skip-operations                                                       no operations will be generated when this flag is specified
-          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+      -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
+
+    Options common to all code generation commands:
+      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
+      -t, --target=                                                               the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                load contributed templates
+      -T, --template-dir=                                                         alternative template override directory
+      -C, --config-file=                                                          configuration file to use for overriding template options
+      -r, --copyright-file=                                                       copyright file used to add copyright header
+          --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --allow-template-override                                               allows overriding protected templates
           --skip-validation                                                       skips validation of spec prior to generation
+          --dump-data                                                             when present dumps the json for the template generator instead of generating files
+          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+
+    Options for model generation:
+      -m, --model-package=                                                        the package to save the models (default: models)
+      -M, --model=                                                                specify a model to include in generation, repeat for multiple (defaults to all)
+          --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
+          --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
+          --keep-spec-order                                                       keep schema properties order identical to spec file
+
+    Options for operation generation:
+      -O, --operation=                                                            specify an operation to include, repeat for multiple (defaults to all)
+          --tags=                                                                 the tags to include, if not specified defaults to all
+      -a, --api-package=                                                          the package to save the operations (default: operations)
+          --with-enum-ci                                                          set all enumerations case-insensitive by default
+          --skip-tag-packages                                                     skips the generation of tag-based operation packages, resulting in a flat generation
 ```
 
 ### Build a client
@@ -163,3 +173,50 @@ func main() {
   fmt.Printf("%#v\n", resp.Payload)
 }
 ```
+
+### Consuming an XML API
+
+In order to enable XML support, you need to set the command options `--default-consumes` or `--default-produces` to an XML mime type like `application/xml` when generating the client:
+
+```
+swagger generate client -f [http-url|filepath] -A [application-name] --default-consumes application/xml
+```
+
+This is necessary regardless of whether your swagger specification already specifies XML in the consumes and produces properties.
+
+An example using the generated client with default Bearer authentication:
+
+```go
+import (
+  "os"
+
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/runtime"
+
+  apiclient "github.com/myproject/client"
+  httptransport "github.com/go-openapi/runtime/client"
+)
+
+func main() {
+  r := httptransport.New(apiclient.DefaultHost, apiclient.DefaultBasePath, apiclient.DefaultSchemes)
+  r.DefaultAuthentication = httptransport.BearerToken(os.Getenv("API_ACCESS_TOKEN"))
+  /*
+  r.DefaultMediaType = runtime.XMLMime
+  r.Consumers = map[string]runtime.Consumer{
+    runtime.XMLMime: runtime.XMLConsumer(),
+  }
+  r.Producers = map[string]runtime.Producer{
+    "application/xhtml+xml": runtime.XMLProducer(),
+  }
+  */
+  client := apiclient.New(r, strfmt.Default)
+
+  resp, err := client.Operations.MyGreatEndpoint()
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Printf("%#v\n", resp.Payload)
+}
+```
+
+It can under certain circumstances be necessary to manually set the DefaultMediaType and the Consumers and Producers similar to the commented-out code above, particularly if you're using special mime types like `application/xhtml+xml`.

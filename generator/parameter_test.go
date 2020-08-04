@@ -28,68 +28,60 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBodyParams(t *testing.T) {
 	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
-	if assert.True(t, ok) && assert.NotNil(t, op) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		for _, param := range op.Parameters {
-			if param.Name == "body" {
-				gp, perr := b.MakeParameter("a", resolver, param, nil)
-				if assert.NoError(t, perr) {
-					assert.True(t, gp.IsBodyParam())
-					if assert.NotNil(t, gp.Schema) {
-						assert.True(t, gp.Schema.IsComplexObject)
-						assert.False(t, gp.Schema.IsAnonymous)
-						assert.Equal(t, "models.Task", gp.Schema.GoType)
-					}
-				}
-			}
+
+	require.True(t, ok)
+	require.NotNil(t, op)
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
+	}
+	for _, param := range op.Parameters {
+		if param.Name == "body" {
+			gp, perr := b.MakeParameter("a", resolver, param, nil)
+			require.NoError(t, perr)
+			assert.True(t, gp.IsBodyParam())
+			require.NotNil(t, gp.Schema)
+			assert.True(t, gp.Schema.IsComplexObject)
+			assert.False(t, gp.Schema.IsAnonymous)
+			assert.Equal(t, "models.Task", gp.Schema.GoType)
 		}
 	}
 
 	b, err = opBuilder("createTask", "../fixtures/codegen/todolist.bodyparams.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	_, _, op, ok = b.Analyzed.OperationForName("createTask")
-	if assert.True(t, ok) && assert.NotNil(t, op) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		for _, param := range op.Parameters {
-			if param.Name == "body" {
-				gp, err := b.MakeParameter("a", resolver, param, nil)
-				if assert.NoError(t, err) {
-					assert.True(t, gp.IsBodyParam())
-					if assert.NotNil(t, gp.Schema) {
-						assert.True(t, gp.Schema.IsComplexObject)
-						assert.False(t, gp.Schema.IsAnonymous)
-						assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
+	require.True(t, ok)
+	require.NotNil(t, op)
+	resolver = &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
+	}
+	for _, param := range op.Parameters {
+		if param.Name == "body" {
+			gp, err := b.MakeParameter("a", resolver, param, nil)
+			require.NoError(t, err)
+			assert.True(t, gp.IsBodyParam())
+			require.NotNil(t, gp.Schema)
+			assert.True(t, gp.Schema.IsComplexObject)
+			assert.False(t, gp.Schema.IsAnonymous)
+			assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
 
-						gpe, ok := b.ExtraSchemas["CreateTaskBody"]
-						assert.True(t, ok)
-						assert.True(t, gpe.IsComplexObject)
-						assert.False(t, gpe.IsAnonymous)
-						assert.Equal(t, "CreateTaskBody", gpe.GoType)
-					}
-				}
-			}
+			gpe, ok := b.ExtraSchemas["CreateTaskBody"]
+			assert.True(t, ok)
+			assert.True(t, gpe.IsComplexObject)
+			assert.False(t, gpe.IsAnonymous)
+			assert.Equal(t, "CreateTaskBody", gpe.GoType)
 		}
 	}
 }
@@ -108,16 +100,11 @@ var arrayFormParams = []paramTestContext{
 
 func TestFormArrayParams(t *testing.T) {
 	b, err := opBuilder("arrayFormParams", "../fixtures/codegen/todolist.arrayform.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	for _, v := range arrayFormParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -135,16 +122,11 @@ var arrayQueryParams = []paramTestContext{
 
 func TestQueryArrayParams(t *testing.T) {
 	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
-
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	for _, v := range arrayQueryParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -161,15 +143,11 @@ var simplePathParams = []paramTestContext{
 
 func TestSimplePathParams(t *testing.T) {
 	b, err := opBuilder("simplePathParams", "../fixtures/codegen/todolist.simplepath.yml")
+	require.NoError(t, err)
 
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
 	for _, v := range simplePathParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -187,15 +165,11 @@ var simpleHeaderParams = []paramTestContext{
 
 func TestSimpleHeaderParams(t *testing.T) {
 	b, err := opBuilder("simpleHeaderParams", "../fixtures/codegen/todolist.simpleheader.yml")
+	require.NoError(t, err)
 
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
 	for _, v := range simpleHeaderParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -213,15 +187,11 @@ var simpleFormParams = []paramTestContext{
 
 func TestSimpleFormParams(t *testing.T) {
 	b, err := opBuilder("simpleFormParams", "../fixtures/codegen/todolist.simpleform.yml")
+	require.NoError(t, err)
 
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
 	for _, v := range simpleFormParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -239,15 +209,11 @@ var simpleQueryParams = []paramTestContext{
 
 func TestSimpleQueryParamsAST(t *testing.T) {
 	b, err := opBuilder("simpleQueryParams", "../fixtures/codegen/todolist.simplequery.yml")
+	require.NoError(t, err)
 
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
 	for _, v := range simpleQueryParams {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -460,14 +426,10 @@ func TestGenParameters_Simple(t *testing.T) {
 	}()
 
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 	for _, v := range bug163Properties {
 		v.B = b
-		if !v.assertParameter(t) {
-			t.FailNow()
-		}
+		require.True(t, v.assertParameter(t))
 	}
 }
 
@@ -478,25 +440,22 @@ func TestGenParameter_Issue163(t *testing.T) {
 	}()
 
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("get_search_parameters.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					// NOTE(fredbi): removed default values resolution from private details (defaults are resolved in NewXXXParams())
-					assertInCode(t, "stringTypeInQueryDefault = string(\"qsValue\")", res)
-					assertInCode(t, "StringTypeInQuery: &stringTypeInQueryDefault", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	err = templates.MustGet("serverParameter").Execute(buf, op)
+	require.NoError(t, err)
+	ff, err := opts.LanguageOpts.FormatContent("get_search_parameters.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	res := string(ff)
+	// NOTE(fredbi): removed default values resolution from private details (defaults are resolved in NewXXXParams())
+	assertInCode(t, "stringTypeInQueryDefault = string(\"qsValue\")", res)
+	assertInCode(t, "StringTypeInQuery: &stringTypeInQueryDefault", res)
 }
 
 func TestGenParameter_Issue195(t *testing.T) {
@@ -617,6 +576,51 @@ func TestGenParameter_Issue248(t *testing.T) {
 					assertInCode(t, ", *o.OptionalQueryEnum", res)
 				} else {
 					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+
+func TestGenParameter_Issue303(t *testing.T) {
+	services := map[string][]string{
+		"giveFruit": {
+			`	if err := validate.EnumCase("fruit", "query", o.Fruit, []interface{}{"Apple", "Pear", "Plum"}, false); err != nil {`,
+		},
+		"giveFruitBasket": {
+			`		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "fruit", i), "query", fruitIIC, []interface{}{[]interface{}{"Strawberry", "Raspberry"}, []interface{}{"Blueberry", "Cranberry"}}, false); err != nil {`,
+			`				if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "fruit", i), ii), "query", fruitII, []interface{}{"Peach", "Apricot"}, false); err != nil {`,
+			`	if err := validate.EnumCase("fruit", "query", o.Fruit, []interface{}{[]interface{}{[]interface{}{"Banana", "Pineapple"}}, []interface{}{[]interface{}{"Orange", "Grapefruit"}, []interface{}{"Lemon", "Lime"}}}, false); err != nil {`,
+		},
+	}
+
+	for service, codelines := range services {
+		gen, err := opBuilder(service, "../fixtures/enhancements/303/swagger.yml")
+		if assert.NoError(t, err) {
+			op, err := gen.MakeOperation()
+			if assert.NoError(t, err) {
+				param := op.Params[0]
+				assert.Equal(t, "fruit", param.Name)
+				assert.True(t, param.IsEnumCI)
+				extension := param.Extensions["x-go-enum-ci"]
+				assert.NotNil(t, extension)
+				xGoEnumCI, ok := extension.(bool)
+				assert.True(t, ok)
+				assert.True(t, xGoEnumCI)
+
+				buf := bytes.NewBuffer(nil)
+				err = templates.MustGet("serverParameter").Execute(buf, op)
+				if assert.NoError(t, err) {
+					opts := opts()
+					ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_parameter.go", buf.Bytes())
+					if assert.NoError(t, err) {
+						res := string(ff)
+						for _, codeline := range codelines {
+							assertInCode(t, codeline, res)
+						}
+					} else {
+						fmt.Println(buf.String())
+					}
 				}
 			}
 		}
@@ -931,29 +935,24 @@ func TestGenParameter_Issue710(t *testing.T) {
 }
 
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
-	//spec.Debug = true
 	log.SetOutput(ioutil.Discard)
 	defer func() {
-		//spec.Debug = false
 		log.SetOutput(os.Stdout)
 	}()
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/param.yaml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			if assert.NoError(t, templates.MustGet("serverParameter").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					assertInCode(t, "Body *models.Item", string(ff))
-					assertNotInCode(t, "type GetItemParamsBody struct", string(ff))
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, templates.MustGet("serverParameter").Execute(&buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
 	}
+	require.NoError(t, err)
+	assertInCode(t, "Body *models.Item", string(ff))
+	assertNotInCode(t, "type GetItemParamsBody struct", string(ff))
 
 }
 
@@ -1259,7 +1258,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 		"1": { // fixture index
 			"serverParameter": { // executed template
 				// expected code lines
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`NotAnOption1 *strfmt.DateTime`,
 				`NotAnOption2 *strfmt.UUID`,
 				`NotAnOption3 *models.ContainerConfig`,
@@ -1288,7 +1287,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`if err := validate.FormatOf(fmt.Sprintf("%s.%v", "isAnOption2", i), "query", "uuid", isAnOption2I.String(), formats); err != nil {`,
 				`isAnOption2IR = append(isAnOption2IR, isAnOption2I)`,
 				`o.IsAnOption2 = isAnOption2IR`,
-				`return errors.Required("notAnOption1", "query")`,
+				`return errors.Required("notAnOption1", "query", notAnOption1IC)`,
 				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "csv")`,
 				`var notAnOption1IR []strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
@@ -1304,7 +1303,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`IsAnOption2 [][]strfmt.UUID`,
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`IsAnOptionalHeader [][]strfmt.UUID`,
@@ -1336,7 +1335,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
 				`value, err := formats.Parse("uuid", isAnOption4IIIV)`,
 				`isAnOption4III := *(value.(*strfmt.UUID))`,
-				`if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}); err != nil {`,
+				`if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}, true); err != nil {`,
 				`if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", "uuid", isAnOption4III.String(), formats); err != nil {`,
 				`isAnOption4IIIR = append(isAnOption4IIIR, isAnOption4III)`,
 				`isAnOption4IIR = append(isAnOption4IIR, isAnOption4IIIR)`,
@@ -1382,7 +1381,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 			"serverParameter": {
 				// expected code lines
 				`"github.com/go-openapi/validate"`,
-				`strfmt "github.com/go-openapi/strfmt"`,
+				`"github.com/go-openapi/strfmt"`,
 				`IsAnOption2 [][]strfmt.UUID`,
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`NotAnOption1 [][]strfmt.DateTime`,
@@ -1413,7 +1412,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
 				`value, err := formats.Parse("uuid", isAnOption4IIIV)`,
 				`isAnOption4III := *(value.(*strfmt.UUID))`,
-				`if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}); err != nil {`,
+				`if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", isAnOption4III.String(), []interface{}{"a", "b", "c"}, true); err != nil {`,
 				`if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "isAnOption4", i), ii), iii), "query", "uuid", isAnOption4III.String(), formats); err != nil {`,
 				`isAnOption4IIIR = append(isAnOption4IIIR, isAnOption4III)`,
 				`isAnOption4IIR = append(isAnOption4IIR, isAnOption4IIIR)`,
@@ -1426,7 +1425,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`if err := o.validateIsAnOption4(formats); err != nil {`,
 				`isAnOption4Size := int64(len(o.IsAnOption4))`,
 				`if err := validate.MaxItems("isAnOption4", "query", isAnOption4Size, 4); err != nil {`,
-				`return errors.Required("notAnOption1", "query")`,
+				`return errors.Required("notAnOption1", "query", notAnOption1IC)`,
 				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "")`,
 				`var notAnOption1IR [][]strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
@@ -1542,7 +1541,7 @@ func TestGenParameter_Issue1237(t *testing.T) {
 				`var body models.Sg`,
 				`if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`if err == io.EOF {`,
-				`res = append(res, errors.Required("body", "body"))`,
+				`res = append(res, errors.Required("body", "body", ""))`,
 				`} else {`,
 				`res = append(res, errors.NewParseError("body", "body", "", err))`,
 				`if err := body.Validate(route.Formats); err != nil {`,
@@ -1659,7 +1658,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`		return errors.CompositeValidationError(res...)`,
 				`	return nil`,
 				`func (o *PostBodybuilder26Params) validateMyObjectBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("myObject", "body", o.MyObject.String(), []interface{}{"1992-01-01", "2012-01-01"}); err != nil {`,
+				`	if err := validate.EnumCase("myObject", "body", o.MyObject.String(), []interface{}{"1992-01-01", "2012-01-01"}, true); err != nil {`,
 				`	if err := validate.FormatOf("myObject", "body", "date", o.MyObject.String(), formats); err != nil {`,
 			},
 		},
@@ -1681,7 +1680,8 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`	if len(res) > 0 {`,
 				`		return errors.CompositeValidationError(res...)`,
 				`func (o *PostBodybuilder27Params) validateMyObjectBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("myObject", "body", o.MyObject, []interface{}{[]interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}}); err != nil {`,
+				`	if err := validate.EnumCase("myObject", "body", o.MyObject, []interface{}{[]interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}},`,
+				`		true); err != nil {`,
 				`		return err`,
 				`	myObjectIC := o.MyObject`,
 				`	var myObjectIR [][]strfmt.Date`,
@@ -1691,14 +1691,15 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`			var myObjectIIR []strfmt.Date`,
 				`			for ii, myObjectIIV := range myObjectIIC {`,
 				`				myObjectII := myObjectIIV`,
-				`				if err := validate.Enum(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", myObjectII.String(), []interface{}{"1992-01-01", "2012-01-01"}); err != nil {`,
+				`				if err := validate.EnumCase(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", myObjectII.String(), []interface{}{"1992-01-01", "2012-01-01"}, true); err != nil {`,
 				`					return err`,
 				`				if err := validate.FormatOf(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "myObject", i), ii), "", "date", myObjectII.String(), formats); err != nil {`,
 				`					return err`,
 				`				myObjectIIR = append(myObjectIIR, myObjectII)`,
 				`			myObjectIR = append(myObjectIR, myObjectIIR)`,
 				// fixed missing enum validation
-				`		if err := validate.Enum(fmt.Sprintf("%s.%v", "myObject", i), "body", myObjectIIC, []interface{}{[]interface{}{"1992-01-01", "2012-01-01"}}); err != nil {`,
+				`		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "myObject", i), "body", myObjectIIC, []interface{}{[]interface{}{"1992-01-01", "2012-01-01"}},`,
+				`			true); err != nil {`,
 				`	o.MyObject = myObjectIR`,
 			},
 		},
@@ -1989,14 +1990,14 @@ func TestGenParameter_Issue1536(t *testing.T) {
 				`		var body []interface{`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("maxRecords", "body")`,
+				`				res = append(res, errors.Required("maxRecords", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("maxRecords", "body", "", err)`,
 				`		} else {`,
 				`			o.MaxRecords = body`,
 				`			if err := o.validateMaxRecordsBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("maxRecords", "body")`,
+				`		res = append(res, errors.Required("maxRecords", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetRecordsMaxParams) validateMaxRecordsBody(formats strfmt.Registry) error {`,
 				`	maxRecordsSize := int64(len(o.MaxRecords)`,
@@ -2020,14 +2021,14 @@ func TestGenParameter_Issue1536(t *testing.T) {
 				`		var body []interface{`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("records", "body")`,
+				`				res = append(res, errors.Required("records", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("records", "body", "", err)`,
 				`		} else {`,
 				`			o.Records = body`,
 				// fixed: no validation has to be carried on
 				`	} else {`,
-				`		res = append(res, errors.Required("records", "body")`,
+				`		res = append(res, errors.Required("records", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2247,7 +2248,8 @@ func TestGenParameter_Issue15362(t *testing.T) {
 				`			if err := o.validateSimpleArrayWithSliceValidationBody(route.Formats); err != nil {`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetSimpleArrayWithSliceValidationParams) validateSimpleArrayWithSliceValidationBody(formats strfmt.Registry) error {`,
-				`	if err := validate.Enum("simpleArrayWithSliceValidation", "body", o.SimpleArrayWithSliceValidation, []interface{}{[]interface{}{1, 2, 3}, []interface{}{4, 5, 6}}); err != nil {`,
+				`	if err := validate.EnumCase("simpleArrayWithSliceValidation", "body", o.SimpleArrayWithSliceValidation, []interface{}{[]interface{}{1, 2, 3}, []interface{}{4, 5, 6}},`,
+				`		true); err != nil {`,
 			},
 		},
 
@@ -2377,13 +2379,13 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]models.ModelInterface`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfInterface", "body")`,
+				`				res = append(res, errors.Required("mapOfInterface", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfInterface", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfInterface = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfInterface", "body")`,
+				`		res = append(res, errors.Required("mapOfInterface", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2404,13 +2406,13 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body []interface{`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("arrayOfInterface", "body")`,
+				`				res = append(res, errors.Required("arrayOfInterface", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("arrayOfInterface", "body", "", err)`,
 				`		} else {`,
 				`			o.ArrayOfInterface = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("arrayOfInterface", "body")`,
+				`		res = append(res, errors.Required("arrayOfInterface", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2431,7 +2433,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]models.ModelArrayWithMax`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfArrayWithMax", "body")`,
+				`				res = append(res, errors.Required("mapOfArrayWithMax", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArrayWithMax", "body", "", err)`,
 				`		} else {`,
@@ -2442,7 +2444,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			if len(res) == 0 {`,
 				`				o.MapOfArrayWithMax = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfArrayWithMax", "body")`,
+				`		res = append(res, errors.Required("mapOfArrayWithMax", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2463,14 +2465,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body [][]string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("arrayOfarraySimple", "body")`,
+				`				res = append(res, errors.Required("arrayOfarraySimple", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("arrayOfarraySimple", "body", "", err)`,
 				`		} else {`,
 				`			o.ArrayOfarraySimple = body`,
 				`			if err := o.validateArrayOfarraySimpleBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("arrayOfarraySimple", "body")`,
+				`		res = append(res, errors.Required("arrayOfarraySimple", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetArrayNestedSimpleParams) validateArrayOfarraySimpleBody(formats strfmt.Registry) error {`,
 				`	arrayOfarraySimpleIC := o.ArrayOfarraySimple`,
@@ -2504,14 +2506,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]strfmt.UUID`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfFormat", "body")`,
+				`				res = append(res, errors.Required("mapOfFormat", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfFormat", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfFormat = body`,
 				`			if err := o.validateMapOfFormatBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfFormat", "body")`,
+				`		res = append(res, errors.Required("mapOfFormat", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfFormatParams) validateMapOfFormatBody(formats strfmt.Registry) error {`,
 				`	mapOfFormatIC := o.MapOfFormat`,
@@ -2540,14 +2542,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body []map[string][]int32`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("arrayOfMap", "body")`,
+				`				res = append(res, errors.Required("arrayOfMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("arrayOfMap", "body", "", err)`,
 				`		} else {`,
 				`			o.ArrayOfMap = body`,
 				`			if err := o.validateArrayOfMapBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("arrayOfMap", "body")`,
+				`		res = append(res, errors.Required("arrayOfMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetArrayOfMapParams) validateArrayOfMapBody(formats strfmt.Registry) error {`,
 				`	arrayOfMapSize := int64(len(o.ArrayOfMap)`,
@@ -2586,13 +2588,13 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string][]*int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonArrayWithXNullable", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonArrayWithXNullable", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonArrayWithXNullable", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonArrayWithXNullable = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonArrayWithXNullable", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonArrayWithXNullable", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2613,14 +2615,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body [][]*models.ModelObject`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("arrayOfarray", "body")`,
+				`				res = append(res, errors.Required("arrayOfarray", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("arrayOfarray", "body", "", err)`,
 				`		} else {`,
 				`			o.ArrayOfarray = body`,
 				`			if err := o.validateArrayOfarrayBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("arrayOfarray", "body")`,
+				`		res = append(res, errors.Required("arrayOfarray", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetArrayNestedParams) validateArrayOfarrayBody(formats strfmt.Registry) error {`,
 				`	arrayOfarrayIC := o.ArrayOfarray`,
@@ -2659,7 +2661,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]models.ModelArray`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfArray", "body")`,
+				`				res = append(res, errors.Required("mapOfArray", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArray", "body", "", err)`,
 				`		} else {`,
@@ -2671,7 +2673,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			if len(res) == 0 {`,
 				`				o.MapOfArray = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfArray", "body")`,
+				`		res = append(res, errors.Required("mapOfArray", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2692,14 +2694,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string][]*int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonArrayWithNullable", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonArrayWithNullable", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonArrayWithNullable", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonArrayWithNullable = body`,
 				`			if err := o.validateMapOfAnonArrayWithNullableBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonArrayWithNullable", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonArrayWithNullable", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapAnonArrayWithNullableParams) validateMapOfAnonArrayWithNullableBody(formats strfmt.Registry) error {`,
 				`	mapOfAnonArrayWithNullableIC := o.MapOfAnonArrayWithNullable`,
@@ -2732,14 +2734,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string][]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonArray", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonArray", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonArray", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonArray = body`,
 				`			if err := o.validateMapOfAnonArrayBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonArray", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonArray", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfAnonArrayParams) validateMapOfAnonArrayBody(formats strfmt.Registry) error {`,
 				`	mapOfAnonArrayIC := o.MapOfAnonArray`,
@@ -2772,14 +2774,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]map[string][]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonMap", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonMap", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonMap = body`,
 				`			if err := o.validateMapOfAnonMapBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonMap", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfAnonMapParams) validateMapOfAnonMapBody(formats strfmt.Registry) error {`,
 				`	mapOfAnonMapIC := o.MapOfAnonMap`,
@@ -2816,14 +2818,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string][]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonArray", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonArray", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonArray", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonArray = body`,
 				`			if err := o.validateMapOfAnonArrayBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonArray", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonArray", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapAnonArrayParams) validateMapOfAnonArrayBody(formats strfmt.Registry) error {`,
 				`	mapOfAnonArrayIC := o.MapOfAnonArray`,
@@ -2856,14 +2858,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfPrimitive", "body")`,
+				`				res = append(res, errors.Required("mapOfPrimitive", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfPrimitive", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfPrimitive = body`,
 				`			if err := o.validateMapOfPrimitiveBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfPrimitive", "body")`,
+				`		res = append(res, errors.Required("mapOfPrimitive", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfPrimitiveParams) validateMapOfPrimitiveBody(formats strfmt.Registry) error {`,
 				`	mapOfPrimitiveIC := o.MapOfPrimitive`,
@@ -2892,7 +2894,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body []*models.ModelObject`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("arrayOfObject", "body")`,
+				`				res = append(res, errors.Required("arrayOfObject", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("arrayOfObject", "body", "", err)`,
 				`		} else {`,
@@ -2903,7 +2905,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			if len(res) == 0 {`,
 				`				o.ArrayOfObject = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("arrayOfObject", "body")`,
+				`		res = append(res, errors.Required("arrayOfObject", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2927,7 +2929,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]models.ModelObject`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfObject", "body")`,
+				`				res = append(res, errors.Required("mapOfObject", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfObject", "body", "", err)`,
 				`		} else {`,
@@ -2939,7 +2941,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			if len(res) == 0 {`,
 				`				o.MapOfObject = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfObject", "body")`,
+				`		res = append(res, errors.Required("mapOfObject", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -2960,14 +2962,14 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var body map[string]map[string]models.ModelArrayWithMax`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfMap", "body")`,
+				`				res = append(res, errors.Required("mapOfMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfMap", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfMap = body`,
 				`			if err := o.validateMapOfMapBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfMap", "body")`,
+				`		res = append(res, errors.Required("mapOfMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfMapParams) validateMapOfMapBody(formats strfmt.Registry) error {`,
 				`	mapOfMapIC := o.MapOfMap`,
@@ -3012,14 +3014,14 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string][]map[string]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfArrayOfMap", "body")`,
+				`				res = append(res, errors.Required("mapOfArrayOfMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArrayOfMap", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfArrayOfMap = body`,
 				`			if err := o.validateMapOfArrayOfMapBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfArrayOfMap", "body")`,
+				`		res = append(res, errors.Required("mapOfArrayOfMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfArrayOfMapParams) validateMapOfArrayOfMapBody(formats strfmt.Registry) error {`,
 				`	mapOfArrayOfMapIC := o.MapOfArrayOfMap`,
@@ -3057,14 +3059,14 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string][]GetMapOfArrayOfNullableMapParamsBodyItems0`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfArrayOfNullableMap", "body")`,
+				`				res = append(res, errors.Required("mapOfArrayOfNullableMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArrayOfNullableMap", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfArrayOfNullableMap = body`,
 				`			if err := o.validateMapOfArrayOfNullableMapBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfArrayOfNullableMap", "body")`,
+				`		res = append(res, errors.Required("mapOfArrayOfNullableMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapOfArrayOfNullableMapParams) validateMapOfArrayOfNullableMapBody(formats strfmt.Registry) error {`,
 				`	mapOfArrayOfNullableMapIC := o.MapOfArrayOfNullableMap`,
@@ -3101,14 +3103,14 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string][][]GetMapArrayOfArrayParamsBodyItems0`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfArrayOfArray", "body")`,
+				`				res = append(res, errors.Required("mapOfArrayOfArray", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArrayOfArray", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfArrayOfArray = body`,
 				`			if err := o.validateMapOfArrayOfArrayBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfArrayOfArray", "body")`,
+				`		res = append(res, errors.Required("mapOfArrayOfArray", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapArrayOfArrayParams) validateMapOfArrayOfArrayBody(formats strfmt.Registry) error {`,
 				`	mapOfArrayOfArrayIC := o.MapOfArrayOfArray`,
@@ -3150,14 +3152,14 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string][][]*int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body")`,
+				`				res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfAnonArrayWithNestedNullable", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfAnonArrayWithNestedNullable = body`,
 				`			if err := o.validateMapOfAnonArrayWithNestedNullableBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body")`,
+				`		res = append(res, errors.Required("mapOfAnonArrayWithNestedNullable", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetMapAnonArrayWithNestedNullableParams) validateMapOfAnonArrayWithNestedNullableBody(formats strfmt.Registry) error {`,
 				`	mapOfAnonArrayWithNestedNullableIC := o.MapOfAnonArrayWithNestedNullable`,
@@ -3195,13 +3197,13 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string]map[string]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfModelMap", "body")`,
+				`				res = append(res, errors.Required("mapOfModelMap", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfModelMap", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfModelMap = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfModelMap", "body")`,
+				`		res = append(res, errors.Required("mapOfModelMap", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -3222,13 +3224,13 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`		var body map[string]map[string]*int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("mapOfModelMapNullable", "body")`,
+				`				res = append(res, errors.Required("mapOfModelMapNullable", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfModelMapNullable", "body", "", err)`,
 				`		} else {`,
 				`			o.MapOfModelMapNullable = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("mapOfModelMapNullable", "body")`,
+				`		res = append(res, errors.Required("mapOfModelMapNullable", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -3262,13 +3264,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string]map[string]map[string]*bool`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMap04", "body")`,
+				`				res = append(res, errors.Required("nestedMap04", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMap04", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMap04 = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMap04", "body")`,
+				`		res = append(res, errors.Required("nestedMap04", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -3289,14 +3291,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body []map[string][]map[string]strfmt.Date`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedSliceAndMap01", "body")`,
+				`				res = append(res, errors.Required("nestedSliceAndMap01", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedSliceAndMap01", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedSliceAndMap01 = body`,
 				`			if err := o.validateNestedSliceAndMap01Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedSliceAndMap01", "body")`,
+				`		res = append(res, errors.Required("nestedSliceAndMap01", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedSliceAndMap01Params) validateNestedSliceAndMap01Body(formats strfmt.Registry) error {`,
 				`	if err := validate.UniqueItems("nestedSliceAndMap01", "body", o.NestedSliceAndMap01); err != nil {`,
@@ -3339,14 +3341,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string][]map[string][]map[string]*int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMapAndSlice02", "body")`,
+				`				res = append(res, errors.Required("nestedMapAndSlice02", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMapAndSlice02", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMapAndSlice02 = body`,
 				`			if err := o.validateNestedMapAndSlice02Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMapAndSlice02", "body")`,
+				`		res = append(res, errors.Required("nestedMapAndSlice02", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedMapAndSlice02Params) validateNestedMapAndSlice02Body(formats strfmt.Registry) error {`,
 				`	nestedMapAndSlice02IC := o.NestedMapAndSlice02`,
@@ -3394,14 +3396,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body []map[string][]map[string]string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedSliceAndMap03", "body")`,
+				`				res = append(res, errors.Required("nestedSliceAndMap03", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedSliceAndMap03", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedSliceAndMap03 = body`,
 				`			if err := o.validateNestedSliceAndMap03Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedSliceAndMap03", "body")`,
+				`		res = append(res, errors.Required("nestedSliceAndMap03", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedSliceAndMap03Params) validateNestedSliceAndMap03Body(formats strfmt.Registry) error {`,
 				`	if err := validate.UniqueItems("nestedSliceAndMap03", "body", o.NestedSliceAndMap03); err != nil {`,
@@ -3443,13 +3445,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body [][][]string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedArray03", "body")`,
+				`				res = append(res, errors.Required("nestedArray03", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedArray03", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedArray03 = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedArray03", "body")`,
+				`		res = append(res, errors.Required("nestedArray03", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -3470,14 +3472,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body [][][]string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedArray03", "body")`,
+				`				res = append(res, errors.Required("nestedArray03", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedArray03", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedArray03 = body`,
 				`			if err := o.validateNestedArray03Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedArray03", "body")`,
+				`		res = append(res, errors.Required("nestedArray03", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedArray04Params) validateNestedArray03Body(formats strfmt.Registry) error {`,
 				`	if err := validate.UniqueItems("nestedArray03", "body", o.NestedArray03); err != nil {`,
@@ -3518,14 +3520,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string][]map[string][]map[string]strfmt.Date`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMapAndSlice01", "body")`,
+				`				res = append(res, errors.Required("nestedMapAndSlice01", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMapAndSlice01", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMapAndSlice01 = body`,
 				`			if err := o.validateNestedMapAndSlice01Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMapAndSlice01", "body")`,
+				`		res = append(res, errors.Required("nestedMapAndSlice01", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedMapAndSlice01Params) validateNestedMapAndSlice01Body(formats strfmt.Registry) error {`,
 				`	nestedMapAndSlice01IC := o.NestedMapAndSlice01`,
@@ -3596,14 +3598,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string]map[string]map[string]*string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMap02", "body")`,
+				`				res = append(res, errors.Required("nestedMap02", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMap02", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMap02 = body`,
 				`			if err := o.validateNestedMap02Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMap02", "body")`,
+				`		res = append(res, errors.Required("nestedMap02", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedMap02Params) validateNestedMap02Body(formats strfmt.Registry) error {`,
 				`	nestedMap02IC := o.NestedMap02`,
@@ -3641,14 +3643,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string][]map[string][]map[string]int64`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMapAndSlice03", "body")`,
+				`				res = append(res, errors.Required("nestedMapAndSlice03", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMapAndSlice03", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMapAndSlice03 = body`,
 				`			if err := o.validateNestedMapAndSlice03Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMapAndSlice03", "body")`,
+				`		res = append(res, errors.Required("nestedMapAndSlice03", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedMapAndSlice03Params) validateNestedMapAndSlice03Body(formats strfmt.Registry) error {`,
 				`	nestedMapAndSlice03IC := o.NestedMapAndSlice03`,
@@ -3694,14 +3696,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body []map[string][]map[string]*string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedSliceAndMap02", "body")`,
+				`				res = append(res, errors.Required("nestedSliceAndMap02", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedSliceAndMap02", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedSliceAndMap02 = body`,
 				`			if err := o.validateNestedSliceAndMap02Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedSliceAndMap02", "body")`,
+				`		res = append(res, errors.Required("nestedSliceAndMap02", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedSliceAndMap02Params) validateNestedSliceAndMap02Body(formats strfmt.Registry) error {`,
 				`	if err := validate.UniqueItems("nestedSliceAndMap02", "body", o.NestedSliceAndMap02); err != nil {`,
@@ -3745,14 +3747,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string]map[string]map[string]strfmt.Date`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMap01", "body")`,
+				`				res = append(res, errors.Required("nestedMap01", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMap01", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMap01 = body`,
 				`			if err := o.validateNestedMap01Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMap01", "body")`,
+				`		res = append(res, errors.Required("nestedMap01", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedMap01Params) validateNestedMap01Body(formats strfmt.Registry) error {`,
 				`	nestedMap01IC := o.NestedMap01`,
@@ -3789,13 +3791,13 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body map[string]map[string]map[string]string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedMap03", "body")`,
+				`				res = append(res, errors.Required("nestedMap03", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedMap03", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedMap03 = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedMap03", "body")`,
+				`		res = append(res, errors.Required("nestedMap03", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -3816,14 +3818,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body [][][]strfmt.Date`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedArray01", "body")`,
+				`				res = append(res, errors.Required("nestedArray01", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedArray01", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedArray01 = body`,
 				`			if err := o.validateNestedArray01Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedArray01", "body")`,
+				`		res = append(res, errors.Required("nestedArray01", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedArray01Params) validateNestedArray01Body(formats strfmt.Registry) error {`,
 				`	nestedArray01Size := int64(len(o.NestedArray01)`,
@@ -3868,14 +3870,14 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`		var body [][][]*string`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nestedArray01", "body")`,
+				`				res = append(res, errors.Required("nestedArray01", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nestedArray01", "body", "", err)`,
 				`		} else {`,
 				`			o.NestedArray01 = body`,
 				`			if err := o.validateNestedArray01Body(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nestedArray01", "body")`,
+				`		res = append(res, errors.Required("nestedArray01", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetNestedArray02Params) validateNestedArray01Body(formats strfmt.Registry) error {`,
 				`	nestedArray01Size := int64(len(o.NestedArray01)`,
@@ -4071,12 +4073,10 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			res = append(res, errors.NewParseError("data", "body", "", err)`,
 				`		} else {`,
-				`			o.Data = body`,
-				`			if err := o.validateDataBody(route.Formats); err != nil {`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *MyMethodParams) bindByteInQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {`,
 				`	if !hasKey {`,
-				`		return errors.Required("byteInQuery", "query"`,
+				`		return errors.Required("byteInQuery", "query", rawData`,
 				`	var raw string`,
 				`	if len(rawData) > 0 {`,
 				`		raw = rawData[len(rawData)-1]`,
@@ -4088,7 +4088,6 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 				`	if err := o.validateByteInQuery(formats); err != nil {`,
 				`func (o *MyMethodParams) validateByteInQuery(formats strfmt.Registry) error {`,
 				`	if err := validate.MaxLength("byteInQuery", "query", o.ByteInQuery.String(), 100); err != nil {`,
-				`func (o *MyMethodParams) validateDataBody(formats strfmt.Registry) error {`,
 			},
 		},
 
@@ -4156,13 +4155,13 @@ func TestGenParameter_1572(t *testing.T) {
 				`		var body interface{`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("interfaceBody", "body")`,
+				`				res = append(res, errors.Required("interfaceBody", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("interfaceBody", "body", "", err)`,
 				`		} else {`,
 				`			o.InterfaceBody = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("interfaceBody", "body")`,
+				`		res = append(res, errors.Required("interfaceBody", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -4183,13 +4182,13 @@ func TestGenParameter_1572(t *testing.T) {
 				`		var body interface{`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("nullBody", "body")`,
+				`				res = append(res, errors.Required("nullBody", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("nullBody", "body", "", err)`,
 				`		} else {`,
 				`			o.NullBody = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("nullBody", "body")`,
+				`		res = append(res, errors.Required("nullBody", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -4210,14 +4209,14 @@ func TestGenParameter_1572(t *testing.T) {
 				`		var body uint32`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("primitiveBody", "body")`,
+				`				res = append(res, errors.Required("primitiveBody", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("primitiveBody", "body", "", err)`,
 				`		} else {`,
 				`			o.PrimitiveBody = body`,
 				`			if err := o.validatePrimitiveBodyBody(route.Formats); err != nil {`,
 				`	} else {`,
-				`		res = append(res, errors.Required("primitiveBody", "body")`,
+				`		res = append(res, errors.Required("primitiveBody", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetPrimitiveParams) validatePrimitiveBodyBody(formats strfmt.Registry) error {`,
 				`	if err := validate.MaximumInt("primitiveBody", "body", int64(o.PrimitiveBody), 100, false); err != nil {`,
@@ -4240,13 +4239,13 @@ func TestGenParameter_1572(t *testing.T) {
 				`		var body map[string]models.ModelInterface`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
-				`				res = append(res, errors.Required("interfaceBody", "body")`,
+				`				res = append(res, errors.Required("interfaceBody", "body", "")`,
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("interfaceBody", "body", "", err)`,
 				`		} else {`,
 				`			o.InterfaceBody = body`,
 				`	} else {`,
-				`		res = append(res, errors.Required("interfaceBody", "body")`,
+				`		res = append(res, errors.Required("interfaceBody", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 			},
 		},
@@ -4406,4 +4405,56 @@ func TestGenClientParameter_1937(t *testing.T) {
 		},
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1937", "fixture-1937.yaml"), true, false)
+}
+
+func TestGenParameter_Issue2167(t *testing.T) {
+	assert := assert.New(t)
+
+	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("clientParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertRegexpInCode(t, `(?m)^\tMyPathName\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestRegion\s+string$`, res)
+					assertRegexpInCode(t, `(?m)^\tMyQueryCount\s+\*int64$`, res)
+					assertRegexpInCode(t, `(?m)^\tTestLimit\s+\*int64$`, res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
+}
+func TestGenParameter_Issue2273(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+	assert := assert.New(t)
+
+	gen, err := opBuilder("postSnapshot", "../fixtures/bugs/2273/swagger.json")
+	if assert.NoError(err) {
+		op, err := gen.MakeOperation()
+		if assert.NoError(err) {
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			err := templates.MustGet("serverParameter").Execute(buf, op)
+			if assert.NoError(err) {
+				ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
+				if assert.NoError(err) {
+					res := string(ff)
+					assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", res)
+				} else {
+					fmt.Println(buf.String())
+				}
+			}
+		}
+	}
 }

@@ -17,7 +17,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -28,180 +27,186 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestUniqueOperationNameMangling(t *testing.T) {
+	doc, err := loads.Spec("../fixtures/bugs/2213/fixture-2213.yaml")
+	require.NoError(t, err)
+	analyzed := analysis.New(doc.Spec())
+	ops := gatherOperations(analyzed, nil)
+	assert.Contains(t, ops, "GetFoo")
+	assert.Contains(t, ops, "GetAFoo")
+}
 
 func TestUniqueOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		sp := doc.Spec()
-		sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
-		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
-		sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
-		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
-		analyzed := analysis.New(sp)
+	require.NoError(t, err)
 
-		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 6)
-		_, exists := ops["saveTask"]
-		assert.True(t, exists)
-		_, exists = ops["PutTasksID"]
-		assert.True(t, exists)
-	}
+	sp := doc.Spec()
+	sp.Paths.Paths["/tasks"].Post.ID = "saveTask"
+	sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+	sp.Paths.Paths["/tasks/{id}"].Put.ID = "saveTask"
+	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+	analyzed := analysis.New(sp)
+
+	ops := gatherOperations(analyzed, nil)
+	assert.Len(t, ops, 6)
+	_, exists := ops["saveTask"]
+	assert.True(t, exists)
+	_, exists = ops["PutTasksID"]
+	assert.True(t, exists)
 }
 
 func TestEmptyOperationNames(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
-	if assert.NoError(t, err) {
-		sp := doc.Spec()
-		sp.Paths.Paths["/tasks"].Post.ID = ""
-		sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
-		sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
-		sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
-		analyzed := analysis.New(sp)
+	require.NoError(t, err)
 
-		ops := gatherOperations(analyzed, nil)
-		assert.Len(t, ops, 6)
-		_, exists := ops["PostTasks"]
-		assert.True(t, exists)
-		_, exists = ops["PutTasksID"]
-		assert.True(t, exists)
-	}
+	sp := doc.Spec()
+	sp.Paths.Paths["/tasks"].Post.ID = ""
+	sp.Paths.Paths["/tasks"].Post.AddExtension("origName", "createTask")
+	sp.Paths.Paths["/tasks/{id}"].Put.ID = ""
+	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
+	analyzed := analysis.New(sp)
+
+	ops := gatherOperations(analyzed, nil)
+	assert.Len(t, ops, 6)
+	_, exists := ops["PostTasks"]
+	assert.True(t, exists)
+	_, exists = ops["PutTasksID"]
+	assert.True(t, exists)
 }
 
 func TestMakeResponseHeader(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
-		gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
-		if assert.NoError(t, er) {
-			assert.True(t, gh.IsPrimitive)
-			assert.Equal(t, "int32", gh.GoType)
-			assert.Equal(t, "X-Rate-Limit", gh.Name)
-		}
-	}
+	require.NoError(t, err)
+
+	hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
+	gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
+	require.NoError(t, er)
+
+	assert.True(t, gh.IsPrimitive)
+	assert.Equal(t, "int32", gh.GoType)
+	assert.Equal(t, "X-Rate-Limit", gh.Name)
 }
 
 func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		var testCases = []struct {
-			name         string      // input
-			typeStr      string      // expected type
-			defaultValue interface{} // expected result
-		}{
-			{"Access-Control-Allow-Origin", "string", "*"},
-			{"X-Rate-Limit", "int32", nil},
-			{"X-Rate-Limit-Remaining", "int32", float64(42)},
-			{"X-Rate-Limit-Reset", "int32", "1449875311"},
-			{"X-Rate-Limit-Reset-Human", "string", "3 days"},
-			{"X-Rate-Limit-Reset-Human-Number", "string", float64(3)},
-		}
+	require.NoError(t, err)
 
-		for _, tc := range testCases {
-			// t.Logf("tc: %+v", tc)
-			hdr := findResponseHeader(&b.Operation, 200, tc.name)
-			assert.NotNil(t, hdr)
-			gh, er := b.MakeHeader("a", tc.name, *hdr)
-			if assert.NoError(t, er) {
-				assert.True(t, gh.IsPrimitive)
-				assert.Equal(t, tc.typeStr, gh.GoType)
-				assert.Equal(t, tc.name, gh.Name)
-				assert.Exactly(t, tc.defaultValue, gh.Default)
-			}
-		}
+	var testCases = []struct {
+		name         string      // input
+		typeStr      string      // expected type
+		defaultValue interface{} // expected result
+	}{
+		{"Access-Control-Allow-Origin", "string", "*"},
+		{"X-Rate-Limit", "int32", nil},
+		{"X-Rate-Limit-Remaining", "int32", float64(42)},
+		{"X-Rate-Limit-Reset", "int32", "1449875311"},
+		{"X-Rate-Limit-Reset-Human", "string", "3 days"},
+		{"X-Rate-Limit-Reset-Human-Number", "string", float64(3)},
+	}
+
+	for _, tc := range testCases {
+		hdr := findResponseHeader(&b.Operation, 200, tc.name)
+		require.NotNil(t, hdr)
+
+		gh, er := b.MakeHeader("a", tc.name, *hdr)
+		require.NoError(t, er)
+
+		assert.True(t, gh.IsPrimitive)
+		assert.Equal(t, tc.typeStr, gh.GoType)
+		assert.Equal(t, tc.name, gh.Name)
+		assert.Exactly(t, tc.defaultValue, gh.Default)
 	}
 }
 
 func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
-		if assert.NoError(t, err) {
-			assert.Len(t, gO.Headers, 6)
-			assert.NotNil(t, gO.Schema)
-			assert.True(t, gO.Schema.IsArray)
-			assert.NotNil(t, gO.Schema.Items)
-			assert.False(t, gO.Schema.IsAnonymous)
-			assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
-		}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
 	}
+	gO, err := b.MakeResponse("a", "getTasksSuccess", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
+	require.NoError(t, err)
+
+	assert.Len(t, gO.Headers, 6)
+	assert.NotNil(t, gO.Schema)
+	assert.True(t, gO.Schema.IsArray)
+	assert.NotNil(t, gO.Schema.Items)
+	assert.False(t, gO.Schema.IsAnonymous)
+	assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range b.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
-		if assert.NoError(t, err) {
-			if assert.NotNil(t, gO.Schema) {
-				assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
-			}
-			if assert.NotEmpty(t, b.ExtraSchemas) {
-				body := b.ExtraSchemas["GetMediaSearchBody"]
-				if assert.NotEmpty(t, body.Properties) {
-					prop := body.Properties[0]
-					assert.Equal(t, "data", prop.Name)
-					// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
-					assert.Equal(t, "[]*DataItems0", prop.GoType)
-				}
-				items := b.ExtraSchemas["DataItems0"]
-				if assert.NotEmpty(t, items.AllOf) {
-					media := items.AllOf[0]
-					// expect #definitions/media to be captured and reused by ExtraSchema
-					assert.Equal(t, "models.Media", media.GoType)
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+	for k := range b.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
 	}
+	gO, err := b.MakeResponse("a", "get /media/search", true, resolver, 200, b.Operation.Responses.StatusCodeResponses[200])
+	require.NoError(t, err)
+
+	require.NotNil(t, gO.Schema)
+	assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
+
+	require.NotEmpty(t, b.ExtraSchemas)
+	body := b.ExtraSchemas["GetMediaSearchBody"]
+	require.NotEmpty(t, body.Properties)
+
+	prop := body.Properties[0]
+	assert.Equal(t, "data", prop.Name)
+	// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
+	assert.Equal(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
+
+	items := b.ExtraSchemas["GetMediaSearchBodyDataItems0"]
+	require.NotEmpty(t, items.AllOf)
+
+	media := items.AllOf[0]
+	// expect #definitions/media to be captured and reused by ExtraSchema
+	assert.Equal(t, "models.Media", media.GoType)
 }
 
 func TestMakeOperationParam(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
-		if assert.NoError(t, err) {
-			assert.Equal(t, "size", gO.Name)
-			assert.True(t, gO.IsPrimitive)
-		}
-	}
+	require.NoError(t, err)
+
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
+	require.NoError(t, err)
+
+	assert.Equal(t, "size", gO.Name)
+	assert.True(t, gO.IsPrimitive)
 }
 
 func TestMakeOperationParamItem(t *testing.T) {
 	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
-	if assert.NoError(t, err) {
-		resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-		gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
-		if assert.NoError(t, err) {
-			assert.Nil(t, gO.Parent)
-			assert.True(t, gO.IsPrimitive)
-		}
-	}
+	require.NoError(t, err)
+	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
+	require.NoError(t, err)
+	assert.Nil(t, gO.Parent)
+	assert.True(t, gO.IsPrimitive)
 }
 
 func TestMakeOperation(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
-	if assert.NoError(t, err) {
-		gO, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			assert.Equal(t, "getTasks", gO.Name)
-			assert.Equal(t, "GET", gO.Method)
-			assert.Equal(t, "/tasks", gO.Path)
-			assert.Len(t, gO.Params, 2)
-			assert.Len(t, gO.Responses, 1)
-			assert.NotNil(t, gO.DefaultResponse)
-			assert.NotNil(t, gO.SuccessResponse)
-		}
-	}
+	require.NoError(t, err)
+	gO, err := b.MakeOperation()
+	require.NoError(t, err)
+	assert.Equal(t, "getTasks", gO.Name)
+	assert.Equal(t, "GET", gO.Method)
+	assert.Equal(t, "/tasks", gO.Path)
+	assert.Len(t, gO.Params, 2)
+	assert.Len(t, gO.Responses, 1)
+	assert.NotNil(t, gO.DefaultResponse)
+	assert.NotNil(t, gO.SuccessResponse)
 }
 
 func TestRenderOperation_InstagramSearch(t *testing.T) {
@@ -209,95 +214,81 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	defer log.SetOutput(os.Stdout)
 
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		gO, ero := b.MakeOperation()
-		if assert.NoError(t, ero) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			ert := templates.MustGet("serverOperation").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertInCode(t, "type GetMediaSearchOKBody struct {", res)
-					// codegen does not assumes objects are only in models
-					// this is inlined
-					assertInCode(t, "Data []*DataItems0 `json:\"data\"`", res)
-					assertInCode(t, "type DataItems0 struct {", res)
-					// this is a definition: expect this definition to be reused from the models pkg
-					assertInCode(t, "models.Media", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
+	require.NoError(t, err)
 
-			buf = bytes.NewBuffer(nil)
-			ert = templates.MustGet("serverResponses").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("response.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					// codegen does not assumes objects are only in models
-					assertInCode(t, "type GetMediaSearchOK struct {", res)
-					assertInCode(t, "GetMediaSearchOKBody", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
-		}
-	}
+	gO, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opt := opts()
+	err = templates.MustGet("serverOperation").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err := opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "type GetMediaSearchOKBody struct {", res)
+	// codegen does not assumes objects are only in models
+	// this is inlined
+	assertInCode(t, "Data []*GetMediaSearchOKBodyDataItems0 `json:\"data\"`", res)
+	assertInCode(t, "type GetMediaSearchOKBodyDataItems0 struct {", res)
+	// this is a definition: expect this definition to be reused from the models pkg
+	assertInCode(t, "models.Media", res)
+
+	buf = bytes.NewBuffer(nil)
+	err = templates.MustGet("serverResponses").Execute(buf, gO)
+	require.NoError(t, err)
+	ff, err = opt.LanguageOpts.FormatContent("response.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	// codegen does not assumes objects are only in models
+	assertInCode(t, "type GetMediaSearchOK struct {", res)
+	assertInCode(t, "GetMediaSearchOKBody", res)
+
 	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../fixtures/codegen/instagram.yml")
-	if assert.NoError(t, err) {
-		gO, ero := b.MakeOperation()
-		if assert.NoError(t, ero) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			ert := templates.MustGet("serverOperation").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertNotInCode(t, "DataItems0", res)
-					assertNotInCode(t, "models", res)
-				} else {
-					fmt.Println(buf.String())
-					t.FailNow()
-				}
-			} else {
-				t.FailNow()
-			}
-			buf = bytes.NewBuffer(nil)
-			ert = templates.MustGet("serverResponses").Execute(buf, gO)
-			if assert.NoError(t, ert) {
-				ff, erf := opts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, erf) {
-					res := string(ff)
-					assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	gO, err = b.MakeOperation()
+	require.NoError(t, err)
+
+	buf = bytes.NewBuffer(nil)
+	opt = opts()
+	err = templates.MustGet("serverOperation").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	assertNotInCode(t, "DataItems0", res)
+	assertNotInCode(t, "models", res)
+
+	buf = bytes.NewBuffer(nil)
+	err = templates.MustGet("serverResponses").Execute(buf, gO)
+	require.NoError(t, err)
+
+	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res = string(ff)
+	assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
 }
 
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
-
-	specDoc, err := loads.Spec(fname)
+	o := opts()
+	o.Spec = fname
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-
-	analyzed := analysis.New(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -316,29 +307,25 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       opts(),
+		GenOpts:       o,
 	}, nil
 }
 
 // methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening
 func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	specDoc, err := loads.Spec(fname)
-	if err != nil {
-		return codeGenOpBuilder{}, err
-	}
-
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
-
-	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	o.Spec = fname
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-
-	analyzed := analysis.New(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -363,31 +350,19 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 
 // opBuilderWithOpts prepares the making of an operation with spec flattening options
 func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
 	if fname == "" {
 		// default fixture
 		fname = "../fixtures/codegen/todolist.simple.yml"
 	}
 
-	if !filepath.IsAbs(fname) {
-		cwd, _ := os.Getwd()
-		fname = filepath.Join(cwd, fname)
-	}
-
-	specDoc, err := loads.Spec(fname)
-	if err != nil {
-		return codeGenOpBuilder{}, err
-	}
 	o.Spec = fname
-
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	specDoc, err = validateAndFlattenSpec(o, specDoc)
+	specDoc, analyzed, err := o.analyzeSpec()
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
-	log.SetOutput(os.Stdout)
-
-	analyzed := analysis.New(specDoc.Spec())
 
 	method, path, op, ok := analyzed.OperationForName(name)
 	if !ok {
@@ -408,19 +383,21 @@ func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error)
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       o, // opts()??
+		GenOpts:       o,
 	}, nil
 }
 
 func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) (opts *GenOpts) {
 	opts = &GenOpts{}
-	if erd := opts.EnsureDefaults(); erd != nil {
+	opts.ValidateSpec = true
+	opts.FlattenOpts = &analysis.FlattenOpts{
+		Expand:  !withFlatten,
+		Minimal: withMinimalFlatten,
+	}
+	opts.Spec = specName
+	if err := opts.EnsureDefaults(); err != nil {
 		panic("Cannot initialize GenOpts")
 	}
-	opts.ValidateSpec = true
-	opts.FlattenOpts.Expand = !withFlatten
-	opts.FlattenOpts.Minimal = withMinimalFlatten
-	opts.Spec = specName
 	return
 }
 
@@ -429,6 +406,14 @@ func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
 	return opBuilderWithOpts(name, fname, o)
 }
+
+/*
+// opBuilderWithMinimalFlatten prepares the making of an operation with spec minimal flattening prior to rendering
+func opBuilderWithMinimalFlatten(name, fname string) (codeGenOpBuilder, error) {
+	o := opBuildGetOpts(fname, true, true) // flatten: true, minimal: true
+	return opBuilderWithOpts(name, fname, o)
+}
+*/
 
 // opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering
 func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
@@ -467,64 +452,61 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 
 func TestDateFormat_Spec1(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec1.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "frTestingThis.String()", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "frTestingThis.String()", res)
 }
 
 func TestDateFormat_Spec2(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec2.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "valuesTestingThis = append(valuesTestingThis, v.String())", res)
 }
 
 func TestBuilder_Issue1703(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 	dr, err := os.Getwd()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -536,25 +518,24 @@ func TestBuilder_Issue1703(t *testing.T) {
 		Target:            dr,
 	}
 	err = opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("x-go-type-import-bug", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			for _, o := range op.Operations {
-				buf := bytes.NewBuffer(nil)
-				err := templates.MustGet("serverResponses").Execute(buf, o)
-				if assert.NoError(t, err) {
-					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(ff)
-						assertInCode(t, "jwk \"github.com/user/package\"", res)
-					} else {
-						fmt.Println(buf.String())
-					}
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	for _, o := range op.Operations {
+		buf := bytes.NewBuffer(nil)
+		err = templates.MustGet("serverResponses").Execute(buf, o)
+		require.NoError(t, err)
+
+		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res := string(ff)
+		assertInCode(t, "jwk \"github.com/user/package\"", res)
 	}
 }
 
@@ -566,7 +547,6 @@ func TestBuilder_Issue287(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -578,24 +558,23 @@ func TestBuilder_Issue287(t *testing.T) {
 		Target:            dr,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverBuilder").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "case \"text/plain\":", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverBuilder").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "case \"text/plain\":", res)
 }
 
 func TestBuilder_Issue465(t *testing.T) {
@@ -605,7 +584,6 @@ func TestBuilder_Issue465(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -618,25 +596,23 @@ func TestBuilder_Issue465(t *testing.T) {
 		IsClient:          true,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
-	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
+	require.NoError(t, err)
 
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("clientFacade").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "/v1/fancyAPI", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("clientFacade").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "/v1/fancyAPI", res)
 }
 
 func TestBuilder_Issue500(t *testing.T) {
@@ -646,7 +622,6 @@ func TestBuilder_Issue500(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -658,80 +633,82 @@ func TestBuilder_Issue500(t *testing.T) {
 		Target:            dr,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverBuilder").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertNotInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = NewGetPaymentByID(o.context, o.GetPaymentByIDHandler)`, res)
-					assertInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = invoices.NewGetPaymentByID(o.context, o.InvoicesGetPaymentByIDHandler)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverBuilder").Execute(buf, op)
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	assertNotInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = NewGetPaymentByID(o.context, o.GetPaymentByIDHandler)`, res)
+	assertInCode(t, `o.handlers["GET"]["/payment/{invoice_id}/payments/{payment_id}"] = invoices.NewGetPaymentByID(o.context, o.InvoicesGetPaymentByIDHandler)`, res)
 }
 
 func TestGenClient_IllegalBOM(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientResponse").Execute(buf, op)
-			assert.NoError(t, err)
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientResponse").Execute(buf, op)
+	require.NoError(t, err)
 }
 
 func TestGenClient_CustomFormatPath(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../fixtures/bugs/789/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientParameter").Execute(buf, op)
+	require.NoError(t, err)
+
+	assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
 }
 
 func TestGenClient_Issue733(t *testing.T) {
 	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../fixtures/bugs/733/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			opts.defaultsEnsured = false
-			opts.IsClient = true
-			err = opts.EnsureDefaults()
-			assert.NoError(t, err)
-			err = templates.MustGet("clientResponse").Execute(buf, op)
-			if assert.NoError(t, err) {
-				assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	opts.defaultsEnsured = false
+	opts.IsClient = true
+	err = opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	err = templates.MustGet("clientResponse").Execute(buf, op)
+	require.NoError(t, err)
+
+	assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
 }
 
 func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
@@ -741,7 +718,6 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -757,27 +733,26 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 
 	//Testing Server Generation
 	err := opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	// Full flattening
 	opts.FlattenOpts.Expand = false
 	opts.FlattenOpts.Minimal = false
-	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(filecontent)
-					assertInCode(t, "GetHealthCheck", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(filecontent)
+	assertInCode(t, "GetHealthCheck", res)
 }
 
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
@@ -793,7 +768,7 @@ func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	opts.FlattenOpts.Minimal = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
@@ -803,7 +778,6 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -818,26 +792,25 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 
 	//Testing Server Generation
 	err := opts.EnsureDefaults()
+	require.NoError(t, err)
+
 	// full flattening
 	opts.FlattenOpts.Minimal = false
-	assert.NoError(t, err)
 	appGen, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(filecontent)
-					assertInCode(t, "GetHealthCheck", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(filecontent)
+	assertInCode(t, "GetHealthCheck", res)
 }
 
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
@@ -854,7 +827,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	opts.FlattenOpts.Minimal = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
@@ -864,7 +837,6 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -903,7 +875,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// New: Now if flatten is false, expand takes over so server generation should resume normally
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
@@ -913,7 +885,6 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -948,11 +919,10 @@ func TestGenServerWithTemplate(t *testing.T) {
 		wantError bool
 	}{
 		{
-			name: "None_existing_contributor_tempalte",
+			name: "None_existing_contributor_template",
 			opts: &GenOpts{
 				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 				IncludeModel:      true,
-				IncludeValidator:  true,
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -973,7 +943,6 @@ func TestGenServerWithTemplate(t *testing.T) {
 			opts: &GenOpts{
 				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 				IncludeModel:      true,
-				IncludeValidator:  true,
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -995,9 +964,10 @@ func TestGenServerWithTemplate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			//Testing Server Generation
 			err := tt.opts.EnsureDefaults()
+			require.NoError(t, err)
+
 			// minimal flattening
 			tt.opts.FlattenOpts.Minimal = true
-			assert.NoError(t, err)
 			_, err = newAppGenerator("JsonRefOperation", nil, nil, tt.opts)
 			if tt.wantError {
 				assert.Error(t, err)
@@ -1021,7 +991,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// same here: now if flatten doesn't resume, expand takes over
-	assert.NoError(t, GenerateClient("foo", nil, nil, &opts))
+	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 // This tests that securityDefinitions generate stable code
@@ -1033,7 +1003,6 @@ func TestBuilder_Issue1214(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1045,76 +1014,68 @@ func TestBuilder_Issue1214(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
-	appGen, err := newAppGenerator("fixture-1214", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			for i := 0; i < 5; i++ {
-				buf := bytes.NewBuffer(nil)
-				ert := templates.MustGet("serverConfigureapi").Execute(buf, op)
-				if assert.NoError(t, ert) {
-					ff, erf := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
-					if assert.NoError(t, erf) {
-						res := string(ff)
-						assertRegexpInCode(t, any+
-							`api\.AAuth = func\(user string, pass string\)`+any+
-							`api\.BAuth = func\(token string\)`+any+
-							`api\.CAuth = func\(token string\)`+any+
-							`api\.DAuth = func\(token string\)`+any+
-							`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
-					} else {
-						fmt.Println(buf.String())
-						break
-					}
-				} else {
-					break
-				}
-				buf = bytes.NewBuffer(nil)
-				err = templates.MustGet("serverBuilder").Execute(buf, op)
-				if assert.NoError(t, err) {
-					ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(ff)
-						assertRegexpInCode(t, any+
-							`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
-							`BAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`CAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`DAuth: func\(token string\) \(interface{}, error\) {`+any+
-							`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+	e := opts.EnsureDefaults()
+	require.NoError(t, e)
 
-							`AAuth func\(string, string\) \(interface{}, error\)`+any+
-							`BAuth func\(string\) \(interface{}, error\)`+any+
-							`CAuth func\(string\) \(interface{}, error\)`+any+
-							`DAuth func\(string\) \(interface{}, error\)`+any+
-							`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+	appGen, e := newAppGenerator("fixture-1214", nil, nil, opts)
+	require.NoError(t, e)
 
-							`if o\.AAuth == nil {`+any+
-							`unregistered = append\(unregistered, "AAuth"\)`+any+
-							`if o\.BAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K1Auth"\)`+any+
-							`if o\.CAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K2Auth"\)`+any+
-							`if o\.DAuth == nil {`+any+
-							`unregistered = append\(unregistered, "K3Auth"\)`+any+
-							`if o\.EAuth == nil {`+any+
-							`unregistered = append\(unregistered, "EAuth"\)`+any+
+	op, e := appGen.makeCodegenApp()
+	require.NoError(t, e)
 
-							`case "A":`+any+
-							`case "B":`+any+
-							`case "C":`+any+
-							`case "D":`+any+
-							`case "E":`+any, res)
-					} else {
-						fmt.Println(buf.String())
-						break
-					}
-				} else {
-					break
-				}
-			}
-		}
+	for i := 0; i < 5; i++ {
+		buf := bytes.NewBuffer(nil)
+		err := templates.MustGet("serverConfigureapi").Execute(buf, op)
+		require.NoError(t, err)
+
+		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res := string(ff)
+		assertRegexpInCode(t, any+
+			`api\.AAuth = func\(user string, pass string\)`+any+
+			`api\.BAuth = func\(token string\)`+any+
+			`api\.CAuth = func\(token string\)`+any+
+			`api\.DAuth = func\(token string\)`+any+
+			`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
+
+		buf = bytes.NewBuffer(nil)
+		err = templates.MustGet("serverBuilder").Execute(buf, op)
+		require.NoError(t, err)
+
+		ff, err = appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
+		require.NoErrorf(t, err, buf.String())
+
+		res = string(ff)
+		assertRegexpInCode(t, any+
+			`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
+			`BAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`CAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`DAuth: func\(token string\) \(interface{}, error\) {`+any+
+			`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+
+			`AAuth func\(string, string\) \(interface{}, error\)`+any+
+			`BAuth func\(string\) \(interface{}, error\)`+any+
+			`CAuth func\(string\) \(interface{}, error\)`+any+
+			`DAuth func\(string\) \(interface{}, error\)`+any+
+			`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+
+			`if o\.AAuth == nil {`+any+
+			`unregistered = append\(unregistered, "AAuth"\)`+any+
+			`if o\.BAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K1Auth"\)`+any+
+			`if o\.CAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K2Auth"\)`+any+
+			`if o\.DAuth == nil {`+any+
+			`unregistered = append\(unregistered, "K3Auth"\)`+any+
+			`if o\.EAuth == nil {`+any+
+			`unregistered = append\(unregistered, "EAuth"\)`+any+
+
+			`case "A":`+any+
+			`case "B":`+any+
+			`case "C":`+any+
+			`case "D":`+any+
+			`case "E":`+any, res)
 	}
 }
 
@@ -1122,10 +1083,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		operation := "asecOp"
 		b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-		if !assert.NoError(t, err) {
-			t.FailNow()
-			return
-		}
+		require.NoError(t, err)
+
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 		genRequirements := b.makeSecurityRequirements("o")
 		assert.Len(t, genRequirements, 2)
@@ -1162,10 +1121,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 		operation = "bsecOp"
 		b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-		if !assert.NoError(t, err) {
-			t.FailNow()
-			return
-		}
+		require.NoError(t, err)
+
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 		genRequirements = b.makeSecurityRequirements("o")
 		assert.Len(t, genRequirements, 2)
@@ -1195,10 +1152,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 	operation := "csecOp"
 	b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements := b.makeSecurityRequirements("o")
 	assert.NotNil(t, genRequirements)
@@ -1206,10 +1161,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 
 	operation = "nosecOp"
 	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements = b.makeSecurityRequirements("o")
 	assert.Nil(t, genRequirements)
@@ -1225,7 +1178,6 @@ func TestGenerateServerOperation(t *testing.T) {
 		_ = os.RemoveAll(tgt)
 	}()
 	o := &GenOpts{
-		IncludeValidator:  true,
 		ValidateSpec:      false,
 		IncludeModel:      true,
 		IncludeHandler:    true,
@@ -1235,19 +1187,18 @@ func TestGenerateServerOperation(t *testing.T) {
 		Spec:              fname,
 		Target:            tgt,
 	}
-	if err := o.EnsureDefaults(); err != nil {
-		panic(err)
-	}
+	err := o.EnsureDefaults()
+	require.NoError(t, err)
 
-	err := GenerateServerOperation([]string{"createTask"}, nil)
+	err = GenerateServerOperation([]string{"createTask"}, nil)
 	assert.Error(t, err)
 
 	d := o.TemplateDir
 	o.TemplateDir = "./nowhere"
 	err = GenerateServerOperation([]string{"notFound"}, o)
 	assert.Error(t, err)
-	o.TemplateDir = d
 
+	o.TemplateDir = d
 	d = o.Spec
 	o.Spec = "nowhere.yaml"
 	err = GenerateServerOperation([]string{"notFound"}, o)
@@ -1258,10 +1209,8 @@ func TestGenerateServerOperation(t *testing.T) {
 	assert.Error(t, err)
 
 	err = GenerateServerOperation([]string{"createTask"}, o)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-		return
-	}
+	require.NoError(t, err)
+
 	// check expected files are generated and that's it
 	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
 	assert.NoError(t, err)
@@ -1291,7 +1240,6 @@ func TestBuilder_Issue1646(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1304,24 +1252,23 @@ func TestBuilder_Issue1646(t *testing.T) {
 		IsClient:          false,
 	}
 	err := opts.EnsureDefaults()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	appGen, err := newAppGenerator("fixture-1646", nil, nil, opts)
+	require.NoError(t, err)
 
-	if assert.NoError(t, err) {
-		preCons, preConj := appGen.makeConsumes()
-		preProds, preProdj := appGen.makeProduces()
-		assert.True(t, preConj)
-		assert.True(t, preProdj)
-		for i := 0; i < 5; i++ {
-			cons, conj := appGen.makeConsumes()
-			prods, prodj := appGen.makeProduces()
-			assert.True(t, conj)
-			assert.True(t, prodj)
-			assert.Equal(t, preConj, conj)
-			assert.Equal(t, preProdj, prodj)
-			assert.Equal(t, preCons, cons)
-			assert.Equal(t, preProds, prods)
-		}
+	preCons, preConj := appGen.makeConsumes()
+	preProds, preProdj := appGen.makeProduces()
+	assert.True(t, preConj)
+	assert.True(t, preProdj)
+	for i := 0; i < 5; i++ {
+		cons, conj := appGen.makeConsumes()
+		prods, prodj := appGen.makeProduces()
+		assert.True(t, conj)
+		assert.True(t, prodj)
+		assert.Equal(t, preConj, conj)
+		assert.Equal(t, preProdj, prodj)
+		assert.Equal(t, preCons, cons)
+		assert.Equal(t, preProds, prods)
 	}
 }
 
@@ -1332,7 +1279,166 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
 		IncludeModel:      true,
-		IncludeValidator:  true,
+		IncludeHandler:    true,
+		IncludeParameters: true,
+		IncludeResponses:  true,
+		IncludeMain:       true,
+		APIPackage:        "restapi",
+		ModelPackage:      "model",
+		ServerPackage:     "server",
+		ClientPackage:     "client",
+		Target:            dr,
+		IsClient:          false,
+	}
+	err := opts.EnsureDefaults()
+	require.NoError(t, err)
+
+	opts.StrictAdditionalProperties = true
+
+	appGen, err := newAppGenerator("StrictAdditionalProperties", nil, nil, opts)
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	require.NoError(t, err)
+
+	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	res := string(ff)
+	for _, tt := range []struct {
+		name      string
+		assertion func(testing.TB, string, string) bool
+	}{
+		{"PostTestBody", assertInCode},
+		{"PostTestParamsBodyExplicit", assertInCode},
+		{"PostTestParamsBodyImplicit", assertInCode},
+		{"PostTestParamsBodyDisabled", assertNotInCode},
+	} {
+		fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
+		require.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name)
+		tt.assertion(t, "dec.DisallowUnknownFields()", fn)
+	}
+}
+
+func makeClientTimeoutNameTest() []struct {
+	seenIds  map[string]interface{}
+	name     string
+	expected string
+} {
+	return []struct {
+		seenIds  map[string]interface{}
+		name     string
+		expected string
+	}{
+		{
+			seenIds:  nil,
+			name:     "witness",
+			expected: "witness",
+		},
+		{
+			seenIds: map[string]interface{}{
+				"id": true,
+			},
+			name:     "timeout",
+			expected: "timeout",
+		},
+		{
+			seenIds: map[string]interface{}{
+				"timeout":        true,
+				"requesttimeout": true,
+			},
+			name:     "timeout",
+			expected: "httpRequestTimeout",
+		},
+		{
+			seenIds: map[string]interface{}{
+				"timeout":            true,
+				"requesttimeout":     true,
+				"httprequesttimeout": true,
+				"swaggertimeout":     true,
+				"operationtimeout":   true,
+				"optimeout":          true,
+			},
+			name:     "timeout",
+			expected: "operTimeout",
+		},
+		{
+			seenIds: map[string]interface{}{
+				"timeout":            true,
+				"requesttimeout":     true,
+				"httprequesttimeout": true,
+				"swaggertimeout":     true,
+				"operationtimeout":   true,
+				"optimeout":          true,
+				"opertimeout":        true,
+				"opertimeout1":       true,
+			},
+			name:     "timeout",
+			expected: "operTimeout11",
+		},
+	}
+}
+
+func TestRenameTimeout(t *testing.T) {
+	for i, toPin := range makeClientTimeoutNameTest() {
+		testCase := toPin
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equalf(t, testCase.expected, renameTimeout(testCase.seenIds, testCase.name), "unexpected deconflicting value [%d]", i)
+		})
+	}
+}
+
+func testInvalidParams() map[string]spec.Parameter {
+	return map[string]spec.Parameter{
+		"query#param1": *spec.QueryParam("param1"),
+		"path#param1":  *spec.PathParam("param1"),
+		"body#param1":  *spec.BodyParam("param1", &spec.Schema{}),
+	}
+}
+
+func TestParamMappings(t *testing.T) {
+	// Test deconfliction of duplicate param names across param locations
+	mappings, _ := paramMappings(testInvalidParams())
+	require.Contains(t, mappings, "query")
+	require.Contains(t, mappings, "path")
+	require.Contains(t, mappings, "body")
+	q := mappings["query"]
+	p := mappings["path"]
+	b := mappings["body"]
+	require.Len(t, q, 1)
+	require.Len(t, p, 1)
+	require.Len(t, b, 1)
+	require.Containsf(t, q, "param1", "unexpected content of %#v", q)
+	require.Containsf(t, p, "param1", "unexpected content of %#v", p)
+	require.Containsf(t, b, "param1", "unexpected content of %#v", b)
+	assert.Equalf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
+	assert.Equalf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
+	assert.Equalf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
+}
+
+func TestDeconflictTag(t *testing.T) {
+	assert.Equal(t, "runtimeops", deconflictTag(nil, "runtime"))
+	assert.Equal(t, "apiops", deconflictTag([]string{"tag1"}, "api"))
+	assert.Equal(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, "api"))
+	assert.Equal(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
+	assert.Equal(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
+
+	assert.Equal(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
+	assert.Equal(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
+}
+
+func TestGenServer_2161_panic(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+	opts := &GenOpts{
+		Spec:              filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
+		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
 		IncludeResponses:  true,
@@ -1350,34 +1456,26 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 
 	opts.StrictAdditionalProperties = true
 
-	appGen, err := newAppGenerator("StrictAdditionalProperties", nil, nil, opts)
-	if assert.NoError(t, err) {
-		op, err := appGen.makeCodegenApp()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-			if assert.NoError(t, err) {
-				ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					for _, tt := range []struct {
-						name      string
-						assertion func(testing.TB, string, string) bool
-					}{
-						{"PostTestBody", assertInCode},
-						{"PostTestParamsBodyExplicit", assertInCode},
-						{"PostTestParamsBodyImplicit", assertInCode},
-						{"PostTestParamsBodyDisabled", assertNotInCode},
-					} {
-						fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
-						if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
-							tt.assertion(t, "dec.DisallowUnknownFields()", fn)
-						}
-					}
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
+	appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
+	require.NoError(t, err)
+
+	op, err := appGen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	var selectedOp int
+	for i := range op.Operations {
+		if op.Operations[i].Name == "configuration_update_configuration_module" {
+			selectedOp = i
 		}
 	}
+	require.NotEmpty(t, selectedOp, "dev error: invalid test vs fixture")
+
+	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp])
+	require.NoError(t, err)
+
+	_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+	// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
+	// The test with this fix simply asserts that there is no panic / internal error with building this.
 }

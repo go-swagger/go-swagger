@@ -65,9 +65,15 @@ func (st schemaTypable) AdditionalProperties() swaggerTypable {
 	st.schema.Typed("object", "")
 	return schemaTypable{st.schema.AdditionalProperties.Schema, st.level + 1}
 }
+
 func (st schemaTypable) Level() int { return st.level }
+
 func (st schemaTypable) AddExtension(key string, value interface{}) {
 	addExtension(&st.schema.VendorExtensible, key, value)
+}
+
+func (st schemaTypable) WithEnum(values ...interface{}) {
+	st.schema.WithEnum(values...)
 }
 
 type schemaValidations struct {
@@ -182,8 +188,8 @@ func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) err
 		debugLog("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
 	case *types.Named:
 		o := tpe.Obj()
-		debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
 		if o != nil {
+			debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
 			if o.Pkg().Name() == "time" && o.Name() == "Time" {
 				schema.Typed("string", "date-time")
 				return nil
@@ -302,7 +308,12 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			}
 
 			if enumName, ok := enumName(cmt); ok {
-				debugLog(enumName)
+				enumValues, _ := s.ctx.FindEnumValues(pkg, enumName)
+				if len(enumValues) > 0 {
+					tgt.WithEnum(enumValues...)
+					enumTypeName := reflect.TypeOf(enumValues[0]).String()
+					_ = swaggerSchemaForType(enumTypeName, tgt)
+				}
 				return nil
 			}
 
@@ -695,6 +706,11 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			debugLog("field %s: %s(%T) [%q] ==> %s", fld.Name(), fld.Type().String(), fld.Type(), tg, at.Doc.Text())
 			afld = at
 			break
+		}
+
+		if afld == nil {
+			debugLog("can't find source associated with %s", fld.String())
+			continue
 		}
 
 		// if the field is annotated with swagger:ignore, ignore it

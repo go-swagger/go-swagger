@@ -13,10 +13,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	cr "github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
+	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
 // NewPetCreateParams creates a new PetCreateParams object

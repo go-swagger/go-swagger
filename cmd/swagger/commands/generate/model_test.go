@@ -41,10 +41,10 @@ func TestGenerateModel(t *testing.T) {
 			m := &generate.Model{}
 			_, _ = flags.Parse(m)
 			if i == 0 {
-				m.ExistingModels = "nonExisting"
+				m.Models.ExistingModels = "nonExisting"
 			}
-			m.Spec = flags.Filename(path)
-			m.Target = flags.Filename(generated)
+			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Target = flags.Filename(generated)
 
 			if err := m.Execute([]string{}); err != nil {
 				t.Error(err)
@@ -59,7 +59,7 @@ func TestGenerateModel_Check(t *testing.T) {
 
 	m := &generate.Model{}
 	_, _ = flags.Parse(m)
-	m.DumpData = true
+	m.Shared.DumpData = true
 	m.Name = []string{"model1", "model2"}
 	err := m.Execute([]string{})
 	assert.Error(t, err)

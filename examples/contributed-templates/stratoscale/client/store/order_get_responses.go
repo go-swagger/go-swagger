@@ -10,10 +10,9 @@ import (
 	"io"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
-	strfmt "github.com/go-openapi/strfmt"
-
-	models "github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
+	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
 // OrderGetReader is a Reader for the OrderGet structure.
@@ -44,7 +43,7 @@ func (o *OrderGetReader) ReadResponse(response runtime.ClientResponse, consumer 
 		return nil, result
 
 	default:
-		return nil, runtime.NewAPIError("unknown error", response, response.Code())
+		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
 }
 

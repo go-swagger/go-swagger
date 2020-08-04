@@ -26,7 +26,7 @@
       {{- if .Schema.Items.IsNullable }}
     if body[{{ .IndexVar }}] == nil {
         {{- if .Schema.Items.Required }}
-        res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}))
+        res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, body[{{ .IndexVar }}]))
         break
         {{- else }}
       continue
@@ -62,7 +62,7 @@
       {{- if and .Schema.AdditionalProperties.IsNullable (not .IsMapNullOverride) }}
     if body[{{ .KeyVar }}] == nil {
         {{- if .Schema.AdditionalProperties.Required }}
-        res = append(res, errors.Required({{ .Path }}, {{ printf "%q" .Location }}))
+        res = append(res, errors.Required({{ .Path }}, {{ printf "%q" .Location }}, body[{{ .KeyVar }}]))
         break
         {{- else }}
         continue
@@ -139,7 +139,7 @@ if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if a
 {{ end }}
 {{ if .Enum }}
 // {{ .ItemsDepth }}Enum: {{ .Enum }}
-if err := validate.Enum(
+if err := validate.EnumCase(
   {{- .Path }}, {{ printf "%q" .Location }},
   {{- if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end -}}
   {{- if .Child -}}
@@ -149,8 +149,7 @@ if err := validate.Enum(
       {{- .ValueExpression -}}{{- if .Child.IsCustomFormatter }}.String(){{ end -}}
     {{- end -}}
   {{- end -}},
-  {{- printf "%#v" .Enum -}}
-    ); err != nil {
+  {{- printf "%#v" .Enum -}}, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
   return err
   }
 {{ end }}
@@ -209,7 +208,7 @@ if err := validate.Enum(
       {{- if and .Child.IsNullable }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
-       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})
+       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, {{ varname .Child.ValueExpression }}V)
        {{- else }}
         continue
        {{- end }}
@@ -225,14 +224,10 @@ if err := validate.Enum(
   {{- if .IsPrimitive }}
     {{ template "validationPrimitive" . }}
   {{- end }}
-  {{- if and .IsCustomFormatter (not .IsStream) }}
-    {{- if ne .SwaggerFormat "byte" }}
+  {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }
-    {{- else }}
-  // Format "byte" (base64 string) is already validated when parsed
-    {{- end }}
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
     {{ template "sliceparamvalidator" . }}
@@ -244,7 +239,7 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 
 {{ define "sliceparambinder" }}
 var {{ varname .Child.ValueExpression }}R {{ .GoType }}
-for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
+for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
   {{- if .Child.IsArray }}{{/* recursive resolution of arrays in params */}}
     {{- if not .Child.SkipParse }}
     // {{ .Child.ItemsDepth }}CollectionFormat: {{ .Child.CollectionFormat }}
@@ -265,7 +260,7 @@ for {{ if or .Child.HasValidations .Child.Converter .Child.IsCustomFormatter }}{
     {{- if and .Child.IsNullable (not .IsMapNullOverride) }}
     if {{ varname .Child.ValueExpression }}V == nil {
        {{- if .Child.Required }}
-       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }})
+       return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, {{ varname .Child.ValueExpression }}V)
        {{- else }}
         continue
        {{- end }}
@@ -288,21 +283,20 @@ package {{ .Package }}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+  "fmt"
+  "io"
   "net/http"
 
   "github.com/go-openapi/errors"
-  "github.com/go-openapi/validate"
   "github.com/go-openapi/runtime"
   "github.com/go-openapi/runtime/security"
   "github.com/go-openapi/runtime/middleware"
+  "github.com/go-openapi/strfmt"
   "github.com/go-openapi/swag"
+  "github.com/go-openapi/validate"
 
-  strfmt "github.com/go-openapi/strfmt"
-
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
@@ -323,7 +317,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
               {{- else if .IsArray -}}{{- /* Do not initialize from possible defaults in nested arrays */ -}}
                   {{- if and .Child.IsPrimitive .Child.IsCustomFormatter }}{{ .Zero }}{{/* initialization strategy with UnmarshalText() */}}
                   {{- else if .Child.IsArray -}}{{ .Zero }}{{/* initialization strategy with json.Unmarshal() */}}
-                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- goSliceInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
+                  {{- else if and .Child.IsPrimitive (not .Child.IsCustomFormatter) -}}{{.GoType}}{{- arrayInitializer .Default }}{{/* regular go primitive type initializer: simple slice initializer */}}
                   {{- else }}{{ printf "%#v" .Default }}{{/* all other cases (e.g. schema) [should not occur] */}}
                   {{- end }}
               {{- else }}{{ printf "%#v" .Default }}{{/* case .Schema */}}
@@ -455,11 +449,11 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- else }}
     defer r.Body.Close()
       {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ stripPackage .GoType (toPackageName .ModelsPackage) }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+    body, err := {{ toPackageName .ModelsPackage }}.Unmarshal{{ dropPackage .GoType }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {
-        err = errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+        err = errors.Required({{ .Path }}, {{ printf "%q" .Location }}, "")
       }
         {{- end }}
     res = append(res, err)
@@ -468,7 +462,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     if err := route.Consumer.Consume(r.Body, &body); err != nil {
         {{- if .Required }}
       if err == io.EOF {
-        res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+        res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, ""))
       } else {
         {{- end }}
       res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
@@ -482,7 +476,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- end }}
   }
     {{- if .Required }} else {
-    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}))
+    res = append(res, errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, ""))
   }
     {{- end }}
   {{- end }}
@@ -506,12 +500,12 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
     {{- end }}
     {{- if .MinLength}}
     if size < {{.MinLength}} {
-        return errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false)
+        return errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false, size)
     }
     {{- end }}
     {{- if .MaxLength}}
     if size > {{.MaxLength}} {
-        return errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false)
+        return errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false, size)
     }
     {{- end }}
     return nil
@@ -522,7 +516,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{- if and (not .IsPathParam) .Required }}
     if !hasKey {
-        return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+        return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
     }
       {{- end }}
     var raw string
@@ -552,7 +546,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
-  {{ .ValueExpression }} = {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsFileParam) (not .IsStream) (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
+  {{ .ValueExpression }} = {{ if or .IsArray .HasDiscriminator .IsFileParam .IsStream (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
       {{else}}{{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}raw
       {{ end }}
       {{if .HasValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
@@ -567,7 +561,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 // Arrays are parsed according to CollectionFormat: "{{ .CollectionFormat }}" (defaults to "csv" when empty).
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{if .Required }}if !hasKey {
-    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
   }
       {{ end }}
       {{ if eq .CollectionFormat "multi" -}}
@@ -583,7 +577,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
       {{if and .Required (not .AllowEmptyValue) }}
   if len({{ varname .Child.ValueExpression }}C) == 0 {
-    return errors.Required({{ .Path }}, {{ printf "%q" .Location }})
+    return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ varname .Child.ValueExpression }}C)
   }
       {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 { {{ if .HasDefault }}
     // Default values have been previously initialized by New{{ $className }}Params(){{ end }}

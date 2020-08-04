@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/pet"
@@ -33,70 +33,75 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		defaultProduces:     "application/json",
 		customConsumers:     make(map[string]runtime.Consumer),
 		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
 		ServerShutdown:      func() {},
 		spec:                spec,
+		useSwaggerUI:        false,
 		ServeError:          errors.ServeError,
 		BasicAuthenticator:  security.BasicAuth,
 		APIKeyAuthenticator: security.APIKeyAuth,
 		BearerAuthenticator: security.BearerAuth,
-		JSONConsumer:        runtime.JSONConsumer(),
-		UrlformConsumer:     runtime.DiscardConsumer,
-		XMLConsumer:         runtime.XMLConsumer(),
-		JSONProducer:        runtime.JSONProducer(),
-		XMLProducer:         runtime.XMLProducer(),
+
+		JSONConsumer:    runtime.JSONConsumer(),
+		UrlformConsumer: runtime.DiscardConsumer,
+		XMLConsumer:     runtime.XMLConsumer(),
+
+		JSONProducer: runtime.JSONProducer(),
+		XMLProducer:  runtime.XMLProducer(),
+
 		PetAddPetHandler: pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetAddPet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 		}),
 		UserCreateUserHandler: user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
 		}),
 		UserCreateUsersWithArrayInputHandler: user.CreateUsersWithArrayInputHandlerFunc(func(params user.CreateUsersWithArrayInputParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUsersWithArrayInput has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUsersWithArrayInput has not yet been implemented")
 		}),
 		UserCreateUsersWithListInputHandler: user.CreateUsersWithListInputHandlerFunc(func(params user.CreateUsersWithListInputParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserCreateUsersWithListInput has not yet been implemented")
+			return middleware.NotImplemented("operation user.CreateUsersWithListInput has not yet been implemented")
 		}),
 		StoreDeleteOrderHandler: store.DeleteOrderHandlerFunc(func(params store.DeleteOrderParams) middleware.Responder {
-			return middleware.NotImplemented("operation StoreDeleteOrder has not yet been implemented")
+			return middleware.NotImplemented("operation store.DeleteOrder has not yet been implemented")
 		}),
 		PetDeletePetHandler: pet.DeletePetHandlerFunc(func(params pet.DeletePetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetDeletePet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.DeletePet has not yet been implemented")
 		}),
 		UserDeleteUserHandler: user.DeleteUserHandlerFunc(func(params user.DeleteUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserDeleteUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.DeleteUser has not yet been implemented")
 		}),
 		PetFindPetsByStatusHandler: pet.FindPetsByStatusHandlerFunc(func(params pet.FindPetsByStatusParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetFindPetsByStatus has not yet been implemented")
+			return middleware.NotImplemented("operation pet.FindPetsByStatus has not yet been implemented")
 		}),
 		PetFindPetsByTagsHandler: pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetFindPetsByTags has not yet been implemented")
+			return middleware.NotImplemented("operation pet.FindPetsByTags has not yet been implemented")
 		}),
 		StoreGetOrderByIDHandler: store.GetOrderByIDHandlerFunc(func(params store.GetOrderByIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation StoreGetOrderByID has not yet been implemented")
+			return middleware.NotImplemented("operation store.GetOrderByID has not yet been implemented")
 		}),
 		PetGetPetByIDHandler: pet.GetPetByIDHandlerFunc(func(params pet.GetPetByIDParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetGetPetByID has not yet been implemented")
+			return middleware.NotImplemented("operation pet.GetPetByID has not yet been implemented")
 		}),
 		UserGetUserByNameHandler: user.GetUserByNameHandlerFunc(func(params user.GetUserByNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserGetUserByName has not yet been implemented")
+			return middleware.NotImplemented("operation user.GetUserByName has not yet been implemented")
 		}),
 		UserLoginUserHandler: user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserLoginUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		}),
 		UserLogoutUserHandler: user.LogoutUserHandlerFunc(func(params user.LogoutUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserLogoutUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.LogoutUser has not yet been implemented")
 		}),
 		StorePlaceOrderHandler: store.PlaceOrderHandlerFunc(func(params store.PlaceOrderParams) middleware.Responder {
-			return middleware.NotImplemented("operation StorePlaceOrder has not yet been implemented")
+			return middleware.NotImplemented("operation store.PlaceOrder has not yet been implemented")
 		}),
 		PetUpdatePetHandler: pet.UpdatePetHandlerFunc(func(params pet.UpdatePetParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetUpdatePet has not yet been implemented")
+			return middleware.NotImplemented("operation pet.UpdatePet has not yet been implemented")
 		}),
 		PetUpdatePetWithFormHandler: pet.UpdatePetWithFormHandlerFunc(func(params pet.UpdatePetWithFormParams, principal interface{}) middleware.Responder {
-			return middleware.NotImplemented("operation PetUpdatePetWithForm has not yet been implemented")
+			return middleware.NotImplemented("operation pet.UpdatePetWithForm has not yet been implemented")
 		}),
 		UserUpdateUserHandler: user.UpdateUserHandlerFunc(func(params user.UpdateUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation UserUpdateUser has not yet been implemented")
+			return middleware.NotImplemented("operation user.UpdateUser has not yet been implemented")
 		}),
 
 		// Applies when the "api_key" header is set
@@ -106,7 +111,6 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 		PetstoreAuthAuth: func(token string, scopes []string) (interface{}, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -128,6 +132,7 @@ type PetstoreAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -139,16 +144,21 @@ type PetstoreAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
+	// JSONConsumer registers a consumer for the following mime types:
+	//   - application/json
 	JSONConsumer runtime.Consumer
-	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
+	// UrlformConsumer registers a consumer for the following mime types:
+	//   - application/x-www-form-urlencoded
 	UrlformConsumer runtime.Consumer
-	// XMLConsumer registers a consumer for a "application/xml" mime type
+	// XMLConsumer registers a consumer for the following mime types:
+	//   - application/xml
 	XMLConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
-	// XMLProducer registers a producer for a "application/xml" mime type
+	// XMLProducer registers a producer for the following mime types:
+	//   - application/xml
 	XMLProducer runtime.Producer
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
@@ -198,10 +208,13 @@ type PetstoreAPI struct {
 	PetUpdatePetWithFormHandler pet.UpdatePetWithFormHandler
 	// UserUpdateUserHandler sets the operation handler for the update user operation
 	UserUpdateUserHandler user.UpdateUserHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -212,6 +225,16 @@ type PetstoreAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *PetstoreAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *PetstoreAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -256,11 +279,9 @@ func (o *PetstoreAPI) Validate() error {
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
 	}
-
 	if o.UrlformConsumer == nil {
 		unregistered = append(unregistered, "UrlformConsumer")
 	}
-
 	if o.XMLConsumer == nil {
 		unregistered = append(unregistered, "XMLConsumer")
 	}
@@ -268,7 +289,6 @@ func (o *PetstoreAPI) Validate() error {
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
 	}
-
 	if o.XMLProducer == nil {
 		unregistered = append(unregistered, "XMLProducer")
 	}
@@ -276,7 +296,6 @@ func (o *PetstoreAPI) Validate() error {
 	if o.APIKeyAuth == nil {
 		unregistered = append(unregistered, "APIKeyAuth")
 	}
-
 	if o.PetstoreAuthAuth == nil {
 		unregistered = append(unregistered, "PetstoreAuthAuth")
 	}
@@ -284,71 +303,54 @@ func (o *PetstoreAPI) Validate() error {
 	if o.PetAddPetHandler == nil {
 		unregistered = append(unregistered, "pet.AddPetHandler")
 	}
-
 	if o.UserCreateUserHandler == nil {
 		unregistered = append(unregistered, "user.CreateUserHandler")
 	}
-
 	if o.UserCreateUsersWithArrayInputHandler == nil {
 		unregistered = append(unregistered, "user.CreateUsersWithArrayInputHandler")
 	}
-
 	if o.UserCreateUsersWithListInputHandler == nil {
 		unregistered = append(unregistered, "user.CreateUsersWithListInputHandler")
 	}
-
 	if o.StoreDeleteOrderHandler == nil {
 		unregistered = append(unregistered, "store.DeleteOrderHandler")
 	}
-
 	if o.PetDeletePetHandler == nil {
 		unregistered = append(unregistered, "pet.DeletePetHandler")
 	}
-
 	if o.UserDeleteUserHandler == nil {
 		unregistered = append(unregistered, "user.DeleteUserHandler")
 	}
-
 	if o.PetFindPetsByStatusHandler == nil {
 		unregistered = append(unregistered, "pet.FindPetsByStatusHandler")
 	}
-
 	if o.PetFindPetsByTagsHandler == nil {
 		unregistered = append(unregistered, "pet.FindPetsByTagsHandler")
 	}
-
 	if o.StoreGetOrderByIDHandler == nil {
 		unregistered = append(unregistered, "store.GetOrderByIDHandler")
 	}
-
 	if o.PetGetPetByIDHandler == nil {
 		unregistered = append(unregistered, "pet.GetPetByIDHandler")
 	}
-
 	if o.UserGetUserByNameHandler == nil {
 		unregistered = append(unregistered, "user.GetUserByNameHandler")
 	}
-
 	if o.UserLoginUserHandler == nil {
 		unregistered = append(unregistered, "user.LoginUserHandler")
 	}
-
 	if o.UserLogoutUserHandler == nil {
 		unregistered = append(unregistered, "user.LogoutUserHandler")
 	}
-
 	if o.StorePlaceOrderHandler == nil {
 		unregistered = append(unregistered, "store.PlaceOrderHandler")
 	}
-
 	if o.PetUpdatePetHandler == nil {
 		unregistered = append(unregistered, "pet.UpdatePetHandler")
 	}
-
 	if o.PetUpdatePetWithFormHandler == nil {
 		unregistered = append(unregistered, "pet.UpdatePetWithFormHandler")
 	}
-
 	if o.UserUpdateUserHandler == nil {
 		unregistered = append(unregistered, "user.UpdateUserHandler")
 	}
@@ -367,49 +369,38 @@ func (o *PetstoreAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
 		switch name {
-
 		case "api_key":
-
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.APIKeyAuth)
 
 		case "petstore_auth":
-
 			result[name] = o.BearerAuthenticator(name, o.PetstoreAuthAuth)
 
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
-
 		case "application/x-www-form-urlencoded":
 			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLConsumer
-
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -417,22 +408,18 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		case "application/xml":
 			result["application/xml"] = o.XMLProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -440,7 +427,6 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -470,7 +456,6 @@ func (o *PetstoreAPI) Context() *middleware.Context {
 
 func (o *PetstoreAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -479,92 +464,74 @@ func (o *PetstoreAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pets"] = pet.NewAddPet(o.context, o.PetAddPetHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users"] = user.NewCreateUser(o.context, o.UserCreateUserHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users/createWithArray"] = user.NewCreateUsersWithArrayInput(o.context, o.UserCreateUsersWithArrayInputHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/users/createWithList"] = user.NewCreateUsersWithListInput(o.context, o.UserCreateUsersWithListInputHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/stores/order/{orderId}"] = store.NewDeleteOrder(o.context, o.StoreDeleteOrderHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/pets/{petId}"] = pet.NewDeletePet(o.context, o.PetDeletePetHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/users/{username}"] = user.NewDeleteUser(o.context, o.UserDeleteUserHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/findByStatus"] = pet.NewFindPetsByStatus(o.context, o.PetFindPetsByStatusHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/findByTags"] = pet.NewFindPetsByTags(o.context, o.PetFindPetsByTagsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/stores/order/{orderId}"] = store.NewGetOrderByID(o.context, o.StoreGetOrderByIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/pets/{petId}"] = pet.NewGetPetByID(o.context, o.PetGetPetByIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{username}"] = user.NewGetUserByName(o.context, o.UserGetUserByNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/login"] = user.NewLoginUser(o.context, o.UserLoginUserHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/logout"] = user.NewLogoutUser(o.context, o.UserLogoutUserHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/stores/order"] = store.NewPlaceOrder(o.context, o.StorePlaceOrderHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/pets"] = pet.NewUpdatePet(o.context, o.PetUpdatePetHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/pets/{petId}"] = pet.NewUpdatePetWithForm(o.context, o.PetUpdatePetWithFormHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/users/{username}"] = user.NewUpdateUser(o.context, o.UserUpdateUserHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -574,6 +541,9 @@ func (o *PetstoreAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -593,4 +563,16 @@ func (o *PetstoreAPI) RegisterConsumer(mediaType string, consumer runtime.Consum
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *PetstoreAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *PetstoreAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

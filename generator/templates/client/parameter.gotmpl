@@ -12,19 +12,17 @@ package {{ .Package }}
 import (
   "context"
   "net/http"
+  "time"
 
-  "github.com/go-openapi/runtime"
-  "github.com/go-openapi/swag"
   "github.com/go-openapi/errors"
-  "github.com/go-openapi/validate"
+  "github.com/go-openapi/runtime"
   cr "github.com/go-openapi/runtime/client"
+  "github.com/go-openapi/strfmt"
+  "github.com/go-openapi/swag"
+  "github.com/go-openapi/validate"
 
-  strfmt "github.com/go-openapi/strfmt"
-
-  {{ range .DefaultImports }}{{ printf "%q" .}}
-  {{ end }}
-  {{ range $key, $value := .Imports }}{{ $key }} {{ printf "%q" $value }}
-  {{ end }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 )
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object

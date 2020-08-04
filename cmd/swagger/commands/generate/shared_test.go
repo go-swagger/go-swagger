@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func resetDefaultOpts() *analysis.FlattenOpts {
@@ -117,4 +118,60 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 }
 
 func Test_Shared_ReadConfig(t *testing.T) {
+	tmpFile, errio := ioutil.TempFile("", "tmp-config*.yaml")
+	require.NoError(t, errio)
+	defer func() {
+		_ = os.Remove(tmpFile.Name())
+	}()
+	tmpConfig := tmpFile.Name()
+	errio = ioutil.WriteFile(tmpConfig, []byte(`param: 123
+other: abc
+`), 0600)
+	require.NoError(t, errio)
+	_ = tmpFile.Close()
+
+	for _, toPin := range []struct {
+		Name        string
+		Filename    string
+		ExpectError bool
+		Expected    map[string]interface{}
+	}{
+		{
+			Name:     "empty",
+			Filename: "",
+		},
+		{
+			Name:        "no file",
+			Filename:    "nowhere",
+			ExpectError: true,
+		},
+		{
+			Name:     "happy path",
+			Filename: tmpConfig,
+			Expected: map[string]interface{}{
+				"param": 123,
+				"other": "abc",
+			},
+		},
+	} {
+		testCase := toPin
+		t.Run(testCase.Name, func(t *testing.T) {
+			v, err := readConfig(testCase.Filename)
+			if testCase.ExpectError {
+				assert.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			if testCase.Expected == nil {
+				require.Nil(t, v)
+				return
+			}
+			require.NotNil(t, v)
+			m := v.AllSettings()
+			for k, expectedValue := range testCase.Expected {
+				require.Contains(t, m, k)
+				assert.EqualValues(t, expectedValue, m[k])
+			}
+		})
+	}
 }
