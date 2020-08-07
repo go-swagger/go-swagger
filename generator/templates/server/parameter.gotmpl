@@ -1,16 +1,18 @@
 {{ define "bindprimitiveparam" }}{{/* an empty test definition to test template repo dependencies resolution - DO NOT CHANGE THIS */}}
 {{ end }}
-
-{{ define "bodyvalidator" }}
-  {{- if .HasModelBodyParams }}
-  // validate body object{{/* delegate validation to model object */}}
-  if err := body.Validate(route.Formats); err != nil {
-    res = append(res, err)
-  }
-
+{{ define "setbodyifvalid" }}
   if len(res) == 0 {
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
+{{ end }}
+{{ define "bodyvalidator" }}
+  {{- if .HasModelBodyParams }}
+  // validate body object{{/* delegate validation to model object */}}
+  if err := body.Validate(formats); err != nil {
+    res = append(res, err)
+  }
+
+  {{ if not .IsValidate }}{{ template "setbodyifvalid" . }}{{- end }}
   {{- else if and .HasSimpleBodyParams .HasModelBodyItems }}
 
     {{- if or .Schema.HasSliceValidations .Schema.Items.HasValidations }}
@@ -33,24 +35,23 @@
         {{- end }}
     }
       {{- end }}
-    if err := body[{{ .IndexVar }}].Validate(route.Formats); err != nil {
+    if err := body[{{ .IndexVar }}].Validate(formats); err != nil {
       res = append(res, err)
       break
     }
   }
 
       {{- if not .Schema.HasSliceValidations }}
-  if len(res) == 0 {
-    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  }
+        {{- if not .IsValidate }}{{- template "setbodyifvalid" . }}{{- end }}
       {{- end }}
     {{- else }}
+    {{- if not .IsValidate }}
   // no validation for items in this slice
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end }}
+  {{- end }}
 
   {{- else if and .HasSimpleBodyParams .HasModelBodyMap }}
-
     {{- if and .Schema.HasValidations (not (or .Schema.AdditionalProperties.IsInterface .Schema.AdditionalProperties.IsStream)) }}
   // validate map of body objects
   for {{ .KeyVar }} := range body {
@@ -69,11 +70,11 @@
         {{- end }}
     }
       {{- end }}
-    if val , ok :=body[{{ .KeyVar }}]; ok {
+    if val , ok := body[{{ .KeyVar }}]; ok {
         {{- if and .IsNullable (not .IsMapNullOverride) }}
         if val != nil {
         {{- end }}
-        if err := val.Validate(route.Formats); err != nil {
+        if err := val.Validate(formats); err != nil {
             res = append(res, err)
             break
         }
@@ -83,36 +84,49 @@
     }
   }
 
-  if len(res) == 0 {
-    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  }
+  {{ if not .IsValidate }}{{ template "setbodyifvalid" . }}{{- end }}
     {{- else }}
   // no validation for this map
+  {{/* TODO: omit body and format in this case */}}
+  _ = body
+  _ = formats
+      {{- if not .IsValidate }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+      {{- end }}
     {{- end }}
   {{- else if .HasSimpleBodyParams }}
     {{- if and (not .IsArray) (not .IsMap) .Schema.HasValidations }}
   // validate inline body
+      {{- if not .IsValidate }}
+  formats := route.Formats
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(route.Formats); err != nil {
+      {{- end }}
+  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(formats); err != nil {
     res = append(res, err)
   }
     {{- else if and (or .IsArray .IsMap) .Schema.HasValidations }}
   // validate inline body {{ if .IsArray }}array{{ else }}map{{ end }}
+      {{- if not .IsValidate }}
+  formats := route.Formats
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(route.Formats); err != nil {
+      {{- end }}
+  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(formats); err != nil {
     res = append(res, err)
   }
     {{- else  }}
   // no validation required on inline body
+      {{- if not .IsValidate }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+      {{- end }}
     {{- end}}
   {{- else }}
       {{- if .IsInterface }}
   // no validation on generic interface
+        {{- if not .IsValidate }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-     {{- end }}
+    {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}
 
 {{ define "sliceparamvalidator"}}
@@ -221,15 +235,28 @@ if err := validate.EnumCase(
 {{- end }}
 
 {{- define "propertyparamvalidator" }}
+  {{- if and .IsNullable (not .IsMapNullOverride) }}
+    // Required: {{ if .Required }}true{{ else }}false{{ end }}
+    if {{.ValueExpression}} == nil {
+      {{- if .Required }}
+        return errors.Required({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "")
+      {{- else }}
+        return nil
+      {{- end }}
+    }
+  {{- end }}
   {{- if .IsPrimitive }}
     {{ template "validationPrimitive" . }}
   {{- end }}
   {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
-if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
+if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ if .IsNullable }}(*{{ end }}{{.ValueExpression}}{{ if .IsNullable }}){{ end }}{{ if .IsCustomFormatter }}.String(){{ end }}, formats); err != nil {
   return err
 }
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
+    {{- if and .Child.HasValidations (not .Child.IsCustomFormatter) }}
+      {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
+    {{- end }}
     {{ template "sliceparamvalidator" . }}
   {{- else if .IsMap }}
     {{ .Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
@@ -238,7 +265,11 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 {{- end }}
 
 {{ define "sliceparambinder" }}
-var {{ varname .Child.ValueExpression }}R {{ .GoType }}
+{{ $child := .Child.ValidateOnly }}
+{{- if not .IsValidate }}
+  {{ $child = .Child }}
+  var {{ varname .Child.ValueExpression }}R {{ .GoType }}
+{{- end }}
 for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .Child.ValueExpression }}V := range {{ varname .Child.ValueExpression }}C {
   {{- if .Child.IsArray }}{{/* recursive resolution of arrays in params */}}
     {{- if not .Child.SkipParse }}
@@ -246,16 +277,22 @@ for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .C
     {{- end }}
     {{ .Child.Child.ValueExpression }}C := {{ if .Child.SkipParse }}{{ varname .Child.ValueExpression }}V{{ else }}swag.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }}){{ end }}
     {{- if .Child.HasSliceValidations }}
-      {{- template "sliceparamvalidator" .Child }}
+      {{- template "sliceparamvalidator" $child }}
     {{- end }}
-  if len({{ varname .Child.Child.ValueExpression }}C) > 0 {
-    {{ template "sliceparambinder" .Child }}
-    {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
-  }
+    {{- if or (not .IsValidate) .Child.Child.HasValidations }}
+      if len({{ varname .Child.Child.ValueExpression }}C) > 0 {
+      {{ template "sliceparambinder" $child }}
+      {{- if not .IsValidate }}
+        {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
+      {{- end }}
+      }
+    {{- end }}
   {{- else if .Child.IsMap }}{{/* simple map in items (possible with body params)*/}}
     {{ .Child.Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
-    {{- template "mapparamvalidator" .Child }}
-    {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
+    {{- template "mapparamvalidator" $child }}
+    {{- if not .IsValidate }}
+      {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
+    {{- end }}
   {{- else }}{{/* non-array && non-map type in items */}}
     {{- if and .Child.IsNullable (not .IsMapNullOverride) }}
     if {{ varname .Child.ValueExpression }}V == nil {
@@ -266,8 +303,10 @@ for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .C
        {{- end }}
     }
     {{- end }}
-    {{- template "childvalidator" .Child }}
-    {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
+    {{- template "childvalidator" $child }}
+    {{- if not .IsValidate }}
+      {{ varname .Child.ValueExpression }}R = append({{ varname .Child.ValueExpression }}R, {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap }}IR{{end}})
+    {{- end }}
   {{- end }}
 }
 {{ end }}
@@ -471,6 +510,9 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
         {{- end -}}
       {{- end }}
     } else {
+      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap) (and .HasSimpleBodyParams .HasModelBodyItems) }}
+        formats := route.Formats
+      {{- end }}
       {{- template "bodyvalidator" . }}
     }
     {{- end }}
@@ -485,6 +527,68 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     return errors.CompositeValidationError(res...)
   }
   return nil
+}
+
+func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) Validate(formats strfmt.Registry) error {
+	var res []error
+	{{ range .Params }}
+    // {{ .Name }}
+    // Required: {{ .Required }}
+    {{ if .IsQueryParam }}// AllowEmptyValue: {{ .AllowEmptyValue }}{{ end -}}{{ if .IsPathParam }}// Parameter is provided by construction from the route{{ end -}}
+    {{/* file validations */}}
+    {{- if .IsFileParam }}
+      {{- if or .MinLength .MaxLength }}
+        size, _ := {{ .ReceiverName }}.{{ pascalize .Name }}.Seek(0, io.SeekEnd)
+        file.Seek(0, io.SeekStart)
+      {{- end }}
+      {{- if .MinLength}}
+        if size < {{.MinLength}} {
+            res = append(res, errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false))
+        }
+      {{- end }}
+      {{- if .MaxLength}}
+        if size > {{.MaxLength}} {
+            res = append(res, errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false))
+        }
+      {{- end }}
+    {{/* body validation */}}
+    {{- else if .IsBodyParam  }}
+      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap) (and .HasSimpleBodyParams .HasModelBodyItems) }}
+        body := {{ .ReceiverName }}.{{ pascalize .Name }}
+      {{- end }}
+      {{- template "bodyvalidator" .ValidateOnly }}
+    {{/* validate for arrays */}}
+    {{- else if .IsArray }}
+      {{- if .HasSliceValidations }}
+        if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
+          res = append(res, err)
+        }
+      {{- end }}
+    {{/* path and query validaionts */}}
+    {{- else if not .IsBodyParam }}
+      {{/* if required check if exists */}}
+      {{- if and (not .IsPathParam) .Required (not .AllowEmptyValue) -}}
+        if err := validate.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ .ReceiverName }}.{{ pascalize .Name }}); err != nil {
+          res = append(res, err)
+        }
+      {{- end }}
+      {{/* if a validation method exists for the property exists, call it */}}
+      {{- if .HasValidations }}
+        if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
+          res = append(res, err)
+        }
+      {{- else if .IsCustomFormatter }}// Format: {{ .SwaggerFormat }}
+        if err := validate.FormatOf({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{ .ReceiverName }}.{{ pascalize .Name }}, formats); err != nil {
+          res = append(res, errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, {{ .ReceiverName }}.{{ pascalize .Name }}))
+        }
+      {{- end }}
+    {{- end }}
+  {{- end }}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
 }
 
 {{- $className := (pascalize .Name) }}
@@ -612,13 +716,11 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}Bo
           {{- end }}
           {{- if .Child.HasValidations }}
             {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
-            {{ template "sliceparambinder" . }}
-            {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
+            {{ template "sliceparambinder" .ValidateOnly }}
           {{- end }}
         {{- else if .IsMap }}
             {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
             {{ template "mapparamvalidator" . }}
-            {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
         {{- else }}
           {{ template "propertyparamvalidator" . }}
         {{- end }}
