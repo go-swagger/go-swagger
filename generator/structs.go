@@ -324,6 +324,35 @@ func (g *GenParameter) ItemsDepth() string {
 	return ""
 }
 
+// IsValidate is used to distinguish in a template if only validation code
+// or the full binding should be generated.
+func (g *GenParameter) IsValidate() bool {
+	return false
+}
+
+// ValidateOnly is used to change the current GenParameter to only
+// generate validation code.
+func (g *GenParameter) ValidateOnly() *GenParameterValidateOnly {
+	return (*GenParameterValidateOnly)(g)
+}
+
+// GenParameterValidateOnly is a wrapper over GenParameter which
+// is used to generate only the validation part of the subtemplate.
+type GenParameterValidateOnly GenParameter
+
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+// For a parameter object, it always returns "".
+func (g *GenParameterValidateOnly) ItemsDepth() string {
+	// NOTE: this is currently used by templates to generate explicit comments in nested structures
+	return ""
+}
+
+// IsValidate is used to distinguish in a template if only validation code
+// or the full binding should be generated.
+func (g *GenParameterValidateOnly) IsValidate() bool {
+	return true
+}
+
 // GenParameters represents a sorted parameter collection
 type GenParameters []GenParameter
 
@@ -376,6 +405,33 @@ func (g *GenItems) ItemsDepth() string {
 		current = current.Parent
 	}
 	return strings.Repeat("items.", i)
+}
+
+// ValidateOnly is used to change the current GenItems to only
+// generate validation code.
+func (g *GenItems) ValidateOnly() *GenItemsValidateOnly {
+	return (*GenItemsValidateOnly)(g)
+}
+
+// IsValidate is used to distinguish in a template if only validation code
+// or the full binding should be generated.
+func (g *GenItems) IsValidate() bool {
+	return false
+}
+
+// GenItemsValidateOnly is a wrapper over GenItems which
+// is used to generate only the validation part of the subtemplate.
+type GenItemsValidateOnly GenItems
+
+// IsValidate is used to distinguish in a template if only validation code
+// or the full binding should be generated.
+func (g *GenItemsValidateOnly) IsValidate() bool {
+	return true
+}
+
+// ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
+func (g *GenItemsValidateOnly) ItemsDepth() string {
+	return ((*GenItems)(g)).ItemsDepth()
 }
 
 // GenOperationGroup represents a named (tagged) group of operations
