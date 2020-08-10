@@ -1,0 +1,107 @@
+swagger: "2.0"
+info:
+  description: Test
+  title: Test
+  version: "0.0.1"
+basePath: /v1
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /getMapAndUUID/{someID}:
+    get:
+      operationId: getMapAndUUID
+      parameters:
+        - name: b1
+          in: query
+          type: string
+          format: byte
+        - name: b2
+          in: query
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+              format: byte
+        - name: b3
+          in: query
+          type: array
+          items:
+            type: array
+            maxItems: 10
+            items:
+              type: string
+              format: byte
+        - name: someID
+          in: path
+          type: string
+          format: uuid4
+          required: true
+      responses:
+        200:
+          description: OK
+  /getNestedWithValidations: 
+    get: 
+      operationId: getNestedWithValidations
+      parameters:
+        - name: genericNestedWithValidations
+          in: body
+          schema:
+            type: array
+            items: 
+              type: array
+              items:
+                type: array
+                items: 
+                  type: array
+                  maxItems: 10
+                  items:
+                    type: object
+      responses: 
+        200: 
+          description: "OK"
+  /postBody:
+    post: 
+      operationId: postBody
+      parameters:
+        - name: postBody
+          in: body
+          required: true
+          schema:
+              $ref: "#/definitions/postBodyPayload"
+      responses: 
+        200: 
+          description: "OK"
+  /getSimple:
+      get:
+        operationId: getSimple
+        parameters:
+          - name: id
+            in: query
+            type: string
+            format: uuid4
+          - name: message
+            in: query
+            type: string
+            minLength: 2
+        responses:
+          200:
+            description: OK
+definitions:
+  postBodyPayload:
+    type: object
+    required:
+      - id
+      - message
+    properties:
+      message:
+          type: string
+          maxLength: 500
+      id:
+          description: UID of the resource
+          type: string
+          format: uuid4
+          example: 74456569-164b-4d44-b2ca-8bfdfaa7feb9

@@ -4506,3 +4506,87 @@ func TestGenParameter_Issue2273(t *testing.T) {
 		}
 	}
 }
+
+func TestGenParameter_2309(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	fixtureConfig := map[string]map[string][]string{
+
+		// load expectations for parameters in operation get_map_and_UUID_parameters.go
+		"getMapAndUUID": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`if err := o.validateSomeID(formats); err != nil {`,
+				`if err := validate.FormatOf("someID", "path", "uuid4", o.SomeID.String(), formats); err != nil {`,
+				`func (o *GetMapAndUUIDParams) Validate(formats strfmt.Registry) error {`,
+				`for i, b2IV := range b2IC {`,
+				`	b2IIC := swag.SplitByFormat(b2IV, "")`,
+				`	if len(b2IIC) > 0 {`,
+				`		var b2IIR []strfmt.Base64`,
+				`		for ii, b2IIV := range b2IIC {`,
+				`			value, err := formats.Parse("byte", b2IIV)`,
+				`				return errors.InvalidType(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "b2", i), ii), "query", "strfmt.Base64", value)`,
+			},
+		},
+
+		// load expectations for parameters in operation get_null_parameters.go
+		"getNestedWithValidations": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func (o *GetNestedWithValidationsParams) Validate(formats strfmt.Registry) error {`,
+				`	if err := o.validateGenericNestedWithValidationsBody(formats); err != nil {`,
+				`		res = append(res, err)`,
+				`func (o *GetNestedWithValidationsParams) validateGenericNestedWithValidationsBody(formats strfmt.Registry) error {`,
+				`	genericNestedWithValidationsIC := o.GenericNestedWithValidations`,
+				`	for i, genericNestedWithValidationsIV := range genericNestedWithValidationsIC {`,
+				`		genericNestedWithValidationsIIC := genericNestedWithValidationsIV`,
+				`		if len(genericNestedWithValidationsIIC) > 0 {`,
+				`			for ii, genericNestedWithValidationsIIV := range genericNestedWithValidationsIIC {`,
+				`				genericNestedWithValidationsIIIC := genericNestedWithValidationsIIV`,
+				`				if len(genericNestedWithValidationsIIIC) > 0 {`,
+				`					for iii, genericNestedWithValidationsIIIV := range genericNestedWithValidationsIIIC {`,
+				`						genericNestedWithValidationsIIIIC := genericNestedWithValidationsIIIV`,
+				`						genericNestedWithValidationsIiiiiiSize := int64(len(genericNestedWithValidationsIIIIC))`,
+				`						if err := validate.MaxItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "genericNestedWithValidations", i), ii), iii), "", genericNestedWithValidationsIiiiiiSize, 10); err != nil {`,
+				`							return err`,
+			},
+		},
+
+		// load expectations for parameters in operation get_primitive_parameters.go
+		"postBody": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`formats := route.Formats`,
+				`func (o *PostBodyParams) Validate(formats strfmt.Registry) error {`,
+				`	body := o.PostBody`,
+				`	if err := body.Validate(formats); err != nil {`,
+				`		res = append(res, err)`,
+			},
+		},
+
+		// load expectations for parameters in operation get_model_interface_parameters.go
+		"getSimple": { // fixture index
+			"serverParameter": { // executed template
+				// expected code lines
+				`func (o *GetSimpleParams) Validate(formats strfmt.Registry) error {`,
+				`	var res []error`,
+				`	if err := o.validateID(formats); err != nil {`,
+				`		res = append(res, err)`,
+				`	if err := o.validateMessage(formats); err != nil {`,
+				`	if len(res) > 0 {`,
+				`		return errors.CompositeValidationError(res...)`,
+				`	return nil`,
+				`if o.ID == nil {`,
+				`    return nil`,
+				`if err := validate.FormatOf("id", "query", "uuid4", (*o.ID).String(), formats); err != nil {`,
+				`	return err`,
+				`if o.Message == nil {`,
+				`    if err := validate.MinLength("message", "query", (*o.Message), 2); err != nil {`,
+			},
+		},
+	}
+	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "2309", "fixture-2309.yaml"), true, false)
+}
