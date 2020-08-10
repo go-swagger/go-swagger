@@ -87,9 +87,6 @@
   {{ if not .IsValidate }}{{ template "setbodyifvalid" . }}{{- end }}
     {{- else }}
   // no validation for this map
-  {{/* TODO: omit body and format in this case */}}
-  _ = body
-  _ = formats
       {{- if not .IsValidate }}
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
       {{- end }}
@@ -254,9 +251,6 @@ if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{
 }
   {{- end }}
   {{- if .IsArray }}{{/* slice validations */}}
-    {{- if and .Child.HasValidations (not .Child.IsCustomFormatter) }}
-      {{ varname .Child.ValueExpression }}C := {{ .ValueExpression }}
-    {{- end }}
     {{ template "sliceparamvalidator" . }}
   {{- else if .IsMap }}
     {{ .Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
@@ -510,7 +504,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
         {{- end -}}
       {{- end }}
     } else {
-      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap) (and .HasSimpleBodyParams .HasModelBodyItems) }}
+      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap .Schema.HasValidations) (and .HasSimpleBodyParams .HasModelBodyItems) }}
         formats := route.Formats
       {{- end }}
       {{- template "bodyvalidator" . }}
@@ -538,22 +532,23 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) Validate(formats strfmt.
     {{/* file validations */}}
     {{- if .IsFileParam }}
       {{- if or .MinLength .MaxLength }}
-        size, _ := {{ .ReceiverName }}.{{ pascalize .Name }}.Seek(0, io.SeekEnd)
-        file.Seek(0, io.SeekStart)
+        fileBuffer := new(bytes.Buffer)
+        fileBuffer.ReadFrom({{ .ReceiverName }}.{{ pascalize .Name }})
+        size := fileBuffer.Len()
       {{- end }}
       {{- if .MinLength}}
         if size < {{.MinLength}} {
-            res = append(res, errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false))
+            res = append(res, errors.ExceedsMinimum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MinLength }}, false, size))
         }
       {{- end }}
       {{- if .MaxLength}}
         if size > {{.MaxLength}} {
-            res = append(res, errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false))
+            res = append(res, errors.ExceedsMaximum({{ .Path }}, {{ printf "%q" .Location }}, {{ .MaxLength }}, false, size))
         }
       {{- end }}
     {{/* body validation */}}
     {{- else if .IsBodyParam  }}
-      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap) (and .HasSimpleBodyParams .HasModelBodyItems) }}
+      {{- if or .HasModelBodyParams (and .HasSimpleBodyParams .HasModelBodyMap .Schema.HasValidations) (and .HasSimpleBodyParams .HasModelBodyItems) }}
         body := {{ .ReceiverName }}.{{ pascalize .Name }}
       {{- end }}
       {{- template "bodyvalidator" .ValidateOnly }}
@@ -577,8 +572,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) Validate(formats strfmt.
         if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
           res = append(res, err)
         }
-      {{- else if .IsCustomFormatter }}// Format: {{ .SwaggerFormat }}
-        if err := validate.FormatOf({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .SwaggerFormat }}, {{ .ReceiverName }}.{{ pascalize .Name }}, formats); err != nil {
+      {{- else if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}// Format: {{ .SwaggerFormat }}
+        if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ if .IsNullable }}(*{{ end }}{{.ValueExpression}}{{ if .IsNullable }}){{ end }}{{ if .IsCustomFormatter }}.String(){{ end }}, formats); err != nil {
           res = append(res, errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, {{ .ReceiverName }}.{{ pascalize .Name }}))
         }
       {{- end }}
