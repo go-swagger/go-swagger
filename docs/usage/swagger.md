@@ -23,3 +23,4 @@ Available commands:
   serve     serve spec and docs
   validate  validate the swagger document
   version   print the version
+```
