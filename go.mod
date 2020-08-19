@@ -10,7 +10,7 @@ require (
 	github.com/go-openapi/analysis v0.19.10
 	github.com/go-openapi/errors v0.19.6
 	github.com/go-openapi/inflect v0.19.0
-	github.com/go-openapi/jsonreference v0.19.4 // indirect
+	github.com/go-openapi/jsonreference v0.19.4
 	github.com/go-openapi/loads v0.19.5
 	github.com/go-openapi/runtime v0.19.20
 	github.com/go-openapi/spec v0.19.8

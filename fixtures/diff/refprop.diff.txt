@@ -1,0 +1,7 @@
+BREAKING CHANGES:
+=================
+/a/:get -> 200 - Response - Body<array[A1]>.wasRef<A5> - Changed type - <A5> -> <string>
+/a/{id}:patch - Request - Body.changeRef<A5> - Changed ref to different object - <A5> -> <A1>
+/b/:post - Request - Body.wasRef<A5> - Changed type - <A5> -> <string>
+/b/:post -> 200 - Response - Body<A1>.wasRef<A5> - Changed type - <A5> -> <string>
+compatibility test FAILED: 4 breaking changes detected
