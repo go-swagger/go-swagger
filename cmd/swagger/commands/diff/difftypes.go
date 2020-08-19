@@ -43,7 +43,7 @@ const (
 	AddedRequiredParam
 	// DeletedRequiredParam - A required parameter has been deleted in the new spec
 	DeletedRequiredParam
-	// ChangedRequiredToOptional - A required parameter has been made optional in the new spec
+	// ChangedRequiredToOptional - A required property has been made optional in the new spec
 	ChangedRequiredToOptional
 	// AddedEndpoint - An endpoint has been added in the new spec
 	AddedEndpoint
@@ -89,6 +89,18 @@ const (
 	ChangedResponseHeader
 	// DeletedResponseHeader Added a header Item
 	DeletedResponseHeader
+	// RefTargetChanged Changed a ref to point to a different object
+	RefTargetChanged
+	// RefTargetRenamed Renamed a ref to point to the same object
+	RefTargetRenamed
+	// DeletedConstraint Deleted a schema constraint
+	DeletedConstraint
+	// AddedConstraint Added a schema constraint
+	AddedConstraint
+	// DeletedDefinition removed one of the definitions
+	DeletedDefinition
+	// AddedDefinition removed one of the definitions
+	AddedDefinition
 )
 
 var toLongStringSpecChangeCode = map[SpecChangeCode]string{
@@ -130,6 +142,13 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedResponseHeader:            "Added response header",
 	ChangedResponseHeader:          "Changed response header",
 	DeletedResponseHeader:          "Deleted response header",
+	RefTargetChanged:               "Changed ref to different object",
+	RefTargetRenamed:               "Changed ref to renamed object",
+	DeletedConstraint:              "Deleted a schema constraint",
+	AddedConstraint:                "Added a schema constraint",
+	DeletedDefinition:              "Deleted a schema definition",
+	AddedDefinition:                "Added a schema definition",
+	ChangedRequiredToOptional:      "Changed required property to optional",
 }
 
 var toStringSpecChangeCode = map[SpecChangeCode]string{
@@ -171,6 +190,13 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedResponseHeader:            "AddedResponseHeader",
 	ChangedResponseHeader:          "ChangedResponseHeader",
 	DeletedResponseHeader:          "DeletedResponseHeader",
+	RefTargetChanged:               "RefTargetChanged",
+	RefTargetRenamed:               "RefTargetRenamed",
+	DeletedConstraint:              "DeletedConstraint",
+	AddedConstraint:                "AddedConstraint",
+	DeletedDefinition:              "DeletedDefinition",
+	AddedDefinition:                "AddedDefinition",
+	ChangedRequiredToOptional:      "ChangedRequiredToOptional",
 }
 
 var toIDSpecChangeCode = map[string]SpecChangeCode{}
@@ -273,5 +299,4 @@ func init() {
 	for key, val := range toStringCompatibility {
 		toIDCompatibility[val] = key
 	}
-
 }

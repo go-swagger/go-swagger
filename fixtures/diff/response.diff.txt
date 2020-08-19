@@ -1,13 +1,13 @@
-NON-BREAKING CHANGES:
-            =====================
-            /a/:get -> 201 Response- Added response
-            /a/:put -> 200 Response - colour : string - Added property
-            /a/:put -> 200 Response - description : string - Narrowed type <string -> integer.int32>
-            /a/{id}:get -> 200 Response - colour : string - Added property
-            /a/{id}:get -> 200 Response - description : string - Narrowed type <string -> integer.int32>
+ NON-BREAKING CHANGES:
+=====================
+/a/:get -> 201 - Response - Body<array[A1]> - Added response
+/a/:put -> 200 - Response - Body<A3>.description<string> - Narrowed type - string -> integer.int32
+/a/{id}:get -> 200 - Response - Body<A3>.description<string> - Narrowed type - string -> integer.int32
 
-            BREAKING CHANGES:
-            =================
-            /a/:get -> 200 Response- Deleted response
-
-compatibility test FAILED: 1 breaking changes detected
+BREAKING CHANGES:
+=================
+/a/:get -> 200 - Response - Body<array[A1]> - Deleted response
+Spec Definitions.B2.attributes<object> - Deleted property
+Spec Definitions.B2.description<string> - Deleted property
+Spec Definitions.B2.letters<array[string]> - Deleted property
+compatibility test FAILED: 4 breaking changes detected

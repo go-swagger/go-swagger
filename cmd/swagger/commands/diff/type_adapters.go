@@ -32,8 +32,28 @@ func forItems(items *spec.Items) *spec.Schema {
 	return &schema
 }
 
-func forParam(param spec.Parameter) spec.SchemaProps {
-	return spec.SchemaProps{
+func forHeader(header spec.Header) *spec.SchemaProps {
+	return &spec.SchemaProps{
+		Type:             []string{header.Type},
+		Format:           header.Format,
+		Items:            &spec.SchemaOrArray{Schema: forItems(header.Items)},
+		Maximum:          header.Maximum,
+		ExclusiveMaximum: header.ExclusiveMaximum,
+		Minimum:          header.Minimum,
+		ExclusiveMinimum: header.ExclusiveMinimum,
+		MaxLength:        header.MaxLength,
+		MinLength:        header.MinLength,
+		Pattern:          header.Pattern,
+		MaxItems:         header.MaxItems,
+		MinItems:         header.MinItems,
+		UniqueItems:      header.UniqueItems,
+		MultipleOf:       header.MultipleOf,
+		Enum:             header.Enum,
+	}
+}
+
+func forParam(param spec.Parameter) *spec.SchemaProps {
+	return &spec.SchemaProps{
 		Type:             []string{param.Type},
 		Format:           param.Format,
 		Items:            &spec.SchemaOrArray{Schema: forItems(param.Items)},
@@ -152,6 +172,13 @@ func compareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreate
 		if *val2 < *val1 {
 			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %f->%f", fieldName, *val1, *val2)}
 		}
+	} else {
+		if val1 != val2 {
+			if val1 != nil {
+				return TypeDiff{Change: DeletedConstraint, Description: fmt.Sprintf("%s(%f)", fieldName, *val1)}
+			}
+			return TypeDiff{Change: AddedConstraint, Description: fmt.Sprintf("%s(%f)", fieldName, *val2)}
+		}
 	}
 	return TypeDiff{Change: NoChangeDetected, Description: ""}
 }
@@ -164,7 +191,13 @@ func compareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode 
 		if *val2 < *val1 {
 			return TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %d->%d", fieldName, *val1, *val2)}
 		}
-
+	} else {
+		if val1 != val2 {
+			if val1 != nil {
+				return TypeDiff{Change: DeletedConstraint, Description: fmt.Sprintf("%s(%d)", fieldName, *val1)}
+			}
+			return TypeDiff{Change: AddedConstraint, Description: fmt.Sprintf("%s(%d)", fieldName, *val2)}
+		}
 	}
 	return TypeDiff{Change: NoChangeDetected, Description: ""}
 }
