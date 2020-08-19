@@ -1,9 +1,11 @@
 NON-BREAKING CHANGES:
-            =====================
-             Metadata - Spec Metadata - Changed a description <Move your app forward with the Uber API -> Move your app forward with the Uber API with description change>
-            /estimates/price:get Request- Added a tag <A new tag>
-            /estimates/price:get Request- Deleted a tag <DeadTagWalking>
-            /products:get Request - latitude - Deleted a description
-            /products:get Request- Deleted a description
-
+=====================
+/estimates/price:get - Request - Added a tag - "A new tag"
+/estimates/price:get - Request - Deleted a tag - "DeadTagWalking"
+/estimates/time:get -> 200 - Response - Body<array[Product]>.display_name<string> - Added a description
+/history:get - Request - Added a description
+/products:get - Request - Deleted a description
+/products:get - Request - latitude - Deleted a description
+/products:get -> 200 - Response - Body<array[Product]>.display_name<string> - Added a description
+Spec Metadata - Changed a description - Move your app forward with the Uber API -> Move your app forward with the Uber API with description change
 compatibility test OK. No breaking changes identified.

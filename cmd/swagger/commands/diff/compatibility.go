@@ -32,6 +32,8 @@ func init() {
 			ChangedTag:              NonBreaking,
 			AddedTag:                NonBreaking,
 			DeletedTag:              NonBreaking,
+			DeletedConstraint:       Breaking,
+			AddedConstraint:         NonBreaking,
 		},
 		ForRequest: map[SpecChangeCode]Compatibility{
 			AddedRequiredProperty:          Breaking,
@@ -55,6 +57,8 @@ func init() {
 			ChangedTag:                     NonBreaking,
 			AddedTag:                       NonBreaking,
 			DeletedTag:                     NonBreaking,
+			DeletedConstraint:              NonBreaking,
+			AddedConstraint:                Breaking,
 		},
 		ForChange: map[SpecChangeCode]Compatibility{
 			NoChangeDetected:          NonBreaking,
@@ -63,8 +67,8 @@ func init() {
 			DeletedDeprecatedEndpoint: NonBreaking,
 			AddedConsumesFormat:       NonBreaking,
 			DeletedConsumesFormat:     Breaking,
-			AddedProducesFormat:       Breaking,
-			DeletedProducesFormat:     NonBreaking,
+			AddedProducesFormat:       NonBreaking,
+			DeletedProducesFormat:     Breaking,
 			AddedSchemes:              NonBreaking,
 			DeletedSchemes:            Breaking,
 			ChangedHostURL:            Breaking,
@@ -75,6 +79,10 @@ func init() {
 			ChangedTag:                NonBreaking,
 			AddedTag:                  NonBreaking,
 			DeletedTag:                NonBreaking,
+			RefTargetChanged:          Breaking,
+			RefTargetRenamed:          NonBreaking,
+			AddedDefinition:           NonBreaking,
+			DeletedDefinition:         NonBreaking,
 		},
 	}
 }
