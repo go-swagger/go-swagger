@@ -1893,12 +1893,17 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	debugLogAsJSON("making gen schema (anon: %t, req: %t, tuple: %t) %s\n",
 		!sg.Named, sg.Required, sg.IsTuple, sg.Name, sg.Schema)
 
-	ex := ""
+	sg.GenSchema.Example = ""
 	if sg.Schema.Example != nil {
-		ex = fmt.Sprintf("%#v", sg.Schema.Example)
+		data, err := asJSON(sg.Schema.Example)
+		if err != nil {
+			return err
+		}
+		// Deleting the unnecessary double quotes for string types
+		// otherwise the generate spec will generate as "\"foo\""
+		sg.GenSchema.Example = strings.Trim(data, "\"")
 	}
 	sg.GenSchema.IsExported = true
-	sg.GenSchema.Example = ex
 	sg.GenSchema.Path = sg.Path
 	sg.GenSchema.IndexVar = sg.IndexVar
 	sg.GenSchema.Location = body
