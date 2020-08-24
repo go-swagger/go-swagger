@@ -1,12 +1,10 @@
 [
   {
     "location": {
-      "url": "/b/",
+      "url": "/a/",
       "method": "get",
-      "response": 200,
       "node": {
-        "type": "A1",
-        "is_array": true,
+        "name": "Query",
         "child": {
           "name": "personality",
           "type": "string"
@@ -14,17 +12,15 @@
       }
     },
     "code": "AddedEnumValue",
-    "compatibility": "Breaking",
-    "info": "sane"
+    "compatibility": "NonBreaking",
+    "info": "extrovert"
   },
   {
     "location": {
-      "url": "/b/",
+      "url": "/a/",
       "method": "get",
-      "response": 200,
       "node": {
-        "type": "A1",
-        "is_array": true,
+        "name": "Query",
         "child": {
           "name": "personality",
           "type": "string"
@@ -32,8 +28,8 @@
       }
     },
     "code": "DeletedEnumValue",
-    "compatibility": "NonBreaking",
-    "info": "crazy"
+    "compatibility": "Breaking",
+    "info": "saucy"
   }
-]
 
+]

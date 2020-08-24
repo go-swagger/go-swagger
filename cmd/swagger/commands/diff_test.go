@@ -95,13 +95,13 @@ func TestDiffReadIgnores(t *testing.T) {
 
 	isIn := diff.SpecDifference{DifferenceLocation: diff.DifferenceLocation{
 		Method:   "get",
-		Response: 0,
-		URL:      "/a/",
-		Node:     &diff.Node{Field: "Query", ChildNode: &diff.Node{Field: "personality"}},
+		Response: 200,
+		URL:      "/b/",
+		Node:     &diff.Node{Field: "Body", TypeName: "A1", IsArray: true, ChildNode: &diff.Node{Field: "personality", TypeName: "string"}},
 	},
-		Code:          diff.AddedEnumValue,
+		Code:          diff.DeletedEnumValue,
 		Compatibility: diff.NonBreaking,
-		DiffInfo:      "extrovert",
+		DiffInfo:      "crazy",
 	}
 	assert.Contains(t, ignores, isIn)
 
@@ -247,7 +247,7 @@ func fixturePart(file string) string {
 func hasFixtureBreaking(part string) bool {
 	// these fixtures expect some breaking changes
 	switch part {
-	case "enum", "kitchensink", "param", "path", "response":
+	case "enum", "kitchensink", "param", "path", "response", "refprop":
 		return true
 	default:
 		return false
