@@ -1,7 +1,6 @@
 package diff
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 	"time"
@@ -46,42 +45,42 @@ func Test_getRef(t *testing.T) {
 	}
 }
 
-func TestCheckToFromArrayType(t *testing.T) {
-	type args struct {
-		diffs []TypeDiff
-		type1 interface{}
-		type2 interface{}
-	}
-	tests := []struct {
-		name string
-		args args
-		want []TypeDiff
-	}{
-		{
-			name: "to",
-			args: args{
-				type1: spec.Int32Property(),
-				type2: arraySchemaOf("string"),
-			},
-			want: []TypeDiff{{Change: ChangedType, FromType: "<integer>", ToType: "<array[string]>"}},
-		},
-		{
-			name: "from",
-			args: args{
-				type1: arraySchemaOf("string"),
-				type2: spec.Int32Property(),
-			},
-			want: []TypeDiff{{Change: ChangedType, ToType: "<integer>", FromType: "<array[string]>"}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := CheckToFromArrayType(tt.args.diffs, tt.args.type1, tt.args.type2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CheckToFromArrayType() = %s, want %s", jsonStr(got), jsonStr(tt.want))
-			}
-		})
-	}
-}
+// func TestCheckToFromArrayType(t *testing.T) {
+// 	type args struct {
+// 		diffs []TypeDiff
+// 		type1 interface{}
+// 		type2 interface{}
+// 	}
+// 	tests := []struct {
+// 		name string
+// 		args args
+// 		want []TypeDiff
+// 	}{
+// 		{
+// 			name: "to",
+// 			args: args{
+// 				type1: spec.Int32Property(),
+// 				type2: arraySchemaOf("string"),
+// 			},
+// 			want: []TypeDiff{{Change: ChangedType, FromType: "<integer>", ToType: "<array[string]>"}},
+// 		},
+// 		{
+// 			name: "from",
+// 			args: args{
+// 				type1: arraySchemaOf("string"),
+// 				type2: spec.Int32Property(),
+// 			},
+// 			want: []TypeDiff{{Change: ChangedType, ToType: "<integer>", FromType: "<array[string]>"}},
+// 		},
+// 	}
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			if got := CheckToFromArrayType(tt.args.diffs, tt.args.type1, tt.args.type2); !reflect.DeepEqual(got, tt.want) {
+// 				t.Errorf("CheckToFromArrayType() = %s, want %s", jsonStr(got), jsonStr(tt.want))
+// 			}
+// 		})
+// 	}
+// }
 
 func arraySchemaOf(typename string) *spec.Schema {
 	return &spec.Schema{SchemaProps: spec.SchemaProps{
@@ -185,7 +184,7 @@ func Test_compareEnums(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := compareEnums(tt.args.left, tt.args.right); !reflect.DeepEqual(got, tt.want) {
+			if got := CompareEnums(tt.args.left, tt.args.right); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("compareEnums() = %v, want %v", got, tt.want)
 			}
 		})
@@ -221,26 +220,104 @@ func Test_checkNumericTypeChanges(t *testing.T) {
 	}
 }
 
-func TestCheckStringTypeChanges(t *testing.T) {
+func TestCompareFloatValues(t *testing.T) {
 	type args struct {
-		diffs []TypeDiff
-		type1 *spec.SchemaProps
-		type2 *spec.SchemaProps
+		name   string
+		field1 *float64
+		field2 *float64
 	}
 	tests := []struct {
 		name string
 		args args
 		want []TypeDiff
 	}{
-		// TODO: Add test cases.
+		{
+			name: "both null",
+			args: args{name: "bob", field1: nil, field2: nil},
+			want: []TypeDiff{},
+		},
+		{
+			name: "greater",
+			args: args{name: "bob", field1: floatPointerOf(1.0), field2: floatPointerOf(2.0)},
+			want: []TypeDiff{{Change: WidenedType, Description: "bob 1.000000->2.000000"}},
+		},
+		{
+			name: "less",
+			args: args{name: "bob", field1: floatPointerOf(2.0), field2: floatPointerOf(1.0)},
+			want: []TypeDiff{{Change: NarrowedType, Description: "bob 2.000000->1.000000"}},
+		},
+		{
+			name: "firstNil",
+			args: args{name: "bob", field1: nil, field2: floatPointerOf(1.0)},
+			want: []TypeDiff{{Change: AddedConstraint, Description: "bob(1.000000)"}},
+		},
+		{
+			name: "secondNil",
+			args: args{name: "bob", field1: floatPointerOf(2.0), field2: nil},
+			want: []TypeDiff{{Change: DeletedConstraint, Description: "bob(2.000000)"}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CheckStringTypeChanges(tt.args.diffs, tt.args.type1, tt.args.type2); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CheckStringTypeChanges() = %v, want %v", got, tt.want)
+			if got := CompareFloatValues(tt.args.name, tt.args.field1, tt.args.field2, WidenedType, NarrowedType); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CheckStringTypeChanges() = %s, want %s", jsonStr(got), jsonStr(tt.want))
 			}
 		})
 	}
+}
+
+func TestCompareIntValues(t *testing.T) {
+	type args struct {
+		name   string
+		field1 *int64
+		field2 *int64
+	}
+	tests := []struct {
+		name string
+		args args
+		want []TypeDiff
+	}{
+		{
+			name: "both null",
+			args: args{name: "bob", field1: nil, field2: nil},
+			want: []TypeDiff{},
+		},
+		{
+			name: "greater",
+			args: args{name: "bob", field1: intPointerOf(1), field2: intPointerOf(2)},
+			want: []TypeDiff{{Change: WidenedType, Description: "bob 1->2"}},
+		},
+		{
+			name: "less",
+			args: args{name: "bob", field1: intPointerOf(2), field2: intPointerOf(1)},
+			want: []TypeDiff{{Change: NarrowedType, Description: "bob 2->1"}},
+		},
+		{
+			name: "firstNil",
+			args: args{name: "bob", field1: nil, field2: intPointerOf(1)},
+			want: []TypeDiff{{Change: AddedConstraint, Description: "bob(1)"}},
+		},
+		{
+			name: "secondNil",
+			args: args{name: "bob", field1: intPointerOf(2), field2: nil},
+			want: []TypeDiff{{Change: DeletedConstraint, Description: "bob(2)"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CompareIntValues(tt.args.name, tt.args.field1, tt.args.field2, WidenedType, NarrowedType); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CheckStringTypeChanges() = %s, want %s", jsonStr(got), jsonStr(tt.want))
+			}
+		})
+	}
+}
+
+func floatPointerOf(f float64) *float64 {
+	return &f
+}
+
+func intPointerOf(f int64) *int64 {
+	return &f
 }
 
 func TestCheckToFromRequired(t *testing.T) {
@@ -282,7 +359,7 @@ func Test_compareProperties(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := compareProperties(tt.args.location, tt.args.schema1, tt.args.schema2, tt.args.getRefFn1, tt.args.getRefFn2, tt.args.cmp); !reflect.DeepEqual(got, tt.want) {
+			if got := CompareProperties(tt.args.location, tt.args.schema1, tt.args.schema2, tt.args.getRefFn1, tt.args.getRefFn2, tt.args.cmp); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("compareProperties() = %v, want %v", got, tt.want)
 			}
 		})
@@ -311,6 +388,6 @@ func Test_propertiesFor(t *testing.T) {
 }
 
 func jsonStr(thing interface{}) string {
-	bstr, _ := json.Marshal(thing)
+	bstr, _ := JSONMarshal(thing)
 	return string(bstr)
 }

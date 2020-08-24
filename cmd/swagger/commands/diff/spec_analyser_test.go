@@ -43,7 +43,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
 	matches := allTests
-	// matches := []string{"kitchensink"}
+	// matches := []string{"enum"}
 
 	testCases := makeTestCases(t, matches)
 

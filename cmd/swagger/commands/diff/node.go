@@ -77,6 +77,7 @@ func getSchemaDiffNode(name string, schema interface{}) *Node {
 		case spec.SchemaProps:
 			node.TypeName, node.IsArray = getSchemaType(&s)
 		default:
+			node.TypeName = fmt.Sprintf("Unknown type %v", schema)
 		}
 	}
 	return &node
