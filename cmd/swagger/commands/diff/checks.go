@@ -7,29 +7,111 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-func getRef(item interface{}) spec.Ref {
-	switch s := item.(type) {
-	case *spec.Refable:
-		return s.Ref
-	case *spec.Schema:
-		return s.Ref
-	case *spec.SchemaProps:
-		return s.Ref
-	default:
-		return spec.Ref{}
+// CompareEnums returns added, deleted enum values
+func CompareEnums(left, right []interface{}) []TypeDiff {
+	diffs := []TypeDiff{}
+
+	leftStrs := []string{}
+	rightStrs := []string{}
+	for _, eachLeft := range left {
+		leftStrs = append(leftStrs, fmt.Sprintf("%v", eachLeft))
 	}
+	for _, eachRight := range right {
+		rightStrs = append(rightStrs, fmt.Sprintf("%v", eachRight))
+	}
+	added, deleted, _ := fromStringArray(leftStrs).DiffsTo(rightStrs)
+	if len(added) > 0 {
+		typeChange := strings.Join(added, ",")
+		diffs = append(diffs, TypeDiff{Change: AddedEnumValue, Description: typeChange})
+	}
+	if len(deleted) > 0 {
+		typeChange := strings.Join(deleted, ",")
+		diffs = append(diffs, TypeDiff{Change: DeletedEnumValue, Description: typeChange})
+	}
+
+	return diffs
 }
 
-// CheckToFromArrayType check for changes to or from an Array type
-func CheckToFromArrayType(diffs []TypeDiff, type1, type2 interface{}) []TypeDiff {
-	// Single to Array or Array to Single
-	typString1, isArray1 := getSchemaType(type1)
-	typString2, isArray2 := getSchemaType(type2)
+//CompareProperties recursive property comparison
+func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema2 *spec.Schema, getRefFn1 SchemaFromRefFn, getRefFn2 SchemaFromRefFn, cmp CompareSchemaFn) []SpecDifference {
+	propDiffs := []SpecDifference{}
 
-	if isArray1 != isArray2 {
-		return addTypeDiff(diffs, TypeDiff{Change: ChangedType, FromType: formatTypeString(typString1, isArray1), ToType: formatTypeString(typString2, isArray2)})
+	if schema1.Properties == nil && schema2.Properties == nil {
+		return propDiffs
 	}
 
+	schema1Props := propertiesFor(schema1, getRefFn1)
+	schema2Props := propertiesFor(schema2, getRefFn2)
+	// find deleted and changed properties
+
+	for eachProp1Name, eachProp1 := range schema1Props {
+		eachProp1 := eachProp1
+		childLoc := addChildDiffNode(location, eachProp1Name, eachProp1.Schema)
+
+		if eachProp2, ok := schema2Props[eachProp1Name]; ok {
+			diffs := CheckToFromRequired(eachProp1.Required, eachProp2.Required)
+			if len(diffs) > 0 {
+				for _, diff := range diffs {
+					propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: diff.Change})
+				}
+			}
+			cmp(childLoc, eachProp1.Schema, eachProp2.Schema)
+		} else {
+			propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: DeletedProperty})
+		}
+	}
+
+	// find added properties
+	for eachProp2Name, eachProp2 := range schema2.Properties {
+		eachProp2 := eachProp2
+		if _, ok := schema1.Properties[eachProp2Name]; !ok {
+			childLoc := addChildDiffNode(location, eachProp2Name, &eachProp2)
+			propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: AddedProperty})
+		}
+	}
+	return propDiffs
+
+}
+
+//CompareFloatValues compares a float data item
+func CompareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
+	diffs := []TypeDiff{}
+	if val1 != nil && val2 != nil {
+		if *val2 > *val1 {
+			diffs = append(diffs, TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %f->%f", fieldName, *val1, *val2)})
+		} else if *val2 < *val1 {
+			diffs = append(diffs, TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %f->%f", fieldName, *val1, *val2)})
+		}
+	} else {
+		if val1 != val2 {
+			if val1 != nil {
+				diffs = append(diffs, TypeDiff{Change: DeletedConstraint, Description: fmt.Sprintf("%s(%f)", fieldName, *val1)})
+			} else {
+				diffs = append(diffs, TypeDiff{Change: AddedConstraint, Description: fmt.Sprintf("%s(%f)", fieldName, *val2)})
+			}
+		}
+	}
+	return diffs
+}
+
+//CompareIntValues compares to int data items
+func CompareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
+	diffs := []TypeDiff{}
+	if val1 != nil && val2 != nil {
+		if *val2 > *val1 {
+			diffs = append(diffs, TypeDiff{Change: ifGreaterCode, Description: fmt.Sprintf("%s %d->%d", fieldName, *val1, *val2)})
+		} else if *val2 < *val1 {
+			diffs = append(diffs, TypeDiff{Change: ifLessCode, Description: fmt.Sprintf("%s %d->%d", fieldName, *val1, *val2)})
+		}
+	} else {
+		if val1 != val2 {
+			if val1 != nil {
+				diffs = append(diffs, TypeDiff{Change: DeletedConstraint, Description: fmt.Sprintf("%s(%d)", fieldName, *val1)})
+			} else {
+				diffs = append(diffs, TypeDiff{Change: AddedConstraint, Description: fmt.Sprintf("%s(%d)", fieldName, *val2)})
+			}
+		}
+	}
 	return diffs
 }
 
@@ -68,30 +150,6 @@ func CheckRefChange(diffs []TypeDiff, type1, type2 interface{}) (diffReturn []Ty
 	return
 }
 
-func compareEnums(left, right []interface{}) []TypeDiff {
-	diffs := []TypeDiff{}
-
-	leftStrs := []string{}
-	rightStrs := []string{}
-	for _, eachLeft := range left {
-		leftStrs = append(leftStrs, fmt.Sprintf("%v", eachLeft))
-	}
-	for _, eachRight := range right {
-		rightStrs = append(rightStrs, fmt.Sprintf("%v", eachRight))
-	}
-	added, deleted, _ := fromStringArray(leftStrs).DiffsTo(rightStrs)
-	if len(added) > 0 {
-		typeChange := strings.Join(added, ",")
-		diffs = append(diffs, TypeDiff{Change: AddedEnumValue, Description: typeChange})
-	}
-	if len(deleted) > 0 {
-		typeChange := strings.Join(deleted, ",")
-		diffs = append(diffs, TypeDiff{Change: DeletedEnumValue, Description: typeChange})
-	}
-
-	return diffs
-}
-
 // checkNumericTypeChanges checks for changes to or from a numeric type
 func checkNumericTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []TypeDiff {
 	// Number
@@ -117,8 +175,10 @@ func checkNumericTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) [
 			foundDiff = true
 		}
 		if !foundDiff {
-			diffs = addTypeDiff(diffs, compareFloatValues("Maximum", type1.Maximum, type2.Maximum, WidenedType, NarrowedType))
-			diffs = addTypeDiff(diffs, compareFloatValues("Minimum", type1.Minimum, type2.Minimum, NarrowedType, WidenedType))
+			maxDiffs := CompareFloatValues("Maximum", type1.Maximum, type2.Maximum, WidenedType, NarrowedType)
+			diffs = append(diffs, maxDiffs...)
+			minDiffs := CompareFloatValues("Minimum", type1.Minimum, type2.Minimum, NarrowedType, WidenedType)
+			diffs = append(diffs, minDiffs...)
 		}
 	}
 	return diffs
@@ -129,14 +189,16 @@ func CheckStringTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []
 	// string changes
 	if type1.Type[0] == StringType &&
 		type2.Type[0] == StringType {
-		diffs = addTypeDiff(diffs, compareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType))
-		diffs = addTypeDiff(diffs, compareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType))
+		minLengthDiffs := CompareIntValues("MinLength", type1.MinLength, type2.MinLength, NarrowedType, WidenedType)
+		diffs = append(diffs, minLengthDiffs...)
+		maxLengthDiffs := CompareIntValues("MaxLength", type1.MinLength, type2.MinLength, WidenedType, NarrowedType)
+		diffs = append(diffs, maxLengthDiffs...)
 		if type1.Pattern != type2.Pattern {
 			diffs = addTypeDiff(diffs, TypeDiff{Change: ChangedType, Description: fmt.Sprintf("Pattern Changed:%s->%s", type1.Pattern, type2.Pattern)})
 		}
 		if type1.Type[0] == StringType {
 			if len(type1.Enum) > 0 {
-				enumDiffs := compareEnums(type1.Enum, type2.Enum)
+				enumDiffs := CompareEnums(type1.Enum, type2.Enum)
 				diffs = append(diffs, enumDiffs...)
 			}
 		}
@@ -147,7 +209,7 @@ func CheckStringTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []
 // CheckToFromRequired checks for changes to or from a required property
 func CheckToFromRequired(required1, required2 bool) (diffs []TypeDiff) {
 	if required1 != required2 {
-		code := AddedRequiredProperty
+		code := ChangedOptionalToRequired
 		if required1 {
 			code = ChangedRequiredToOptional
 		}
@@ -156,71 +218,38 @@ func CheckToFromRequired(required1, required2 bool) (diffs []TypeDiff) {
 	return diffs
 }
 
-func compareProperties(location DifferenceLocation, schema1 *spec.Schema, schema2 *spec.Schema, getRefFn1 SchemaFromRefFn, getRefFn2 SchemaFromRefFn, cmp CompareSchemaFn) []SpecDifference {
-	propDiffs := []SpecDifference{}
+const objType = "object"
 
-	requiredProps2 := sliceToStrMap(schema2.Required)
-	requiredProps1 := sliceToStrMap(schema1.Required)
-	schema1Props := propertiesFor(schema1, getRefFn1)
-	schema2Props := propertiesFor(schema2, getRefFn2)
-	// find deleted and changed properties
-
-	for eachProp1Name, eachProp1 := range schema1Props {
-		eachProp1 := eachProp1
-		_, required1 := requiredProps1[eachProp1Name]
-		_, required2 := requiredProps2[eachProp1Name]
-		childLoc := addChildDiffNode(location, eachProp1Name, &eachProp1)
-
-		if eachProp2, ok := schema2Props[eachProp1Name]; ok {
-			diffs := CheckToFromRequired(required1, required2)
-			if len(diffs) > 0 {
-				for _, diff := range diffs {
-					propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: diff.Change})
-				}
-			}
-			cmp(childLoc, &eachProp1, &eachProp2)
-		} else {
-			propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: DeletedProperty})
+func getTypeHierarchyChange(type1, type2 string) TypeDiff {
+	fromType := type1
+	if fromType == "" {
+		fromType = objType
+	}
+	toType := type2
+	if toType == "" {
+		toType = objType
+	}
+	diffDescription := fmt.Sprintf("%s -> %s", fromType, toType)
+	if isStringType(type1) && !isStringType(type2) {
+		return TypeDiff{Change: NarrowedType, Description: diffDescription}
+	}
+	if !isStringType(type1) && isStringType(type2) {
+		return TypeDiff{Change: WidenedType, Description: diffDescription}
+	}
+	type1Wideness, type1IsNumeric := numberWideness[type1]
+	type2Wideness, type2IsNumeric := numberWideness[type2]
+	if type1IsNumeric && type2IsNumeric {
+		if type1Wideness == type2Wideness {
+			return TypeDiff{Change: ChangedToCompatibleType, Description: diffDescription}
+		}
+		if type1Wideness > type2Wideness {
+			return TypeDiff{Change: NarrowedType, Description: diffDescription}
+		}
+		if type1Wideness < type2Wideness {
+			return TypeDiff{Change: WidenedType, Description: diffDescription}
 		}
 	}
-
-	// find added properties
-	for eachProp2Name, eachProp2 := range schema2.Properties {
-		if _, ok := schema1.Properties[eachProp2Name]; !ok {
-			childLoc := addChildDiffNode(location, eachProp2Name, &eachProp2)
-			propDiffs = append(propDiffs, SpecDifference{DifferenceLocation: childLoc, Code: AddedProperty})
-		}
-	}
-	return propDiffs
-
-}
-
-// SchemaFromRefFn define this to get a schema for a ref
-type SchemaFromRefFn func(spec.Ref) (*spec.Schema, string)
-
-func propertiesFor(schema *spec.Schema, getRefFn SchemaFromRefFn) PropertyMap {
-	schemaFromRef, _ := getRefFn(schema.Ref)
-	if schemaFromRef != nil {
-		schema = schemaFromRef
-	}
-	props := PropertyMap{}
-
-	if schema.Properties != nil {
-		for name, prop := range schema.Properties {
-			props[name] = prop
-		}
-	}
-	for _, eachAllOf := range schema.AllOf {
-		eachAllOf := eachAllOf
-		eachAllOfActual, _ := getRefFn(eachAllOf.SchemaProps.Ref)
-		if eachAllOfActual == nil {
-			eachAllOfActual = &eachAllOf
-		}
-		for name, prop := range eachAllOfActual.Properties {
-			props[name] = prop
-		}
-	}
-	return props
+	return TypeDiff{Change: ChangedType, Description: diffDescription}
 }
 
 func isRefType(item interface{}) bool {

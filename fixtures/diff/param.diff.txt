@@ -12,7 +12,7 @@ BREAKING CHANGES:
 =================
 /a/:post -> 200 - Response - Body<A3>.otherDeletedName<string> - Deleted property
 /a/{id}:get - Request - Path.id<integer> - Narrowed type - string -> integer
-/a/{id}:get - Request - Query.flavour<string> - Added required property
+/a/{id}:get - Request - Query.flavour<string> - Changed optional param to required
 /a/{id}:get - Request - Query.newReqParam<string> - Added required param
 /a/{id}:get -> 200 - Response - Headers.optResponseHeader - Deleted response header
 /a/{id}:post - Request - Header.changedboris<integer> - Narrowed type - string -> integer
