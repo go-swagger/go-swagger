@@ -298,15 +298,11 @@ func (sd *SpecAnalyser) CompareProps(type1, type2 *spec.SchemaProps) []TypeDiff 
 		return diffs
 	}
 
-	diffs = CheckToFromArrayType(diffs, type1, type2)
-
-	if len(diffs) > 0 {
-		return diffs
-	}
-
 	if isArray(type1) {
-		diffs = addTypeDiff(diffs, compareIntValues("MaxItems", type1.MaxItems, type2.MaxItems, WidenedType, NarrowedType))
-		diffs = addTypeDiff(diffs, compareIntValues("MinItems", type1.MinItems, type2.MinItems, NarrowedType, WidenedType))
+		maxItemDiffs := CompareIntValues("MaxItems", type1.MaxItems, type2.MaxItems, WidenedType, NarrowedType)
+		diffs = append(diffs, maxItemDiffs...)
+		minItemsDiff := CompareIntValues("MinItems", type1.MinItems, type2.MinItems, NarrowedType, WidenedType)
+		diffs = append(diffs, minItemsDiff...)
 	}
 
 	if len(diffs) > 0 {
@@ -372,15 +368,16 @@ func (sd *SpecAnalyser) compareParams(urlMethod URLMethod, location string, name
 }
 
 func (sd *SpecAnalyser) addTypeDiff(location DifferenceLocation, diff *TypeDiff) {
-	desc := diff.Description
+	diffCopy := diff
+	desc := diffCopy.Description
 	if len(desc) == 0 {
-		if diff.FromType != diff.ToType {
-			desc = fmt.Sprintf("%s -> %s", diff.FromType, diff.ToType)
+		if diffCopy.FromType != diffCopy.ToType {
+			desc = fmt.Sprintf("%s -> %s", diffCopy.FromType, diffCopy.ToType)
 		}
 	}
 	sd.Diffs = sd.Diffs.addDiff(SpecDifference{
 		DifferenceLocation: location,
-		Code:               diff.Change,
+		Code:               diffCopy.Change,
 		DiffInfo:           desc})
 }
 
@@ -416,6 +413,22 @@ type CompareSchemaFn func(location DifferenceLocation, schema1, schema2 *spec.Sc
 
 func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, schema2 *spec.Schema) {
 
+	refDiffs := []TypeDiff{}
+	refDiffs = CheckRefChange(refDiffs, schema1, schema2)
+	if len(refDiffs) > 0 {
+		for _, diff := range refDiffs {
+			sd.addTypeDiff(location, &diff)
+		}
+		return
+	}
+
+	if isRefType(schema1) {
+		schema1, _ = sd.schemaFromRef(getRef(schema1), &sd.Definitions1)
+	}
+	if isRefType(schema2) {
+		schema2, _ = sd.schemaFromRef(getRef(schema2), &sd.Definitions2)
+	}
+
 	sd.compareDescripton(location, schema1.Description, schema2.Description)
 
 	typeDiffs := sd.CompareProps(&schema1.SchemaProps, &schema2.SchemaProps)
@@ -428,7 +441,7 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 		sd.compareSchema(location, schema1.Items.Schema, schema2.Items.Schema)
 	}
 
-	diffs := compareProperties(location, schema1, schema2, sd.getRefSchemaFromSpec1, sd.getRefSchemaFromSpec2, sd.compareSchema)
+	diffs := CompareProperties(location, schema1, schema2, sd.getRefSchemaFromSpec1, sd.getRefSchemaFromSpec2, sd.compareSchema)
 	for _, diff := range diffs {
 		sd.Diffs = sd.Diffs.addDiff(diff)
 	}
@@ -506,13 +519,11 @@ func (sd *SpecAnalyser) schemaFromRef(ref spec.Ref, defns *spec.Definitions) (ac
 
 }
 
+//PropertyDefn combines a property with its required-ness
+type PropertyDefn struct {
+	Schema   *spec.Schema
+	Required bool
+}
+
 //PropertyMap a unified map including all AllOf fields
-type PropertyMap map[string]spec.Schema
-
-// // DeDefaultProperties list of properties
-// type RequiredProperties []string
-
-// type SpecProperties struct {
-// 	PropertyMap
-// 	RequiredProperties
-// }
+type PropertyMap map[string]PropertyDefn
