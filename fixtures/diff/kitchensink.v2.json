@@ -247,7 +247,7 @@
   "definitions": {
     "A1": {
       "type": "object",
-      "required": ["id"],
+      "required": ["busby"],
       "properties": {
         "id": {
           "type": "integer"
@@ -262,6 +262,19 @@
             "empathic",
             "saucy"
           ]
+        },
+        "busby": {
+          "type": "string"
+        },
+        "newProp": {
+          "type": "string"
+        },
+        "onceWasArray": {
+          "type": "string"
+        },
+        "sameWideness": {
+          "type": "number",
+          "format":"float"
         }
       }
     },
