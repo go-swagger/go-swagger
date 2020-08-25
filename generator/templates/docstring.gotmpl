@@ -10,4 +10,7 @@
   {{- else }}
     {{- humanize .Name }}
   {{- end }}
+  {{- if .Example }}
+// Example: {{ print .Example }}
+  {{- end }}
 {{- end }}

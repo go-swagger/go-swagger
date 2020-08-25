@@ -188,9 +188,11 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.UniqueItems = true
 	gmp.ReadOnly = true
 	gmp.StructTags = []string{"json", "db"}
+	gmp.Example = "some example"
 	tt.assertRender(gmp, `// The title of the property
 //
 // The description of the property
+// Example: some example
 // Required: true
 // Read Only: true
 // Maximum: < 10
