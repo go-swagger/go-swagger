@@ -1,0 +1,9 @@
+definitions:
+  A:
+    properties:
+      B:
+        $ref: "#/definitions/B"
+  B:
+    properties:
+      A:
+        $ref: "#/definitions/A"
