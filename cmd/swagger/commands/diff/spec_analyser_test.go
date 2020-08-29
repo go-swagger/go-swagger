@@ -33,7 +33,6 @@ func fixturePart(file string) string {
 // TestDiffForVariousCombinations - computes the diffs for a number
 // of scenarios and compares the computed diff with expected diffs
 func TestDiffForVariousCombinations(t *testing.T) {
-
 	pattern := fixturePath("*.diff.txt")
 	allTests, err := filepath.Glob(pattern)
 	require.NoError(t, err)
@@ -44,6 +43,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
 	matches := allTests
+	// matches := []string{"enum"}
 
 	testCases := makeTestCases(t, matches)
 
@@ -66,7 +66,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 		})
 	}
 
-	require.Equalf(t, len(matches), len(allTests), "All test cases were not run. Remove filter")
+	require.Equalf(t, len(allTests), len(matches), "All test cases were not run. Remove filter")
 }
 
 func getDiffs(oldSpecPath, newSpecPath string) (SpecDifferences, error) {
@@ -90,13 +90,24 @@ func makeTestCases(t testing.TB, matches []string) []testCaseData {
 	testCases := make([]testCaseData, 0, len(matches))
 	for _, eachFile := range matches {
 		namePart := fixturePart(eachFile)
-		testCases = append(
-			testCases, testCaseData{
-				name:          namePart,
-				oldSpec:       fixturePath(namePart, ".v1.json"),
-				newSpec:       fixturePath(namePart, ".v2.json"),
-				expectedLines: linesInFile(t, fixturePath(namePart, ".diff.txt")),
-			})
+		if _, err := os.Stat(fixturePath(namePart, ".v1.json")); err == nil {
+			testCases = append(
+				testCases, testCaseData{
+					name:          namePart,
+					oldSpec:       fixturePath(namePart, ".v1.json"),
+					newSpec:       fixturePath(namePart, ".v2.json"),
+					expectedLines: linesInFile(t, fixturePath(namePart, ".diff.txt")),
+				})
+		}
+		if _, err := os.Stat(fixturePath(namePart, ".v1.yml")); err == nil {
+			testCases = append(
+				testCases, testCaseData{
+					name:          namePart,
+					oldSpec:       fixturePath(namePart, ".v1.yml"),
+					newSpec:       fixturePath(namePart, ".v2.yml"),
+					expectedLines: linesInFile(t, fixturePath(namePart, ".diff.txt")),
+				})
+		}
 	}
 	return testCases
 }

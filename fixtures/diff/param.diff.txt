@@ -1,22 +1,21 @@
 NON-BREAKING CHANGES:
-            =====================
-            /a/:get Request - Query.limit - Deleted optional param
-            /a/{id}:get -> 200 Response - Headers.newResponseHeader - Added response header
-            /a/{id}:get Request - Query.newOptParam - Added optional param
-            /a/{id}:get Request - Query.widenedParam - Widened type <integer.int32 -> integer.int64>
-            /a/{id}:post Request - Header.newboris - Added optional param
-            /a/{id}:post Request - Header.optboris - Deleted optional param
-            /a/{id}:post Request - Header.reqdboris - Deleted required param
+=====================
+/a/:get - Request - Query.limit<integer> - Deleted optional param
+/a/{id}:get - Request - Query.newOptParam<string> - Added optional param
+/a/{id}:get - Request - Query.widenedParam<integer.int64> - Widened type - integer.int32 -> integer.int64
+/a/{id}:get -> 200 - Response - Headers.newResponseHeader - Added response header
+/a/{id}:post - Request - Header.newboris<string> - Added optional param
+/a/{id}:post - Request - Header.optboris<string> - Deleted optional param
+/a/{id}:post - Request - Header.reqdboris<string> - Deleted required param
 
-            BREAKING CHANGES:
-            =================
-            /a/:post -> 200 Response - otherDeletedName : string - Deleted property
-            /a/{id}:get -> 200 Response - Headers.optResponseHeader - Deleted response header
-            /a/{id}:get Request - Path.id - Narrowed type <string -> integer>
-            /a/{id}:get Request - Query.flavour - Changed optional param to required
-            /a/{id}:get Request - Query.newReqParam - Added required param
-            /a/{id}:post -> 200 Response - otherDeletedName : string - Deleted property
-            /a/{id}:post Request - Header.changedboris - Narrowed type <string -> integer>
-            /b/:post -> 200 Response - otherDeletedName : string - Deleted property
-
+BREAKING CHANGES:
+=================
+/a/:post -> 200 - Response - Body<A3>.otherDeletedName<string> - Deleted property
+/a/{id}:get - Request - Path.id<integer> - Narrowed type - string -> integer
+/a/{id}:get - Request - Query.flavour<string> - Changed optional param to required
+/a/{id}:get - Request - Query.newReqParam<string> - Added required param
+/a/{id}:get -> 200 - Response - Headers.optResponseHeader - Deleted response header
+/a/{id}:post - Request - Header.changedboris<integer> - Narrowed type - string -> integer
+/a/{id}:post -> 200 - Response - Body<A3>.otherDeletedName<string> - Deleted property
+/b/:post -> 200 - Response - Body<A3>.otherDeletedName<string> - Deleted property
 compatibility test FAILED: 8 breaking changes detected

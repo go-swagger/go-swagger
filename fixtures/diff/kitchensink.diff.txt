@@ -1,28 +1,42 @@
 NON-BREAKING CHANGES:
-            =====================
-             Metadata - Spec.consumes - Added a consumes format <bob>
-             Metadata - Spec.produces - Deleted produces format <bill>
-             Metadata - Spec.schemes - Added schemes <https>
-            /a/:get -> 200 Response- Added response
-            /a/:get Request - Header.addedHeaderParam : string - Added optional param
-            /a/:get Request - Header.deletedHeaderParam : string - Deleted optional param
-            /a/:get Request - Header.headerParam.headerParam : string - Widened type <string.password -> string>
-            /a/:get Request - Query.changeMaxInt - Widened type <Maximum 200.000000->300.000000>
-            /a/:get Request - Query.removeMaxInt - Widened type <Exclusive Maximum Removed:true->false>
-            /a/:get Request - Query.wideryString - Widened type <integer -> string>
+=====================
+/a/:get - Request - Header.addedHeaderParam - Added optional param
+/a/:get - Request - Header.deletedHeaderParam - Deleted optional param
+/a/:get - Request - Header.headerParam<string> - Widened type - string.password -> string
+/a/:get - Request - Query.removeMaxInt<integer> - Widened type - Exclusive Maximum Removed:true->false
+/a/:get - Request - Query.wideryString<string> - Widened type - integer -> string
+/a/:get -> 200 - Response - Body<array[A1]> - Added response
+/a/:post - Request - Body.description<string> - Changed required param to optional
+/a/{id}:get -> 200 - Response - Body<array[A1]>.newProp<string> - Added property
+/a/{id}:get -> 200 - Response - Body<array[A1]>.sameWideness<number> - Narrowed type - number -> number.float
+/a/{id}:post - Request - Body.description<string> - Changed required param to optional
+/b/:get -> 200 - Response - Body<array[A1]>.newProp<string> - Added property
+/b/:get -> 200 - Response - Body<array[A1]>.sameWideness<number> - Narrowed type - number -> number.float
+/b/:post - Request - Body.description<string> - Changed required param to optional
+/c/:get -> 200 - Response - Body<array[object]> - Added a schema constraint - MaxItems(1)
+Spec Definitions.ThisWasAdded - Added a schema definition
+Spec.consumes - Added a consumes format - bob
+Spec.produces - Added produces format - bob
+Spec.schemes - Added schemes - https
 
-            BREAKING CHANGES:
-            =================
-             Metadata - Spec Metadata - Changed base path </api -> /apibaby>
-             Metadata - Spec Metadata - Changed host URL <petstore.swagger.wordnik.com -> petstore.swaggery.wordnik.com>
-             Metadata - Spec.consumes - Deleted a consumes format <bill>
-             Metadata - Spec.produces - Added produces format <bob>
-             Metadata - Spec.schemes - Deleted schemes <http>
-            /a/:get Request - Query.ObjToPrim - Changed type <obj -> integer>
-            /a/:get Request - Query.changeMaxInt - Narrowed type <Exclusive Maximum Added:false->true>
-            /a/:get Request - Query.changeMinInt - Narrowed type <Exclusive Minimum Added:false->true>
-            /a/:get Request - Query.changeMinInt - Narrowed type <Minimum 200.000000->300.000000>
-            /a/:get Request - Query.changeyPattern - Changed type <Pattern Changed:*->anewpattern>
-            /a/:get Request - Query.primToObj : A2 - Changed type <integer -> obj>
-
-compatibility test FAILED: 11 breaking changes detected
+BREAKING CHANGES:
+=================
+/a/:get - Request - Query.ObjToPrim<integer> - Changed type - object -> integer
+/a/:get - Request - Query.changeMaxInt<integer> - Narrowed type - Exclusive Maximum Added:false->true
+/a/:get - Request - Query.changeMinInt<integer> - Narrowed type - Exclusive Minimum Added:false->true
+/a/:get - Request - Query.changeyPattern<string> - Changed type - Pattern Changed:*->anewpattern
+/a/:get - Request - Query.primToObj - Changed type - integer -> object
+/a/:post -> 200 - Response - Body<A3>.name<string> - Changed required param to optional
+/a/{id}:get -> 200 - Response - Body<array[A1]>.busby<string> - Changed optional param to required
+/a/{id}:get -> 200 - Response - Body<array[A1]>.onceWasArray<array[object]> - Changed type - <array[object]> -> <string>
+/a/{id}:post -> 200 - Response - Body<A3>.name<string> - Changed required param to optional
+/b/:get -> 200 - Response - Body<array[A1]>.busby<string> - Changed optional param to required
+/b/:get -> 200 - Response - Body<array[A1]>.onceWasArray<array[object]> - Changed type - <array[object]> -> <string>
+/b/:post -> 200 - Response - Body<A3>.name<string> - Changed required param to optional
+/c/:get -> 200 - Response - Body<array[object]> - Deleted a schema constraint - MinItems(1)
+Spec Metadata - Changed base path - /api -> /apibaby
+Spec Metadata - Changed host URL - petstore.swagger.wordnik.com -> petstore.swaggery.wordnik.com
+Spec.consumes - Deleted a consumes format - bill
+Spec.produces - Deleted produces format - bill
+Spec.schemes - Deleted schemes - http
+compatibility test FAILED: 18 breaking changes detected
