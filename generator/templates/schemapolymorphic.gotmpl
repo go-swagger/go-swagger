@@ -8,6 +8,8 @@
         the definition of the base type has a Validate() func.
     */}}
         runtime.Validatable
+        // WIP: add to interface in runtime pkg
+        ContextValidate(context.Context, strfmt.Registry) error
   {{- end }}
   {{ range .AllOf }}
     {{- if .IsAnonymous }}

@@ -122,8 +122,9 @@ func (g GenSchemaList) Less(i, j int) bool {
 }
 
 type sharedValidations struct {
-	HasValidations bool
-	Required       bool
+	HasValidations        bool
+	HasContextValidations bool
+	Required              bool
 
 	// String validations
 	MaxLength *int64

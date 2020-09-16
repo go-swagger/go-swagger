@@ -1,3 +1,10 @@
+{{ define "primitivefieldcontextvalidator" }}
+  {{ if .ReadOnly }}
+    if err := validate.ReadOnly(ctx, {{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil{
+      return err
+    }
+  {{ end }}
+{{ end }}
 {{ define "primitivefieldvalidator" }}
   {{ if .Required }}
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
@@ -43,6 +50,38 @@
   {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
     {{ template "validationCustomformat" . }}
   {{ end }}
+{{ end }}
+
+{{ define "slicecontextvalidator" }}
+  {{ if .ReadOnly }}
+    if err := validate.ReadOnly(ctx, {{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil{
+      return err
+    }
+  {{ end }}
+  {{ if .Items }}
+    {{- if and (or .Items.ReadOnly .Items.HasContextValidations) (not .Items.IsInterface) (not .Items.IsStream) }}
+      for {{.IndexVar }} := 0; {{.IndexVar }} < len({{.ValueExpression }}); {{.IndexVar }}++ {
+      {{- with .Items }}
+        {{ template "propertycontextvalidator" . }}
+      {{- end }}
+      }
+    {{- end }}
+  {{- else }}
+    {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
+      {{- if and .IsNullable (not .IsMapNullOverride) }}
+    if {{ .ValueExpression }} != nil {
+      {{- end }}
+      if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
+        if ve, ok := err.(*errors.Validation); ok {
+          return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        }
+        return err
+      }
+      {{- if and .IsNullable (not .IsMapNullOverride) }}
+    }
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{ end }}
 
 {{define "slicevalidator" }}
@@ -105,6 +144,113 @@
     {{- end }}
   {{- end }}
 {{ end }}
+{{ define "mapcontextvalidator" }}
+  {{ if .HasAdditionalProperties }}
+    {{- if  .AdditionalProperties.HasContextValidations }}
+    {{- $validatedValues := .ValueExpression }}{{ $keyVar := .AdditionalProperties.KeyVar }}
+    for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
+      {{ with .AdditionalProperties }}
+        {{/*Don't need to add context validate directly here since we are recursing*/}}
+        {{- if .IsPrimitive }}
+          {{- if .IsAliased }}
+            {{- if not .IsAnonymous }}
+      if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
+              {{- if and .IsNullable (not .IsMapNullOverride) }}
+        if val != nil {
+              {{- end }}
+          if err := val.ContextValidate(ctx, formats); err != nil {
+              return err
+          }
+              {{- if and .IsNullable (not .IsMapNullOverride) }}
+        }
+              {{- end }}
+      }
+            {{- else }}{{/* validation of anonymous objects */}}
+              {{ range .AllOf }}
+                {{ range .Properties }}
+                  {{ template "propertycontextvalidator" . }}
+                {{ end }}
+              {{- end }}
+              {{ range .Properties }}
+                {{ template "propertycontextvalidator" . }}
+              {{ end }}
+            {{- end }}
+            {{ if and .IsTuple .AdditionalItems }}
+      // TODO: context validating additional items should go here, if you see this raise an issue{{/* TODO(fred): investigate the case to remove that comment: AdditionalItems shouldn't come in maps. Upstream validation is needed to guard against this */}}
+      // at https://github.com/go-swagger/go-swagger/issues
+            {{ end }}
+          {{ else }}
+            {{ template "primitivefieldcontextvalidator" . }}
+          {{ end }}
+        {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
+          {{- if and (not .IsStream) (not .IsBase64) }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+      // TODO: context validating custom formatter items should go here, if you see this raise an issue
+      // at https://github.com/go-swagger/go-swagger/issues
+            {{/*
+            {{ template "validationCustomformat" . }}
+            */}}
+          {{- end }}
+        {{ else if .IsArray }}
+          {{ template "slicecontextvalidator" . }}
+        {{ else if .IsMap }}
+          {{ template "mapcontextvalidator" . }}
+        {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
+          {{- if not .IsAnonymous }}
+    if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
+            {{- if and .IsNullable (not .IsMapNullOverride) }}
+      if val != nil {
+            {{- end }}
+          if err := val.ContextValidate(ctx, formats); err != nil {
+              return err
+          }
+            {{- if and .IsNullable (not .IsMapNullOverride) }}
+      }
+            {{- end }}
+    }
+          {{- else }}
+            {{ range .AllOf }}
+              {{ range .Properties }}
+                {{ template "propertycontextvalidator" . }}
+              {{ end }}
+            {{- end }}
+            {{ range .Properties }}
+              {{ template "propertycontextvalidator" . }}
+            {{- end }}
+          {{- end }}
+          {{ if and .IsTuple .AdditionalItems }}
+      // TODO: context validating additional items should go here, if you see this raise an issue
+      // at https://github.com/go-swagger/go-swagger/issues
+          {{ end }}
+        {{ end }}
+    }
+      {{ end }}
+    {{ end }}
+  {{- else if .IsAliased }}
+    {{- if and .IsMap .HasValidations }}{{/* validation of aliased maps but does not know about AdditionalProperties: e.g. it comes from a $ref */}}
+      {{- if not .IsAnonymous }}
+        {{- if $.IsMap }}{{/* we come from a map range */}}
+      if val, ok := {{ .ValueExpression }}; ok {
+        {{- end }}
+        {{- if and .IsNullable (not .IsMapNullOverride) }}
+          {{- if $.IsMap }}
+        if val != nil {
+          {{- else }}
+        if {{ .ValueExpression }} != nil {
+          {{- end }}
+        {{- end }}
+          if err := {{ if $.IsMap }}val{{ else }}{{ .ValueExpression }}{{ end }}.ContextValidate(ctx, formats); err != nil {
+              return err
+          }
+        {{- if and .IsNullable (not .IsMapNullOverride) }}
+        }
+        {{- end }}
+        {{- if or $.IsMap }}
+     }
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{ end }} {{/*mapcontextvalidator*/}}
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
   {{ if .HasAdditionalProperties }}
     {{- if  .AdditionalProperties.HasValidations }}
@@ -238,6 +384,52 @@
   {{- end }}
 {{ end }}
 
+{{define "objectcontextvalidator" }}
+  {{/* Debug
+  // .Name: {{ .Name }}
+  // .IsAliased: {{ .IsAliased }}
+  // .IsAnonymous: {{ .IsAnonymous }}
+  // .IsNullable: {{ .IsNullable }}
+  // .Required: {{ .Required }}
+  // .ReadOnly: {{ .ReadOnly }}
+  // .HasContextValidations {{ .HasContextValidations }}
+  // .IsBaseType: {{ .IsBaseType }}
+  // .ValueExpression: {{ .ValueExpression }}
+  // .ReceiverName: {{ .ReceiverName }}
+  */}}
+  {{- if not .IsAnonymous }}
+    {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: case of aliased types */}}
+      {{- if and .IsNullable (not .IsMapNullOverride) }}
+      if {{ .ValueExpression }} != nil {
+      {{- end }}
+      if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
+        if ve, ok := err.(*errors.Validation); ok {
+          return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        }
+        return err
+      }
+      {{- if and .IsNullable (not .IsMapNullOverride) }}
+    }
+      {{- end }}
+    {{- end }}
+  {{- else }}
+    {{ range .AllOf }}
+      {{ range .Properties }}
+        // all of properites
+        {{ template "propertycontextvalidator" . }}
+      {{ end }}
+    {{ end }}
+    {{ range .Properties }}
+      //properties
+      {{ template "propertycontextvalidator" . }}
+    {{ end }}
+  {{- end }}
+  {{- if and .IsTuple .AdditionalItems }}
+    // TODO: context validating additional items should go here, if you see this raise an issue
+    // at https://github.com/go-swagger/go-swagger/issues
+  {{- end }}
+{{ end }}
+
 {{define "objectvalidator" }}
   {{/* // DEBUG
   // .Name: {{ .Name }}
@@ -245,6 +437,8 @@
   // .IsAnonymous: {{ .IsAnonymous }}
   // .IsNullable: {{ .IsNullable }}
   // .Required: {{ .Required }}
+  // .ReadOnly: {{ .ReadOnly }}
+  // .HasContextValidations {{ .HasContextValidations }}
   // .IsBaseType: {{ .IsBaseType }}
   // .ValueExpression: {{ .ValueExpression }}
   // .ReceiverName: {{ .ReceiverName }} */}}
@@ -289,6 +483,37 @@
   {{- end }}
 {{ end }}
 
+{{define "propertycontextvalidator"}}
+  {{- if .IsPrimitive }}
+    {{- if .IsAliased }}
+      {{ template "objectcontextvalidator" . }}
+    {{- else }}
+      {{ template "primitivefieldcontextvalidator" . }}
+    {{- end }}
+    {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
+    // TODO: context validating primitive with custom formatter should go here, if you see this raise an issue
+    // at https://github.com/go-swagger/go-swagger/issues
+    {{- if .ReadOnly }}
+
+  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+    return err
+  }
+    {{- end }}
+    {{- if and (not .IsStream) (not .IsBase64) }}
+  // TODO: context validating properties with custom formatter should go here, if you see this raise an issue
+  // at https://github.com/go-swagger/go-swagger/issues
+    {{/*{{ template "validationCustomformat" . }}*/}}
+    {{- end }}
+  {{- else if .IsArray }}
+    {{ template "slicecontextvalidator" . }}
+  {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}{{/* except for interface, the renderinf for aliased maps is performed by objectvalidator */}}
+    {{ template "mapcontextvalidator" . }}
+  {{- else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
+    {{ template "objectcontextvalidator" . }}
+  {{- end }}
+
+{{end}}
+
 {{define "propertyvalidator" }}
   {{- if .IsPrimitive }}
     {{- if .IsAliased }}
@@ -314,6 +539,25 @@
   {{- end }}
 {{ end }}
 
+{{define "fieldcontextvalidator" }}
+  {{- if .IsPrimitive }}
+    {{ template "primitivefieldcontextvalidator" . }}
+  {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
+    {{- if and (not .IsStream) (not .IsBase64) }}
+      // TODO: context validating properties with custom formatter should go here, if you see this raise an issue
+      // at https://github.com/go-swagger/go-swagger/issues
+      {{/*
+      {{ template "validationCustomformat" . }}
+      */}}
+    {{- end }}
+  {{- else if .IsArray }}
+    {{ template "slicecontextvalidator" . }}
+  {{- else if .IsMap }}
+    {{ template "mapcontextvalidator" . }}
+  {{- end }}
+
+{{ end }}
+
 {{ define "fieldvalidator"}}
   {{- if .IsPrimitive }}
     {{ template "primitivefieldvalidator" . }}
@@ -332,6 +576,79 @@
     {{ template "mapvalidator" . }}
   {{- end }}
 {{ end }}
+
+{{define "schemacontextvalidator" }}
+// ContextValidate validate this {{ humanize .Name }} based on the context it is used
+func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+  var res []error
+  {{ range .AllOf }}
+    {{- if not .Properties }}
+      // validation for a type composition with {{ .GoType }}
+    {{- end }}
+    {{- if and (or .IsInterface .IsAnonymous .IsBaseType) (or .HasContextValidations) }}
+      {{ template "fieldcontextvalidator" . }}
+      {{ range .Properties }}
+        {{ if and (ne $.DiscriminatorField .Name) (or .HasContextValidations) }}
+          if err := {{.ReceiverName }}.contextValidate{{ pascalize .Name }}(ctx, formats); err != nil {
+            res = append(res, err)
+          }
+        {{- end }}
+      {{- end }}
+      {{- if and .HasAdditionalProperties (not .IsMap) }}{{/* validates additionalProperties in an object which is not itself a map */}}
+        {{ template "mapcontextvalidator" . }}
+      {{- end }}
+      {{ if and .IsTuple .AdditionalItems }}
+      // TODO: context validating additional items should go here, if you see this raise an issue
+      // at https://github.com/go-swagger/go-swagger/issues
+      {{/*
+      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
+        res = append(res, err)
+      }
+      */}}
+      {{ end }}
+    {{- else if (or .HasContextValidations) }}
+      if err := {{ .ReceiverName }}.{{ pascalize (dropPackage .GoType) }}.ContextValidate(ctx, formats); err != nil {
+        res = append(res, err)
+      }
+    {{- end }}
+  {{- end }} {{/*end AllOf*/}}
+  {{ template "fieldcontextvalidator" . }}
+  {{ range .Properties }}
+    {{ if .HasContextValidations }} {{/* complex obj always has cv*/}}
+      if err := {{.ReceiverName }}.contextValidate{{ pascalize .Name }}(ctx, formats); err != nil {
+        res = append(res, err)
+      }
+    {{ end }}
+  {{ end }}
+  {{- if and .HasAdditionalProperties (not .IsMap) }}{{/* validates additionalProperties in an object which is not itself a map */}}
+    {{ template "mapcontextvalidator" . }}
+  {{- end }}
+  if len(res) > 0 {
+    return errors.CompositeValidationError(res...)
+  }
+  return nil
+}
+
+
+  {{ range .Properties }}
+    {{ if .HasContextValidations }}
+func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) contextValidate{{ pascalize .Name }}(ctx context.Context, formats strfmt.Registry) error {
+       {{template "propertycontextvalidator" . }}
+  return nil     
+}
+    {{ end }}
+  {{ end }} {{/*Properties*/}}
+  {{ range .AllOf }}
+    {{ range .Properties }}
+      {{ if .HasContextValidations }}
+func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) contextValidate{{ pascalize .Name }}(ctx context.Context, formats strfmt.Registry) error {
+       {{template "propertycontextvalidator" . }}
+  return nil     
+}
+      {{ end }}
+    {{ end }}
+  {{ end }} {{/*AllOf*/}}
+{{end}} {{/*schemacontextvalidator*/}}
 
 {{define "schemavalidator" }}
   {{ if .Enum }}

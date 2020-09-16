@@ -626,6 +626,15 @@ func hasSliceValidations(model *spec.Schema) (hasSliceValidations bool) {
 	return
 }
 
+func hasContextValidations(model *spec.Schema) bool {
+	// always assume ref needs context validate
+	// TODO: find away to determine ref needs context validate or not
+	if model.ReadOnly || model.Ref.String() != "" {
+		return true
+	}
+	return false
+}
+
 func hasValidations(model *spec.Schema, isRequired bool) (hasValidation bool) {
 	// NOTE: needsValidation has gone deprecated and is replaced by top-level's shallowValidationLookup()
 	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
@@ -708,6 +717,7 @@ func mergeValidation(other *schemaGenContext) bool {
 
 func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired bool) {
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || mergeValidation(other)
+	sg.GenSchema.HasContextValidations = sg.GenSchema.HasContextValidations || other.GenSchema.HasContextValidations
 
 	if liftsRequired && other.GenSchema.AdditionalProperties != nil && other.GenSchema.AdditionalProperties.Required {
 		sg.GenSchema.Required = true
@@ -1964,6 +1974,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	// include format validations, excluding binary
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || hasFormatValidation(tpe)
+
+	// include context validations
+	sg.GenSchema.HasContextValidations = sg.GenSchema.HasContextValidations || hasContextValidations(&sg.Schema)
 
 	// usage of a polymorphic base type is rendered with getter funcs on private properties.
 	// In the case of aliased types, the value expression remains unchanged to the receiver.

@@ -268,7 +268,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n// ContextValidate validates this the type based on context it is used \nfunc (o theType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 

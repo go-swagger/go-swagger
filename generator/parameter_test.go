@@ -433,6 +433,30 @@ func TestGenParameters_Simple(t *testing.T) {
 	}
 }
 
+func TestGenParameter_Enhancement936(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer func() {
+		log.SetOutput(os.Stdout)
+	}()
+
+	b, err := opBuilder("find", "../fixtures/enhancements/936/fixture-936.yml")
+	require.NoError(t, err)
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	err = templates.MustGet("serverParameter").Execute(buf, op)
+	require.NoError(t, err)
+	ff, err := opts.LanguageOpts.FormatContent("find_parameters.go", buf.Bytes())
+	if err != nil {
+		fmt.Println(buf.String())
+	}
+	require.NoError(t, err)
+	res := string(ff)
+	assertInCode(t, "ctx := validate.WithOperationRequest(context.Background())", res)
+	assertInCode(t, "if err := body.ContextValidate(ctx, route.Formats)", res)
+}
+
 func TestGenParameter_Issue163(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer func() {

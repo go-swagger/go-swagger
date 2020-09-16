@@ -216,6 +216,9 @@ func initModelFixtures() {
 
 	// allOf can be forced to non-nullable
 	initFixture2364()
+
+	// ReadOnly ContextValidate
+	initFixture936ReadOnly()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
