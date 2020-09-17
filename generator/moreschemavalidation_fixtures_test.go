@@ -14,6 +14,92 @@
 
 package generator
 
+func initFixture936ReadOnly() {
+	f := newModelFixture("../fixtures/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// object simple has 2 read only feilds
+	flattenRun.AddExpectations("object1.go", []string{
+		// object1
+		`func (m *Object1) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`m.contextValidateID(ctx, formats)`,
+		`m.contextValidateName(ctx, formats)`,
+		`) contextValidateID(ctx context.Context, formats strfmt.Registry)`,
+		`) contextValidateName(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object2 composed of object1
+	flattenRun.AddExpectations("object2.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`contextValidateObjectRef(ctx, formats)`,
+		`) contextValidateObjectRef(ctx context.Context, formats strfmt.Registry) `,
+		`m.ObjectRef.ContextValidate(ctx, formats)`,
+	}, todo, noLines, noLines)
+
+	// object3 has inline object
+	flattenRun.AddExpectations("object3.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`contextValidateName(ctx, formats)`,
+		`) contextValidateName(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object4 is array with readonly string element
+	flattenRun.AddExpectations("object4.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`for i := 0; i < len(m); i++`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object5 is string alias
+	flattenRun.AddExpectations("object5.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object6 is array of object5
+	flattenRun.AddExpectations("object6.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`for i := 0; i < len(m); i++`,
+		`m[i].ContextValidate(ctx, formats)`,
+	}, todo, noLines, noLines)
+
+	// object7 is all of object5 and object4 and fields
+	flattenRun.AddExpectations("object7.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`m.Object5.ContextValidate(ctx, formats)`,
+		`m.Object4.ContextValidate(ctx, formats)`,
+		// field one
+		`m.contextValidateObject7Field1(ctx, formats)`,
+		`contextValidateObject7Field1(ctx context.Context, formats strfmt.Registry)`,
+		// field two should missing since not readOnly
+		// field three
+		`m.contextValidateObject7Field3(ctx, formats)`,
+		`contextValidateObject7Field3(ctx context.Context, formats strfmt.Registry)`,
+		`m.Object7Field3.ContextValidate(ctx, formats)`,
+	}, todo, noLines,
+		[]string{
+			`m.contextValidateObject7Field2(ctx, formats)`,
+		})
+	// x go type
+	flattenRun.AddExpectations("time.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`var f interface{} = m.Time`,
+	}, todo, noLines, noLines)
+	// additional properties
+	flattenRun.AddExpectations("object8.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`for k := range m`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+	flattenRun.AddExpectations("object9.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`m.contextValidateObject9Field1(ctx, formats)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+}
+
 func initFixture2220() {
 	// NOTE(fred): this test merely asserts that template refactoring (essentially dealing with hite space gobbling etc)
 	// properly runs against the case of base type with additionalProperties.
