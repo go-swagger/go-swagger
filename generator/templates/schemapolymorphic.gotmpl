@@ -5,11 +5,10 @@
         Under normal conditions, we can't have a base type rendered a .IsStream or .IsInterface: this check is just for sanity check).
 
         In the definition of the base type itself, this means that the unexported struct holding
-        the definition of the base type has a Validate() func.
+        the definition of the base type has a Validate() func and a ContextValitate() func.
     */}}
         runtime.Validatable
-        // WIP: add to interface in runtime pkg
-        ContextValidate(context.Context, strfmt.Registry) error
+        runtime.ContextValidatable
   {{- end }}
   {{ range .AllOf }}
     {{- if .IsAnonymous }}

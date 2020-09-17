@@ -13,9 +13,8 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject }}*{{ end }}{{ if .D
 
 func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
   var f interface{} = {{ .ReceiverName }}.{{ dropPackage .ElemType.GoType }}
-  // WIP: change to context validatable
-  if v, ok := f.(runtime.Validatable) ; ok {
-    return v.Validate(formats)
+  if v, ok := f.(runtime.ContextValidatable) ; ok {
+    return v.ContextValidate(ctx, formats)
   }
   return nil
 }

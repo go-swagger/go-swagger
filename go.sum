@@ -119,6 +119,8 @@ github.com/go-openapi/runtime v0.19.15/go.mod h1:dhGWCTKRXlAfGnQG0ONViOZpjfg0m2g
 github.com/go-openapi/runtime v0.19.16/go.mod h1:5P9104EJgYcizotuXhEuUrzVc+j1RiSjahULvYmlv98=
 github.com/go-openapi/runtime v0.19.20 h1:J/t+QIjbcoq8WJvjGxRKiFBhqUE8slS9SbmD0Oi/raQ=
 github.com/go-openapi/runtime v0.19.20/go.mod h1:Lm9YGCeecBnUUkFTxPC4s1+lwrkJ0pthx8YvyjCfkgk=
+github.com/go-openapi/runtime v0.19.22-0.20200916161045-0f43ad21da65 h1:fr4S6da+IIREk/NfU0OPmHTohuNWcbh4h43JZ9Wy8L0=
+github.com/go-openapi/runtime v0.19.22-0.20200916161045-0f43ad21da65/go.mod h1:Lm9YGCeecBnUUkFTxPC4s1+lwrkJ0pthx8YvyjCfkgk=
 github.com/go-openapi/spec v0.17.0/go.mod h1:XkF/MOi14NmjsfZ8VtAKf8pIlbZzyoTvZsdfssdxcBI=
 github.com/go-openapi/spec v0.18.0/go.mod h1:XkF/MOi14NmjsfZ8VtAKf8pIlbZzyoTvZsdfssdxcBI=
 github.com/go-openapi/spec v0.19.2/go.mod h1:sCxk3jxKgioEJikev4fgkNmwS+3kuYdJtcsZsD5zxMY=
