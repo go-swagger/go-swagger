@@ -127,7 +127,7 @@ You may see the schemes currently supported here: https://github.com/go-openapi/
 Example with Middleware:
 ```golang
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
-// The middleware executes after routing but before authentication, binding and validation
+// The middleware executes after routing but before authentication, binding and validation.
 func setupMiddlewares(handler http.Handler) http.Handler {
     return handler
 }
