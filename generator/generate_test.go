@@ -23,6 +23,7 @@ type generateFixture struct {
 	wantError bool
 	prepare   func(opts *GenOpts)
 	verify    func(testing.TB, string)
+	clean     func()
 }
 
 func (f generateFixture) prepareTarget(name, base string, opts *GenOpts) func() {
@@ -36,7 +37,7 @@ func (f generateFixture) prepareTarget(name, base string, opts *GenOpts) func() 
 		opts.Target = f.target
 	}
 	opts.Spec = spec
-	_ = os.Mkdir(opts.Target, 0700)
+	_ = os.MkdirAll(opts.Target, 0700)
 	return func() {
 		if f.target == "" {
 			_ = os.RemoveAll(filepath.Join(opts.Target))
@@ -339,6 +340,91 @@ func TestGenerateAndTest(t *testing.T) {
 				require.NoErrorf(t, err, string(p))
 			},
 		},
+		"conflict_name_api_issue_2405_1": {
+			spec:   "../examples/todo-list/swagger.yml",
+			target: "codegen/2405-1",
+			prepare: func(opts *GenOpts) {
+				opts.Target = "codegen/2405-1"
+				opts.ServerPackage = "api"
+				opts.IncludeMain = true
+			},
+			verify: func(t testing.TB, target string) {
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				require.True(t, fileExists(target, filepath.Join("cmd", "simple-to-do-list-api-server")))
+
+				err = os.Chdir(filepath.Join(target, "cmd", "simple-to-do-list-api-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+			clean: func() {
+				_ = os.RemoveAll("codegen")
+			},
+		},
+		"conflict_name_api_issue_2405_2": {
+			spec:   "../examples/todo-list/swagger.yml",
+			target: "codegen/2405-2",
+			prepare: func(opts *GenOpts) {
+				opts.Target = "codegen/2405-2"
+				opts.ServerPackage = "loads"
+				opts.IncludeMain = true
+			},
+			verify: func(t testing.TB, target string) {
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				require.True(t, fileExists(target, filepath.Join("cmd", "simple-to-do-list-api-server")))
+
+				err = os.Chdir(filepath.Join(target, "cmd", "simple-to-do-list-api-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+			clean: func() {
+				_ = os.RemoveAll("codegen")
+			},
+		},
+		"conflict_name_api_issue_2405_3": {
+			spec:   "../fixtures/bugs/2405/fixture-2405.yaml",
+			target: "codegen/2405-3",
+			prepare: func(opts *GenOpts) {
+				opts.Target = "codegen/2405-3"
+				opts.ServerPackage = "server"
+				opts.APIPackage = "api"
+				opts.IncludeMain = true
+			},
+			verify: func(t testing.TB, target string) {
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				require.True(t, fileExists(target, filepath.Join("cmd", "simple-to-do-list-api-server")))
+
+				err = os.Chdir(filepath.Join(target, "cmd", "simple-to-do-list-api-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+			clean: func() {
+				_ = os.RemoveAll("codegen")
+			},
+		},
 	}
 
 	for name, cas := range cases {
@@ -366,6 +452,10 @@ func TestGenerateAndTest(t *testing.T) {
 
 			if thisCas.verify != nil {
 				thisCas.verify(t, opts.Target)
+			}
+
+			if thisCas.clean != nil {
+				thisCas.clean()
 			}
 		})
 	}

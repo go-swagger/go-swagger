@@ -41,11 +41,11 @@ import (
 {{- if .DumpData }} --dump-data{{ end }}
 {{- if .StrictResponders }} --strict-responders{{ end }}
 {{ end }}
-func configureFlags(api *{{.Package}}.{{ pascalize .Name }}API) {
+func configureFlags(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) {
   // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
+func configureAPI(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) http.Handler {
   // configure the api here
   api.ServeError = errors.ServeError
 
@@ -109,10 +109,15 @@ func configureAPI(api *{{.Package}}.{{ pascalize .Name }}API) http.Handler {
   // api.APIAuthorizer = security.Authorized()
   {{- end }}
   {{- $package := .Package }}
+  {{- $apipackagealias := .APIPackageAlias }}
   {{- range .Operations }}
   if api.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler == nil {
     api.{{ if ne .Package $package }}{{pascalize .Package}}{{ end }}{{ pascalize .Name }}Handler =
-    {{- .PackageAlias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ .PackageAlias }}.{{- pascalize .Name }}Params
+    {{- if ne .Package $package }}
+      {{- .PackageAlias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ .PackageAlias }}.{{- pascalize .Name }}Params
+    {{- else }}
+      {{- $apipackagealias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ $apipackagealias }}.{{- pascalize .Name }}Params
+    {{- end }}
   {{- if $.GenOpts.StrictResponders }}
     {{- if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{.Package}}.{{ pascalize .Name }}Responder {
      return {{.Package}}.{{ pascalize .Name }}NotImplemented()

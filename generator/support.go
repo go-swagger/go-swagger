@@ -190,7 +190,10 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	serverPath := path.Join(baseImport,
 		a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, defaultServerTarget))
-	app.DefaultImports[importAlias(serverPath)] = serverPath
+
+	pkgAlias := deconflictPkg(importAlias(serverPath), renameServerPackage)
+	app.DefaultImports[pkgAlias] = serverPath
+	app.ServerPackageAlias = pkgAlias
 
 	return a.GenOpts.renderApplication(app)
 }
@@ -219,7 +222,12 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	defaultImports := a.GenOpts.defaultImports()
-	imports := a.GenOpts.initImports(a.OperationsPackage)
+
+	imports := make(map[string]string, 50)
+	alias := deconflictPkg(a.GenOpts.LanguageOpts.ManglePackageName(a.OperationsPackage, defaultOperationsTarget), renameAPIPackage)
+	imports[alias] = path.Join(
+		baseImport,
+		a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, defaultOperationsTarget))
 
 	log.Println("planning definitions")
 
@@ -396,6 +404,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			TargetImportPath: baseImport,
 		},
 		APIPackage:          a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget),
+		APIPackageAlias:     alias,
 		Package:             a.Package,
 		ReceiverName:        receiver,
 		Name:                a.Name,
