@@ -1,0 +1,73 @@
+---
+  swagger: "2.0"
+  info:
+    title: "param body with array of empty objects"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    obj:
+      type: object
+      required: [ req1, req2, req3, req4, req5 ]
+      properties:
+        req1:
+          $ref: '#/definitions/requiredInterface'
+        req2:
+          $ref: '#/definitions/requiredNonNullableInterface'
+        req3:
+          $ref: '#/definitions/requiredNullableInterface'
+        req4:
+          $ref: '#/definitions/requiredMap'
+        req5:
+          $ref: '#/definitions/basic'
+        nreq1:
+          $ref: '#/definitions/requiredInterface'
+        nreq2:
+          $ref: '#/definitions/requiredNonNullableInterface'
+        nreq3:
+          $ref: '#/definitions/requiredNullableInterface'
+        nreq4:
+          $ref: '#/definitions/requiredMap'
+        nreq5:
+          $ref: '#/definitions/basic'
+
+    requiredInterface:
+      type: object
+      additionalProperties: true
+    requiredNonNullableInterface:
+      type: object
+      additionalProperties: true
+      x-nullable: false
+    requiredNullableInterface:
+      type: object
+      additionalProperties: true
+      x-nullable: true
+    requiredMap:
+      type: object
+      additionalProperties:
+        type: object
+    basic:
+      type: object
+      required: [ a ]
+      properties:
+        a:
+          type:
+            string
+        b:
+          type:
+            string
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/obj'
+        responses:
+          200:
+            description: "OK"

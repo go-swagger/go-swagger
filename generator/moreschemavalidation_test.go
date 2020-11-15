@@ -219,6 +219,15 @@ func initModelFixtures() {
 
 	// ReadOnly ContextValidate
 	initFixture936ReadOnly()
+
+	// required interface{}
+	initFixture2081()
+
+	// required map
+	initFixture2300()
+
+	// required $ref primitive
+	initFixture2381()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
