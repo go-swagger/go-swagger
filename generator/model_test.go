@@ -2405,7 +2405,7 @@ func TestGenModel_Issue910(t *testing.T) {
 							assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
 							assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
 							assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
-							assertInCode(t, `if err := validate.Required("foo", "body", m.Foo); err != nil {`, res)
+							assertInCode(t, `if m.Foo == nil {`, res) // interface{} now checked against nil (validate.Required fails on any zero value)
 							assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
 							assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
 							// NOTE(fredbi); fixed Required in slices. This property has actually no validation

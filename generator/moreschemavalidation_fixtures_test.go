@@ -14,6 +14,103 @@
 
 package generator
 
+func initFixture2381() {
+	f := newModelFixture("../fixtures/bugs/2381/fixture-2381.yaml", "required $ref primitive")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+	expandRun := f.AddRun(true)
+
+	flattenRun.AddExpectations("my_object.go", []string{
+		`func (m *MyObject) validateRequiredReferencedObject(formats strfmt.Registry) error {`,
+		`	if m.RequiredReferencedObject == nil {`,
+		`		return errors.Required("required_referenced_object", "body", nil)`,
+		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_referenced_string", "body", MyStringRef(m.RequiredReferencedString)); err != nil {`,
+		`	if err := m.RequiredReferencedString.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("required_referenced_string")`,
+		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
+	}, todo, noLines, noLines)
+
+	expandRun.AddExpectations("my_object.go", []string{
+		`func (m *MyObject) validateRequiredReferencedObject(formats strfmt.Registry) error {`,
+		`	if m.RequiredReferencedObject == nil {`,
+		`		return errors.Required("required_referenced_object", "body", nil)`,
+		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_referenced_string", "body", m.RequiredReferencedString); err != nil {`,
+		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2300() {
+	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required interface{} is validated with against nil")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// test behaviour with all structs made anonymous (inlined)
+	expandRun := f.AddRun(true)
+
+	flattenRun.AddExpectations("obj.go", []string{
+		`func (m *Obj) validateReq1(formats strfmt.Registry) error {`,
+		`	if m.Req1 == nil {`,
+		`		return errors.Required("req1", "body", nil)`,
+		`func (m *Obj) validateReq2(formats strfmt.Registry) error {`,
+		`	if m.Req2 == nil {`,
+		`		return errors.Required("req2", "body", nil)`,
+		`func (m *Obj) validateReq3(formats strfmt.Registry) error {`,
+		`	if m.Req3 == nil {`,
+		`		return errors.Required("req3", "body", nil)`,
+		`func (m *Obj) validateReq4(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req4", "body", m.Req4); err != nil {`,
+		`	if m.Req4 != nil {`,
+		`		if err := m.Req4.Validate(formats); err != nil {`,
+		`func (m *Obj) validateReq5(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req5", "body", m.Req5); err != nil {`,
+		`	if m.Req5 != nil {`,
+		`		if err := m.Req5.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	// on anonymous
+	expandRun.AddExpectations("obj.go", []string{
+		`Req4 map[string]interface{}`,
+		`func (m *Obj) validateReq1(formats strfmt.Registry) error {`,
+		`	if m.Req1 == nil {`,
+		`		return errors.Required("req1", "body", nil)`,
+		`func (m *Obj) validateReq2(formats strfmt.Registry) error {`,
+		`	if m.Req2 == nil {`,
+		`		return errors.Required("req2", "body", nil)`,
+		`func (m *Obj) validateReq3(formats strfmt.Registry) error {`,
+		`	if m.Req3 == nil {`,
+		`		return errors.Required("req3", "body", nil)`,
+		`func (m *Obj) validateReq4(formats strfmt.Registry) error {`,
+		`if err := validate.Required("req4", "body", m.Req4); err != nil {`,
+		`for k := range m.Req4 {`,
+		`if err := validate.Required("req4"+"."+k, "body", m.Req4[k]); err != nil {`,
+		`func (m *Obj) validateReq5(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req5", "body", m.Req5); err != nil {`,
+		`	if m.Req5 != nil {`,
+		`		if err := m.Req5.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2081() {
+	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required interface{} is validated with against nil")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// interface{}
+	flattenRun.AddExpectations("event.go", []string{
+		`func (m *Event) validateValue(formats strfmt.Registry) error {`,
+		`if m.Value == nil {`,
+		`return errors.Required("value", "body", nil)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("events.go", []string{
+		`func (m *EventsItems0) validateA(formats strfmt.Registry) error {`,
+		`if m.A == nil {`,
+		`return errors.Required("a", "body", nil)`,
+	}, todo, noLines, noLines)
+}
+
 func initFixture936ReadOnly() {
 	f := newModelFixture("../fixtures/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -8346,7 +8443,8 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	if err := m.P2.Validate(formats); err != nil {`,
 		`		if ve, ok := err.(*errors.Validation); ok {`,
@@ -8359,7 +8457,10 @@ func initFixture844Variations() {
 		"func (m *TupleVariation) validateTupleVariationItems(formats strfmt.Registry) error {\n\n	return nil\n}",
 	},
 		// not expected
-		todo,
+		append(todo,
+			`	if err := validate.Required("1", "body", m.P1)`, // check we don't have redundant validations
+			`	if err := validate.Required("1", "body", Bar(m.P1))`,
+		),
 		// output in log
 		noLines,
 		noLines)
@@ -8382,7 +8483,8 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	for k := range m.P2 {`,
 		//`		if swag.IsZero(m.P2[k]) {`,
@@ -8415,7 +8517,8 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
 		`		if err := validate.UniqueItems(strconv.Itoa(i+2), "body", m.AddItemsVariationItems[i]); err != nil {`,
@@ -8440,7 +8543,8 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
 		`		if err := validate.UniqueItems(strconv.Itoa(i+2), "body", m.AddItemsVariationItems[i]); err != nil {`,
@@ -9997,7 +10101,7 @@ func initFixtureSimpleTuple() {
 		`	for i := 0; i < len(m.P0); i++ {`,
 		`		if err := validate.MaxLength("0"+"."+strconv.Itoa(i), "body", string(m.P0[i]), 10); err != nil {`,
 		`func (m *TupleThingWithArrayElement) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	iP1Size := int64(len(m.P1)`,
 		`	if err := validate.MinItems("1", "body", iP1Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.P1); i++ {`,
@@ -10082,7 +10186,7 @@ func initFixtureSimpleTuple() {
 		`	for i := 0; i < len(m.P0); i++ {`,
 		`		if err := validate.MaxLength("P0"+"."+strconv.Itoa(i), "body", string(m.P0[i]), 10); err != nil {`,
 		`func (m *ArrayOfTuplesTuple0) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("P0", "body", m.P0); err != nil {`,
 		`	iP1Size := int64(len(m.P1)`,
 		`	if err := validate.MinItems("P1", "body", iP1Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.P1); i++ {`,
@@ -10159,7 +10263,7 @@ func initFixtureSimpleTuple() {
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName("0"`,
 		`func (m *TupleThingWithObjectElement) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	for k := range m.P1 {`,
 		`		if err := validate.MinimumInt("1"+"."+k, "body", int64(m.P1[k]), 10, false); err != nil {`,
 		`func (m *TupleThingWithObjectElement) validateTupleThingWithObjectElementItems(formats strfmt.Registry)` +
@@ -10223,7 +10327,7 @@ func initFixtureSimpleTuple() {
 		`func (m *TupleThingWithNoAdditionalItems) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`func (m *TupleThingWithNoAdditionalItems) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
 	},
 		// not expected
@@ -10288,7 +10392,7 @@ func initFixtureSimpleTuple() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
 		`func (m *TupleThingWithAnyAdditionalItems) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
 		`func (m *TupleThingWithAnyAdditionalItems) ` +
 			`validateTupleThingWithAnyAdditionalItemsItems(formats strfmt.Registry) error {`,

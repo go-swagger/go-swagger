@@ -1,0 +1,41 @@
+---
+swagger: "2.0"
+info:
+  version: 0.1.0
+  title: foo
+
+paths:
+  /mypath:
+    post:
+      parameters:
+        - $ref: "#/parameters/my_param"
+      responses:
+        202:
+          description: foo
+
+parameters:
+  my_param:
+    name: my_param
+    in: body
+    required: true
+    schema:
+      $ref: "#/definitions/my_object"
+
+definitions:
+  my_object:
+    type: object
+    required:
+      - required_string
+      - required_referenced_object
+      - required_referenced_string
+    properties:
+      required_string:
+        type: string
+      required_referenced_object:
+        $ref: '#/definitions/my_object_ref'
+      required_referenced_string:
+        $ref: '#/definitions/my_string_ref'
+  my_object_ref:
+    type: object
+  my_string_ref:
+    type: string
