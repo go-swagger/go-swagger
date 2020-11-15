@@ -1203,7 +1203,7 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 		}
 	}
 	if tag == b.APIPackage {
-		// confict with "operations" package is handled separately
+		// conflict with "operations" package is handled separately
 		tag = renameOperationPackage(intersected, tag)
 	}
 	b.APIPackage = b.GenOpts.LanguageOpts.ManglePackageName(tag, b.APIPackage) // actual package name
@@ -1238,11 +1238,14 @@ func deconflictPrincipal(pkg string) string {
 // deconflictPkg renames package names which conflict with standard imports
 func deconflictPkg(pkg string, renamer func(string) string) string {
 	switch pkg {
-	case "api", "httptransport", "formats":
+	// package conflict with variables
+	case "api", "httptransport", "formats", "server":
 		fallthrough
+	// package conflict with go-openapi imports
 	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
 		fallthrough
-	case "tls", "http", "fmt", "strings", "log":
+	// package conflict with stdlib/other lib imports
+	case "tls", "http", "fmt", "strings", "log", "flags", "pflag":
 		return renamer(pkg)
 	}
 	return pkg
@@ -1260,5 +1263,16 @@ func renameOperationPackage(seenTags []string, pkg string) string {
 }
 
 func renamePrincipalPackage(pkg string) string {
+	// favors readability over perfect deconfliction
 	return "auth"
+}
+
+func renameServerPackage(pkg string) string {
+	// favors readability over perfect deconfliction
+	return "swagger" + pkg + "srv"
+}
+
+func renameAPIPackage(pkg string) string {
+	// favors readability over perfect deconfliction
+	return "swagger" + pkg
 }

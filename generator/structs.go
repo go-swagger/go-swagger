@@ -519,6 +519,8 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 type GenApp struct {
 	GenCommon
 	APIPackage          string
+	ServerPackageAlias  string
+	APIPackageAlias     string
 	Package             string
 	ReceiverName        string
 	Name                string

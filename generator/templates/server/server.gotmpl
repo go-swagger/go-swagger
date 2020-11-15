@@ -165,7 +165,7 @@ func intEnvOverride(orig int, def int, keys ...string) int {
 {{ end }}
 
 // NewServer creates a new api {{ humanize .Name }} server but does not configure it
-func NewServer(api *{{ .Package }}.{{ pascalize .Name }}API) *Server {
+func NewServer(api *{{ .APIPackageAlias }}.{{ pascalize .Name }}API) *Server {
 	s := new(Server)
   {{ if not .UseGoStructFlags }}
 	s.EnabledListeners = enabledListeners
@@ -242,7 +242,7 @@ type Server struct {
 	httpsServerL  net.Listener
 
 	{{ if .ExcludeSpec }}Spec {{ if not .UseGoStructFlags }}string{{ else }}flags.Filename `long:"spec" description:"the swagger specification to serve"`{{ end }}{{ end }}
-	api               *{{ .Package }}.{{ pascalize .Name }}API
+	api               *{{ .APIPackageAlias }}.{{ pascalize .Name }}API
 	handler           http.Handler
 	hasListeners      bool
 	shutdown          chan struct{}
@@ -272,7 +272,7 @@ func (s *Server) Fatalf(f string, args ...interface{}) {
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
-func (s *Server) SetAPI(api *{{ .Package }}.{{ pascalize .Name }}API) {
+func (s *Server) SetAPI(api *{{ .APIPackageAlias }}.{{ pascalize .Name }}API) {
 	if api == nil {
 		s.api = nil
 		s.handler = nil
