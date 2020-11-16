@@ -1,0 +1,83 @@
+---
+  swagger: "2.0"
+  info:
+    title: "validations inconsistent with schema type"
+    version: "0.0.1"
+    description: "inconsistent validations"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  definitions:
+    obj:
+      type: object
+      properties:
+        a:
+          type: number
+          format: double
+          maximum: 1000000000
+          minimum: 1
+          pattern: "[-]?\\d+(.\\d{1,2})?"
+          maxLength: 13
+          minLength: 1
+        b:
+          type: string
+          minimum: 13
+          maxLength: 5
+        c:
+          type: string
+          maximum: 144
+          maxLength: 5
+          multipleOf: 12
+          enum: [ 'a', 'b' ]
+        d:
+          type: boolean
+          maximum: 15
+          exclusiveMaximum: true
+          minimum: 1
+          exclusiveMinimum: true
+          minProperties: 12
+        e:
+          type: object
+          maximum: 15
+          minProperties: 12
+          uniqueItems: true
+          enum: [ {"x": 1} ]
+        f:
+          type: array
+          uniqueItems: true
+          minimum: 15
+          items:
+            type: object
+            minProperties: 13
+            maximum: 15
+        g:
+          type: integer
+          maximum: 10
+          minimum: 1
+          pattern: "[-]?\\d+(.\\d{1,2})?"
+          maxLength: 13
+          minLength: 1
+          maxProperties: 12
+
+        #h:
+        #  type: file
+        #  maximum: 10
+        #  minimum: 1
+        #  pattern: "[-]?\\d+(.\\d{1,2})?"
+        #  maxLength: 13
+        #  minLength: 1
+        #  maxProperties: 12
+
+  paths:
+    /getRecords:
+      get:
+        operationId: getRecords
+        parameters:
+          - name: records
+            in: body
+            required: true
+            schema:
+              $ref: '#/definitions/obj'
+        responses:
+          200:
+            description: "OK"

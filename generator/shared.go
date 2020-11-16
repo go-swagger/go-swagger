@@ -927,7 +927,9 @@ func gatherExtraSchemas(extraMap map[string]GenSchema) (extras GenSchemaList) {
 	return
 }
 
-func sharedValidationsFromSimple(v spec.CommonValidations, isRequired bool) (sh sharedValidations) {
+func sharedValidationsFromSimple(tpe resolvedType, v spec.CommonValidations, isRequired bool) (sh sharedValidations) {
+	guardSimpleValidations(tpe.SwaggerType, &v)
+
 	sh = sharedValidations{
 		Required:         isRequired,
 		Maximum:          v.Maximum,
@@ -947,6 +949,8 @@ func sharedValidationsFromSimple(v spec.CommonValidations, isRequired bool) (sh 
 }
 
 func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValidations) {
+	// validation guards have already been carried out directly by the type resolver
+
 	sh = sharedValidations{
 		Required:         isRequired,
 		Maximum:          v.Maximum,

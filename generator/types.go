@@ -715,6 +715,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	tpe := t.firstType(schema)
 	var returns bool
 
+	guardValidations(tpe, schema)
+
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 
 	if returns {
@@ -796,7 +798,212 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	default:
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
 	}
+
 	return
+}
+
+func warnSkipValidation(val string, types interface{}) {
+	log.Printf("warning: validation %q not compatible with type %v. Skipped", val, types)
+}
+
+func removeStringValidations(schema *spec.Schema) {
+	if schema.Pattern != "" {
+		schema.Pattern = ""
+		warnSkipValidation("pattern", schema.Type)
+	}
+	if schema.MinLength != nil {
+		schema.MinLength = nil
+		warnSkipValidation("minLength", schema.Type)
+	}
+	if schema.MaxLength != nil {
+		schema.MaxLength = nil
+		warnSkipValidation("maxLength", schema.Type)
+	}
+}
+
+func removeStringCommonValidations(tpe string, schema *spec.CommonValidations) {
+	if schema.Pattern != "" {
+		schema.Pattern = ""
+		warnSkipValidation("pattern", tpe)
+	}
+	if schema.MinLength != nil {
+		schema.MinLength = nil
+		warnSkipValidation("minLength", tpe)
+	}
+	if schema.MaxLength != nil {
+		schema.MaxLength = nil
+		warnSkipValidation("maxLength", tpe)
+	}
+}
+
+func removeNumberValidations(schema *spec.Schema) {
+	if schema.Minimum != nil {
+		schema.Minimum = nil
+		warnSkipValidation("minimum", schema.Type)
+	}
+	if schema.Maximum != nil {
+		schema.Maximum = nil
+		warnSkipValidation("maximum", schema.Type)
+	}
+	if schema.ExclusiveMaximum {
+		schema.ExclusiveMaximum = false
+		warnSkipValidation("exclusiveMaximum", schema.Type)
+	}
+	if schema.ExclusiveMinimum {
+		schema.ExclusiveMinimum = false
+		warnSkipValidation("exclusiveMinimum", schema.Type)
+	}
+	if schema.MultipleOf != nil {
+		schema.MultipleOf = nil
+		warnSkipValidation("multipleOf", schema.Type)
+	}
+}
+
+func removeNumberCommonValidations(tpe string, schema *spec.CommonValidations) {
+	if schema.Minimum != nil {
+		schema.Minimum = nil
+		warnSkipValidation("minimum", tpe)
+	}
+	if schema.Maximum != nil {
+		schema.Maximum = nil
+		warnSkipValidation("maximum", tpe)
+	}
+	if schema.ExclusiveMaximum {
+		schema.ExclusiveMaximum = false
+		warnSkipValidation("exclusiveMaximum", tpe)
+	}
+	if schema.ExclusiveMinimum {
+		schema.ExclusiveMinimum = false
+		warnSkipValidation("exclusiveMinimum", tpe)
+	}
+	if schema.MultipleOf != nil {
+		schema.MultipleOf = nil
+		warnSkipValidation("multipleOf", tpe)
+	}
+}
+
+func removeSliceValidations(schema *spec.Schema) {
+	if schema.MaxItems != nil {
+		schema.MaxItems = nil
+		warnSkipValidation("maxItems", schema.Type)
+	}
+	if schema.MinItems != nil {
+		schema.MinItems = nil
+		warnSkipValidation("minItems", schema.Type)
+	}
+	if schema.UniqueItems {
+		schema.UniqueItems = false
+		warnSkipValidation("uniqueItems", schema.Type)
+	}
+}
+
+func removeSliceCommonValidations(tpe string, schema *spec.CommonValidations) {
+	if schema.MaxItems != nil {
+		schema.MaxItems = nil
+		warnSkipValidation("maxItems", tpe)
+	}
+	if schema.MinItems != nil {
+		schema.MinItems = nil
+		warnSkipValidation("minItems", tpe)
+	}
+	if schema.UniqueItems {
+		schema.UniqueItems = false
+		warnSkipValidation("uniqueItems", tpe)
+	}
+}
+
+func removeObjectValidations(schema *spec.Schema) {
+	if schema.MaxProperties != nil {
+		schema.MaxProperties = nil
+		warnSkipValidation("maxProperties", schema.Type)
+	}
+	if schema.MinProperties != nil {
+		schema.MinProperties = nil
+		warnSkipValidation("minProperties", schema.Type)
+	}
+}
+
+// guardValidations removes (with a warning) validations that don't fit with the schema type.
+//
+// Notice that the "enum" validation is allowed on any type.
+func guardValidations(tpe string, schema *spec.Schema) {
+	switch tpe {
+	case array:
+		removeStringValidations(schema)
+		removeNumberValidations(schema)
+		removeObjectValidations(schema)
+
+	case boolean:
+		removeStringValidations(schema)
+		removeNumberValidations(schema)
+		removeSliceValidations(schema)
+		removeObjectValidations(schema)
+
+	case file:
+		removeNumberValidations(schema)
+		removeSliceValidations(schema)
+		removeObjectValidations(schema)
+
+		// keep MinLength/MaxLength on file
+		if schema.Pattern != "" {
+			schema.Pattern = ""
+			warnSkipValidation("pattern", schema)
+		}
+
+	case number, integer:
+		removeStringValidations(schema)
+		removeSliceValidations(schema)
+		removeObjectValidations(schema)
+
+	case str:
+		removeNumberValidations(schema)
+		removeSliceValidations(schema)
+		removeObjectValidations(schema)
+
+	case object:
+		removeStringValidations(schema)
+		removeNumberValidations(schema)
+		removeSliceValidations(schema)
+
+	case "null":
+		// mapped as interface{}: no validations allowed atm (TODO(fred): support minProperties, maxProperties)
+		removeStringValidations(schema)
+		removeNumberValidations(schema)
+		removeSliceValidations(schema)
+		removeObjectValidations(schema)
+	}
+}
+
+// guardSimpleValidations removes (with a warning) validations that don't fit with the simple schema type.
+func guardSimpleValidations(tpe string, validations *spec.CommonValidations) {
+	switch tpe {
+	case array:
+		removeStringCommonValidations(tpe, validations)
+		removeNumberCommonValidations(tpe, validations)
+
+	case boolean:
+		removeStringCommonValidations(tpe, validations)
+		removeNumberCommonValidations(tpe, validations)
+		removeSliceCommonValidations(tpe, validations)
+
+	case file:
+		removeNumberCommonValidations(tpe, validations)
+		removeSliceCommonValidations(tpe, validations)
+
+		// keep MinLength/MaxLength on file
+		if validations.Pattern != "" {
+			validations.Pattern = ""
+			warnSkipValidation("pattern", tpe)
+		}
+
+	case number, integer:
+		removeStringCommonValidations(tpe, validations)
+		removeSliceCommonValidations(tpe, validations)
+
+	case str:
+		removeNumberCommonValidations(tpe, validations)
+		removeSliceCommonValidations(tpe, validations)
+	}
 }
 
 // resolvedType is a swagger type that has been resolved and analyzed for usage
