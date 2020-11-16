@@ -211,3 +211,13 @@
 - dir: fixtures/bugs/2342
   skipped:
     skipModel: true
+- dir: fixtures/enhancements/2163
+  skipped:
+    skipServer: true
+    skipClient: true
+    skipExpand: true
+- dir: fixtures/enhancements/1771
+  skipped:
+    skipModel: true
+    skiClient: true
+    skipExpand: true

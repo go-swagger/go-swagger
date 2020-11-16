@@ -46,6 +46,12 @@ func TestGenerateAndBuild(t *testing.T) {
 		"issue 2278": {
 			"../fixtures/bugs/2278/fixture-2278.yaml",
 		},
+		"issue 2163": {
+			"../fixtures/enhancements/2163/fixture-2163.yaml",
+		},
+		"issue 1771": {
+			"../fixtures/enhancements/1771/fixture-1771.yaml",
+		},
 	}
 
 	for name, cas := range cases {
