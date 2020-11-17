@@ -14,11 +14,12 @@ build: off
 environment:
   GOPATH: c:\gopath
 
-stack: go 1.12
+stack: go 1.15
 
 test_script:
-  - hack\gomod-download.cmd
-  - go test -timeout 20m ./...
+  - echo "disabled for now"
+  #- hack\gomod-download.cmd
+  #- go test -timeout 20m ./...
 #artifacts:
 #  - path: '%GOPATH%\bin\*.exe'
 deploy: off
