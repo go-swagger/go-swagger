@@ -22,7 +22,7 @@ swagger:meta
 
 Annotation | Format
 -----------|--------
-**Terms Of Service** | allows for either a url or a free text definition describing the terms of services for the API
+**TermsOfService** | allows for either a url or a free text definition describing the terms of services for the API (alias **"TOS"**)
 **Consumes** | a list of default (global) mime type values, one per line, for the content the API receives.<br>[List of supported mime types](#supported-mime-types)
 **Produces** | a list of default (global) mime type values, one per line, for the content the API sends.<br>[List of supported mime types](#supported-mime-types)
 **Schemes** | a list of default schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured

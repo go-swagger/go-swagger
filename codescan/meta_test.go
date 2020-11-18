@@ -163,3 +163,30 @@ that are available to turn go code into a fully compliant swagger 2.0 spec`
 	assert.Equal(t, "john.doe@example.com", info.Contact.Email)
 	assert.Equal(t, "http://john.doe.com", info.Contact.URL)
 }
+
+func TestMoreParseMeta(t *testing.T) {
+	for _, docFile := range []string{
+		"../fixtures/goparsing/meta/v1/doc.go",
+		"../fixtures/goparsing/meta/v2/doc.go",
+		"../fixtures/goparsing/meta/v3/doc.go",
+		"../fixtures/goparsing/meta/v4/doc.go",
+	} {
+
+		swspec := new(spec.Swagger)
+		parser := newMetaParser(swspec)
+		fileSet := token.NewFileSet()
+		fileTree, err := goparser.ParseFile(fileSet, docFile, nil, goparser.ParseComments)
+		if err != nil {
+			t.FailNow()
+		}
+
+		err = parser.Parse(fileTree.Doc)
+		assert.NoError(t, err)
+		assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
+		/*
+			jazon, err := json.MarshalIndent(swspec.Info, "", " ")
+			require.NoError(t, err)
+			t.Logf("%v", string(jazon))
+		*/
+	}
+}
