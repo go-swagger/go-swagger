@@ -754,7 +754,7 @@ func (sg *schemaGenContext) buildProperties() error {
 
 	for k, v := range sg.Schema.Properties {
 		debugLogAsJSON("building property %s[%q] (tup: %t) (BaseType: %t)",
-			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.Schema)
+			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, v)
 		debugLog("property %s[%q] (tup: %t) HasValidations: %t)",
 			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
 
@@ -1016,7 +1016,12 @@ func (sg *schemaGenContext) buildAllOf() error {
 		log.Printf("warning: cannot generate serializable allOf with conflicting array definitions in %s", sg.Container)
 	}
 
-	sg.GenSchema.IsNullable = true
+	// AllOf types are always considered nullable, except when an extension says otherwise
+	if override, ok := sg.TypeResolver.isNullableOverride(&sg.Schema); ok {
+		sg.GenSchema.IsNullable = override
+	} else {
+		sg.GenSchema.IsNullable = true
+	}
 
 	// prevent IsAliased to bubble up (e.g. when a single branch is itself aliased)
 	sg.GenSchema.IsAliased = sg.GenSchema.IsAliased && len(sg.GenSchema.AllOf) < 2
@@ -1452,7 +1457,7 @@ func (sg *schemaGenContext) buildArray() error {
 	// items from maps of aliased or nullable type remain required
 
 	// NOTE(fredbi): since this is reset below, this Required = true serves the obscure purpose
-	// of indirectly lifting validations from the slice. This is carried on differently now.
+	// of indirectly lifting validations from the slice. This is carried out differently now.
 	// elProp.Required = true
 
 	if err := elProp.makeGenSchema(); err != nil {
@@ -1849,6 +1854,21 @@ func goName(sch *spec.Schema, orig string) string {
 	return orig
 }
 
+func (sg *schemaGenContext) derefMapElement(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
+	derefType := strings.TrimPrefix(elem.GoType, "*")
+
+	if outer.IsAliased {
+		nesting := strings.TrimSuffix(strings.TrimSuffix(outer.AliasedType, elem.GoType), "*")
+		outer.AliasedType = nesting + derefType
+		outer.GoType = derefType
+	} else {
+		nesting := strings.TrimSuffix(strings.TrimSuffix(outer.GoType, elem.GoType), "*")
+		outer.GoType = nesting + derefType
+	}
+
+	elem.GoType = derefType
+}
+
 func (sg *schemaGenContext) checkNeedsPointer(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
 	derefType := strings.TrimPrefix(elem.GoType, "*")
 	switch {
@@ -1890,6 +1910,16 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 						sg.checkNeedsPointer(outer, sch, it)
 					} else if it.IsMap {
 						sg.buildMapOfNullable(it)
+					} else if !it.IsPrimitive && !it.IsArray && it.IsComplexObject && it.IsNullable {
+						// structs in map are not rendered as pointer by default
+						// unless some x-nullable overrides says so
+						_, forced := it.Extensions[xNullable]
+						if !forced {
+							_, forced = it.Extensions[xIsNullable]
+						}
+						if !forced {
+							sg.derefMapElement(outer, sch, it)
+						}
 					}
 					it = it.Items
 				}

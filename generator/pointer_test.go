@@ -27,7 +27,7 @@ func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	rt, err := tr.ResolveSchema(&schema, false, false)
 	require.NoError(t, err)
 
-	assert.Equal(t, "[][][]models.StatixItems0", rt.AliasedType)
+	assert.Equal(t, "[][][]*models.StatixItems0", rt.AliasedType)
 }
 
 func TestTypeResolver_PointerLifting(t *testing.T) {
