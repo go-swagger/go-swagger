@@ -1,7 +1,5 @@
 module github.com/go-swagger/go-swagger
 
-replace github.com/go-openapi/spec => github.com/fredbi/spec v0.19.6-0.20201117101326-19e53be3bf39
-
 go 1.14
 
 require (
