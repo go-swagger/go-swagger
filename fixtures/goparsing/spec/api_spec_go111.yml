@@ -29,7 +29,6 @@ paths:
       operationId: Bookings
       responses:
         '200':
-          "description": ""
           "$ref": "#/responses/BookingResponse"
 definitions:
   Booking:
