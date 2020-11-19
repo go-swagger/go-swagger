@@ -221,3 +221,6 @@
     skipModel: true
     skiClient: true
     skipExpand: true
+- dir: fixtures/bugs/2330
+  skipped:
+    skipModel: true
