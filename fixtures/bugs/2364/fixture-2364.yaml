@@ -31,6 +31,14 @@ definitions:
           type: array
           items:
             $ref: "#/definitions/ItemBundleSectionResponse"
+        nullableSections:
+            type: array
+            items:
+              $ref: "#/definitions/NullableItemBundleSectionResponse"
+        otherSections:
+            type: array
+            items:
+              $ref: "#/definitions/OtherItemBundleSectionResponse"
 
   BundleType:
     type: string
@@ -63,3 +71,28 @@ definitions:
             items:
               $ref: "#/definitions/BundleItemResponse"
     x-nullable: false
+
+  NullableItemBundleSectionResponse:
+    allOf:
+      - $ref: "#/definitions/BundleSectionResponse"
+      - type: object
+        x-omitempty: false
+        properties:
+          items:
+            description: Array of bundle items inside a section of the bundle
+            type: array
+            items:
+              $ref: "#/definitions/BundleItemResponse"
+    x-nullable: true
+
+  OtherItemBundleSectionResponse:
+    allOf:
+      - $ref: "#/definitions/BundleSectionResponse"
+      - type: object
+        x-omitempty: false
+        properties:
+          items:
+            description: Array of bundle items inside a section of the bundle
+            type: array
+            items:
+              $ref: "#/definitions/BundleItemResponse"
