@@ -241,6 +241,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		return
 	}
 	debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
+
 	returns = true
 	var ref *spec.Schema
 	var er error
@@ -268,7 +269,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	}
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
-	result.IsNullable = t.isNullable(ref)
+	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overriden for slices and maps
 	result.IsEnumCI = false
 	return
 }
@@ -334,8 +335,18 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 // - it is an object with properties
 // - it is a composed object (allOf)
 //
-// The interpretation of Required as a mean to make a type nullable is carried on elsewhere.
+// The interpretation of Required as a mean to make a type nullable is carried out elsewhere.
 func (t *typeResolver) isNullable(schema *spec.Schema) bool {
+
+	if nullable, ok := t.isNullableOverride(schema); ok {
+		return nullable
+	}
+
+	return len(schema.Properties) > 0 || len(schema.AllOf) > 0
+}
+
+// isNullableOverride determines a nullable flag forced by an extension
+func (t *typeResolver) isNullableOverride(schema *spec.Schema) (bool, bool) {
 	check := func(extension string) (bool, bool) {
 		v, found := schema.Extensions[extension]
 		nullable, cast := v.(bool)
@@ -343,12 +354,14 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	}
 
 	if nullable, ok := check(xIsNullable); ok {
-		return nullable
+		return nullable, ok
 	}
+
 	if nullable, ok := check(xNullable); ok {
-		return nullable
+		return nullable, ok
 	}
-	return len(schema.Properties) > 0 || len(schema.AllOf) > 0
+
+	return false, false
 }
 
 func (t *typeResolver) firstType(schema *spec.Schema) string {
@@ -397,9 +410,30 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		err = er
 		return
 	}
-	// override the general nullability rule from ResolveSchema():
-	// only complex items are nullable (when not discriminated, not forced by x-nullable)
-	rt.IsNullable = t.isNullable(schema.Items.Schema) && !rt.HasDiscriminator
+
+	// Override the general nullability rule from ResolveSchema() in array elements:
+	// - only complex items are nullable (when not discriminated, not forced by x-nullable)
+	// - arrays of allOf have non nullable elements when not forced by x-nullable
+	elem := schema.Items.Schema
+	if elem.Ref.String() != "" {
+		// drill into $ref to figure out whether we want the element type to nullable or not
+		resolved, erf := spec.ResolveRef(t.Doc.Spec(), &elem.Ref)
+		if erf != nil {
+			debugLog("error resolving ref %s: %v", schema.Ref.String(), erf)
+		}
+		elem = resolved
+	}
+
+	debugLogAsJSON("resolved item for %s", rt.GoType, elem)
+	if nullable, ok := t.isNullableOverride(elem); ok {
+		debugLog("found nullable override in element %s: %t", rt.GoType, nullable)
+		rt.IsNullable = nullable
+	} else {
+		// this differs from isNullable for elements with AllOf
+		debugLog("no nullable override in element %s: Properties: %t, HasDiscriminator: %t", rt.GoType, len(elem.Properties) > 0, rt.HasDiscriminator)
+		rt.IsNullable = len(elem.Properties) > 0 && !rt.HasDiscriminator
+	}
+
 	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
@@ -457,7 +491,12 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 				isNullable = true
 			}
 		}
-		result.IsNullable = isNullable
+		if override, ok := t.isNullableOverride(schema); ok {
+			// prioritize x-nullable extensions
+			result.IsNullable = override
+		} else {
+			result.IsNullable = isNullable
+		}
 		result.SwaggerType = object
 		return
 	}

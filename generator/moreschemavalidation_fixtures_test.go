@@ -14,22 +14,48 @@
 
 package generator
 
+func initFixture2400() {
+	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("signup_request.go", []string{
+		`type SignupRequest struct {`,
+		`Email *string`,
+	}, todo, noLines, noLines)
+	flattenRun.AddExpectations("signup_request2.go", []string{
+		`type SignupRequest2 struct {`,
+		`Email *Email`,
+	}, todo, noLines, noLines)
+}
+
 func initFixture2381() {
 	f := newModelFixture("../fixtures/bugs/2381/fixture-2381.yaml", "required $ref primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	expandRun := f.AddRun(true)
 
 	flattenRun.AddExpectations("my_object.go", []string{
+		`RequiredReferencedObject MyObjectRef`,  // this is an interface{}
+		`RequiredReferencedString *MyStringRef`, // alias to primitive
+		`RequiredString *string`,                // unaliased primitive
+		`RequiredReferencedArray MyArrayRef`,    // no need to use a pointer
+		`RequiredReferencedMap MyMapRef`,        // no need to use a pointer
+		`RequiredReferencedStruct *MyStructRef`, // pointer to struct
 		`func (m *MyObject) validateRequiredReferencedObject(formats strfmt.Registry) error {`,
 		`	if m.RequiredReferencedObject == nil {`,
 		`		return errors.Required("required_referenced_object", "body", nil)`,
 		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("required_referenced_string", "body", MyStringRef(m.RequiredReferencedString)); err != nil {`,
+		`	if err := validate.Required("required_referenced_string", "body", m.RequiredReferencedString); err != nil {`,
 		`	if err := m.RequiredReferencedString.Validate(formats); err != nil {`,
 		`		if ve, ok := err.(*errors.Validation); ok {`,
 		`			return ve.ValidateName("required_referenced_string")`,
 		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedStruct(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_struct", "body", m.RequiredReferencedStruct); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedArray(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_array", "body", m.RequiredReferencedArray); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedMap(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_map", "body", m.RequiredReferencedMap); err != nil {`,
 	}, todo, noLines, noLines)
 
 	expandRun.AddExpectations("my_object.go", []string{
@@ -11281,6 +11307,8 @@ func initFixture2364() {
 		`type BundleAttributesResponse struct {`,
 		`Items []BundleItemResponse`,
 		`Sections []ItemBundleSectionResponse`,
+		`NullableSections []*NullableItemBundleSectionResponse`,
+		`OtherSections []*OtherItemBundleSectionResponse`,
 		`Type BundleType`,
 	},
 		// not expected

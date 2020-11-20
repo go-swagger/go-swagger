@@ -228,6 +228,9 @@ func initModelFixtures() {
 
 	// required $ref primitive
 	initFixture2381()
+
+	// required aliased primitive
+	initFixture2400()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

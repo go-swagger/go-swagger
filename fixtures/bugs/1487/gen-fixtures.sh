@@ -1,4 +1,4 @@
-#! /bin/bash 
+#! /bin/bash
 if [[ ${1} == "--clean" ]] ; then
     clean=1
 fi
@@ -65,7 +65,7 @@ for testcase in ${testcases} ; do
     rm -rf ${target}
     mkdir ${target}
     echo "Model generation for ${spec} with opts=${opts}"
-    swagger generate model --skip-validation ${opts} --spec=${spec} --target=${target} --output=${testcase%.*}.log
+    swagger generate model --skip-validation ${opts} --spec=${spec} --target=${target} --log-output=${testcase%.*}.log
     # 1>x.log 2>&1
     #
     if [[ $? != 0 ]] ; then
@@ -92,21 +92,21 @@ for testcase in ${testcases} ; do
             fi
         fi
         echo "${spec}: Build OK"
-        if [[ -n ${clean} ]] ; then 
+        if [[ -n ${clean} ]] ; then
              rm -rf ${target}
         fi
     fi
 done
 done
-if [[ ! -z ${failures} ]] ; then 
+if [[ ! -z ${failures} ]] ; then
     echo ${failures}|tr ' ' '\n'
 else
     echo "No failures"
 fi
 exit
 # Non reg codegen
-# NOTE(fredbi): 
-# - azure: invalid spec 
+# NOTE(fredbi):
+# - azure: invalid spec
 # - bitbucket: model does not compile
 # - issue72: invalid spec
 # - todolist.discriminator: ok now
@@ -117,7 +117,7 @@ for testcase in ${testcases} ; do
     target=./gen-${testcase%.*}
     if [[ -f ../../codegen/${testcase} ]] ; then
       spec=../../codegen/${testcase}
-    else 
+    else
       spec=${testcase}
     fi
     serverName="nrcodegen"
@@ -125,7 +125,7 @@ for testcase in ${testcases} ; do
     mkdir ${target}
     echo "Server generation for ${spec}"
     swagger generate server --skip-validation --spec ${spec} --target ${target} --name=${serverName} 1>${testcase%.*}.log 2>&1
-    #--output=${testcase%.*}.log
+    #--log-output=${testcase%.*}.log
     if [[ $? != 0 ]] ; then
         echo "Generation failed for ${spec}"
         exit 1
@@ -137,7 +137,7 @@ for testcase in ${testcases} ; do
         exit 1
     fi
     echo "${spec}: Build OK"
-    if [[ -n ${clean} ]] ; then 
+    if [[ -n ${clean} ]] ; then
         rm -rf ${target}
     fi
 done
@@ -162,7 +162,7 @@ for testcase in ${testcases} ; do
         exit 1
     fi
     echo "${spec}: Build OK"
-    if [[ -n ${clean} ]] ; then 
+    if [[ -n ${clean} ]] ; then
         rm -rf ${target}
     fi
 done
