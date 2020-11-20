@@ -1,0 +1,48 @@
+
+---
+  swagger: "2.0"
+  info:
+    title: "param body with array of empty objects"
+    version: "0.0.1"
+    description: "repro issue 1537"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+
+  definitions:
+   LoginInput:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+
+  responses:
+    GenericError:
+      description: "error"
+      schema:
+        type: object
+
+  paths:
+    /login:
+       post:
+         operationId: login
+         parameters:
+           - in: body
+             required: true
+             name: body
+             schema:
+               $ref: '#/definitions/LoginInput'
+         responses:
+           200:
+             description: ''
+             schema:
+               properties:
+                 token:
+                   type: string
+           400:
+             $ref: '#/responses/GenericError'
+           401:
+             $ref: '#/responses/GenericError'
+           500:
+             $ref: '#/responses/GenericError'
