@@ -312,7 +312,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	//
 	// In all cases, resetting definitions to the _original_ (untransformed) spec is not an option:
 	// we take from there the spec possibly already transformed by the GenDefinitions stage.
-	resolver := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(b.ModelsPackage, defaultModelsTarget), b.Doc)
+	resolver := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(b.ModelsPackage, defaultModelsTarget), b.DefaultImports[b.ModelsPackage], b.Doc)
 	receiver := "o"
 
 	operation := b.Operation
@@ -1008,7 +1008,7 @@ func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *sp
 	if b.PristineDoc == nil {
 		b.PristineDoc = b.Doc.Pristine()
 	}
-	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget), b.PristineDoc)
+	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget), b.DefaultImports[b.ModelsPackage], b.PristineDoc)
 
 	return rslv, b.cloneSchema(schema)
 }
@@ -1028,7 +1028,7 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *sp
 	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget)
 
 	// make a resolver for current package (i.e. operations)
-	pg.TypeResolver = newTypeResolver("", rslv.Doc).withKeepDefinitionsPackage(pkg)
+	pg.TypeResolver = newTypeResolver("", b.DefaultImports[b.APIPackage], rslv.Doc).withKeepDefinitionsPackage(pkg)
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
 	pg.UseContainerInName = true
 
@@ -1064,7 +1064,10 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 	if sch == nil {
 		sch = &spec.Schema{}
 	}
-	rslv := resolver
+	shallowClonedResolver := *resolver
+	shallowClonedResolver.ModelsFullPkg = b.DefaultImports[b.ModelsPackage]
+	rslv := &shallowClonedResolver
+
 	sc := schemaGenContext{
 		Path:                       schemaPath,
 		Name:                       containerName,
@@ -1247,7 +1250,7 @@ func deconflictPkg(pkg string, renamer func(string) string) string {
 	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
 		fallthrough
 	// package conflict with stdlib/other lib imports
-	case "tls", "http", "fmt", "strings", "log", "flags", "pflag":
+	case "tls", "http", "fmt", "strings", "log", "flags", "pflag", "json", "time":
 		return renamer(pkg)
 	}
 	return pkg

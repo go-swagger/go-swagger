@@ -425,6 +425,81 @@ func TestGenerateAndTest(t *testing.T) {
 				_ = os.RemoveAll("codegen")
 			},
 		},
+		"ext_types_issue_2385": {
+			spec:   "../fixtures/bugs/2385/fixture-2385.yaml",
+			target: "codegen/2385",
+			prepare: func(opts *GenOpts) {
+				opts.Target = "codegen/2385"
+				opts.MainPackage = "nrcodegen-server"
+				opts.IncludeMain = true
+				location := filepath.Join(opts.Target, "models")
+				addModelsToLocation(t, location, "my_type.go")
+			},
+			verify: func(t testing.TB, target string) {
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				require.True(t, fileExists(target, filepath.Join("cmd", "nrcodegen-server")))
+
+				err = os.Chdir(filepath.Join(target, "cmd", "nrcodegen-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+
+				err = os.Chdir(filepath.Join(cwd, target, "models"))
+				require.NoError(t, err)
+
+				t.Log("building generated models")
+				p, err = exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+			clean: func() {
+				_ = os.RemoveAll("codegen")
+			},
+		},
+		"ext_types_full_example": {
+			spec:   "../examples/external-types/example-external-types.yaml",
+			target: "codegen/external",
+			prepare: func(opts *GenOpts) {
+				opts.Target = "codegen/external"
+				opts.MainPackage = "nrcodegen-server"
+				opts.IncludeMain = true
+				opts.ValidateSpec = false
+				location := filepath.Join(opts.Target, "models")
+				addModelsToLocation(t, location, "my_type.go")
+			},
+			verify: func(t testing.TB, target string) {
+				cwd, err := os.Getwd()
+				require.NoError(t, err)
+
+				require.True(t, fileExists(target, filepath.Join("cmd", "nrcodegen-server")))
+
+				err = os.Chdir(filepath.Join(target, "cmd", "nrcodegen-server"))
+				require.NoError(t, err)
+				defer func() {
+					_ = os.Chdir(cwd)
+				}()
+
+				t.Log("building generated server")
+				p, err := exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+
+				err = os.Chdir(filepath.Join(cwd, target, "models"))
+				require.NoError(t, err)
+
+				t.Log("building generated models")
+				p, err = exec.Command("go", "build").CombinedOutput()
+				require.NoErrorf(t, err, string(p))
+			},
+			clean: func() {
+				_ = os.RemoveAll("codegen")
+			},
+		},
 	}
 
 	for name, cas := range cases {
@@ -459,4 +534,51 @@ func TestGenerateAndTest(t *testing.T) {
 			}
 		})
 	}
+}
+
+func addModelsToLocation(t testing.TB, location, file string) {
+	emkd := os.MkdirAll(location, 0700)
+	require.NoError(t, emkd)
+	erf := ioutil.WriteFile(filepath.Join(location, file), []byte(`
+package models
+
+import (
+  "context"
+  "io"
+  "github.com/go-openapi/strfmt"
+)
+
+// MyType ...
+type MyType string
+
+// Validate MyType
+func (MyType) Validate(strfmt.Registry) error { return nil }
+func (MyType) ContextValidate(context.Context, strfmt.Registry) error { return nil }
+
+// MyInteger ...
+type MyInteger int
+
+// Validate MyInteger
+func (MyInteger) Validate(strfmt.Registry) error { return nil }
+func (MyInteger) ContextValidate(context.Context, strfmt.Registry) error { return nil }
+
+// MyString ...
+type MyString string
+
+// Validate MyString
+func (MyString) Validate(strfmt.Registry) error { return nil }
+func (MyString) ContextValidate(context.Context, strfmt.Registry) error { return nil }
+
+// MyOtherType ...
+type MyOtherType struct{}
+
+// Validate MyOtherType
+func (MyOtherType) Validate(strfmt.Registry) error { return nil }
+func (MyOtherType) ContextValidate(context.Context, strfmt.Registry) error { return nil }
+
+// MyStreamer ...
+type MyStreamer io.Reader
+`),
+		os.ModePerm)
+	require.NoError(t, erf)
 }

@@ -115,7 +115,7 @@
     }
   {{ end }}
   {{ if .Items }}
-    {{- if and (or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased) (not .Items.IsInterface) (not .Items.IsStream) }}
+    {{- if and (or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased) (not .Items.IsInterface) (not .Items.IsStream) (not .Items.SkipExternalValidation) }}
       for {{.IndexVar }} := 0; {{.IndexVar }} < len({{.ValueExpression }}); {{.IndexVar }}++ {
       {{- with .Items }}
         {{- if and .IsNullable (not .Required) (not .IsMapNullOverride) }}
@@ -132,7 +132,7 @@
       }
     {{- end }}
   {{- else }}
-    {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
+    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName) (not .SkipExternalValidation)) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
       {{- if and .IsNullable (not .IsMapNullOverride) }}
     if {{ .ValueExpression }} != nil {
       {{- end }}
@@ -285,7 +285,7 @@
     {{- end }}
   {{- end }}
   {{ if .HasAdditionalProperties }}
-    {{- if  .AdditionalProperties.HasValidations }}
+    {{- if  and .AdditionalProperties.HasValidations (not .AdditionalProperties.SkipExternalValidation) }}
     {{- $validatedValues := .ValueExpression }}{{ $keyVar := .AdditionalProperties.KeyVar }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
       {{ with .AdditionalProperties }}
@@ -302,7 +302,7 @@
         return err
       }
         {{- end }}
-        {{- if .IsPrimitive }}
+        {{- if and  .IsPrimitive (not .SkipExternalValidation ) }}
           {{- if .IsAliased }}
             {{- if not .IsAnonymous }}
       if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
@@ -339,7 +339,7 @@
         return err
       }
           {{- end }}
-          {{- if and (not .IsStream) (not .IsBase64) }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+          {{- if and (not .IsStream) (not .IsBase64) (not .SkipExternalValidation) }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
             {{ template "validationCustomformat" . }}
           {{- end }}
         {{- else if .IsArray }}
@@ -358,7 +358,7 @@
       }
           {{- end }}
         {{- else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
-          {{- if not .IsAnonymous }}
+          {{- if and (not .IsAnonymous) (not .SkipExternalValidation) }}
     if val, ok := {{ $validatedValues }}[{{ $keyVar }}]; ok {
             {{- if and .IsNullable (not .IsMapNullOverride) }}
       if val != nil {
@@ -395,7 +395,7 @@
     }
     {{ end }}
   {{- else if .IsAliased }}
-    {{- if and .IsMap .HasValidations }}{{/* validation of aliased maps but does not know about AdditionalProperties: e.g. it comes from a $ref */}}
+    {{- if and .IsMap .HasValidations (not .SkipExternalValidation) }}{{/* validation of aliased maps but does not know about AdditionalProperties: e.g. it comes from a $ref */}}
       {{- if not .IsAnonymous }}
         {{- if $.IsMap }}{{/* we come from a map range */}}
       if val, ok := {{ .ValueExpression }}; ok {
@@ -452,7 +452,7 @@
   {{- else }}
     {{ range .AllOf }}
       {{ range .Properties }}
-        // all of properites
+        // all of properties
         {{ template "propertycontextvalidator" . }}
       {{ end }}
     {{ end }}
@@ -474,6 +474,7 @@
   // .IsNullable: {{ .IsNullable }}
   // .Required: {{ .Required }}
   // .ReadOnly: {{ .ReadOnly }}
+  // .HasValidations {{ .HasValidations }}
   // .HasContextValidations {{ .HasContextValidations }}
   // .IsBaseType: {{ .IsBaseType }}
   // .ValueExpression: {{ .ValueExpression }}
@@ -495,7 +496,7 @@
       }
       {{- end }}
     {{ end }}
-    {{- if or .IsAliased (ne .ValueExpression .ReceiverName) }}{{/* prevents generated code to call itself: case of aliased types */}}
+    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName)) (not .SkipExternalValidation) }}{{/* prevents generated code to call itself: case of aliased types */}}
       {{- if or (and (or .IsNullable) (not .IsMapNullOverride)) .IsMap .IsArray }}
       if {{ .ValueExpression }} != nil {
       {{- end }}
@@ -594,6 +595,16 @@
       {{- end }}
     {{- end }}
     {{ template "objectvalidator" . }}
+  {{- else if and .IsExternal .Required }}
+    {{- if or .IsNullable .IsInterface }}
+      if {{ .ValueExpression }} == nil {
+        return errors.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
+      }
+    {{- else }}
+      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+        return err
+      }
+    {{- end }}
   {{- end }}
 {{ end }}
 
@@ -1105,7 +1116,7 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
 }
     {{ end }}
 func ({{.ReceiverName }} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
-    {{ if or .AdditionalItems.Required .AdditionalItems.HasValidations }}
+    {{ if and (or .AdditionalItems.Required .AdditionalItems.HasValidations) (not .AdditionalItems.SkipExternalValidation) }}
   for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
       {{template "propertyvalidator" .AdditionalItems }}
   }

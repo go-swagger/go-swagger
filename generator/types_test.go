@@ -10,10 +10,12 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/require"
 )
 
 type externalTypeFixture struct {
+	title     string
 	schema    string
 	expected  *externalTypeDefinition
 	knownDefs struct{ tpe, pkg, alias string }
@@ -23,6 +25,7 @@ type externalTypeFixture struct {
 func makeResolveExternalTypes() []externalTypeFixture {
 	return []externalTypeFixture{
 		{
+			title: "hint as map",
 			schema: `{
 		"type": "object",
 		"x-go-type": {
@@ -47,8 +50,9 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "external",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind: "map",
 				},
@@ -69,6 +73,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 			},
 		},
 		{
+			title: "hint as map, embedded",
 			schema: `{
 		"type": "object",
 		"x-go-type": {
@@ -93,8 +98,9 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "external",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind: "map",
 				},
@@ -113,6 +119,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 			},
 		},
 		{
+			title: "hint as array, nullable",
 			schema: `{
 		"type": "object",
 		"x-go-type": {
@@ -136,11 +143,12 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "mymodels",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind:     "array",
-					Nullable: true,
+					Nullable: swag.Bool(true),
 				},
 				Embedded: false,
 			},
@@ -152,9 +160,11 @@ func makeResolveExternalTypes() []externalTypeFixture {
 				IsEmptyOmitted: false,
 				Pkg:            "github.com/fredbi/mymodels",
 				PkgAlias:       "mymodels",
+				IsNullable:     true,
 			},
 		},
 		{
+			title: "hint as map, unaliased",
 			schema: `{
 		"type": "object",
 		"x-go-type": {
@@ -177,8 +187,9 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "mymodels",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind: "map",
 				},
@@ -194,6 +205,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 			},
 		},
 		{
+			title: "hint as tuple, unaliased",
 			schema: `{
 		"type": "object",
 		"x-go-type": {
@@ -216,8 +228,9 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "mymodels",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind: "tuple",
 				},
@@ -233,6 +246,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 			},
 		},
 		{
+			title: "hint as primitive, unaliased",
 			schema: `{
 		"type": "number",
 		"x-go-type": {
@@ -255,8 +269,9 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias:   "mymodels",
 				},
 				Hints: struct {
-					Kind     string
-					Nullable bool
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
 				}{
 					Kind: "primitive",
 				},
@@ -271,6 +286,44 @@ func makeResolveExternalTypes() []externalTypeFixture {
 				PkgAlias:       "mymodels",
 			},
 		},
+		{
+			title: "default model package",
+			schema: `{
+		"type": "number",
+		"x-go-type": {
+			"type": "Mytype",
+			"hints": {
+			  "kind": "primitive"
+			}
+		}
+	}`,
+			expected: &externalTypeDefinition{
+				Type: "Mytype",
+				Import: struct {
+					Package string
+					Alias   string
+				}{
+					Package: "github.com/example/custom",
+					Alias:   "custom",
+				},
+				Hints: struct {
+					Kind         string
+					Nullable     *bool
+					NoValidation *bool
+				}{
+					Kind: "primitive",
+				},
+			},
+			knownDefs: struct{ tpe, pkg, alias string }{tpe: "Mytype", pkg: "", alias: ""},
+			resolved: resolvedType{
+				GoType:         "Mytype",
+				IsPrimitive:    true,
+				SwaggerType:    "",
+				IsEmptyOmitted: true,
+				Pkg:            "",
+				PkgAlias:       "",
+			},
+		},
 	}
 }
 
@@ -282,25 +335,30 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 
 	for i, toPin := range makeResolveExternalTypes() {
 		fixture := toPin
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
+		var title string
+		if fixture.title == "" {
+			title = strconv.Itoa(i)
+		} else {
+			title = fixture.title
+		}
+		t.Run(title, func(t *testing.T) {
 			jazonDoc := fixture.schema
 			doc, err := loads.Embedded([]byte(jazonDoc), []byte(jazonDoc))
 			require.NoErrorf(t, err, "fixture %d", i)
 
-			r := newTypeResolver("models", doc)
+			r := newTypeResolver("models", "github.com/example/custom", doc)
 			var schema spec.Schema
 			err = json.Unmarshal([]byte(jazonDoc), &schema)
 			require.NoErrorf(t, err, "fixture %d", i)
 
 			extType, ok := hasExternalType(schema.Extensions)
 			require.Truef(t, ok, "fixture %d", i)
+			require.NotNil(t, extType)
 
-			require.EqualValuesf(t, fixture.expected, extType, "fixture %d", i)
-
-			tpe, pkg, alias := knownDefGoType("A", schema, r.goTypeName)
+			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
 			require.EqualValuesf(t, fixture.knownDefs, struct{ tpe, pkg, alias string }{tpe, pkg, alias}, "fixture %d", i)
 
-			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema)
+			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema, false)
 
 			resolved.Extensions = nil // don't assert this
 			require.EqualValuesf(t, fixture.resolved, resolved, "fixture %d", i)

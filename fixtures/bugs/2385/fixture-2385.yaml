@@ -1,0 +1,76 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: "external types imports"
+  description: "repro issue 2385"
+paths:
+  /test:
+    get:
+      parameters:
+      - in: body
+        name: body
+        schema:
+          type: array
+          items:
+            $ref: "#/definitions/MyType"
+      responses:
+        default:
+          description: xxx
+          # reference to models package
+          schema:
+            $ref: "#/definitions/Zzz"
+    put:
+      parameters:
+      - in: body
+        name: body
+        schema:
+          # inline type generated in operations
+          type: array
+          items:
+            # inline type generated in operations
+            type: integer
+            x-go-type:
+              type: MyInteger
+      responses:
+        default:
+          description: ok
+          # inline type generated in operations
+          schema:
+            type: object
+            properties:
+              x:
+                type: string
+            x-go-type:
+              type: MyString
+
+definitions:
+  Zzz:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MyType'
+
+  # generated in models package
+  MyType:
+    type: object
+    x-go-type:
+      type: MyType
+
+  MyArray:
+    type: array
+    items:
+      type: array
+      maxItems: 12
+      items:
+        $ref: '#/definitions/MyType'
+
+  MyMap:
+    type: object
+    additionalProperties:
+      type: array
+      minItems: 5
+      items:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/MyType'
