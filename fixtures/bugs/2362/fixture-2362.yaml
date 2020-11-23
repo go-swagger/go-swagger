@@ -12,15 +12,22 @@ produces:
 consumes:
   - application/json
 
+securityDefinitions:
+  apikey:
+    type: apiKey
+    name: api_key
+    in: header
+
 paths:
   '/ping':
     get:
+      security:
+      - apikey: []
       summary: Ping the server
       description: Ping the server
       operationId: ping
       produces:
         - text/plain
-      security: []
       responses:
         200:
           description: OK
