@@ -17,7 +17,6 @@ package generator
 import (
 	"fmt"
 	"log"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -127,18 +126,18 @@ func typeForHeader(header spec.Header) resolvedType {
 	return simpleResolvedType(header.Type, header.Format, header.Items)
 }
 
-func newTypeResolver(pkg string, doc *loads.Document) *typeResolver {
+func newTypeResolver(pkg, fullPkg string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
 	resolver.KnownDefs = make(map[string]struct{}, len(doc.Spec().Definitions))
 	for k, sch := range doc.Spec().Definitions {
-		tpe, _, _ := knownDefGoType(k, sch, nil)
+		tpe, _, _ := resolver.knownDefGoType(k, sch, nil)
 		resolver.KnownDefs[tpe] = struct{}{}
 	}
 	return &resolver
 }
 
 // knownDefGoType returns go type, package and package alias for definition
-func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
+func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
 	debugLog("known def type: %q", def)
 	ext := schema.Extensions
 	nm, hasGoName := ext.GetString(xGoName)
@@ -147,8 +146,7 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 		debugLog("known def type %s named from %s as %q", def, xGoName, nm)
 		def = nm
 	}
-	extType, isExternalType := hasExternalType(ext)
-
+	extType, isExternalType := t.resolveExternalType(ext)
 	if !isExternalType || extType.Embedded {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
@@ -159,7 +157,11 @@ func knownDefGoType(def string, schema spec.Schema, clear func(string) string) (
 	}
 
 	// external type definition trumps regular type resolution
-	log.Printf("type %s imported as external type %s.%s", def, extType.Import.Package, extType.Type)
+	if extType.Import.Alias == "" {
+		debugLog("type %s imported as external type %s, assumed in current package", def, extType.Type)
+		return extType.Type, extType.Import.Package, extType.Import.Alias
+	}
+	debugLog("type %s imported as external type from %s as %s.%s", def, extType.Import.Package, extType.Import.Alias, extType.Type)
 	return extType.Import.Alias + "." + extType.Type, extType.Import.Package, extType.Import.Alias
 }
 
@@ -179,8 +181,9 @@ type externalTypeDefinition struct {
 		Alias   string
 	}
 	Hints struct {
-		Kind     string
-		Nullable bool
+		Kind         string
+		Nullable     *bool
+		NoValidation *bool
 	}
 	Embedded bool
 }
@@ -190,23 +193,57 @@ func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 	if !ok {
 		return nil, false
 	}
+
 	var extType externalTypeDefinition
 	err := mapstructure.Decode(v, &extType)
 	if err != nil {
 		log.Printf("warning: x-go-type extension could not be decoded (%v). Skipped", v)
 		return nil, false
 	}
-	if extType.Import.Package != "" && extType.Import.Alias == "" {
-		// NOTE(fred): possible name conflict here (TODO(fred): deconflict this default alias)
-		extType.Import.Alias = path.Base(extType.Import.Package)
-	}
-	debugLogAsJSON("known def external %s type", xGoType, extType)
+
 	return &extType, true
+}
+
+func (t typeResolver) resolveExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
+	extType, hasExt := hasExternalType(ext)
+	if !hasExt {
+		return nil, false
+	}
+
+	// NOTE:
+	// * basic deconfliction of the default alias
+	// * if no package is specified, defaults to models (as provided from CLI or defaut generation location for models)
+	toAlias := func(pkg string) string {
+		mangled := GoLangOpts().ManglePackageName(pkg, "")
+		return deconflictPkg(mangled, func(in string) string {
+			return in + "ext"
+		})
+	}
+
+	switch {
+	case extType.Import.Package != "" && extType.Import.Alias == "":
+		extType.Import.Alias = toAlias(extType.Import.Package)
+	case extType.Import.Package == "" && extType.Import.Alias != "":
+		extType.Import.Package = t.ModelsFullPkg
+	case extType.Import.Package == "" && extType.Import.Alias == "":
+		// in this case, the external type is assumed to be present in the current package.
+		// For completion, whenever this type is used in anonymous types declared by operations,
+		// we assume this is the package where models are expected to be found.
+		extType.Import.Package = t.ModelsFullPkg
+		if extType.Import.Package != "" {
+			extType.Import.Alias = toAlias(extType.Import.Package)
+		}
+	}
+
+	debugLogAsJSON("known def external %s type", xGoType, extType)
+
+	return extType, true
 }
 
 type typeResolver struct {
 	Doc           *loads.Document
-	ModelsPackage string
+	ModelsPackage string // package alias (e.g. "models")
+	ModelsFullPkg string // fully qualified package (e.g. "github.com/example/models")
 	ModelName     string
 	KnownDefs     map[string]struct{}
 	// unexported fields
@@ -216,7 +253,7 @@ type typeResolver struct {
 
 // NewWithModelName clones a type resolver and specifies a new model name
 func (t *typeResolver) NewWithModelName(name string) *typeResolver {
-	tt := newTypeResolver(t.ModelsPackage, t.Doc)
+	tt := newTypeResolver(t.ModelsPackage, t.ModelsFullPkg, t.Doc)
 	tt.ModelName = name
 
 	// propagates kept definitions
@@ -252,6 +289,13 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		err = er
 		return
 	}
+
+	extType, isExternalType := t.resolveExternalType(schema.Extensions)
+	if isExternalType {
+		// deal with validations for an aliased external type
+		result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+	}
+
 	res, er := t.ResolveSchema(ref, false, isRequired)
 	if er != nil {
 		err = er
@@ -260,7 +304,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	result = res
 
 	tn := filepath.Base(schema.Ref.GetURL().Fragment)
-	tpe, pkg, alias := knownDefGoType(tn, *ref, t.goTypeName)
+	tpe, pkg, alias := t.knownDefGoType(tn, *ref, t.goTypeName)
 	debugLog("type name %s, package %s, alias %s", tpe, pkg, alias)
 	if tpe != "" {
 		result.GoType = tpe
@@ -477,7 +521,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	result.IsBaseType = schema.Discriminator != ""
 	if !isAnonymous {
 		result.SwaggerType = object
-		tpe, pkg, alias := knownDefGoType(t.ModelName, *schema, t.goTypeName)
+		tpe, pkg, alias := t.knownDefGoType(t.ModelName, *schema, t.goTypeName)
 		result.GoType = tpe
 		result.Pkg = pkg
 		result.PkgAlias = alias
@@ -522,6 +566,12 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.IsMap = !result.IsComplexObject
 
 		result.SwaggerType = object
+
+		if et.IsExternal {
+			// external AdditionalProperties are a special case because we look ahead into schemas
+			extType, _, _ := t.knownDefGoType(t.ModelName, *sch, t.goTypeName)
+			et.GoType = extType
+		}
 
 		// only complex map elements are nullable (when not forced by x-nullable)
 		// TODO: figure out if required to check when not discriminated like arrays?
@@ -690,21 +740,38 @@ func hasEnumCI(ve spec.Extensions) bool {
 	return ok && isEnumCI
 }
 
-func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extType *externalTypeDefinition, schema *spec.Schema) resolvedType {
+func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extType *externalTypeDefinition, schema *spec.Schema, isRequired bool) resolvedType {
 	// short circuit type resolution for external types
+	debugLogAsJSON("shortCircuitResolveExternal", extType)
+
 	var result resolvedType
 	result.Extensions = schema.Extensions
 	result.GoType = tpe
 	result.Pkg = pkg
 	result.PkgAlias = alias
+	result.IsInterface = false
+	// by default consider that we have a type with validations. Use hint "interface" or "noValidation" to disable validations
+	result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+	result.IsNullable = isRequired
+
 	result.setKind(extType.Hints.Kind)
-	result.IsNullable = t.isNullable(schema)
+	if result.IsInterface || result.IsStream {
+		result.IsNullable = false
+	}
+	if extType.Hints.Nullable != nil {
+		result.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+	}
+
+	if nullable, ok := t.isNullableOverride(schema); ok {
+		result.IsNullable = nullable // x-nullable directive rules them all
+	}
 
 	// other extensions
 	if result.IsArray {
 		result.IsEmptyOmitted = false
 		tpe = "array"
 	}
+
 	result.setExtensions(schema, tpe)
 	return result
 }
@@ -721,32 +788,73 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		return
 	}
 
-	extType, isExternalType := hasExternalType(schema.Extensions)
+	extType, isExternalType := t.resolveExternalType(schema.Extensions)
 	if isExternalType {
-		tpe, pkg, alias := knownDefGoType(t.ModelName, *schema, t.goTypeName)
-		debugLog("found type declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
-			pkg, tpe, extType.Hints.Kind != "", extType.Embedded)
+		tpe, pkg, alias := t.knownDefGoType(t.ModelName, *schema, t.goTypeName)
+		debugLog("found type %s declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
+			t.ModelName, pkg, tpe, extType.Hints.Kind != "", extType.Embedded)
 
 		if extType.Hints.Kind != "" && !extType.Embedded {
 			// use hint to qualify type
 			debugLog("short circuits external type resolution with hint for %s", tpe)
-			result = t.shortCircuitResolveExternal(tpe, pkg, alias, extType, schema)
+			result = t.shortCircuitResolveExternal(tpe, pkg, alias, extType, schema, isRequired)
+			result.IsExternal = isAnonymous // mark anonymous external types only, not definitions
 			return
 		}
 
 		// use spec to qualify type
 		debugLog("marking type %s as external embedded: %t", tpe, extType.Embedded)
-		// mark this type as an embedded external definition if requested
-		defer func() {
+		defer func() { // enforce bubbling up decisions taken about being an external type
+			// mark this type as an embedded external definition if requested
 			result.IsEmbedded = extType.Embedded
+			result.IsExternal = isAnonymous // for non-embedded, mark anonymous external types only, not definitions
+
+			result.IsAnonymous = false
+			result.IsAliased = true
+			result.IsNullable = isRequired
+			if extType.Hints.Nullable != nil {
+				result.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+			}
+
+			result.IsMap = false
+			result.AliasedType = result.GoType
+			result.IsInterface = false
+
 			if result.IsEmbedded {
 				result.ElemType = &resolvedType{
-					GoType:     extType.Import.Alias + "." + extType.Type,
-					Pkg:        extType.Import.Package,
-					PkgAlias:   extType.Import.Alias,
-					IsNullable: extType.Hints.Nullable,
+					IsExternal:             isAnonymous, // mark anonymous external types only, not definitions
+					IsInterface:            false,
+					Pkg:                    extType.Import.Package,
+					PkgAlias:               extType.Import.Alias,
+					SkipExternalValidation: swag.BoolValue(extType.Hints.NoValidation),
 				}
-				result.setKind(extType.Hints.Kind)
+				if extType.Import.Alias != "" {
+					result.ElemType.GoType = extType.Import.Alias + "." + extType.Type
+				} else {
+					result.ElemType.GoType = extType.Type
+				}
+				result.ElemType.setKind(extType.Hints.Kind)
+				if result.IsInterface || result.IsStream {
+					result.ElemType.IsNullable = false
+				}
+				if extType.Hints.Nullable != nil {
+					result.ElemType.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+				}
+				// embedded external: by default consider validation is skipped for the external type
+				//
+				// NOTE: at this moment the template generates a type assertion, so this setting does not really matter
+				// for embedded types.
+				if extType.Hints.NoValidation != nil {
+					result.ElemType.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+				} else {
+					result.ElemType.SkipExternalValidation = true
+				}
+			} else {
+				// non-embedded external type: by default consider that validation is enabled (SkipExternalValidation: false)
+				result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+			}
+			if nullable, ok := t.isNullableOverride(schema); ok {
+				result.IsNullable = nullable
 			}
 		}()
 	}
@@ -762,9 +870,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		if !isAnonymous {
 			result.IsMap = false
 			result.IsComplexObject = true
-			debugLog("not anonymous ref")
 		}
-		debugLog("anonymous after ref")
+
 		return
 	}
 
@@ -1061,6 +1168,7 @@ type resolvedType struct {
 	IsJSONString      bool
 	IsEnumCI          bool
 	IsBase64          bool
+	IsExternal        bool
 
 	// A tuple gets rendered as an anonymous struct with P{index} as property name
 	IsTuple            bool
@@ -1096,6 +1204,8 @@ type resolvedType struct {
 	// is generated in models that embeds the external type, with the Validate
 	// method.
 	IsEmbedded bool
+
+	SkipExternalValidation bool
 }
 
 func (rt *resolvedType) Zero() string {

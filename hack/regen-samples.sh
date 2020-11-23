@@ -61,5 +61,12 @@ rm -rf client cmd models restapi
 swagger generate client -A Petstore --template stratoscale
 swagger generate server -A Petstore --template stratoscale
 
-cd ${examples}
+cd "${examples}/external-types" || exit 1
+cp models/my_type.go .
+rm -rf cmd models restapi
+mkdir models
+mv my_type.go models
+swagger generate server --skip-validation -f example-external-types.yaml -A external-types-demo
+
+cd "${examples}"
 go test -v ./...

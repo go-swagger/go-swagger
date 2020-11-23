@@ -230,7 +230,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	// Check if model is imported from external package using x-go-type
 	receiver := "m"
 	// models are resolved in the current package
-	resolver := newTypeResolver("", specDoc)
+	resolver := newTypeResolver("", "", specDoc)
 	resolver.ModelName = name
 	analyzed := analysis.New(specDoc.Spec())
 
@@ -375,7 +375,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 }
 
 func findImports(sch *GenSchema) map[string]string {
-	imp := map[string]string{}
+	imp := make(map[string]string, 20)
 	t := sch.resolvedType
 	if t.Pkg != "" && t.PkgAlias != "" {
 		imp[t.PkgAlias] = t.Pkg
@@ -426,8 +426,11 @@ func findImports(sch *GenSchema) map[string]string {
 		}
 	}
 	for k, v := range sch.ExtraImports {
-		imp[k] = v
+		if k != "" && v != "" {
+			imp[k] = v
+		}
 	}
+
 	return imp
 }
 
@@ -1062,6 +1065,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 				l.Type.AdditionalProperties.Schema = sch
 				l.ValueRef = l.Context.NewAdditionalProperty(*sch)
 			}
+
 			// other cases where to stop are: a $ref or a simple object
 			break
 		}
@@ -2006,12 +2010,34 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || hasFormatValidation(tpe)
 
 	// include context validations
-	sg.GenSchema.HasContextValidations = sg.GenSchema.HasContextValidations || hasContextValidations(&sg.Schema)
+	sg.GenSchema.HasContextValidations = sg.GenSchema.HasContextValidations || hasContextValidations(&sg.Schema) && !tpe.IsInterface && !tpe.IsStream && !tpe.SkipExternalValidation
 
 	// usage of a polymorphic base type is rendered with getter funcs on private properties.
 	// In the case of aliased types, the value expression remains unchanged to the receiver.
 	if tpe.IsArray && tpe.ElemType != nil && tpe.ElemType.IsBaseType && sg.GenSchema.ValueExpression != sg.GenSchema.ReceiverName {
 		sg.GenSchema.ValueExpression += asMethod
+	}
+
+	if tpe.IsExternal { // anonymous external types
+		extType, pkg, alias := sg.TypeResolver.knownDefGoType(sg.GenSchema.Name, sg.Schema, sg.TypeResolver.goTypeName)
+		if pkg != "" && alias != "" {
+			sg.GenSchema.ExtraImports[alias] = pkg
+		}
+
+		if !tpe.IsEmbedded {
+			sg.GenSchema.resolvedType = tpe
+			sg.GenSchema.Required = sg.Required
+			// assume we validate everything but interface and io.Reader - validation may be disabled by using the noValidation hint
+			sg.GenSchema.HasValidations = !(tpe.IsInterface || tpe.IsStream || tpe.SkipExternalValidation)
+			sg.GenSchema.IsAliased = sg.GenSchema.HasValidations
+
+			log.Printf("INFO: type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
+			sg.GenSchema.GoType = extType
+			sg.GenSchema.AliasedType = extType
+			return nil
+		}
+		// TODO: case for embedded types as anonymous definitions
+		return fmt.Errorf("ERROR: inline definitions embedded types are not supported")
 	}
 
 	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)

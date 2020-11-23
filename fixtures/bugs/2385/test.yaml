@@ -1,0 +1,113 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: "external types imports: external anonymous types"
+  description: |
+    This sample specification exercises external types, with both x-go-type in definitions and inlined.
+
+    It demonstrates how to use the x-go-type extension to plug external type definitions in the generated code,
+    for models (e.g. for properties, arrays or maps) or operations.
+
+    Notice that x-go-type works for schemas and is not supported for simple swagger types,
+    used for response headers and query & path parameters.
+
+paths:
+  /test:
+    get:
+      responses:
+        default:
+          description: "ok"
+          schema:
+
+definitions:
+  NoValidateExternal:
+    description: |
+
+      This type demonstrates how we can disable validation for an external type.
+
+      This is useful if you want to reuse some types from the standard library and don't
+      want to resort to an embedded type.
+
+    type: object
+    x-go-type:
+      type: Request
+      import:
+        package: net/http
+      hints:
+        noValidation: true
+
+  ObjectWithNoValidate:
+    description: |
+      A reference to the NoValidateExternal external type.
+
+      If the "noValidation" hint is omitted in the definition above, this code won't build because `http.Request` has no `Validate` method.
+
+    type: object
+    required: [ myMandatoryRequest ]
+    properties:
+      myRequest:
+        $ref: '#/definitions/NoValidateExternal'
+      myMandatoryRequest:
+        $ref: '#/definitions/NoValidateExternal'
+
+  ArrayWithNoValidate:
+    description: |
+      A slice of NoValidateExternal external types.
+
+      If the "noValidation" hint is omitted in the definition above, this code won't build because `http.Request` has no `Validate` method.
+
+    type: array
+    maxItems: 12
+    uniqueItems: true
+    items:
+      $ref: '#/definitions/NoValidateExternal'
+
+  MapWithNoValidate:
+    description: |
+      A map of NoValidateExternal external types.
+
+      If the "noValidation" hint is omitted in the definition above, this code won't build because `http.Request` has no `Validate` method.
+
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/NoValidateExternal'
+
+  TupleWithNoValidate:
+    description: |
+      A tuple of NoValidateExternal external types.
+
+      If the "noValidation" hint is omitted in the definition above, this code won't build because `http.Request` has no `Validate` method.
+
+      Notice that "additionalItems" is not a construct that pass swagger validation,
+      but is supported by go-swagger.
+
+    type: array
+    items:
+    - $ref: '#/definitions/NoValidateExternal'
+    - $ref: '#/definitions/NoValidateExternal'
+    additionalItems:
+      $ref: '#/definitions/NoValidateExternal'
+
+  NoValidatePrimitive:
+    description: |
+
+      This type demonstrates how we can disable validation for an external primitive type.
+
+    type: integer
+    x-go-type:
+      type: Duration
+      import:
+        package: time
+      hints:
+        noValidation: true
+
+  MapOfPrimitives:
+    description: |
+      A map of NoValidatePrimitive external types.
+
+      If the "noValidation" hint is omitted in the definition above, this code won't build because `time.Duration` has no `Validate` method.
+
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/NoValidatePrimitive'

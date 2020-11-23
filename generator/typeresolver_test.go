@@ -607,11 +607,11 @@ func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
-	resolver := newTypeResolver("model", doc)
+	resolver := newTypeResolver("model", "", doc)
 	require.NoError(t, err)
 
 	def := doc.Spec().Definitions["JsonWebKey"]
-	tpe, pkg, alias := knownDefGoType("JsonWebKey", def, nil)
+	tpe, pkg, alias := resolver.knownDefGoType("JsonWebKey", def, nil)
 	assert.Equal(t, "jwk.Key", tpe)
 	assert.Equal(t, "github.com/user/package", pkg)
 	assert.Equal(t, "jwk", alias)
@@ -622,7 +622,7 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 	assert.False(t, rest.IsArray)
 	assert.False(t, rest.IsTuple)
 	assert.False(t, rest.IsStream)
-	assert.False(t, rest.IsAliased)
+	assert.True(t, rest.IsAliased)
 	assert.False(t, rest.IsBaseType)
 	assert.False(t, rest.IsInterface)
 	assert.True(t, rest.IsNullable)
