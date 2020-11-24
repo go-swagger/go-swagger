@@ -675,6 +675,50 @@ func TestDefaultImports(t *testing.T) {
 				"models": "github.com/myproject/target/bespoke",
 			},
 		},
+		// issue #2362
+		{
+			Title: "relative principal, in dedicated package under generated target",
+			Opts: &GenOpts{
+				Principal:    "auth.Principal",
+				ModelPackage: "target/bespoke",
+			},
+			Expected: map[string]string{
+				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
+				"auth":    "github.com/go-swagger/go-swagger/generator/auth",
+			},
+		},
+		{
+			Title: "relative principal in models (1)",
+			Opts: &GenOpts{
+				Principal:    "bespoke.Principal",
+				ModelPackage: "target/bespoke",
+			},
+			Expected: map[string]string{
+				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
+			},
+		},
+		{
+			Title: "relative principal in models (2)",
+			Opts: &GenOpts{
+				Principal:    "target/bespoke.Principal",
+				ModelPackage: "target/bespoke",
+			},
+			Expected: map[string]string{
+				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
+			},
+		},
+		{
+			Title: "relative principal: not detected",
+			// NOTE: this case will probably not build: no way to determine the user intent
+			Opts: &GenOpts{
+				Principal:    "target/auth.Principal",
+				ModelPackage: "target/models",
+			},
+			Expected: map[string]string{
+				"models": "github.com/go-swagger/go-swagger/generator/target/models",
+				"auth":   "target/auth",
+			},
+		},
 	} {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {

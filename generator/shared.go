@@ -699,27 +699,33 @@ func (g *GenOpts) defaultImports() map[string]string {
 	baseImport := g.LanguageOpts.baseImport(g.Target)
 	defaultImports := make(map[string]string, 50)
 
+	var modelsAlias, importPath string
 	if g.ExistingModels == "" {
 		// generated models
-		importPath := path.Join(
+		importPath = path.Join(
 			baseImport,
 			g.LanguageOpts.ManglePackagePath(g.ModelPackage, defaultModelsTarget))
-		defaultImports[g.LanguageOpts.ManglePackageName(g.ModelPackage, defaultModelsTarget)] = importPath
+		modelsAlias = g.LanguageOpts.ManglePackageName(g.ModelPackage, defaultModelsTarget)
 	} else {
 		// external models
-		importPath := g.LanguageOpts.ManglePackagePath(g.ExistingModels, "")
-		defaultImports["models"] = importPath
+		importPath = g.LanguageOpts.ManglePackagePath(g.ExistingModels, "")
+		modelsAlias = path.Base(defaultModelsTarget)
+	}
+	defaultImports[modelsAlias] = importPath
+
+	// resolve model representing an authenticated principal
+	alias, _, target := g.resolvePrincipal()
+	if alias == "" || target == g.ModelPackage || path.Base(target) == modelsAlias {
+		// if principal is specified with the models generation package, do not import any extra package
+		return defaultImports
 	}
 
-	alias, _, target := g.resolvePrincipal()
-	if alias != "" {
-		if pth, _ := path.Split(target); pth != "" {
-			// if principal is specified with an path, generate this import
-			defaultImports[alias] = target
-		} else {
-			// if principal is specified with a relative path, assume it is located in generated target
-			defaultImports[alias] = path.Join(baseImport, target)
-		}
+	if pth, _ := path.Split(target); pth != "" {
+		// if principal is specified with a path, assume this is a fully qualified package and generate this import
+		defaultImports[alias] = target
+	} else {
+		// if principal is specified with a relative path (no "/", e.g. internal.Principal), assume it is located in generated target
+		defaultImports[alias] = path.Join(baseImport, target)
 	}
 	return defaultImports
 }
