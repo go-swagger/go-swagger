@@ -1,0 +1,67 @@
+swagger: '2.0'
+basePath: /
+host: localhost
+info:
+  version: 0.1.0
+  title: demonstrates principal
+  termsOfService: |
+    There are actually none.
+  license:
+    name: 'Apache 2.0'
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: go-openapi maintainers
+    email: nowhere@example.com
+    url: https://github.com/go-openapi
+
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+  - https
+
+securityDefinitions:
+  apikey:
+    type: apiKey
+    name: api_key
+    in: header
+  petstore_auth:
+    type: oauth2
+    authorizationUrl: http://swagger.io/api/oauth/dialog
+    flow: implicit
+    scopes:
+      'write:pets': modify pets in your account
+      'read:pets': read your pets
+  basic:
+    type: basic
+
+paths:
+  /:
+    get:
+      security:
+        - apikey: []
+        - petstore_auth: ["read:pets"]
+        - basic: []
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+      responses:
+        default:
+          description: error
+          schema:
+            type: object
+    post:
+      parameters:
+        - name: body
+          in: body
+          schema:
+            type: object
+      responses:
+        default:
+          description: error
+          schema:
+            type: object

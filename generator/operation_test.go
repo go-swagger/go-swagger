@@ -1479,3 +1479,313 @@ func TestGenServer_2161_panic(t *testing.T) {
 	// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
 	// The test with this fix simply asserts that there is no panic / internal error with building this.
 }
+
+func TestGenServer_1659_Principal(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	dr, _ := os.Getwd()
+
+	for _, toPin := range []struct {
+		Title       string
+		Opts        *GenOpts
+		Expected    map[string][]string
+		NotExpected map[string][]string
+	}{
+		{
+			Title: "default",
+			Opts: &GenOpts{
+				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				IncludeHandler:    true,
+				IncludeParameters: true,
+				IncludeResponses:  true,
+				IncludeMain:       false,
+				APIPackage:        "restapi",
+				ModelPackage:      "models",
+				ServerPackage:     "server",
+				ClientPackage:     "client",
+				Target:            dr,
+				IsClient:          false,
+			},
+			Expected: map[string][]string{
+				"configure": []string{
+					`if api.ApikeyAuth == nil {`,
+					`api.ApikeyAuth = func(token string) (interface{}, error) {`,
+					`if api.BasicAuth == nil {`,
+					`api.BasicAuth = func(user string, pass string) (interface{}, error) {`,
+					`if api.PetstoreAuthAuth == nil {`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal interface{}) middleware.Responder {`,
+					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
+				},
+				"get": []string{
+					`type GetHandlerFunc func(GetParams, interface{})  middleware.Responder`,
+					`func (fn GetHandlerFunc) Handle(params GetParams, principal interface{})  middleware.Responder  {`,
+					`return fn(params, principal)`,
+					`type GetHandler interface {`,
+					`Handle(GetParams, interface{})  middleware.Responder`,
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`if uprinc != nil {`,
+					`principal = uprinc.(interface{})`,
+					`res := o.Handler.Handle(Params, principal)`,
+				},
+				"post": []string{
+					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
+					`return fn(params)`,
+					`type PostHandler interface {`,
+					`Handle(PostParams)  middleware.Responder`,
+					`res := o.Handler.Handle(Params)`,
+				},
+			},
+			NotExpected: map[string][]string{
+				"post": []string{
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`principal = uprinc.(interface{})`,
+				},
+			},
+		},
+		{
+			Title: "principal is struct",
+			Opts: &GenOpts{
+				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				IncludeHandler:    true,
+				IncludeParameters: true,
+				IncludeResponses:  true,
+				IncludeMain:       false,
+				APIPackage:        "restapi",
+				ModelPackage:      "models",
+				ServerPackage:     "server",
+				ClientPackage:     "client",
+				Target:            dr,
+				Principal:         "github.com/example/security.Principal",
+				IsClient:          false,
+			},
+			Expected: map[string][]string{
+				"configure": []string{
+					`auth "github.com/example/security"`,
+					`if api.ApikeyAuth == nil {`,
+					`api.ApikeyAuth = func(token string) (*auth.Principal, error) {`,
+					`if api.BasicAuth == nil {`,
+					`api.BasicAuth = func(user string, pass string) (*auth.Principal, error) {`,
+					`if api.PetstoreAuthAuth == nil {`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (*auth.Principal, error) {`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal *auth.Principal) middleware.Responder {`,
+					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
+				},
+				"get": []string{
+					`type GetHandlerFunc func(GetParams, *auth.Principal)  middleware.Responder`,
+					`func (fn GetHandlerFunc) Handle(params GetParams, principal *auth.Principal)  middleware.Responder  {`,
+					`return fn(params, principal)`,
+					`type GetHandler interface {`,
+					`Handle(GetParams, *auth.Principal)  middleware.Responder`,
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`if uprinc != nil {`,
+					`principal = uprinc.(*auth.Principal)`,
+					`res := o.Handler.Handle(Params, principal)`,
+				},
+				"post": []string{
+					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
+					`return fn(params)`,
+					`type PostHandler interface {`,
+					`Handle(PostParams)  middleware.Responder`,
+					`res := o.Handler.Handle(Params)`,
+				},
+			},
+			NotExpected: map[string][]string{
+				"post": []string{
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`principal = uprinc.(`,
+				},
+			},
+		},
+		{
+			Title: "principal is interface",
+			Opts: &GenOpts{
+				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				IncludeHandler:       true,
+				IncludeParameters:    true,
+				IncludeResponses:     true,
+				IncludeMain:          false,
+				APIPackage:           "restapi",
+				ModelPackage:         "models",
+				ServerPackage:        "server",
+				ClientPackage:        "client",
+				Target:               dr,
+				Principal:            "github.com/example/security.PrincipalIface",
+				IsClient:             false,
+				PrincipalCustomIface: true,
+			},
+			Expected: map[string][]string{
+				"configure": []string{
+					`auth "github.com/example/security"`,
+					`if api.ApikeyAuth == nil {`,
+					`api.ApikeyAuth = func(token string) (auth.PrincipalIface, error) {`,
+					`if api.BasicAuth == nil {`,
+					`api.BasicAuth = func(user string, pass string) (auth.PrincipalIface, error) {`,
+					`if api.PetstoreAuthAuth == nil {`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (auth.PrincipalIface, error) {`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal auth.PrincipalIface) middleware.Responder {`,
+					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
+				},
+				"get": []string{
+					`type GetHandlerFunc func(GetParams, auth.PrincipalIface)  middleware.Responder`,
+					`func (fn GetHandlerFunc) Handle(params GetParams, principal auth.PrincipalIface)  middleware.Responder  {`,
+					`return fn(params, principal)`,
+					`type GetHandler interface {`,
+					`Handle(GetParams, auth.PrincipalIface)  middleware.Responder`,
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`if uprinc != nil {`,
+					`principal = uprinc.(auth.PrincipalIface)`,
+					`res := o.Handler.Handle(Params, principal)`,
+				},
+				"post": []string{
+					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
+					`return fn(params)`,
+					`type PostHandler interface {`,
+					`Handle(PostParams)  middleware.Responder`,
+					`res := o.Handler.Handle(Params)`,
+				},
+			},
+			NotExpected: map[string][]string{
+				"post": []string{
+					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
+					`principal = uprinc.(`,
+				},
+			},
+		},
+		{
+			Title: "stratoscale: principal is struct",
+			Opts: &GenOpts{
+				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				IncludeHandler:    true,
+				IncludeParameters: true,
+				IncludeResponses:  true,
+				IncludeMain:       false,
+				APIPackage:        "restapi",
+				ModelPackage:      "models",
+				ServerPackage:     "server",
+				ClientPackage:     "client",
+				Target:            dr,
+				Principal:         "github.com/example/security.Principal",
+				IsClient:          false,
+				Template:          "stratoscale",
+			},
+			Expected: map[string][]string{
+				"configure": []string{
+					`auth "github.com/example/security"`,
+					`AuthApikey func(token string) (*auth.Principal, error)`,
+					`AuthBasic func(user string, pass string) (*auth.Principal, error)`,
+					`AuthPetstoreAuth func(token string, scopes []string) (*auth.Principal, error)`,
+					`api.ApikeyAuth = func(token string) (*auth.Principal, error) {`,
+					`if c.AuthApikey == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthApikey(token)`,
+					`api.BasicAuth = func(user string, pass string) (*auth.Principal, error) {`,
+					`if c.AuthBasic == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthBasic(user, pass)`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (*auth.Principal, error) {`,
+					`if c.AuthPetstoreAuth == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthPetstoreAuth(token, scopes)`,
+					`api.APIAuthorizer = authorizer(c.Authorizer)`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal *auth.Principal) middleware.Responder {`,
+					`ctx = storeAuth(ctx, principal)`,
+					`return c.RestapiAPI.Get(ctx, params)`,
+					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
+					`return c.RestapiAPI.Post(ctx, params)`,
+					`func (a authorizer) Authorize(req *http.Request, principal interface{}) error {`,
+					`ctx := storeAuth(req.Context(), principal)`,
+					`func storeAuth(ctx context.Context, principal interface{})`,
+				},
+			},
+		},
+		{
+			Title: "stratoscale: principal is interface",
+			Opts: &GenOpts{
+				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				IncludeHandler:       true,
+				IncludeParameters:    true,
+				IncludeResponses:     true,
+				IncludeMain:          false,
+				APIPackage:           "restapi",
+				ModelPackage:         "models",
+				ServerPackage:        "server",
+				ClientPackage:        "client",
+				Target:               dr,
+				Principal:            "github.com/example/security.PrincipalIface",
+				IsClient:             false,
+				PrincipalCustomIface: true,
+				Template:             "stratoscale",
+			},
+			Expected: map[string][]string{
+				"configure": []string{
+					`auth "github.com/example/security"`,
+					`AuthApikey func(token string) (auth.PrincipalIface, error)`,
+					`AuthBasic func(user string, pass string) (auth.PrincipalIface, error)`,
+					`AuthPetstoreAuth func(token string, scopes []string) (auth.PrincipalIface, error)`,
+					`api.ApikeyAuth = func(token string) (auth.PrincipalIface, error) {`,
+					`if c.AuthApikey == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthApikey(token)`,
+					`api.BasicAuth = func(user string, pass string) (auth.PrincipalIface, error) {`,
+					`if c.AuthBasic == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthBasic(user, pass)`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (auth.PrincipalIface, error) {`,
+					`if c.AuthPetstoreAuth == nil {`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`return c.AuthPetstoreAuth(token, scopes)`,
+					`api.APIAuthorizer = authorizer(c.Authorizer)`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal auth.PrincipalIface) middleware.Responder {`,
+					`ctx = storeAuth(ctx, principal)`,
+					`return c.RestapiAPI.Get(ctx, params)`,
+					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
+					`return c.RestapiAPI.Post(ctx, params)`,
+					`func (a authorizer) Authorize(req *http.Request, principal interface{}) error {`,
+					`ctx := storeAuth(req.Context(), principal)`,
+					`func storeAuth(ctx context.Context, principal interface{})`,
+				},
+			},
+		},
+	} {
+		fixture := toPin
+		t.Run(fixture.Title, func(t *testing.T) {
+			opts := fixture.Opts
+			require.NoError(t, opts.EnsureDefaults())
+			require.NoError(t, opts.setTemplates())
+
+			appGen, err := newAppGenerator(fixture.Title, nil, nil, opts)
+			require.NoError(t, err)
+
+			op, err := appGen.makeCodegenApp()
+			require.NoError(t, err)
+
+			bufC := bytes.NewBuffer(nil)
+			require.NoError(t, templates.MustGet("serverConfigureapi").Execute(bufC, op))
+
+			_, err = appGen.GenOpts.LanguageOpts.FormatContent("configure_api.go", bufC.Bytes())
+			require.NoErrorf(t, err, bufC.String())
+			for _, line := range fixture.Expected["configure"] {
+				assertInCode(t, line, bufC.String())
+			}
+			for _, line := range fixture.NotExpected["configure"] {
+				assertNotInCode(t, line, bufC.String())
+			}
+
+			for i := range op.Operations {
+				bufO := bytes.NewBuffer(nil)
+				require.NoError(t, templates.MustGet("serverOperation").Execute(bufO, op.Operations[i]))
+
+				_, erf := appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[i].Name+".go", bufO.Bytes())
+				require.NoErrorf(t, erf, bufO.String())
+
+				for _, line := range fixture.Expected[op.Operations[i].Name] {
+					assertInCode(t, line, bufO.String())
+				}
+				for _, line := range fixture.NotExpected[op.Operations[i].Name] {
+					assertNotInCode(t, line, bufO.String())
+				}
+			}
+		})
+	}
+}

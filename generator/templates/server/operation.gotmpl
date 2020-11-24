@@ -24,16 +24,16 @@ import (
 )
 
 // {{ pascalize .Name }}HandlerFunc turns a function with the right signature into a {{ humanize .Name }} handler
-type {{ pascalize .Name }}HandlerFunc func({{ pascalize .Name }}Params{{ if .Authorized }}, {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}}
+type {{ pascalize .Name }}HandlerFunc func({{ pascalize .Name }}Params{{ if .Authorized }}, {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}}
 
 // Handle executing the request and returning a response
-func (fn {{ pascalize .Name }}HandlerFunc) Handle(params {{ pascalize .Name }}Params{{ if .Authorized }}, principal {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}} {
+func (fn {{ pascalize .Name }}HandlerFunc) Handle(params {{ pascalize .Name }}Params{{ if .Authorized }}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}} {
   return fn(params{{ if .Authorized }}, principal{{ end }})
 }
 
 // {{ pascalize .Name }}Handler interface for that can handle valid {{ humanize .Name }} params
 type {{ pascalize .Name }}Handler interface {
-  Handle({{ pascalize .Name }}Params{{ if .Authorized }}, {{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}}
+  Handle({{ pascalize .Name }}Params{{ if .Authorized }}, {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}{{ end }}) {{ if $.StrictResponders }} {{ pascalize .Name }}Responder {{else}} middleware.Responder {{end}}
 }
 
 // New{{ pascalize .Name }} creates a new http.Handler for the {{ humanize .Name }} operation
@@ -60,7 +60,8 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   }
   var Params = New{{ pascalize .Name }}Params()
 
-  {{ if .Authorized }}uprinc, aCtx, err := {{ .ReceiverName }}.Context.Authorize(r, route)
+  {{- if .Authorized }}
+  uprinc, aCtx, err := {{ .ReceiverName }}.Context.Authorize(r, route)
   if err != nil {
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
@@ -68,22 +69,17 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   if aCtx != nil {
     r = aCtx
   }
-  var principal {{ if not (eq .Principal "interface{}") }}*{{ end }}{{ .Principal }}
+  var principal {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}
   if uprinc != nil {
-    principal = {{ if eq .Principal "interface{}" }}uprinc{{ else }}uprinc.(*{{ .Principal }}) // this is really a {{ .Principal }}, I promise{{ end }}
+    principal = {{ if eq .Principal "inferface{}" }}uprinc{{ else }}uprinc.({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}) // this is really a {{ .Principal }}, I promise{{ end }}
   }
-
   {{ end }}
   if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
     {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, err)
     return
   }
 
-  {{ if .Authorized }}
-  res := {{ .ReceiverName }}.Handler.Handle(Params, principal) // actually handle the request
-  {{else}}
-  res := {{ .ReceiverName }}.Handler.Handle(Params) // actually handle the request
-  {{ end }}
+  res := {{ .ReceiverName }}.Handler.Handle(Params{{ if .Authorized }}, principal{{ end }}) // actually handle the request
   {{ .ReceiverName }}.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -205,7 +205,7 @@ func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 			requiredSecuritySchemes[scheme] = *req
 		}
 	}
-	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver)
+	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver, a.GenOpts.PrincipalIsNullable())
 }
 
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
@@ -429,6 +429,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
 		ExcludeSpec:         a.GenOpts.ExcludeSpec,
 		GenOpts:             a.GenOpts,
+
+		PrincipalIsNullable: a.GenOpts.PrincipalIsNullable(),
 	}, nil
 }
 
