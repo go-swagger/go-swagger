@@ -475,6 +475,7 @@ type GenOperation struct {
 	Security            []GenSecurityRequirements
 	SecurityDefinitions GenSecuritySchemes
 	Principal           string
+	PrincipalIsNullable bool
 
 	SuccessResponse  *GenResponse
 	SuccessResponses []GenResponse
@@ -525,6 +526,7 @@ type GenApp struct {
 	ReceiverName        string
 	Name                string
 	Principal           string
+	PrincipalIsNullable bool
 	DefaultConsumes     string
 	DefaultProduces     string
 	Host                string
@@ -616,16 +618,18 @@ type GenSerializer struct {
 
 // GenSecurityScheme represents a security scheme for code generation
 type GenSecurityScheme struct {
-	AppName      string
-	ID           string
-	Name         string
-	ReceiverName string
-	IsBasicAuth  bool
-	IsAPIKeyAuth bool
-	IsOAuth2     bool
-	Scopes       []string
-	Source       string
-	Principal    string
+	AppName             string
+	ID                  string
+	Name                string
+	ReceiverName        string
+	IsBasicAuth         bool
+	IsAPIKeyAuth        bool
+	IsOAuth2            bool
+	Scopes              []string
+	Source              string
+	Principal           string
+	PrincipalIsNullable bool
+
 	// from spec.SecurityScheme
 	Description      string
 	Type             string

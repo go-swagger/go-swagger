@@ -62,15 +62,15 @@ type Config struct {
 	{{ range .SecurityDefinitions -}}
 	{{ if .IsBasicAuth -}}
 	// Auth{{ pascalize .ID }} for basic authentication
-	Auth{{ pascalize .ID }} func(user string, pass string) (interface{}, error)
+  Auth{{ pascalize .ID }} func(user string, pass string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
 	{{ end -}}
 	{{ if .IsAPIKeyAuth -}}
 	// Auth{{ pascalize .ID }} Applies when the "{{ .Name }}" {{ .Source }} is set
-	Auth{{ pascalize .ID }} func(token string) (interface{}, error)
+  Auth{{ pascalize .ID }} func(token string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
 	{{ end }}
 	{{ if .IsOAuth2 -}}
 	// Auth{{ pascalize .ID }} For OAuth2 authentication
-	Auth{{ pascalize .ID }} func(token string, scopes []string) (interface{}, error)
+  Auth{{ pascalize .ID }} func(token string, scopes []string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
 	{{ end -}}
 	{{ end -}}
 
@@ -132,26 +132,38 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 
 	{{ range .SecurityDefinitions -}}
 	{{ if .IsBasicAuth -}}
-	api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-        if c.Auth{{ pascalize .ID }} == nil {
-            return "", nil
-        }
+	api.{{ pascalize .ID }}Auth = func(user string, pass string) ({{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
+    if c.Auth{{ pascalize .ID }} == nil {
+     {{- if eq .Principal "interface{}" }}
+        return "", nil
+     {{- else }}
+        panic("you specified a custom principal type, but did not provide the authenticator to provide this")
+     {{- end }}
+    }
 		return c.Auth{{ pascalize .ID }}(user, pass)
 	}
 	{{ end -}}
 	{{ if .IsAPIKeyAuth -}}
-	api.{{ pascalize .ID }}Auth = func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-	    if c.Auth{{ pascalize .ID }} == nil {
-	        return token, nil
-	    }
+	api.{{ pascalize .ID }}Auth = func(token string) ({{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
+	  if c.Auth{{ pascalize .ID }} == nil {
+     {{- if eq .Principal "interface{}" }}
+	      return token, nil
+     {{- else }}
+        panic("you specified a custom principal type, but did not provide the authenticator to provide this")
+     {{- end }}
+	  }
 		return c.Auth{{ pascalize .ID }}(token)
 	}
 	{{ end }}
 	{{ if .IsOAuth2 -}}
-	api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
-        if c.Auth{{ pascalize .ID }} == nil {
-            return token, nil
-        }
+	api.{{ pascalize .ID }}Auth = func(token string, scopes []string) ({{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
+    if c.Auth{{ pascalize .ID }} == nil {
+     {{- if eq .Principal "interface{}" }}
+        return token, nil
+     {{- else }}
+        panic("you specified a custom principal type, but did not provide the authenticator to provide this")
+     {{- end }}
+    }
 		return c.Auth{{ pascalize .ID }}(token, scopes)
 	}
 	{{ end -}}
@@ -163,7 +175,7 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 
 	{{ range .Operations -}}
 	api.{{if ne .Package $package}}{{pascalize .Package}}{{end}}{{ pascalize .Name }}Handler =
-    {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal interface{}{{end}}) middleware.Responder {
+  {{- .PackageAlias }}.{{ pascalize .Name }}HandlerFunc(func(params {{.PackageAlias}}.{{ pascalize .Name }}Params{{if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}{{end}}) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		{{ if .Authorized -}}
 		ctx = storeAuth(ctx, principal)

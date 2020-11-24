@@ -408,10 +408,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		defaultResponse = &gr
 	}
 
-	if b.Principal == "" {
-		b.Principal = iface
-	}
-
 	swsp := resolver.Doc.Spec()
 	var extraSchemes []string
 	if ess, ok := operation.Extensions.GetStringSlice(xSchemes); ok {
@@ -503,6 +499,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		TimeoutName:          timeoutName,
 		Extensions:           operation.Extensions,
 		StrictResponders:     b.GenOpts.StrictResponders,
+
+		PrincipalIsNullable: b.GenOpts.PrincipalIsNullable(),
 	}, nil
 }
 
@@ -962,7 +960,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 
 // makeSecuritySchemes produces a sorted list of security schemes for this operation
 func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchemes {
-	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver)
+	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver, b.GenOpts.PrincipalIsNullable())
 }
 
 // makeSecurityRequirements produces a sorted list of security requirements for this operation.

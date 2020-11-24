@@ -241,6 +241,7 @@ type GenOpts struct {
 	ServerPackage          string
 	ClientPackage          string
 	Principal              string
+	PrincipalCustomIface   bool // user-provided interface for Principal (non-nullable)
 	Target                 string
 	Sections               SectionOpts
 	LanguageOpts           *LanguageOpts
@@ -362,6 +363,13 @@ func (g *GenOpts) SpecPath() string {
 	return specRel
 }
 
+// PrincipalIsNullable indicates whether the principal type used for authentication
+// may be used as a pointer
+func (g *GenOpts) PrincipalIsNullable() bool {
+	log.Printf("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
+	return g.Principal != iface && !g.PrincipalCustomIface
+}
+
 // EnsureDefaults for these gen opts
 func (g *GenOpts) EnsureDefaults() error {
 	if g.defaultsEnsured {
@@ -401,6 +409,7 @@ func (g *GenOpts) EnsureDefaults() error {
 
 	if g.Principal == "" {
 		g.Principal = iface
+		g.PrincipalCustomIface = false
 	}
 
 	g.defaultsEnsured = true
@@ -879,7 +888,7 @@ func trimBOM(in string) string {
 }
 
 // gatherSecuritySchemes produces a sorted representation from a map of spec security schemes
-func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string) (security GenSecuritySchemes) {
+func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string, nullable bool) (security GenSecuritySchemes) {
 	for scheme, req := range securitySchemes {
 		isOAuth2 := strings.ToLower(req.Type) == "oauth2"
 		var scopes []string
@@ -909,6 +918,8 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 			AuthorizationURL: req.AuthorizationURL,
 			TokenURL:         req.TokenURL,
 			Extensions:       req.Extensions,
+
+			PrincipalIsNullable: nullable,
 		})
 	}
 	sort.Sort(security)
