@@ -1,0 +1,9 @@
+swagger: "2.0"
+info:
+  version: "1"
+  title: "nested $ref fixture"
+paths:
+  /dummy:
+    $ref: ./schemas/api/api.yaml#/paths/~1dummy
+  /example:
+    $ref: ./schemas/api/api.yaml#/paths/~1example

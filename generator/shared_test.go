@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -508,11 +509,35 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
 	specDoc, err := loads.Spec(specPath)
 	require.NoError(t, err)
+
 	require.NotNil(t, specDoc.Spec().Info)
 	specDoc.Spec().Info.Title = "    "
 	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 	specDoc.Spec().Info.Title = "test"
 	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	_, err = opts.validateAndFlattenSpec()
+	require.NoError(t, err)
+
+	// more aggressive fixture on $refs, with validation errors, but flatten ok
+	specPath = filepath.Join("..", "fixtures", "bugs", "1429", "swagger.yaml")
+	specDoc, err = loads.Spec(specPath)
+	require.NoError(t, err)
+
+	opts.Spec = specPath
+	opts.FlattenOpts.BasePath = specDoc.SpecFilePath()
+	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+	opts.FlattenOpts.Minimal = true
+	err = analysis.Flatten(*opts.FlattenOpts)
+	assert.NoError(t, err)
+
+	specDoc, _ = loads.Spec(specPath) // needs reload
+	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+	opts.FlattenOpts.Minimal = false
+	err = analysis.Flatten(*opts.FlattenOpts)
+	assert.NoError(t, err)
 }
 
 func TestShared_GatherModel(t *testing.T) {
@@ -729,4 +754,21 @@ func TestDefaultImports(t *testing.T) {
 			require.EqualValuesf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}
+}
+
+func TestShared_Issue2113(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	// acknowledge fix in go-openapi/spec
+	specPath := filepath.Join("..", "fixtures", "bugs", "2113", "base.yaml")
+	_, err := loads.Spec(specPath)
+	require.NoError(t, err)
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	opts.Spec = specPath
+	opts.ValidateSpec = true
+	_, err = opts.validateAndFlattenSpec()
+	assert.NoError(t, err)
 }
