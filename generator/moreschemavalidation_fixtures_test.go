@@ -14,6 +14,154 @@
 
 package generator
 
+func initFixture2444() {
+	f := newModelFixture("../fixtures/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("all_of_with_min_max_properties.go", []string{
+		`func (m *AllOfWithMinMaxProperties) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.AllOfWithMinMaxPropertiesAO0P0.Validate(formats); err != nil {`,
+		`func (m *AllOfWithMinMaxPropertiesAO0P0) Validate(formats strfmt.Registry) error {`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	if err := m.validateUID(formats); err != nil {`,
+		`	for k := range m.AllOfWithMinMaxPropertiesAO0P0 {`,
+		`		if err := validate.MaximumUint(k, "body", uint64(m.AllOfWithMinMaxPropertiesAO0P0[k]), 100, false); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_items_with_min_max_properties.go", []string{
+		`type ArrayItemsWithMinMaxProperties []map[string]interface{}`,
+		`func (m ArrayItemsWithMinMaxProperties) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		nprops := len(m[i])`,
+		`		if nprops < 3 {`,
+		`			return errors.TooFewProperties(strconv.Itoa(i), "body", 3)`,
+		`		if nprops > 5 {`,
+		`			return errors.TooManyProperties(strconv.Itoa(i), "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_max_properties.go", []string{
+		`	HasMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops > 2 {`,
+		`		return errors.TooManyProperties("", "body", 2)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_min_max_properties.go", []string{
+		`	HasMinMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_min_properties.go", []string{
+		`HasMinPropertiesAdditionalProperties map[string]interface{}`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 2)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 2 {`,
+		`		return errors.TooFewProperties("", "body", 2)`,
+		`	if err := m.validateA(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_arrays_with_min_max_properties.go", []string{
+		`type MapOfArraysWithMinMaxProperties map[string][]HasMaxProperties`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+		`		for i := 0; i < len(m[k]); i++ {`,
+		`			if err := m[k][i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(k + "." + strconv.Itoa(i))`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_integers_with_min_max_properties.go", []string{
+		`type MapOfIntegersWithMinMaxProperties map[string]int64`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_objects_with_min_max_properties.go", []string{
+		`type MapOfObjectsWithMinMaxProperties map[string]HasMaxProperties`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+		`		if val, ok := m[k]; ok {`,
+		`			if err := val.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_with_min_max_properties.go", []string{
+		`type MapWithMinMaxProperties map[string]interface{}`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_min_max_properties.go", []string{
+		`	ObjectWithMinMaxProperties map[string]*HasMaxProperties`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 2+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	if err := m.validateB(formats); err != nil {`,
+		`	if err := m.validateID(formats); err != nil {`,
+		`	for k := range m.ObjectWithMinMaxProperties {`,
+		`		if err := validate.Required(k, "body", m.ObjectWithMinMaxProperties[k]); err != nil {`,
+		`		if val, ok := m.ObjectWithMinMaxProperties[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("untyped_with_min_max_properties.go", []string{
+		`type UntypedWithMinMaxProperties map[string]interface{}`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+}
+
 func initFixtureGuardFormats() {
 	f := newModelFixture("../fixtures/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)

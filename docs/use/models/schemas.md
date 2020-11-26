@@ -171,7 +171,7 @@ Explicitly specifying `true` will produce models that retain those additional pr
 
 ### Known limitations with go-swagger models
 
-Recap as of release `0.15`:
+Recap as of release `>0.25`:
 
 - re [Swagger 2.0 specification][swagger]
 
@@ -180,9 +180,9 @@ Recap as of release `0.15`:
 - re [JSON-schema-draft4][json-schema]
 
   - `"additionalProperties": false`, `"additionalItems": false` do not invalidate data with extra properties. We trade strictness for speed and
-  truncate unwanted properties or items without further validation.
+    truncate unwanted properties or items without further validation.
+  - the generation flag `--strict-additional-properties` invalidates data with extra properties when `"additionalProperties": false`
   - when `enum` values cannot be marshalled into their schema, a runtime panic occurs - the `go-openapi/validate` package does not yet detect this situation
-  - `minProperties`, `maxProperties` are not supported
   - `patternProperties` and `dependencies`are not supported
   - use of `additionalItems` requires the `--skip-validation` flag (`go-openapi/validate` is strict regarding Swagger specification)
   - JSONSchema defaults to the `"additionalProperties": true`, `go-swagger` defaults to ignoring extra properties. Same for `additionalItems`.

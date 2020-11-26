@@ -635,11 +635,16 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	}
 
 	// an object without property and without AdditionalProperties schema is rendered as interface{}
-	result.GoType = iface
 	result.IsMap = true
 	result.SwaggerType = object
 	result.IsNullable = false
-	result.IsInterface = len(schema.Properties) == 0
+	// an object without properties but with MinProperties or MaxProperties is rendered as map[string]interface{}
+	result.IsInterface = len(schema.Properties) == 0 && !schema.Validations().HasObjectValidations()
+	if result.IsInterface {
+		result.GoType = iface
+	} else {
+		result.GoType = "map[string]interface{}"
+	}
 	return
 }
 
@@ -943,6 +948,18 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		result.HasDiscriminator = schema.Discriminator != ""
 
 	case "null":
+		if schema.Validations().HasObjectValidations() {
+			// no explicit object type, but inferred from object validations:
+			// this makes the type a map[string]interface{} instead of interface{}
+			result, err = t.resolveObject(schema, isAnonymous)
+			if err != nil {
+				result = resolvedType{}
+				break
+			}
+			result.HasDiscriminator = schema.Discriminator != ""
+			break
+		}
+
 		result.GoType = iface
 		result.SwaggerType = object
 		result.IsNullable = false

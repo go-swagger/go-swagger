@@ -14,12 +14,12 @@
     {{- end }}
     return err
   }
-  {{ end }}
+  {{- end }}
   {{ if .MinLength }}
     if err := validate.MinLength({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MinLength }}); err != nil {
     return err
   }
-  {{ end }}
+  {{- end }}
   {{ if .MaxLength }}
   if err := validate.MaxLength({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MaxLength }}); err != nil {
     return err
@@ -29,7 +29,7 @@
   if err := validate.Pattern({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ToString }}, `{{ escapeBackticks .Pattern }}`); err != nil {
     return err
   }
-  {{ end }}
+  {{- end }}
   {{ if .Minimum }}
     {{ template "validationMinimum" . }}
   {{ end }}
@@ -44,10 +44,10 @@
   if err := {{.ReceiverName }}.validate{{ pascalize .Name }}{{ .Suffix }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
     return err
   }
-  {{ end }}
-  {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
+  {{- end }}
+  {{ if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
     {{ template "validationCustomformat" . }}
-  {{ end }}
+  {{- end }}
 {{ end }}
 
 {{ define "slicecontextvalidator" }}
@@ -462,7 +462,47 @@
     // at https://github.com/go-swagger/go-swagger/issues
   {{- end }}
 {{ end }}
+{{ define "minmaxProperties" }}
+  {{- if and (or .IsMap (and .IsAdditionalProperties .HasAdditionalProperties)) (or .MinProperties .MaxProperties) }}
+    {{- if and (not .IsAdditionalProperties) (not .IsInterface) (eq (len .Properties) 0) }}{{/* map only */}}
+    nprops := len({{ if and (not .IsAliased) .HasAdditionalProperties }}{{ .ReceiverName }}{{ else }}{{ .ValueExpression }}{{ end }})
+    {{- else }}{{/* object with properties */}}
+      {{- if and .IsNullable .MinProperties }}
+        {{- if gt0 .MinProperties }}
 
+    // short circuits minProperties > 0
+    if {{ .ReceiverName }} == nil {
+      return errors.TooFewProperties({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .MinProperties }})
+    }
+        {{- end }}
+      {{- end }}
+
+    props := make(map[string]json.RawMessage, {{ len .Properties }}{{ if .HasAdditionalProperties }}+ 10{{ end }})
+    j, err := swag.WriteJSON({{ .ReceiverName }})
+    if err != nil {
+      return err
+    }
+
+    if err = swag.ReadJSON(j, &props) ; err != nil {
+      return err
+    }
+
+    nprops := len(props)
+    {{- end }}
+    {{ if .MinProperties }}
+    // minProperties: {{ .MinProperties }}
+    if nprops < {{ .MinProperties }} {
+      return errors.TooFewProperties({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .MinProperties }})
+    }
+    {{- end }}
+    {{ if .MaxProperties }}
+    // maxProperties: {{ .MaxProperties }}
+    if nprops > {{ .MaxProperties }} {
+      return errors.TooManyProperties({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ .MaxProperties }})
+    }
+    {{- end }}
+  {{- end }}
+{{- end }}
 {{define "objectvalidator" }}{{/* // DEBUG
   // .Name: {{ .Name }}
   // .IsAliased: {{ .IsAliased }}
@@ -507,6 +547,7 @@
       {{- end }}
     {{- end }}
   {{- else }}
+    {{ template "minmaxProperties" .}}
     {{ range .AllOf }}
       {{ range .Properties }}
         {{ template "propertyvalidator" . }}
@@ -577,6 +618,7 @@
    {{- else if .IsArray }}
     {{ template "slicevalidator" . }}
   {{- else if and .IsMap (or (not .IsAliased) (and .IsAliased .IsInterface)) }}
+    {{ template "minmaxProperties" . }}
     {{ template "mapvalidator" . }}
   {{- else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
     {{- if and .IsAdditionalProperties .Required (not .IsAliased) }}
@@ -793,7 +835,7 @@ func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{
 // Validate validates this {{ humanize .Name }}
 func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   var res []error
-
+  {{ template "minmaxProperties" .}}
   {{ range .AllOf }}
     {{- if not .Properties }}
       // validation for a type composition with {{ .GoType }}

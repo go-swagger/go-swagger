@@ -280,6 +280,9 @@ func initModelFixtures() {
 	initFixture2448()
 
 	initFixtureGuardFormats()
+
+	// min / maxProperties
+	initFixture2444()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

@@ -10,6 +10,15 @@
   {{- else }}
     {{- humanize .Name }}
   {{- end }}
+  {{- if or .MinProperties .MinProperties }}
+//
+    {{- if .MinProperties }}
+// Min Properties: {{ .MinProperties }}
+    {{- end }}
+    {{- if .MaxProperties }}
+// Max Properties: {{ .MaxProperties }}
+    {{- end }}
+  {{- end }}
   {{- if .Example }}
 // Example: {{ print .Example }}
   {{- end }}
