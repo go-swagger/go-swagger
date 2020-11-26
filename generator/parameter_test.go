@@ -3131,7 +3131,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 }
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	t.Parallel()
-	defer discardOutput()()
+	//defer discardOutput()()
 
 	// testing fixture-1536-4.yaml with flatten
 	// param body with maps
@@ -3509,7 +3509,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`			for kkk, nestedMap02IIIV := range nestedMap02IIIC {`,
 				`				if nestedMap02IIIV == nil {`,
 				`				nestedMap02III := nestedMap02IIIV`,
-				`				if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedMap02", k), kk), kkk), "", (*nestedMap02III), 0); err != nil {`,
+				`				if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedMap02", k), kk), kkk), "", *nestedMap02III, 0); err != nil {`,
 				`				nestedMap02IIIR[kkk] = nestedMap02III`,
 				`			nestedMap02IIR[kk] = nestedMap02IIIR`,
 				`		nestedMap02IR[k] = nestedMap02IIR`,
@@ -3612,7 +3612,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`				for kkkk, nestedSliceAndMap02IIIIV := range nestedSliceAndMap02IIIIC {`,
 				`					if nestedSliceAndMap02IIIIV == nil {`,
 				`					nestedSliceAndMap02IIII := nestedSliceAndMap02IIIIV`,
-				`					if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedSliceAndMap02", i), kk), iii), kkkk), "", (*nestedSliceAndMap02IIII), 0); err != nil {`,
+				`					if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedSliceAndMap02", i), kk), iii), kkkk), "", *nestedSliceAndMap02IIII, 0); err != nil {`,
 				`					nestedSliceAndMap02IIIIR[kkkk] = nestedSliceAndMap02IIII`,
 				`				nestedSliceAndMap02IIIR = append(nestedSliceAndMap02IIIR, nestedSliceAndMap02IIIIR`,
 				`			nestedSliceAndMap02IIR[kk] = nestedSliceAndMap02IIIR`,
@@ -3794,7 +3794,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				// with Required
 				//`							return errors.Required(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedArray01", i), ii), iii), ""`,
 				`						nestedArray01III := nestedArray01IIIV`,
-				`						if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedArray01", i), ii), iii), "", (*nestedArray01III), 0); err != nil {`,
+				`						if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedArray01", i), ii), iii), "", *nestedArray01III, 0); err != nil {`,
 				`						nestedArray01IIIR = append(nestedArray01IIIR, nestedArray01III`,
 				`					nestedArray01IIR = append(nestedArray01IIR, nestedArray01IIIR`,
 				`			nestedArray01IR = append(nestedArray01IR, nestedArray01IIR`,

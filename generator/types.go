@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -68,9 +69,13 @@ func initTypes() {
 	}
 }
 
-func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType) {
+func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidations) (result resolvedType) {
 	result.SwaggerType = tn
 	result.SwaggerFormat = fmt
+
+	defer func() {
+		guardValidations(result.SwaggerType, v)
+	}()
 
 	if tn == file {
 		// special case of swagger type "file", rendered as io.ReadCloser interface
@@ -81,6 +86,10 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 	}
 
 	if fmt != "" {
+		defer func() {
+			guardFormatConflicts(result.SwaggerFormat, v)
+		}()
+
 		fmtn := strings.Replace(fmt, "-", "", -1)
 		if fmm, ok := formatMapping[tn]; ok {
 			if tpe, ok := fmm[fmtn]; ok {
@@ -113,17 +122,13 @@ func simpleResolvedType(tn, fmt string, items *spec.Items) (result resolvedType)
 			result.GoType = "[]" + iface
 			return
 		}
-		res := simpleResolvedType(items.Type, items.Format, items.Items)
+		res := simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
 		result.GoType = "[]" + res.GoType
 		return
 	}
 	result.GoType = tn
 	_, result.IsPrimitive = primitives[tn]
 	return
-}
-
-func typeForHeader(header spec.Header) resolvedType {
-	return simpleResolvedType(header.Type, header.Format, header.Items)
 }
 
 func newTypeResolver(pkg, fullPkg string, doc *loads.Document) *typeResolver {
@@ -369,6 +374,8 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 			result.IsNullable = t.isNullable(schema)
 		}
 	}
+
+	guardFormatConflicts(schema.Format, schema)
 	return
 }
 
@@ -862,7 +869,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	tpe := t.firstType(schema)
 	var returns bool
 
-	guardValidations(tpe, schema)
+	guardValidations(tpe, schema, schema.Type...)
 
 	returns, result, err = t.resolveSchemaRef(schema, isRequired)
 
@@ -948,208 +955,83 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	return
 }
 
-func warnSkipValidation(val string, types interface{}) {
-	log.Printf("warning: validation %q not compatible with type %v. Skipped", val, types)
-}
-
-func removeStringValidations(schema *spec.Schema) {
-	if schema.Pattern != "" {
-		schema.Pattern = ""
-		warnSkipValidation("pattern", schema.Type)
-	}
-	if schema.MinLength != nil {
-		schema.MinLength = nil
-		warnSkipValidation("minLength", schema.Type)
-	}
-	if schema.MaxLength != nil {
-		schema.MaxLength = nil
-		warnSkipValidation("maxLength", schema.Type)
-	}
-}
-
-func removeStringCommonValidations(tpe string, schema *spec.CommonValidations) {
-	if schema.Pattern != "" {
-		schema.Pattern = ""
-		warnSkipValidation("pattern", tpe)
-	}
-	if schema.MinLength != nil {
-		schema.MinLength = nil
-		warnSkipValidation("minLength", tpe)
-	}
-	if schema.MaxLength != nil {
-		schema.MaxLength = nil
-		warnSkipValidation("maxLength", tpe)
-	}
-}
-
-func removeNumberValidations(schema *spec.Schema) {
-	if schema.Minimum != nil {
-		schema.Minimum = nil
-		warnSkipValidation("minimum", schema.Type)
-	}
-	if schema.Maximum != nil {
-		schema.Maximum = nil
-		warnSkipValidation("maximum", schema.Type)
-	}
-	if schema.ExclusiveMaximum {
-		schema.ExclusiveMaximum = false
-		warnSkipValidation("exclusiveMaximum", schema.Type)
-	}
-	if schema.ExclusiveMinimum {
-		schema.ExclusiveMinimum = false
-		warnSkipValidation("exclusiveMinimum", schema.Type)
-	}
-	if schema.MultipleOf != nil {
-		schema.MultipleOf = nil
-		warnSkipValidation("multipleOf", schema.Type)
-	}
-}
-
-func removeNumberCommonValidations(tpe string, schema *spec.CommonValidations) {
-	if schema.Minimum != nil {
-		schema.Minimum = nil
-		warnSkipValidation("minimum", tpe)
-	}
-	if schema.Maximum != nil {
-		schema.Maximum = nil
-		warnSkipValidation("maximum", tpe)
-	}
-	if schema.ExclusiveMaximum {
-		schema.ExclusiveMaximum = false
-		warnSkipValidation("exclusiveMaximum", tpe)
-	}
-	if schema.ExclusiveMinimum {
-		schema.ExclusiveMinimum = false
-		warnSkipValidation("exclusiveMinimum", tpe)
-	}
-	if schema.MultipleOf != nil {
-		schema.MultipleOf = nil
-		warnSkipValidation("multipleOf", tpe)
-	}
-}
-
-func removeSliceValidations(schema *spec.Schema) {
-	if schema.MaxItems != nil {
-		schema.MaxItems = nil
-		warnSkipValidation("maxItems", schema.Type)
-	}
-	if schema.MinItems != nil {
-		schema.MinItems = nil
-		warnSkipValidation("minItems", schema.Type)
-	}
-	if schema.UniqueItems {
-		schema.UniqueItems = false
-		warnSkipValidation("uniqueItems", schema.Type)
-	}
-}
-
-func removeSliceCommonValidations(tpe string, schema *spec.CommonValidations) {
-	if schema.MaxItems != nil {
-		schema.MaxItems = nil
-		warnSkipValidation("maxItems", tpe)
-	}
-	if schema.MinItems != nil {
-		schema.MinItems = nil
-		warnSkipValidation("minItems", tpe)
-	}
-	if schema.UniqueItems {
-		schema.UniqueItems = false
-		warnSkipValidation("uniqueItems", tpe)
-	}
-}
-
-func removeObjectValidations(schema *spec.Schema) {
-	if schema.MaxProperties != nil {
-		schema.MaxProperties = nil
-		warnSkipValidation("maxProperties", schema.Type)
-	}
-	if schema.MinProperties != nil {
-		schema.MinProperties = nil
-		warnSkipValidation("minProperties", schema.Type)
+func warnSkipValidation(types interface{}) func(string, interface{}) {
+	return func(validation string, value interface{}) {
+		value = reflect.Indirect(reflect.ValueOf(value)).Interface()
+		log.Printf("warning: validation %s (value: %v) not compatible with type %v. Skipped", validation, value, types)
 	}
 }
 
 // guardValidations removes (with a warning) validations that don't fit with the schema type.
 //
-// Notice that the "enum" validation is allowed on any type.
-func guardValidations(tpe string, schema *spec.Schema) {
-	switch tpe {
-	case array:
-		removeStringValidations(schema)
-		removeNumberValidations(schema)
-		removeObjectValidations(schema)
+// Notice that the "enum" validation is allowed on any type but file.
+func guardValidations(tpe string, schema interface {
+	Validations() spec.SchemaValidations
+	SetValidations(spec.SchemaValidations)
+}, types ...string) {
 
-	case boolean:
-		removeStringValidations(schema)
-		removeNumberValidations(schema)
-		removeSliceValidations(schema)
-		removeObjectValidations(schema)
-
-	case file:
-		removeNumberValidations(schema)
-		removeSliceValidations(schema)
-		removeObjectValidations(schema)
-
-		// keep MinLength/MaxLength on file
-		if schema.Pattern != "" {
-			schema.Pattern = ""
-			warnSkipValidation("pattern", schema)
-		}
-
-	case number, integer:
-		removeStringValidations(schema)
-		removeSliceValidations(schema)
-		removeObjectValidations(schema)
-
-	case str:
-		removeNumberValidations(schema)
-		removeSliceValidations(schema)
-		removeObjectValidations(schema)
-
-	case object:
-		removeStringValidations(schema)
-		removeNumberValidations(schema)
-		removeSliceValidations(schema)
-
-	case "null":
-		// mapped as interface{}: no validations allowed atm (TODO(fred): support minProperties, maxProperties)
-		removeStringValidations(schema)
-		removeNumberValidations(schema)
-		removeSliceValidations(schema)
-		removeObjectValidations(schema)
+	v := schema.Validations()
+	if len(types) == 0 {
+		types = []string{tpe}
 	}
+	defer func() {
+		schema.SetValidations(v)
+	}()
+
+	if tpe != array {
+		v.ClearArrayValidations(warnSkipValidation(types))
+	}
+
+	if tpe != str && tpe != file {
+		v.ClearStringValidations(warnSkipValidation(types))
+	}
+
+	if tpe != object {
+		v.ClearObjectValidations(warnSkipValidation(types))
+	}
+
+	if tpe != number && tpe != integer {
+		v.ClearNumberValidations(warnSkipValidation(types))
+	}
+
+	if tpe == file {
+		// keep MinLength/MaxLength on file
+		if v.Pattern != "" {
+			warnSkipValidation(types)("pattern", v.Pattern)
+			v.Pattern = ""
+		}
+		if v.HasEnum() {
+			warnSkipValidation(types)("enum", v.Enum)
+			v.Enum = nil
+		}
+	}
+
+	// other cases:  mapped as interface{}: no validations allowed but Enum
 }
 
-// guardSimpleValidations removes (with a warning) validations that don't fit with the simple schema type.
-func guardSimpleValidations(tpe string, validations *spec.CommonValidations) {
-	switch tpe {
-	case array:
-		removeStringCommonValidations(tpe, validations)
-		removeNumberCommonValidations(tpe, validations)
+// guardFormatConflicts handles all conflicting properties
+// (for schema model or simple schema) when a format is set.
+//
+// At this moment, validation guards already handle all known conflicts, but for the
+// special case of binary (i.e. io.Reader).
+func guardFormatConflicts(format string, schema interface {
+	Validations() spec.SchemaValidations
+	SetValidations(spec.SchemaValidations)
+}) {
+	v := schema.Validations()
+	msg := fmt.Sprintf("for format %q", format)
 
-	case boolean:
-		removeStringCommonValidations(tpe, validations)
-		removeNumberCommonValidations(tpe, validations)
-		removeSliceCommonValidations(tpe, validations)
-
-	case file:
-		removeNumberCommonValidations(tpe, validations)
-		removeSliceCommonValidations(tpe, validations)
-
-		// keep MinLength/MaxLength on file
-		if validations.Pattern != "" {
-			validations.Pattern = ""
-			warnSkipValidation("pattern", tpe)
+	// for this format, no additional validations are supported
+	if format == "binary" {
+		// no validations supported on binary fields at this moment (io.Reader)
+		v.ClearStringValidations(warnSkipValidation(msg))
+		if v.HasEnum() {
+			warnSkipValidation(msg)
+			v.Enum = nil
 		}
-
-	case number, integer:
-		removeStringCommonValidations(tpe, validations)
-		removeSliceCommonValidations(tpe, validations)
-
-	case str:
-		removeNumberCommonValidations(tpe, validations)
-		removeSliceCommonValidations(tpe, validations)
+		schema.SetValidations(v)
 	}
+	// more cases should be inserted here if they arise
 }
 
 // resolvedType is a swagger type that has been resolved and analyzed for usage
@@ -1208,7 +1090,8 @@ type resolvedType struct {
 	SkipExternalValidation bool
 }
 
-func (rt *resolvedType) Zero() string {
+// Zero returns an initializer for the type
+func (rt resolvedType) Zero() string {
 	// if type is aliased, provide zero from the aliased type
 	if rt.IsAliased {
 		if zr, ok := zeroes[rt.AliasedType]; ok {
@@ -1238,6 +1121,28 @@ func (rt *resolvedType) Zero() string {
 	}
 
 	return ""
+}
+
+// ToString returns a string conversion for a type akin to a string
+func (rt resolvedType) ToString(value string) string {
+	if !rt.IsPrimitive || rt.SwaggerType != "string" || rt.IsStream {
+		return ""
+	}
+	if rt.IsCustomFormatter {
+		if rt.IsAliased {
+			return fmt.Sprintf("%s(%s).String()", rt.AliasedType, value)
+		}
+		return fmt.Sprintf("%s.String()", value)
+	}
+	var deref string
+	if rt.IsNullable {
+		deref = "*"
+	}
+	if rt.GoType == "string" || rt.GoType == "*string" {
+		return fmt.Sprintf("%s%s", deref, value)
+	}
+
+	return fmt.Sprintf("string(%s%s)", deref, value)
 }
 
 func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string) {

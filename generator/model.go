@@ -186,7 +186,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 	if sch.Required || hasFormatValidation(sch.resolvedType) {
 		return true
 	}
-	if sch.MaxLength != nil || sch.MinLength != nil || sch.Pattern != "" || sch.MultipleOf != nil || sch.Minimum != nil || sch.Maximum != nil || len(sch.Enum) > 0 || len(sch.ItemsEnum) > 0 {
+	if sch.HasStringValidations() || sch.HasNumberValidations() || sch.HasEnum() || len(sch.ItemsEnum) > 0 {
 		return true
 	}
 	for _, a := range sch.AllOf {
@@ -624,11 +624,6 @@ func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGen
 	return pg
 }
 
-func hasSliceValidations(model *spec.Schema) (hasSliceValidations bool) {
-	hasSliceValidations = model.MaxItems != nil || model.MinItems != nil || model.UniqueItems || len(model.Enum) > 0
-	return
-}
-
 func hasContextValidations(model *spec.Schema) bool {
 	// always assume ref needs context validate
 	// TODO: find away to determine ref needs context validate or not
@@ -638,28 +633,30 @@ func hasContextValidations(model *spec.Schema) bool {
 	return false
 }
 
-func hasValidations(model *spec.Schema, isRequired bool) (hasValidation bool) {
-	// NOTE: needsValidation has gone deprecated and is replaced by top-level's shallowValidationLookup()
-	hasNumberValidation := model.Maximum != nil || model.Minimum != nil || model.MultipleOf != nil
-	hasStringValidation := model.MaxLength != nil || model.MinLength != nil || model.Pattern != ""
-	hasEnum := len(model.Enum) > 0
+func hasValidations(model *spec.Schema, isRequired bool) bool {
+	if isRequired {
+		return true
+	}
+
+	v := model.Validations()
+	if v.HasNumberValidations() || v.HasStringValidations() || v.HasArrayValidations() || v.HasEnum() {
+		return true
+	}
 
 	// since this was added to deal with discriminator, we'll fix this when testing discriminated types
-	simpleObject := len(model.Properties) > 0 && model.Discriminator == ""
+	if len(model.Properties) > 0 && model.Discriminator == "" {
+		return true
+	}
 
 	// lift validations from allOf branches
-	hasAllOfValidation := false
 	for _, s := range model.AllOf {
-		hasAllOfValidation = hasValidations(&s, false)
-		hasAllOfValidation = s.Ref.String() != "" || hasAllOfValidation
-		if hasAllOfValidation {
-			break
+		schema := s
+		if s.Ref.String() != "" || hasValidations(&schema, false) {
+			return true
 		}
 	}
 
-	hasValidation = hasNumberValidation || hasStringValidation || hasSliceValidations(model) || hasEnum || simpleObject || hasAllOfValidation || isRequired
-
-	return
+	return false
 }
 
 func hasFormatValidation(tpe resolvedType) bool {
@@ -672,34 +669,25 @@ func hasFormatValidation(tpe resolvedType) bool {
 	return false
 }
 
-// handleFormatConflicts handles all conflicting model properties when a format is set
-func handleFormatConflicts(model *spec.Schema) {
-	switch model.Format {
-	case "date", "datetime", "uuid", "bsonobjectid", "base64", "duration":
-		model.MinLength = nil
-		model.MaxLength = nil
-		model.Pattern = ""
-		// more cases should be inserted here if they arise
-	}
-}
-
 func (sg *schemaGenContext) schemaValidations() sharedValidations {
 	model := sg.Schema
-	// resolve any conflicting properties if the model has a format
-	handleFormatConflicts(&model)
 
 	isRequired := sg.Required
 	if model.Default != nil || model.ReadOnly {
 		// when readOnly or default is specified, this disables Required validation (Swagger-specific)
 		isRequired = false
+		if sg.Required {
+			log.Printf("warn: properties with a default value or readOnly should not be required [%s]", sg.Name)
+		}
 	}
-	hasSliceValidations := model.MaxItems != nil || model.MinItems != nil || model.UniqueItems || len(model.Enum) > 0
-	hasValidations := hasValidations(&model, isRequired)
 
-	s := sharedValidationsFromSchema(model, sg.Required)
-	s.HasValidations = hasValidations
-	s.HasSliceValidations = hasSliceValidations
-	return s
+	v := model.Validations()
+	return sharedValidations{
+		Required:            sg.Required, /* TODO(fred): guard for cases with discriminator field, default and readOnly*/
+		SchemaValidations:   v,
+		HasSliceValidations: v.HasArrayValidations() || v.HasEnum(),
+		HasValidations:      hasValidations(&model, isRequired),
+	}
 }
 
 func mergeValidation(other *schemaGenContext) bool {
@@ -756,10 +744,8 @@ func (sg *schemaGenContext) buildProperties() error {
 	debugLog("building properties %s (parent: %s)", sg.Name, sg.Container)
 
 	for k, v := range sg.Schema.Properties {
-		debugLogAsJSON("building property %s[%q] (tup: %t) (BaseType: %t)",
-			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, v)
-		debugLog("property %s[%q] (tup: %t) HasValidations: %t)",
-			sg.Name, k, sg.IsTuple, sg.GenSchema.HasValidations)
+		debugLogAsJSON("building property %s[%q] (IsTuple: %t) (IsBaseType: %t) (HasValidations: %t)",
+			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.GenSchema.HasValidations, v)
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
 		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
@@ -1508,7 +1494,7 @@ func (sg *schemaGenContext) buildArray() error {
 
 	// lift validations
 	sg.GenSchema.HasValidations = sg.GenSchema.HasValidations || schemaCopy.HasValidations
-	sg.GenSchema.HasSliceValidations = hasSliceValidations(&sg.Schema)
+	sg.GenSchema.HasSliceValidations = sg.Schema.Validations().HasArrayValidations() || sg.Schema.Validations().HasEnum()
 
 	// prevents bubbling custom formatter flag
 	sg.GenSchema.IsCustomFormatter = false

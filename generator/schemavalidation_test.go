@@ -1031,7 +1031,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 	assertInCode(t, k+") Validate(formats", res)
 	assertInCode(t, "swag.IsZero(m.ID)", res)
 	assertInCode(t, "validate.Required(\"name\", \"body\", m.Name)", res)
-	assertInCode(t, "validate.MinLength(\"id\", \"body\", string(m.ID), 2)", res)
+	assertInCode(t, "validate.MinLength(\"id\", \"body\", m.ID, 2)", res)
 	assertInCode(t, "validate.Required(\"urls\", \"body\", m.Urls)", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
