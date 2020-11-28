@@ -1,0 +1,19 @@
+swagger: "2.0"
+info:
+  version: "1"
+  title: "sub api"
+paths:
+  /dummy:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: ../dummy/dummy.yaml
+  /example:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: ../example/example.yaml

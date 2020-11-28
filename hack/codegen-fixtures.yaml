@@ -71,6 +71,7 @@
     knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
 - dir: fixtures/bugs/2111
 - dir: fixtures/bugs/2223
+- dir: fixtures/bugs/2113
 #
 # The following specs fail to generate:
 # - existing-model.yml requires pregeneration (not supported yet by this script)
@@ -222,5 +223,11 @@
     skiClient: true
     skipExpand: true
 - dir: fixtures/bugs/2330
+  skipped:
+    skipModel: true
+- spec: fixture-2258.yaml
+  dir: fixtures/bugs/2258
+- spec: fixture-2137.yaml
+  dir: fixtures/bugs/2137
   skipped:
     skipModel: true

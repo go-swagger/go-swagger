@@ -1,0 +1,5 @@
+required:
+  - dummyPayload
+properties:
+  dummyPayload:
+    type: string
