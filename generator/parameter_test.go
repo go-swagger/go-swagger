@@ -17,9 +17,6 @@ package generator
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -44,6 +41,7 @@ func TestBodyParams(t *testing.T) {
 	for k := range b.Doc.Spec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
 	}
+
 	for _, param := range op.Parameters {
 		if param.Name == "body" {
 			gp, perr := b.MakeParameter("a", resolver, param, nil)
@@ -62,27 +60,32 @@ func TestBodyParams(t *testing.T) {
 	_, _, op, ok = b.Analyzed.OperationForName("createTask")
 	require.True(t, ok)
 	require.NotNil(t, op)
+
 	resolver = &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 	resolver.KnownDefs = make(map[string]struct{})
+
 	for k := range b.Doc.Spec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
 	}
-	for _, param := range op.Parameters {
-		if param.Name == "body" {
-			gp, err := b.MakeParameter("a", resolver, param, nil)
-			require.NoError(t, err)
-			assert.True(t, gp.IsBodyParam())
-			require.NotNil(t, gp.Schema)
-			assert.True(t, gp.Schema.IsComplexObject)
-			assert.False(t, gp.Schema.IsAnonymous)
-			assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
 
-			gpe, ok := b.ExtraSchemas["CreateTaskBody"]
-			assert.True(t, ok)
-			assert.True(t, gpe.IsComplexObject)
-			assert.False(t, gpe.IsAnonymous)
-			assert.Equal(t, "CreateTaskBody", gpe.GoType)
+	for _, param := range op.Parameters {
+		if param.Name != "body" {
+			continue
 		}
+
+		gp, err := b.MakeParameter("a", resolver, param, nil)
+		require.NoError(t, err)
+		assert.True(t, gp.IsBodyParam())
+		require.NotNil(t, gp.Schema)
+		assert.True(t, gp.Schema.IsComplexObject)
+		assert.False(t, gp.Schema.IsAnonymous)
+		assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
+
+		gpe, ok := b.ExtraSchemas["CreateTaskBody"]
+		assert.True(t, ok)
+		assert.True(t, gpe.IsComplexObject)
+		assert.False(t, gpe.IsAnonymous)
+		assert.Equal(t, "CreateTaskBody", gpe.GoType)
 	}
 }
 
@@ -232,25 +235,34 @@ type paramTestContext struct {
 	Items     *paramItemsTestContext
 }
 
-func (ctx *paramTestContext) assertParameter(t testing.TB) bool {
+func (ctx *paramTestContext) assertParameter(t testing.TB) (result bool) {
+	defer func() {
+		result = !t.Failed()
+	}()
+
 	_, _, op, err := ctx.B.Analyzed.OperationForName(ctx.OpID)
-	if assert.True(t, err) && assert.NotNil(t, op) {
-		resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
-		resolver.KnownDefs = make(map[string]struct{})
-		for k := range ctx.B.Doc.Spec().Definitions {
-			resolver.KnownDefs[k] = struct{}{}
-		}
-		for _, param := range op.Parameters {
-			if param.Name == ctx.Name {
-				gp, err := ctx.B.MakeParameter("a", resolver, param, nil)
-				if assert.NoError(t, err) {
-					return assert.True(t, ctx.assertGenParam(t, param, gp))
-				}
-			}
-		}
-		return false
+
+	require.True(t, err)
+	require.NotNil(t, op)
+
+	resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
+	resolver.KnownDefs = make(map[string]struct{})
+
+	for k := range ctx.B.Doc.Spec().Definitions {
+		resolver.KnownDefs[k] = struct{}{}
 	}
-	return false
+	for _, param := range op.Parameters {
+		if param.Name != ctx.Name {
+			continue
+		}
+
+		gp, err := ctx.B.MakeParameter("a", resolver, param, nil)
+		require.NoError(t, err)
+
+		assert.True(t, ctx.assertGenParam(t, param, gp))
+	}
+
+	return
 }
 
 func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
@@ -420,13 +432,11 @@ var bug163Properties = []paramTestContext{
 }
 
 func TestGenParameters_Simple(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
 	require.NoError(t, err)
+
 	for _, v := range bug163Properties {
 		v.B = b
 		require.True(t, v.assertParameter(t))
@@ -434,48 +444,41 @@ func TestGenParameters_Simple(t *testing.T) {
 }
 
 func TestGenParameter_Enhancement936(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilder("find", "../fixtures/enhancements/936/fixture-936.yml")
 	require.NoError(t, err)
+
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
+
 	buf := bytes.NewBuffer(nil)
 	opts := opts()
-	err = templates.MustGet("serverParameter").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
 	ff, err := opts.LanguageOpts.FormatContent("find_parameters.go", buf.Bytes())
-	if err != nil {
-		fmt.Println(buf.String())
-	}
-	require.NoError(t, err)
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
 	res := string(ff)
 	assertInCode(t, "ctx := validate.WithOperationRequest(context.Background())", res)
 	assertInCode(t, "if err := body.ContextValidate(ctx, route.Formats)", res)
 }
 
 func TestGenParameter_Issue163(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
+
 	buf := bytes.NewBuffer(nil)
 	opts := opts()
-	err = templates.MustGet("serverParameter").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
 	ff, err := opts.LanguageOpts.FormatContent("get_search_parameters.go", buf.Bytes())
-	if err != nil {
-		fmt.Println(buf.String())
-	}
-	require.NoError(t, err)
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
 	res := string(ff)
 	// NOTE(fredbi): removed default values resolution from private details (defaults are resolved in NewXXXParams())
 	assertInCode(t, "stringTypeInQueryDefault = string(\"qsValue\")", res)
@@ -483,55 +486,40 @@ func TestGenParameter_Issue163(t *testing.T) {
 }
 
 func TestGenParameter_Issue195(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilder("getTesting", "../fixtures/bugs/195/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("get_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "TestingThis *int64", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "TestingThis *int64", string(ff))
 }
 
 func TestGenParameter_Issue196(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_events.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "body.Validate", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+	ff, err := opts.LanguageOpts.FormatContent("post_events.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "body.Validate", string(ff))
 }
 
 func TestGenParameter_Issue217(t *testing.T) {
@@ -545,65 +533,53 @@ func TestGenParameter_Issue217(t *testing.T) {
 
 func assertNoValidator(t testing.TB, opName, path string) {
 	b, err := opBuilder(opName, path)
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			var buf bytes.Buffer
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(&buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_echo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertNotInCode(t, "body.Validate", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	var buf bytes.Buffer
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_echo.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertNotInCode(t, "body.Validate", string(ff))
 }
 
 func TestGenParameter_Issue249(t *testing.T) {
 	b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertNotInCode(t, "valuesTestingThis := o.TestingThis", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertNotInCode(t, "valuesTestingThis := o.TestingThis", string(ff))
 }
 
 func TestGenParameter_Issue248(t *testing.T) {
 	b, err := opBuilder("CreateThing", "../fixtures/bugs/248/swagger.json")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("create_thing.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, ", *o.OptionalQueryEnum", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("create_thing.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, ", *o.OptionalQueryEnum", string(ff))
 }
 
 func TestGenParameter_Issue303(t *testing.T) {
@@ -618,666 +594,573 @@ func TestGenParameter_Issue303(t *testing.T) {
 		},
 	}
 
-	for service, codelines := range services {
-		gen, err := opBuilder(service, "../fixtures/enhancements/303/swagger.yml")
-		if assert.NoError(t, err) {
-			op, err := gen.MakeOperation()
-			if assert.NoError(t, err) {
-				param := op.Params[0]
-				assert.Equal(t, "fruit", param.Name)
-				assert.True(t, param.IsEnumCI)
-				extension := param.Extensions["x-go-enum-ci"]
-				assert.NotNil(t, extension)
-				xGoEnumCI, ok := extension.(bool)
-				assert.True(t, ok)
-				assert.True(t, xGoEnumCI)
+	for k, toPin := range services {
+		service := k
+		codelines := toPin
 
-				buf := bytes.NewBuffer(nil)
-				err = templates.MustGet("serverParameter").Execute(buf, op)
-				if assert.NoError(t, err) {
-					opts := opts()
-					ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_parameter.go", buf.Bytes())
-					if assert.NoError(t, err) {
-						res := string(ff)
-						for _, codeline := range codelines {
-							assertInCode(t, codeline, res)
-						}
-					} else {
-						fmt.Println(buf.String())
-					}
-				}
+		t.Run(fmt.Sprintf("%s-%s", t.Name(), service), func(t *testing.T) {
+			t.Parallel()
+
+			gen, err := opBuilder(service, "../fixtures/enhancements/303/swagger.yml")
+			require.NoError(t, err)
+
+			op, err := gen.MakeOperation()
+			require.NoError(t, err)
+
+			param := op.Params[0]
+			assert.Equal(t, "fruit", param.Name)
+			assert.True(t, param.IsEnumCI)
+
+			extension := param.Extensions["x-go-enum-ci"]
+			assert.NotNil(t, extension)
+
+			xGoEnumCI, ok := extension.(bool)
+			assert.True(t, ok)
+			assert.True(t, xGoEnumCI)
+
+			buf := bytes.NewBuffer(nil)
+			opts := opts()
+			require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+			ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_parameter.go", buf.Bytes())
+			require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+			res := string(ff)
+			for _, codeline := range codelines {
+				assertInCode(t, codeline, res)
 			}
-		}
+		})
 	}
 }
 
 func TestGenParameter_Issue350(t *testing.T) {
 	b, err := opBuilder("withBoolDefault", "../fixtures/codegen/todolist.allparams.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("with_bool_default.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "Verbose: &verboseDefault", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("with_bool_default.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "Verbose: &verboseDefault", res)
 }
 
 func TestGenParameter_Issue351(t *testing.T) {
 	b, err := opBuilder("withArray", "../fixtures/codegen/todolist.allparams.yml")
-	if assert.NoError(t, err) {
-		op, err := b.MakeOperation()
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("with_array.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", sha256I, 64)", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("with_array.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "validate.MinLength(fmt.Sprintf(\"%s.%v\", \"sha256\", i), \"query\", sha256I, 64)", res)
 }
 
 func TestGenParameter_Issue511(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("postModels", "../fixtures/bugs/511/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertNotInCode(t, "fds := runtime.Values(r.Form)", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertNotInCode(t, "fds := runtime.Values(r.Form)", res)
 }
 
 func TestGenParameter_Issue628_Collection(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `value, err := formats.Parse("uuid", workspaceIDIV)`, res) // NOTE(fredbi): added type assertion
-					assertInCode(t, `workspaceIDI := *(value.(*strfmt.UUID))`, res)
-					assertInCode(t, `workspaceIDIR = append(workspaceIDIR, workspaceIDI)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `value, err := formats.Parse("uuid", workspaceIDIV)`, res) // NOTE(fredbi): added type assertion
+	assertInCode(t, `workspaceIDI := *(value.(*strfmt.UUID))`, res)
+	assertInCode(t, `workspaceIDIR = append(workspaceIDIR, workspaceIDI)`, res)
 }
 
 func TestGenParameter_Issue628_Single(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
-					assertInCode(t, `o.WorkspaceID = *(value.(*strfmt.UUID))`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+	assertInCode(t, `o.WorkspaceID = *(value.(*strfmt.UUID))`, res)
 }
 
 func TestGenParameter_Issue628_Details(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
-					assertInCode(t, `o.ID = *(value.(*strfmt.UUID))`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `value, err := formats.Parse("uuid", raw)`, res)
+	assertInCode(t, `o.ID = *(value.(*strfmt.UUID))`, res)
 }
 
 func TestGenParameter_Issue731_Collection(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `for _, v := range o.WorkspaceID`, res)
-					assertInCode(t, `valuesWorkspaceID = append(valuesWorkspaceID, v.String())`, res)
-					assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "")`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `for _, v := range o.WorkspaceID`, res)
+	assertInCode(t, `valuesWorkspaceID = append(valuesWorkspaceID, v.String())`, res)
+	assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "")`, res)
 }
 
 func TestGenParameter_Issue731_Single(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `qWorkspaceID := qrWorkspaceID.String()`, res)
-					assertInCode(t, `r.SetQueryParam("workspace_id", qWorkspaceID)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `qWorkspaceID := qrWorkspaceID.String()`, res)
+	assertInCode(t, `r.SetQueryParam("workspace_id", qWorkspaceID)`, res)
 }
 
 func TestGenParameter_Issue731_Details(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `r.SetPathParam("id", o.ID.String())`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, `r.SetPathParam("id", o.ID.String())`, string(ff))
 }
 
 func TestGenParameter_Issue809_Client(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "valuesGroups", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "valuesGroups", string(ff))
 }
 
 func TestGenParameter_Issue809_Server(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "groupsIC := rawData", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "groupsIC := rawData", string(ff))
 }
 
 func TestGenParameter_Issue1010_Server(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := methodPathOpBuilder("get", "/widgets/", "../fixtures/bugs/1010/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("get_widgets.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "validate.Pattern(fmt.Sprintf(\"%s.%v\", \"category_id\", i), \"query\", categoryIDI, `^[0-9abcdefghjkmnpqrtuvwxyz]{29}$`)", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_widgets.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "validate.Pattern(fmt.Sprintf(\"%s.%v\", \"category_id\", i), \"query\", categoryIDI, `^[0-9abcdefghjkmnpqrtuvwxyz]{29}$`)", string(ff))
 }
 
 func TestGenParameter_Issue710(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-
-	assert := assert.New(t)
+	defer discardOutput()()
 
 	gen, err := opBuilder("createTask", "../fixtures/codegen/todolist.allparams.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "(typeVar", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "(typeVar", string(ff))
 }
 
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
+
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/param.yaml")
 	require.NoError(t, err)
+
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
+
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverParameter").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
-	if err != nil {
-		fmt.Println(buf.String())
-	}
-	require.NoError(t, err)
-	assertInCode(t, "Body *models.Item", string(ff))
-	assertNotInCode(t, "type GetItemParamsBody struct", string(ff))
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, "Body *models.Item", res)
+	assertNotInCode(t, "type GetItemParamsBody struct", res)
 
 }
 
 func TestGenParameter_Issue1111(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1111/arrayParam.json")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `r.SetPathParam("instance_ids", joinedInstanceIds[0])`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, `r.SetPathParam("instance_ids", joinedInstanceIds[0])`, string(ff))
 }
 
 func TestGenParameter_Issue1462(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1462/arrayParam.json")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `if len(joinedInstanceIds) > 0 {`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, `if len(joinedInstanceIds) > 0 {`, string(ff))
 }
 
 func TestGenParameter_Issue1199(t *testing.T) {
-	assert := assert.New(t)
 	var assertion = `if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
 	}`
+
 	gen, err := opBuilder("move-clusters", "../fixtures/bugs/1199/nonEmptyBody.json")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, assertion, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, assertion, string(ff))
 }
 
 func TestGenParameter_Issue1325(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-
-	assert := assert.New(t)
+	defer discardOutput()()
 
 	gen, err := opBuilder("uploadFile", "../fixtures/bugs/1325/swagger.yaml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "runtime.NamedReadCloser", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "runtime.NamedReadCloser", string(ff))
 }
 
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
-	assert := assert.New(t)
-
 	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("array_query_params.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, `siBoolIC := swag.SplitByFormat(qvSiBool, "ssv")`, res)
-					assertInCode(t, `var siBoolIR []bool`, res)
-					assertInCode(t, `for i, siBoolIV := range siBoolIC`, res)
-					assertInCode(t, `siBoolI, err := swag.ConvertBool(siBoolIV)`, res)
-					assertInCode(t, `siBoolIR = append(siBoolIR, siBoolI)`, res)
-					assertInCode(t, `o.SiBool = siBoolIR`, res)
-					assertInCode(t, `siBoolSize := int64(len(o.SiBool))`, res)
-					assertInCode(t, `err := validate.MinItems("siBool", "query", siBoolSize, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siBool", "query", siBoolSize, 50)`, res)
+	require.NoError(t, err)
 
-					assertInCode(t, `siFloatIC := rawData`, res)
-					assertInCode(t, `var siFloatIR []float64`, res)
-					assertInCode(t, `for i, siFloatIV := range siFloatIC`, res)
-					assertInCode(t, `siFloatI, err := swag.ConvertFloat64(siFloatIV)`, res)
-					assertInCode(t, `return errors.InvalidType(fmt.Sprintf("%s.%v", "siFloat", i), "query", "float64", siFloatI)`, res)
-					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 3, true)`, res)
-					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 100, true); err != nil`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 1.5)`, res)
-					assertInCode(t, `siFloatIR = append(siFloatIR, siFloatI)`, res)
-					assertInCode(t, `o.SiFloat = siFloatIR`, res)
-					assertInCode(t, `siFloatSize := int64(len(o.SiFloat))`, res)
-					assertInCode(t, `err := validate.MinItems("siFloat", "query", siFloatSize, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siFloat", "query", siFloatSize, 50)`, res)
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
 
-					assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "")`, res)
-					assertInCode(t, `var siFloat32IR []float32`, res)
-					assertInCode(t, `for i, siFloat32IV := range siFloat32IC`, res)
-					assertInCode(t, `siFloat32I, err := swag.ConvertFloat32(siFloat32IV)`, res)
-					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 3, true)`, res)
-					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 100, true)`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 1.5)`, res)
-					assertInCode(t, `siFloat32IR = append(siFloat32IR, siFloat32I)`, res)
-					assertInCode(t, `o.SiFloat32 = siFloat32IR`, res)
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
-					assertInCode(t, `siFloat64IC := swag.SplitByFormat(qvSiFloat64, "pipes")`, res)
-					assertInCode(t, `var siFloat64IR []float64`, res)
-					assertInCode(t, `for i, siFloat64IV := range siFloat64IC`, res)
-					assertInCode(t, `siFloat64I, err := swag.ConvertFloat64(siFloat64IV)`, res)
-					assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 3, true)`, res)
-					assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 100, true)`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 1.5)`, res)
-					assertInCode(t, `siFloat64IR = append(siFloat64IR, siFloat64I)`, res)
-					assertInCode(t, `o.SiFloat64 = siFloat64IR`, res)
-					assertInCode(t, `siFloat64Size := int64(len(o.SiFloat64))`, res)
-					assertInCode(t, `err := validate.MinItems("siFloat64", "query", siFloat64Size, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siFloat64", "query", siFloat64Size, 50)`, res)
+	ff, err := opts.LanguageOpts.FormatContent("array_query_params.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
-					assertInCode(t, `siIntIC := swag.SplitByFormat(qvSiInt, "pipes")`, res)
-					assertInCode(t, `var siIntIR []int64`, res)
-					assertInCode(t, `for i, siIntIV := range siIntIC`, res)
-					assertInCode(t, `siIntI, err := swag.ConvertInt64(siIntIV)`, res)
-					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 8, true)`, res)
-					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 100, true)`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt", i), "query", float64(siIntI), 2)`, res)
-					assertInCode(t, `siIntIR = append(siIntIR, siIntI)`, res)
-					assertInCode(t, `o.SiInt = siIntIR`, res)
-					assertInCode(t, `siIntSize := int64(len(o.SiInt))`, res)
-					assertInCode(t, `err := validate.MinItems("siInt", "query", siIntSize, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siInt", "query", siIntSize, 50)`, res)
+	res := string(ff)
+	assertInCode(t, `siBoolIC := swag.SplitByFormat(qvSiBool, "ssv")`, res)
+	assertInCode(t, `var siBoolIR []bool`, res)
+	assertInCode(t, `for i, siBoolIV := range siBoolIC`, res)
+	assertInCode(t, `siBoolI, err := swag.ConvertBool(siBoolIV)`, res)
+	assertInCode(t, `siBoolIR = append(siBoolIR, siBoolI)`, res)
+	assertInCode(t, `o.SiBool = siBoolIR`, res)
+	assertInCode(t, `siBoolSize := int64(len(o.SiBool))`, res)
+	assertInCode(t, `err := validate.MinItems("siBool", "query", siBoolSize, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siBool", "query", siBoolSize, 50)`, res)
 
-					assertInCode(t, `siInt32IC := swag.SplitByFormat(qvSiInt32, "tsv")`, res)
-					assertInCode(t, `var siInt32IR []int32`, res)
-					assertInCode(t, `for i, siInt32IV := range siInt32IC`, res)
-					assertInCode(t, `siInt32I, err := swag.ConvertInt32(siInt32IV)`, res)
-					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 8, true)`, res)
-					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 100, true)`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt32", i), "query", float64(siInt32I), 2)`, res)
-					assertInCode(t, `siInt32IR = append(siInt32IR, siInt32I)`, res)
-					assertInCode(t, `o.SiInt32 = siInt32IR`, res)
-					assertInCode(t, `siFloat32Size := int64(len(o.SiFloat32))`, res)
-					assertInCode(t, `err := validate.MinItems("siFloat32", "query", siFloat32Size, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siFloat32", "query", siFloat32Size, 50)`, res)
-					assertInCode(t, `siInt32Size := int64(len(o.SiInt32))`, res)
-					assertInCode(t, `err := validate.MinItems("siInt32", "query", siInt32Size, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siInt32", "query", siInt32Size, 50)`, res)
+	assertInCode(t, `siFloatIC := rawData`, res)
+	assertInCode(t, `var siFloatIR []float64`, res)
+	assertInCode(t, `for i, siFloatIV := range siFloatIC`, res)
+	assertInCode(t, `siFloatI, err := swag.ConvertFloat64(siFloatIV)`, res)
+	assertInCode(t, `return errors.InvalidType(fmt.Sprintf("%s.%v", "siFloat", i), "query", "float64", siFloatI)`, res)
+	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 3, true)`, res)
+	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 100, true); err != nil`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 1.5)`, res)
+	assertInCode(t, `siFloatIR = append(siFloatIR, siFloatI)`, res)
+	assertInCode(t, `o.SiFloat = siFloatIR`, res)
+	assertInCode(t, `siFloatSize := int64(len(o.SiFloat))`, res)
+	assertInCode(t, `err := validate.MinItems("siFloat", "query", siFloatSize, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siFloat", "query", siFloatSize, 50)`, res)
 
-					assertInCode(t, `siInt64IC := swag.SplitByFormat(qvSiInt64, "ssv")`, res)
-					assertInCode(t, `var siInt64IR []int64`, res)
-					assertInCode(t, `for i, siInt64IV := range siInt64IC`, res)
-					assertInCode(t, `siInt64I, err := swag.ConvertInt64(siInt64IV)`, res)
-					assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 8, true)`, res)
-					assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 100, true)`, res)
-					assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt64", i), "query", float64(siInt64I), 2)`, res)
-					assertInCode(t, `siInt64IR = append(siInt64IR, siInt64I)`, res)
-					assertInCode(t, `o.SiInt64 = siInt64IR`, res)
-					assertInCode(t, `siInt64Size := int64(len(o.SiInt64))`, res)
-					assertInCode(t, `err := validate.MinItems("siInt64", "query", siInt64Size, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siInt64", "query", siInt64Size, 50)`, res)
+	assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "")`, res)
+	assertInCode(t, `var siFloat32IR []float32`, res)
+	assertInCode(t, `for i, siFloat32IV := range siFloat32IC`, res)
+	assertInCode(t, `siFloat32I, err := swag.ConvertFloat32(siFloat32IV)`, res)
+	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 3, true)`, res)
+	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 1.5)`, res)
+	assertInCode(t, `siFloat32IR = append(siFloat32IR, siFloat32I)`, res)
+	assertInCode(t, `o.SiFloat32 = siFloat32IR`, res)
 
-					assertInCode(t, `siStringIC := swag.SplitByFormat(qvSiString, "csv")`, res)
-					assertInCode(t, `var siStringIR []string`, res)
-					assertInCode(t, `for i, siStringIV := range siStringIC`, res)
-					assertInCode(t, `siStringI := siStringIV`, res)
-					assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 5)`, res)
-					assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 50)`, res)
-					assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
-					assertInCode(t, `siStringIR = append(siStringIR, siStringI)`, res)
-					assertInCode(t, `o.SiString = siStringIR`, res)
-					assertInCode(t, `siStringSize := int64(len(o.SiString))`, res)
-					assertInCode(t, `err := validate.MinItems("siString", "query", siStringSize, 5)`, res)
-					assertInCode(t, `err := validate.MaxItems("siString", "query", siStringSize, 50)`, res)
+	assertInCode(t, `siFloat64IC := swag.SplitByFormat(qvSiFloat64, "pipes")`, res)
+	assertInCode(t, `var siFloat64IR []float64`, res)
+	assertInCode(t, `for i, siFloat64IV := range siFloat64IC`, res)
+	assertInCode(t, `siFloat64I, err := swag.ConvertFloat64(siFloat64IV)`, res)
+	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 3, true)`, res)
+	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 1.5)`, res)
+	assertInCode(t, `siFloat64IR = append(siFloat64IR, siFloat64I)`, res)
+	assertInCode(t, `o.SiFloat64 = siFloat64IR`, res)
+	assertInCode(t, `siFloat64Size := int64(len(o.SiFloat64))`, res)
+	assertInCode(t, `err := validate.MinItems("siFloat64", "query", siFloat64Size, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siFloat64", "query", siFloat64Size, 50)`, res)
 
-					assertInCode(t, `siNestedIC := rawData`, res)
-					assertInCode(t, `var siNestedIR [][][]string`, res)
-					assertInCode(t, `for i, siNestedIV := range siNestedIC`, res)
-					assertInCode(t, `siNestedIIC := swag.SplitByFormat(siNestedIV, "pipes")`, res)
-					assertInCode(t, `var siNestedIIR [][]string`, res)
-					assertInCode(t, `for ii, siNestedIIV := range siNestedIIC {`, res)
-					assertInCode(t, `siNestedIIIC := swag.SplitByFormat(siNestedIIV, "csv")`, res)
-					assertInCode(t, `var siNestedIIIR []string`, res)
-					assertInCode(t, `for iii, siNestedIIIV := range siNestedIIIC`, res)
-					assertInCode(t, `siNestedIII := siNestedIIIV`, res)
-					assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 5)`, res)
-					assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 50)`, res)
-					assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
-					assertInCode(t, `siNestedIIIR = append(siNestedIIIR, siNestedIII)`, res)
-					assertInCode(t, `siNestedIIiSize := int64(len(siNestedIIIC))`, res) // NOTE(fredbi): fixed variable (nested arrays)
-					assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 3)`, res)
-					assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 30)`, res)
-					assertInCode(t, `siNestedIIR = append(siNestedIIR, siNestedIIIR)`, res) // NOTE(fredbi): fixed variable (nested arrays)
-					assertInCode(t, `siNestedISize := int64(len(siNestedIIC))`, res)        //NOTE(fredbi): fixed variable (nested arrays)
-					assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 2)`, res)
-					assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 20)`, res)
-					assertInCode(t, `siNestedIR = append(siNestedIR, siNestedIIR)`, res) // NOTE(fredbi): fixed variable (nested arrays)
-					assertInCode(t, `o.SiNested = siNestedIR`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	assertInCode(t, `siIntIC := swag.SplitByFormat(qvSiInt, "pipes")`, res)
+	assertInCode(t, `var siIntIR []int64`, res)
+	assertInCode(t, `for i, siIntIV := range siIntIC`, res)
+	assertInCode(t, `siIntI, err := swag.ConvertInt64(siIntIV)`, res)
+	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 8, true)`, res)
+	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt", i), "query", float64(siIntI), 2)`, res)
+	assertInCode(t, `siIntIR = append(siIntIR, siIntI)`, res)
+	assertInCode(t, `o.SiInt = siIntIR`, res)
+	assertInCode(t, `siIntSize := int64(len(o.SiInt))`, res)
+	assertInCode(t, `err := validate.MinItems("siInt", "query", siIntSize, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siInt", "query", siIntSize, 50)`, res)
+
+	assertInCode(t, `siInt32IC := swag.SplitByFormat(qvSiInt32, "tsv")`, res)
+	assertInCode(t, `var siInt32IR []int32`, res)
+	assertInCode(t, `for i, siInt32IV := range siInt32IC`, res)
+	assertInCode(t, `siInt32I, err := swag.ConvertInt32(siInt32IV)`, res)
+	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 8, true)`, res)
+	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt32", i), "query", float64(siInt32I), 2)`, res)
+	assertInCode(t, `siInt32IR = append(siInt32IR, siInt32I)`, res)
+	assertInCode(t, `o.SiInt32 = siInt32IR`, res)
+	assertInCode(t, `siFloat32Size := int64(len(o.SiFloat32))`, res)
+	assertInCode(t, `err := validate.MinItems("siFloat32", "query", siFloat32Size, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siFloat32", "query", siFloat32Size, 50)`, res)
+	assertInCode(t, `siInt32Size := int64(len(o.SiInt32))`, res)
+	assertInCode(t, `err := validate.MinItems("siInt32", "query", siInt32Size, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siInt32", "query", siInt32Size, 50)`, res)
+
+	assertInCode(t, `siInt64IC := swag.SplitByFormat(qvSiInt64, "ssv")`, res)
+	assertInCode(t, `var siInt64IR []int64`, res)
+	assertInCode(t, `for i, siInt64IV := range siInt64IC`, res)
+	assertInCode(t, `siInt64I, err := swag.ConvertInt64(siInt64IV)`, res)
+	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 8, true)`, res)
+	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt64", i), "query", float64(siInt64I), 2)`, res)
+	assertInCode(t, `siInt64IR = append(siInt64IR, siInt64I)`, res)
+	assertInCode(t, `o.SiInt64 = siInt64IR`, res)
+	assertInCode(t, `siInt64Size := int64(len(o.SiInt64))`, res)
+	assertInCode(t, `err := validate.MinItems("siInt64", "query", siInt64Size, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siInt64", "query", siInt64Size, 50)`, res)
+
+	assertInCode(t, `siStringIC := swag.SplitByFormat(qvSiString, "csv")`, res)
+	assertInCode(t, `var siStringIR []string`, res)
+	assertInCode(t, `for i, siStringIV := range siStringIC`, res)
+	assertInCode(t, `siStringI := siStringIV`, res)
+	assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 5)`, res)
+	assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, 50)`, res)
+	assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", "siString", i), "query", siStringI, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
+	assertInCode(t, `siStringIR = append(siStringIR, siStringI)`, res)
+	assertInCode(t, `o.SiString = siStringIR`, res)
+	assertInCode(t, `siStringSize := int64(len(o.SiString))`, res)
+	assertInCode(t, `err := validate.MinItems("siString", "query", siStringSize, 5)`, res)
+	assertInCode(t, `err := validate.MaxItems("siString", "query", siStringSize, 50)`, res)
+
+	assertInCode(t, `siNestedIC := rawData`, res)
+	assertInCode(t, `var siNestedIR [][][]string`, res)
+	assertInCode(t, `for i, siNestedIV := range siNestedIC`, res)
+	assertInCode(t, `siNestedIIC := swag.SplitByFormat(siNestedIV, "pipes")`, res)
+	assertInCode(t, `var siNestedIIR [][]string`, res)
+	assertInCode(t, `for ii, siNestedIIV := range siNestedIIC {`, res)
+	assertInCode(t, `siNestedIIIC := swag.SplitByFormat(siNestedIIV, "csv")`, res)
+	assertInCode(t, `var siNestedIIIR []string`, res)
+	assertInCode(t, `for iii, siNestedIIIV := range siNestedIIIC`, res)
+	assertInCode(t, `siNestedIII := siNestedIIIV`, res)
+	assertInCode(t, `err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 5)`, res)
+	assertInCode(t, `err := validate.MaxLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, 50)`, res)
+	assertInCode(t, `err := validate.Pattern(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), iii), "query", siNestedIII, `+"`"+`[A-Z][\w-]+`+"`"+`)`, res)
+	assertInCode(t, `siNestedIIIR = append(siNestedIIIR, siNestedIII)`, res)
+	assertInCode(t, `siNestedIIiSize := int64(len(siNestedIIIC))`, res) // NOTE(fredbi): fixed variable (nested arrays)
+	assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 3)`, res)
+	assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "siNested", i), ii), "query", siNestedIIiSize, 30)`, res)
+	assertInCode(t, `siNestedIIR = append(siNestedIIR, siNestedIIIR)`, res) // NOTE(fredbi): fixed variable (nested arrays)
+	assertInCode(t, `siNestedISize := int64(len(siNestedIIC))`, res)        // NOTE(fredbi): fixed variable (nested arrays)
+	assertInCode(t, `err := validate.MinItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 2)`, res)
+	assertInCode(t, `err := validate.MaxItems(fmt.Sprintf("%s.%v", "siNested", i), "query", siNestedISize, 20)`, res)
+	assertInCode(t, `siNestedIR = append(siNestedIR, siNestedIIR)`, res) // NOTE(fredbi): fixed variable (nested arrays)
+	assertInCode(t, `o.SiNested = siNestedIR`, res)
 }
 
 func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fixture string, minimalFlatten bool, withExpand bool) {
 	fixtureSpec := path.Base(fixture)
-	tassert := assert.New(t)
-	for fixtureIndex, fixtureContents := range fixtureConfig {
-		var gen codeGenOpBuilder
-		var err error
-		switch {
-		case minimalFlatten && !withExpand:
-			// proceed with minimal spec flattening
-			gen, err = opBuilder(fixtureIndex, fixture)
-		case !minimalFlatten:
-			// proceed with full flattening
-			gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
-		default:
-			// proceed with spec expansion
-			gen, err = opBuilderWithExpand(fixtureIndex, fixture)
-		}
-		if tassert.NoError(err) {
+
+	for k, toPin := range fixtureConfig {
+		fixtureIndex := k
+		fixtureContents := toPin
+		t.Run(fmt.Sprintf("%s-%s", t.Name(), fixtureIndex), func(t *testing.T) {
+			t.Parallel()
+
+			var gen codeGenOpBuilder
+			var err error
+			switch {
+			case minimalFlatten && !withExpand:
+				// proceed with minimal spec flattening
+				gen, err = opBuilder(fixtureIndex, fixture)
+			case !minimalFlatten:
+				// proceed with full flattening
+				gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
+			default:
+				// proceed with spec expansion
+				gen, err = opBuilderWithExpand(fixtureIndex, fixture)
+			}
+			require.NoError(t, err)
+
 			op, err := gen.MakeOperation()
-			if tassert.NoError(err) {
-				opts := opts()
-				for fixtureTemplate, expectedCode := range fixtureContents {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
-					if tassert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if tassert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-							res := string(ff)
-							for line, codeLine := range expectedCode {
-								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
-								}
-							}
-						} else {
-							fmt.Println(buf.String())
-						}
+			require.NoError(t, err)
+
+			opts := opts()
+			for fixtureTemplate, expectedCode := range fixtureContents {
+				buf := bytes.NewBuffer(nil)
+				require.NoErrorf(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
+					"expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
+
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				require.NoErrorf(t, err, "unexpect format error on %s with template %s\n%s",
+					fixtureSpec, fixtureTemplate, buf.String())
+
+				res := string(ff)
+				for line, codeLine := range expectedCode {
+					if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+						t.Logf("code expected did not match for fixture %s at line %d", fixtureSpec, line)
 					}
 				}
 			}
-		}
+		})
 	}
 }
 
 func TestGenParameter_Issue909(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
-	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
 		"1": { // fixture index
 			"serverParameter": { // executed template
@@ -1521,43 +1404,45 @@ func TestGenParameter_Issue909(t *testing.T) {
 		},
 	}
 
-	for fixtureIndex, fixtureContents := range fixtureConfig {
-		fixtureSpec := strings.Join([]string{"fixture-909-", fixtureIndex, ".yaml"}, "")
-		gen, err := opBuilder("getOptional", filepath.Join("..", "fixtures", "bugs", "909", fixtureSpec))
-		if assert.NoError(err) {
+	for k, toPin := range fixtureConfig {
+		fixtureIndex := k
+		fixtureContents := toPin
+
+		t.Run(fmt.Sprintf("%s-%s", t.Name(), fixtureIndex), func(t *testing.T) {
+			t.Parallel()
+
+			fixtureSpec := strings.Join([]string{"fixture-909-", fixtureIndex, ".yaml"}, "")
+			gen, err := opBuilder("getOptional", filepath.Join("..", "fixtures", "bugs", "909", fixtureSpec))
+			require.NoError(t, err)
+
 			op, err := gen.MakeOperation()
-			if assert.NoError(err) {
-				opts := opts()
-				for fixtureTemplate, expectedCode := range fixtureContents {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
-					if assert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-							res := string(ff)
-							for line, codeLine := range expectedCode {
-								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
-								}
-							}
-						} else {
-							fmt.Println(buf.String())
-						}
+			require.NoError(t, err)
+
+			opts := opts()
+			for fixtureTemplate, expectedCode := range fixtureContents {
+				buf := bytes.NewBuffer(nil)
+				err := opts.templates.MustGet(fixtureTemplate).Execute(buf, op)
+				require.NoErrorf(t, err, "expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
+
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				require.NoError(t, err, "expected formatting to go well on %s with template %s\n%s",
+					fixtureSpec, fixtureTemplate, buf.String())
+
+				res := string(ff)
+				for line, codeLine := range expectedCode {
+					if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+						t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 					}
 				}
 			}
-		}
+		})
 	}
 }
 
 // verifies that validation method is called on body param with $ref
 func TestGenParameter_Issue1237(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
-	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
 		"1": { // fixture index
 			"serverParameter": { // executed template
@@ -1575,26 +1460,24 @@ func TestGenParameter_Issue1237(t *testing.T) {
 	for _, fixtureContents := range fixtureConfig {
 		fixtureSpec := strings.Join([]string{"fixture-1237", ".json"}, "")
 		gen, err := opBuilder("add sg", filepath.Join("..", "fixtures", "bugs", "1237", fixtureSpec))
-		if assert.NoError(err) {
-			op, err := gen.MakeOperation()
-			if assert.NoError(err) {
-				opts := opts()
-				for fixtureTemplate, expectedCode := range fixtureContents {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
-					if assert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-							res := string(ff)
-							for line, codeLine := range expectedCode {
-								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
-								}
-							}
-						} else {
-							fmt.Println(buf.String())
-						}
-					}
+		require.NoError(t, err)
+
+		op, err := gen.MakeOperation()
+		require.NoError(t, err)
+
+		opts := opts()
+		for fixtureTemplate, expectedCode := range fixtureContents {
+			buf := bytes.NewBuffer(nil)
+			require.NoErrorf(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
+				"expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
+
+			ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+			require.NoErrorf(t, err, "expected formatting to go well on %s with template %s: %s", fixtureSpec, fixtureTemplate, buf.String())
+
+			res := string(ff)
+			for line, codeLine := range expectedCode {
+				if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+					t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 				}
 			}
 		}
@@ -1602,12 +1485,8 @@ func TestGenParameter_Issue1237(t *testing.T) {
 }
 
 func TestGenParameter_Issue1392(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
-	assert := assert.New(t)
 	fixtureConfig := map[string]map[string][]string{
 		"1": { // fixture index
 			"serverParameter": { // executed template
@@ -1756,81 +1635,77 @@ func TestGenParameter_Issue1392(t *testing.T) {
 		},
 	}
 
-	for fixtureIndex, fixtureContents := range fixtureConfig {
-		fixtureSpec := strings.Join([]string{"fixture-1392-", fixtureIndex, ".yaml"}, "")
-		// pick selected operation id in fixture
-		operationToTest := ""
-		switch fixtureIndex {
-		case "1":
-			operationToTest = "PatchSomeResource"
-		case "2":
-			operationToTest = "PostBodybuilder20"
-		case "3":
-			operationToTest = "PostBodybuilder26"
-		case "4":
-			operationToTest = "PostBodybuilder27"
-		case "5":
-			operationToTest = "Bodybuilder23"
-		}
-		gen, err := opBuilder(operationToTest, filepath.Join("..", "fixtures", "bugs", "1392", fixtureSpec))
-		if assert.NoError(err) {
+	for k, toPin := range fixtureConfig {
+		fixtureIndex := k
+		fixtureContents := toPin
+		t.Run(fmt.Sprintf("%s-%s", t.Name(), k), func(t *testing.T) {
+			fixtureSpec := strings.Join([]string{"fixture-1392-", fixtureIndex, ".yaml"}, "")
+			// pick selected operation id in fixture
+			operationToTest := ""
+			switch fixtureIndex {
+			case "1":
+				operationToTest = "PatchSomeResource"
+			case "2":
+				operationToTest = "PostBodybuilder20"
+			case "3":
+				operationToTest = "PostBodybuilder26"
+			case "4":
+				operationToTest = "PostBodybuilder27"
+			case "5":
+				operationToTest = "Bodybuilder23"
+			}
+
+			gen, err := opBuilder(operationToTest, filepath.Join("..", "fixtures", "bugs", "1392", fixtureSpec))
+			require.NoError(t, err)
+
 			op, err := gen.MakeOperation()
-			if assert.NoError(err) {
-				opts := opts()
-				for fixtureTemplate, expectedCode := range fixtureContents {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet(fixtureTemplate).Execute(buf, op)
-					if assert.NoError(err, "Expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-						ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if assert.NoError(err, "Expected formatting to go well on %s with template %s", fixtureSpec, fixtureTemplate) {
-							res := string(ff)
-							for line, codeLine := range expectedCode {
-								if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-									t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
-								}
-							}
-						} else {
-							fmt.Println(buf.String())
-						}
+			require.NoError(t, err)
+
+			opts := opts()
+			for fixtureTemplate, expectedCode := range fixtureContents {
+				buf := bytes.NewBuffer(nil)
+				require.NoError(t, templates.MustGet(fixtureTemplate).Execute(buf, op),
+					"expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
+
+				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				require.NoError(t, err, "expected formatting to go well on %s with template %s\n%s", fixtureSpec, fixtureTemplate, buf.String())
+
+				res := string(ff)
+				for line, codeLine := range expectedCode {
+					if !assertInCode(t, strings.TrimSpace(codeLine), res) {
+						t.Logf("Code expected did not match for fixture %s at line %d", fixtureSpec, line)
 					}
 				}
 			}
-		}
+		})
 	}
 }
 
 func TestGenParameter_Issue1513(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
-	assert := assert.New(t)
 	var assertion = `r.SetBodyParam(o.Something)`
+
 	gen, err := opBuilderWithFlatten("put-enum", "../fixtures/bugs/1513/enums.yaml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, assertion, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %v\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, assertion, res)
 }
 
 // Body param validation on empty objects
 func TestGenParameter_Issue1536(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	// testing fixture-1536.yaml with flatten
 	// param body with array of empty objects
@@ -2148,10 +2023,7 @@ func TestGenParameter_Issue1536(t *testing.T) {
 }
 
 func TestGenParameter_Issue15362(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 		// load expectations for parameters in operation get_nested_with_validations_parameters.go
@@ -2380,10 +2252,8 @@ func TestGenParameter_Issue15362(t *testing.T) {
 }
 
 func TestGenParameter_Issue1536_Maps(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 
@@ -3016,10 +2886,8 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 }
 
 func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 		// load expectations for parameters in operation get_map_of_array_of_map_parameters.go
@@ -3262,10 +3130,8 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
 }
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
 
 	// testing fixture-1536-4.yaml with flatten
 	// param body with maps
@@ -4003,10 +3869,8 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 }
 
 func TestGenParameter_Issue15362_WithExpand(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 		// load expectations for parameters in operation get_nested_required_parameters.go
@@ -4072,6 +3936,9 @@ func TestGenParameter_Issue15362_WithExpand(t *testing.T) {
 }
 
 func TestGenParameter_Issue1548_base64(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1548.yaml with flatten
 	// My App API
 	fixtureConfig := map[string]map[string][]string{
@@ -4144,10 +4011,9 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 }
 
 func TestGenParameter_1572(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1572.yaml with minimal flatten
 	// edge cases for operations schemas
 
@@ -4278,10 +4144,9 @@ func TestGenParameter_1572(t *testing.T) {
 }
 
 func TestGenParameter_1637(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1637.yaml with minimal flatten
 	// slice of polymorphic type in body param
 
@@ -4298,10 +4163,9 @@ func TestGenParameter_1637(t *testing.T) {
 }
 
 func TestGenParameter_1755(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1755.yaml with minimal flatten
 	// body param is array with slice validation (e.g. minItems): initialize array with body
 
@@ -4319,10 +4183,9 @@ func TestGenParameter_1755(t *testing.T) {
 }
 
 func TestGenClientParameter_1490(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1490.yaml with minimal flatten
 	// body param is interface
 
@@ -4349,10 +4212,9 @@ func TestGenClientParameter_1490(t *testing.T) {
 }
 
 func TestGenClientParameter_973(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-973.yaml with minimal flatten
 	// header param is UUID, with or without required constraint
 
@@ -4370,10 +4232,9 @@ func TestGenClientParameter_973(t *testing.T) {
 }
 
 func TestGenClientParameter_1020(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1020.yaml with minimal flatten
 	// param is File
 
@@ -4390,10 +4251,9 @@ func TestGenClientParameter_1020(t *testing.T) {
 }
 
 func TestGenClientParameter_1339(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	t.Parallel()
+	defer discardOutput()()
+
 	// testing fixture-1339.yaml with minimal flatten
 	// param is binary
 
@@ -4410,11 +4270,11 @@ func TestGenClientParameter_1339(t *testing.T) {
 }
 
 func TestGenClientParameter_1937(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
 	// names starting with a number
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+
 	// testing fixture-1339.yaml with minimal flatten
 	// param is binary
 
@@ -4432,53 +4292,45 @@ func TestGenClientParameter_1937(t *testing.T) {
 }
 
 func TestGenParameter_Issue2167(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+	defer discardOutput()()
 
 	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("clientParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertRegexpInCode(t, `(?m)^\tMyPathName\s+string$`, res)
-					assertRegexpInCode(t, `(?m)^\tTestRegion\s+string$`, res)
-					assertRegexpInCode(t, `(?m)^\tMyQueryCount\s+\*int64$`, res)
-					assertRegexpInCode(t, `(?m)^\tTestLimit\s+\*int64$`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertRegexpInCode(t, `(?m)^\tMyPathName\s+string$`, res)
+	assertRegexpInCode(t, `(?m)^\tTestRegion\s+string$`, res)
+	assertRegexpInCode(t, `(?m)^\tMyQueryCount\s+\*int64$`, res)
+	assertRegexpInCode(t, `(?m)^\tTestLimit\s+\*int64$`, res)
 }
+
 func TestGenParameter_Issue2273(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-	assert := assert.New(t)
+	t.Parallel()
+	defer discardOutput()()
 
 	gen, err := opBuilder("postSnapshot", "../fixtures/bugs/2273/swagger.json")
-	if assert.NoError(err) {
-		op, err := gen.MakeOperation()
-		if assert.NoError(err) {
-			buf := bytes.NewBuffer(nil)
-			opts := opts()
-			err := templates.MustGet("serverParameter").Execute(buf, op)
-			if assert.NoError(err) {
-				ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
-				if assert.NoError(err) {
-					res := string(ff)
-					assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", string(ff))
 }

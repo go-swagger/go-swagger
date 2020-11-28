@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -210,8 +209,7 @@ func TestMakeOperation(t *testing.T) {
 }
 
 func TestRenderOperation_InstagramSearch(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
 	require.NoError(t, err)
@@ -221,8 +219,8 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 
 	buf := bytes.NewBuffer(nil)
 	opt := opts()
-	err = templates.MustGet("serverOperation").Execute(buf, gO)
-	require.NoError(t, err)
+
+	require.NoError(t, opt.templates.MustGet("serverOperation").Execute(buf, gO))
 
 	ff, err := opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -237,8 +235,8 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertInCode(t, "models.Media", res)
 
 	buf = bytes.NewBuffer(nil)
-	err = templates.MustGet("serverResponses").Execute(buf, gO)
-	require.NoError(t, err)
+	require.NoError(t, opt.templates.MustGet("serverResponses").Execute(buf, gO))
+
 	ff, err = opt.LanguageOpts.FormatContent("response.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
@@ -255,8 +253,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 
 	buf = bytes.NewBuffer(nil)
 	opt = opts()
-	err = templates.MustGet("serverOperation").Execute(buf, gO)
-	require.NoError(t, err)
+	require.NoError(t, opt.templates.MustGet("serverOperation").Execute(buf, gO))
 
 	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -266,8 +263,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertNotInCode(t, "models", res)
 
 	buf = bytes.NewBuffer(nil)
-	err = templates.MustGet("serverResponses").Execute(buf, gO)
-	require.NoError(t, err)
+	require.NoError(t, opt.templates.MustGet("serverResponses").Execute(buf, gO))
 
 	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -277,8 +273,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 }
 
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
@@ -313,8 +308,7 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 
 // methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening
 func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	if fname == "" {
 		fname = "../fixtures/codegen/todolist.simple.yml"
@@ -350,8 +344,7 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 
 // opBuilderWithOpts prepares the making of an operation with spec flattening options
 func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	if fname == "" {
 		// default fixture
@@ -461,17 +454,14 @@ func TestDateFormat_Spec1(t *testing.T) {
 	opts := opts()
 	opts.defaultsEnsured = false
 	opts.IsClient = true
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
-	err = templates.MustGet("clientParameter").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	res := string(ff)
-	assertInCode(t, "frTestingThis.String()", res)
+	assertInCode(t, "frTestingThis.String()", string(ff))
 }
 
 func TestDateFormat_Spec2(t *testing.T) {
@@ -485,11 +475,9 @@ func TestDateFormat_Spec2(t *testing.T) {
 	opts := opts()
 	opts.defaultsEnsured = false
 	opts.IsClient = true
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
-	err = templates.MustGet("clientParameter").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -499,10 +487,9 @@ func TestDateFormat_Spec2(t *testing.T) {
 }
 
 func TestBuilder_Issue1703(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, err := os.Getwd()
-	require.NoError(t, err)
+	defer discardOutput()()
+
+	dr := testCwd(t)
 
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
@@ -517,8 +504,7 @@ func TestBuilder_Issue1703(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, err := newAppGenerator("x-go-type-import-bug", nil, nil, opts)
 	require.NoError(t, err)
@@ -528,21 +514,19 @@ func TestBuilder_Issue1703(t *testing.T) {
 
 	for _, o := range op.Operations {
 		buf := bytes.NewBuffer(nil)
-		err = templates.MustGet("serverResponses").Execute(buf, o)
-		require.NoError(t, err)
+		require.NoError(t, opts.templates.MustGet("serverResponses").Execute(buf, o))
 
 		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("response.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())
 
-		res := string(ff)
-		assertInCode(t, "jwk \"github.com/user/package\"", res)
+		assertInCode(t, "jwk \"github.com/user/package\"", string(ff))
 	}
 }
 
 func TestBuilder_Issue287(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
 
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
@@ -557,8 +541,7 @@ func TestBuilder_Issue287(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	require.NoError(t, err)
@@ -567,20 +550,19 @@ func TestBuilder_Issue287(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("serverBuilder").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverBuilder").Execute(buf, op))
 
 	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	res := string(ff)
-	assertInCode(t, "case \"text/plain\":", res)
+	assertInCode(t, "case \"text/plain\":", string(ff))
 }
 
 func TestBuilder_Issue465(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
 		IncludeModel:      true,
@@ -595,8 +577,7 @@ func TestBuilder_Issue465(t *testing.T) {
 		Target:            dr,
 		IsClient:          true,
 	}
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	require.NoError(t, err)
@@ -605,20 +586,19 @@ func TestBuilder_Issue465(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("clientFacade").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientFacade").Execute(buf, op))
 
 	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	res := string(ff)
-	assertInCode(t, "/v1/fancyAPI", res)
+	assertInCode(t, "/v1/fancyAPI", string(ff))
 }
 
 func TestBuilder_Issue500(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
 		IncludeModel:      true,
@@ -632,8 +612,7 @@ func TestBuilder_Issue500(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
 	require.NoError(t, err)
@@ -642,8 +621,7 @@ func TestBuilder_Issue500(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("serverBuilder").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverBuilder").Execute(buf, op))
 
 	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -664,11 +642,9 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 	opts := opts()
 	opts.defaultsEnsured = false
 	opts.IsClient = true
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
-	err = templates.MustGet("clientResponse").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(buf, op))
 }
 
 func TestGenClient_CustomFormatPath(t *testing.T) {
@@ -682,11 +658,9 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 	opts := opts()
 	opts.defaultsEnsured = false
 	opts.IsClient = true
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
-	err = templates.MustGet("clientParameter").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	assertInCode(t, `if err := r.SetPathParam("SeriesId", o.SeriesID.String()); err != nil`, buf.String())
 }
@@ -702,19 +676,18 @@ func TestGenClient_Issue733(t *testing.T) {
 	opts := opts()
 	opts.defaultsEnsured = false
 	opts.IsClient = true
-	err = opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
-	err = templates.MustGet("clientResponse").Execute(buf, op)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(buf, op))
 
 	assertInCode(t, "Labels []*int64 `json:\"labels\"`", buf.String())
 }
 
 func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
@@ -732,8 +705,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	// Full flattening
 	opts.FlattenOpts.Expand = false
@@ -745,8 +717,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0]))
 
 	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -756,25 +727,28 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	defer discardOutput()()
+
+	dr := testCwd(t)
 	defer func() {
-		log.SetOutput(os.Stdout)
-		dr, _ := os.Getwd()
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
+
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
 	opts.ValidateSpec = true
 	opts.FlattenOpts.Minimal = false
+
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
+	require.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
@@ -791,8 +765,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	}
 
 	//Testing Server Generation
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	// full flattening
 	opts.FlattenOpts.Minimal = false
@@ -803,7 +776,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
+	err = opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
 	require.NoError(t, err)
 
 	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
@@ -814,12 +787,13 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 }
 
 func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	defer discardOutput()()
+
+	dr := testCwd(t)
 	defer func() {
-		log.SetOutput(os.Stdout)
-		dr, _ := os.Getwd()
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
+
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
 	opts.ValidateSpec = false
@@ -831,9 +805,10 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
@@ -850,23 +825,24 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 		IsClient:          true,
 	}
 
-	//Testing Server Generation
-	err := opts.EnsureDefaults()
+	// Testing Server Generation
+	require.NoError(t, opts.EnsureDefaults())
+
 	// minimal flattening
 	opts.FlattenOpts.Minimal = true
-	assert.NoError(t, err)
-	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
+	_, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// if flatten is not set, expand takes over so this would resume normally
 	assert.NoError(t, err)
 }
 
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	defer discardOutput()()
+
+	dr := testCwd(t)
 	defer func() {
-		dr, _ := os.Getwd()
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
-		log.SetOutput(os.Stdout)
 	}()
+
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
 	opts.ValidateSpec = false
@@ -879,9 +855,10 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 }
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
 		IncludeModel:      true,
@@ -898,20 +875,21 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		IsClient:          true,
 	}
 
-	//Testing Server Generation
-	err := opts.EnsureDefaults()
+	// Testing Server Generation
+	require.NoError(t, opts.EnsureDefaults())
+
 	// minimal flattening
 	opts.FlattenOpts.Minimal = true
-	assert.NoError(t, err)
-	_, err = newAppGenerator("JsonRefOperation", nil, nil, opts)
+
+	_, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// now if flatten is false, expand takes over so server generation should resume normally
 	assert.NoError(t, err)
 }
 
 func TestGenServerWithTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
 
 	tests := []struct {
 		name      string
@@ -960,31 +938,36 @@ func TestGenServerWithTemplate(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			//Testing Server Generation
-			err := tt.opts.EnsureDefaults()
-			require.NoError(t, err)
+	t.Run("codegen operations", func(t *testing.T) {
+		for _, toPin := range tests {
+			tt := toPin
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
 
-			// minimal flattening
-			tt.opts.FlattenOpts.Minimal = true
-			_, err = newAppGenerator("JsonRefOperation", nil, nil, tt.opts)
-			if tt.wantError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+				// Testing Server Generation
+				require.NoError(t, tt.opts.EnsureDefaults())
+
+				// minimal flattening
+				tt.opts.FlattenOpts.Minimal = true
+				_, err := newAppGenerator("JsonRefOperation", nil, nil, tt.opts)
+				if tt.wantError {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+		}
+	})
 }
 
 func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	defer discardOutput()()
+
+	dr := testCwd(t)
 	defer func() {
-		log.SetOutput(os.Stdout)
-		dr, _ := os.Getwd()
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
+
 	opts := testGenOpts()
 	opts.Spec = filepath.FromSlash("../fixtures/bugs/890/swagger.yaml")
 	opts.ValidateSpec = true
@@ -996,10 +979,11 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 
 // This tests that securityDefinitions generate stable code
 func TestBuilder_Issue1214(t *testing.T) {
+	defer discardOutput()()
+
+	dr := testCwd(t)
 	const any = `(.|\n)+`
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
 		IncludeModel:      true,
@@ -1014,8 +998,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	e := opts.EnsureDefaults()
-	require.NoError(t, e)
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, e := newAppGenerator("fixture-1214", nil, nil, opts)
 	require.NoError(t, e)
@@ -1040,8 +1023,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 			`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
 
 		buf = bytes.NewBuffer(nil)
-		err = templates.MustGet("serverBuilder").Execute(buf, op)
-		require.NoError(t, err)
+		require.NoError(t, opts.templates.MustGet("serverBuilder").Execute(buf, op))
 
 		ff, err = appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_server.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())
@@ -1169,8 +1151,8 @@ func TestGenSecurityRequirements(t *testing.T) {
 }
 
 func TestGenerateServerOperation(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
+
 	fname := "../fixtures/codegen/todolist.simple.yml"
 
 	tgt, _ := ioutil.TempDir(filepath.Dir(fname), "generated")
@@ -1187,32 +1169,26 @@ func TestGenerateServerOperation(t *testing.T) {
 		Spec:              fname,
 		Target:            tgt,
 	}
-	err := o.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, o.EnsureDefaults())
 
-	err = GenerateServerOperation([]string{"createTask"}, nil)
-	assert.Error(t, err)
+	require.Error(t, GenerateServerOperation([]string{"createTask"}, nil))
 
 	d := o.TemplateDir
 	o.TemplateDir = "./nowhere"
-	err = GenerateServerOperation([]string{"notFound"}, o)
-	assert.Error(t, err)
+	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
 
 	o.TemplateDir = d
 	d = o.Spec
 	o.Spec = "nowhere.yaml"
-	err = GenerateServerOperation([]string{"notFound"}, o)
-	assert.Error(t, err)
+	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
+
 	o.Spec = d
+	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
 
-	err = GenerateServerOperation([]string{"notFound"}, o)
-	assert.Error(t, err)
-
-	err = GenerateServerOperation([]string{"createTask"}, o)
-	require.NoError(t, err)
+	require.NoError(t, GenerateServerOperation([]string{"createTask"}, o))
 
 	// check expected files are generated and that's it
-	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
+	_, err := os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
 	assert.NoError(t, err)
 	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_parameters.go"))
 	assert.NoError(t, err)
@@ -1234,9 +1210,10 @@ func TestGenerateServerOperation(t *testing.T) {
 
 // This tests that mimetypes generate stable code
 func TestBuilder_Issue1646(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
 		IncludeModel:      true,
@@ -1273,9 +1250,10 @@ func TestBuilder_Issue1646(t *testing.T) {
 }
 
 func TestGenServer_StrictAdditionalProperties(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
+
 	opts := &GenOpts{
 		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
 		IncludeModel:      true,
@@ -1384,7 +1362,8 @@ func makeClientTimeoutNameTest() []struct {
 }
 
 func TestRenameTimeout(t *testing.T) {
-	for i, toPin := range makeClientTimeoutNameTest() {
+	for idx, toPin := range makeClientTimeoutNameTest() {
+		i := idx
 		testCase := toPin
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
@@ -1433,28 +1412,32 @@ func TestDeconflictTag(t *testing.T) {
 }
 
 func TestGenServer_2161_panic(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
-	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          false,
-	}
-	if err := opts.EnsureDefaults(); err != nil {
-		panic(err)
-	}
+	t.Parallel()
+	defer discardOutput()()
 
-	opts.StrictAdditionalProperties = true
+	generated, err := ioutil.TempDir(testCwd(t), "generated_2161")
+	require.NoError(t, err)
+
+	defer func() {
+		_ = os.RemoveAll(generated)
+	}()
+
+	opts := &GenOpts{
+		Spec:                       filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
+		IncludeModel:               true,
+		IncludeHandler:             true,
+		IncludeParameters:          true,
+		IncludeResponses:           true,
+		IncludeMain:                true,
+		APIPackage:                 "restapi",
+		ModelPackage:               "model",
+		ServerPackage:              "server",
+		ClientPackage:              "client",
+		Target:                     generated,
+		IsClient:                   false,
+		StrictAdditionalProperties: true,
+	}
+	require.NoError(t, opts.EnsureDefaults())
 
 	appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
 	require.NoError(t, err)
@@ -1471,8 +1454,7 @@ func TestGenServer_2161_panic(t *testing.T) {
 	}
 	require.NotEmpty(t, selectedOp, "dev error: invalid test vs fixture")
 
-	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp])
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp]))
 
 	_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1481,9 +1463,9 @@ func TestGenServer_2161_panic(t *testing.T) {
 }
 
 func TestGenServer_1659_Principal(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-	dr, _ := os.Getwd()
+	defer discardOutput()()
+
+	dr := testCwd(t)
 
 	for _, toPin := range []struct {
 		Title       string
@@ -1750,6 +1732,8 @@ func TestGenServer_1659_Principal(t *testing.T) {
 	} {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {
+			t.Parallel()
+
 			opts := fixture.Opts
 			require.NoError(t, opts.EnsureDefaults())
 			require.NoError(t, opts.setTemplates())
@@ -1761,10 +1745,11 @@ func TestGenServer_1659_Principal(t *testing.T) {
 			require.NoError(t, err)
 
 			bufC := bytes.NewBuffer(nil)
-			require.NoError(t, templates.MustGet("serverConfigureapi").Execute(bufC, op))
+			require.NoError(t, opts.templates.MustGet("serverConfigureapi").Execute(bufC, op))
 
 			_, err = appGen.GenOpts.LanguageOpts.FormatContent("configure_api.go", bufC.Bytes())
 			require.NoErrorf(t, err, bufC.String())
+
 			for _, line := range fixture.Expected["configure"] {
 				assertInCode(t, line, bufC.String())
 			}
@@ -1774,7 +1759,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 
 			for i := range op.Operations {
 				bufO := bytes.NewBuffer(nil)
-				require.NoError(t, templates.MustGet("serverOperation").Execute(bufO, op.Operations[i]))
+				require.NoError(t, opts.templates.MustGet("serverOperation").Execute(bufO, op.Operations[i]))
 
 				_, erf := appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[i].Name+".go", bufO.Bytes())
 				require.NoErrorf(t, erf, bufO.String())

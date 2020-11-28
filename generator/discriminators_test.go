@@ -34,7 +34,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 	assert.True(t, genModel.HasBaseType)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("has_discriminator.go", buf.Bytes())
@@ -65,7 +65,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		assert.Equal(t, k, genModel.DiscriminatorValue)
 
 		buf := bytes.NewBuffer(nil)
-		err = templates.MustGet("model").Execute(buf, genModel)
+		err = opts.templates.MustGet("model").Execute(buf, genModel)
 		require.NoError(t, err)
 
 		b, err := opts.LanguageOpts.FormatContent("discriminated.go", buf.Bytes())
@@ -117,7 +117,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 	assert.Equal(t, "Dog", genModel.Discriminates["Dog"])
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("with_discriminator.go", buf.Bytes())
@@ -154,7 +154,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 	require.True(t, genModel.HasBaseType)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("has_discriminator.go", buf.Bytes())
@@ -174,6 +174,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 	require.True(t, ok)
 
+	opts := opts()
 	bldr := codeGenOpBuilder{
 		Name:          "modelOp",
 		Method:        method,
@@ -188,7 +189,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 		Authed:        false,
 		DefaultScheme: "http",
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       opts(),
+		GenOpts:       opts,
 	}
 
 	genOp, err := bldr.MakeOperation()
@@ -196,7 +197,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 
 	assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
-	err = templates.MustGet("clientResponse").Execute(&buf, genOp)
+	err = opts.templates.MustGet("clientResponse").Execute(&buf, genOp)
 	require.NoError(t, err)
 
 	res := buf.String()
@@ -212,6 +213,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 	require.True(t, ok)
 
+	opts := opts()
 	bldr := codeGenOpBuilder{
 		Name:          "modelOp",
 		Method:        method,
@@ -226,14 +228,14 @@ func TestGenerateServer_Parameters(t *testing.T) {
 		Authed:        false,
 		DefaultScheme: "http",
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       opts(),
+		GenOpts:       opts,
 	}
 	genOp, err := bldr.MakeOperation()
 	require.NoError(t, err)
 
 	assert.True(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
-	err = templates.MustGet("serverParameter").Execute(&buf, genOp)
+	err = opts.templates.MustGet("serverParameter").Execute(&buf, genOp)
 	require.NoErrorf(t, err, buf.String())
 
 	res := buf.String()
@@ -255,7 +257,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 	require.True(t, genModel.IsSubType)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("has_discriminator.go", buf.Bytes())
@@ -286,7 +288,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 	}
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("repository.go", buf.Bytes())
@@ -309,7 +311,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("webhook_subscription.go", buf.Bytes())
@@ -333,7 +335,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 	require.Equal(t, "map[string]Base", genModel.Properties[0].GoType)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("ifacedmap.go", buf.Bytes())
@@ -356,7 +358,7 @@ func TestGenerateModel_Issue541(t *testing.T) {
 	require.NotEmpty(t, genModel.AllOf)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
@@ -380,7 +382,7 @@ func TestGenerateModel_Issue436(t *testing.T) {
 	require.NotEmpty(t, genModel.AllOf)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("lion.go", buf.Bytes())
@@ -407,7 +409,7 @@ func TestGenerateModel_Issue740(t *testing.T) {
 	require.NotEmpty(t, genModel.AllOf)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("bar.go", buf.Bytes())
@@ -431,7 +433,7 @@ func TestGenerateModel_Issue743(t *testing.T) {
 	require.NotEmpty(t, genModel.AllOf)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
+	err = opts.templates.MustGet("model").Execute(buf, genModel)
 	require.NoError(t, err)
 
 	b, err := opts.LanguageOpts.FormatContent("awol.go", buf.Bytes())

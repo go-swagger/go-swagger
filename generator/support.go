@@ -229,7 +229,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		baseImport,
 		a.GenOpts.LanguageOpts.ManglePackagePath(a.OperationsPackage, defaultOperationsTarget))
 
-	log.Println("planning definitions")
+	log.Printf("planning definitions (found: %d)", len(a.Models))
 
 	genModels := make(GenDefinitions, 0, len(a.Models))
 	for mn, m := range a.Models {
@@ -258,7 +258,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(genModels)
 
-	log.Println("planning operations")
+	log.Printf("planning operations (found: %d)", len(a.Operations))
 
 	genOps := make(GenOperations, 0, len(a.Operations))
 	for operationName, opp := range a.Operations {
@@ -326,15 +326,16 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(genOps)
 
-	log.Println("grouping operations into packages")
-
 	opsGroupedByPackage := make(map[string]GenOperations, len(genOps))
 	for _, operation := range genOps {
 		opsGroupedByPackage[operation.PackageAlias] = append(opsGroupedByPackage[operation.PackageAlias], operation)
 	}
 
+	log.Printf("grouping operations into packages (packages: %d)", len(opsGroupedByPackage))
+
 	opGroups := make(GenOperationGroups, 0, len(opsGroupedByPackage))
 	for k, v := range opsGroupedByPackage {
+		log.Printf("operations for package packages %q (found: %d)", k, len(v))
 		sort.Sort(v)
 		// trim duplicate extra schemas within the same package
 		vv := make(GenOperations, 0, len(v))
