@@ -225,3 +225,9 @@
 - dir: fixtures/bugs/2330
   skipped:
     skipModel: true
+- spec: fixture-2258.yaml
+  dir: fixtures/bugs/2258
+- spec: fixture-2137.yaml
+  dir: fixtures/bugs/2137
+  skipped:
+    skipModel: true
