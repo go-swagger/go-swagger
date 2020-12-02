@@ -16,7 +16,6 @@ package generator
 
 import (
 	"errors"
-
 	"github.com/go-openapi/swag"
 )
 
