@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 	"text/template/parse"
@@ -85,7 +86,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"stringContains":   strings.Contains,
 		"imports":          lang.imports,
 		"dict":             dict,
-		"escapeTagValue":   escapeTagValue,
+		"quoteTagValue":   quoteTagValue,
 	})
 }
 
@@ -582,11 +583,9 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
-func escapeTagValue(value string) string {
+func quoteTagValue(value string) string {
 	if strings.Contains(value, "`") {
-		panic("Example value contains backtick: " + value)
+		panic(fmt.Sprintf("Tag value contains backtick and conflicts with Go struct tags: %#v", value))
 	}
-	value = strings.ReplaceAll(value, "\"", "\\\"")
-	value = strings.ReplaceAll(value, "\n", "\\n")
-	return value
+	return strconv.Quote(value)
 }
