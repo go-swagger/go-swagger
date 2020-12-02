@@ -85,6 +85,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"stringContains":   strings.Contains,
 		"imports":          lang.imports,
 		"dict":             dict,
+		"escapeTagValue":   escapeTagValue,
 	})
 }
 
@@ -579,4 +580,13 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 		dict[key] = values[i+1]
 	}
 	return dict, nil
+}
+
+func escapeTagValue(value string) string {
+	if strings.Contains(value, "`") {
+		panic("Example value contains backtick: " + value)
+	}
+	value = strings.ReplaceAll(value, "\"", "\\\"")
+	value = strings.ReplaceAll(value, "\n", "\\n")
+	return value
 }

@@ -12,7 +12,7 @@
     {{- template "structTag" dict "Tag" "json" "Schema" $prop }}
   {{- end }}
   {{- if .XMLName }} xml:"{{ .XMLName }}"{{ end }}
-  {{- if .Example }} example:"{{ .Example }}"{{ end }}
+  {{- if .Example }} example:"{{ escapeTagValue .Example }}"{{ end }}
   {{- if .CustomTag }} {{ .CustomTag }}{{ end }}`
 {{ end }}
 
