@@ -85,6 +85,9 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"stringContains":   strings.Contains,
 		"imports":          lang.imports,
 		"dict":             dict,
+		"escapeBackticks": func(arg string) string {
+			return strings.ReplaceAll(arg, "`", "`+\"`\"+`")
+		},
 	})
 }
 
