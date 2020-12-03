@@ -96,6 +96,89 @@ type GenSchema struct {
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 }
 
+func contains(haystack []string, needle string) bool {
+	for _, item := range haystack {
+		if item == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *GenSchema) renderMarshalTag() string {
+	if g.HasBaseType {
+		return "-"
+	}
+
+	result := g.OriginalName
+
+	if !g.Required && g.IsEmptyOmitted {
+		result += ",omitempty"
+	}
+
+	if g.IsJSONString {
+		result += ",string"
+	}
+
+	return result
+}
+
+func (g *GenSchema) PrintTags() string {
+	tags := make(map[string]string)
+
+	tags["json"] = g.renderMarshalTag()
+
+	if len(g.XMLName) > 0 {
+		tags["xml"] = g.XMLName
+	}
+
+	if len(g.CustomTag) > 0 {
+		tags[g.CustomTag] = g.CustomTag
+	}
+
+	// Only add example tag if it's contained in the struct tags.
+	if len(g.Example) > 0 && contains(g.StructTags, "example") {
+		tags["example"] = g.Example
+	}
+
+	// Add extra struct tags, only if the tag hasn't already been set, i.e. example.
+	// Extra struct tags have the same value has the `json` tag.
+	for _, tag := range g.StructTags {
+		// TODO: example handling is not very clean
+		if _, exists := tags[tag]; !exists && tag != "example" {
+			tags[tag] = tags["json"]
+		}
+	}
+
+	// TODO: sort keys to always render deterministically?
+
+	// Assemble the tags in key value pairs with the value properly quoted.
+	kvPairs := make([]string, 0, len(tags))
+	for key, value := range tags {
+		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(value)))
+	}
+
+	// Join the key value pairs by a space.
+	completeTag := strings.Join(kvPairs, " ")
+
+	// If the values contain a backtick, we cannot render the tag using backticks because Go does not support
+	// escaping backticks in raw string literals.
+	valuesHaveBacktick := false
+	for _, value := range tags {
+		if strings.Contains(value, "`") {
+			valuesHaveBacktick = true
+			break
+		}
+	}
+
+	if !valuesHaveBacktick {
+		return fmt.Sprintf("`%s`", completeTag)
+	} else {
+		// We have to escape the tag again to put it in a literal with double quotes as the tag format uses double quotes.
+		return strconv.Quote(completeTag)
+	}
+}
+
 func (g GenSchemaList) Len() int      { return len(g) }
 func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
 func (g GenSchemaList) Less(i, j int) bool {
