@@ -125,20 +125,25 @@ func (g *GenSchema) renderMarshalTag() string {
 
 func (g *GenSchema) PrintTags() string {
 	tags := make(map[string]string)
+	orderedTags := make([]string, 0, 2)
 
 	tags["json"] = g.renderMarshalTag()
+	orderedTags = append(orderedTags, "json")
 
 	if len(g.XMLName) > 0 {
 		tags["xml"] = g.XMLName
+		orderedTags = append(orderedTags, "xml")
 	}
 
 	if len(g.CustomTag) > 0 {
 		tags[g.CustomTag] = g.CustomTag
+		orderedTags = append(orderedTags, g.CustomTag)
 	}
 
 	// Only add example tag if it's contained in the struct tags.
 	if len(g.Example) > 0 && contains(g.StructTags, "example") {
 		tags["example"] = g.Example
+		orderedTags = append(orderedTags, "example")
 	}
 
 	// Add extra struct tags, only if the tag hasn't already been set, i.e. example.
@@ -147,15 +152,14 @@ func (g *GenSchema) PrintTags() string {
 		// TODO: example handling is not very clean
 		if _, exists := tags[tag]; !exists && tag != "example" {
 			tags[tag] = tags["json"]
+			orderedTags = append(orderedTags, tag)
 		}
 	}
 
-	// TODO: sort keys to always render deterministically?
-
 	// Assemble the tags in key value pairs with the value properly quoted.
 	kvPairs := make([]string, 0, len(tags))
-	for key, value := range tags {
-		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(value)))
+	for _, key := range orderedTags {
+		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(tags[key])))
 	}
 
 	// Join the key value pairs by a space.
