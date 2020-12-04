@@ -22,7 +22,7 @@
   }
   {{ end }}
   {{ if .Pattern }}
-  if err := validate.Pattern({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), `{{.Pattern }}`); err != nil {
+  if err := validate.Pattern({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, string({{ if .IsNullable }}*{{ end }}{{.ValueExpression }}), `{{ escapeBackticks .Pattern }}`); err != nil {
     return err
   }
   {{ end }}
