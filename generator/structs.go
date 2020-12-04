@@ -127,11 +127,6 @@ func (g *GenSchema) PrintTags() string {
 		orderedTags = append(orderedTags, "xml")
 	}
 
-	if len(g.CustomTag) > 0 {
-		tags[g.CustomTag] = g.CustomTag
-		orderedTags = append(orderedTags, g.CustomTag)
-	}
-
 	// Only add example tag if it's contained in the struct tags.
 	if len(g.Example) > 0 && swag.ContainsStrings(g.StructTags, "example") {
 		tags["example"] = g.Example
@@ -149,9 +144,13 @@ func (g *GenSchema) PrintTags() string {
 	}
 
 	// Assemble the tags in key value pairs with the value properly quoted.
-	kvPairs := make([]string, 0, len(tags))
+	kvPairs := make([]string, 0, len(tags) + 1)
 	for _, key := range orderedTags {
 		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(tags[key])))
+	}
+
+	if len(g.CustomTag) > 0 {
+		kvPairs = append(kvPairs, g.CustomTag)
 	}
 
 	// Join the key value pairs by a space.
