@@ -204,6 +204,23 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 // Min Items: 30
 // Unique: true
 `+"SomeName string `json:\"some name\" example:\"some example\\\"\" db:\"some name\" mytag:\"foobar,foobaz\"`\n")
+
+	gmp.Example = "some example``"
+	tt.assertRender(&gmp, `// The title of the property
+//
+// The description of the property
+// Example: some example` + "``" + `
+// Required: true
+// Read Only: true
+// Maximum: < 10
+// Minimum: > 10
+// Max Length: 20
+// Min Length: 20
+// Pattern: \w[\w- ]+
+// Max Items: 30
+// Min Items: 30
+// Unique: true
+`+"SomeName string \"json:\\\"some name\\\" example:\\\"some example``\\\" db:\\\"some name\\\" mytag:\\\"foobar,foobaz\\\"\"\n")
 }
 
 var schTypeGenDataSimple = []struct {
