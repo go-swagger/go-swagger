@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 )
 
 // GenCommon contains common properties needed across
@@ -96,15 +97,6 @@ type GenSchema struct {
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 }
 
-func contains(haystack []string, needle string) bool {
-	for _, item := range haystack {
-		if item == needle {
-			return true
-		}
-	}
-	return false
-}
-
 func (g *GenSchema) renderMarshalTag() string {
 	if g.HasBaseType {
 		return "-"
@@ -141,7 +133,7 @@ func (g *GenSchema) PrintTags() string {
 	}
 
 	// Only add example tag if it's contained in the struct tags.
-	if len(g.Example) > 0 && contains(g.StructTags, "example") {
+	if len(g.Example) > 0 && swag.ContainsStrings(g.StructTags, "example") {
 		tags["example"] = g.Example
 		orderedTags = append(orderedTags, "example")
 	}
