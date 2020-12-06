@@ -2,9 +2,6 @@ package generator
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"log"
-	"os"
 	"strconv"
 	"testing"
 
@@ -328,10 +325,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 }
 
 func TestShortCircuitResolveExternal(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	for i, toPin := range makeResolveExternalTypes() {
 		fixture := toPin
@@ -354,6 +348,7 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			extType, ok := hasExternalType(schema.Extensions)
 			require.Truef(t, ok, "fixture %d", i)
 			require.NotNil(t, extType)
+			//require.EqualValues(t, fixture.expected, extType) // TODO(fred)
 
 			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
 			require.EqualValuesf(t, fixture.knownDefs, struct{ tpe, pkg, alias string }{tpe, pkg, alias}, "fixture %d", i)

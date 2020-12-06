@@ -443,21 +443,22 @@ func TestGenerateModel_Issue303(t *testing.T) {
 		assert.Equal(t, name, genModel.Name)
 		assert.Equal(t, name, genModel.GoType)
 		assert.True(t, genModel.IsEnumCI)
+
 		extension := genModel.Extensions["x-go-enum-ci"]
-		assert.NotNil(t, extension)
+		require.NotNil(t, extension)
+
 		xGoEnumCI, ok := extension.(bool)
 		assert.True(t, ok)
 		assert.True(t, xGoEnumCI)
 
 		buf := bytes.NewBuffer(nil)
-		err = tt.template.Execute(buf, genModel)
-		require.NoError(t, err)
+		require.NoError(t, tt.template.Execute(buf, genModel))
 
 		ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_definition.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())
 
 		res := string(ff)
-		assertInCode(t, `		if err := validate.EnumCase(path, location, value, vegetableEnum, false); err != nil {`, res)
+		assertInCode(t, `if err := validate.EnumCase(path, location, value, vegetableEnum, false); err != nil {`, res)
 	}
 }
 

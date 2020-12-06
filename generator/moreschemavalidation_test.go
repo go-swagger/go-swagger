@@ -41,6 +41,49 @@ type modelExpectations struct {
 	ExpectFailure    bool
 }
 
+func (m modelExpectations) ExpectLogs() bool {
+	// does this test case assert output?
+	return len(m.ExpectedLogs) > 0 || len(m.NotExpectedLogs) > 0
+}
+
+func (m modelExpectations) AssertModelLogs(t testing.TB, msg, definitionName, fixtureSpec string) {
+	// assert logged output
+	for line, logLine := range m.ExpectedLogs {
+		if !assertInCode(t, strings.TrimSpace(logLine), msg) {
+			t.Logf("log expected did not match for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
+		}
+	}
+
+	for line, logLine := range m.NotExpectedLogs {
+		if !assertNotInCode(t, strings.TrimSpace(logLine), msg) {
+			t.Logf("log unexpectedly matched for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
+		}
+	}
+
+	if t.Failed() {
+		t.FailNow()
+	}
+}
+
+func (m modelExpectations) AssertModelCodegen(t testing.TB, msg, definitionName, fixtureSpec string) {
+	// assert generated code
+	for line, codeLine := range m.ExpectedLines {
+		if !assertInCode(t, strings.TrimSpace(codeLine), msg) {
+			t.Logf("code expected did not match for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
+		}
+	}
+
+	for line, codeLine := range m.NotExpectedLines {
+		if !assertNotInCode(t, strings.TrimSpace(codeLine), msg) {
+			t.Logf("code unexpectedly matched for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
+		}
+	}
+
+	if t.Failed() {
+		t.FailNow()
+	}
+}
+
 // modelTestRun is a test structure to configure generations options to test a spec
 type modelTestRun struct {
 	FixtureOpts *GenOpts
@@ -57,6 +100,7 @@ func (r *modelTestRun) AddExpectations(file string, expectedCode, notExpectedCod
 		def.NotExpectedLogs = append(def.NotExpectedLogs, notExpectedLogs...)
 		return
 	}
+
 	r.Definitions[k] = &modelExpectations{
 		GeneratedFile:    file,
 		ExpectedLines:    expectedCode,
@@ -143,7 +187,7 @@ func newModelFixture(specFile string, description string) *modelFixture {
 // all tested specs: init at the end of this source file
 // you may append to those with different initXXX() funcs below.
 var (
-	modelTestMutex = &sync.Mutex{}
+	modelTestMutex = &sync.Mutex{} // mutex to protect log capture
 	testedModels   []*modelFixture
 
 	// convenient vars for (not) matching some lines
@@ -318,221 +362,111 @@ func TestMoreModelValidations(t *testing.T) {
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
-	continueOnErrors := false
+
 	initModelFixtures()
 
-	dassert := assert.New(t)
-
 	t.Logf("INFO: model specs tested: %d", len(testedModels))
-	for _, fixt := range testedModels {
-		fixture := fixt
+	for _, toPin := range testedModels {
+		fixture := toPin
 		if fixture.SpecFile == "" {
 			continue
 		}
 		fixtureSpec := fixture.SpecFile
 		runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
+
 		t.Run(runTitle, func(t *testing.T) {
-			// gave up with parallel testing: when $ref analysis is involved, it is not possible to to parallelize
-			//t.Parallel()
+			t.Parallel()
 			log.SetOutput(ioutil.Discard)
+
 			for _, fixtureRun := range fixture.Runs {
-				// workaround race condition with underlying pkg: go-openapi/spec works with a global cache
-				// which does not support concurrent use for different specs.
-				//modelTestMutex.Lock()
 				opts := fixtureRun.FixtureOpts
 				opts.Spec = fixtureSpec
 				// this is the expanded or flattened spec
-				newSpecDoc, er0 := opts.validateAndFlattenSpec()
-				if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
-					//modelTestMutex.Unlock()
-					t.FailNow()
-					return
-				}
-				//modelTestMutex.Unlock()
+				newSpecDoc, err := opts.validateAndFlattenSpec()
+				require.NoErrorf(t, err, "could not expand/flatten fixture %s: %v", fixtureSpec, err)
+
 				definitions := newSpecDoc.Spec().Definitions
 				for k, fixtureExpectations := range fixtureRun.Definitions {
 					// pick definition to test
-					var schema *spec.Schema
-					var definitionName string
-					for def, s := range definitions {
-						// please do not inject fixtures with case conflicts on defs...
-						// this one is just easier to retrieve model back from file names when capturing
-						// the generated code.
-						mangled := swag.ToJSONName(def)
-						if strings.EqualFold(mangled, k) {
-							schema = &s
-							definitionName = def
-							break
-						}
-					}
-					if !dassert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
-						//modelTestMutex.Unlock()
-						t.FailNow()
-						return
-					}
-					checkDefinitionCodegen(t, definitionName, fixtureSpec, schema, newSpecDoc, opts, fixtureExpectations, continueOnErrors)
+					definitionName, schema := findTestDefinition(k, definitions)
+					require.NotNilf(t, schema, "expected to find definition %q in model fixture %s", k, fixtureSpec)
+
+					checkDefinitionCodegen(t, definitionName, fixtureSpec, schema, newSpecDoc, opts, fixtureExpectations)
 				}
 			}
 		})
 	}
 }
 
-func checkContinue(t *testing.T, continueOnErrors bool) {
-	if continueOnErrors {
-		t.Fail()
-	} else {
-		t.FailNow()
+func findTestDefinition(k string, definitions spec.Definitions) (string, *spec.Schema) {
+	var (
+		schema         *spec.Schema
+		definitionName string
+	)
+
+	for def, s := range definitions {
+		// please do not inject fixtures with case conflicts on defs...
+		// this one is just easier to retrieve model back from file names when capturing
+		// the generated code.
+		mangled := swag.ToJSONName(def)
+		if strings.EqualFold(mangled, k) {
+			definition := s
+			schema = &definition
+			definitionName = def
+			break
+		}
 	}
+	return definitionName, schema
 }
 
-func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations, continueOnErrors bool) {
+func checkDefinitionCodegen(t testing.TB, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations) {
 	// prepare assertions on log output (e.g. generation warnings)
 	var logCapture bytes.Buffer
 	var msg string
-	dassert := assert.New(t)
-	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+
+	if fixtureExpectations.ExpectLogs() {
 		// lock when capturing shared log resource (hopefully not for all testcases)
 		modelTestMutex.Lock()
 		log.SetOutput(&logCapture)
+
+		defer func() {
+			log.SetOutput(ioutil.Discard)
+			modelTestMutex.Unlock()
+		}()
 	}
 
 	// generate the schema for this definition
-	genModel, er1 := makeGenDefinition(definitionName, "models", *schema, specDoc, opts)
-	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
+	genModel, err := makeGenDefinition(definitionName, "models", *schema, specDoc, opts)
+	if fixtureExpectations.ExpectLogs() {
 		msg = logCapture.String()
-		log.SetOutput(ioutil.Discard)
-		modelTestMutex.Unlock()
 	}
 
-	if fixtureExpectations.ExpectFailure && !dassert.Errorf(er1, "Expected an error during generation of definition %q from spec fixture %s", definitionName, fixtureSpec) {
+	if fixtureExpectations.ExpectFailure {
 		// expected an error here, and it has not happened
-		checkContinue(t, continueOnErrors)
-		return
+		require.Errorf(t, err, "Expected an error during generation of definition %q from spec fixture %s", definitionName, fixtureSpec)
 	}
-	if !dassert.NoErrorf(er1, "could not generate model definition %q from spec fixture %s: %v", definitionName, fixtureSpec, er1) {
-		// expected smooth generation
-		checkContinue(t, continueOnErrors)
-		return
-	}
-	if len(fixtureExpectations.ExpectedLogs) > 0 || len(fixtureExpectations.NotExpectedLogs) > 0 {
-		// assert logged output
-		for line, logLine := range fixtureExpectations.ExpectedLogs {
-			if !assertInCode(t, strings.TrimSpace(logLine), msg) {
-				t.Logf("log expected did not match for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
-			}
-		}
-		for line, logLine := range fixtureExpectations.NotExpectedLogs {
-			if !assertNotInCode(t, strings.TrimSpace(logLine), msg) {
-				t.Logf("log unexpectedly matched for definition %q in fixture %s at (fixture) log line %d", definitionName, fixtureSpec, line)
-			}
-		}
-		if t.Failed() && !continueOnErrors {
-			t.FailNow()
-			return
-		}
+
+	// expected smooth generation
+	require.NoErrorf(t, err, "could not generate model definition %q from spec fixture %s: %v", definitionName, fixtureSpec, err)
+
+	if fixtureExpectations.ExpectLogs() {
+		fixtureExpectations.AssertModelLogs(t, msg, definitionName, fixtureSpec)
 	}
 
 	// execute the model template with this schema
 	buf := bytes.NewBuffer(nil)
-	er2 := templates.MustGet("model").Execute(buf, genModel)
-	if !dassert.NoErrorf(er2, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, er2) {
-		checkContinue(t, continueOnErrors)
-		return
-	}
+	err = templates.MustGet("model").Execute(buf, genModel)
+	require.NoErrorf(t, err, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, err)
+
 	outputName := fixtureExpectations.GeneratedFile
 	if outputName == "" {
 		outputName = swag.ToFileName(definitionName) + ".go"
 	}
 
 	// run goimport, gofmt on the generated code
-	formatted, er3 := opts.LanguageOpts.FormatContent(outputName, buf.Bytes())
-	if !dassert.NoErrorf(er3, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, er2) {
-		checkContinue(t, continueOnErrors)
-		return
-	}
+	formatted, err := opts.LanguageOpts.FormatContent(outputName, buf.Bytes())
+	require.NoErrorf(t, err, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, err)
 
-	// asserts generated code (see fixture file)
-	res := string(formatted)
-	for line, codeLine := range fixtureExpectations.ExpectedLines {
-		if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-			t.Logf("code expected did not match for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
-		}
-	}
-	for line, codeLine := range fixtureExpectations.NotExpectedLines {
-		if !assertNotInCode(t, strings.TrimSpace(codeLine), res) {
-			t.Logf("code unexpectedly matched for definition %q in fixture %s at (fixture) line %d", definitionName, fixtureSpec, line)
-		}
-	}
-	if t.Failed() && !continueOnErrors {
-		t.FailNow()
-		return
-	}
+	// assert generated code (see fixture file)
+	fixtureExpectations.AssertModelCodegen(t, string(formatted), definitionName, fixtureSpec)
 }
-
-/*
-// Gave up with parallel testing
-// TestModelRace verifies how much of the load/expand/flatten process may be parallelized:
-// by placing proper locks, global cache pollution in go-openapi/spec may be avoided.
-func TestModelRace(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-	initModelFixtures()
-
-	dassert := assert.New(t)
-
-	for i := 0; i < 10; i++ {
-		t.Logf("Iteration: %d", i)
-
-		for _, fixt := range testedModels {
-			fixture := fixt
-			if fixture.SpecFile == "" {
-				continue
-			}
-			fixtureSpec := fixture.SpecFile
-			runTitle := strings.Join([]string{"codegen", strings.TrimSuffix(path.Base(fixtureSpec), path.Ext(fixtureSpec))}, "-")
-			t.Run(runTitle, func(t *testing.T) {
-				t.Parallel()
-				log.SetOutput(ioutil.Discard)
-				for _, fixtureRun := range fixture.Runs {
-
-					// loads defines the start of the critical section because it comes with the global cache initialized
-					// TODO: should make this cache more manageable in go-openapi/spec
-					modelTestMutex.Lock()
-					specDoc, err := loads.Spec(fixtureSpec)
-					if !dassert.NoErrorf(err, "unexpected failure loading spec %s: %v", fixtureSpec, err) {
-						modelTestMutex.Unlock()
-						t.FailNow()
-						return
-					}
-					opts := fixtureRun.FixtureOpts
-					// this is the expanded or flattened spec
-					newSpecDoc, er0 := validateAndFlattenSpec(opts, specDoc)
-					if !dassert.NoErrorf(er0, "could not expand/flatten fixture %s: %v", fixtureSpec, er0) {
-						modelTestMutex.Unlock()
-						t.FailNow()
-						return
-					}
-					modelTestMutex.Unlock()
-					definitions := newSpecDoc.Spec().Definitions
-					for k := range fixtureRun.Definitions {
-						// pick definition to test
-						var schema *spec.Schema
-						for def, s := range definitions {
-							if strings.EqualFold(def, k) {
-								schema = &s
-								break
-							}
-						}
-						if !dassert.NotNil(schema, "expected to find definition %q in model fixture %s", k, fixtureSpec) {
-							t.FailNow()
-							return
-						}
-					}
-				}
-			})
-		}
-	}
-}
-*/

@@ -54,7 +54,8 @@ func testClientGenOpts() *GenOpts {
 }
 
 func Test_GenerateClient(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	t.Parallel()
+	defer discardOutput()()
 
 	// exercise safeguards
 	err := GenerateClient("test", []string{"model1"}, []string{"op1", "op2"}, nil)
@@ -147,7 +148,8 @@ func assertImports(t testing.TB, baseImport, code string) {
 }
 
 func TestClient(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	t.Parallel()
+	defer discardOutput()()
 
 	base := os.Getenv("GOPATH")
 	if base == "" {
@@ -273,45 +275,49 @@ func TestClient(t *testing.T) {
 		},
 	}
 
-	for i, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			opts := testClientGenOpts()
-			opts.Spec = basicFixture
-			opts.Target = filepath.Join(targetdir, opts.LanguageOpts.ManglePackageName(tt.name, "client_test"+strconv.Itoa(i)))
-			err := os.MkdirAll(opts.Target, 0755)
-			require.NoError(t, err)
-
-			if tt.spec == "" {
+	t.Run("generate client", func(t *testing.T) {
+		for idx, toPin := range tests {
+			tt := toPin
+			i := idx
+			t.Run(tt.name, func(t *testing.T) {
+				t.Parallel()
+				opts := testClientGenOpts()
 				opts.Spec = basicFixture
-			} else {
-				opts.Spec = tt.spec
-			}
-			opts.Template = tt.template
+				opts.Target = filepath.Join(targetdir, opts.LanguageOpts.ManglePackageName(tt.name, "client_test"+strconv.Itoa(i)))
+				err := os.MkdirAll(opts.Target, 0755)
+				require.NoError(t, err)
 
-			if tt.prepare != nil {
-				tt.prepare(opts)
-			}
+				if tt.spec == "" {
+					opts.Spec = basicFixture
+				} else {
+					opts.Spec = tt.spec
+				}
+				opts.Template = tt.template
 
-			err = GenerateClient("foo", nil, nil, opts)
-			if tt.wantError {
-				require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
-			} else {
-				require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
-			}
+				if tt.prepare != nil {
+					tt.prepare(opts)
+				}
 
-			if tt.verify != nil {
-				tt.verify(t, opts.Target)
-			}
-		})
-	}
+				err = GenerateClient("foo", nil, nil, opts)
+				if tt.wantError {
+					require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
+				} else {
+					require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
+				}
+
+				if tt.verify != nil {
+					tt.verify(t, opts.Target)
+				}
+			})
+		}
+	})
 }
 
 func TestGenClient_1518(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
 	// test client response handling when unexpected success response kicks in
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
 
 	opts := testClientGenOpts()
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "1518", "fixture-1518.yaml")
@@ -321,13 +327,11 @@ func TestGenClient_1518(t *testing.T) {
 	opts.Target = tft
 
 	defer func() {
-		_ = os.RemoveAll(opts.Target)
+		_ = os.RemoveAll(tft)
 	}()
 
 	err := GenerateClient("client", []string{}, []string{}, opts)
-	if !assert.NoError(t, err) {
-		t.FailNow()
-	}
+	require.NoError(t, err)
 
 	fixtureConfig := map[string][]string{
 		"client/operations/operations_client.go": { // generated file
@@ -365,6 +369,7 @@ func TestGenClient_1518(t *testing.T) {
 	for fileToInspect, expectedCode := range fixtureConfig {
 		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
+
 		for line, codeLine := range expectedCode {
 			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
 				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])

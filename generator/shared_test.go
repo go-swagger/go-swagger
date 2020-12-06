@@ -131,7 +131,7 @@ func TestShared_CheckOpts(t *testing.T) {
 
 func TestShared_EnsureDefaults(t *testing.T) {
 	opts := &GenOpts{}
-	_ = opts.EnsureDefaults()
+	require.NoError(t, opts.EnsureDefaults())
 	assert.True(t, opts.defaultsEnsured)
 	opts.DefaultConsumes = "https"
 	_ = opts.EnsureDefaults()
@@ -276,7 +276,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	opts := GenOpts{}
+	opts := testGenOpts()
 	tplOpts := TemplateOpts{
 		Name:       "NotFound",
 		Source:     "asset:notfound",
@@ -287,8 +287,8 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 	}
 
 	buf, err := opts.render(&tplOpts, nil)
-	assert.Error(t, err, "Error should be handled here")
-	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+	require.Errorf(t, err, "Error should be handled here")
+	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 
 // Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
@@ -300,7 +300,8 @@ func TestShared_GarbledTemplate(t *testing.T) {
 	garbled := "func x {{;;; garbled"
 
 	_ = templates.AddFile("garbled", garbled)
-	opts := GenOpts{}
+	opts := testGenOpts()
+
 	tplOpts := TemplateOpts{
 		Name:       "Garbled",
 		Source:     "asset:garbled",
@@ -311,8 +312,8 @@ func TestShared_GarbledTemplate(t *testing.T) {
 	}
 
 	buf, err := opts.render(&tplOpts, nil)
-	assert.Error(t, err, "Error should be handled here")
-	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+	require.Errorf(t, err, "Error should be handled here")
+	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 
 // Template execution failure
@@ -331,7 +332,8 @@ func TestShared_ExecTemplate(t *testing.T) {
 	execfailure1 := "func x {{ .NotInData }}"
 
 	_ = templates.AddFile("execfailure1", execfailure1)
-	opts := new(GenOpts)
+	opts := testGenOpts()
+
 	tplOpts := TemplateOpts{
 		Name:       "execFailure1",
 		Source:     "asset:execfailure1",
@@ -348,7 +350,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	execfailure2 := "func {{ .MyFaultyMethod }}"
 
 	_ = templates.AddFile("execfailure2", execfailure2)
-	opts = new(GenOpts)
+	opts = testGenOpts()
 	tplOpts2 := TemplateOpts{
 		Name:       "execFailure2",
 		Source:     "asset:execfailure2",
@@ -382,7 +384,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	Debug = true
 	_ = templates.AddFile("badformat", badFormat)
 
-	opts := GenOpts{}
+	opts := testGenOpts()
 	opts.LanguageOpts = GoLangOpts()
 	tplOpts := TemplateOpts{
 		Name:   "badformat",
@@ -400,17 +402,19 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	}
 
 	err := opts.write(&tplOpts, data)
+	defer func() {
+		_ = os.Remove(tplOpts.FileName)
+	}()
 
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(tplOpts.FileName)
 	assert.True(t, !os.IsNotExist(exists), "The template file has not been generated as expected")
-	_ = os.Remove(tplOpts.FileName)
 
-	assert.NotNil(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "source formatting on generated source")
 
 	// Skipping format
-	opts = GenOpts{}
+	opts = testGenOpts()
 	opts.LanguageOpts = GoLangOpts()
 	tplOpts2 := TemplateOpts{
 		Name:       "badformat2",
@@ -447,7 +451,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 
 	_ = templates.AddFile("gendir", content)
 
-	opts := GenOpts{}
+	opts := testGenOpts()
 	opts.LanguageOpts = GoLangOpts()
 	tplOpts := TemplateOpts{
 		Name:   "gendir",
@@ -480,7 +484,7 @@ func TestShared_LoadTemplate(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	opts := GenOpts{}
+	opts := testGenOpts()
 	tplOpts := TemplateOpts{
 		Name:       "File",
 		Source:     "File",

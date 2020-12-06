@@ -121,8 +121,7 @@ func TestBaseImport(t *testing.T) {
 
 		// Create Paths
 		for _, paths := range item.path {
-			err = os.MkdirAll(paths, 0700)
-			require.NoError(t, err)
+			require.NoError(t, os.MkdirAll(paths, 0700))
 		}
 
 		if item.symlinksrc == "" {
@@ -130,8 +129,7 @@ func TestBaseImport(t *testing.T) {
 		}
 
 		// Create Symlink
-		err := os.Symlink(item.symlinkdest, item.symlinksrc)
-		require.NoErrorf(t, err,
+		require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
 			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v\n%s",
 			item.symlinksrc, item.symlinkdest, err,
 			"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",

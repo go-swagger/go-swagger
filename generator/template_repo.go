@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"text/template"
 	"text/template/parse"
 	"unicode"
@@ -216,6 +217,31 @@ type Repository struct {
 	templates     map[string]*template.Template
 	funcs         template.FuncMap
 	allowOverride bool
+	mux           sync.Mutex
+}
+
+// ShallowClone a repository.
+//
+// Clones the maps of files and templates, so as to be able to use
+// the cloned repo concurrently.
+func (t *Repository) ShallowClone() *Repository {
+	clone := &Repository{
+		files:         make(map[string]string, len(t.files)),
+		templates:     make(map[string]*template.Template, len(t.templates)),
+		funcs:         t.funcs,
+		allowOverride: t.allowOverride,
+	}
+
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	for k, file := range t.files {
+		clone.files[k] = file
+	}
+	for k, tpl := range t.templates {
+		clone.templates[k] = tpl
+	}
+	return clone
 }
 
 // LoadDefaults will load the embedded templates

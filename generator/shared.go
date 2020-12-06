@@ -269,6 +269,8 @@ type GenOpts struct {
 	AllowEnumCI            bool
 	StrictResponders       bool
 	AcceptDefinitionsOnly  bool
+
+	templates *Repository // a shallow clone of the global template repository
 }
 
 // CheckOpts carries out some global consistency checks on options.
@@ -366,7 +368,7 @@ func (g *GenOpts) SpecPath() string {
 // PrincipalIsNullable indicates whether the principal type used for authentication
 // may be used as a pointer
 func (g *GenOpts) PrincipalIsNullable() bool {
-	log.Printf("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
+	debugLog("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
 	return g.Principal != iface && !g.PrincipalCustomIface
 }
 
@@ -375,6 +377,10 @@ func (g *GenOpts) EnsureDefaults() error {
 	if g.defaultsEnsured {
 		return nil
 	}
+
+	g.templates = templates.ShallowClone()
+
+	g.templates.LoadDefaults()
 
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = DefaultLanguageFunc()
@@ -491,7 +497,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	var templ *template.Template
 
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
-		tt, err := templates.Get(strings.TrimPrefix(t.Source, "asset:"))
+		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
 		if err != nil {
 			return nil, err
 		}
@@ -501,7 +507,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err := templates.Get(name)
+		tt, err := g.templates.Get(name)
 		if err == nil {
 			templ = tt
 		}
@@ -674,20 +680,18 @@ func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 }
 
 func (g *GenOpts) setTemplates() error {
-	templates.LoadDefaults()
-
 	if g.Template != "" {
 		// set contrib templates
-		if err := templates.LoadContrib(g.Template); err != nil {
+		if err := g.templates.LoadContrib(g.Template); err != nil {
 			return err
 		}
 	}
 
-	templates.SetAllowOverride(g.AllowTemplateOverride)
+	g.templates.SetAllowOverride(g.AllowTemplateOverride)
 
 	if g.TemplateDir != "" {
 		// set custom templates
-		if err := templates.LoadDir(g.TemplateDir); err != nil {
+		if err := g.templates.LoadDir(g.TemplateDir); err != nil {
 			return err
 		}
 	}
