@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag"
 )
 
 // GenCommon contains common properties needed across
@@ -94,6 +95,83 @@ type GenSchema struct {
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
+}
+
+func (g *GenSchema) renderMarshalTag() string {
+	if g.HasBaseType {
+		return "-"
+	}
+
+	result := g.OriginalName
+
+	if !g.Required && g.IsEmptyOmitted {
+		result += ",omitempty"
+	}
+
+	if g.IsJSONString {
+		result += ",string"
+	}
+
+	return result
+}
+
+func (g *GenSchema) PrintTags() string {
+	tags := make(map[string]string)
+	orderedTags := make([]string, 0, 2)
+
+	tags["json"] = g.renderMarshalTag()
+	orderedTags = append(orderedTags, "json")
+
+	if len(g.XMLName) > 0 {
+		tags["xml"] = g.XMLName
+		orderedTags = append(orderedTags, "xml")
+	}
+
+	// Only add example tag if it's contained in the struct tags.
+	if len(g.Example) > 0 && swag.ContainsStrings(g.StructTags, "example") {
+		tags["example"] = g.Example
+		orderedTags = append(orderedTags, "example")
+	}
+
+	// Add extra struct tags, only if the tag hasn't already been set, i.e. example.
+	// Extra struct tags have the same value has the `json` tag.
+	for _, tag := range g.StructTags {
+		// TODO: example handling is not very clean
+		if _, exists := tags[tag]; !exists && tag != "example" {
+			tags[tag] = tags["json"]
+			orderedTags = append(orderedTags, tag)
+		}
+	}
+
+	// Assemble the tags in key value pairs with the value properly quoted.
+	kvPairs := make([]string, 0, len(tags) + 1)
+	for _, key := range orderedTags {
+		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(tags[key])))
+	}
+
+	if len(g.CustomTag) > 0 {
+		kvPairs = append(kvPairs, g.CustomTag)
+	}
+
+	// Join the key value pairs by a space.
+	completeTag := strings.Join(kvPairs, " ")
+
+	// If the values contain a backtick, we cannot render the tag using backticks because Go does not support
+	// escaping backticks in raw string literals.
+	valuesHaveBacktick := false
+	for _, value := range tags {
+		if strings.Contains(value, "`") {
+			valuesHaveBacktick = true
+			break
+		}
+	}
+
+	if !valuesHaveBacktick {
+		return fmt.Sprintf("`%s`", completeTag)
+	} else {
+		// We have to escape the tag again to put it in a literal with double quotes as the tag format uses double quotes.
+		return strconv.Quote(completeTag)
+	}
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }
