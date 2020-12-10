@@ -1489,7 +1489,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				IsClient:          false,
 			},
 			Expected: map[string][]string{
-				"configure": []string{
+				"configure": {
 					`if api.ApikeyAuth == nil {`,
 					`api.ApikeyAuth = func(token string) (interface{}, error) {`,
 					`if api.BasicAuth == nil {`,
@@ -1499,7 +1499,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal interface{}) middleware.Responder {`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
 				},
-				"get": []string{
+				"get": {
 					`type GetHandlerFunc func(GetParams, interface{})  middleware.Responder`,
 					`func (fn GetHandlerFunc) Handle(params GetParams, principal interface{})  middleware.Responder  {`,
 					`return fn(params, principal)`,
@@ -1510,7 +1510,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`principal = uprinc.(interface{})`,
 					`res := o.Handler.Handle(Params, principal)`,
 				},
-				"post": []string{
+				"post": {
 					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
 					`return fn(params)`,
 					`type PostHandler interface {`,
@@ -1519,7 +1519,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				},
 			},
 			NotExpected: map[string][]string{
-				"post": []string{
+				"post": {
 					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
 					`principal = uprinc.(interface{})`,
 				},
@@ -1542,7 +1542,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				IsClient:          false,
 			},
 			Expected: map[string][]string{
-				"configure": []string{
+				"configure": {
 					`auth "github.com/example/security"`,
 					`if api.ApikeyAuth == nil {`,
 					`api.ApikeyAuth = func(token string) (*auth.Principal, error) {`,
@@ -1553,7 +1553,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal *auth.Principal) middleware.Responder {`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
 				},
-				"get": []string{
+				"get": {
 					`type GetHandlerFunc func(GetParams, *auth.Principal)  middleware.Responder`,
 					`func (fn GetHandlerFunc) Handle(params GetParams, principal *auth.Principal)  middleware.Responder  {`,
 					`return fn(params, principal)`,
@@ -1564,7 +1564,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`principal = uprinc.(*auth.Principal)`,
 					`res := o.Handler.Handle(Params, principal)`,
 				},
-				"post": []string{
+				"post": {
 					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
 					`return fn(params)`,
 					`type PostHandler interface {`,
@@ -1573,7 +1573,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				},
 			},
 			NotExpected: map[string][]string{
-				"post": []string{
+				"post": {
 					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
 					`principal = uprinc.(`,
 				},
@@ -1597,7 +1597,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				PrincipalCustomIface: true,
 			},
 			Expected: map[string][]string{
-				"configure": []string{
+				"configure": {
 					`auth "github.com/example/security"`,
 					`if api.ApikeyAuth == nil {`,
 					`api.ApikeyAuth = func(token string) (auth.PrincipalIface, error) {`,
@@ -1608,7 +1608,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal auth.PrincipalIface) middleware.Responder {`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
 				},
-				"get": []string{
+				"get": {
 					`type GetHandlerFunc func(GetParams, auth.PrincipalIface)  middleware.Responder`,
 					`func (fn GetHandlerFunc) Handle(params GetParams, principal auth.PrincipalIface)  middleware.Responder  {`,
 					`return fn(params, principal)`,
@@ -1619,7 +1619,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`principal = uprinc.(auth.PrincipalIface)`,
 					`res := o.Handler.Handle(Params, principal)`,
 				},
-				"post": []string{
+				"post": {
 					`type PostHandlerFunc func(PostParams)  middleware.Responder`,
 					`return fn(params)`,
 					`type PostHandler interface {`,
@@ -1628,7 +1628,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				},
 			},
 			NotExpected: map[string][]string{
-				"post": []string{
+				"post": {
 					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
 					`principal = uprinc.(`,
 				},
@@ -1652,7 +1652,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				Template:          "stratoscale",
 			},
 			Expected: map[string][]string{
-				"configure": []string{
+				"configure": {
 					`auth "github.com/example/security"`,
 					`AuthApikey func(token string) (*auth.Principal, error)`,
 					`AuthBasic func(user string, pass string) (*auth.Principal, error)`,
@@ -1700,7 +1700,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				Template:             "stratoscale",
 			},
 			Expected: map[string][]string{
-				"configure": []string{
+				"configure": {
 					`auth "github.com/example/security"`,
 					`AuthApikey func(token string) (auth.PrincipalIface, error)`,
 					`AuthBasic func(user string, pass string) (auth.PrincipalIface, error)`,

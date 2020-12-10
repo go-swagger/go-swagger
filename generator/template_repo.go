@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"text/template"
@@ -86,6 +89,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"stringContains":   strings.Contains,
 		"imports":          lang.imports,
 		"dict":             dict,
+		"isInteger":        isInteger,
 		"escapeBackticks": func(arg string) string {
 			return strings.ReplaceAll(arg, "`", "`+\"`\"+`")
 		},
@@ -102,6 +106,9 @@ func defaultAssets() map[string][]byte {
 		"schemavalidator.gotmpl":         MustAsset("templates/schemavalidator.gotmpl"),
 		"schemapolymorphic.gotmpl":       MustAsset("templates/schemapolymorphic.gotmpl"),
 		"schemaembedded.gotmpl":          MustAsset("templates/schemaembedded.gotmpl"),
+		"validation/minimum.gotmpl":      MustAsset("templates/validation/minimum.gotmpl"),
+		"validation/maximum.gotmpl":      MustAsset("templates/validation/maximum.gotmpl"),
+		"validation/multipleOf.gotmpl":   MustAsset("templates/validation/multipleOf.gotmpl"),
 
 		// schema serialization templates
 		"additionalpropertiesserializer.gotmpl": MustAsset("templates/serializers/additionalpropertiesserializer.gotmpl"),
@@ -176,6 +183,9 @@ func defaultProtectedTemplates() map[string]bool {
 		"validationStructfield":       true,
 		"withBaseTypeBody":            true,
 		"withoutBaseTypeBody":         true,
+		"validationMinimum":           true,
+		"validationMaximum":           true,
+		"validationMultipleOf":        true,
 
 		// all serializers TODO(fred)
 		"additionalPropertiesSerializer": true,
@@ -608,4 +618,34 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 		dict[key] = values[i+1]
 	}
 	return dict, nil
+}
+
+func isInteger(arg interface{}) bool {
+	// is integer determines if a value may be represented by an integer
+	switch val := arg.(type) {
+	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
+		return true
+	case *int8, *int16, *int32, *int, *int64, *uint8, *uint16, *uint32, *uint, *uint64:
+		v := reflect.ValueOf(arg)
+		return !v.IsNil()
+	case float64:
+		return math.Round(val) == val
+	case *float64:
+		return val != nil && math.Round(*val) == *val
+	case float32:
+		return math.Round(float64(val)) == float64(val)
+	case *float32:
+		return val != nil && math.Round(float64(*val)) == float64(*val)
+	case string:
+		_, err := strconv.ParseInt(val, 10, 64)
+		return err == nil
+	case *string:
+		if val == nil {
+			return false
+		}
+		_, err := strconv.ParseInt(*val, 10, 64)
+		return err == nil
+	default:
+		return false
+	}
 }

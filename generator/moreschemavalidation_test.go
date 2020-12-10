@@ -275,6 +275,9 @@ func initModelFixtures() {
 
 	// required aliased primitive
 	initFixture2400()
+
+	// numerical validations
+	initFixture2448()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

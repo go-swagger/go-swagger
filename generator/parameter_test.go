@@ -998,9 +998,9 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `for i, siFloatIV := range siFloatIC`, res)
 	assertInCode(t, `siFloatI, err := swag.ConvertFloat64(siFloatIV)`, res)
 	assertInCode(t, `return errors.InvalidType(fmt.Sprintf("%s.%v", "siFloat", i), "query", "float64", siFloatI)`, res)
-	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 3, true)`, res)
-	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 100, true); err != nil`, res)
-	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat", i), "query", float64(siFloatI), 1.5)`, res)
+	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", siFloatI, 3, true)`, res)
+	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", siFloatI, 100, true); err != nil`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat", i), "query", siFloatI, 1.5)`, res)
 	assertInCode(t, `siFloatIR = append(siFloatIR, siFloatI)`, res)
 	assertInCode(t, `o.SiFloat = siFloatIR`, res)
 	assertInCode(t, `siFloatSize := int64(len(o.SiFloat))`, res)
@@ -1021,9 +1021,9 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `var siFloat64IR []float64`, res)
 	assertInCode(t, `for i, siFloat64IV := range siFloat64IC`, res)
 	assertInCode(t, `siFloat64I, err := swag.ConvertFloat64(siFloat64IV)`, res)
-	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 3, true)`, res)
-	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 100, true)`, res)
-	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", float64(siFloat64I), 1.5)`, res)
+	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 3, true)`, res)
+	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 1.5)`, res)
 	assertInCode(t, `siFloat64IR = append(siFloat64IR, siFloat64I)`, res)
 	assertInCode(t, `o.SiFloat64 = siFloat64IR`, res)
 	assertInCode(t, `siFloat64Size := int64(len(o.SiFloat64))`, res)
@@ -1034,9 +1034,9 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `var siIntIR []int64`, res)
 	assertInCode(t, `for i, siIntIV := range siIntIC`, res)
 	assertInCode(t, `siIntI, err := swag.ConvertInt64(siIntIV)`, res)
-	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 8, true)`, res)
-	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", int64(siIntI), 100, true)`, res)
-	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt", i), "query", float64(siIntI), 2)`, res)
+	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 8, true)`, res)
+	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 2)`, res)
 	assertInCode(t, `siIntIR = append(siIntIR, siIntI)`, res)
 	assertInCode(t, `o.SiInt = siIntIR`, res)
 	assertInCode(t, `siIntSize := int64(len(o.SiInt))`, res)
@@ -1049,7 +1049,7 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `siInt32I, err := swag.ConvertInt32(siInt32IV)`, res)
 	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 8, true)`, res)
 	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 100, true)`, res)
-	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt32", i), "query", float64(siInt32I), 2)`, res)
+	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 2)`, res)
 	assertInCode(t, `siInt32IR = append(siInt32IR, siInt32I)`, res)
 	assertInCode(t, `o.SiInt32 = siInt32IR`, res)
 	assertInCode(t, `siFloat32Size := int64(len(o.SiFloat32))`, res)
@@ -1063,9 +1063,9 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `var siInt64IR []int64`, res)
 	assertInCode(t, `for i, siInt64IV := range siInt64IC`, res)
 	assertInCode(t, `siInt64I, err := swag.ConvertInt64(siInt64IV)`, res)
-	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 8, true)`, res)
-	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", int64(siInt64I), 100, true)`, res)
-	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siInt64", i), "query", float64(siInt64I), 2)`, res)
+	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 8, true)`, res)
+	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 100, true)`, res)
+	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 2)`, res)
 	assertInCode(t, `siInt64IR = append(siInt64IR, siInt64I)`, res)
 	assertInCode(t, `o.SiInt64 = siInt64IR`, res)
 	assertInCode(t, `siInt64Size := int64(len(o.SiInt64))`, res)
@@ -2605,7 +2605,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var mapOfAnonArrayWithNullableIIR []*int64`,
 				`		for ii, mapOfAnonArrayWithNullableIIV := range mapOfAnonArrayWithNullableIIC {`,
 				`			mapOfAnonArrayWithNullableII := mapOfAnonArrayWithNullableIIV`,
-				`			if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArrayWithNullable", k), ii), "", int64(*mapOfAnonArrayWithNullableII), 0, false); err != nil {`,
+				`			if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArrayWithNullable", k), ii), "", *mapOfAnonArrayWithNullableII, 0, false); err != nil {`,
 				`			mapOfAnonArrayWithNullableIIR = append(mapOfAnonArrayWithNullableIIR, mapOfAnonArrayWithNullableII`,
 				`		mapOfAnonArrayWithNullableIR[k] = mapOfAnonArrayWithNullableIIR`,
 				`	o.MapOfAnonArrayWithNullable = mapOfAnonArrayWithNullableIR`,
@@ -2729,7 +2729,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`		var mapOfAnonArrayIIR []int64`,
 				`		for ii, mapOfAnonArrayIIV := range mapOfAnonArrayIIC {`,
 				`			mapOfAnonArrayII := mapOfAnonArrayIIV`,
-				`			if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArray", k), ii), "", int64(mapOfAnonArrayII), 10, false); err != nil {`,
+				`			if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArray", k), ii), "", mapOfAnonArrayII, 10, false); err != nil {`,
 				`			mapOfAnonArrayIIR = append(mapOfAnonArrayIIR, mapOfAnonArrayII`,
 				`		mapOfAnonArrayIR[k] = mapOfAnonArrayIIR`,
 				`	o.MapOfAnonArray = mapOfAnonArrayIR`,
@@ -2766,7 +2766,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`	mapOfPrimitiveIR := make(map[string]int64, len(mapOfPrimitiveIC)`,
 				`	for k, mapOfPrimitiveIV := range mapOfPrimitiveIC {`,
 				`		mapOfPrimitiveI := mapOfPrimitiveIV`,
-				`		if err := validate.MaximumInt(fmt.Sprintf("%s.%v", "mapOfPrimitive", k), "body", int64(mapOfPrimitiveI), 100, false); err != nil {`,
+				`		if err := validate.MaximumInt(fmt.Sprintf("%s.%v", "mapOfPrimitive", k), "body", mapOfPrimitiveI, 100, false); err != nil {`,
 				`		mapOfPrimitiveIR[k] = mapOfPrimitiveI`,
 				`	o.MapOfPrimitive = mapOfPrimitiveIR`,
 			},
@@ -3065,7 +3065,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 				`				var mapOfAnonArrayWithNestedNullableIIIR []*int64`,
 				`				for iii, mapOfAnonArrayWithNestedNullableIIIV := range mapOfAnonArrayWithNestedNullableIIIC {`,
 				`					mapOfAnonArrayWithNestedNullableIII := mapOfAnonArrayWithNestedNullableIIIV`,
-				`					if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArrayWithNestedNullable", k), ii), iii), "", int64(*mapOfAnonArrayWithNestedNullableIII), 0, false); err != nil {`,
+				`					if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "mapOfAnonArrayWithNestedNullable", k), ii), iii), "", *mapOfAnonArrayWithNestedNullableIII, 0, false); err != nil {`,
 				`					mapOfAnonArrayWithNestedNullableIIIR = append(mapOfAnonArrayWithNestedNullableIIIR, mapOfAnonArrayWithNestedNullableIII`,
 				`				mapOfAnonArrayWithNestedNullableIIR = append(mapOfAnonArrayWithNestedNullableIIR, mapOfAnonArrayWithNestedNullableIIIR`,
 				`		mapOfAnonArrayWithNestedNullableIR[k] = mapOfAnonArrayWithNestedNullableIIR`,
@@ -3260,7 +3260,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				`					for kkkkk, nestedMapAndSlice02IIIIIV := range nestedMapAndSlice02IIIIIC {`,
 				`						if nestedMapAndSlice02IIIIIV == nil {`,
 				`						nestedMapAndSlice02IIIII := nestedMapAndSlice02IIIIIV`,
-				`						if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedMapAndSlice02", k), ii), kkk), iiii), kkkkk), "", int64(*nestedMapAndSlice02IIIII), 0, false); err != nil {`,
+				`						if err := validate.MinimumInt(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedMapAndSlice02", k), ii), kkk), iiii), kkkkk), "", *nestedMapAndSlice02IIIII, 0, false); err != nil {`,
 				`						nestedMapAndSlice02IIIIIR[kkkkk] = nestedMapAndSlice02IIIII`,
 				`					nestedMapAndSlice02IIIIR = append(nestedMapAndSlice02IIIIR, nestedMapAndSlice02IIIIIR`,
 				`				nestedMapAndSlice02IIIR[kkk] = nestedMapAndSlice02IIIIR`,
@@ -4109,7 +4109,7 @@ func TestGenParameter_1572(t *testing.T) {
 				`		res = append(res, errors.Required("primitiveBody", "body", "")`,
 				`		return errors.CompositeValidationError(res...`,
 				`func (o *GetPrimitiveParams) validatePrimitiveBodyBody(formats strfmt.Registry) error {`,
-				`	if err := validate.MaximumInt("primitiveBody", "body", int64(o.PrimitiveBody), 100, false); err != nil {`,
+				`	if err := validate.MaximumUint("primitiveBody", "body", uint64(o.PrimitiveBody), 100, false); err != nil {`,
 			},
 		},
 
@@ -4333,4 +4333,76 @@ func TestGenParameter_Issue2273(t *testing.T) {
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
 	assertInCode(t, "o.Snapshot = *(value.(*io.ReadCloser))", string(ff))
+}
+
+func TestGenParameter_Issue2448_Numbers(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	gen, err := opBuilder("getNumbers", "../fixtures/bugs/2448/fixture-2448.yaml")
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_numbers_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `if err := validate.Minimum("f0", "query", *o.F0, 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.Maximum("f0", "query", *o.F0, 100, false); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOf("f0", "query", *o.F0, 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.Minimum("f1", "query", float64(*o.F1), 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.Maximum("f1", "query", float64(*o.F1), 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOf("f1", "query", float64(*o.F1), 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.Minimum("f2", "query", *o.F2, 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.Maximum("f2", "query", *o.F2, 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOf("f2", "query", *o.F2, 10); err != nil {`, res)
+}
+
+func TestGenParameter_Issue2448_Integers(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	gen, err := opBuilder("getIntegers", "../fixtures/bugs/2448/fixture-2448.yaml")
+	require.NoError(t, err)
+
+	op, err := gen.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("get_integers_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	res := string(ff)
+	assertInCode(t, `if err := validate.MinimumInt("i0", "query", *o.I0, 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumInt("i0", "query", *o.I0, 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfInt("i0", "query", *o.I0, 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumInt("i1", "query", int64(*o.I1), 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumInt("i1", "query", int64(*o.I1), 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfInt("i1", "query", int64(*o.I1), 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumInt("i2", "query", *o.I2, 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumInt("i2", "query", *o.I2, 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfInt("i2", "query", *o.I2, 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumInt("i3", "query", int64(*o.I3), 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumInt("i3", "query", int64(*o.I3), 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfInt("i3", "query", int64(*o.I3), 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOf("i4", "query", float64(*o.I4), 10.5); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumUint("ui1", "query", uint64(*o.Ui1), 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumUint("ui1", "query", uint64(*o.Ui1), 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfUint("ui1", "query", uint64(*o.Ui1), 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumUint("ui2", "query", *o.Ui2, 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumUint("ui2", "query", *o.Ui2, 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfUint("ui2", "query", *o.Ui2, 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MinimumUint("ui3", "query", uint64(*o.Ui3), 10, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MaximumUint("ui3", "query", uint64(*o.Ui3), 100, true); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOfUint("ui3", "query", uint64(*o.Ui3), 10); err != nil {`, res)
+	assertInCode(t, `if err := validate.MultipleOf("ui4", "query", float64(*o.Ui4), 10.5); err != nil {`, res)
 }

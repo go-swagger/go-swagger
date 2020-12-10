@@ -115,6 +115,7 @@ func (g *GenSchema) renderMarshalTag() string {
 	return result
 }
 
+// PrintTags takes care of rendering tags for a struct field
 func (g *GenSchema) PrintTags() string {
 	tags := make(map[string]string)
 	orderedTags := make([]string, 0, 2)
@@ -144,7 +145,7 @@ func (g *GenSchema) PrintTags() string {
 	}
 
 	// Assemble the tags in key value pairs with the value properly quoted.
-	kvPairs := make([]string, 0, len(tags) + 1)
+	kvPairs := make([]string, 0, len(tags)+1)
 	for _, key := range orderedTags {
 		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(tags[key])))
 	}
@@ -168,10 +169,17 @@ func (g *GenSchema) PrintTags() string {
 
 	if !valuesHaveBacktick {
 		return fmt.Sprintf("`%s`", completeTag)
-	} else {
-		// We have to escape the tag again to put it in a literal with double quotes as the tag format uses double quotes.
-		return strconv.Quote(completeTag)
 	}
+	// We have to escape the tag again to put it in a literal with double quotes as the tag format uses double quotes.
+	return strconv.Quote(completeTag)
+}
+
+// UnderlyingType tells the go type or the aliased go type
+func (g GenSchema) UnderlyingType() string {
+	if g.IsAliased {
+		return g.AliasedType
+	}
+	return g.GoType
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }
@@ -402,6 +410,11 @@ func (g *GenParameter) ItemsDepth() string {
 	return ""
 }
 
+// UnderlyingType tells the go type or the aliased go type
+func (g GenParameter) UnderlyingType() string {
+	return g.GoType
+}
+
 // GenParameters represents a sorted parameter collection
 type GenParameters []GenParameter
 
@@ -454,6 +467,11 @@ func (g *GenItems) ItemsDepth() string {
 		current = current.Parent
 	}
 	return strings.Repeat("items.", i)
+}
+
+// UnderlyingType tells the go type or the aliased go type
+func (g GenItems) UnderlyingType() string {
+	return g.GoType
 }
 
 // GenOperationGroup represents a named (tagged) group of operations
