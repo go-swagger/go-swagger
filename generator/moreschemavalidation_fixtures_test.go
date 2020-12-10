@@ -10978,7 +10978,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("d1v.go", []string{
 		`type D1v int64`,
 		`func (m D1v) Validate(formats strfmt.Registry) error {`,
-		`	if err := validate.MaximumInt("", "body", m, 100, false); err != nil {`,
+		`	if err := validate.MaximumInt("", "body", int64(m), 100, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
