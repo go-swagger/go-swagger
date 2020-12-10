@@ -201,7 +201,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	tt.assertRender(&gmp, `// The title of the property
 //
 // The description of the property
-// Example: some example` + "``" + `
+// Example: some example`+"``"+`
 // Required: true
 // Read Only: true
 // Maximum: < 10
@@ -2089,8 +2089,8 @@ func TestGenModel_Issue981(t *testing.T) {
 					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
 					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
 					assertInCode(t, "if swag.IsZero(m.Type)", res)
-					assertInCode(t, `validate.MinimumInt("user_type", "body", int64(m.Type), 1, false)`, res)
-					assertInCode(t, `validate.MaximumInt("user_type", "body", int64(m.Type), 5, false)`, res)
+					assertInCode(t, `validate.MinimumInt("user_type", "body", m.Type, 1, false)`, res)
+					assertInCode(t, `validate.MaximumInt("user_type", "body", m.Type, 5, false)`, res)
 				} else {
 					fmt.Println(buf.String())
 				}

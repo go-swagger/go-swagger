@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -616,4 +617,55 @@ func TestFuncMap_Dict(t *testing.T) {
 	// none-string key
 	_, err = dict("a", "b", 3, "d")
 	require.Error(t, err)
+}
+
+func TestIsInteger(t *testing.T) {
+	var (
+		nilString *string
+		nilInt    *int
+		nilFloat  *float32
+	)
+
+	for _, anInteger := range []interface{}{
+		int8(4),
+		int16(4),
+		int32(4),
+		int64(4),
+		int(4),
+		swag.Int(4),
+		swag.Int32(4),
+		swag.Int64(4),
+		swag.Uint(4),
+		swag.Uint32(4),
+		swag.Uint64(4),
+		float32(12),
+		float64(12),
+		swag.Float32(12),
+		swag.Float64(12),
+		"12",
+		swag.String("12"),
+	} {
+		val := anInteger
+		require.Truef(t, isInteger(val), "expected %#v to be detected an integer value", val)
+	}
+
+	for _, notAnInteger := range []interface{}{
+		float32(12.5),
+		float64(12.5),
+		swag.Float32(12.5),
+		swag.Float64(12.5),
+		[]string{"a"},
+		struct{}{},
+		nil,
+		map[string]int{"a": 1},
+		"abc",
+		"2.34",
+		swag.String("2.34"),
+		nilString,
+		nilInt,
+		nilFloat,
+	} {
+		val := notAnInteger
+		require.Falsef(t, isInteger(val), "did not expect %#v to be detected an integer value", val)
+	}
 }
