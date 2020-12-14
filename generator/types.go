@@ -934,6 +934,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			break
 		}
 		result.HasDiscriminator = schema.Discriminator != ""
+		result.Extensions = schema.Extensions
 
 	case "null":
 		result.GoType = iface

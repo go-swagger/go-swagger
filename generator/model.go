@@ -804,6 +804,11 @@ func (sg *schemaGenContext) buildProperties() error {
 			return err
 		}
 
+		// set custom serializer tag
+		if customTag, found := emprop.GenSchema.Extensions[xGoCustomTag]; found {
+			emprop.GenSchema.CustomTag = customTag.(string)
+		}
+
 		// whatever the validations says, if we have an interface{}, do not validate
 		// NOTE: this may be the case when the type is left empty and we get a Enum validation.
 		if emprop.GenSchema.IsInterface || emprop.GenSchema.IsStream {
