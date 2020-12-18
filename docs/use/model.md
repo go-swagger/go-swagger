@@ -38,3 +38,4 @@ See the full list of available options [here](../generate/model.md).
   * [Polymorphic types](./models/schemas.md#polymorphic-types)
   * [Serialization interfaces](./models/schemas.md#serialization-interfaces)
   * [External types](./models/schemas.md#external-types)
+  * [Customizing struct tags](./models/schemas.md#customizing-struct-tags)

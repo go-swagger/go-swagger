@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
 )
 
 // GenCommon contains common properties needed across
@@ -97,55 +96,63 @@ type GenSchema struct {
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 }
 
-func (g *GenSchema) renderMarshalTag() string {
+func (g GenSchema) renderMarshalTag() string {
 	if g.HasBaseType {
 		return "-"
 	}
 
-	result := g.OriginalName
+	var result strings.Builder
+
+	result.WriteString(g.OriginalName)
 
 	if !g.Required && g.IsEmptyOmitted {
-		result += ",omitempty"
+		result.WriteString(",omitempty")
 	}
 
 	if g.IsJSONString {
-		result += ",string"
+		result.WriteString(",string")
 	}
 
-	return result
+	return result.String()
 }
 
 // PrintTags takes care of rendering tags for a struct field
-func (g *GenSchema) PrintTags() string {
-	tags := make(map[string]string)
-	orderedTags := make([]string, 0, 2)
+func (g GenSchema) PrintTags() string {
+	tags := make(map[string]string, 3)
+	orderedTags := make([]string, 0, 3)
 
 	tags["json"] = g.renderMarshalTag()
 	orderedTags = append(orderedTags, "json")
 
 	if len(g.XMLName) > 0 {
-		tags["xml"] = g.XMLName
+		if !g.Required && g.IsEmptyOmitted {
+			tags["xml"] = g.XMLName + ",omitempty"
+		} else {
+			tags["xml"] = g.XMLName
+		}
 		orderedTags = append(orderedTags, "xml")
-	}
-
-	// Only add example tag if it's contained in the struct tags.
-	if len(g.Example) > 0 && swag.ContainsStrings(g.StructTags, "example") {
-		tags["example"] = g.Example
-		orderedTags = append(orderedTags, "example")
 	}
 
 	// Add extra struct tags, only if the tag hasn't already been set, i.e. example.
 	// Extra struct tags have the same value has the `json` tag.
 	for _, tag := range g.StructTags {
-		// TODO: example handling is not very clean
-		if _, exists := tags[tag]; !exists && tag != "example" {
-			tags[tag] = tags["json"]
-			orderedTags = append(orderedTags, tag)
+		if _, exists := tags[tag]; exists {
+			// dedupe
+			continue
 		}
+
+		if tag == "example" && len(g.Example) > 0 {
+			// only add example tag if it's contained in the struct tags
+			tags["example"] = g.Example // json representation of the example object
+		} else {
+			tags[tag] = tags["json"]
+		}
+
+		orderedTags = append(orderedTags, tag)
 	}
 
 	// Assemble the tags in key value pairs with the value properly quoted.
-	kvPairs := make([]string, 0, len(tags)+1)
+	kvPairs := make([]string, 0, len(orderedTags)+1)
 	for _, key := range orderedTags {
 		kvPairs = append(kvPairs, fmt.Sprintf("%s:%s", key, strconv.Quote(tags[key])))
 	}
@@ -161,7 +168,7 @@ func (g *GenSchema) PrintTags() string {
 	// escaping backticks in raw string literals.
 	valuesHaveBacktick := false
 	for _, value := range tags {
-		if strings.Contains(value, "`") {
+		if !strconv.CanBackquote(value) {
 			valuesHaveBacktick = true
 			break
 		}
@@ -170,6 +177,7 @@ func (g *GenSchema) PrintTags() string {
 	if !valuesHaveBacktick {
 		return fmt.Sprintf("`%s`", completeTag)
 	}
+
 	// We have to escape the tag again to put it in a literal with double quotes as the tag format uses double quotes.
 	return strconv.Quote(completeTag)
 }

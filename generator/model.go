@@ -1654,7 +1654,11 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 }
 
 func (sg *schemaGenContext) buildXMLNameWithTags() error {
-	if sg.WithXML || sg.Schema.XML != nil {
+	// render some "xml" struct tag under one the following conditions:
+	// - consumes/produces in spec contains xml
+	// - struct tags CLI option contains xml
+	// - XML object present in spec for this schema
+	if sg.WithXML || swag.ContainsStrings(sg.StructTags, "xml") || sg.Schema.XML != nil {
 		sg.GenSchema.XMLName = sg.Name
 
 		if sg.Schema.XML != nil {
@@ -1664,10 +1668,6 @@ func (sg *schemaGenContext) buildXMLNameWithTags() error {
 			if sg.Schema.XML.Attribute {
 				sg.GenSchema.XMLName += ",attr"
 			}
-		}
-
-		if !sg.GenSchema.Required && sg.GenSchema.IsEmptyOmitted {
-			sg.GenSchema.XMLName += ",omitempty"
 		}
 	}
 	return nil

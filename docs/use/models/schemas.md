@@ -196,11 +196,13 @@ Recap as of release `0.15`:
 Model generation may be altered with the following extensions:
 
 - `x-go-name: "string"`: give explicit type name to the generated model
-- `x-go-custom-tag: "string"`: add serialization tags to an object property
+- `x-go-custom-tag: "string"`: add serialization tags to an object property (see [Customizing struct tags](#customizing-struct-tags))
 - `x-nullable: true|false` (or equivalently `x-is-nullable:true|false`): accepts null values (i.e. rendered as a pointer)
 - `x-go-type: "string"`: explicitly reuse an already available go type
 - `x-class: "string"`: give explicit polymorphic class name in discriminator
 - `x-order: number`: indicates explicit generation ordering for schemas (e.g. models, properties, allOf, ...)
+- `x-omitempty: true|false`: force the omitempty modifier in struct json and xml tags
+- `x-go-json-string: true:false`: force the string modifier in struct json tags
 
 ### Primitive types
 
@@ -290,8 +292,14 @@ to manipulate pointers more easily.
 > An alternate design has been experimented but not released. For those interested in pushing forward this project again,
 > see [this pull request][lifting-pointers]
 
+#### Common use cases
+
+You don't always have to resort to pointers to figure out whether a value is empty.
+
+* The idiomatic way to check for a null/empty string is: `minLength: 1`
 
 ### Validation
+
 All produced models implement the [Validatable] interface.
 
 Exceptions:
@@ -717,12 +725,6 @@ Note that the marshalling of a base type into JSON is processed naturally, so th
 ### Serialization interfaces
 
 <!--
-
-TODO
-
-##### Serializer's tags
-
-##### Custom tags
 
 JSON
 
@@ -1190,6 +1192,122 @@ import (
 Package aliases may still conflict with packages produces by operation tags or other external imports.
 
 In such cases, modify the type alias under `x-go-type` to resolve the conflict manually.
+
+### Customizing struct tags
+
+When a model struct is generated, tags for json are generated to keep the original name:
+
+```go
+type ObjectWithTag struct {
+    StandardTag string `json:"standardTag,omitempty"`
+}
+```
+
+#### Extra tags
+
+Extra tags may be defined with the CLI generation option `--sruct-tags`.
+
+Extra tags essentially repeat the name of the field can be added from the command line option.
+
+> **NOTE**: at this moment, all tag modifiers (omitempty, string) are repeated like for the json tag.
+
+```bash
+swagger generate model ... --struct-tags yaml,db
+```
+
+```go
+type ObjectWithTag struct {
+    StandardTag string `json:"standardTag,omitempty" yaml:"standardTag,omitempty" db:"standardTag,omitempty"`
+}
+```
+
+#### Custom tags
+
+A custom may be added to a field using the `x-go-custom-tag` extension. Like so:
+
+#### Omit empty values
+
+By default, a struct field is omitted when it holds the zero value (tag modifier: `omitempty`).
+
+Required fields are never omitted.
+
+```go
+type ObjectWithTag struct {
+    RequiredField *string `json:"requiredField"`
+}
+```
+
+This property can be altered using the `x-omitempty` extension. Like so:
+```yaml
+objectWithTag:
+  type: object
+  properties:
+    field:
+      type: string
+      x-omitempty: false
+```
+
+```go
+type ObjectWithTag struct {
+    Field string `json:"field"`
+}
+```
+
+The extension does not force a required field to get the "omitempty" modifier.
+
+#### Numerical values as string
+
+For some specific requirements, the standard json library may consider numbers as strings.
+This is done by adding the modifier `json:"...,string"` to the tag.
+
+With go-swagger you can specify this modifier by adding the `x-go-json-string: true` extension to your type.
+
+```go
+type ObjectWithTag struct {
+    NumericField int `json:"field,omitempty,string"`
+}
+```
+
+#### XML tags
+
+The XML name and attribute Swagger properties are used to generate extra tags.
+```yaml
+definitions:
+ objectWithXML:
+   type: object
+   properties:
+     field:
+       type: string
+       xml:
+         name: xmlObject
+         attribute: true
+```
+
+```go
+type ObjectWithXML struct {
+    Field string `json:"field,omitempty" xml:"xmlObject,attr,omitempty"`
+}
+```
+
+#### The example tag
+
+If you add `example` to the list of generated tags from the CLI (`swagger generate ... --struct-tags example`),
+a special example tag is created with the example value taken from the specification.
+
+```yaml
+definitions:
+  objectWithExample:
+   properties:
+     field:
+       type: string
+       example: "sample"
+```
+
+```go
+type ObjectWithExample struct {
+    Field string `json:"field,omitempty" example:"\"sample\""`
+}
+```
 
 
 [swagger]: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema-object
