@@ -917,8 +917,13 @@ func (sg *schemaGenContext) buildProperties() error {
 		emprop.GenSchema.Extensions = emprop.Schema.Extensions
 
 		// set custom serializer tag
-		if customTag, found := emprop.Schema.Extensions[xGoCustomTag]; found {
-			emprop.GenSchema.CustomTag = customTag.(string)
+		if customTag, found := tpe.Extensions[xGoCustomTag]; found {
+			tagAsStr, ok := customTag.(string)
+			if ok {
+				emprop.GenSchema.CustomTag = tagAsStr
+			} else {
+				log.Printf("warning: expect %s extension to be a string, got: %v. Skipped", xGoCustomTag, customTag)
+			}
 		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}

@@ -2485,6 +2485,23 @@ func TestGenModel_Issue1623(t *testing.T) {
 
 }
 
+func TestGenerateModel_Issue2457(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/2457/fixture-2457.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ObjWithCustomTag"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	assertInCode(t, "myobjtag:\"foo,bar\"", buf.String())
+}
+
 func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	ymlFile := "../fixtures/codegen/keep-spec-order.yml"
 	opts := opts()
