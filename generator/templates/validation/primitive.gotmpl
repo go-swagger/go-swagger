@@ -14,19 +14,13 @@ if err := validate.Pattern({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf
 }
 {{end}}
 {{if .Minimum}}
-if err := validate.Minimum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Minimum}}, {{.ExclusiveMinimum}}); err != nil {
-  return err
-}
+  {{ template "validationMinimum" . }}
 {{end}}
 {{if .Maximum}}
-if err := validate.Maximum{{ if eq .SwaggerType "integer" }}Int{{ end }}({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if eq .SwaggerType "integer" }}int{{ else }}float{{ end }}64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.Maximum}}, {{.ExclusiveMaximum}}); err != nil {
-  return err
-}
+  {{ template "validationMaximum" . }}
 {{end}}
 {{if .MultipleOf}}
-if err := validate.MultipleOf({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, float64({{ if .IsNullable }}*{{ end }}{{.ValueExpression}}), {{.MultipleOf}}); err != nil {
-  return err
-}
+  {{ template "validationMultipleOf" . }}
 {{end}}
 {{if .Enum}}
 if err := validate.EnumCase({{ if .Path }}{{ .Path }}{{else}}""{{end}}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) .IsNullable }}*{{ end }}{{.ValueExpression}}{{ if .IsCustomFormatter }}.String(){{ end }}, {{ printf "%#v" .Enum}}, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {

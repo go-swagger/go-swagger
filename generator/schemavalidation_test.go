@@ -135,7 +135,7 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 	assertInCode(t, k+") Validate(formats", res)
 	assertInCode(t, "err := validate.MinimumInt", res)
 	assertInCode(t, "err := validate.MaximumInt", res)
-	assertInCode(t, "err := validate.MultipleOf", res)
+	assertInCode(t, "err := validate.MultipleOf(", res) // factor is not an integer
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -165,7 +165,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 	assertInCode(t, "m.validateAge(formats", res)
 	assertInCode(t, "err := validate.MinimumInt(\"age\",", res)
 	assertInCode(t, "err := validate.MaximumInt(\"age\",", res)
-	assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+	assertInCode(t, "err := validate.MultipleOf(\"age\",", res) // factor is not an integer
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -574,7 +574,7 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 	assertInCode(t, "for k := range m {", res)
 	assertInCode(t, "err := validate.MinimumInt(k,", res)
 	assertInCode(t, "err := validate.MaximumInt(k,", res)
-	assertInCode(t, "err := validate.MultipleOf(k,", res)
+	assertInCode(t, "err := validate.MultipleOfInt(k,", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -605,7 +605,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 	assertInCode(t, "for k := range m.Meta {", res)
 	assertInCode(t, "err := validate.MinimumInt(\"meta\"+\".\"+k,", res)
 	assertInCode(t, "err := validate.MaximumInt(\"meta\"+\".\"+k,", res)
-	assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k,", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"meta\"+\".\"+k,", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -638,7 +638,7 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 	assertInCode(t, "err := validate.Pattern(\"name\",", res)
 	assertInCode(t, "err := validate.MinimumInt(\"age\",", res)
 	assertInCode(t, "err := validate.MaximumInt(\"age\",", res)
-	assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"age\",", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -671,7 +671,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 	assertInCode(t, "err := validate.Pattern(\"name\",", res)
 	assertInCode(t, "err := validate.MinimumInt(\"age\",", res)
 	assertInCode(t, "err := validate.MaximumInt(\"age\",", res)
-	assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"age\",", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -702,7 +702,7 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 	assertInCode(t, "for kkk := range m[k][kk] {", res)
 	assertInCode(t, "err := validate.MinimumInt(k+\".\"+kk+\".\"+kkk,", res)
 	assertInCode(t, "err := validate.MaximumInt(k+\".\"+kk+\".\"+kkk,", res)
-	assertInCode(t, "err := validate.MultipleOf(k+\".\"+kk+\".\"+kkk,", res)
+	assertInCode(t, "err := validate.MultipleOfInt(k+\".\"+kk+\".\"+kkk,", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -735,7 +735,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	assertInCode(t, "for kkk := range m.Meta[k][kk] {", res)
 	assertInCode(t, "err := validate.MinimumInt(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
 	assertInCode(t, "err := validate.MaximumInt(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
-	assertInCode(t, "err := validate.MultipleOf(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"meta\"+\".\"+k+\".\"+kk+\".\"+kkk,", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -864,7 +864,7 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	assertInCode(t, "err := validate.Pattern(\"name\",", res)
 	assertInCode(t, "err := validate.MinimumInt(\"age\",", res)
 	assertInCode(t, "err := validate.MaximumInt(\"age\",", res)
-	assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"age\",", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -901,7 +901,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 	assertInCode(t, "err := validate.Pattern(\"name\",", res)
 	assertInCode(t, "err := validate.MinimumInt(\"age\",", res)
 	assertInCode(t, "err := validate.MaximumInt(\"age\",", res)
-	assertInCode(t, "err := validate.MultipleOf(\"age\",", res)
+	assertInCode(t, "err := validate.MultipleOfInt(\"age\",", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }
 
@@ -1084,7 +1084,7 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 	res := string(formatted)
 	assertInCode(t, k+") Validate(formats", res)
 	assertInCode(t, "swag.IsZero(m.TagExpiration)", res)
-	assertInCode(t, "validate.MinimumInt(\"tag_expiration\", \"body\", int64(*m.TagExpiration)", res)
-	assertInCode(t, "validate.MaximumInt(\"tag_expiration\", \"body\", int64(*m.TagExpiration)", res)
+	assertInCode(t, "validate.MinimumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
+	assertInCode(t, "validate.MaximumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
 }

@@ -1,0 +1,225 @@
+swagger: '2.0'
+info:
+  title: number validations
+  version: '1.0.0'
+host: localhost
+basePath: /
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+paths:
+  /integers:
+    get:
+      operationId: "getIntegers"
+      parameters:
+      - name: i0
+        in: query
+        type: integer
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: i1
+        in: query
+        type: integer
+        format: int32
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: i2
+        in: query
+        type: integer
+        format: int64
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      # extra integer formats supported by go-swagger
+      - name: ui1
+        in: query
+        type: integer
+        format: uint32
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: ui2
+        in: query
+        type: integer
+        format: uint64
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: i3
+        in: query
+        type: integer
+        format: int16
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: ui3
+        in: query
+        type: integer
+        format: uint16
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      # edge case: multipleOf integer with float factor
+      - name: i4
+        in: query
+        type: integer
+        format: int16
+        multipleOf: 10.5
+      - name: ui4
+        in: query
+        type: integer
+        format: uint16
+        multipleOf: 10.5
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/integers'
+  /numbers:
+    get:
+      operationId: "getNumbers"
+      parameters:
+      - name: f0
+        in: query
+        type: number
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        multipleOf: 10
+      - name: f1
+        in: query
+        type: number
+        format: float
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      - name: f2
+        in: query
+        type: number
+        format: double
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/numbers'
+
+definitions:
+  integers:
+    type: object
+    properties:
+      i0:
+        type: integer
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      i1:
+        type: integer
+        format: int32
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      i2:
+        type: integer
+        format: int64
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      i3:
+        type: integer
+        format: int16
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      ui1:
+        type: integer
+        format: uint32
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      ui2:
+        type: integer
+        format: uint64
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      ui3:
+        type: integer
+        format: uint16
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      # edge case: multipleOf integer with float factor
+      i4:
+        type: integer
+        format: int16
+        multipleOf: 10.5
+      ui4:
+        type: integer
+        format: uint16
+        multipleOf: 10.5
+  numbers:
+    type: object
+    properties:
+      f0:
+        type: number
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      f1:
+        type: number
+        format: float
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
+      f2:
+        type: number
+        format: double
+        minimum: 10
+        exclusiveMinimum: true
+        maximum: 100
+        exclusiveMaximum: true
+        multipleOf: 10
