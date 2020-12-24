@@ -717,8 +717,9 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
       {{ $gotype := .GoType }}
 const (
       {{ range .Enum }}
-  // {{ $gotype }}{{ pascalize . }} captures enum value {{ printf "%q" . }}
-	{{ $gotype }}{{ pascalize . }} {{ $gotype }} = {{ printf "%q" . }}
+      {{- $variant := print $gotype (pascalize (cleanupEnumVariant .)) }}
+  // {{ $variant }} captures enum value {{ printf "%q" . }}
+	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
       {{ end }}
 )
     {{ end }}
@@ -866,8 +867,9 @@ func init() {
           {{ $propname := .Name }}
 const (
           {{ range .Enum }}
-  // {{ pascalize $.Name }}{{ pascalize $propname }}{{ pascalize . }} captures enum value {{ printf "%q" . }}
-	{{ pascalize $.Name }}{{ pascalize $propname }}{{ pascalize . }} {{ $gotype }} = {{ printf "%q" . }}
+          {{- $variant := print (pascalize $.Name) (pascalize $propname) (pascalize (cleanupEnumVariant .)) }}
+  // {{ $variant }} captures enum value {{ printf "%q" . }}
+	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
           {{ end }}
 )
         {{ end }}
