@@ -11,7 +11,11 @@ paths:
         200:
           description: Get an example device
           schema:
-            $ref: "#/definitions/Device"
+            type: object
+            properties:
+              band: { $ref: "#/definitions/band" }
+              change: { $ref: "#/definitions/change" }
+              topic: { $ref: "#/definitions/topic" }
 
 definitions:
   band:
@@ -21,3 +25,14 @@ definitions:
       - "5Ghz"
       - "10Ghz"
       - "24Ghz"
+  change:
+    type: string
+    enum:
+      - "-1"
+      - "0"
+      - "+1"
+  topic:
+    type: string
+    enum:
+      - "#one"
+      - "two#two"

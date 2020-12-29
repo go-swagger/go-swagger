@@ -2507,17 +2507,51 @@ func TestGenModel_Pr2464(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "band"
-	schema := definitions[k]
-	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-	require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+	tests := map[string]struct {
+		model    string
+		expected []string
+	}{
+		"withDot": {
+			model: "band",
+			expected: []string{
+				`BandNr2Dot4Ghz Band = "2.4Ghz"`,
+				`BandNr24Ghz Band = "24Ghz"`,
+			},
+		},
+		"withSigns": {
+			model: "change",
+			expected: []string{
+				`ChangeDash1 Change = "-1"`,
+				`ChangeNr0 Change = "0"`,
+				`ChangePlus1 Change = "+1"`,
+			},
+		},
+		"hashtag": {
+			model: "topic",
+			expected: []string{
+				`TopicHashtagOne Topic = "#one"`,
+				`TopicTwoHashtagTwo Topic = "two#two"`,
+			},
+		},
+	}
 
-	assertInCode(t, `BandNr2Dot4Ghz Band = "2.4Ghz"`, buf.String())
-	assertInCode(t, `BandNr24Ghz Band = "24Ghz"`, buf.String())
+	for name, spec := range tests {
+		t.Run(name, func(t *testing.T) {
+			k := spec.model
+			schema := definitions[k]
+			opts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			for _, expected := range spec.expected {
+				assertInCode(t, expected, buf.String())
+			}
+		})
+	}
 }
 
 func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
