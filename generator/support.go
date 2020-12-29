@@ -49,6 +49,25 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOp
 	return generator.GenerateSupport(nil)
 }
 
+// GenerateMarkdown documentation for a swagger specification
+func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *GenOpts) error {
+	if output == "." || output == "" {
+		output = "markdown.md"
+	}
+
+	if err := opts.EnsureDefaults(); err != nil {
+		return err
+	}
+	MarkdownSectionOpts(opts, output)
+
+	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
+	if err != nil {
+		return err
+	}
+
+	return generator.GenerateMarkdown()
+}
+
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
 	if err := opts.CheckOpts(); err != nil {
 		return nil, err
@@ -196,6 +215,15 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	app.ServerPackageAlias = pkgAlias
 
 	return a.GenOpts.renderApplication(app)
+}
+
+func (a *appGenerator) GenerateMarkdown() error {
+	app, err := a.makeCodegenApp()
+	if err != nil {
+		return err
+	}
+
+	return a.GenOpts.renderApplication(&app)
 }
 
 func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
@@ -377,8 +405,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	log.Println("planning meta data and facades")
 
-	var collectedSchemes []string
-	var extraSchemes []string
+	var collectedSchemes, extraSchemes []string
 	for _, op := range genOps {
 		collectedSchemes = concatUnique(collectedSchemes, op.Schemes)
 		extraSchemes = concatUnique(extraSchemes, op.ExtraSchemes)
@@ -404,32 +431,34 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Copyright:        a.GenOpts.Copyright,
 			TargetImportPath: baseImport,
 		},
-		APIPackage:          a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget),
-		APIPackageAlias:     alias,
-		Package:             a.Package,
-		ReceiverName:        receiver,
-		Name:                a.Name,
-		Host:                host,
-		BasePath:            basePath,
-		Schemes:             schemeOrDefault(collectedSchemes, a.DefaultScheme),
-		ExtraSchemes:        extraSchemes,
-		ExternalDocs:        sw.ExternalDocs,
-		Info:                sw.Info,
-		Consumes:            consumes,
-		Produces:            produces,
-		DefaultConsumes:     a.DefaultConsumes,
-		DefaultProduces:     a.DefaultProduces,
-		DefaultImports:      defaultImports,
-		Imports:             imports,
-		SecurityDefinitions: security,
-		Models:              genModels,
-		Operations:          genOps,
-		OperationGroups:     opGroups,
-		Principal:           a.GenOpts.PrincipalAlias(),
-		SwaggerJSON:         generateReadableSpec(jsonb),
-		FlatSwaggerJSON:     generateReadableSpec(flatjsonb),
-		ExcludeSpec:         a.GenOpts.ExcludeSpec,
-		GenOpts:             a.GenOpts,
+		APIPackage:           a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget),
+		APIPackageAlias:      alias,
+		Package:              a.Package,
+		ReceiverName:         receiver,
+		Name:                 a.Name,
+		Host:                 host,
+		BasePath:             basePath,
+		Schemes:              schemeOrDefault(collectedSchemes, a.DefaultScheme),
+		ExtraSchemes:         extraSchemes,
+		ExternalDocs:         trimExternalDoc(sw.ExternalDocs),
+		Tags:                 trimTags(sw.Tags),
+		Info:                 trimInfo(sw.Info),
+		Consumes:             consumes,
+		Produces:             produces,
+		DefaultConsumes:      a.DefaultConsumes,
+		DefaultProduces:      a.DefaultProduces,
+		DefaultImports:       defaultImports,
+		Imports:              imports,
+		SecurityDefinitions:  security,
+		SecurityRequirements: securityRequirements(a.SpecDoc.Spec().Security), // top level securityRequirements
+		Models:               genModels,
+		Operations:           genOps,
+		OperationGroups:      opGroups,
+		Principal:            a.GenOpts.PrincipalAlias(),
+		SwaggerJSON:          generateReadableSpec(jsonb),
+		FlatSwaggerJSON:      generateReadableSpec(flatjsonb),
+		ExcludeSpec:          a.GenOpts.ExcludeSpec,
+		GenOpts:              a.GenOpts,
 
 		PrincipalIsNullable: a.GenOpts.PrincipalIsNullable(),
 	}, nil
@@ -449,4 +478,53 @@ func generateReadableSpec(spec []byte) string {
 		}
 	}
 	return buf.String()
+}
+
+func trimExternalDoc(in *spec.ExternalDocumentation) *spec.ExternalDocumentation {
+	if in == nil {
+		return nil
+	}
+
+	return &spec.ExternalDocumentation{
+		URL:         in.URL,
+		Description: trimBOM(in.Description),
+	}
+}
+
+func trimInfo(in *spec.Info) *spec.Info {
+	if in == nil {
+		return nil
+	}
+
+	return &spec.Info{
+		InfoProps: spec.InfoProps{
+			Contact:        in.Contact,
+			Title:          trimBOM(in.Title),
+			Description:    trimBOM(in.Description),
+			TermsOfService: trimBOM(in.TermsOfService),
+			License:        in.License,
+			Version:        in.Version,
+		},
+		VendorExtensible: in.VendorExtensible,
+	}
+}
+
+func trimTags(in []spec.Tag) []spec.Tag {
+	if in == nil {
+		return nil
+	}
+
+	tags := make([]spec.Tag, 0, len(in))
+
+	for _, tag := range in {
+		tags = append(tags, spec.Tag{
+			TagProps: spec.TagProps{
+				Name:         tag.Name,
+				Description:  trimBOM(tag.Description),
+				ExternalDocs: trimExternalDoc(tag.ExternalDocs),
+			},
+		})
+	}
+
+	return tags
 }

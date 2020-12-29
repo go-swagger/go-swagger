@@ -21,6 +21,7 @@
     - [Expand](usage/expand.md)
     - [Flatten](usage/flatten.md)
     - [Mixin](usage/mixin.md)
+  - [Generate markdown](usage/markdown.md)
   - Generate code from spec
     - [Dependencies & Requirements](generate/requirements.md)
     - [API Client](generate/client.md)

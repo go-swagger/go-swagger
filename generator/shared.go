@@ -197,6 +197,29 @@ func DefaultSectionOpts(gen *GenOpts) {
 
 }
 
+// MarkdownOpts for rendering a spec as markdown
+func MarkdownOpts() *LanguageOpts {
+	opts := &LanguageOpts{}
+	opts.Init()
+	return opts
+}
+
+// MarkdownSectionOpts for a given opts and output file.
+func MarkdownSectionOpts(gen *GenOpts, output string) {
+	gen.Sections.Models = nil
+	gen.Sections.OperationGroups = nil
+	gen.Sections.Operations = nil
+	gen.LanguageOpts = MarkdownOpts()
+	gen.Sections.Application = []TemplateOpts{
+		{
+			Name:     "markdowndocs",
+			Source:   "asset:markdownDocs",
+			Target:   filepath.Dir(output),
+			FileName: filepath.Base(output),
+		},
+	}
+}
+
 // TemplateOpts allows for codegen customization
 type TemplateOpts struct {
 	Name       string `mapstructure:"name"`
@@ -441,7 +464,9 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	var tags []string
 	tagsF := v.FieldByName("Tags")
 	if tagsF.IsValid() {
-		tags = tagsF.Interface().([]string)
+		if tt, ok := tagsF.Interface().([]string); ok {
+			tags = tt
+		}
 	}
 
 	var useTags bool
@@ -895,13 +920,15 @@ func trimBOM(in string) string {
 func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string, nullable bool) (security GenSecuritySchemes) {
 	for scheme, req := range securitySchemes {
 		isOAuth2 := strings.ToLower(req.Type) == "oauth2"
-		var scopes []string
+		scopes := make([]string, 0, len(req.Scopes))
+		genScopes := make([]GenSecurityScope, 0, len(req.Scopes))
 		if isOAuth2 {
-			for k := range req.Scopes {
+			for k, v := range req.Scopes {
 				scopes = append(scopes, k)
+				genScopes = append(genScopes, GenSecurityScope{Name: k, Description: v})
 			}
+			sort.Strings(scopes)
 		}
-		sort.Strings(scopes)
 
 		security = append(security, GenSecurityScheme{
 			AppName:      appName,
@@ -912,6 +939,7 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 			IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
 			IsOAuth2:     isOAuth2,
 			Scopes:       scopes,
+			ScopesDesc:   genScopes,
 			Principal:    principal,
 			Source:       req.In,
 			// from original spec
@@ -927,6 +955,18 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 		})
 	}
 	sort.Sort(security)
+	return
+}
+
+// securityRequirements just clones the original SecurityRequirements from either the spec
+// or an operation, without any modification. This is used to generate documentation.
+func securityRequirements(orig []map[string][]string) (result []analysis.SecurityRequirement) {
+	for _, r := range orig {
+		for k, v := range r {
+			result = append(result, analysis.SecurityRequirement{Name: k, Scopes: v})
+		}
+	}
+	// TODO(fred): sort this for stable generation
 	return
 }
 
@@ -948,31 +988,29 @@ func gatherExtraSchemas(extraMap map[string]GenSchema) (extras GenSchemaList) {
 	return
 }
 
-func sharedValidationsFromSimple(tpe resolvedType, v spec.CommonValidations, isRequired bool) (sh sharedValidations) {
-	guardSimpleValidations(tpe.SwaggerType, &v)
-
-	sh = sharedValidations{
-		Required:         isRequired,
-		Maximum:          v.Maximum,
-		ExclusiveMaximum: v.ExclusiveMaximum,
-		Minimum:          v.Minimum,
-		ExclusiveMinimum: v.ExclusiveMinimum,
-		MaxLength:        v.MaxLength,
-		MinLength:        v.MinLength,
-		Pattern:          v.Pattern,
-		MaxItems:         v.MaxItems,
-		MinItems:         v.MinItems,
-		UniqueItems:      v.UniqueItems,
-		MultipleOf:       v.MultipleOf,
-		Enum:             v.Enum,
+func getExtraSchemes(ext spec.Extensions) []string {
+	if ess, ok := ext.GetStringSlice(xSchemes); ok {
+		return ess
 	}
-	return
+	return nil
 }
 
-func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValidations) {
-	// validation guards have already been carried out directly by the type resolver
+func gatherURISchemes(swsp *spec.Swagger, operation spec.Operation) ([]string, []string) {
+	var extraSchemes []string
+	extraSchemes = append(extraSchemes, getExtraSchemes(operation.Extensions)...)
+	extraSchemes = concatUnique(getExtraSchemes(swsp.Extensions), extraSchemes)
+	sort.Strings(extraSchemes)
 
-	sh = sharedValidations{
+	schemes := concatUnique(swsp.Schemes, operation.Schemes)
+	sort.Strings(schemes)
+
+	return schemes, extraSchemes
+}
+
+func sharedValidationsFromSimple(tpe resolvedType, v spec.CommonValidations, isRequired bool) sharedValidations {
+	guardSimpleValidations(tpe.SwaggerType, &v)
+
+	return sharedValidations{
 		Required:         isRequired,
 		Maximum:          v.Maximum,
 		ExclusiveMaximum: v.ExclusiveMaximum,
@@ -987,7 +1025,26 @@ func sharedValidationsFromSchema(v spec.Schema, isRequired bool) (sh sharedValid
 		MultipleOf:       v.MultipleOf,
 		Enum:             v.Enum,
 	}
-	return
+}
+
+func sharedValidationsFromSchema(v spec.Schema, isRequired bool) sharedValidations {
+	// validation guards have already been carried out directly by the type resolver
+
+	return sharedValidations{
+		Required:         isRequired,
+		Maximum:          v.Maximum,
+		ExclusiveMaximum: v.ExclusiveMaximum,
+		Minimum:          v.Minimum,
+		ExclusiveMinimum: v.ExclusiveMinimum,
+		MaxLength:        v.MaxLength,
+		MinLength:        v.MinLength,
+		Pattern:          v.Pattern,
+		MaxItems:         v.MaxItems,
+		MinItems:         v.MinItems,
+		UniqueItems:      v.UniqueItems,
+		MultipleOf:       v.MultipleOf,
+		Enum:             v.Enum,
+	}
 }
 
 func dumpData(data interface{}) error {
@@ -1002,4 +1059,21 @@ func dumpData(data interface{}) error {
 func importAlias(pkg string) string {
 	_, k := path.Split(pkg)
 	return k
+}
+
+// concatUnique concatenate collections of strings with deduplication
+func concatUnique(collections ...[]string) []string {
+	resultSet := make(map[string]struct{})
+	for _, c := range collections {
+		for _, i := range c {
+			if _, ok := resultSet[i]; !ok {
+				resultSet[i] = struct{}{}
+			}
+		}
+	}
+	result := make([]string, 0, len(resultSet))
+	for k := range resultSet {
+		result = append(result, k)
+	}
+	return result
 }

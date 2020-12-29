@@ -1952,6 +1952,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		// otherwise the generate spec will generate as "\"foo\""
 		sg.GenSchema.Example = strings.Trim(data, "\"")
 	}
+	sg.GenSchema.ExternalDocs = trimExternalDoc(sg.Schema.ExternalDocs)
 	sg.GenSchema.IsExported = true
 	sg.GenSchema.Path = sg.Path
 	sg.GenSchema.IndexVar = sg.IndexVar

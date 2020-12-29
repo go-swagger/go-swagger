@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/spec"
 )
 
@@ -94,6 +95,7 @@ type GenSchema struct {
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
+	ExternalDocs               *spec.ExternalDocumentation
 }
 
 func (g GenSchema) renderMarshalTag() string {
@@ -271,6 +273,20 @@ type GenResponse struct {
 
 	StrictResponders bool
 	OperationName    string
+	Examples         GenResponseExamples
+}
+
+// GenResponseExamples is a sortable collection []GenResponseExample
+type GenResponseExamples []GenResponseExample
+
+func (g GenResponseExamples) Len() int           { return len(g) }
+func (g GenResponseExamples) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenResponseExamples) Less(i, j int) bool { return g[i].MediaType < g[j].MediaType }
+
+// GenResponseExample captures an example provided for a response for some mime type
+type GenResponseExample struct {
+	MediaType string
+	Example   interface{}
 }
 
 // GenHeader represents a header on a response for code generation
@@ -575,11 +591,12 @@ type GenOperation struct {
 	ExtraSchemas   GenSchemaList
 	PackageAlias   string
 
-	Authorized          bool
-	Security            []GenSecurityRequirements
-	SecurityDefinitions GenSecuritySchemes
-	Principal           string
-	PrincipalIsNullable bool
+	Authorized           bool
+	Security             []GenSecurityRequirements // resolved security requirements for the operation
+	SecurityDefinitions  GenSecuritySchemes
+	SecurityRequirements []analysis.SecurityRequirement // original security requirements as per the spec (for doc)
+	Principal            string
+	PrincipalIsNullable  bool
 
 	SuccessResponse  *GenResponse
 	SuccessResponses []GenResponse
@@ -600,15 +617,20 @@ type GenOperation struct {
 	HasBodyParams        bool
 	HasStreamingResponse bool
 
-	Schemes            []string
-	ExtraSchemes       []string
-	ProducesMediaTypes []string
-	ConsumesMediaTypes []string
-	TimeoutName        string
+	Schemes              []string
+	ExtraSchemes         []string
+	SchemeOverrides      []string // original scheme overrides for operation, as per spec (for doc)
+	ExtraSchemeOverrides []string // original extra scheme overrides for operation, as per spec (for doc)
+	ProducesMediaTypes   []string
+	ConsumesMediaTypes   []string
+	TimeoutName          string
 
 	Extensions map[string]interface{}
 
 	StrictResponders bool
+	ExternalDocs     *spec.ExternalDocumentation
+	Produces         []string // original produces for operation (for doc)
+	Consumes         []string // original consumes for operation (for doc)
 }
 
 // GenOperations represents a list of operations to generate
@@ -623,31 +645,33 @@ func (g GenOperations) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // from a swagger spec
 type GenApp struct {
 	GenCommon
-	APIPackage          string
-	ServerPackageAlias  string
-	APIPackageAlias     string
-	Package             string
-	ReceiverName        string
-	Name                string
-	Principal           string
-	PrincipalIsNullable bool
-	DefaultConsumes     string
-	DefaultProduces     string
-	Host                string
-	BasePath            string
-	Info                *spec.Info
-	ExternalDocs        *spec.ExternalDocumentation
-	Imports             map[string]string
-	DefaultImports      map[string]string
-	Schemes             []string
-	ExtraSchemes        []string
-	Consumes            GenSerGroups
-	Produces            GenSerGroups
-	SecurityDefinitions GenSecuritySchemes
-	Models              []GenDefinition
-	Operations          GenOperations
-	OperationGroups     GenOperationGroups
-	SwaggerJSON         string
+	APIPackage           string
+	ServerPackageAlias   string
+	APIPackageAlias      string
+	Package              string
+	ReceiverName         string
+	Name                 string
+	Principal            string
+	PrincipalIsNullable  bool
+	DefaultConsumes      string
+	DefaultProduces      string
+	Host                 string
+	BasePath             string
+	Info                 *spec.Info
+	ExternalDocs         *spec.ExternalDocumentation
+	Tags                 []spec.Tag
+	Imports              map[string]string
+	DefaultImports       map[string]string
+	Schemes              []string
+	ExtraSchemes         []string
+	Consumes             GenSerGroups
+	Produces             GenSerGroups
+	SecurityDefinitions  GenSecuritySchemes
+	SecurityRequirements []analysis.SecurityRequirement // original security requirements as per the spec (for doc)
+	Models               []GenDefinition
+	Operations           GenOperations
+	OperationGroups      GenOperationGroups
+	SwaggerJSON          string
 	// Embedded specs: this is important for when the generated server adds routes.
 	// NOTE: there is a distinct advantage to having this in runtime rather than generated code.
 	// We are not ever going to generate the router.
@@ -742,6 +766,7 @@ type GenSecurityScheme struct {
 	AuthorizationURL string
 	TokenURL         string
 	Extensions       map[string]interface{}
+	ScopesDesc       []GenSecurityScope
 }
 
 // GenSecuritySchemes sorted representation of serializers
@@ -755,6 +780,12 @@ func (g GenSecuritySchemes) Less(i, j int) bool { return g[i].ID < g[j].ID }
 type GenSecurityRequirement struct {
 	Name   string
 	Scopes []string
+}
+
+// GenSecurityScope represents a scope descriptor for an OAuth2 security scheme
+type GenSecurityScope struct {
+	Name        string
+	Description string
 }
 
 // GenSecurityRequirements represents a compounded security requirement specification.
