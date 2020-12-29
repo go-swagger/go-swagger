@@ -653,13 +653,13 @@ func prefixForName(arg string) string {
 func replaceSpecialChar(in rune) string {
 	switch in {
 	case '.':
-		return "Dot"
+		return "-Dot-"
 	case '+':
-		return "Plus"
+		return "-Plus-"
 	case '-':
-		return "Minus"
+		return "-Dash-"
 	case '#':
-		return "HashTag"
+		return "-Hashtag-"
 	}
 	return string(in)
 }
