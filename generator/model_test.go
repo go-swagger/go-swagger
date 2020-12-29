@@ -2502,6 +2502,24 @@ func TestGenerateModel_Issue2457(t *testing.T) {
 	assertInCode(t, "myobjtag:\"foo,bar\"", buf.String())
 }
 
+func TestGenModel_Pr2464(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/enhancements/2464/fixture-2464.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "band"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	assertInCode(t, `BandNr2Dot4Ghz Band = "2.4Ghz"`, buf.String())
+	assertInCode(t, `BandNr24Ghz Band = "24Ghz"`, buf.String())
+}
+
 func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	ymlFile := "../fixtures/codegen/keep-spec-order.yml"
 	opts := opts()

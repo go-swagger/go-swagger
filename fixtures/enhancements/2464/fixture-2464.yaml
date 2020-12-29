@@ -1,0 +1,23 @@
+swagger: "2.0"
+info:
+  title: "enum variant names"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      summary: Get a device
+      operationId: "GetDevice"
+      responses:
+        200:
+          description: Get an example device
+          schema:
+            $ref: "#/definitions/Device"
+
+definitions:
+  band:
+    type: string
+    enum:
+      - "2.4Ghz"
+      - "5Ghz"
+      - "10Ghz"
+      - "24Ghz"
