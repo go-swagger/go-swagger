@@ -56,6 +56,7 @@ PascalizeSpecialChar2={{ pascalize "-1" }}
 PascalizeSpecialChar3={{ pascalize "1" }}
 PascalizeSpecialChar4={{ pascalize "-" }}
 PascalizeSpecialChar5={{ pascalize "+" }}
+PascalizeCleanupEnumVariant1={{ pascalize (cleanupEnumVariant "2.4Ghz") }}
 Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture" "table" }}
 {{ define "dictTemplate" }}{{ .Animal }} of the {{ .Shape }} {{ .Furniture }}{{ end }}
 `
@@ -430,6 +431,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
+	assert.Contains(t, rendered.String(), "PascalizeCleanupEnumVariant1=Nr2Dot4Ghz")
 	assert.Contains(t, rendered.String(), "Dict=Pony of the round table\n")
 }
 

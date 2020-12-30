@@ -135,6 +135,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"docCollectionFormat": resolvedDocCollectionFormat,
 		"trimSpace":           strings.TrimSpace,
 		"httpStatus":          httpStatus,
+		"cleanupEnumVariant":  cleanupEnumVariant,
 	})
 }
 
@@ -647,6 +648,28 @@ func prefixForName(arg string) string {
 		// other cases ($,@ etc..) handled by swag.ToGoName
 	}
 	return "Nr"
+}
+
+func replaceSpecialChar(in rune) string {
+	switch in {
+	case '.':
+		return "-Dot-"
+	case '+':
+		return "-Plus-"
+	case '-':
+		return "-Dash-"
+	case '#':
+		return "-Hashtag-"
+	}
+	return string(in)
+}
+
+func cleanupEnumVariant(in string) string {
+	replaced := ""
+	for _, char := range in {
+		replaced += replaceSpecialChar(char)
+	}
+	return replaced
 }
 
 func dict(values ...interface{}) (map[string]interface{}, error) {
