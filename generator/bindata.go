@@ -1151,67 +1151,67 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"templates": {nil, map[string]*bintree{
-		"client": {nil, map[string]*bintree{
-			"client.gotmpl": {templatesClientClientGotmpl, map[string]*bintree{}},
-			"facade.gotmpl": {templatesClientFacadeGotmpl, map[string]*bintree{}},
-			"parameter.gotmpl": {templatesClientParameterGotmpl, map[string]*bintree{}},
-			"response.gotmpl": {templatesClientResponseGotmpl, map[string]*bintree{}},
+	"templates": &bintree{nil, map[string]*bintree{
+		"client": &bintree{nil, map[string]*bintree{
+			"client.gotmpl":    &bintree{templatesClientClientGotmpl, map[string]*bintree{}},
+			"facade.gotmpl":    &bintree{templatesClientFacadeGotmpl, map[string]*bintree{}},
+			"parameter.gotmpl": &bintree{templatesClientParameterGotmpl, map[string]*bintree{}},
+			"response.gotmpl":  &bintree{templatesClientResponseGotmpl, map[string]*bintree{}},
 		}},
-		"contrib": {nil, map[string]*bintree{
-			"stratoscale": {nil, map[string]*bintree{
-				"client": {nil, map[string]*bintree{
-					"client.gotmpl": {templatesContribStratoscaleClientClientGotmpl, map[string]*bintree{}},
-					"facade.gotmpl": {templatesContribStratoscaleClientFacadeGotmpl, map[string]*bintree{}},
+		"contrib": &bintree{nil, map[string]*bintree{
+			"stratoscale": &bintree{nil, map[string]*bintree{
+				"client": &bintree{nil, map[string]*bintree{
+					"client.gotmpl": &bintree{templatesContribStratoscaleClientClientGotmpl, map[string]*bintree{}},
+					"facade.gotmpl": &bintree{templatesContribStratoscaleClientFacadeGotmpl, map[string]*bintree{}},
 				}},
-				"server": {nil, map[string]*bintree{
-					"configureapi.gotmpl": {templatesContribStratoscaleServerConfigureapiGotmpl, map[string]*bintree{}},
-					"server.gotmpl": {templatesContribStratoscaleServerServerGotmpl, map[string]*bintree{}},
+				"server": &bintree{nil, map[string]*bintree{
+					"configureapi.gotmpl": &bintree{templatesContribStratoscaleServerConfigureapiGotmpl, map[string]*bintree{}},
+					"server.gotmpl":       &bintree{templatesContribStratoscaleServerServerGotmpl, map[string]*bintree{}},
 				}},
 			}},
 		}},
-		"docstring.gotmpl": {templatesDocstringGotmpl, map[string]*bintree{}},
-		"header.gotmpl": {templatesHeaderGotmpl, map[string]*bintree{}},
-		"markdown": {nil, map[string]*bintree{
-			"docs.gotmpl": {templatesMarkdownDocsGotmpl, map[string]*bintree{}},
+		"docstring.gotmpl": &bintree{templatesDocstringGotmpl, map[string]*bintree{}},
+		"header.gotmpl":    &bintree{templatesHeaderGotmpl, map[string]*bintree{}},
+		"markdown": &bintree{nil, map[string]*bintree{
+			"docs.gotmpl": &bintree{templatesMarkdownDocsGotmpl, map[string]*bintree{}},
 		}},
-		"model.gotmpl": {templatesModelGotmpl, map[string]*bintree{}},
-		"schema.gotmpl": {templatesSchemaGotmpl, map[string]*bintree{}},
-		"schemabody.gotmpl": {templatesSchemabodyGotmpl, map[string]*bintree{}},
-		"schemaembedded.gotmpl": {templatesSchemaembeddedGotmpl, map[string]*bintree{}},
-		"schemapolymorphic.gotmpl": {templatesSchemapolymorphicGotmpl, map[string]*bintree{}},
-		"schematype.gotmpl": {templatesSchematypeGotmpl, map[string]*bintree{}},
-		"schemavalidator.gotmpl": {templatesSchemavalidatorGotmpl, map[string]*bintree{}},
-		"serializers": {nil, map[string]*bintree{
-			"additionalpropertiesserializer.gotmpl": {templatesSerializersAdditionalpropertiesserializerGotmpl, map[string]*bintree{}},
-			"aliasedserializer.gotmpl": {templatesSerializersAliasedserializerGotmpl, map[string]*bintree{}},
-			"allofserializer.gotmpl": {templatesSerializersAllofserializerGotmpl, map[string]*bintree{}},
-			"basetypeserializer.gotmpl": {templatesSerializersBasetypeserializerGotmpl, map[string]*bintree{}},
-			"marshalbinaryserializer.gotmpl": {templatesSerializersMarshalbinaryserializerGotmpl, map[string]*bintree{}},
-			"schemaserializer.gotmpl": {templatesSerializersSchemaserializerGotmpl, map[string]*bintree{}},
-			"subtypeserializer.gotmpl": {templatesSerializersSubtypeserializerGotmpl, map[string]*bintree{}},
-			"tupleserializer.gotmpl": {templatesSerializersTupleserializerGotmpl, map[string]*bintree{}},
+		"model.gotmpl":             &bintree{templatesModelGotmpl, map[string]*bintree{}},
+		"schema.gotmpl":            &bintree{templatesSchemaGotmpl, map[string]*bintree{}},
+		"schemabody.gotmpl":        &bintree{templatesSchemabodyGotmpl, map[string]*bintree{}},
+		"schemaembedded.gotmpl":    &bintree{templatesSchemaembeddedGotmpl, map[string]*bintree{}},
+		"schemapolymorphic.gotmpl": &bintree{templatesSchemapolymorphicGotmpl, map[string]*bintree{}},
+		"schematype.gotmpl":        &bintree{templatesSchematypeGotmpl, map[string]*bintree{}},
+		"schemavalidator.gotmpl":   &bintree{templatesSchemavalidatorGotmpl, map[string]*bintree{}},
+		"serializers": &bintree{nil, map[string]*bintree{
+			"additionalpropertiesserializer.gotmpl": &bintree{templatesSerializersAdditionalpropertiesserializerGotmpl, map[string]*bintree{}},
+			"aliasedserializer.gotmpl":              &bintree{templatesSerializersAliasedserializerGotmpl, map[string]*bintree{}},
+			"allofserializer.gotmpl":                &bintree{templatesSerializersAllofserializerGotmpl, map[string]*bintree{}},
+			"basetypeserializer.gotmpl":             &bintree{templatesSerializersBasetypeserializerGotmpl, map[string]*bintree{}},
+			"marshalbinaryserializer.gotmpl":        &bintree{templatesSerializersMarshalbinaryserializerGotmpl, map[string]*bintree{}},
+			"schemaserializer.gotmpl":               &bintree{templatesSerializersSchemaserializerGotmpl, map[string]*bintree{}},
+			"subtypeserializer.gotmpl":              &bintree{templatesSerializersSubtypeserializerGotmpl, map[string]*bintree{}},
+			"tupleserializer.gotmpl":                &bintree{templatesSerializersTupleserializerGotmpl, map[string]*bintree{}},
 		}},
-		"server": {nil, map[string]*bintree{
-			"builder.gotmpl": {templatesServerBuilderGotmpl, map[string]*bintree{}},
-			"configureapi.gotmpl": {templatesServerConfigureapiGotmpl, map[string]*bintree{}},
-			"doc.gotmpl": {templatesServerDocGotmpl, map[string]*bintree{}},
-			"main.gotmpl": {templatesServerMainGotmpl, map[string]*bintree{}},
-			"operation.gotmpl": {templatesServerOperationGotmpl, map[string]*bintree{}},
-			"parameter.gotmpl": {templatesServerParameterGotmpl, map[string]*bintree{}},
-			"responses.gotmpl": {templatesServerResponsesGotmpl, map[string]*bintree{}},
-			"server.gotmpl": {templatesServerServerGotmpl, map[string]*bintree{}},
-			"urlbuilder.gotmpl": {templatesServerUrlbuilderGotmpl, map[string]*bintree{}},
+		"server": &bintree{nil, map[string]*bintree{
+			"builder.gotmpl":      &bintree{templatesServerBuilderGotmpl, map[string]*bintree{}},
+			"configureapi.gotmpl": &bintree{templatesServerConfigureapiGotmpl, map[string]*bintree{}},
+			"doc.gotmpl":          &bintree{templatesServerDocGotmpl, map[string]*bintree{}},
+			"main.gotmpl":         &bintree{templatesServerMainGotmpl, map[string]*bintree{}},
+			"operation.gotmpl":    &bintree{templatesServerOperationGotmpl, map[string]*bintree{}},
+			"parameter.gotmpl":    &bintree{templatesServerParameterGotmpl, map[string]*bintree{}},
+			"responses.gotmpl":    &bintree{templatesServerResponsesGotmpl, map[string]*bintree{}},
+			"server.gotmpl":       &bintree{templatesServerServerGotmpl, map[string]*bintree{}},
+			"urlbuilder.gotmpl":   &bintree{templatesServerUrlbuilderGotmpl, map[string]*bintree{}},
 		}},
-		"structfield.gotmpl": {templatesStructfieldGotmpl, map[string]*bintree{}},
-		"swagger_json_embed.gotmpl": {templatesSwagger_json_embedGotmpl, map[string]*bintree{}},
-		"validation": {nil, map[string]*bintree{
-			"customformat.gotmpl": {templatesValidationCustomformatGotmpl, map[string]*bintree{}},
-			"maximum.gotmpl": {templatesValidationMaximumGotmpl, map[string]*bintree{}},
-			"minimum.gotmpl": {templatesValidationMinimumGotmpl, map[string]*bintree{}},
-			"multipleOf.gotmpl": {templatesValidationMultipleofGotmpl, map[string]*bintree{}},
-			"primitive.gotmpl": {templatesValidationPrimitiveGotmpl, map[string]*bintree{}},
-			"structfield.gotmpl": {templatesValidationStructfieldGotmpl, map[string]*bintree{}},
+		"structfield.gotmpl":        &bintree{templatesStructfieldGotmpl, map[string]*bintree{}},
+		"swagger_json_embed.gotmpl": &bintree{templatesSwagger_json_embedGotmpl, map[string]*bintree{}},
+		"validation": &bintree{nil, map[string]*bintree{
+			"customformat.gotmpl": &bintree{templatesValidationCustomformatGotmpl, map[string]*bintree{}},
+			"maximum.gotmpl":      &bintree{templatesValidationMaximumGotmpl, map[string]*bintree{}},
+			"minimum.gotmpl":      &bintree{templatesValidationMinimumGotmpl, map[string]*bintree{}},
+			"multipleOf.gotmpl":   &bintree{templatesValidationMultipleofGotmpl, map[string]*bintree{}},
+			"primitive.gotmpl":    &bintree{templatesValidationPrimitiveGotmpl, map[string]*bintree{}},
+			"structfield.gotmpl":  &bintree{templatesValidationStructfieldGotmpl, map[string]*bintree{}},
 		}},
 	}},
 }}

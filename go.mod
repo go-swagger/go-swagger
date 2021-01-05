@@ -1,5 +1,7 @@
 module github.com/go-swagger/go-swagger
 
+replace github.com/go-openapi/spec => github.com/fredbi/spec v0.19.6-0.20210105075300-e606f6b0651d
+
 go 1.14
 
 require (
@@ -34,7 +36,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/toqueteos/webbrowser v1.2.0
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
-	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
 	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
 	golang.org/x/tools v0.0.0-20201125231158-b5590deeca9b
