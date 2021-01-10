@@ -671,3 +671,9 @@ func TestIsInteger(t *testing.T) {
 		require.Falsef(t, isInteger(val), "did not expect %#v to be detected an integer value", val)
 	}
 }
+
+func TestGt0(t *testing.T) {
+	require.True(t, gt0(swag.Int64(1)))
+	require.False(t, gt0(swag.Int64(0)))
+	require.False(t, gt0(nil))
+}

@@ -186,7 +186,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 	if sch.Required || hasFormatValidation(sch.resolvedType) {
 		return true
 	}
-	if sch.HasStringValidations() || sch.HasNumberValidations() || sch.HasEnum() || len(sch.ItemsEnum) > 0 {
+	if sch.HasStringValidations() || sch.HasNumberValidations() || sch.HasEnum() || len(sch.ItemsEnum) > 0 || sch.HasObjectValidations() {
 		return true
 	}
 	for _, a := range sch.AllOf {
@@ -639,7 +639,7 @@ func hasValidations(model *spec.Schema, isRequired bool) bool {
 	}
 
 	v := model.Validations()
-	if v.HasNumberValidations() || v.HasStringValidations() || v.HasArrayValidations() || v.HasEnum() {
+	if v.HasNumberValidations() || v.HasStringValidations() || v.HasArrayValidations() || v.HasEnum() || v.HasObjectValidations() {
 		return true
 	}
 

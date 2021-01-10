@@ -136,6 +136,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"trimSpace":           strings.TrimSpace,
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
+		"gt0":                 gt0,
 	})
 }
 
@@ -807,4 +808,11 @@ func httpStatus(code int) string {
 	}
 	// non-standard codes deserve some name
 	return fmt.Sprintf("Status %d", code)
+}
+
+func gt0(in *int64) bool {
+	// gt0 returns true if the *int64 points to a value > 0
+	// NOTE: plain {{ gt .MinProperties 0 }} just refuses to work normally
+	// with a pointer
+	return in != nil && *in > 0
 }

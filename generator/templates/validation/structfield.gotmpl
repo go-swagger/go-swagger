@@ -40,6 +40,14 @@
 // Min Items: {{ .MinItems }}
 {{- end }}
 
+{{- if .MinProperties }}
+// Min Properties: {{ .MinProperties }}
+{{- end }}
+
+{{- if .MaxProperties }}
+// Max Properties: {{ .MaxProperties }}
+{{- end }}
+
 {{- if .UniqueItems }}
 // Unique: true
 {{- end }}
