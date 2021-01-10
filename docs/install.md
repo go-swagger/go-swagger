@@ -88,6 +88,16 @@ cd "$dir"
 go install ./cmd/swagger
 ```
 
+To install a specific version from source an appropriate tag needs to be checked out first (e.g. `v0.25.0`). Additional `-ldflags` are just to make `swagger version` command print the version and commit id instead of `dev`.
+
+```
+dir=$(mktemp -d)
+git clone https://github.com/go-swagger/go-swagger "$dir" 
+cd "$dir"
+go checkout v0.25.0
+go install -ldflags "-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=$(git describe --tags) -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=$(git rev-parse HEAD)" ./cmd/swagger
+```
+
 You are welcome to clone this repo and start contributing:
 ```
 git clone https://github.com/go-swagger/go-swagger
