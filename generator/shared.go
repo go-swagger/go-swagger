@@ -1007,46 +1007,6 @@ func gatherURISchemes(swsp *spec.Swagger, operation spec.Operation) ([]string, [
 	return schemes, extraSchemes
 }
 
-func sharedValidationsFromSimple(tpe resolvedType, v spec.CommonValidations, isRequired bool) sharedValidations {
-	guardSimpleValidations(tpe.SwaggerType, &v)
-
-	return sharedValidations{
-		Required:         isRequired,
-		Maximum:          v.Maximum,
-		ExclusiveMaximum: v.ExclusiveMaximum,
-		Minimum:          v.Minimum,
-		ExclusiveMinimum: v.ExclusiveMinimum,
-		MaxLength:        v.MaxLength,
-		MinLength:        v.MinLength,
-		Pattern:          v.Pattern,
-		MaxItems:         v.MaxItems,
-		MinItems:         v.MinItems,
-		UniqueItems:      v.UniqueItems,
-		MultipleOf:       v.MultipleOf,
-		Enum:             v.Enum,
-	}
-}
-
-func sharedValidationsFromSchema(v spec.Schema, isRequired bool) sharedValidations {
-	// validation guards have already been carried out directly by the type resolver
-
-	return sharedValidations{
-		Required:         isRequired,
-		Maximum:          v.Maximum,
-		ExclusiveMaximum: v.ExclusiveMaximum,
-		Minimum:          v.Minimum,
-		ExclusiveMinimum: v.ExclusiveMinimum,
-		MaxLength:        v.MaxLength,
-		MinLength:        v.MinLength,
-		Pattern:          v.Pattern,
-		MaxItems:         v.MaxItems,
-		MinItems:         v.MinItems,
-		UniqueItems:      v.UniqueItems,
-		MultipleOf:       v.MultipleOf,
-		Enum:             v.Enum,
-	}
-}
-
 func dumpData(data interface{}) error {
 	bb, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {

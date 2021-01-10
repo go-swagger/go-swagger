@@ -278,6 +278,8 @@ func initModelFixtures() {
 
 	// numerical validations
 	initFixture2448()
+
+	initFixtureGuardFormats()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

@@ -578,26 +578,29 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 }
 
 func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (GenHeader, error) {
-	tpe := typeForHeader(hdr) //simpleResolvedType(hdr.Type, hdr.Format, hdr.Items)
+	tpe := simpleResolvedType(hdr.Type, hdr.Format, hdr.Items, &hdr.CommonValidations)
 
 	id := swag.ToGoName(name)
 	res := GenHeader{
-		sharedValidations: sharedValidationsFromSimple(tpe, hdr.CommonValidations, true), // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
-		resolvedType:      tpe,
-		Package:           b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
-		ReceiverName:      receiver,
-		ID:                id,
-		Name:              name,
-		Path:              fmt.Sprintf("%q", name),
-		ValueExpression:   fmt.Sprintf("%s.%s", receiver, id),
-		Description:       trimBOM(hdr.Description),
-		Default:           hdr.Default,
-		HasDefault:        hdr.Default != nil,
-		Converter:         stringConverters[tpe.GoType],
-		Formatter:         stringFormatters[tpe.GoType],
-		ZeroValue:         tpe.Zero(),
-		CollectionFormat:  hdr.CollectionFormat,
-		IndexVar:          "i",
+		sharedValidations: sharedValidations{
+			Required:          true,
+			SchemaValidations: hdr.Validations(), // NOTE: Required is not defined by the Swagger schema for header. Set arbitrarily to true for convenience in templates.
+		},
+		resolvedType:     tpe,
+		Package:          b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
+		ReceiverName:     receiver,
+		ID:               id,
+		Name:             name,
+		Path:             fmt.Sprintf("%q", name),
+		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
+		Description:      trimBOM(hdr.Description),
+		Default:          hdr.Default,
+		HasDefault:       hdr.Default != nil,
+		Converter:        stringConverters[tpe.GoType],
+		Formatter:        stringFormatters[tpe.GoType],
+		ZeroValue:        tpe.Zero(),
+		CollectionFormat: hdr.CollectionFormat,
+		IndexVar:         "i",
 	}
 	res.HasValidations, res.HasSliceValidations = b.HasValidations(hdr.CommonValidations, res.resolvedType)
 
@@ -620,8 +623,12 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 
 func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, valueExpression string, items, parent *spec.Items) (GenItems, error) {
 	var res GenItems
-	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
-	res.sharedValidations = sharedValidationsFromSimple(res.resolvedType, items.CommonValidations, false)
+	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
+
+	res.sharedValidations = sharedValidations{
+		Required:          false,
+		SchemaValidations: items.Validations(),
+	}
 	res.Name = paramName
 	res.Path = path
 	res.Location = "header"
@@ -651,20 +658,20 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 
 // HasValidations resolves the validation status for simple schema objects
 func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolvedType) (hasValidations bool, hasSliceValidations bool) {
-	guardSimpleValidations(rt.SwaggerType, &sh)
-
-	hasNumberValidation := sh.Maximum != nil || sh.Minimum != nil || sh.MultipleOf != nil
-	hasStringValidation := sh.MaxLength != nil || sh.MinLength != nil || sh.Pattern != ""
-	hasSliceValidations = sh.MaxItems != nil || sh.MinItems != nil || sh.UniqueItems || len(sh.Enum) > 0
-	hasValidations = hasNumberValidation || hasStringValidation || hasSliceValidations || hasFormatValidation(rt)
+	hasSliceValidations = sh.HasArrayValidations() || sh.HasEnum()
+	hasValidations = sh.HasNumberValidations() || sh.HasStringValidations() || hasSliceValidations || hasFormatValidation(rt)
 	return
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
 	debugLog("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
-	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items)
-	res.sharedValidations = sharedValidationsFromSimple(res.resolvedType, items.CommonValidations, false)
+	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
+
+	res.sharedValidations = sharedValidations{
+		Required:          false,
+		SchemaValidations: items.Validations(),
+	}
 	res.Name = paramName
 	res.Path = path
 	res.Location = location
@@ -738,8 +745,11 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		}
 	} else {
 		// Process parameters declared in other inputs: path, query, header (SimpleSchema)
-		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items)
-		res.sharedValidations = sharedValidationsFromSimple(res.resolvedType, param.CommonValidations, param.Required)
+		res.resolvedType = simpleResolvedType(param.Type, param.Format, param.Items, &param.CommonValidations)
+		res.sharedValidations = sharedValidations{
+			Required:          param.Required,
+			SchemaValidations: param.Validations(),
+		}
 
 		res.ZeroValue = res.resolvedType.Zero()
 

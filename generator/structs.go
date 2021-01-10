@@ -192,6 +192,11 @@ func (g GenSchema) UnderlyingType() string {
 	return g.GoType
 }
 
+// ToString returns a string conversion expression for the schema
+func (g GenSchema) ToString() string {
+	return g.resolvedType.ToString(g.ValueExpression)
+}
+
 func (g GenSchemaList) Len() int      { return len(g) }
 func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
 func (g GenSchemaList) Less(i, j int) bool {
@@ -218,33 +223,13 @@ func (g GenSchemaList) Less(i, j int) bool {
 }
 
 type sharedValidations struct {
+	spec.SchemaValidations
+
 	HasValidations        bool
 	HasContextValidations bool
 	Required              bool
-
-	// String validations
-	MaxLength *int64
-	MinLength *int64
-	Pattern   string
-
-	// Number validations
-	MultipleOf       *float64
-	Minimum          *float64
-	Maximum          *float64
-	ExclusiveMinimum bool
-	ExclusiveMaximum bool
-
-	Enum      []interface{}
-	ItemsEnum []interface{}
-
-	// Slice validations
-	MinItems            *int64
-	MaxItems            *int64
-	UniqueItems         bool
-	HasSliceValidations bool
-
-	// Not used yet (perhaps intended for maxProperties, minProperties validations?)
-	NeedsSize bool
+	HasSliceValidations   bool
+	ItemsEnum             []interface{}
 
 	// NOTE: "patternProperties" and "dependencies" not supported by Swagger 2.0
 }
@@ -321,9 +306,14 @@ type GenHeader struct {
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
 // For a header objects it always returns "".
-func (g *GenHeader) ItemsDepth() string {
+func (h *GenHeader) ItemsDepth() string {
 	// NOTE: this is currently used by templates to generate explicit comments in nested structures
 	return ""
+}
+
+// ToString returns a string conversion expression for the header
+func (h GenHeader) ToString() string {
+	return h.resolvedType.ToString(h.ValueExpression)
 }
 
 // GenHeaders is a sorted collection of headers for codegen
@@ -439,6 +429,11 @@ func (g GenParameter) UnderlyingType() string {
 	return g.GoType
 }
 
+// ToString returns a string conversion expression for the parameter
+func (g GenParameter) ToString() string {
+	return g.resolvedType.ToString(g.ValueExpression)
+}
+
 // GenParameters represents a sorted parameter collection
 type GenParameters []GenParameter
 
@@ -496,6 +491,11 @@ func (g *GenItems) ItemsDepth() string {
 // UnderlyingType tells the go type or the aliased go type
 func (g GenItems) UnderlyingType() string {
 	return g.GoType
+}
+
+// ToString returns a string conversion expression for the item
+func (g GenItems) ToString() string {
+	return g.resolvedType.ToString(g.ValueExpression)
 }
 
 // GenOperationGroup represents a named (tagged) group of operations
