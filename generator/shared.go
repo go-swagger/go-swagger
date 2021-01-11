@@ -651,7 +651,8 @@ func (g *GenOpts) shouldRenderOperations() bool {
 
 func (g *GenOpts) renderApplication(app *GenApp) error {
 	log.Printf("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
-	for _, templ := range g.Sections.Application {
+	for _, tp := range g.Sections.Application {
+		templ := tp
 		if !g.shouldRenderApp(&templ, app) {
 			continue
 		}
@@ -664,7 +665,8 @@ func (g *GenOpts) renderApplication(app *GenApp) error {
 
 func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
 	log.Printf("rendering %d templates for operation group %s", len(g.Sections.OperationGroups), g.Name)
-	for _, templ := range g.Sections.OperationGroups {
+	for _, tp := range g.Sections.OperationGroups {
+		templ := tp
 		if !g.shouldRenderOperations() {
 			continue
 		}
@@ -678,7 +680,8 @@ func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
 
 func (g *GenOpts) renderOperation(gg *GenOperation) error {
 	log.Printf("rendering %d templates for operation %s", len(g.Sections.Operations), g.Name)
-	for _, templ := range g.Sections.Operations {
+	for _, tp := range g.Sections.Operations {
+		templ := tp
 		if !g.shouldRenderOperations() {
 			continue
 		}
@@ -692,7 +695,8 @@ func (g *GenOpts) renderOperation(gg *GenOperation) error {
 
 func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 	log.Printf("rendering %d templates for model %s", len(g.Sections.Models), gg.Name)
-	for _, templ := range g.Sections.Models {
+	for _, tp := range g.Sections.Models {
+		templ := tp
 		if !g.IncludeModel {
 			continue
 		}

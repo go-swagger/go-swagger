@@ -19,10 +19,8 @@ func (n *Node) String() string {
 	name := n.Field
 	if n.IsArray {
 		name = fmt.Sprintf("%s<array[%s]>", name, n.TypeName)
-	} else {
-		if len(n.TypeName) > 0 {
-			name = fmt.Sprintf("%s<%s>", name, n.TypeName)
-		}
+	} else if len(n.TypeName) > 0 {
+		name = fmt.Sprintf("%s<%s>", name, n.TypeName)
 	}
 	if n.ChildNode != nil {
 		return fmt.Sprintf("%s.%s", name, n.ChildNode.String())
@@ -42,7 +40,7 @@ func (n *Node) AddLeafNode(toAdd *Node) *Node {
 	return n
 }
 
-//Copy deep copy of this node and children
+// Copy deep copy of this node and children
 func (n Node) Copy() *Node {
 	newChild := n.ChildNode
 	if newChild != nil {

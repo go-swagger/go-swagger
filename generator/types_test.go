@@ -140,7 +140,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias   string
 				}{
 					Package: "github.com/fredbi/mymodels",
-					Alias:   "mymodels",
+					// Alias:   "mymodels",
 				},
 				Hints: struct {
 					Kind         string
@@ -184,7 +184,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias   string
 				}{
 					Package: "github.com/fredbi/mymodels",
-					Alias:   "mymodels",
+					// Alias:   "mymodels",
 				},
 				Hints: struct {
 					Kind         string
@@ -225,7 +225,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias   string
 				}{
 					Package: "github.com/fredbi/mymodels",
-					Alias:   "mymodels",
+					// Alias:   "mymodels",
 				},
 				Hints: struct {
 					Kind         string
@@ -266,7 +266,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Alias   string
 				}{
 					Package: "github.com/fredbi/mymodels",
-					Alias:   "mymodels",
+					// Alias:   "mymodels",
 				},
 				Hints: struct {
 					Kind         string
@@ -303,8 +303,8 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					Package string
 					Alias   string
 				}{
-					Package: "github.com/example/custom",
-					Alias:   "custom",
+					// Package: "github.com/example/custom",
+					// Alias:   "custom",
 				},
 				Hints: struct {
 					Kind         string
@@ -351,12 +351,13 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			extType, ok := hasExternalType(schema.Extensions)
 			require.Truef(t, ok, "fixture %d", i)
 			require.NotNil(t, extType)
-			//require.EqualValues(t, fixture.expected, extType) // TODO(fred)
 
 			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
 			require.EqualValuesf(t, fixture.knownDefs, struct{ tpe, pkg, alias string }{tpe, pkg, alias}, "fixture %d", i)
 
 			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema, false)
+
+			require.EqualValues(t, fixture.expected, extType)
 
 			resolved.Extensions = nil // don't assert this
 			require.EqualValuesf(t, fixture.resolved, resolved, "fixture %d", i)

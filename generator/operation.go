@@ -193,7 +193,8 @@ func (o *operationGenerator) Generate() error {
 	operations = append(operations, op)
 	sort.Sort(operations)
 
-	for _, op := range operations {
+	for _, pp := range operations {
+		op := pp
 		if o.GenOpts.DumpData {
 			_ = dumpData(swag.ToDynamicJSON(op))
 			continue
@@ -422,7 +423,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	sort.Strings(consumes)
 
 	var successResponse *GenResponse
-	for _, sr := range successResponses {
+	for _, resp := range successResponses {
+		sr := resp
 		if sr.IsSuccess {
 			successResponse = &sr
 			break

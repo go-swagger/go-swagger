@@ -233,7 +233,7 @@ func TestDiffOnlyBreaking(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "compatibility test FAILED")
 
-	expected.Seek(0, os.SEEK_SET)
+	_, _ = expected.Seek(0, io.SeekStart)
 	result := bytes.NewBuffer(output)
 	cmdtest.AssertReadersContent(t, true, expected, result)
 }

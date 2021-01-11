@@ -126,7 +126,8 @@ func (sd *SpecAnalyser) AnalyseDefinitions() {
 		alreadyReferenced[k] = true
 	}
 	location := DifferenceLocation{Node: &Node{Field: "Spec Definitions"}}
-	for name1, schema1 := range sd.Definitions1 {
+	for name1, sch := range sd.Definitions1 {
+		schema1 := sch
 		if _, ok := alreadyReferenced[name1]; !ok {
 			childLocation := location.AddNode(&Node{Field: name1})
 			if schema2, ok := sd.Definitions2[name1]; ok {
@@ -190,7 +191,7 @@ func (sd *SpecAnalyser) analyseRequestParams() {
 				}
 				// detect added changed params
 				for paramName2, param2 := range params2 {
-					//changed?
+					// changed?
 					if param1, ok := params1[paramName2]; ok {
 						sd.compareParams(URLMethod, paramLocation, paramName2, param1, param2)
 					} else {
@@ -270,7 +271,7 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 							op2Response.Schema)
 					}
 				} else {
-					//op2Response
+					// op2Response
 					sd.Diffs = sd.Diffs.addDiff(SpecDifference{
 						DifferenceLocation: DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code2, Node: getSchemaDiffNode("Body", op2Response.Schema)},
 						Code:               AddedResponse})
@@ -416,7 +417,8 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 	refDiffs := []TypeDiff{}
 	refDiffs = CheckRefChange(refDiffs, schema1, schema2)
 	if len(refDiffs) > 0 {
-		for _, diff := range refDiffs {
+		for _, d := range refDiffs {
+			diff := d
 			sd.addTypeDiff(location, &diff)
 		}
 		return
@@ -448,7 +450,8 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 }
 
 func (sd *SpecAnalyser) addDiffs(location DifferenceLocation, diffs []TypeDiff) {
-	for _, eachTypeDiff := range diffs {
+	for _, e := range diffs {
+		eachTypeDiff := e
 		if eachTypeDiff.Change != NoChangeDetected {
 			sd.addTypeDiff(location, &eachTypeDiff)
 		}
@@ -519,11 +522,11 @@ func (sd *SpecAnalyser) schemaFromRef(ref spec.Ref, defns *spec.Definitions) (ac
 
 }
 
-//PropertyDefn combines a property with its required-ness
+// PropertyDefn combines a property with its required-ness
 type PropertyDefn struct {
 	Schema   *spec.Schema
 	Required bool
 }
 
-//PropertyMap a unified map including all AllOf fields
+// PropertyMap a unified map including all AllOf fields
 type PropertyMap map[string]PropertyDefn

@@ -41,7 +41,7 @@ func main() {
 	// Recovering from internal panics
 	// Stack may be printed in Debug mode
 	// Need import "runtime/debug".
-	//defer func() {
+	// defer func() {
 	//	r := recover()
 	//	if r != nil {
 	//		log.Printf("Fatal error:", r)
@@ -50,7 +50,7 @@ func main() {
 	//		}
 	//		os.Exit(1)
 	//	}
-	//}()
+	// }()
 
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"

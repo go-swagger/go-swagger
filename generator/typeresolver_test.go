@@ -518,7 +518,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 	resolver.KnownDefs["TheModel"] = struct{}{}
 	defer func() { resolver.ModelName = "" }()
 
-	//very poor schema definitions (as in none)
+	// very poor schema definitions (as in none)
 	types := []string{"object", ""}
 	for _, tpe := range types {
 		sch := new(spec.Schema)

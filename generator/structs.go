@@ -361,8 +361,8 @@ type GenParameter struct {
 	Child  *GenItems
 	Parent *GenItems
 
-	/// Unused
-	//BodyParam *GenParameter
+	// Unused
+	// BodyParam *GenParameter
 
 	Default         interface{}
 	HasDefault      bool

@@ -1627,8 +1627,6 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				`					res = append(res, err)`,
 				`					break`,
 				// removed redundant assignment
-				//`			if len(res) == 0 {`,
-				//`				o.MyObject = body`,
 				`	if len(res) > 0 {`,
 				`		return errors.CompositeValidationError(res...)`,
 			},
@@ -2545,13 +2543,11 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`type GetMapArrayParams struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
 				// maps are now simple types
-				//`	MapOfArray models.GetMapArrayParamsBody`,
 				`	MapOfArray map[string]models.ModelArray`,
 				`func (o *GetMapArrayParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
 				`	if runtime.HasBody(r) {`,
 				`		defer r.Body.Close(`,
-				//`		var body models.GetMapArrayParamsBody`,
 				`		var body map[string]models.ModelArray`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
@@ -2559,7 +2555,6 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfArray", "body", "", err)`,
 				`		} else {`,
-				//`			if err := body.Validate(route.Formats); err != nil {`,
 				`       	for k := range body {`,
 				`       		if err := validate.Required(fmt.Sprintf("%s.%v", "mapOfArray", k), "body", body[k]); err != nil {`,
 				`       		if val, ok := body[k]; ok {`,
@@ -2812,14 +2807,12 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`	return GetMapObjectParams{`,
 				`type GetMapObjectParams struct {`,
 				"	HTTPRequest *http.Request `json:\"-\"`",
-				//`	MapOfObject models.GetMapObjectParamsBody`,
 				// maps are now simple types
 				`	MapOfObject map[string]models.ModelObject`,
 				`func (o *GetMapObjectParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {`,
 				`	o.HTTPRequest = r`,
 				`	if runtime.HasBody(r) {`,
 				`		defer r.Body.Close(`,
-				//`		var body models.GetMapObjectParamsBody`,
 				`		var body map[string]models.ModelObject`,
 				`		if err := route.Consumer.Consume(r.Body, &body); err != nil {`,
 				`			if err == io.EOF {`,
@@ -2827,7 +2820,6 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 				`			} else {`,
 				`				res = append(res, errors.NewParseError("mapOfObject", "body", "", err)`,
 				`		} else {`,
-				//`			if err := body.Validate(route.Formats); err != nil {`,
 				`       	for k := range body {`,
 				`       		if err := validate.Required(fmt.Sprintf("%s.%v", "mapOfObject", k), "body", body[k]); err != nil {`,
 				`       		if val, ok := body[k]; ok {`,
@@ -3131,7 +3123,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 }
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	t.Parallel()
-	//defer discardOutput()()
+	defer discardOutput()()
 
 	// testing fixture-1536-4.yaml with flatten
 	// param body with maps
@@ -3792,7 +3784,6 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 				// without Required
 				`							continue`,
 				// with Required
-				//`							return errors.Required(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedArray01", i), ii), iii), ""`,
 				`						nestedArray01III := nestedArray01IIIV`,
 				`						if err := validate.MinLength(fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", fmt.Sprintf("%s.%v", "nestedArray01", i), ii), iii), "", *nestedArray01III, 0); err != nil {`,
 				`						nestedArray01IIIR = append(nestedArray01IIIR, nestedArray01III`,

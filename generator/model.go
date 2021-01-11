@@ -404,7 +404,8 @@ func findImports(sch *GenSchema) map[string]string {
 		}
 	}
 	if sch.Properties != nil {
-		for _, p := range sch.Properties {
+		for _, props := range sch.Properties {
+			p := props
 			sub := findImports(&p)
 			for k, v := range sub {
 				imp[k] = v
@@ -418,7 +419,8 @@ func findImports(sch *GenSchema) map[string]string {
 		}
 	}
 	if sch.AllOf != nil {
-		for _, p := range sch.AllOf {
+		for _, props := range sch.AllOf {
+			p := props
 			sub := findImports(&p)
 			for k, v := range sub {
 				imp[k] = v
@@ -747,16 +749,17 @@ func (sg *schemaGenContext) buildProperties() error {
 		debugLogAsJSON("building property %s[%q] (IsTuple: %t) (IsBaseType: %t) (HasValidations: %t)",
 			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.GenSchema.HasValidations, v)
 
+		vv := v
+
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&v, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
-		if sg.Schema.Discriminator == k {
-			tpe.IsNullable = false
-		}
+		tpe, err := sg.TypeResolver.ResolveSchema(&vv, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
 		if err != nil {
 			return err
 		}
+		if sg.Schema.Discriminator == k {
+			tpe.IsNullable = false
+		}
 
-		vv := v
 		var hasValidation bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			// this is an anonymous complex construct: build a new new type for it
@@ -930,7 +933,8 @@ func (sg *schemaGenContext) buildAllOf() error {
 		sg.Container = sg.Name
 	}
 	debugLogAsJSON("building all of for %d entries", len(sg.Schema.AllOf), sg.Schema)
-	for i, sch := range sg.Schema.AllOf {
+	for i, schema := range sg.Schema.AllOf {
+		sch := schema
 		tpe, ert := sg.TypeResolver.ResolveSchema(&sch, sch.Ref.String() == "", false)
 		if ert != nil {
 			return ert
@@ -1046,7 +1050,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 		}
 
 		if !tpe.IsMap {
-			//reached the end of the rabbit hole
+			// reached the end of the rabbit hole
 			if tpe.IsComplexObject && tpe.IsAnonymous {
 				// found an anonymous object: create the struct from a newly created definition
 				nw := l.Context.makeNewStruct(l.Context.makeRefName()+" Anon", *l.Type.AdditionalProperties.Schema)
@@ -1070,7 +1074,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 		l = l.Next
 	}
 
-	//return top and bottom entries of this stack of AdditionalProperties
+	// return top and bottom entries of this stack of AdditionalProperties
 	return ms, l, nil
 }
 
@@ -1526,7 +1530,8 @@ func (sg *schemaGenContext) buildItems() error {
 	if sg.Named {
 		sg.GenSchema.Name = sg.Name
 		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name)
-		for i, s := range sg.Schema.Items.Schemas {
+		for i, sch := range sg.Schema.Items.Schemas {
+			s := sch
 			elProp := sg.NewTupleElement(&s, i)
 
 			if s.Ref.String() == "" {
@@ -1769,8 +1774,8 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 	var seenNullable bool
 	var schemaToLift spec.Schema
 
-	for _, sch := range sg.Schema.AllOf {
-
+	for _, schema := range sg.Schema.AllOf {
+		sch := schema
 		tpe, err := sg.TypeResolver.ResolveSchema(&sch, true, true)
 		if err != nil {
 			return err
@@ -1901,11 +1906,12 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 				// render element of aliased or anonyous map as a pointer
 				it := elem.Items
 				for it != nil {
-					if it.IsPrimitive && it.IsNullable {
+					switch {
+					case it.IsPrimitive && it.IsNullable:
 						sg.checkNeedsPointer(outer, sch, it)
-					} else if it.IsMap {
+					case it.IsMap:
 						sg.buildMapOfNullable(it)
-					} else if !it.IsPrimitive && !it.IsArray && it.IsComplexObject && it.IsNullable {
+					case !it.IsPrimitive && !it.IsArray && it.IsComplexObject && it.IsNullable:
 						// structs in map are not rendered as pointer by default
 						// unless some x-nullable overrides says so
 						_, forced := it.Extensions[xNullable]

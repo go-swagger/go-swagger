@@ -704,7 +704,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 		IsClient:          true,
 	}
 
-	//Testing Server Generation
+	// Testing Server Generation
 	require.NoError(t, opts.EnsureDefaults())
 
 	// Full flattening
@@ -764,7 +764,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 		IsClient:          true,
 	}
 
-	//Testing Server Generation
+	// Testing Server Generation
 	require.NoError(t, opts.EnsureDefaults())
 
 	// full flattening

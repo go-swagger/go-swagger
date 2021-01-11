@@ -135,11 +135,12 @@ func propertiesFor(schema *spec.Schema, getRefFn SchemaFromRefFn) PropertyMap {
 	if schema.Properties != nil {
 		for name, prop := range schema.Properties {
 			prop := prop
-			required, _ := requiredMap[name]
+			required := requiredMap[name]
 			props[name] = PropertyDefn{Schema: &prop, Required: required}
 		}
 	}
-	for _, eachAllOf := range schema.AllOf {
+	for _, e := range schema.AllOf {
+		eachAllOf := e
 		allOfMap := propertiesFor(&eachAllOf, getRefFn)
 		for name, prop := range allOfMap {
 			props[name] = prop
