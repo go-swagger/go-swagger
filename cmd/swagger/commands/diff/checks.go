@@ -32,7 +32,7 @@ func CompareEnums(left, right []interface{}) []TypeDiff {
 	return diffs
 }
 
-//CompareProperties recursive property comparison
+// CompareProperties recursive property comparison
 func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema2 *spec.Schema, getRefFn1 SchemaFromRefFn, getRefFn2 SchemaFromRefFn, cmp CompareSchemaFn) []SpecDifference {
 	propDiffs := []SpecDifference{}
 
@@ -73,7 +73,7 @@ func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema
 
 }
 
-//CompareFloatValues compares a float data item
+// CompareFloatValues compares a float data item
 func CompareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
 	diffs := []TypeDiff{}
 	if val1 != nil && val2 != nil {
@@ -94,7 +94,7 @@ func CompareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreate
 	return diffs
 }
 
-//CompareIntValues compares to int data items
+// CompareIntValues compares to int data items
 func CompareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
 	diffs := []TypeDiff{}
 	if val1 != nil && val2 != nil {
@@ -142,10 +142,8 @@ func CheckRefChange(diffs []TypeDiff, type1, type2 interface{}) (diffReturn []Ty
 		if ref1 != ref2 {
 			diffReturn = addTypeDiff(diffReturn, TypeDiff{Change: RefTargetChanged, FromType: getSchemaTypeStr(type1), ToType: getSchemaTypeStr(type2)})
 		}
-	} else {
-		if isRefType(type1) != isRefType(type2) {
-			diffReturn = addTypeDiff(diffReturn, TypeDiff{Change: ChangedType, FromType: getSchemaTypeStr(type1), ToType: getSchemaTypeStr(type2)})
-		}
+	} else if isRefType(type1) != isRefType(type2) {
+		diffReturn = addTypeDiff(diffReturn, TypeDiff{Change: ChangedType, FromType: getSchemaTypeStr(type1), ToType: getSchemaTypeStr(type2)})
 	}
 	return
 }

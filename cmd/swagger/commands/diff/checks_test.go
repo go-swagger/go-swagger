@@ -82,6 +82,7 @@ func Test_getRef(t *testing.T) {
 // 	}
 // }
 
+/*
 func arraySchemaOf(typename string) *spec.Schema {
 	return &spec.Schema{SchemaProps: spec.SchemaProps{
 		Type: spec.StringOrArray{"array"},
@@ -92,6 +93,7 @@ func arraySchemaOf(typename string) *spec.Schema {
 	},
 	}
 }
+*/
 
 func TestCheckToFromPrimitiveType(t *testing.T) {
 	type args struct {

@@ -212,7 +212,6 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 								for _, vv := range validNumericArgs {
 									line := strings.Join([]string{pref, es1, nm1, es2, nm2, es3, ":", es4, vv}, "")
 									matches := matcher.FindStringSubmatch(line)
-									//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
 									assert.Len(t, matches, 2)
 									assert.Equal(t, vv, matches[1])
 									cnt++
@@ -262,7 +261,6 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 							}
 							for _, line := range lines {
 								matches := matcher.FindStringSubmatch(line)
-								//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
 								assert.Len(t, matches, 2)
 								assert.Equal(t, vv, matches[1])
 								cnt++
@@ -277,7 +275,6 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 							}
 							for _, line := range lines {
 								matches := matcher.FindStringSubmatch(line)
-								//fmt.Printf("matching %q, matches (%d): %v\n", line, len(matches), matches)
 								assert.Empty(t, matches)
 								cnt++
 							}

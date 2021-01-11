@@ -532,26 +532,25 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 
 func TestGenerateModel_WithMap(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["WithMap"]
-		opts := opts()
-		genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.False(t, genModel.HasAdditionalProperties)
-			prop := getDefinitionProperty(genModel, "data")
-			assert.True(t, prop.HasAdditionalProperties)
-			assert.True(t, prop.IsMap)
-			assert.False(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				res := buf.String()
-				assertInCode(t, "type WithMap struct {", res)
-				assertInCode(t, "Data map[string]string `json:\"data,omitempty\"`", res)
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["WithMap"]
+	opts := opts()
+	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.False(t, genModel.HasAdditionalProperties)
+	prop := getDefinitionProperty(genModel, "data")
+	assert.True(t, prop.HasAdditionalProperties)
+	assert.True(t, prop.IsMap)
+	assert.False(t, prop.IsComplexObject)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, templates.MustGet("model").Execute(buf, genModel))
+
+	res := buf.String()
+	assertInCode(t, "type WithMap struct {", res)
+	assertInCode(t, "Data map[string]string `json:\"data,omitempty\"`", res)
 }
 
 func TestGenerateModel_WithMapInterface(t *testing.T) {
@@ -867,669 +866,666 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 
 func TestGenerateModel_Notables(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Notables"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Equal(t, "[]*Notable", genModel.GoType) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("notables.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "type Notables []*Notable", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Notables"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.Equal(t, "[]*Notable", genModel.GoType)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+	require.NoError(t, err)
+
+	ff, err := opts.LanguageOpts.FormatContent("notables.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "type Notables []*Notable", res)
 }
 
 func TestGenerateModel_Notablix(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Notablix"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("notablix.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "type Notablix [][][]*Notable", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Notablix"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("notablix.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "type Notablix [][][]*Notable", res)
 }
 
 func TestGenerateModel_Stats(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Stats"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("stats.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "type Stats []*StatsItems0", res)
-					assertInCode(t, "type StatsItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Stats"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("stats.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "type Stats []*StatsItems0", res)
+	assertInCode(t, "type StatsItems0 struct {", res)
+	assertInCode(t, "Points []int64 `json:\"points\"`", res)
 }
 
 func TestGenerateModel_Statix(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Statix"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("statix.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "type Statix [][][]*StatixItems0", res)
-					assertInCode(t, "type StatixItems0 struct {", res)
-					assertInCode(t, "Points []int64 `json:\"points\"`", res)
-				} /*else {
-					fmt.Println(buf.String())
-				}*/
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Statix"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("statix.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "type Statix [][][]*StatixItems0", res)
+	assertInCode(t, "type StatixItems0 struct {", res)
+	assertInCode(t, "Points []int64 `json:\"points\"`", res)
 }
 
 func TestGenerateModel_WithItems(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["WithItems"]
-		opts := opts()
-		genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Nil(t, genModel.Items)
-			assert.True(t, genModel.IsComplexObject)
-			prop := getDefinitionProperty(genModel, "tags")
-			assert.NotNil(t, prop.Items)
-			assert.True(t, prop.IsArray)
-			assert.False(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := tt.template.Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				res := buf.String()
-				assertInCode(t, "type WithItems struct {", res)
-				assertInCode(t, "Tags []string `json:\"tags\"`", res)
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["WithItems"]
+	opts := opts()
+	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schema")}
+
+	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Nil(t, genModel.Items)
+	assert.True(t, genModel.IsComplexObject)
+	prop := getDefinitionProperty(genModel, "tags")
+
+	assert.NotNil(t, prop.Items)
+	assert.True(t, prop.IsArray)
+	assert.False(t, prop.IsComplexObject)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, tt.template.Execute(buf, genModel))
+
+	res := buf.String()
+	assertInCode(t, "type WithItems struct {", res)
+	assertInCode(t, "Tags []string `json:\"tags\"`", res)
 }
 
 func TestGenerateModel_WithComplexItems(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithComplexItems"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Nil(t, genModel.Items)
-			assert.True(t, genModel.IsComplexObject)
-			prop := getDefinitionProperty(genModel, "tags")
-			assert.NotNil(t, prop.Items)
-			assert.True(t, prop.IsArray)
-			assert.False(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(b)
-					assertInCode(t, "type WithComplexItems struct {", res)
-					assertInCode(t, "type WithComplexItemsTagsItems0 struct {", res)
-					assertInCode(t, "Tags []*WithComplexItemsTagsItems0 `json:\"tags\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "WithComplexItems"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Nil(t, genModel.Items)
+	assert.True(t, genModel.IsComplexObject)
+	prop := getDefinitionProperty(genModel, "tags")
+	assert.NotNil(t, prop.Items)
+	assert.True(t, prop.IsArray)
+	assert.False(t, prop.IsComplexObject)
+	buf := bytes.NewBuffer(nil)
+
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(b)
+	assertInCode(t, "type WithComplexItems struct {", res)
+	assertInCode(t, "type WithComplexItemsTagsItems0 struct {", res)
+	assertInCode(t, "Tags []*WithComplexItemsTagsItems0 `json:\"tags\"`", res)
 }
 
 func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithItemsAndAdditional"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Nil(t, genModel.Items)
-			assert.True(t, genModel.IsComplexObject)
-			prop := getDefinitionProperty(genModel, "tags")
-			assert.True(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(b)
-					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
-					// this would fail if it accepts additionalItems because it would come out as []interface{}
-					assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
-					assertInCode(t, "P0 *string `json:\"-\"`", res)
-					assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "WithItemsAndAdditional"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Nil(t, genModel.Items)
+	assert.True(t, genModel.IsComplexObject)
+	prop := getDefinitionProperty(genModel, "tags")
+	assert.True(t, prop.IsComplexObject)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(b)
+	assertInCode(t, "type "+k+" struct {", res)
+	assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
+	// this would fail if it accepts additionalItems because it would come out as []interface{}
+	assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
+	assertInCode(t, "P0 *string `json:\"-\"`", res)
+	assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
 }
 
 func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithItemsAndAdditional2"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Nil(t, genModel.Items)
-			assert.True(t, genModel.IsComplexObject)
-			prop := getDefinitionProperty(genModel, "tags")
-			assert.True(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(b)
-					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
-					// this would fail if it accepts additionalItems because it would come out as []interface{}
-					assertInCode(t, "P0 *string `json:\"-\"`", res)
-					assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
-					assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
+	require.NoError(t, err)
 
-				}
-			}
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "WithItemsAndAdditional2"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Nil(t, genModel.Items)
+	assert.True(t, genModel.IsComplexObject)
+	prop := getDefinitionProperty(genModel, "tags")
+	assert.True(t, prop.IsComplexObject)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	b, err := opts.LanguageOpts.FormatContent("with_complex_items.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(b)
+	assertInCode(t, "type "+k+" struct {", res)
+	assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
+	// this would fail if it accepts additionalItems because it would come out as []interface{}
+	assertInCode(t, "P0 *string `json:\"-\"`", res)
+	assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
+	assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
 }
 
 func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithComplexAdditional"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Nil(t, genModel.Items)
-			assert.True(t, genModel.IsComplexObject)
-			prop := getDefinitionProperty(genModel, "tags")
-			assert.True(t, prop.IsComplexObject)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				b, err := opts.LanguageOpts.FormatContent("with_complex_additional.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(b)
-					assertInCode(t, "type WithComplexAdditional struct {", res)
-					assertInCode(t, "type WithComplexAdditionalTagsTuple0 struct {", res)
-					assertInCode(t, "Tags *WithComplexAdditionalTagsTuple0 `json:\"tags,omitempty\"`", res)
-					assertInCode(t, "P0 *string `json:\"-\"`", res)
-					assertInCode(t, "WithComplexAdditionalTagsTuple0Items []*WithComplexAdditionalTagsItems `json:\"-\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "WithComplexAdditional"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Nil(t, genModel.Items)
+	assert.True(t, genModel.IsComplexObject)
+	prop := getDefinitionProperty(genModel, "tags")
+	assert.True(t, prop.IsComplexObject)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	b, err := opts.LanguageOpts.FormatContent("with_complex_additional.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(b)
+	assertInCode(t, "type WithComplexAdditional struct {", res)
+	assertInCode(t, "type WithComplexAdditionalTagsTuple0 struct {", res)
+	assertInCode(t, "Tags *WithComplexAdditionalTagsTuple0 `json:\"tags,omitempty\"`", res)
+	assertInCode(t, "P0 *string `json:\"-\"`", res)
+	assertInCode(t, "WithComplexAdditionalTagsTuple0Items []*WithComplexAdditionalTagsItems `json:\"-\"`", res)
 }
 
 func TestGenerateModel_SimpleTuple(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "SimpleTuple"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Len(t, genModel.ExtraSchemas, 1) {
-			// NOTE: with PR#1592, an extra schema is added here because of the allOf tuple element.
-			// This uncovers another issue with special AllOfs (e.g. allOf [ ..., x-nullable:true ])
-			// TODO(fredbi): fix liftSpecialAllOf() to revert to: assert.Empty(t, genModel.ExtraSchemas)
-			assert.True(t, genModel.IsTuple)
-			assert.False(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsArray)
-			assert.False(t, genModel.IsAnonymous)
-			assert.Equal(t, k, genModel.Name)
-			assert.Equal(t, k, genModel.GoType)
-			assert.Len(t, genModel.Properties, 5)
-			buf := bytes.NewBuffer(nil)
-			err = tt.template.Execute(buf, genModel)
-			assert.NoError(t, err)
-			res := buf.String()
-			assertInCode(t, "swagger:model "+k, res)
-			assertInCode(t, "type "+k+" struct {", res)
-			assertInCode(t, "P0 *int64 `json:\"-\"`", res)
-			assertInCode(t, "P1 *string `json:\"-\"`", res)
-			assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
-			assertInCode(t, "P3 *Notable `json:\"-\"`", res)
-			// NOTE: with PR#1592, an extra schema is added here because of the allOf tuple element.
-			// This uncovers another issue with special AllOfs (e.g. allOf [ ..., x-nullable:true ])
-			// TODO(fredbi): fix liftSpecialAllOf() to revert to: assert.Empty(t, genModel.ExtraSchemas)
-			//assertInCode(t, "P4 *Notable `json:\"-\"`", res)
-			assertInCode(t, "P4 *SimpleTupleItems4 `json:\"-\"`", res)
-			assertInCode(t, k+") UnmarshalJSON", res)
-			assertInCode(t, k+") MarshalJSON", res)
-			assertInCode(t, "json.Marshal(data)", res)
-			assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	require.NoError(t, err)
 
-			for i, p := range genModel.Properties {
-				m := "m.P" + strconv.Itoa(i)
-				r := "&dataP" + strconv.Itoa(i)
-				var rr string
-				if !p.IsNullable {
-					rr = "dataP" + strconv.Itoa(i)
-				} else {
-					rr = r
-				}
-				assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
-				assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
-				assertInCode(t, "P"+strconv.Itoa(i)+",", res)
-				assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
-			}
+	definitions := specDoc.Spec().Definitions
+	k := "SimpleTuple"
+	schema := definitions[k]
+	opts := opts()
+
+	tt := templateTest{t, opts.templates.MustGet("model")}
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.Len(t, genModel.ExtraSchemas, 1)
+
+	// NOTE: with PR#1592, an extra schema is added here because of the allOf tuple element.
+	// This uncovers another issue with special AllOfs (e.g. allOf [ ..., x-nullable:true ])
+	// TODO(fredbi): fix liftSpecialAllOf() to revert to: assert.Empty(t, genModel.ExtraSchemas)
+	assert.True(t, genModel.IsTuple)
+	assert.False(t, genModel.IsComplexObject)
+	assert.False(t, genModel.IsArray)
+	assert.False(t, genModel.IsAnonymous)
+	assert.Equal(t, k, genModel.Name)
+	assert.Equal(t, k, genModel.GoType)
+	assert.Len(t, genModel.Properties, 5)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, tt.template.Execute(buf, genModel))
+
+	res := buf.String()
+	assertInCode(t, "swagger:model "+k, res)
+	assertInCode(t, "type "+k+" struct {", res)
+	assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *string `json:\"-\"`", res)
+	assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
+	assertInCode(t, "P3 *Notable `json:\"-\"`", res)
+	// NOTE: with PR#1592, an extra schema is added here because of the allOf tuple element.
+	// This uncovers another issue with special AllOfs (e.g. allOf [ ..., x-nullable:true ])
+	// TODO(fredbi): fix liftSpecialAllOf() to revert to: assert.Empty(t, genModel.ExtraSchemas)
+	// assertInCode(t, "P4 *Notable `json:\"-\"`", res)
+	assertInCode(t, "P4 *SimpleTupleItems4 `json:\"-\"`", res)
+	assertInCode(t, k+") UnmarshalJSON", res)
+	assertInCode(t, k+") MarshalJSON", res)
+	assertInCode(t, "json.Marshal(data)", res)
+	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+
+	for i, p := range genModel.Properties {
+		m := "m.P" + strconv.Itoa(i)
+		r := "&dataP" + strconv.Itoa(i)
+		var rr string
+		if !p.IsNullable {
+			rr = "dataP" + strconv.Itoa(i)
+		} else {
+			rr = r
 		}
+		assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+		assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
+		assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+		assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
 	}
 }
 
 func TestGenerateModel_TupleWithExtra(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "TupleWithExtra"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Empty(t, genModel.ExtraSchemas) {
-			assert.True(t, genModel.IsTuple)
-			assert.False(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsArray)
-			assert.False(t, genModel.IsAnonymous)
-			assert.True(t, genModel.HasAdditionalItems)
-			assert.NotNil(t, genModel.AdditionalItems)
-			assert.Equal(t, k, genModel.Name)
-			assert.Equal(t, k, genModel.GoType)
-			assert.Len(t, genModel.Properties, 4)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "swagger:model "+k, res)
-					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
-					assertInCode(t, "P1 *string `json:\"-\"`", res)
-					assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
-					assertInCode(t, "P3 *Notable `json:\"-\"`", res)
-					assertInCode(t, k+"Items []float64 `json:\"-\"`", res)
-					assertInCode(t, k+") UnmarshalJSON", res)
-					assertInCode(t, k+") MarshalJSON", res)
+	require.NoError(t, err)
 
-					for i, p := range genModel.Properties {
-						m := "m.P" + strconv.Itoa(i)
-						r := "&dataP" + strconv.Itoa(i)
-						var rr string
-						if !p.IsNullable {
-							rr = "dataP" + strconv.Itoa(i)
-						} else {
-							rr = r
-						}
-						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
-						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
-						assertInCode(t, "dec := json.NewDecoder(buf)", res)
-						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
-						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
-						assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
-					}
-					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd float64", res)
-					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
-					assertInCode(t, "dec := json.NewDecoder(buf)", res)
-					assertInCode(t, "dec.Decode(&toadd)", res)
-					assertInCode(t, "json.Marshal(data)", res)
-					assertInCode(t, "for _, v := range m."+k+"Items", res)
-				}
-			}
+	definitions := specDoc.Spec().Definitions
+	k := "TupleWithExtra"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.Empty(t, genModel.ExtraSchemas)
+
+	assert.True(t, genModel.IsTuple)
+	assert.False(t, genModel.IsComplexObject)
+	assert.False(t, genModel.IsArray)
+	assert.False(t, genModel.IsAnonymous)
+	assert.True(t, genModel.HasAdditionalItems)
+	assert.NotNil(t, genModel.AdditionalItems)
+	assert.Equal(t, k, genModel.Name)
+	assert.Equal(t, k, genModel.GoType)
+	assert.Len(t, genModel.Properties, 4)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "swagger:model "+k, res)
+	assertInCode(t, "type "+k+" struct {", res)
+	assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *string `json:\"-\"`", res)
+	assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
+	assertInCode(t, "P3 *Notable `json:\"-\"`", res)
+	assertInCode(t, k+"Items []float64 `json:\"-\"`", res)
+	assertInCode(t, k+") UnmarshalJSON", res)
+	assertInCode(t, k+") MarshalJSON", res)
+
+	for i, p := range genModel.Properties {
+		m := "m.P" + strconv.Itoa(i)
+		r := "&dataP" + strconv.Itoa(i)
+		var rr string
+		if !p.IsNullable {
+			rr = "dataP" + strconv.Itoa(i)
+		} else {
+			rr = r
 		}
+		assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+		assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+		assertInCode(t, "dec := json.NewDecoder(buf)", res)
+		assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
+		assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+		assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
 	}
+
+	assertInCode(t, "var lastIndex int", res)
+	assertInCode(t, "var toadd float64", res)
+	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+	assertInCode(t, "dec := json.NewDecoder(buf)", res)
+	assertInCode(t, "dec.Decode(&toadd)", res)
+	assertInCode(t, "json.Marshal(data)", res)
+	assertInCode(t, "for _, v := range m."+k+"Items", res)
 }
 
 func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "TupleWithComplex"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) { //&& assert.Empty(t, genModel.ExtraSchemas) {
-			assert.True(t, genModel.IsTuple)
-			assert.False(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsArray)
-			assert.False(t, genModel.IsAnonymous)
-			assert.True(t, genModel.HasAdditionalItems)
-			assert.NotNil(t, genModel.AdditionalItems)
-			assert.Equal(t, k, genModel.Name)
-			assert.Equal(t, k, genModel.GoType)
-			assert.Len(t, genModel.Properties, 4)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "swagger:model "+k, res)
-					assertInCode(t, "type "+k+" struct {", res)
-					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
-					assertInCode(t, "P1 *string `json:\"-\"`", res)
-					assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
-					assertInCode(t, "P3 *Notable `json:\"-\"`", res)
-					assertInCode(t, k+"Items []*TupleWithComplexItems `json:\"-\"`", res)
-					assertInCode(t, k+") UnmarshalJSON", res)
-					assertInCode(t, k+") MarshalJSON", res)
+	require.NoError(t, err)
 
-					for i, p := range genModel.Properties {
-						m := "m.P" + strconv.Itoa(i)
-						r := "&dataP" + strconv.Itoa(i)
-						var rr string
-						if !p.IsNullable {
-							rr = "dataP" + strconv.Itoa(i)
-						} else {
-							rr = r
-						}
-						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
-						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
-						assertInCode(t, "dec := json.NewDecoder(buf)", res)
-						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
-						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
-						assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
-					}
+	definitions := specDoc.Spec().Definitions
+	k := "TupleWithComplex"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
 
-					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd *TupleWithComplexItems", res)
-					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
-					assertInCode(t, "dec := json.NewDecoder(buf)", res)
-					assertInCode(t, "dec.Decode(toadd)", res)
-					assertInCode(t, "json.Marshal(data)", res)
-					assertInCode(t, "for _, v := range m."+k+"Items", res)
-				}
-			}
+	assert.True(t, genModel.IsTuple)
+	assert.False(t, genModel.IsComplexObject)
+	assert.False(t, genModel.IsArray)
+	assert.False(t, genModel.IsAnonymous)
+	assert.True(t, genModel.HasAdditionalItems)
+	assert.NotNil(t, genModel.AdditionalItems)
+	assert.Equal(t, k, genModel.Name)
+	assert.Equal(t, k, genModel.GoType)
+	assert.Len(t, genModel.Properties, 4)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("tuple_with_extra.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "swagger:model "+k, res)
+	assertInCode(t, "type "+k+" struct {", res)
+	assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *string `json:\"-\"`", res)
+	assertInCode(t, "P2 *strfmt.DateTime `json:\"-\"`", res)
+	assertInCode(t, "P3 *Notable `json:\"-\"`", res)
+	assertInCode(t, k+"Items []*TupleWithComplexItems `json:\"-\"`", res)
+	assertInCode(t, k+") UnmarshalJSON", res)
+	assertInCode(t, k+") MarshalJSON", res)
+
+	for i, p := range genModel.Properties {
+		m := "m.P" + strconv.Itoa(i)
+		r := "&dataP" + strconv.Itoa(i)
+		var rr string
+		if !p.IsNullable {
+			rr = "dataP" + strconv.Itoa(i)
+		} else {
+			rr = r
 		}
+		assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+		assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+		assertInCode(t, "dec := json.NewDecoder(buf)", res)
+		assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
+		assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+		assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
 	}
+
+	assertInCode(t, "var lastIndex int", res)
+	assertInCode(t, "var toadd *TupleWithComplexItems", res)
+	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+	assertInCode(t, "dec := json.NewDecoder(buf)", res)
+	assertInCode(t, "dec.Decode(toadd)", res)
+	assertInCode(t, "json.Marshal(data)", res)
+	assertInCode(t, "for _, v := range m."+k+"Items", res)
 }
 
 func TestGenerateModel_WithTuple(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithTuple"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) && assert.NotEmpty(t, genModel.Properties) {
-			assert.False(t, genModel.IsTuple)
-			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsArray)
-			assert.False(t, genModel.IsAnonymous)
+	require.NoError(t, err)
 
-			sch := genModel.ExtraSchemas[0]
-			assert.True(t, sch.IsTuple)
-			assert.False(t, sch.IsComplexObject)
-			assert.False(t, sch.IsArray)
-			assert.False(t, sch.IsAnonymous)
-			assert.Equal(t, k+"FlagsTuple0", sch.Name)
-			assert.False(t, sch.HasAdditionalItems)
-			assert.Nil(t, sch.AdditionalItems)
+	definitions := specDoc.Spec().Definitions
+	k := "WithTuple"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.NotEmpty(t, genModel.ExtraSchemas)
+	require.NotEmpty(t, genModel.Properties)
 
-			prop := genModel.Properties[0]
-			assert.False(t, genModel.IsTuple)
-			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, prop.IsArray)
-			assert.False(t, prop.IsAnonymous)
-			assert.Equal(t, k+"FlagsTuple0", prop.GoType)
-			assert.Equal(t, "flags", prop.Name)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "swagger:model "+k+"Flags", res)
-					assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
-					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
-					assertInCode(t, "P1 *string `json:\"-\"`", res)
-					assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
-					assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
-					assertInCode(t, "json.Marshal(data)", res)
-					assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	assert.False(t, genModel.IsTuple)
+	assert.True(t, genModel.IsComplexObject)
+	assert.False(t, genModel.IsArray)
+	assert.False(t, genModel.IsAnonymous)
 
-					for i, p := range sch.Properties {
-						m := "m.P" + strconv.Itoa(i)
-						r := "&dataP" + strconv.Itoa(i)
-						var rr string
-						if !p.IsNullable {
-							rr = "dataP" + strconv.Itoa(i)
-						} else {
-							rr = r
-						}
-						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
-						assertInCode(t, "dec := json.NewDecoder(buf)", res)
-						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
-						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
-						assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
-					}
-				}
-			}
+	sch := genModel.ExtraSchemas[0]
+	assert.True(t, sch.IsTuple)
+	assert.False(t, sch.IsComplexObject)
+	assert.False(t, sch.IsArray)
+	assert.False(t, sch.IsAnonymous)
+	assert.Equal(t, k+"FlagsTuple0", sch.Name)
+	assert.False(t, sch.HasAdditionalItems)
+	assert.Nil(t, sch.AdditionalItems)
+
+	prop := genModel.Properties[0]
+	assert.False(t, genModel.IsTuple)
+	assert.True(t, genModel.IsComplexObject)
+	assert.False(t, prop.IsArray)
+	assert.False(t, prop.IsAnonymous)
+	assert.Equal(t, k+"FlagsTuple0", prop.GoType)
+	assert.Equal(t, "flags", prop.Name)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "swagger:model "+k+"Flags", res)
+	assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
+	assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *string `json:\"-\"`", res)
+	assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
+	assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
+	assertInCode(t, "json.Marshal(data)", res)
+	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+
+	for i, p := range sch.Properties {
+		m := "m.P" + strconv.Itoa(i)
+		r := "&dataP" + strconv.Itoa(i)
+		var rr string
+		if !p.IsNullable {
+			rr = "dataP" + strconv.Itoa(i)
+		} else {
+			rr = r
 		}
+		assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+		assertInCode(t, "dec := json.NewDecoder(buf)", res)
+		assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
+		assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+		assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
 	}
 }
 
 func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model")}
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "WithTupleWithExtra"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.NotEmpty(t, genModel.ExtraSchemas) && assert.NotEmpty(t, genModel.Properties) {
-			assert.False(t, genModel.IsTuple)
-			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, genModel.IsArray)
-			assert.False(t, genModel.IsAnonymous)
+	require.NoError(t, err)
 
-			sch := genModel.ExtraSchemas[0]
-			assert.True(t, sch.IsTuple)
-			assert.False(t, sch.IsComplexObject)
-			assert.False(t, sch.IsArray)
-			assert.False(t, sch.IsAnonymous)
-			assert.Equal(t, k+"FlagsTuple0", sch.Name)
-			assert.True(t, sch.HasAdditionalItems)
-			assert.NotEmpty(t, sch.AdditionalItems)
+	definitions := specDoc.Spec().Definitions
+	k := "WithTupleWithExtra"
+	schema := definitions[k]
+	opts := opts()
+	tt := templateTest{t, opts.templates.MustGet("model")}
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.NotEmpty(t, genModel.ExtraSchemas)
+	require.NotEmpty(t, genModel.Properties)
 
-			prop := genModel.Properties[0]
-			assert.False(t, genModel.IsTuple)
-			assert.True(t, genModel.IsComplexObject)
-			assert.False(t, prop.IsArray)
-			assert.False(t, prop.IsAnonymous)
-			assert.Equal(t, k+"FlagsTuple0", prop.GoType)
-			assert.Equal(t, "flags", prop.Name)
-			buf := bytes.NewBuffer(nil)
-			err := tt.template.Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					assertInCode(t, "swagger:model "+k+"Flags", res)
-					assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
-					assertInCode(t, "P0 *int64 `json:\"-\"`", res)
-					assertInCode(t, "P1 *string `json:\"-\"`", res)
-					assertInCode(t, k+"FlagsTuple0Items []float32 `json:\"-\"`", res)
-					assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
-					assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
-					assertInCode(t, "json.Marshal(data)", res)
+	assert.False(t, genModel.IsTuple)
+	assert.True(t, genModel.IsComplexObject)
+	assert.False(t, genModel.IsArray)
+	assert.False(t, genModel.IsAnonymous)
 
-					for i, p := range sch.Properties {
-						m := "m.P" + strconv.Itoa(i)
-						r := "&dataP" + strconv.Itoa(i)
-						var rr string
-						if !p.IsNullable {
-							rr = "dataP" + strconv.Itoa(i)
-						} else {
-							rr = r
-						}
-						assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
-						assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
-						assertInCode(t, "dec := json.NewDecoder(buf)", res)
-						assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
-						assertInCode(t, "P"+strconv.Itoa(i)+",", res)
-						assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
-					}
+	sch := genModel.ExtraSchemas[0]
+	assert.True(t, sch.IsTuple)
+	assert.False(t, sch.IsComplexObject)
+	assert.False(t, sch.IsArray)
+	assert.False(t, sch.IsAnonymous)
+	assert.Equal(t, k+"FlagsTuple0", sch.Name)
+	assert.True(t, sch.HasAdditionalItems)
+	assert.NotEmpty(t, sch.AdditionalItems)
 
-					assertInCode(t, "var lastIndex int", res)
-					assertInCode(t, "var toadd float32", res)
-					assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
-					assertInCode(t, "buf = bytes.NewBuffer(val)", res)
-					assertInCode(t, "dec := json.NewDecoder(buf)", res)
-					assertInCode(t, "dec.Decode(&toadd)", res)
-					assertInCode(t, "json.Marshal(data)", res)
-					assertInCode(t, "for _, v := range m."+k+"FlagsTuple0Items", res)
-				}
-			}
+	prop := genModel.Properties[0]
+	assert.False(t, genModel.IsTuple)
+	assert.True(t, genModel.IsComplexObject)
+	assert.False(t, prop.IsArray)
+	assert.False(t, prop.IsAnonymous)
+	assert.Equal(t, k+"FlagsTuple0", prop.GoType)
+	assert.Equal(t, "flags", prop.Name)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, tt.template.Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, "swagger:model "+k+"Flags", res)
+	assertInCode(t, "type "+k+"FlagsTuple0 struct {", res)
+	assertInCode(t, "P0 *int64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *string `json:\"-\"`", res)
+	assertInCode(t, k+"FlagsTuple0Items []float32 `json:\"-\"`", res)
+	assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
+	assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
+	assertInCode(t, "json.Marshal(data)", res)
+
+	for i, p := range sch.Properties {
+		m := "m.P" + strconv.Itoa(i)
+		r := "&dataP" + strconv.Itoa(i)
+		var rr string
+		if !p.IsNullable {
+			rr = "dataP" + strconv.Itoa(i)
+		} else {
+			rr = r
 		}
+		assertInCode(t, fmt.Sprintf("lastIndex = %d", i), res)
+		assertInCode(t, fmt.Sprintf("buf = bytes.NewBuffer(stage1[%d])", i), res)
+		assertInCode(t, "dec := json.NewDecoder(buf)", res)
+		assertInCode(t, fmt.Sprintf("dec.Decode(%s)", r), res)
+		assertInCode(t, "P"+strconv.Itoa(i)+",", res)
+		assertInCode(t, fmt.Sprintf("%s = %s", m, rr), res)
 	}
+
+	assertInCode(t, "var lastIndex int", res)
+	assertInCode(t, "var toadd float32", res)
+	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
+	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
+	assertInCode(t, "dec := json.NewDecoder(buf)", res)
+	assertInCode(t, "dec.Decode(&toadd)", res)
+	assertInCode(t, "json.Marshal(data)", res)
+	assertInCode(t, "for _, v := range m."+k+"FlagsTuple0Items", res)
 }
 
 func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["Cat"]
-		opts := opts()
-		genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
-			assert.True(t, genModel.IsComplexObject)
-			assert.Equal(t, "Cat", genModel.Name)
-			assert.Equal(t, "Cat", genModel.GoType)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("cat.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "type Cat struct {", res)
-					assertInCode(t, "Pet", res)
-					assertInCode(t, "HuntingSkill *string `json:\"huntingSkill\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["Cat"]
+	opts := opts()
+	genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.Len(t, genModel.AllOf, 2)
+
+	assert.True(t, genModel.IsComplexObject)
+	assert.Equal(t, "Cat", genModel.Name)
+	assert.Equal(t, "Cat", genModel.GoType)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("cat.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "type Cat struct {", res)
+	assertInCode(t, "Pet", res)
+	assertInCode(t, "HuntingSkill *string `json:\"huntingSkill\"`", res)
 }
 
 func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["PetWithPets"]
-		opts := opts()
-		genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) && assert.Len(t, genModel.AllOf, 2) {
-			assert.True(t, genModel.IsComplexObject)
-			assert.Equal(t, "PetWithPets", genModel.Name)
-			assert.Equal(t, "PetWithPets", genModel.GoType)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("PetWithPets.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "type PetWithPets struct {", res)
-					assertInCode(t, "UnmarshalPetSlice", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["PetWithPets"]
+	opts := opts()
+	genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+	require.Len(t, genModel.AllOf, 2)
+
+	assert.True(t, genModel.IsComplexObject)
+	assert.Equal(t, "PetWithPets", genModel.Name)
+	assert.Equal(t, "PetWithPets", genModel.GoType)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("PetWithPets.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "type PetWithPets struct {", res)
+	assertInCode(t, "UnmarshalPetSlice", res)
 }
 
 func TestGenerateModel_WithAllOf(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["WithAllOf"]
-		opts := opts()
-		genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.Len(t, genModel.AllOf, 7)
-			assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
-			assert.True(t, genModel.IsComplexObject)
-			assert.Equal(t, "WithAllOf", genModel.Name)
-			assert.Equal(t, "WithAllOf", genModel.GoType)
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "type WithAllOf struct {", res)
-					assertInCode(t, "type WithAllOfAO2P2 struct {", res)
-					assertInCode(t, "type WithAllOfAO3P3 struct {", res)
-					assertInCode(t, "type WithAllOfParamsAnon struct {", res)
-					assertInCode(t, "type WithAllOfAO4Tuple4 struct {", res)
-					assertInCode(t, "type WithAllOfAO5Tuple5 struct {", res)
-					assertInCode(t, "Notable", res)
-					assertInCode(t, "Title string `json:\"title,omitempty\"`", res)
-					assertInCode(t, "Body string `json:\"body,omitempty\"`", res)
-					assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
-					assertInCode(t, "P0 *float32 `json:\"-\"`", res)
-					assertInCode(t, "P0 *float64 `json:\"-\"`", res)
-					assertInCode(t, "P1 *strfmt.DateTime `json:\"-\"`", res)
-					assertInCode(t, "P1 *strfmt.Date `json:\"-\"`", res)
-					assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
-					assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
-					assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
-					assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["WithAllOf"]
+	opts := opts()
+	genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	assert.Len(t, genModel.AllOf, 7)
+	assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
+	assert.True(t, genModel.IsComplexObject)
+	assert.Equal(t, "WithAllOf", genModel.Name)
+	assert.Equal(t, "WithAllOf", genModel.GoType)
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "type WithAllOf struct {", res)
+	assertInCode(t, "type WithAllOfAO2P2 struct {", res)
+	assertInCode(t, "type WithAllOfAO3P3 struct {", res)
+	assertInCode(t, "type WithAllOfParamsAnon struct {", res)
+	assertInCode(t, "type WithAllOfAO4Tuple4 struct {", res)
+	assertInCode(t, "type WithAllOfAO5Tuple5 struct {", res)
+	assertInCode(t, "Notable", res)
+	assertInCode(t, "Title string `json:\"title,omitempty\"`", res)
+	assertInCode(t, "Body string `json:\"body,omitempty\"`", res)
+	assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+	assertInCode(t, "P0 *float32 `json:\"-\"`", res)
+	assertInCode(t, "P0 *float64 `json:\"-\"`", res)
+	assertInCode(t, "P1 *strfmt.DateTime `json:\"-\"`", res)
+	assertInCode(t, "P1 *strfmt.Date `json:\"-\"`", res)
+	assertInCode(t, "Opinion string `json:\"opinion,omitempty\"`", res)
+	assertInCode(t, "WithAllOfAO5Tuple5Items []strfmt.Password `json:\"-\"`", res)
+	assertInCode(t, "AO1 map[string]int32 `json:\"-\"`", res)
+	assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 }
 
 func findProperty(properties []GenSchema, name string) *GenSchema {
@@ -1547,753 +1543,670 @@ func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
 
 func TestNumericKeys(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/162/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["AvatarUrls"]
-		opts := opts()
-		genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Nr16x16 string `json:\"16x16,omitempty\"`", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["AvatarUrls"]
+	opts := opts()
+	genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("all_of_schema.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Nr16x16 string `json:\"16x16,omitempty\"`", res)
 }
 
 func TestGenModel_Issue196(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/196/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["Event"]
-		opts := opts()
-		genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("primitive_event.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Event) Validate(formats strfmt.Registry) error", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["Event"]
+	opts := opts()
+	genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("primitive_event.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Event) Validate(formats strfmt.Registry) error", res)
 }
 
 func TestGenModel_Issue222(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Price"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) && assert.True(t, genModel.HasValidations) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("price.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
-					assertInCode(t, "Currency Currency `json:\"currency,omitempty\"`", res)
-					assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Price"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+	require.True(t, genModel.HasValidations)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("price.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
+	assertInCode(t, "Currency Currency `json:\"currency,omitempty\"`", res)
+	assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
 }
 
 func TestGenModel_Issue243(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "HasDynMeta"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("has_dyn_meta.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					if !assertInCode(t, "Metadata DynamicMetaData `json:\"metadata,omitempty\"`", res) {
-						fmt.Println(res)
-					}
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "HasDynMeta"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("has_dyn_meta.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Metadata DynamicMetaData `json:\"metadata,omitempty\"`", res)
 }
 
 func TestGenModel_Issue252(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "SodaBrand"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) && assert.False(t, genModel.IsNullable) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					b1 := assertInCode(t, "type "+k+" string", res)
-					b2 := assertInCode(t, "(m "+k+") validateSodaBrand", res)
-					b3 := assertInCode(t, "(m "+k+") Validate", res)
-					if !(b1 && b2 && b3) {
-						fmt.Println(res)
-					}
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "SodaBrand"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+	require.False(t, genModel.IsNullable)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "type "+k+" string", res)
+	assertInCode(t, "(m "+k+") validateSodaBrand", res)
+	assertInCode(t, "(m "+k+") Validate", res)
 }
 
 func TestGenModel_Issue251(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/251/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "example"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
+	require.NoError(t, err)
 
-					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
-					b2 := assertInCode(t, "Begin *strfmt.DateTime `json:\"begin\"`", res)
-					b3 := assertInCode(t, "End strfmt.DateTime `json:\"end,omitempty\"`", res)
-					b4 := assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
-					b5 := assertInCode(t, "(m *"+swag.ToGoName(k)+") validateBegin", res)
-					//b6 := assertInCode(t, "(m *"+swag.ToGoName(k)+") validateEnd", res)
-					b7 := assertInCode(t, "(m *"+swag.ToGoName(k)+") Validate", res)
-					if !(b1 && b2 && b3 && b4 && b5 && b7) {
-						fmt.Println(res)
-					}
-				}
-			}
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "example"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+
+	assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+	assertInCode(t, "Begin *strfmt.DateTime `json:\"begin\"`", res)
+	assertInCode(t, "End strfmt.DateTime `json:\"end,omitempty\"`", res)
+	assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
+	assertInCode(t, "(m *"+swag.ToGoName(k)+") validateBegin", res)
+	assertInCode(t, "(m *"+swag.ToGoName(k)+") Validate", res)
 }
 
 func TestGenModel_Issue257(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "HasSpecialCharProp"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
+	require.NoError(t, err)
 
-					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
-					b2 := assertInCode(t, "AtType string `json:\"@type,omitempty\"`", res)
-					b3 := assertInCode(t, "Type string `json:\"type,omitempty\"`", res)
-					if !(b1 && b2 && b3) {
-						fmt.Println(res)
-					}
-				}
-			}
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "HasSpecialCharProp"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("example.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+
+	assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+	assertInCode(t, "AtType string `json:\"@type,omitempty\"`", res)
+	assertInCode(t, "Type string `json:\"type,omitempty\"`", res)
 }
 
 func TestGenModel_Issue340(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ImageTar"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("image_tar.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
+	require.NoError(t, err)
 
-					b1 := assertInCode(t, "type "+swag.ToGoName(k)+" io.ReadCloser", res)
-					b2 := assertNotInCode(t, "func (m ImageTar) Validate(formats strfmt.Registry) error", res)
-					if !(b1 && b2) {
-						fmt.Println(res)
-					}
-				}
-			}
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "ImageTar"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("image_tar.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+
+	assertInCode(t, "type "+swag.ToGoName(k)+" io.ReadCloser", res)
+	assertNotInCode(t, "func (m ImageTar) Validate(formats strfmt.Registry) error", res)
 }
 
 func TestGenModel_Issue381(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "flags_list"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("flags_list.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertNotInCode(t, "m[i] != nil", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "flags_list"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("flags_list.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertNotInCode(t, "m[i] != nil", res)
 }
 
 func TestGenModel_Issue300(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ActionItem"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Name ActionName `json:\"name\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ActionItem"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Name ActionName `json:\"name\"`", res)
 }
 
 func TestGenModel_Issue398(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Property"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Computed bool `json:\"computed,omitempty\"`", res)
-					assertInCode(t, "Intval *int64 `json:\"intval\"`", res)
-					assertInCode(t, "PropType *string `json:\"propType\"`", res)
-					assertInCode(t, "Strval *string `json:\"strval\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Property"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("action_item.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Computed bool `json:\"computed,omitempty\"`", res)
+	assertInCode(t, "Intval *int64 `json:\"intval\"`", res)
+	assertInCode(t, "PropType *string `json:\"propType\"`", res)
+	assertInCode(t, "Strval *string `json:\"strval\"`", res)
 }
 
 func TestGenModel_Issue454(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/454/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["genericResource"]
-		opts := opts()
-		genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("generic_resource.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "rcv.Meta = stage1.Meta", res)
-					assertInCode(t, "json.Marshal(stage1)", res)
-					assertInCode(t, "stage1.Meta = m.Meta", res)
-					assertInCode(t, "json.Marshal(m.GenericResource)", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["genericResource"]
+	opts := opts()
+	genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("generic_resource.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "rcv.Meta = stage1.Meta", res)
+	assertInCode(t, "json.Marshal(stage1)", res)
+	assertInCode(t, "stage1.Meta = m.Meta", res)
+	assertInCode(t, "json.Marshal(m.GenericResource)", res)
 }
 
 func TestGenModel_Issue423(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/423/swagger.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["SRN"]
-		opts := opts()
-		genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "propSite, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
-					assertInCode(t, "result.siteField = propSite", res)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["SRN"]
+	opts := opts()
+	genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("SRN.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "propSite, err := UnmarshalSite(bytes.NewBuffer(data.Site), runtime.JSONConsumer())", res)
+	assertInCode(t, "result.siteField = propSite", res)
 }
 
 func TestGenModel_Issue453(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/453/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "out_obj"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `func (m *OutObj) validateFld3(formats strfmt.Registry)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "out_obj"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `func (m *OutObj) validateFld3(formats strfmt.Registry)`, res)
 }
 
 func TestGenModel_Issue455(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/455/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "out_obj"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `if err := validate.Required("fld2", "body", m.Fld2); err != nil {`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "out_obj"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `if err := validate.Required("fld2", "body", m.Fld2); err != nil {`, res)
 }
 
 func TestGenModel_Issue763(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/763/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "test_list"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("test_list.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "TheArray []*int32 `json:\"the_array\"`", res)
-					assertInCode(t, `validate.MinimumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 0, false)`, res)
-					assertInCode(t, `validate.MaximumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 10, false)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "test_list"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("test_list.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "TheArray []*int32 `json:\"the_array\"`", res)
+	assertInCode(t, `validate.MinimumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 0, false)`, res)
+	assertInCode(t, `validate.MaximumInt("the_array"+"."+strconv.Itoa(i), "body", int64(*m.TheArray[i]), 10, false)`, res)
 }
 
 func TestGenModel_Issue811_NullType(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "teamRepos"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Language interface{} `json:\"language,omitempty\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "teamRepos"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Language interface{} `json:\"language,omitempty\"`", res)
 }
 
 func TestGenModel_Issue811_Emojis(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "emojis"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Plus1 string `json:\"+1,omitempty\"`", res)
-					assertInCode(t, "Minus1 string `json:\"-1,omitempty\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "emojis"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("team_repos.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Plus1 string `json:\"+1,omitempty\"`", res)
+	assertInCode(t, "Minus1 string `json:\"-1,omitempty\"`", res)
 }
 
 func TestGenModel_Issue752_EOFErr(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/azure-text-analyis.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "OperationResult"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `&& err != io.EOF`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "OperationResult"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("out_obj.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `&& err != io.EOF`, res)
 }
 
 func TestImports_ExistingModel(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "JsonWebKeySet"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) &&
-			assert.NotNil(t, genModel) &&
-			assert.NotNil(t, genModel.Imports) {
-			assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
-		}
-		k = "JsonWebKey"
-		genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			assert.NotNil(t, genModel)
-			assert.NotNil(t, genModel.Imports)
-			assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	opts := opts()
+
+	k := "JsonWebKeySet"
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	require.NotNil(t, genModel)
+	require.NotNil(t, genModel.Imports)
+	assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
+
+	k = "JsonWebKey"
+	genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	require.NotNil(t, genModel)
+	require.NotNil(t, genModel.Imports)
+	assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
 }
 
 func TestGenModel_Issue786(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/786/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "MyFirstObject"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) && assert.False(t, genModel.Properties[0].AdditionalProperties.IsNullable) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("MyFirstObject.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `m.validateEntreeChoiceValueEnum("entree_choice"+"."+k, "body", m.EntreeChoice[k])`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "MyFirstObject"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	require.False(t, genModel.Properties[0].AdditionalProperties.IsNullable)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("MyFirstObject.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `m.validateEntreeChoiceValueEnum("entree_choice"+"."+k, "body", m.EntreeChoice[k])`, res)
 }
 
 func TestGenModel_Issue822(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/822/swagger.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Pet"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		ap := genModel.AdditionalProperties
-		if assert.NoError(t, err) && assert.True(t, genModel.HasAdditionalProperties) && assert.NotNil(t, ap) && assert.False(t, ap.IsNullable) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `PetAdditionalProperties map[string]interface{}`, res)
-					assertInCode(t, `m.PetAdditionalProperties = result`, res)
-					assertInCode(t, `additional, err := json.Marshal(m.PetAdditionalProperties)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Pet"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	ap := genModel.AdditionalProperties
+	require.True(t, genModel.HasAdditionalProperties)
+	require.NotNil(t, ap)
+	require.False(t, ap.IsNullable)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `PetAdditionalProperties map[string]interface{}`, res)
+	assertInCode(t, `m.PetAdditionalProperties = result`, res)
+	assertInCode(t, `additional, err := json.Marshal(m.PetAdditionalProperties)`, res)
 }
 
 func TestGenModel_Issue981(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/981/swagger.json")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "User"
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					//fmt.Println(res)
-					assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
-					assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
-					assertInCode(t, "if swag.IsZero(m.Type)", res)
-					assertInCode(t, `validate.MinimumInt("user_type", "body", m.Type, 1, false)`, res)
-					assertInCode(t, `validate.MaximumInt("user_type", "body", m.Type, 5, false)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
 
+	definitions := specDoc.Spec().Definitions
+	k := "User"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("user.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
+	assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
+	assertInCode(t, "if swag.IsZero(m.Type)", res)
+	assertInCode(t, `validate.MinimumInt("user_type", "body", m.Type, 1, false)`, res)
+	assertInCode(t, `validate.MaximumInt("user_type", "body", m.Type, 5, false)`, res)
 }
 
 func TestGenModel_Issue1341(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1341/swagger.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ExecutableValueString"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("executable_value_string.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					//fmt.Println(res)
-					assertInCode(t, `return errors.New(422, "invalid ValueType value: %q", base.ValueType`, res)
-					assertInCode(t, "result.testField = base.Test", res)
-					assertInCode(t, "Test *string `json:\"Test\"`", res)
-					assertInCode(t, "Test: m.Test(),", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ExecutableValueString"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("executable_value_string.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, `return errors.New(422, "invalid ValueType value: %q", base.ValueType`, res)
+	assertInCode(t, "result.testField = base.Test", res)
+	assertInCode(t, "Test *string `json:\"Test\"`", res)
+	assertInCode(t, "Test: m.Test(),", res)
 }
 
 // This tests to check that format validation is performed on non required schema properties
 func TestGenModel_Issue1347(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1347/fixture-1347.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		schema := definitions["ContainerConfig"]
-		opts := opts()
-		genModel, err := makeGenDefinition("ContainerConfig", "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					//log.Println("1347")
-					//log.Println(res)
-					// Just verify that the validation call is generated even though we add a non-required property
-					assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	schema := definitions["ContainerConfig"]
+	opts := opts()
+	genModel, err := makeGenDefinition("ContainerConfig", "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	// Just verify that the validation call is generated even though we add a non-required property
+	assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
 }
 
 // This tests to check that format validation is performed on MAC format
 func TestGenModel_Issue1348(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1348/fixture-1348.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ContainerConfig"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `if err := validate.FormatOf("config1", "body", "mac", m.Config1.String(), formats)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ContainerConfig"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `if err := validate.FormatOf("config1", "body", "mac", m.Config1.String(), formats)`, res)
 }
 
 // This tests that additionalProperties with validation is generated properly.
 func TestGenModel_Issue1198(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1198/fixture-1198.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "pet"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					//log.Println("1198")
-					//log.Println(res)
-					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `if err := m.validateDate(formats); err != nil {`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "pet"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `if err := m.validateDate(formats); err != nil {`, res)
 }
 
 // This tests that additionalProperties with validation is generated properly.
 func TestGenModel_Issue1397a(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397a.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ContainerConfig"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					//log.Println("1397a")
-					//log.Println(res)
-					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `if swag.IsZero(m[k]) { // not required`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ContainerConfig"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `if swag.IsZero(m[k]) { // not required`, res)
 }
 
 // This tests that an enum of object values validates properly.
 func TestGenModel_Issue1397b(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397b.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "ContainerConfig"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					//log.Println("1397b")
-					//log.Println(res)
-					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `if err := m.validateContainerConfigEnum("", "body", m); err != nil {`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "ContainerConfig"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `if err := m.validateContainerConfigEnum("", "body", m); err != nil {`, res)
 }
 
 // This tests that additionalProperties with an array of polymorphic objects is generated properly.
 func TestGenModel_Issue1409(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1409/fixture-1409.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Graph"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					//log.Println("1409")
-					//log.Println(res)
-					// Just verify that the validation call is generated with proper format
-					assertInCode(t, `nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
-					assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
-					assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
-					assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "Graph"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer())`, res)
+	assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
+	assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
+	assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
 }
 
 // This tests makes sure model definitions from inline schema in response are properly flattened and get validation
@@ -2301,174 +2214,154 @@ func TestGenModel_Issue866(t *testing.T) {
 	defer discardOutput()()
 
 	specDoc, err := loads.Spec("../fixtures/bugs/866/fixture-866.yaml")
-	if assert.NoError(t, err) {
-		p, ok := specDoc.Spec().Paths.Paths["/"]
-		if assert.True(t, ok) {
-			op := p.Get
-			responses := op.Responses.StatusCodeResponses
-			for k, r := range responses {
-				t.Logf("Response: %d", k)
-				schema := *r.Schema
-				opts := opts()
-				genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
-				if assert.NoError(t, err) {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet("model").Execute(buf, genModel)
-					if assert.NoError(t, err) {
-						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if assert.NoError(t, err) {
-							res := string(ct)
-							assertInCode(t, `if err := validate.Required(`, res)
-							assertInCode(t, `if err := validate.MaxLength(`, res)
-							assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
-							assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
-						} else {
-							fmt.Println(buf.String())
-						}
-					}
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	p, ok := specDoc.Spec().Paths.Paths["/"]
+	require.True(t, ok)
+
+	op := p.Get
+	responses := op.Responses.StatusCodeResponses
+	for k, r := range responses {
+		t.Logf("Response: %d", k)
+		schema := *r.Schema
+		opts := opts()
+		genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+		require.NoError(t, err)
+
+		res := string(ct)
+		assertInCode(t, `if err := validate.Required(`, res)
+		assertInCode(t, `if err := validate.MaxLength(`, res)
+		assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
+		assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
 	}
 }
 
 // This tests makes sure marshalling and validation is generated in aliased formatted definitions
 func TestGenModel_Issue946(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/946/fixture-946.yaml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "mydate"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, `type Mydate strfmt.Date`, res)
-					assertInCode(t, `func (m *Mydate) UnmarshalJSON(b []byte) error {`, res)
-					assertInCode(t, `return ((*strfmt.Date)(m)).UnmarshalJSON(b)`, res)
-					assertInCode(t, `func (m Mydate) MarshalJSON() ([]byte, error) {`, res)
-					assertInCode(t, `return (strfmt.Date(m)).MarshalJSON()`, res)
-					assertInCode(t, `if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`, res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "mydate"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, `type Mydate strfmt.Date`, res)
+	assertInCode(t, `func (m *Mydate) UnmarshalJSON(b []byte) error {`, res)
+	assertInCode(t, `return ((*strfmt.Date)(m)).UnmarshalJSON(b)`, res)
+	assertInCode(t, `func (m Mydate) MarshalJSON() ([]byte, error) {`, res)
+	assertInCode(t, `return (strfmt.Date(m)).MarshalJSON()`, res)
+	assertInCode(t, `if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`, res)
 }
 
 // This tests makes sure that docstring in inline schema in response properly reflect the Required property
 func TestGenModel_Issue910(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/910/fixture-910.yaml")
-	if assert.NoError(t, err) {
-		p, ok := specDoc.Spec().Paths.Paths["/mytest"]
-		if assert.True(t, ok) {
-			op := p.Get
-			responses := op.Responses.StatusCodeResponses
-			for k, r := range responses {
-				t.Logf("Response: %d", k)
-				schema := *r.Schema
-				opts := opts()
-				genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
-				if assert.NoError(t, err) {
-					buf := bytes.NewBuffer(nil)
-					err := templates.MustGet("model").Execute(buf, genModel)
-					if assert.NoError(t, err) {
-						ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-						if assert.NoError(t, err) {
-							res := string(ct)
-							assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
-							assertInCode(t, "// foo\n	// Required: true\n	Foo interface{} `json:\"foo\"`", res)
-							assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
-							assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
-							assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
-							assertInCode(t, `if m.Foo == nil {`, res) // interface{} now checked against nil (validate.Required fails on any zero value)
-							assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
-							assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
-							// NOTE(fredbi); fixed Required in slices. This property has actually no validation
-							assertNotInCode(t, `if swag.IsZero(m.Quux) { // not required`, res)
-						} else {
-							fmt.Println(buf.String())
-						}
-					}
-				}
-			}
-		}
+	require.NoError(t, err)
+
+	p, ok := specDoc.Spec().Paths.Paths["/mytest"]
+	require.True(t, ok)
+
+	op := p.Get
+	responses := op.Responses.StatusCodeResponses
+	for k, r := range responses {
+		t.Logf("Response: %d", k)
+		schema := *r.Schema
+		opts := opts()
+		genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+		require.NoError(t, err)
+
+		res := string(ct)
+		assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
+		assertInCode(t, "// foo\n	// Required: true\n	Foo interface{} `json:\"foo\"`", res)
+		assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
+		assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
+		assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
+		assertInCode(t, `if m.Foo == nil {`, res) // interface{} now checked against nil (validate.Required fails on any zero value)
+		assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
+		assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
+		// NOTE(fredbi); fixed Required in slices. This property has actually no validation
 	}
 }
 
 func TestGenerateModel_Xorder(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/x-order.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "sessionData"
-		schema := definitions[k]
-		opts := opts()
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("x-order.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					// if no x-order then alphabetical order, like DeviceID, SessionID, UMain.
-					// There is x-order
-					//   sessionId
-					//     x-order: 0
-					//   deviceId:
-					//     x-order: 1
-					//   uMain:
-					//     x-order: 2
-					// This is need for msgpack-array.
-					foundDeviceID := strings.Index(res, "DeviceID")
-					foundSessionID := strings.Index(res, "SessionID")
-					foundUMain := strings.Index(res, "UMain")
-					foundAaa := strings.Index(res, "Aaa")
-					foundBbb := strings.Index(res, "Bbb")
-					foundZzz := strings.Index(res, "Zzz")
-					assert.True(t, foundSessionID < foundDeviceID)
-					assert.True(t, foundSessionID < foundUMain)
-					assert.True(t, foundUMain < foundAaa)
-					assert.True(t, foundAaa < foundBbb)
-					assert.True(t, foundBbb < foundZzz)
-				}
-			}
-		}
-	}
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "sessionData"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("x-order.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	// if no x-order then alphabetical order, like DeviceID, SessionID, UMain.
+	// There is x-order
+	//   sessionId
+	//     x-order: 0
+	//   deviceId:
+	//     x-order: 1
+	//   uMain:
+	//     x-order: 2
+	// This is need for msgpack-array.
+	foundDeviceID := strings.Index(res, "DeviceID")
+	foundSessionID := strings.Index(res, "SessionID")
+	foundUMain := strings.Index(res, "UMain")
+	foundAaa := strings.Index(res, "Aaa")
+	foundBbb := strings.Index(res, "Bbb")
+	foundZzz := strings.Index(res, "Zzz")
+	assert.True(t, foundSessionID < foundDeviceID)
+	assert.True(t, foundSessionID < foundUMain)
+	assert.True(t, foundUMain < foundAaa)
+	assert.True(t, foundAaa < foundBbb)
+	assert.True(t, foundBbb < foundZzz)
 }
 
 func TestGenModel_Issue1623(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/enhancements/1623/swagger.yml")
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
 	k := "Foo"
 	schema := definitions[k]
 	opts := opts()
+
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	if !assert.NoError(t, err) {
-		fmt.Println(buf.String())
-		return
-	}
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("Foo.go", buf.Bytes())
-	if !assert.NoError(t, err) {
-		return
-	}
+	require.NoError(t, err)
 
 	res := string(ff)
 	assertInCode(t, "ArrayHasOmitEmptyFalse []string `json:\"arrayHasOmitEmptyFalse\"`", res)
@@ -2560,9 +2453,10 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	abcType := "abctype"
 
 	specDoc, err := loads.Spec(ymlFile)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	orderedSpecDoc, err := loads.Spec(WithAutoXOrder(ymlFile))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
 	orderedDefinitions := orderedSpecDoc.Spec().Definitions
@@ -2570,21 +2464,24 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts)
 	assert.NoError(t, err)
 	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	assert.NoError(t, templates.MustGet("model").Execute(buf, genModel))
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
 	orderBuf := bytes.NewBuffer(nil)
-	assert.NoError(t, templates.MustGet("model").Execute(orderBuf, orderGenModel))
+	require.NoError(t, opts.templates.MustGet("model").Execute(orderBuf, orderGenModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("keepSpecOrder.go", buf.Bytes())
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	modelCode := string(ff)
 	ff, err = opts.LanguageOpts.FormatContent("keepSpecOrder-ordered.go", orderBuf.Bytes())
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	orderModelCode := string(ff)
 
-	//without auto order , properties sorted by alphanumeric
+	// without auto order, properties sorted by alphanumeric
 	foundA := strings.Index(modelCode, "Aaa")
 	foundB := strings.Index(modelCode, "Bbb")
 	foundC := strings.Index(modelCode, "Ccc")
@@ -2614,72 +2511,66 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 
 func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/strict-additional-properties.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "Body"
-		schema := definitions[k]
-		opts := opts()
+	require.NoError(t, err)
 
-		opts.StrictAdditionalProperties = true
+	definitions := specDoc.Spec().Definitions
+	k := "Body"
+	schema := definitions[k]
+	opts := opts()
 
-		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err = templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ff, err := opts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ff)
-					for _, tt := range []struct {
-						name      string
-						assertion func(testing.TB, string, string) bool
-					}{
-						{k, assertInCode},
-						{k + "Explicit", assertInCode},
-						{k + "Implicit", assertInCode},
-						{k + "Disabled", assertNotInCode},
-					} {
-						fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
-						if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
-							tt.assertion(t, "dec.DisallowUnknownFields()", fn)
-						}
-					}
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
+	opts.StrictAdditionalProperties = true
+
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	for _, tt := range []struct {
+		name      string
+		assertion func(testing.TB, string, string) bool
+	}{
+		{k, assertInCode},
+		{k + "Explicit", assertInCode},
+		{k + "Implicit", assertInCode},
+		{k + "Disabled", assertNotInCode},
+	} {
+		fn := funcBody(res, "*"+tt.name+") UnmarshalJSON(data []byte) error")
+		if assert.NotEmpty(t, fn, "Method UnmarshalJSON should be defined for type *"+tt.name) {
+			tt.assertion(t, "dec.DisallowUnknownFields()", fn)
 		}
 	}
 }
 
 func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/xml-model.yml")
-	if assert.NoError(t, err) {
-		definitions := specDoc.Spec().Definitions
-		k := "XmlWithAttribute"
-		opts := opts()
-		opts.WithXML = true
+	require.NoError(t, err)
 
-		genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
-		if assert.NoError(t, err) {
-			buf := bytes.NewBuffer(nil)
-			err := templates.MustGet("model").Execute(buf, genModel)
-			if assert.NoError(t, err) {
-				ct, err := opts.LanguageOpts.FormatContent("xml_with_attribute.go", buf.Bytes())
-				if assert.NoError(t, err) {
-					res := string(ct)
-					assertInCode(t, "Author *string `json:\"author\" xml:\"author\"`", res)
-					assertInCode(t, "Children []*XMLChild `json:\"children\" xml:\"children\"`", res)
-					assertInCode(t, "ID int64 `json:\"id,omitempty\" xml:\"id,attr,omitempty\"`", res)
-					assertInCode(t, "IsPublished *bool `json:\"isPublished\" xml:\"published,attr\"`", res)
-					assertInCode(t, "SingleChild *XMLChild `json:\"singleChild,omitempty\" xml:\"singleChild,omitempty\"`", res)
-					assertInCode(t, "Title string `json:\"title,omitempty\" xml:\"xml-title,omitempty\"`", res)
-				} else {
-					fmt.Println(buf.String())
-				}
-			}
-		}
-	}
+	definitions := specDoc.Spec().Definitions
+	k := "XmlWithAttribute"
+	opts := opts()
+	opts.WithXML = true
+
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("xml_with_attribute.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "Author *string `json:\"author\" xml:\"author\"`", res)
+	assertInCode(t, "Children []*XMLChild `json:\"children\" xml:\"children\"`", res)
+	assertInCode(t, "ID int64 `json:\"id,omitempty\" xml:\"id,attr,omitempty\"`", res)
+	assertInCode(t, "IsPublished *bool `json:\"isPublished\" xml:\"published,attr\"`", res)
+	assertInCode(t, "SingleChild *XMLChild `json:\"singleChild,omitempty\" xml:\"singleChild,omitempty\"`", res)
+	assertInCode(t, "Title string `json:\"title,omitempty\" xml:\"xml-title,omitempty\"`", res)
 }
 
 func TestGenModel_XMLStructTags_Explicit(t *testing.T) {

@@ -90,7 +90,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 			guardFormatConflicts(result.SwaggerFormat, v)
 		}()
 
-		fmtn := strings.Replace(fmt, "-", "", -1)
+		fmtn := strings.ReplaceAll(fmt, "-", "")
 		if fmm, ok := formatMapping[tn]; ok {
 			if tpe, ok := fmm[fmtn]; ok {
 				result.GoType = tpe
@@ -341,7 +341,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 		}
 
 		debugLog("resolving format (anon: %t, req: %t)", isAnonymous, isRequired)
-		schFmt := strings.Replace(schema.Format, "-", "", -1)
+		schFmt := strings.ReplaceAll(schema.Format, "-", "")
 		if fmm, ok := formatMapping[result.SwaggerType]; ok {
 			if tpe, ok := fmm[schFmt]; ok {
 				returns = true
@@ -537,7 +537,8 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		result.GoType = t.goTypeName(t.ModelName)
 		result.IsComplexObject = true
 		var isNullable bool
-		for _, p := range schema.AllOf {
+		for _, sch := range schema.AllOf {
+			p := sch
 			if t.isNullable(&p) {
 				isNullable = true
 			}

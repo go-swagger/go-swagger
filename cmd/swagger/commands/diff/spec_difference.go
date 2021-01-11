@@ -95,7 +95,7 @@ func (sd SpecDifference) String() string {
 			prefix = fmt.Sprintf("%s:%s", sd.DifferenceLocation.URL, sd.DifferenceLocation.Method)
 		}
 		if isResponse {
-			prefix = prefix + fmt.Sprintf(" -> %d", sd.DifferenceLocation.Response)
+			prefix += fmt.Sprintf(" -> %d", sd.DifferenceLocation.Response)
 			direction = "Response"
 		} else {
 			direction = "Request"
@@ -110,7 +110,7 @@ func (sd SpecDifference) String() string {
 	}
 	optionalInfo := ""
 	if sd.DiffInfo != "" {
-		optionalInfo = fmt.Sprintf("%s", sd.DiffInfo)
+		optionalInfo = sd.DiffInfo
 	}
 
 	items := []string{}

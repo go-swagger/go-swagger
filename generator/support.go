@@ -161,7 +161,8 @@ func (a *appGenerator) Generate() error {
 	// templates are now lazy loaded so there is concurrent map access I can't guard
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
-		for _, mod := range app.Models {
+		for _, md := range app.Models {
+			mod := md
 			mod.IncludeModel = true
 			mod.IncludeValidator = a.GenOpts.IncludeValidator
 			if err := a.GenOpts.renderDefinition(&mod); err != nil {
@@ -172,9 +173,11 @@ func (a *appGenerator) Generate() error {
 
 	if a.GenOpts.IncludeHandler {
 		log.Printf("rendering %d operation groups (tags)", app.OperationGroups.Len())
-		for _, opg := range app.OperationGroups {
+		for _, g := range app.OperationGroups {
+			opg := g
 			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
-			for _, op := range opg.Operations {
+			for _, p := range opg.Operations {
+				op := p
 				if err := a.GenOpts.renderOperation(&op); err != nil {
 					return err
 				}

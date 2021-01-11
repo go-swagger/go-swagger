@@ -738,7 +738,6 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
@@ -769,7 +768,6 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 	},
 		// not expected
@@ -904,7 +902,6 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...?
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
-		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigAllOf0TypeIsolationPropEnum []interface{`,
 		`	var res []string`,
@@ -1035,7 +1032,6 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
-		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigTypeIsolationPropEnum []interface{`,
 		`	var res []string`,
@@ -1228,7 +1224,6 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
@@ -1256,7 +1251,6 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.HostConfig) {`,
@@ -1266,7 +1260,6 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.HostConfig.ConsoleSize); i++ {`,
 		// do we need... ?
 		`		if swag.IsZero(m.HostConfig.ConsoleSize[i]) {`,
-		//`if err := validate.Required("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", m.HostConfig.ConsoleSize[i]); err != nil {`,
 		`		if err := validate.MinimumInt("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", *m.HostConfig.ConsoleSize[i], 0, false); err != nil {`,
 		// TODO: enum if anonymous allOf is not honored (missing func)
 		// => will do that with Enum refactoring
@@ -1302,7 +1295,6 @@ func initFixture1479Part() {
 		`		if swag.IsZero(m.EndpointsConfig[k]) {`,
 		`		if val, ok := m.EndpointsConfig[k]; ok {`,
 		// NOTE: fixed incorrect IsNullable status in map element
-		//`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`type ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnon struct {`,
 		"	Aliases []string `json:\"Aliases\"`",
@@ -1398,14 +1390,12 @@ func initFixture1479Part() {
 	flattenRun.AddExpectations("networking_config.go", []string{
 		`type NetworkingConfig struct {`,
 		// maps are now simple types
-		//"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
 		"	EndpointsConfig map[string]*EndpointSettings `json:\"EndpointsConfig,omitempty\"`",
 		`func (m *NetworkingConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateEndpointsConfig(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NetworkingConfig) validateEndpointsConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.EndpointsConfig) {`,
-		//`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
 		`       for k := range m.EndpointsConfig {`,
 		`	if err := validate.Required("EndpointsConfig"+"."+k, "body", m.EndpointsConfig[k]); err != nil {`,
 		`       	if val, ok := m.EndpointsConfig[k]; ok {`,
@@ -2452,7 +2442,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		// nullable required:
-		//`	if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil`,
 		`		if err := validate.FormatOf("prop2"+"."+strconv.Itoa(i), "body", "date", m.Prop2[i].String(), formats); err != nil {`,
 	},
 		// not expected
@@ -2556,7 +2545,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2578,7 +2566,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2712,7 +2699,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2786,7 +2772,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil {`,
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2996,7 +2981,6 @@ func initFixtureItching() {
 		`func (m EmptyObjectWithAdditionalNonNullablePrimitive) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		// fix undue IsZero call
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3186,7 +3170,6 @@ func initFixtureItching() {
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		// fixed undue Required on this aliased type
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3205,7 +3188,6 @@ func initFixtureItching() {
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		// fixed undue Required on this aliased type
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3488,7 +3470,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithFormatedThing {`,
 		// removed undue IZero call
-		//`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithFormatedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithFormatedThing) validateBlob(formats strfmt.Registry) error {`,
@@ -3527,7 +3508,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := m.AdditionalArrayOfRefedThing[k][i].Validate(formats); err != nil {`,
@@ -3552,7 +3532,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
 		// removed undue IsZero() call
-		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalArrayOfRefedThing[k][i].String(), formats); err != nil {`,
@@ -3628,7 +3607,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateStatus(formats); err != nil {`,
 		`	for k := range m.AdditionalThings {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalThings[k]) {`,
 		`		if err := m.validateAdditionalThingsValueEnum(k, "body", m.AdditionalThings[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var additionalThingsTypeOriginPropEnum []interface{`,
@@ -3759,7 +3737,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
 		// removed undue IsSzero call
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3767,7 +3744,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if m.AdditionalSliceOfAliasedNullablePrimitives[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfAliasedNullablePrimitives[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3790,7 +3766,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3798,7 +3773,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfAliasedNullablePrimitives[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) validateProp3(formats strfmt.Registry) error {`,
@@ -3828,7 +3802,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
 		// nullable not required:
-		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3860,7 +3833,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
 		// nullable required:
-		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3893,7 +3865,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if val, ok := m.AdditionalObjectWithAliasedThing[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -3914,7 +3885,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
-		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithAliasedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
@@ -4057,7 +4027,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4087,7 +4056,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4143,7 +4111,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalNullableArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalNullableArrayThing {`,
-		//`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalNullableArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalNullableArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "isbn", m.AdditionalNullableArrayThing[k][i].String(), formats); err != nil {`,
@@ -4167,7 +4134,6 @@ func initFixtureAdditionalProps() {
 		"	AdditionalSliceOfPrimitives map[string][]strfmt.Date `json:\"-\"`",
 		`func (m *AdditionalSliceOfPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AdditionalSliceOfPrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfPrimitives[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfPrimitives[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfPrimitives[k][i].String(), formats); err != nil {`,
@@ -4189,7 +4155,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayThing {`,
-		//`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "uuid", m.AdditionalArrayThing[k][i].String(), formats); err != nil {`,
@@ -4222,7 +4187,6 @@ func initFixtureAdditionalProps() {
 	flattenRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -4240,7 +4204,6 @@ func initFixtureAdditionalProps() {
 	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -4277,7 +4240,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
 		// nullable required:
-		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4303,7 +4265,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
 		// nullable required:
-		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4451,7 +4412,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfInterface {`,
 		// remove undue IsZero call
-		//`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfInterface[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfInterface) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -4471,7 +4431,6 @@ func initFixtureAdditionalProps() {
 		`type AdditionalFormatedThing map[string]strfmt.Date`,
 		`func (m AdditionalFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -4513,7 +4472,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4543,7 +4501,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4574,7 +4531,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4599,7 +4555,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4891,7 +4846,6 @@ func initFixtureTuple() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsClassicsItemsTuple0P2 {`,
 		// removed undue IsZero() call
-		//`		if swag.IsZero(m.ClassicsClassicsItemsTuple0P2[k]) {`,
 		`		if err := m.validateClassicsClassicsItemsTuple0P2ValueEnum("P2"+"."+k, "body", m.ClassicsClassicsItemsTuple0P2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsClassicsItemsTuple0P2TypeOriginPropEnum []interface{`,
@@ -5074,7 +5028,6 @@ func initFixtureTuple() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsItemsAdditionalItemsItems2 {`,
 		// removed undue IsZero()
-		//`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
 		`		if err := m.validateClassicsItemsAdditionalItemsItems2ValueEnum(k, "body", m.ClassicsItemsAdditionalItemsItems2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []interface{`,
@@ -5345,7 +5298,6 @@ func initFixture1042() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.BAllOf1 = aO1`,
 		`func (m B) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.A`,
@@ -5451,7 +5403,6 @@ func initFixture1042V2() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.ExtendedErrorModelAllOf1 = aO1`,
 		`func (m ExtendedErrorModel) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.ErrorModel`,
@@ -5514,7 +5465,6 @@ func initFixture979() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.ClusterAllOf1 = aO1`,
 		`func (m Cluster) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.NewCluster`,
@@ -6304,7 +6254,6 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.MinimumInt("opts"+"."+k, "body", int64(m.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("opts"+"."+k, "body", int64(m.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
@@ -6462,11 +6411,8 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 3, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 6, false); err != nil {`,
 		`				if err := validate.MultipleOfInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 1); err != nil {`,
@@ -6534,13 +6480,10 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
 		// maps are now simple types
-		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
 		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
@@ -6557,11 +6500,8 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -6801,11 +6741,8 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -6821,7 +6758,6 @@ func initTodolistSchemavalidation() {
 		`type NamedMap map[string]int64`,
 		`func (m NamedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.MinimumInt(k, "body", m[k], 3, false); err != nil {`,
 		`		if err := validate.MaximumInt(k, "body", m[k], 6, false); err != nil {`,
 		`		if err := validate.MultipleOfInt(k, "body", m[k], 1); err != nil {`,
@@ -6887,16 +6823,12 @@ func initTodolistSchemavalidation() {
 	flattenRun.AddExpectations("map_complex_validations.go", []string{
 		`type MapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta MapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"Meta map[string]MapComplexValidationsMetaAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *MapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		//`	if err := m.Meta.Validate(formats); err != nil {`,
-		//`		if ve, ok := err.(*errors.Validation); ok {`,
-		//`			return ve.ValidateName("meta"`,
 		`            		for k := range m.Meta {`,
 		`            			if val, ok := m.Meta[k]; ok {`,
 		`            				if err := val.Validate(formats); err != nil {`,
@@ -6916,7 +6848,6 @@ func initTodolistSchemavalidation() {
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		if val, ok := m.Meta[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`type MapComplexValidationsMetaAnon struct {`,
@@ -7293,7 +7224,6 @@ func initTodolistSchemavalidation() {
 		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -7350,7 +7280,6 @@ func initTodolistSchemavalidation() {
 		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -7460,7 +7389,6 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.Minimum("opts"+"."+k, "body", m.Opts[k], 2, false); err != nil {`,
 		`		if err := validate.Maximum("opts"+"."+k, "body", m.Opts[k], 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", m.Opts[k], 1.5); err != nil {`,
@@ -7606,18 +7534,14 @@ func initTodolistSchemavalidation() {
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		//`	if err := m.Meta.Validate(formats); err != nil {`,
 		`            		for k := range m.Meta {`,
-		//`            			if swag.IsZero(m.Meta[k]) { // not required`,
 		`            			for kk := range m.Meta[k] {`,
-		//`            				if swag.IsZero(m.Meta[k][kk]) { // not required`,
 		`            				for kkk := range m.Meta[k][kk] {`,
 		`	            				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
 		`            					if val, ok := m.Meta[k][kk][kkk]; ok {`,
@@ -7638,11 +7562,8 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if val, ok := m.Meta[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`type NestedMapComplexValidationsMetaAnon struct {`,
@@ -7829,18 +7750,14 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOf) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.Minimum("opts"+"."+k, "body", m.Opts[k], 2, false); err != nil {`,
 		`		if err := validate.Maximum("opts"+"."+k, "body", m.Opts[k], 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", m.Opts[k], 1.5); err != nil {`,
 		`func (m *NamedAllOf) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -7879,7 +7796,6 @@ func initTodolistSchemavalidation() {
 		`type NamedMapComplex map[string]NamedMapComplexAnon`,
 		`func (m NamedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -8038,7 +7954,6 @@ func initTodolistSchemavalidation() {
 		`func (m *MapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		if err := validate.MinimumInt("meta"+"."+k, "body", m.Meta[k], 3, false); err != nil {`,
 		`		if err := validate.MaximumInt("meta"+"."+k, "body", m.Meta[k], 6, false); err != nil {`,
 		`		if err := validate.MultipleOfInt("meta"+"."+k, "body", m.Meta[k], 1); err != nil {`,
@@ -8080,11 +7995,8 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -8163,16 +8075,12 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MaxLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Meta.Assoc[i][ii][iii], 50); err != nil {`,
 		"				if err := validate.Pattern(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Meta.Assoc[i][ii][iii], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	for k := range m.Meta.Opts {`,
-		//`		if swag.IsZero(m.Meta.Opts[k]) {`,
 		`		if err := validate.MinimumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("meta"+"."+"opts"+"."+k, "body", float64(m.Meta.Opts[k]), 1.5); err != nil {`,
 		`	for k := range m.Meta.ExtOpts {`,
-		//`		if swag.IsZero(m.Meta.ExtOpts[k]) {`,
 		`		for kk := range m.Meta.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.Meta.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.Meta.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.Meta.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -8355,11 +8263,8 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMap map[string]map[string]map[string]int64`,
 		`func (m NamedNestedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 3, false); err != nil {`,
 		`				if err := validate.MaximumInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 6, false); err != nil {`,
 		`				if err := validate.MultipleOfInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 1); err != nil {`,
@@ -8433,11 +8338,8 @@ func initFixtureNestedMaps() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 3, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 6, false); err != nil {`,
 		`				if err := validate.MultipleOfInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 1); err != nil {`,
@@ -8452,13 +8354,10 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
-		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
 		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
@@ -8475,11 +8374,8 @@ func initFixtureNestedMaps() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -8561,11 +8457,8 @@ func initFixtureNestedMaps() {
 		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAnon`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -8589,13 +8482,10 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: nested_map_no_validations.go
 	flattenRun.AddExpectations("nested_map_no_validations.go", []string{
-		//`type NestedMapNoValidations map[string]NestedMapNoValidationsAdditionalProperties`,
 		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`       	for kk := range m[k] {`,
-		//`        		if swag.IsZero(m[k][kk]) { // not required`,
 		`            		for kkk := range m[k][kk] {`,
 		`            			if val, ok := m[k][kk][kkk]; ok {`,
 		`            			if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
@@ -8638,7 +8528,6 @@ func initFixtureNestedMaps() {
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
@@ -8646,9 +8535,7 @@ func initFixtureNestedMaps() {
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`          		for k := range m.Meta {`,
-		//`          			if swag.IsZero(m.Meta[k]) { // not required`,
 		`          			for kk := range m.Meta[k] {`,
-		//`          				if swag.IsZero(m.Meta[k][kk]) { // not required`,
 		`          				for kkk := range m.Meta[k][kk] {`,
 		`          				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
 		`          					if val, ok := m.Meta[k][kk][kkk]; ok {`,
@@ -8835,7 +8722,6 @@ func initFixture844Variations() {
 		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	for k := range m.P2 {`,
-		//`		if swag.IsZero(m.P2[k]) {`,
 		`		if err := validate.FormatOf("2"+"."+k, "body", "date", m.P2[k].String(), formats); err != nil {`,
 		`func (m *TupleVariation) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("3", "body", m.P3); err != nil {`,
@@ -8908,7 +8794,6 @@ func initFixture844Variations() {
 		`type NonInterface map[string]strfmt.Date`,
 		`func (m NonInterface) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -8970,7 +8855,6 @@ func initFixture844Variations() {
 		"	AO1 map[string]strfmt.Date `json:\"-\"`",
 		`func (m *Variation1) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AO1 {`,
-		//`		if swag.IsZero(m.AO1[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AO1[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type Variation1AllOf0 interface{}`,
@@ -9122,7 +9006,6 @@ func initFixtureMoreAddProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable not required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -9308,7 +9191,6 @@ func initFixtureMoreAddProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -9459,7 +9341,6 @@ func initFixture1537() {
 		// nullable not required:
 		`		if swag.IsZero(m.ProfileCfg[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("profileCfg"+"."+strconv.Itoa(i), "body", m.ProfileCfg[i]); err != nil {`,
 		`		if m.ProfileCfg[i] != nil {`,
 		`			if err := m.ProfileCfg[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9499,7 +9380,6 @@ func initFixture1537() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9583,7 +9463,6 @@ func initFixture1537v2() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9607,7 +9486,6 @@ func initFixture1537v2() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9667,7 +9545,6 @@ func initFixture15365() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", *m[i], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9715,10 +9592,6 @@ func initFixture15365() {
 		// nullable not required:
 		"func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
-		//`func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {`,
-		//`for i := 0; i < len(m); i++ {`,
-		//`	if swag.IsZero(m[k]) {`,
-		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -9735,7 +9608,6 @@ func initFixture15365() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if err := validate.FormatOf(strconv.Itoa(i), "body", "uuid", m[i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9752,11 +9624,9 @@ func initFixture15365() {
 		`	for k := range m {`,
 		// do we need Required when element is nullable?
 		// nullable not required:
-		//`		if swag.IsZero(m[k]) {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		//`			if swag.IsZero(m[k][i]) {`,
 		`			if err := validate.MinimumInt(k+"."+strconv.Itoa(i), "body", *m[k][i], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9771,7 +9641,6 @@ func initFixture15365() {
 		`type ModelMapOfRef map[string]ModelArrayWithMax`,
 		`func (m ModelMapOfRef) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := m[k].Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName(k`,
@@ -9831,9 +9700,6 @@ func initFixture15365() {
 		// empty validation
 		"func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
-		//`func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {`,
-		//`for i := 0; i < len(m); i++ {`,
-		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 	},
 		// not expected
 		todo,

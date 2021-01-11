@@ -842,10 +842,10 @@ func TestStructDiscriminators(t *testing.T) {
 	cl, _ = sch.Extensions.GetString("x-go-name")
 	assert.Equal(t, "Giraffe", cl)
 
-	//sch = noModelDefs["lion"]
+	// sch = noModelDefs["lion"]
 
-	//b, _ := json.MarshalIndent(sch, "", "  ")
-	//fmt.Println(string(b))
+	// b, _ := json.MarshalIndent(sch, "", "  ")
+	// fmt.Println(string(b))
 
 }
 

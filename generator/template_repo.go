@@ -617,7 +617,7 @@ func padComment(str string, pads ...string) string {
 }
 
 func blockComment(str string) string {
-	return strings.Replace(str, "*/", "[*]/", -1)
+	return strings.ReplaceAll(str, "*/", "[*]/")
 }
 
 func pascalize(arg string) string {
