@@ -139,7 +139,7 @@ jobs:
           name: Install golangci-lint
           command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - run:
-          name: Run unit tests
+          name: Run linting
           command: golangci-lint run --timeout 2m --new-from-rev master
           no_output_timeout: 2m
 
@@ -164,16 +164,8 @@ jobs:
       - prepare_directory_layout
 
       - run:
-          name: Run unit tests
-          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose
-          no_output_timeout: 30m
-
-      - run:
-          name: Build docker images
+          name: Build binary
           command: ./hack/build-docker.sh --circleci
-
-      - store_test_results:
-          path: /usr/share/testresults
 
   test:
     docker:
