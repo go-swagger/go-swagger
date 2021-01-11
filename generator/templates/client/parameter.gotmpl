@@ -150,77 +150,122 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
     return err
   }
   var res []error
-  {{range .Params}}
+  {{ range .Params }}
+    {{- if not (or .IsArray .IsMap .IsBodyParam) }}
+      {{- if and .IsNullable (not .AllowEmptyValue) }}
+  if {{ .ValueExpression }} != nil {
+      {{- end}}
 
-  {{if not (or .IsArray .IsMap .IsBodyParam) }}
-  {{ if and .IsNullable (not .AllowEmptyValue) }}if {{ .ValueExpression }} != nil { {{ end}}
-  {{ if .IsQueryParam }}
+      {{- if .IsQueryParam }}
+
   // query param {{ .Name }}
-  {{ if .IsNullable }}var qr{{ pascalize .Name }} {{ .GoType }}
+        {{- if .IsNullable }}
+  var qr{{ pascalize .Name }} {{ .GoType }}
   if {{ .ValueExpression }} != nil {
     qr{{ pascalize .Name }} = *{{ .ValueExpression }}
-  }{{ else }}qr{{ pascalize .Name }} := {{ .ValueExpression }}{{ end}}
-  q{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(qr{{ pascalize .Name }}){{ else }}qr{{ pascalize .Name }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}{{ if not .AllowEmptyValue }}
-  if q{{ pascalize .Name }} != "" { {{ end }}
+  }
+        {{- else }}
+  qr{{ pascalize .Name }} := {{ .ValueExpression }}
+        {{- end}}
+  q{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(qr{{ pascalize .Name }}){{ else }}qr{{ pascalize .Name }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+        {{- if not .AllowEmptyValue }}
+  if q{{ pascalize .Name }} != "" {
+        {{- end }}
   if err := r.SetQueryParam({{ printf "%q" .Name }}, q{{ pascalize .Name }}); err != nil {
     return err
   }
-  {{ if not .AllowEmptyValue }}}{{ end }}
-  {{ else if .IsPathParam }}
+        {{- if not .AllowEmptyValue }}
+  }
+        {{- end }}
+
+      {{- else if .IsPathParam }}
+
   // path param {{ .Name }}
   if err := r.SetPathParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if and (not .IsCustomFormatter) .IsNullable }}*{{end}}{{ .ValueExpression }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}); err != nil {
     return err
   }
-  {{ else if .IsHeaderParam }}
+
+      {{- else if .IsHeaderParam }}
+
   // header param {{ .Name }}
   if err := r.SetHeaderParam({{ printf "%q" .Name }}, {{ if .Formatter }}{{ .Formatter }}({{ if .IsNullable }}*{{end}}{{ .ValueExpression }}){{ else }}{{ if and (not .IsCustomFormatter) .IsNullable }}*{{end}}{{ .ValueExpression }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}); err != nil {
     return err
   }
-  {{ else if .IsFormParam }}
-  {{ if .IsFileParam }}
-  {{ if .IsNullable}}
+      {{- else if .IsFormParam }}
+        {{- if .IsFileParam }}
+          {{- if .IsNullable }}
   if {{ .ValueExpression }} != nil {
-  {{end}}
+          {{- end }}
     // form file param {{ .Name }}
     if err := r.SetFileParam({{ printf "%q" .Name }}, {{ .ValueExpression }}); err != nil {
       return err
     }
-  {{ if .IsNullable}}
+          {{- if .IsNullable}}
   }
-  {{ end }}
-  {{ else }}
+          {{- end }}
+        {{- else }}
+
   // form param {{ .Name }}
-  {{ if .IsNullable }}var fr{{ pascalize .Name }} {{ .GoType }}
+          {{- if .IsNullable }}
+  var fr{{ pascalize .Name }} {{ .GoType }}
   if {{ .ValueExpression }} != nil {
     fr{{ pascalize .Name }} = *{{ .ValueExpression }}
-  }{{ else }}fr{{ pascalize .Name }} := {{ .ValueExpression }}{{ end}}
-  f{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(fr{{ pascalize .Name }}){{ else }}fr{{ pascalize .Name }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}{{ if not .AllowEmptyValue }}
-  if f{{ pascalize .Name }} != "" { {{ end }}
+  }
+          {{- else }}
+  fr{{ pascalize .Name }} := {{ .ValueExpression }}
+          {{- end}}
+  f{{ pascalize .Name}} := {{ if .Formatter }}{{ .Formatter }}(fr{{ pascalize .Name }}){{ else }}fr{{ pascalize .Name }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+          {{- if not .AllowEmptyValue }}
+  if f{{ pascalize .Name }} != "" {
+          {{- end }}
   if err := r.SetFormParam({{ printf "%q" .Name }}, f{{ pascalize .Name }}); err != nil {
     return err
   }
-  {{ if not .AllowEmptyValue }}}{{ end }}
-  {{ end }}
-  {{ end }}
-  {{ if and .IsNullable (not .AllowEmptyValue) }}}{{end}}
-  {{else if .IsArray }}
-  {{ if not .IsBodyParam }}{{ if .Child }}{{ if or .Child.Formatter .Child.IsCustomFormatter }}var values{{ pascalize .Name }} []string
+          {{- if not .AllowEmptyValue }}
+  }
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if and .IsNullable (not .AllowEmptyValue) }}
+  }
+      {{- end }}
+    {{- else if .IsArray }}
+
+      {{- if not .IsBodyParam }}
+
+        {{- if .Child }}
+          {{- if or .Child.Formatter .Child.IsCustomFormatter }}
+
+  var values{{ pascalize .Name }} []string
   for _, v := range {{ if and (not .IsArray) (not .IsMap) (not .IsStream) (.IsNullable) }}*{{end}}{{ .ValueExpression }} {
     values{{ pascalize .Name }} = append(values{{ pascalize .Name }}, {{ .Child.Formatter }}{{ if .Child.Formatter }}({{ end }}v{{ if .Child.IsCustomFormatter }}.String(){{ end }}{{ if .Child.Formatter }}){{ end }})
   }
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
-  {{ else }}values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}{{ end }}
+          {{- else }}
+  values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}
+          {{- end }}
+        {{- else }}
+  values{{ pascalize .Name }} := {{ if and (not .IsArray) (not .IsStream) (not .IsMap) (.IsNullable) }}*{{end}}{{ .ValueExpression }}
+        {{- end }}
   joined{{ pascalize .Name}} := swag.JoinByFormat(values{{ pascalize .Name }}, "{{.CollectionFormat}}")
-  {{ if .IsQueryParam }}// query array param {{ .Name }}
+
+        {{- if .IsQueryParam }}
+
+  // query array param {{ .Name }}
   if err := r.SetQueryParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}...); err != nil {
     return err
   }
-  {{ else if and .IsFormParam }}// form array param {{ .Name }}
+
+        {{- else if and .IsFormParam }}
+
+  // form array param {{ .Name }}
   if err := r.SetFormParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}...); err != nil {
     return err
   }
-  {{ else if and .IsPathParam }}// path array param {{ .Name }}
-  // SetPathParam does not support variadric arguments, since we used JoinByFormat
+
+        {{- else if and .IsPathParam }}
+
+  // path array param {{ .Name }}
+  // SetPathParam does not support variadic arguments, since we used JoinByFormat
   // we can send the first item in the array as it's all the items of the previous
   // array joined together
   if len(joined{{ pascalize .Name }}) > 0 {
@@ -228,19 +273,32 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
       return err
     }
   }
-  {{ end }}{{ end }}
 
-  {{ end }}
+        {{- else if .IsHeaderParam }}
 
-  {{if .IsBodyParam}}
-  {{ if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }} if {{ .ValueExpression }} != nil { {{end}}
+  // header array param {{ .Name }}
+  if len(joined{{ pascalize .Name }}) > 0 {
+     if err := r.SetHeaderParam({{ printf "%q" .Name }}, joined{{ pascalize .Name }}[0]); err != nil {
+      return err
+    }
+  }
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- if .IsBodyParam }}
+      {{- if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }}
+  if {{ .ValueExpression }} != nil {
+      {{- end }}
     if err := r.SetBodyParam({{ .ValueExpression }}); err != nil {
       return err
     }
-  {{ if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }} } {{end}}
-  {{end}}
+      {{- if or .Schema.IsInterface .Schema.IsStream (and .Schema.IsArray .Child) (and .Schema.IsMap .Child) (and .Schema.IsNullable (not .HasDiscriminator)) }}
+  }
+      {{- end }}
+    {{- end }}
 
-  {{end}}
+  {{- end }}
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
   }

@@ -377,3 +377,51 @@ func TestGenClient_1518(t *testing.T) {
 		}
 	}
 }
+
+func TestGenClient_2471(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	opts := testClientGenOpts()
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2471", "fixture-2471.yaml")
+
+	cwd, _ := os.Getwd()
+	tft, _ := ioutil.TempDir(cwd, "generated")
+	opts.Target = tft
+
+	defer func() {
+		_ = os.RemoveAll(tft)
+	}()
+
+	err := GenerateClient("client", []string{}, []string{}, opts)
+	require.NoError(t, err)
+
+	fixtureConfig := map[string][]string{
+		"client/operations/example_post_parameters.go": { // generated file
+			`func (o *ExamplePostParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {`,
+			`	if err := r.SetTimeout(o.timeout); err != nil {`,
+			`	valuesFoo := o.Foo`,
+			`	joinedFoo := swag.JoinByFormat(valuesFoo, "")`,
+			`	if len(joinedFoo) > 0 {`,
+			`		if err := r.SetHeaderParam("Foo", joinedFoo[0]); err != nil {`,
+			`	valuesFooPath := o.FooPath`,
+			`	joinedFooPath := swag.JoinByFormat(valuesFooPath, "")`,
+			`	if len(joinedFooPath) > 0 {`,
+			`		if err := r.SetPathParam("FooPath", joinedFooPath[0]); err != nil {`,
+			`	valuesFooQuery := o.FooQuery`,
+			`	joinedFooQuery := swag.JoinByFormat(valuesFooQuery, "")`,
+			`	if err := r.SetQueryParam("FooQuery", joinedFooQuery...); err != nil {`,
+		},
+	}
+
+	for fileToInspect, expectedCode := range fixtureConfig {
+		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		require.NoError(t, err)
+
+		for line, codeLine := range expectedCode {
+			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+			}
+		}
+	}
+}
