@@ -193,7 +193,7 @@ import (
 type {{ pascalize .Name }}Reader struct {
   formats strfmt.Registry
 {{- if .HasStreamingResponse }}
-  writer  io.WriteHeader
+  writer  io.Writer
 {{- end }}
 }
 
