@@ -40,29 +40,100 @@ paths:
           $ref: '#/definitions/ContainerConfig'
       responses:
         200:
-          description: simple type
+          description: header is of a simple type
           headers:
+            x-isAnOptionalHeader0DirtSimple:
+              description: "header 0 is a plain header"
+              type: string
+
+            x-isAnOptionalHeader0DirtSimpleInteger:
+              description: "header 0 is a plain integer header"
+              type: integer
+
+            x-isAnOptionalHeader0DirtSimpleArray:
+              description: "header 0 is a plain array of integer header"
+              type: array
+              items:
+                type: integer
+
             x-isAnOptionalHeader0:
+              description: "header 0 is a date-time"
               type: string
               format: date-time
+              default: 2018-01-28T23:54:00.000Z
+
+            x-isAnOptionalHeader0Stringer:
+              description: "header 0Stringer is a uuid"
+              type: string
+              format: uuid
+              default: 524fc6d5-66c6-46f6-90bc-34e0d0139e43
+
+            x-isAnOptionalHeader0Primitive:
+              description: "header 0Primitive is a primitive"
+              type: number
+              format: float
+              default: 345.55
+
             x-isAnOptionalHeader1:
+              description: "header 1 an array of datetimes"
               type: array
               collectionFormat: tsv
               minItems: 3
               items:
                 type: string
                 format: date-time
+              default:
+              - 2018-01-28T23:54:00.000Z
+              - 2018-02-28T23:54:00.000Z
+              - 2018-03-28T23:54:00.000Z
+              - 2018-04-28T23:54:00.000Z
+
             x-isAnOptionalHeader2:
+              description: "header 2 a nested array of integers"
               type: array
               uniqueItems: true
               items:
                 type: array
                 collectionFormat: pipes
-                items: 
+                items:
                   type: integer
                   format: int32
                   minimum: 20
+                  default: 21
+              default:
+              -
+                - 21
+                - 22
+                - 23
+              -
+                - 31
+                - 32
+                - 33
+
+            x-isAnOptionalHeader2NoFormat:
+              description: "header 2NoFormat a nested array of integers"
+              type: array
+              uniqueItems: true
+              collectionFormat: pipes
+              items:
+                type: array
+                collectionFormat: tsv
+                items:
+                  type: integer
+                  minimum: 20
+                  default: 21
+              default:
+              -
+                - 21
+                - 22
+                - 23
+              -
+                - 31
+                - 32
+                - 33
+
             x-isAnOptionalHeader3:
+              description: "header 3 a nested array of uuid"
               type: array
               uniqueItems: true
               # defaults to csv
@@ -70,22 +141,58 @@ paths:
               items:
                 type: array
                 collectionFormat: pipes
-                items: 
+                items:
                   type: array
                   items:
                     collectionFormat: tsv
                     type: string
                     format: uuid
+              default:
+              -
+                -
+                  - 524fc6d5-66c6-46f6-90bc-34e0d0139e43
+                  - c8199a5f-f7ce-4fb1-b8af-082256125e89
+                -
+                  - c8199a5f-f7ce-4fb1-b8af-082256125e89
+                  - 524fc6d5-66c6-46f6-90bc-34e0d0139e43
+              -
+                -
+                  - c8199a5f-f7ce-4fb1-b8af-082256125e89
+                  - 524fc6d5-66c6-46f6-90bc-34e0d0139e43
+                -
+                  - 524fc6d5-66c6-46f6-90bc-34e0d0139e43
+                  - c8199a5f-f7ce-4fb1-b8af-082256125e89
           schema:
             type: string
             format: hostname
+            default: "www.example.com"
         201:
           description: simple type
           schema:
             type: string
             format: uuid
+            default: c8199a5f-f7ce-4fb1-b8af-082256125e89
         default:
           description: schema type
+          headers:
+            x-isDefaultHeader0:
+              description: "header 0 is an integer"
+              type: integer
+              format: uint32
+              default: 15
+
+            x-isDefaultHeader1:
+              description: |
+                header 1 an array of simple precision floats.
+                This array contains at least 3 elements.
+
+              type: array
+              collectionFormat: pipes
+              minItems: 3
+              items:
+                type: number
+                format: float
+              default: [ 14.00, 15, 16 ]
           schema:
             $ref: '#/definitions/ContainerConfig'
 definitions:

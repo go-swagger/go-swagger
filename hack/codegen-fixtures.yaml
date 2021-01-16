@@ -38,8 +38,6 @@
 - dir: fixtures/bugs/1314
 - dir: fixtures/bugs/1062
   spec: eve-online-esi.json
-  skipped:
-    knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
 - dir: fixtures/bugs/1392
 - dir: fixtures/bugs/1277
 - dir: fixtures/bugs/1536
@@ -67,8 +65,6 @@
 - dir: fixtures/bugs/1557
 - dir: fixtures/bugs/1663
 - dir: fixtures/bugs/2136
-  skipped:
-    knownClientFailure: true  # <- bug in client with non-string nested CollectionItems
 - dir: fixtures/bugs/2111
 - dir: fixtures/bugs/2223
 - dir: fixtures/bugs/2113
@@ -139,11 +135,7 @@
   skipped:
     knownValidationFailure: true
 - spec: todolist.arrayform.yml
-  skipped:
-    knownClientFailure: true
 - spec: todolist.arrayquery.yml
-  skipped:
-    knownClientFailure: true
 - spec: todolist.url.basepath.yml
   skipped:
     knownClientFailure: true
@@ -151,41 +143,17 @@
   skipped:
     knownClientFailure: true
 - spec: swagger-codegen-tests.json
-  skipped:
-    knownClientFailure: true
 - spec: fixture-1414.json
-  skipped:
-    knownClientFailure: true
 - spec: fixture-909-3.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-909-4.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-909-5.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-909-6.yaml
-  skipped:
-    knownClientFailure: true
 - spec: gentest2.yaml
-  skipped:
-    knownClientFailure: true
 - spec: gentest3.yaml
-  skipped:
-    knownClientFailure: true
 - spec: gentest.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-1437-4.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-1392-2.yaml
-  skipped:
-    knownClientFailure: true
 - spec: fixture-1392-3.yaml
-  skipped:
-    knownClientFailure: true
 # known fixtures not supporting expand mode (not including the discriminator case).
 # Normally, this is because of duplicate names constructed during codegen of anonymous structures.
 # This should be solved with proper analysis of names before codegen.

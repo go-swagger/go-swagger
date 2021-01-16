@@ -172,6 +172,10 @@ func defaultAssets() map[string][]byte {
 		"model.gotmpl":      MustAsset("templates/model.gotmpl"),
 		"header.gotmpl":     MustAsset("templates/header.gotmpl"),
 
+		// simple schema generation helpers templates
+		"simpleschema/defaultsvar.gotmpl":  MustAsset("templates/simpleschema/defaultsvar.gotmpl"),
+		"simpleschema/defaultsinit.gotmpl": MustAsset("templates/simpleschema/defaultsinit.gotmpl"),
+
 		"swagger_json_embed.gotmpl": MustAsset("templates/swagger_json_embed.gotmpl"),
 
 		// server templates
@@ -224,16 +228,20 @@ func defaultProtectedTemplates() map[string]bool {
 		"tuplefield":                  true,
 		"tuplefieldIface":             true,
 		"typeSchemaType":              true,
-		"validationCustomformat":      true,
-		"validationPrimitive":         true,
-		"validationStructfield":       true,
-		"withBaseTypeBody":            true,
-		"withoutBaseTypeBody":         true,
-		"validationMinimum":           true,
-		"validationMaximum":           true,
-		"validationMultipleOf":        true,
+		"simpleschemaDefaultsvar":     true,
+		"simpleschemaDefaultsinit":    true,
 
-		// all serializers TODO(fred)
+		// validation helpers
+		"validationCustomformat": true,
+		"validationPrimitive":    true,
+		"validationStructfield":  true,
+		"withBaseTypeBody":       true,
+		"withoutBaseTypeBody":    true,
+		"validationMinimum":      true,
+		"validationMaximum":      true,
+		"validationMultipleOf":   true,
+
+		// all serializers
 		"additionalPropertiesSerializer": true,
 		"tupleSerializer":                true,
 		"schemaSerializer":               true,

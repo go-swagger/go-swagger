@@ -506,7 +506,7 @@ paths:
         default: 1970-01-01
       - name: queryParam3
         in: query
-        type: integer 
+        type: integer
         format: uint32
         minimum: 12
         exclusiveMinimum: true
@@ -572,7 +572,7 @@ paths:
         default: 1970-01-01
       - name: queryParam3
         in: query
-        type: integer 
+        type: integer
         format: uint32
         minimum: 12
         exclusiveMinimum: true
@@ -628,7 +628,7 @@ paths:
         default: 1970-01-01
       - name: queryParam3
         in: query
-        type: integer 
+        type: integer
         format: uint32
         minimum: 12
         exclusiveMinimum: true
@@ -704,7 +704,7 @@ definitions:
       config1: 2019-09-09
       config2: 2018-09-09
   errorResponseMsg:
-    type: object 
+    type: object
     required: [ errorCode, reason ]
     properties:
       errorCode:

@@ -760,9 +760,16 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
 	res := string(ff)
-	assertInCode(t, `for _, v := range o.WorkspaceID`, res)
-	assertInCode(t, `valuesWorkspaceID = append(valuesWorkspaceID, v.String())`, res)
-	assertInCode(t, `joinedWorkspaceID := swag.JoinByFormat(valuesWorkspaceID, "")`, res)
+	assertInCode(t, `joinedWorkspaceID := o.bindParamWorkspaceID(reg)`, res)
+	assertInCode(t, `if err := r.SetQueryParam("workspace_id", joinedWorkspaceID...); err != nil {`, res)
+	assertInCode(t, `func (o *CollectionParams) bindParamWorkspaceID(formats strfmt.Registry) []string {`, res)
+	assertInCode(t, `workspaceIDIR := o.WorkspaceID`, res)
+	assertInCode(t, `var workspaceIDIC []string`, res)
+	assertInCode(t, `for _, workspaceIDIIR := range workspaceIDIR { // explode []strfmt.UUID`, res)
+	assertInCode(t, `workspaceIDIIV := workspaceIDIIR.String()`, res)
+	assertInCode(t, `workspaceIDIC = append(workspaceIDIC, workspaceIDIIV)`, res)
+	assertInCode(t, `workspaceIDIS := swag.JoinByFormat(workspaceIDIC, "")`, res)
+	assertInCode(t, `return workspaceIDIS`, res)
 }
 
 func TestGenParameter_Issue731_Single(t *testing.T) {
@@ -815,7 +822,14 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
-	assertInCode(t, "valuesGroups", string(ff))
+	res := string(ff)
+	assertInCode(t, `joinedGroups := o.bindParamGroups(reg)`, res)
+	assertInCode(t, `if err := r.SetQueryParam("groups[]", joinedGroups...); err != nil {`, res)
+	assertInCode(t, `func (o *GetFooParams) bindParamGroups(formats strfmt.Registry) []string {`, res)
+	assertInCode(t, `for _, groupsIIR := range groupsIR`, res)
+	assertInCode(t, `groupsIC = append(groupsIC, groupsIIV)`, res)
+	assertInCode(t, `groupsIS := swag.JoinByFormat(groupsIC, "multi")`, res)
+	assertInCode(t, `return groupsIS`, res)
 }
 
 func TestGenParameter_Issue809_Server(t *testing.T) {
@@ -1232,7 +1246,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "csv")`,
 				`var isAnOption4IR [][][]strfmt.UUID`,
 				`for i, isAnOption4IV := range isAnOption4IC {`,
-				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "")`,
+				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "tsv")`,
 				`if len(isAnOption4IIC) > 0 {`,
 				`var isAnOption4IIR [][]strfmt.UUID`,
 				`for ii, isAnOption4IIV := range isAnOption4IIC {`,
