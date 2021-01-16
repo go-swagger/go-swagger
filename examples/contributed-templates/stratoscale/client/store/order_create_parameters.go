@@ -18,59 +18,73 @@ import (
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
-// NewOrderCreateParams creates a new OrderCreateParams object
-// with the default values initialized.
+// NewOrderCreateParams creates a new OrderCreateParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewOrderCreateParams() *OrderCreateParams {
-	var ()
 	return &OrderCreateParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewOrderCreateParamsWithTimeout creates a new OrderCreateParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewOrderCreateParamsWithTimeout(timeout time.Duration) *OrderCreateParams {
-	var ()
 	return &OrderCreateParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewOrderCreateParamsWithContext creates a new OrderCreateParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewOrderCreateParamsWithContext(ctx context.Context) *OrderCreateParams {
-	var ()
 	return &OrderCreateParams{
-
 		Context: ctx,
 	}
 }
 
 // NewOrderCreateParamsWithHTTPClient creates a new OrderCreateParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewOrderCreateParamsWithHTTPClient(client *http.Client) *OrderCreateParams {
-	var ()
 	return &OrderCreateParams{
 		HTTPClient: client,
 	}
 }
 
-/*OrderCreateParams contains all the parameters to send to the API endpoint
-for the order create operation typically these are written to a http.Request
+/* OrderCreateParams contains all the parameters to send to the API endpoint
+   for the order create operation.
+
+   Typically these are written to a http.Request.
 */
 type OrderCreateParams struct {
 
-	/*Body
-	  order placed for purchasing the pet
+	/* Body.
 
+	   order placed for purchasing the pet
 	*/
 	Body *models.Order
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the order create params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderCreateParams) WithDefaults() *OrderCreateParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the order create params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderCreateParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the order create params
@@ -124,7 +138,6 @@ func (o *OrderCreateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.R
 		return err
 	}
 	var res []error
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

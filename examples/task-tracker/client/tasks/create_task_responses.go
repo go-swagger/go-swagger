@@ -46,7 +46,7 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 	return &CreateTaskCreated{}
 }
 
-/*CreateTaskCreated handles this case with default header values.
+/* CreateTaskCreated describes a response with status code 201, with default header values.
 
 Task created
 */
@@ -69,14 +69,13 @@ func NewCreateTaskDefault(code int) *CreateTaskDefault {
 	}
 }
 
-/*CreateTaskDefault handles this case with default header values.
+/* CreateTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type CreateTaskDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -89,15 +88,18 @@ func (o *CreateTaskDefault) Code() int {
 func (o *CreateTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *CreateTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *CreateTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

@@ -19,64 +19,81 @@ import (
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
 
-// NewUpdateTaskParams creates a new UpdateTaskParams object
-// with the default values initialized.
+// NewUpdateTaskParams creates a new UpdateTaskParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateTaskParams() *UpdateTaskParams {
-	var ()
 	return &UpdateTaskParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateTaskParamsWithTimeout creates a new UpdateTaskParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateTaskParamsWithTimeout(timeout time.Duration) *UpdateTaskParams {
-	var ()
 	return &UpdateTaskParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateTaskParamsWithContext creates a new UpdateTaskParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateTaskParamsWithContext(ctx context.Context) *UpdateTaskParams {
-	var ()
 	return &UpdateTaskParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateTaskParamsWithHTTPClient creates a new UpdateTaskParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateTaskParamsWithHTTPClient(client *http.Client) *UpdateTaskParams {
-	var ()
 	return &UpdateTaskParams{
 		HTTPClient: client,
 	}
 }
 
-/*UpdateTaskParams contains all the parameters to send to the API endpoint
-for the update task operation typically these are written to a http.Request
+/* UpdateTaskParams contains all the parameters to send to the API endpoint
+   for the update task operation.
+
+   Typically these are written to a http.Request.
 */
 type UpdateTaskParams struct {
 
-	/*Body
-	  The task to update
+	/* Body.
 
+	   The task to update
 	*/
 	Body *models.Task
-	/*ID
-	  The id of the item
 
+	/* ID.
+
+	   The id of the item
+
+	   Format: int64
 	*/
 	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update task params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateTaskParams) WithDefaults() *UpdateTaskParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update task params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateTaskParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the update task params
@@ -141,7 +158,6 @@ func (o *UpdateTaskParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Re
 		return err
 	}
 	var res []error
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

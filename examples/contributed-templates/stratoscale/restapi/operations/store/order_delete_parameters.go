@@ -85,7 +85,7 @@ func (o *OrderDeleteParams) bindOrderID(rawData []string, hasKey bool, formats s
 // validateOrderID carries on validations for parameter OrderID
 func (o *OrderDeleteParams) validateOrderID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("orderId", "path", int64(o.OrderID), 1, false); err != nil {
+	if err := validate.MinimumInt("orderId", "path", o.OrderID, 1, false); err != nil {
 		return err
 	}
 

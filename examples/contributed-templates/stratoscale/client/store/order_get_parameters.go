@@ -17,59 +17,75 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewOrderGetParams creates a new OrderGetParams object
-// with the default values initialized.
+// NewOrderGetParams creates a new OrderGetParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewOrderGetParams() *OrderGetParams {
-	var ()
 	return &OrderGetParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewOrderGetParamsWithTimeout creates a new OrderGetParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewOrderGetParamsWithTimeout(timeout time.Duration) *OrderGetParams {
-	var ()
 	return &OrderGetParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewOrderGetParamsWithContext creates a new OrderGetParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewOrderGetParamsWithContext(ctx context.Context) *OrderGetParams {
-	var ()
 	return &OrderGetParams{
-
 		Context: ctx,
 	}
 }
 
 // NewOrderGetParamsWithHTTPClient creates a new OrderGetParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewOrderGetParamsWithHTTPClient(client *http.Client) *OrderGetParams {
-	var ()
 	return &OrderGetParams{
 		HTTPClient: client,
 	}
 }
 
-/*OrderGetParams contains all the parameters to send to the API endpoint
-for the order get operation typically these are written to a http.Request
+/* OrderGetParams contains all the parameters to send to the API endpoint
+   for the order get operation.
+
+   Typically these are written to a http.Request.
 */
 type OrderGetParams struct {
 
-	/*OrderID
-	  ID of pet that needs to be fetched
+	/* OrderID.
 
+	   ID of pet that needs to be fetched
+
+	   Format: int64
 	*/
 	OrderID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the order get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderGetParams) WithDefaults() *OrderGetParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the order get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderGetParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the order get params

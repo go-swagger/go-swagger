@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -55,7 +56,6 @@ func (m *Order) validateOrderID(formats strfmt.Registry) error {
 }
 
 func (m *Order) validateOrderLines(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.OrderLines) { // not required
 		return nil
 	}
@@ -67,6 +67,38 @@ func (m *Order) validateOrderLines(formats strfmt.Registry) error {
 
 		if m.OrderLines[i] != nil {
 			if err := m.OrderLines[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("orderLines" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this order based on the context it is used
+func (m *Order) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateOrderLines(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Order) contextValidateOrderLines(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.OrderLines); i++ {
+
+		if m.OrderLines[i] != nil {
+			if err := m.OrderLines[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("orderLines" + "." + strconv.Itoa(i))
 				}
@@ -104,7 +136,7 @@ type OrderLine struct {
 
 	// purchased item
 	// Required: true
-	PurchasedItem Item `json:"purchasedItem"`
+	PurchasedItem *Item `json:"purchasedItem"`
 
 	// quantity
 	// Required: true
@@ -132,11 +164,21 @@ func (m *OrderLine) Validate(formats strfmt.Registry) error {
 
 func (m *OrderLine) validatePurchasedItem(formats strfmt.Registry) error {
 
-	if err := m.PurchasedItem.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("purchasedItem")
-		}
+	if err := validate.Required("purchasedItem", "body", m.PurchasedItem); err != nil {
 		return err
+	}
+
+	if err := validate.Required("purchasedItem", "body", m.PurchasedItem); err != nil {
+		return err
+	}
+
+	if m.PurchasedItem != nil {
+		if err := m.PurchasedItem.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("purchasedItem")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -150,6 +192,34 @@ func (m *OrderLine) validateQuantity(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("quantity", "body", int64(*m.Quantity), 1, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this order line based on the context it is used
+func (m *OrderLine) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidatePurchasedItem(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *OrderLine) contextValidatePurchasedItem(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.PurchasedItem != nil {
+		if err := m.PurchasedItem.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("purchasedItem")
+			}
+			return err
+		}
 	}
 
 	return nil

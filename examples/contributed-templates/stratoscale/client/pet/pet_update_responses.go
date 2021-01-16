@@ -47,7 +47,6 @@ func (o *PetUpdateReader) ReadResponse(response runtime.ClientResponse, consumer
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -58,7 +57,7 @@ func NewPetUpdateCreated() *PetUpdateCreated {
 	return &PetUpdateCreated{}
 }
 
-/*PetUpdateCreated handles this case with default header values.
+/* PetUpdateCreated describes a response with status code 201, with default header values.
 
 Updated successfully
 */
@@ -69,7 +68,6 @@ type PetUpdateCreated struct {
 func (o *PetUpdateCreated) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
 }
-
 func (o *PetUpdateCreated) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -91,7 +89,7 @@ func NewPetUpdateBadRequest() *PetUpdateBadRequest {
 	return &PetUpdateBadRequest{}
 }
 
-/*PetUpdateBadRequest handles this case with default header values.
+/* PetUpdateBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -112,7 +110,7 @@ func NewPetUpdateNotFound() *PetUpdateNotFound {
 	return &PetUpdateNotFound{}
 }
 
-/*PetUpdateNotFound handles this case with default header values.
+/* PetUpdateNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */
@@ -133,7 +131,7 @@ func NewPetUpdateMethodNotAllowed() *PetUpdateMethodNotAllowed {
 	return &PetUpdateMethodNotAllowed{}
 }
 
-/*PetUpdateMethodNotAllowed handles this case with default header values.
+/* PetUpdateMethodNotAllowed describes a response with status code 405, with default header values.
 
 Validation exception
 */

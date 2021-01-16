@@ -17,59 +17,75 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewDeleteTaskParams creates a new DeleteTaskParams object
-// with the default values initialized.
+// NewDeleteTaskParams creates a new DeleteTaskParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewDeleteTaskParams() *DeleteTaskParams {
-	var ()
 	return &DeleteTaskParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewDeleteTaskParamsWithTimeout creates a new DeleteTaskParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewDeleteTaskParamsWithTimeout(timeout time.Duration) *DeleteTaskParams {
-	var ()
 	return &DeleteTaskParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewDeleteTaskParamsWithContext creates a new DeleteTaskParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewDeleteTaskParamsWithContext(ctx context.Context) *DeleteTaskParams {
-	var ()
 	return &DeleteTaskParams{
-
 		Context: ctx,
 	}
 }
 
 // NewDeleteTaskParamsWithHTTPClient creates a new DeleteTaskParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewDeleteTaskParamsWithHTTPClient(client *http.Client) *DeleteTaskParams {
-	var ()
 	return &DeleteTaskParams{
 		HTTPClient: client,
 	}
 }
 
-/*DeleteTaskParams contains all the parameters to send to the API endpoint
-for the delete task operation typically these are written to a http.Request
+/* DeleteTaskParams contains all the parameters to send to the API endpoint
+   for the delete task operation.
+
+   Typically these are written to a http.Request.
 */
 type DeleteTaskParams struct {
 
-	/*ID
-	  The id of the item
+	/* ID.
 
+	   The id of the item
+
+	   Format: int64
 	*/
 	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the delete task params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteTaskParams) WithDefaults() *DeleteTaskParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the delete task params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *DeleteTaskParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the delete task params

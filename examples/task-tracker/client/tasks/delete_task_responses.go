@@ -46,7 +46,7 @@ func NewDeleteTaskNoContent() *DeleteTaskNoContent {
 	return &DeleteTaskNoContent{}
 }
 
-/*DeleteTaskNoContent handles this case with default header values.
+/* DeleteTaskNoContent describes a response with status code 204, with default header values.
 
 Task deleted
 */
@@ -69,14 +69,13 @@ func NewDeleteTaskDefault(code int) *DeleteTaskDefault {
 	}
 }
 
-/*DeleteTaskDefault handles this case with default header values.
+/* DeleteTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type DeleteTaskDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -89,15 +88,18 @@ func (o *DeleteTaskDefault) Code() int {
 func (o *DeleteTaskDefault) Error() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *DeleteTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *DeleteTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

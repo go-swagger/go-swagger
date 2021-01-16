@@ -41,7 +41,6 @@ func (o *OrderGetReader) ReadResponse(response runtime.ClientResponse, consumer 
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -52,7 +51,7 @@ func NewOrderGetOK() *OrderGetOK {
 	return &OrderGetOK{}
 }
 
-/*OrderGetOK handles this case with default header values.
+/* OrderGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -63,7 +62,6 @@ type OrderGetOK struct {
 func (o *OrderGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
 }
-
 func (o *OrderGetOK) GetPayload() *models.Order {
 	return o.Payload
 }
@@ -85,7 +83,7 @@ func NewOrderGetBadRequest() *OrderGetBadRequest {
 	return &OrderGetBadRequest{}
 }
 
-/*OrderGetBadRequest handles this case with default header values.
+/* OrderGetBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -106,7 +104,7 @@ func NewOrderGetNotFound() *OrderGetNotFound {
 	return &OrderGetNotFound{}
 }
 
-/*OrderGetNotFound handles this case with default header values.
+/* OrderGetNotFound describes a response with status code 404, with default header values.
 
 Order not found
 */

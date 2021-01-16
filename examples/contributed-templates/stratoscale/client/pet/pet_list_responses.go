@@ -35,7 +35,6 @@ func (o *PetListReader) ReadResponse(response runtime.ClientResponse, consumer r
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -46,7 +45,7 @@ func NewPetListOK() *PetListOK {
 	return &PetListOK{}
 }
 
-/*PetListOK handles this case with default header values.
+/* PetListOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -57,7 +56,6 @@ type PetListOK struct {
 func (o *PetListOK) Error() string {
 	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
 }
-
 func (o *PetListOK) GetPayload() []*models.Pet {
 	return o.Payload
 }
@@ -77,7 +75,7 @@ func NewPetListBadRequest() *PetListBadRequest {
 	return &PetListBadRequest{}
 }
 
-/*PetListBadRequest handles this case with default header values.
+/* PetListBadRequest describes a response with status code 400, with default header values.
 
 Invalid status value
 */

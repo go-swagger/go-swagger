@@ -5,7 +5,10 @@ examples=$(git rev-parse --show-toplevel)/examples
 # go to project root
 cd "${examples}/generated"
 rm -rf cmd models restapi
-swagger generate server -A Petstore
+# NOTE: there is a conflict here between the spec used to demo the spec
+# generator (swagger.json) and the spec used to demo the server generator.
+# Moving forward, the codegen example is generated from swagger-petstore.json.
+swagger generate server -f swagger-petstore.json -A Petstore
 
 cd "${examples}/todo-list"
 rm -rf client cmd models restapi
