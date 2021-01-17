@@ -76,5 +76,12 @@ cd "${examples}/stream-client" || exit 1
 rm -rf client
 swagger generate client
 
+cd "${examples}/file-server" || exit 1
+cp restapi/configure_file_upload.go .
+rm -rf client cmd restapi
+swagger generate server
+swagger generate client
+mv configure_file_upload.go restapi/
+
 cd "${examples}" || exit 1
 go test -v ./...
