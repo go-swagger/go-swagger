@@ -45,6 +45,9 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
+	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+	// uploads.UploadFileMaxParseMemory = 32 << 20
+
 	uploadFolder, err := ioutil.TempDir(".", "upload")
 	if err != nil {
 		panic("could not create upload folder")

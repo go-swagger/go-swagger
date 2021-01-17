@@ -15,8 +15,17 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
+// UploadFileMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var UploadFileMaxParseMemory int64 = 32 << 20
+
 // NewUploadFileParams creates a new UploadFileParams object
-// no default values defined in spec.
+
+//
+// There are no default values defined in the spec.
 func NewUploadFileParams() UploadFileParams {
 
 	return UploadFileParams{}
@@ -47,7 +56,7 @@ func (o *UploadFileParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(UploadFileMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -64,7 +73,6 @@ func (o *UploadFileParams) BindRequest(r *http.Request, route *middleware.Matche
 	} else {
 		o.File = &runtime.File{Data: file, Header: fileHeader}
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
