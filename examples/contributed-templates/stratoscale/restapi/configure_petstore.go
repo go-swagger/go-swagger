@@ -69,7 +69,7 @@ type Config struct {
 	StoreAPI
 	Logger func(string, ...interface{})
 	// InnerMiddleware is for the handler executors. These do not apply to the swagger.json document.
-	// The middleware executes after routing but before authentication, binding and validation.
+	// The middleware executes after routing but before authentication, binding and validation
 	InnerMiddleware func(http.Handler) http.Handler
 
 	// Authorizer is used to authorize a request after the Auth function was called using the "Auth*" functions

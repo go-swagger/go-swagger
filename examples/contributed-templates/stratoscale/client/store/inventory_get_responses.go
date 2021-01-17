@@ -27,7 +27,6 @@ func (o *InventoryGetReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -38,7 +37,7 @@ func NewInventoryGetOK() *InventoryGetOK {
 	return &InventoryGetOK{}
 }
 
-/*InventoryGetOK handles this case with default header values.
+/* InventoryGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -49,7 +48,6 @@ type InventoryGetOK struct {
 func (o *InventoryGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
 }
-
 func (o *InventoryGetOK) GetPayload() map[string]int32 {
 	return o.Payload
 }

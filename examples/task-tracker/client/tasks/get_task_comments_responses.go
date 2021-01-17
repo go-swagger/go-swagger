@@ -46,7 +46,7 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 	return &GetTaskCommentsOK{}
 }
 
-/*GetTaskCommentsOK handles this case with default header values.
+/* GetTaskCommentsOK describes a response with status code 200, with default header values.
 
 The list of comments
 */
@@ -57,7 +57,6 @@ type GetTaskCommentsOK struct {
 func (o *GetTaskCommentsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskCommentsOK  %+v", 200, o.Payload)
 }
-
 func (o *GetTaskCommentsOK) GetPayload() []*models.Comment {
 	return o.Payload
 }
@@ -79,14 +78,13 @@ func NewGetTaskCommentsDefault(code int) *GetTaskCommentsDefault {
 	}
 }
 
-/*GetTaskCommentsDefault handles this case with default header values.
+/* GetTaskCommentsDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type GetTaskCommentsDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -99,15 +97,18 @@ func (o *GetTaskCommentsDefault) Code() int {
 func (o *GetTaskCommentsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *GetTaskCommentsDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *GetTaskCommentsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

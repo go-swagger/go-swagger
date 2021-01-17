@@ -17,61 +17,78 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewPetDeleteParams creates a new PetDeleteParams object
-// with the default values initialized.
+// NewPetDeleteParams creates a new PetDeleteParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPetDeleteParams() *PetDeleteParams {
-	var ()
 	return &PetDeleteParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPetDeleteParamsWithTimeout creates a new PetDeleteParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPetDeleteParamsWithTimeout(timeout time.Duration) *PetDeleteParams {
-	var ()
 	return &PetDeleteParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPetDeleteParamsWithContext creates a new PetDeleteParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPetDeleteParamsWithContext(ctx context.Context) *PetDeleteParams {
-	var ()
 	return &PetDeleteParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPetDeleteParamsWithHTTPClient creates a new PetDeleteParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPetDeleteParamsWithHTTPClient(client *http.Client) *PetDeleteParams {
-	var ()
 	return &PetDeleteParams{
 		HTTPClient: client,
 	}
 }
 
-/*PetDeleteParams contains all the parameters to send to the API endpoint
-for the pet delete operation typically these are written to a http.Request
+/* PetDeleteParams contains all the parameters to send to the API endpoint
+   for the pet delete operation.
+
+   Typically these are written to a http.Request.
 */
 type PetDeleteParams struct {
 
-	/*APIKey*/
+	// APIKey.
 	APIKey *string
-	/*PetID
-	  Pet id to delete
 
+	/* PetID.
+
+	   Pet id to delete
+
+	   Format: int64
 	*/
 	PetID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the pet delete params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetDeleteParams) WithDefaults() *PetDeleteParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the pet delete params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetDeleteParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the pet delete params
@@ -143,7 +160,6 @@ func (o *PetDeleteParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		if err := r.SetHeaderParam("api_key", *o.APIKey); err != nil {
 			return err
 		}
-
 	}
 
 	// path param petId

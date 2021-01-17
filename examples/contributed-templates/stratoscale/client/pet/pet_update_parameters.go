@@ -18,59 +18,73 @@ import (
 	"github.com/go-swagger/go-swagger/examples/contributed-templates/stratoscale/models"
 )
 
-// NewPetUpdateParams creates a new PetUpdateParams object
-// with the default values initialized.
+// NewPetUpdateParams creates a new PetUpdateParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPetUpdateParams() *PetUpdateParams {
-	var ()
 	return &PetUpdateParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPetUpdateParamsWithTimeout creates a new PetUpdateParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPetUpdateParamsWithTimeout(timeout time.Duration) *PetUpdateParams {
-	var ()
 	return &PetUpdateParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPetUpdateParamsWithContext creates a new PetUpdateParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPetUpdateParamsWithContext(ctx context.Context) *PetUpdateParams {
-	var ()
 	return &PetUpdateParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPetUpdateParamsWithHTTPClient creates a new PetUpdateParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPetUpdateParamsWithHTTPClient(client *http.Client) *PetUpdateParams {
-	var ()
 	return &PetUpdateParams{
 		HTTPClient: client,
 	}
 }
 
-/*PetUpdateParams contains all the parameters to send to the API endpoint
-for the pet update operation typically these are written to a http.Request
+/* PetUpdateParams contains all the parameters to send to the API endpoint
+   for the pet update operation.
+
+   Typically these are written to a http.Request.
 */
 type PetUpdateParams struct {
 
-	/*Body
-	  Pet object that needs to be added to the store
+	/* Body.
 
+	   Pet object that needs to be added to the store
 	*/
 	Body *models.Pet
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the pet update params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetUpdateParams) WithDefaults() *PetUpdateParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the pet update params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetUpdateParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the pet update params
@@ -124,7 +138,6 @@ func (o *PetUpdateParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

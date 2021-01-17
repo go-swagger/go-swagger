@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -71,7 +73,6 @@ func (m *Milestone) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Milestone) validateDueDate(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.DueDate) { // not required
 		return nil
 	}
@@ -89,15 +90,15 @@ func (m *Milestone) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("name", "body", string(*m.Name), 3); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", string(*m.Name), 50); err != nil {
+	if err := validate.MaxLength("name", "body", *m.Name, 50); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("name", "body", string(*m.Name), `[A-Za-z][\w- ]+`); err != nil {
+	if err := validate.Pattern("name", "body", *m.Name, `[A-Za-z][\w- ]+`); err != nil {
 		return err
 	}
 
@@ -105,13 +106,40 @@ func (m *Milestone) validateName(formats strfmt.Registry) error {
 }
 
 func (m *Milestone) validateStats(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Stats) { // not required
 		return nil
 	}
 
 	if m.Stats != nil {
 		if err := m.Stats.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("stats")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this milestone based on the context it is used
+func (m *Milestone) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateStats(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Milestone) contextValidateStats(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Stats != nil {
+		if err := m.Stats.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("stats")
 			}
@@ -160,6 +188,11 @@ type MilestoneStats struct {
 
 // Validate validates this milestone stats
 func (m *MilestoneStats) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this milestone stats based on context it is used
+func (m *MilestoneStats) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

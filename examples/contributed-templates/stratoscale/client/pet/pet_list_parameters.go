@@ -17,59 +17,73 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewPetListParams creates a new PetListParams object
-// with the default values initialized.
+// NewPetListParams creates a new PetListParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPetListParams() *PetListParams {
-	var ()
 	return &PetListParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPetListParamsWithTimeout creates a new PetListParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPetListParamsWithTimeout(timeout time.Duration) *PetListParams {
-	var ()
 	return &PetListParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPetListParamsWithContext creates a new PetListParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPetListParamsWithContext(ctx context.Context) *PetListParams {
-	var ()
 	return &PetListParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPetListParamsWithHTTPClient creates a new PetListParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPetListParamsWithHTTPClient(client *http.Client) *PetListParams {
-	var ()
 	return &PetListParams{
 		HTTPClient: client,
 	}
 }
 
-/*PetListParams contains all the parameters to send to the API endpoint
-for the pet list operation typically these are written to a http.Request
+/* PetListParams contains all the parameters to send to the API endpoint
+   for the pet list operation.
+
+   Typically these are written to a http.Request.
 */
 type PetListParams struct {
 
-	/*Status
-	  Status values that need to be considered for filter
+	/* Status.
 
+	   Status values that need to be considered for filter
 	*/
 	Status []string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the pet list params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetListParams) WithDefaults() *PetListParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the pet list params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetListParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the pet list params
@@ -124,16 +138,36 @@ func (o *PetListParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Regis
 	}
 	var res []error
 
-	valuesStatus := o.Status
+	if o.Status != nil {
 
-	joinedStatus := swag.JoinByFormat(valuesStatus, "multi")
-	// query array param status
-	if err := r.SetQueryParam("status", joinedStatus...); err != nil {
-		return err
+		// binding items for status
+		joinedStatus := o.bindParamStatus(reg)
+
+		// query array param status
+		if err := r.SetQueryParam("status", joinedStatus...); err != nil {
+			return err
+		}
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
+}
+
+// bindParamPetList binds the parameter status
+func (o *PetListParams) bindParamStatus(formats strfmt.Registry) []string {
+	statusIR := o.Status
+
+	var statusIC []string
+	for _, statusIIR := range statusIR { // explode []string
+
+		statusIIV := statusIIR // string as string
+		statusIC = append(statusIC, statusIIV)
+	}
+
+	// items.CollectionFormat: "multi"
+	statusIS := swag.JoinByFormat(statusIC, "multi")
+
+	return statusIS
 }

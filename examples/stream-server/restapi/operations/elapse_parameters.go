@@ -86,11 +86,11 @@ func (o *ElapseParams) bindLength(rawData []string, hasKey bool, formats strfmt.
 // validateLength carries on validations for parameter Length
 func (o *ElapseParams) validateLength(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("length", "path", int64(o.Length), 2, false); err != nil {
+	if err := validate.MinimumInt("length", "path", o.Length, 2, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("length", "path", int64(o.Length), 30, false); err != nil {
+	if err := validate.MaximumInt("length", "path", o.Length, 30, false); err != nil {
 		return err
 	}
 

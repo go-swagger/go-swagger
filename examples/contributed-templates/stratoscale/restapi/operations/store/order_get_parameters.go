@@ -86,11 +86,11 @@ func (o *OrderGetParams) bindOrderID(rawData []string, hasKey bool, formats strf
 // validateOrderID carries on validations for parameter OrderID
 func (o *OrderGetParams) validateOrderID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("orderId", "path", int64(o.OrderID), 1, false); err != nil {
+	if err := validate.MinimumInt("orderId", "path", o.OrderID, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("orderId", "path", int64(o.OrderID), 10, false); err != nil {
+	if err := validate.MaximumInt("orderId", "path", o.OrderID, 10, false); err != nil {
 		return err
 	}
 

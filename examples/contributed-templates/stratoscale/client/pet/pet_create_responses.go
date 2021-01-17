@@ -35,7 +35,6 @@ func (o *PetCreateReader) ReadResponse(response runtime.ClientResponse, consumer
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -46,7 +45,7 @@ func NewPetCreateCreated() *PetCreateCreated {
 	return &PetCreateCreated{}
 }
 
-/*PetCreateCreated handles this case with default header values.
+/* PetCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -57,7 +56,6 @@ type PetCreateCreated struct {
 func (o *PetCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
 }
-
 func (o *PetCreateCreated) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -79,7 +77,7 @@ func NewPetCreateMethodNotAllowed() *PetCreateMethodNotAllowed {
 	return &PetCreateMethodNotAllowed{}
 }
 
-/*PetCreateMethodNotAllowed handles this case with default header values.
+/* PetCreateMethodNotAllowed describes a response with status code 405, with default header values.
 
 Invalid input
 */

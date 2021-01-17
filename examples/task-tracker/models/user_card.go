@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -82,12 +84,11 @@ func (m *UserCard) Validate(formats strfmt.Registry) error {
 }
 
 func (m *UserCard) validateAvailableKarma(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AvailableKarma) { // not required
 		return nil
 	}
 
-	if err := validate.Maximum("availableKarma", "body", float64(m.AvailableKarma), 1000, true); err != nil {
+	if err := validate.Maximum("availableKarma", "body", m.AvailableKarma, 1000, true); err != nil {
 		return err
 	}
 
@@ -109,15 +110,64 @@ func (m *UserCard) validateScreenName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("screenName", "body", string(*m.ScreenName), 3); err != nil {
+	if err := validate.MinLength("screenName", "body", *m.ScreenName, 3); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("screenName", "body", string(*m.ScreenName), 255); err != nil {
+	if err := validate.MaxLength("screenName", "body", *m.ScreenName, 255); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("screenName", "body", string(*m.ScreenName), `\w[\w_-]+`); err != nil {
+	if err := validate.Pattern("screenName", "body", *m.ScreenName, `\w[\w_-]+`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this user card based on the context it is used
+func (m *UserCard) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAdmin(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAvailableKarma(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UserCard) contextValidateAdmin(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "admin", "body", m.Admin); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UserCard) contextValidateAvailableKarma(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "availableKarma", "body", float64(m.AvailableKarma)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UserCard) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
 		return err
 	}
 

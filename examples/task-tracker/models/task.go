@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -260,6 +261,115 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 	return nil
 }
 
+// ContextValidate validate this task based on the context it is used
+func (m *Task) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with TaskCard
+	if err := m.TaskCard.ContextValidate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAttachments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateComments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdated(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLastUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Task) contextValidateAttachments(ctx context.Context, formats strfmt.Registry) error {
+
+	for k := range m.Attachments {
+
+		if val, ok := m.Attachments[k]; ok {
+			if err := val.ContextValidate(ctx, formats); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Task) contextValidateComments(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "comments", "body", []*Comment(m.Comments)); err != nil {
+		return err
+	}
+
+	for i := 0; i < len(m.Comments); i++ {
+
+		if m.Comments[i] != nil {
+			if err := m.Comments[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Task) contextValidateLastUpdated(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "lastUpdated", "body", strfmt.DateTime(m.LastUpdated)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Task) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LastUpdatedBy != nil {
+		if err := m.LastUpdatedBy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastUpdatedBy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Task) contextValidateReportedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.ReportedBy != nil {
+		if err := m.ReportedBy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("reportedBy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *Task) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -338,12 +448,11 @@ func (m *TaskAttachmentsAnon) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TaskAttachmentsAnon) validateDescription(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Description) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("description", "body", string(m.Description), 3); err != nil {
+	if err := validate.MinLength("description", "body", m.Description, 3); err != nil {
 		return err
 	}
 
@@ -351,12 +460,73 @@ func (m *TaskAttachmentsAnon) validateDescription(formats strfmt.Registry) error
 }
 
 func (m *TaskAttachmentsAnon) validateURL(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.URL) { // not required
 		return nil
 	}
 
 	if err := validate.FormatOf("url", "body", "uri", m.URL.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this task attachments anon based on the context it is used
+func (m *TaskAttachmentsAnon) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateContentType(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateName(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSize(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateURL(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TaskAttachmentsAnon) contextValidateContentType(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "contentType", "body", string(m.ContentType)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskAttachmentsAnon) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskAttachmentsAnon) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "size", "body", float64(m.Size)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskAttachmentsAnon) contextValidateURL(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "url", "body", strfmt.URI(m.URL)); err != nil {
 		return err
 	}
 

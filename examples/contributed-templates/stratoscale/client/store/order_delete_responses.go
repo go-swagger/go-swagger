@@ -38,7 +38,6 @@ func (o *OrderDeleteReader) ReadResponse(response runtime.ClientResponse, consum
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -49,7 +48,7 @@ func NewOrderDeleteNoContent() *OrderDeleteNoContent {
 	return &OrderDeleteNoContent{}
 }
 
-/*OrderDeleteNoContent handles this case with default header values.
+/* OrderDeleteNoContent describes a response with status code 204, with default header values.
 
 Deleted successfully
 */
@@ -70,7 +69,7 @@ func NewOrderDeleteBadRequest() *OrderDeleteBadRequest {
 	return &OrderDeleteBadRequest{}
 }
 
-/*OrderDeleteBadRequest handles this case with default header values.
+/* OrderDeleteBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -91,7 +90,7 @@ func NewOrderDeleteNotFound() *OrderDeleteNotFound {
 	return &OrderDeleteNotFound{}
 }
 
-/*OrderDeleteNotFound handles this case with default header values.
+/* OrderDeleteNotFound describes a response with status code 404, with default header values.
 
 Order not found
 */

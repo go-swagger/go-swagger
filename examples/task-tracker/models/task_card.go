@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 
@@ -143,7 +144,6 @@ func (m *TaskCard) Validate(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.AssignedTo) { // not required
 		return nil
 	}
@@ -161,7 +161,6 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateEffort(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Effort) { // not required
 		return nil
 	}
@@ -170,7 +169,7 @@ func (m *TaskCard) validateEffort(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MultipleOf("effort", "body", float64(m.Effort), 3); err != nil {
+	if err := validate.MultipleOfInt("effort", "body", int64(m.Effort), 3); err != nil {
 		return err
 	}
 
@@ -178,16 +177,15 @@ func (m *TaskCard) validateEffort(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateKarma(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Karma) { // not required
 		return nil
 	}
 
-	if err := validate.Minimum("karma", "body", float64(m.Karma), 0, true); err != nil {
+	if err := validate.Minimum("karma", "body", m.Karma, 0, true); err != nil {
 		return err
 	}
 
-	if err := validate.MultipleOf("karma", "body", float64(m.Karma), 0.5); err != nil {
+	if err := validate.MultipleOf("karma", "body", m.Karma, 0.5); err != nil {
 		return err
 	}
 
@@ -195,7 +193,6 @@ func (m *TaskCard) validateKarma(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Milestone) { // not required
 		return nil
 	}
@@ -213,7 +210,6 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateReportedAt(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ReportedAt) { // not required
 		return nil
 	}
@@ -226,7 +222,6 @@ func (m *TaskCard) validateReportedAt(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Severity) { // not required
 		return nil
 	}
@@ -292,7 +287,6 @@ func (m *TaskCard) validateStatus(formats strfmt.Registry) error {
 }
 
 func (m *TaskCard) validateTags(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Tags) { // not required
 		return nil
 	}
@@ -309,11 +303,11 @@ func (m *TaskCard) validateTags(formats strfmt.Registry) error {
 
 	for i := 0; i < len(m.Tags); i++ {
 
-		if err := validate.MinLength("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i]), 3); err != nil {
+		if err := validate.MinLength("tags"+"."+strconv.Itoa(i), "body", m.Tags[i], 3); err != nil {
 			return err
 		}
 
-		if err := validate.Pattern("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i]), `\w[\w- ]+`); err != nil {
+		if err := validate.Pattern("tags"+"."+strconv.Itoa(i), "body", m.Tags[i], `\w[\w- ]+`); err != nil {
 			return err
 		}
 
@@ -328,11 +322,83 @@ func (m *TaskCard) validateTitle(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("title", "body", string(*m.Title), 5); err != nil {
+	if err := validate.MinLength("title", "body", *m.Title, 5); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("title", "body", string(*m.Title), 150); err != nil {
+	if err := validate.MaxLength("title", "body", *m.Title, 150); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this task card based on the context it is used
+func (m *TaskCard) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAssignedTo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMilestone(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReportedAt(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *TaskCard) contextValidateAssignedTo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AssignedTo != nil {
+		if err := m.AssignedTo.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("assignedTo")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TaskCard) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *TaskCard) contextValidateMilestone(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Milestone != nil {
+		if err := m.Milestone.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("milestone")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *TaskCard) contextValidateReportedAt(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "reportedAt", "body", strfmt.DateTime(m.ReportedAt)); err != nil {
 		return err
 	}
 

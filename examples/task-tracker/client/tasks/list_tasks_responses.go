@@ -54,13 +54,16 @@ func NewListTasksOK() *ListTasksOK {
 	return &ListTasksOK{}
 }
 
-/*ListTasksOK handles this case with default header values.
+/* ListTasksOK describes a response with status code 200, with default header values.
 
 Successful response
 */
 type ListTasksOK struct {
-	/*the last task id known to the application
-	 */
+
+	/* the last task id known to the application
+
+	   Format: int64
+	*/
 	XLastTaskID int64
 
 	Payload []*models.TaskCard
@@ -69,19 +72,22 @@ type ListTasksOK struct {
 func (o *ListTasksOK) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasksOK  %+v", 200, o.Payload)
 }
-
 func (o *ListTasksOK) GetPayload() []*models.TaskCard {
 	return o.Payload
 }
 
 func (o *ListTasksOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Last-Task-Id
-	xLastTaskId, err := swag.ConvertInt64(response.GetHeader("X-Last-Task-Id"))
-	if err != nil {
-		return errors.InvalidType("X-Last-Task-Id", "header", "int64", response.GetHeader("X-Last-Task-Id"))
+	// hydrates response header X-Last-Task-Id
+	hdrXLastTaskID := response.GetHeader("X-Last-Task-Id")
+
+	if hdrXLastTaskID != "" {
+		valxLastTaskId, err := swag.ConvertInt64(hdrXLastTaskID)
+		if err != nil {
+			return errors.InvalidType("X-Last-Task-Id", "header", "int64", hdrXLastTaskID)
+		}
+		o.XLastTaskID = valxLastTaskId
 	}
-	o.XLastTaskID = xLastTaskId
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
@@ -96,7 +102,7 @@ func NewListTasksUnprocessableEntity() *ListTasksUnprocessableEntity {
 	return &ListTasksUnprocessableEntity{}
 }
 
-/*ListTasksUnprocessableEntity handles this case with default header values.
+/* ListTasksUnprocessableEntity describes a response with status code 422, with default header values.
 
 Validation error
 */
@@ -107,7 +113,6 @@ type ListTasksUnprocessableEntity struct {
 func (o *ListTasksUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity  %+v", 422, o.Payload)
 }
-
 func (o *ListTasksUnprocessableEntity) GetPayload() *models.ValidationError {
 	return o.Payload
 }
@@ -131,14 +136,13 @@ func NewListTasksDefault(code int) *ListTasksDefault {
 	}
 }
 
-/*ListTasksDefault handles this case with default header values.
+/* ListTasksDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type ListTasksDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -151,15 +155,18 @@ func (o *ListTasksDefault) Code() int {
 func (o *ListTasksDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks][%d] listTasks default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *ListTasksDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *ListTasksDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

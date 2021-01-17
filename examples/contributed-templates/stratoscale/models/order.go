@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -59,7 +60,6 @@ func (m *Order) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Order) validateShipDate(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ShipDate) { // not required
 		return nil
 	}
@@ -104,7 +104,6 @@ func (m *Order) validateStatusEnum(path, location string, value string) error {
 }
 
 func (m *Order) validateStatus(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Status) { // not required
 		return nil
 	}
@@ -114,6 +113,11 @@ func (m *Order) validateStatus(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this order based on context it is used
+func (m *Order) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
