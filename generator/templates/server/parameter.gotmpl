@@ -19,6 +19,7 @@
   {{- else if and .HasSimpleBodyParams .HasModelBodyItems }}
 
     {{- if or .Schema.HasSliceValidations .Schema.Items.HasValidations }}
+
   // validate array of body objects
     {{- end }}
     {{- if .Schema.HasSliceValidations }}
@@ -45,6 +46,7 @@
   }
 
       {{- if not .Schema.HasSliceValidations }}
+
   if len(res) == 0 {
     {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
@@ -113,36 +115,41 @@
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end}}
   {{- else }}
-      {{- if .IsInterface }}
+    {{- if .IsInterface }}
   // no validation on generic interface
   {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-     {{- end }}
+    {{- end }}
   {{- end }}
 {{- end }}
 
 {{ define "sliceparamvalidator"}}
-{{ if or .MinItems .MaxItems }}
+  {{- if or .MinItems .MaxItems }}
+
     {{ camelize .Name }}Size := int64(len({{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not (hasPrefix .ValueExpression "o.")) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}))
-{{ end }}
-{{ if .MinItems }}
+  {{- end }}
+  {{- if .MinItems }}
+
 // {{ .ItemsDepth }}minItems: {{ .MinItems }}
 if err := validate.MinItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{ .MinItems }}); err != nil {
   return err
 }
-{{ end }}
-{{ if .MaxItems }}
+  {{- end }}
+  {{- if .MaxItems }}
+
 // {{ .ItemsDepth }}maxItems: {{ .MaxItems }}
 if err := validate.MaxItems({{ .Path }}, {{ printf "%q" .Location }}, {{ camelize .Name }}Size, {{.MaxItems}}); err != nil {
   return err
 }
-{{ end }}
-{{ if .UniqueItems }}
+  {{- end }}
+  {{- if .UniqueItems }}
+
 // {{ .ItemsDepth }}uniqueItems: true
 if err := validate.UniqueItems({{ .Path }}, {{ printf "%q" .Location }}, {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{ if and .Child (not ( hasPrefix .ValueExpression "o." )) }}{{ .Child.ValueExpression }}C{{ else }}{{ .ValueExpression }}{{ end }}); err != nil {
   return err
 }
-{{ end }}
-{{ if .Enum }}
+ {{- end }}
+ {{- if .Enum }}
+
 // {{ .ItemsDepth }}Enum: {{ .Enum }}
 if err := validate.EnumCase(
   {{- .Path }}, {{ printf "%q" .Location }},
@@ -157,8 +164,8 @@ if err := validate.EnumCase(
   {{- printf "%#v" .Enum -}}, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
   return err
   }
-{{ end }}
-{{ end }}
+  {{- end }}
+{{- end }}
 
 {{- define "childvalidator" }}
   {{- if .Converter }}
@@ -200,27 +207,27 @@ if err := validate.EnumCase(
   {{- end }}
   {{ varname .Child.ValueExpression }}R := make({{ .GoType }},len({{ .Child.ValueExpression }}C))
   for {{ .KeyVar }}, {{ .Child.ValueExpression }}V := range {{ .Child.ValueExpression}}C {
-    {{- if .Child.IsArray }}
+  {{- if .Child.IsArray }}
       {{ .Child.Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
-      {{- if .Child.HasSliceValidations }}
+    {{- if .Child.HasSliceValidations }}
         {{- template "sliceparamvalidator" .Child }}
-      {{- end }}
+    {{- end }}
       {{- template "sliceparambinder" .Child }}
-    {{- else if .Child.IsMap }}
+  {{- else if .Child.IsMap }}
       {{ .Child.Child.ValueExpression }}C := {{ varname .Child.ValueExpression }}V
       {{ template "mapparamvalidator" .Child }}
-    {{- else }}
-      {{- if and .Child.IsNullable }}
+  {{- else }}
+    {{- if and .Child.IsNullable }}
     if {{ varname .Child.ValueExpression }}V == nil {
-       {{- if .Child.Required }}
+      {{- if .Child.Required }}
        return errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, {{ varname .Child.ValueExpression }}V)
-       {{- else }}
+      {{- else }}
         continue
-       {{- end }}
-    }
       {{- end }}
-      {{- template "childvalidator" .Child }}
+    }
     {{- end }}
+      {{- template "childvalidator" .Child }}
+  {{- end }}
     {{ varname .Child.ValueExpression }}R[{{.KeyVar}}] = {{ varname .Child.ValueExpression }}{{ if or .Child.IsArray .Child.IsMap}}IR{{end}}
   }
 {{- end }}
@@ -304,10 +311,22 @@ import (
   {{ imports .Imports }}
 )
 
+{{- if .HasFormParams }}
+
+// {{ pascalize .Name }}MaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var {{ pascalize .Name }}MaxParseMemory int64 = 32 << 20
+{{- end }}
+
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
-{{ if .Params.HasSomeDefaults -}}
-// with the default values initialized.{{ else -}}
-// no default values defined in spec.
+{{ if .Params.HasSomeDefaults }}
+// with the default values initialized.
+{{- else }}
+//
+// There are no default values defined in the spec.
 {{- end }}
 func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
 {{ if .Params.HasSomeDefaults }}
@@ -332,7 +351,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
   {{- end }}
   )
 
-{{ range .Params }}{{ if .HasDefault -}}{{- /* carry on UnmarshalText initialization strategy */ -}}
+{{ range .Params }}{{ if .HasDefault -}}{{- /* carry out UnmarshalText initialization strategy */ -}}
       {{ if and .IsPrimitive .IsCustomFormatter (not (stringContains .Zero "(\"")) }}{{ varname .ID}}Default.UnmarshalText([]byte({{ printf "%q" .Default }}))
       {{ else if .IsArray -}}
           {{ if or ( and .Child.IsPrimitive .Child.IsCustomFormatter ) .Child.IsArray -}}
@@ -388,66 +407,98 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
   {{ .ReceiverName }}.HTTPRequest = r
 
-  {{ if .HasQueryParams }}qs := runtime.Values(r.URL.Query()){{ end }}
+{{- if .HasQueryParams }}
 
-  {{ if .HasFormParams }}if err := r.ParseMultipartForm(32 << 20); err != nil {
-		if err != http.ErrNotMultipart {
+  qs := runtime.Values(r.URL.Query())
+{{- end }}
+
+{{- if .HasFormParams }}
+
+  if err := r.ParseMultipartForm({{ pascalize .Name }}MaxParseMemory); err != nil {
+    if err != http.ErrNotMultipart {
             return errors.New(400,"%v",err)
         } else if err := r.ParseForm(); err != nil {
             return errors.New(400,"%v",err)
         }
-	}{{ if .HasFormValueParams }}
+	}
+  {{- if .HasFormValueParams }}
   fds := runtime.Values(r.Form)
-  {{ end }}{{ end }}
+  {{- end }}
+{{- end }}
+{{ range .Params }}
+  {{- if not .IsArray }}
+    {{- if .IsQueryParam }}
 
-  {{ range .Params }}
-  {{ if not .IsArray -}}
-  {{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+  q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsPathParam }}r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
+    {{- else if .IsPathParam }}
+
+  r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
+    {{- else if .IsHeaderParam }}
+
+  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsFormParam -}}
-    {{if .IsFileParam }}{{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
+    {{- else if .IsFormParam }}
+      {{- if .IsFileParam }}
+
+  {{ camelize .Name }}, {{ camelize .Name }}Header, err := r.FormFile({{ .Path }})
   if err != nil {{ if .IsNullable }}&& err != http.ErrMissingFile{{ end }}{
     res = append(res, errors.New(400, "reading file %q failed: %v", {{ printf "%q" (camelize .Name) }}, err))
-        {{ if .IsNullable }}} else if err == http.ErrMissingFile {
+        {{- if .IsNullable }}
+  } else if err == http.ErrMissingFile {
     // no-op for missing but optional file parameter
-        {{ end }}} else if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}({{ camelize .Name }}, {{ camelize .Name }}Header); err != nil {
-    {{ if .Required }}// Required: true{{ printf "\n" }}{{end }}res = append(res, err)
+        {{- end }}
+  } else if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}({{ camelize .Name }}, {{ camelize .Name }}Header); err != nil {
+        {{- if .Required }}
+    // Required: true
+        {{- end }}
+    res = append(res, err)
   } else {
     {{ .ReceiverName }}.{{ pascalize .Name }} = &runtime.File{Data: {{ camelize .Name }}, Header: {{ camelize .Name }}Header}
   }
-    {{ else }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
+      {{- else }}
+
+  fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-    {{ end }}{{/* end .FileParam */}}
-  {{ end }}{{/* end not .Array */}}
-  {{ else if .IsArray -}}
-    {{ if .IsQueryParam }}q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
+      {{- end }}
+    {{- end }}
+  {{- else if .IsArray }}
+    {{- if .IsQueryParam }}
+
+  q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsPathParam }}r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
+    {{- else if .IsPathParam }}
+
+  r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if .IsHeaderParam }}if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
+    {{- else if .IsHeaderParam }}
+
+  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ else if and .IsFormParam }}fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
+    {{- else if and .IsFormParam }}
+
+  fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
   if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
-  {{ end }}{{ end }}
-  {{ if and .IsBodyParam .Schema -}}
+    {{- end }}
+  {{- end }}
+
+  {{- if and .IsBodyParam .Schema }}
+
   if runtime.HasBody(r) {
     {{- if .Schema.IsStream }}
     {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
@@ -473,7 +524,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
       res = append(res, errors.NewParseError({{ printf "%q" (camelize .Name) }}, {{ printf "%q" .Location }}, "", err))
         {{- if .Required }}
       }
-        {{- end -}}
+        {{- end }}
       {{- end }}
     } else {
       {{- template "bodyvalidator" . }}
@@ -485,7 +536,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
   }
     {{- end }}
   {{- end }}
-  {{- end }}
+{{- end }}
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
   }
@@ -530,17 +581,18 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     }
 
   // Required: {{ .Required }}
-      {{ if .IsQueryParam }}// AllowEmptyValue: {{ .AllowEmptyValue }}{{ end }}{{ if .IsPathParam }}// Parameter is provided by construction from the route{{ end }}
-      {{ if and (not .IsPathParam) .Required (not .AllowEmptyValue) -}}
+      {{- if .IsQueryParam }}// AllowEmptyValue: {{ .AllowEmptyValue }}{{ end }}{{ if .IsPathParam }}// Parameter is provided by construction from the route{{ end }}
+        {{- if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}
+
   if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
     return err
   }
-      {{ else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) -}}
+        {{- else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}
   if raw == "" { // empty values pass all other validations{{ if .HasDefault }}
     // Default values have been previously initialized by New{{ $className }}Params(){{ end }}
     return nil
   }
-      {{ end }}
+        {{- end }}
       {{ if .Converter }}value, err := {{ .Converter }}(raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)

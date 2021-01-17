@@ -111,6 +111,12 @@ func configureAPI(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) http.Handl
   {{- $package := .Package }}
   {{- $apipackagealias := .APIPackageAlias }}
   {{- range .Operations }}
+    {{- if .HasFormParams }}
+  // You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+  // {{ if ne .Package $package }}{{ .PackageAlias }}{{ else }}{{ $apipackagealias }}{{ end }}.{{ pascalize .Name }}MaxParseMemory = 32 << 20
+    {{- end }}
+  {{- end }}
+  {{ range .Operations }}
   if api.{{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler == nil {
     api.{{ if ne .Package $package }}{{pascalize .Package}}{{ end }}{{ pascalize .Name }}Handler =
     {{- if ne .Package $package }}
