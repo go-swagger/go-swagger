@@ -72,5 +72,9 @@ mkdir models
 mv my_type.go models
 swagger generate server --skip-validation -f example-external-types.yaml -A external-types-demo
 
+cd "${examples}/stream-client" || exit 1
+rm -rf client
+swagger generate client
+
 cd "${examples}" || exit 1
 go test -v ./...

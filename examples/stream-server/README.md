@@ -192,4 +192,3 @@ Notice the use of the `cancel()` method to interrupt the ongoing request if the 
 		}
     ...
 ```
-
