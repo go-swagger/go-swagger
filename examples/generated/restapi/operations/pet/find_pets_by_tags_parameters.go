@@ -15,7 +15,8 @@ import (
 )
 
 // NewFindPetsByTagsParams creates a new FindPetsByTagsParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewFindPetsByTagsParams() FindPetsByTagsParams {
 
 	return FindPetsByTagsParams{}
@@ -52,7 +53,6 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindTags(qTags, qhkTags, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -63,10 +63,8 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 //
 // Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *FindPetsByTagsParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	// CollectionFormat: multi
 	tagsIC := rawData
-
 	if len(tagsIC) == 0 {
 		return nil
 	}

@@ -31,7 +31,7 @@ func NewGetOrdersForItem(ctx *middleware.Context, handler GetOrdersForItemHandle
 	return &GetOrdersForItem{Context: ctx, Handler: handler}
 }
 
-/*GetOrdersForItem swagger:route GET /orders/{itemID} getOrdersForItem
+/* GetOrdersForItem swagger:route GET /orders/{itemID} getOrdersForItem
 
 retrieves all orders for an item
 

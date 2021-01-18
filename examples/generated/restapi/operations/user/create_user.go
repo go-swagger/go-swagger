@@ -29,7 +29,7 @@ func NewCreateUser(ctx *middleware.Context, handler CreateUserHandler) *CreateUs
 	return &CreateUser{Context: ctx, Handler: handler}
 }
 
-/*CreateUser swagger:route POST /users user createUser
+/* CreateUser swagger:route POST /users user createUser
 
 Create user
 

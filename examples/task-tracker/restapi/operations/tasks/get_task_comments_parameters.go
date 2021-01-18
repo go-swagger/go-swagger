@@ -81,7 +81,6 @@ func (o *GetTaskCommentsParams) BindRequest(r *http.Request, route *middleware.M
 	if err := o.bindSince(qSince, qhkSince, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -116,6 +115,7 @@ func (o *GetTaskCommentsParams) bindPageSize(rawData []string, hasKey bool, form
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetTaskCommentsParams()
 		return nil
@@ -139,6 +139,7 @@ func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}

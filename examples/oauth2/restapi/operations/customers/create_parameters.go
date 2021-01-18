@@ -18,7 +18,8 @@ import (
 )
 
 // NewCreateParams creates a new CreateParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewCreateParams() CreateParams {
 
 	return CreateParams{}

@@ -57,6 +57,9 @@ func configureAPI(api *operations.TaskTrackerAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+	// tasks.UploadTaskFileMaxParseMemory = 32 << 20
+
 	if api.TasksAddCommentToTaskHandler == nil {
 		api.TasksAddCommentToTaskHandler = tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")

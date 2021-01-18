@@ -70,7 +70,6 @@ func (o *FindTodosParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindSince(qSince, qhkSince, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -86,6 +85,7 @@ func (o *FindTodosParams) bindLimit(rawData []string, hasKey bool, formats strfm
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewFindTodosParams()
 		return nil
@@ -109,6 +109,7 @@ func (o *FindTodosParams) bindSince(rawData []string, hasKey bool, formats strfm
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}

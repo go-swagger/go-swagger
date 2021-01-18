@@ -18,7 +18,8 @@ import (
 )
 
 // NewPlaceOrderParams creates a new PlaceOrderParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPlaceOrderParams() PlaceOrderParams {
 
 	return PlaceOrderParams{}

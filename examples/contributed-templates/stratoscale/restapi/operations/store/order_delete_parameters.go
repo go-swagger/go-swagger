@@ -16,7 +16,8 @@ import (
 )
 
 // NewOrderDeleteParams creates a new OrderDeleteParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewOrderDeleteParams() OrderDeleteParams {
 
 	return OrderDeleteParams{}
@@ -52,7 +53,6 @@ func (o *OrderDeleteParams) BindRequest(r *http.Request, route *middleware.Match
 	if err := o.bindOrderID(rOrderID, rhkOrderID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

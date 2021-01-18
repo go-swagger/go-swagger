@@ -29,7 +29,7 @@ func NewGetStream(ctx *middleware.Context, handler GetStreamHandler) *GetStream 
 	return &GetStream{Context: ctx, Handler: handler}
 }
 
-/*GetStream swagger:route GET /stream getStream
+/* GetStream swagger:route GET /stream getStream
 
 GetStream get stream API
 

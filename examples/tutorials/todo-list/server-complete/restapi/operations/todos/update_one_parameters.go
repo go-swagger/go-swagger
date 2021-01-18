@@ -20,7 +20,8 @@ import (
 )
 
 // NewUpdateOneParams creates a new UpdateOneParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateOneParams() UpdateOneParams {
 
 	return UpdateOneParams{}
@@ -76,11 +77,11 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 			}
 		}
 	}
+
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

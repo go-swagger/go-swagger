@@ -15,7 +15,8 @@ import (
 )
 
 // NewDestroyOneParams creates a new DestroyOneParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDestroyOneParams() DestroyOneParams {
 
 	return DestroyOneParams{}
@@ -50,7 +51,6 @@ func (o *DestroyOneParams) BindRequest(r *http.Request, route *middleware.Matche
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

@@ -16,7 +16,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger.json --principal interface{}
+//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger-petstore.json --principal interface{}
 
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -60,6 +60,9 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+	// pet.UpdatePetWithFormMaxParseMemory = 32 << 20
+
 	if api.PetAddPetHandler == nil {
 		api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")

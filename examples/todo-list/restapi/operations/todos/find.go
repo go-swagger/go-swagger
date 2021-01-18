@@ -29,7 +29,7 @@ func NewFind(ctx *middleware.Context, handler FindHandler) *Find {
 	return &Find{Context: ctx, Handler: handler}
 }
 
-/*Find swagger:route GET / todos find
+/* Find swagger:route GET / todos find
 
 Find find API
 

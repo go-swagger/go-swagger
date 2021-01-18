@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAuthCallbackParams creates a new GetAuthCallbackParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAuthCallbackParams() GetAuthCallbackParams {
 
 	return GetAuthCallbackParams{}

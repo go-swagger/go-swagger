@@ -23,7 +23,6 @@ import (
 var UploadFileMaxParseMemory int64 = 32 << 20
 
 // NewUploadFileParams creates a new UploadFileParams object
-
 //
 // There are no default values defined in the spec.
 func NewUploadFileParams() UploadFileParams {

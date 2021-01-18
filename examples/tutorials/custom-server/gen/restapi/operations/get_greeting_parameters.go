@@ -15,7 +15,8 @@ import (
 )
 
 // NewGetGreetingParams creates a new GetGreetingParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetGreetingParams() GetGreetingParams {
 
 	return GetGreetingParams{}
@@ -51,7 +52,6 @@ func (o *GetGreetingParams) BindRequest(r *http.Request, route *middleware.Match
 	if err := o.bindName(qName, qhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -67,10 +67,10 @@ func (o *GetGreetingParams) bindName(rawData []string, hasKey bool, formats strf
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Name = &raw
 
 	return nil

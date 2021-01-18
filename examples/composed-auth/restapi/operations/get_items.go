@@ -29,7 +29,7 @@ func NewGetItems(ctx *middleware.Context, handler GetItemsHandler) *GetItems {
 	return &GetItems{Context: ctx, Handler: handler}
 }
 
-/*GetItems swagger:route GET /items getItems
+/* GetItems swagger:route GET /items getItems
 
 items on sale
 

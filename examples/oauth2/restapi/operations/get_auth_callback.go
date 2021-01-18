@@ -32,7 +32,7 @@ func NewGetAuthCallback(ctx *middleware.Context, handler GetAuthCallbackHandler)
 	return &GetAuthCallback{Context: ctx, Handler: handler}
 }
 
-/*GetAuthCallback swagger:route GET /auth/callback getAuthCallback
+/* GetAuthCallback swagger:route GET /auth/callback getAuthCallback
 
 return access_token
 

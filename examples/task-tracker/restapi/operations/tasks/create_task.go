@@ -29,7 +29,7 @@ func NewCreateTask(ctx *middleware.Context, handler CreateTaskHandler) *CreateTa
 	return &CreateTask{Context: ctx, Handler: handler}
 }
 
-/*CreateTask swagger:route POST /tasks tasks createTask
+/* CreateTask swagger:route POST /tasks tasks createTask
 
 Creates a 'Task' object.
 

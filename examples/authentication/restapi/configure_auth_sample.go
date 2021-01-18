@@ -51,6 +51,7 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+
 	if api.CustomersCreateHandler == nil {
 		api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")

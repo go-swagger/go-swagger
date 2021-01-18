@@ -19,7 +19,8 @@ import (
 )
 
 // NewCreateTaskParams creates a new CreateTaskParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewCreateTaskParams() CreateTaskParams {
 
 	return CreateTaskParams{}
