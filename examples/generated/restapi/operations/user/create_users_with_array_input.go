@@ -29,7 +29,7 @@ func NewCreateUsersWithArrayInput(ctx *middleware.Context, handler CreateUsersWi
 	return &CreateUsersWithArrayInput{Context: ctx, Handler: handler}
 }
 
-/*CreateUsersWithArrayInput swagger:route POST /users/createWithArray user createUsersWithArrayInput
+/* CreateUsersWithArrayInput swagger:route POST /users/createWithArray user createUsersWithArrayInput
 
 Creates list of users with given input array
 

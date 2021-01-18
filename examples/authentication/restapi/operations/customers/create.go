@@ -31,7 +31,7 @@ func NewCreate(ctx *middleware.Context, handler CreateHandler) *Create {
 	return &Create{Context: ctx, Handler: handler}
 }
 
-/*Create swagger:route POST /customers customers create
+/* Create swagger:route POST /customers customers create
 
 Create a new customer to track
 

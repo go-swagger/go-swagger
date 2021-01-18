@@ -29,7 +29,7 @@ func NewFindTodos(ctx *middleware.Context, handler FindTodosHandler) *FindTodos 
 	return &FindTodos{Context: ctx, Handler: handler}
 }
 
-/*FindTodos swagger:route GET / todos findTodos
+/* FindTodos swagger:route GET / todos findTodos
 
 FindTodos find todos API
 

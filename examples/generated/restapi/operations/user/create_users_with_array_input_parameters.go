@@ -16,7 +16,8 @@ import (
 )
 
 // NewCreateUsersWithArrayInputParams creates a new CreateUsersWithArrayInputParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
 
 	return CreateUsersWithArrayInputParams{}
@@ -52,6 +53,7 @@ func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *mi
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
+
 			// validate array of body objects
 			for i := range body {
 				if body[i] == nil {
@@ -62,6 +64,7 @@ func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *mi
 					break
 				}
 			}
+
 			if len(res) == 0 {
 				o.Body = body
 			}

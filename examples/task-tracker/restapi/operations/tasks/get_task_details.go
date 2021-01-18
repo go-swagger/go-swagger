@@ -29,7 +29,7 @@ func NewGetTaskDetails(ctx *middleware.Context, handler GetTaskDetailsHandler) *
 	return &GetTaskDetails{Context: ctx, Handler: handler}
 }
 
-/*GetTaskDetails swagger:route GET /tasks/{id} tasks getTaskDetails
+/* GetTaskDetails swagger:route GET /tasks/{id} tasks getTaskDetails
 
 Gets the details for a task.
 

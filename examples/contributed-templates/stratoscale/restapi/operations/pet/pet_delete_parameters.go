@@ -15,7 +15,8 @@ import (
 )
 
 // NewPetDeleteParams creates a new PetDeleteParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPetDeleteParams() PetDeleteParams {
 
 	return PetDeleteParams{}
@@ -58,7 +59,6 @@ func (o *PetDeleteParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindPetID(rPetID, rhkPetID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -77,7 +77,6 @@ func (o *PetDeleteParams) bindAPIKey(rawData []string, hasKey bool, formats strf
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.APIKey = &raw
 
 	return nil

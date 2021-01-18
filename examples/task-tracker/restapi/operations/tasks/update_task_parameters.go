@@ -21,7 +21,8 @@ import (
 )
 
 // NewUpdateTaskParams creates a new UpdateTaskParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateTaskParams() UpdateTaskParams {
 
 	return UpdateTaskParams{}
@@ -84,11 +85,11 @@ func (o *UpdateTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 	} else {
 		res = append(res, errors.Required("body", "body", ""))
 	}
+
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

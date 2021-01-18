@@ -19,7 +19,8 @@ import (
 )
 
 // NewAddOrderParams creates a new AddOrderParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAddOrderParams() AddOrderParams {
 
 	return AddOrderParams{}

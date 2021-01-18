@@ -18,7 +18,8 @@ import (
 )
 
 // NewAddCommentToTaskParams creates a new AddCommentToTaskParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAddCommentToTaskParams() AddCommentToTaskParams {
 
 	return AddCommentToTaskParams{}
@@ -74,11 +75,11 @@ func (o *AddCommentToTaskParams) BindRequest(r *http.Request, route *middleware.
 			}
 		}
 	}
+
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

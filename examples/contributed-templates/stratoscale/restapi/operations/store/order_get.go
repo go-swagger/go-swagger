@@ -29,7 +29,7 @@ func NewOrderGet(ctx *middleware.Context, handler OrderGetHandler) *OrderGet {
 	return &OrderGet{Context: ctx, Handler: handler}
 }
 
-/*OrderGet swagger:route GET /store/order/{orderId} store orderGet
+/* OrderGet swagger:route GET /store/order/{orderId} store orderGet
 
 Find purchase order by ID
 

@@ -19,7 +19,8 @@ import (
 )
 
 // NewPutTestParams creates a new PutTestParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPutTestParams() PutTestParams {
 
 	return PutTestParams{}

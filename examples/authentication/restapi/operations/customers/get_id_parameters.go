@@ -18,7 +18,8 @@ import (
 )
 
 // NewGetIDParams creates a new GetIDParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetIDParams() GetIDParams {
 
 	return GetIDParams{}

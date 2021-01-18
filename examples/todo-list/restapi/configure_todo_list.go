@@ -50,6 +50,9 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+	// todos.FindMaxParseMemory = 32 << 20
+
 	if api.TodosAddOneHandler == nil {
 		api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")

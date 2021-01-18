@@ -31,7 +31,7 @@ func NewGetAccount(ctx *middleware.Context, handler GetAccountHandler) *GetAccou
 	return &GetAccount{Context: ctx, Handler: handler}
 }
 
-/*GetAccount swagger:route GET /account getAccount
+/* GetAccount swagger:route GET /account getAccount
 
 registered user account
 

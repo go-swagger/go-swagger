@@ -15,7 +15,8 @@ import (
 )
 
 // NewDeleteTaskParams creates a new DeleteTaskParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteTaskParams() DeleteTaskParams {
 
 	return DeleteTaskParams{}
@@ -50,7 +51,6 @@ func (o *DeleteTaskParams) BindRequest(r *http.Request, route *middleware.Matche
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

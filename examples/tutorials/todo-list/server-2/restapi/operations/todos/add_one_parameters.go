@@ -18,7 +18,8 @@ import (
 )
 
 // NewAddOneParams creates a new AddOneParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAddOneParams() AddOneParams {
 
 	return AddOneParams{}

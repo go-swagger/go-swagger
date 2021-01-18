@@ -29,7 +29,7 @@ func NewPetUploadImage(ctx *middleware.Context, handler PetUploadImageHandler) *
 	return &PetUploadImage{Context: ctx, Handler: handler}
 }
 
-/*PetUploadImage swagger:route POST /pet/{petId}/image pet petUploadImage
+/* PetUploadImage swagger:route POST /pet/{petId}/image pet petUploadImage
 
 uploads an image
 

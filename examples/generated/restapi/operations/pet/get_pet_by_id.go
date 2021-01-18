@@ -29,7 +29,7 @@ func NewGetPetByID(ctx *middleware.Context, handler GetPetByIDHandler) *GetPetBy
 	return &GetPetByID{Context: ctx, Handler: handler}
 }
 
-/*GetPetByID swagger:route GET /pets/{petId} pet getPetById
+/* GetPetByID swagger:route GET /pets/{petId} pet getPetById
 
 Find pet by ID
 

@@ -31,7 +31,7 @@ func NewAddOrder(ctx *middleware.Context, handler AddOrderHandler) *AddOrder {
 	return &AddOrder{Context: ctx, Handler: handler}
 }
 
-/*AddOrder swagger:route POST /order/add addOrder
+/* AddOrder swagger:route POST /order/add addOrder
 
 post a new order
 

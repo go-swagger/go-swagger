@@ -29,7 +29,7 @@ func NewElapse(ctx *middleware.Context, handler ElapseHandler) *Elapse {
 	return &Elapse{Context: ctx, Handler: handler}
 }
 
-/*Elapse swagger:route GET /elapse/{length} elapse
+/* Elapse swagger:route GET /elapse/{length} elapse
 
 Count down the number of seconds
 

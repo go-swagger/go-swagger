@@ -34,7 +34,7 @@ func NewAddCommentToTask(ctx *middleware.Context, handler AddCommentToTaskHandle
 	return &AddCommentToTask{Context: ctx, Handler: handler}
 }
 
-/*AddCommentToTask swagger:route POST /tasks/{id}/comments tasks addCommentToTask
+/* AddCommentToTask swagger:route POST /tasks/{id}/comments tasks addCommentToTask
 
 Adds a comment to a task
 

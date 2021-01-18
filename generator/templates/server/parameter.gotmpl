@@ -1,6 +1,5 @@
-{{ define "bindprimitiveparam" }}{{/* an empty test definition to test template repo dependencies resolution - DO NOT CHANGE THIS */}}
-{{ end }}
-
+{{- define "bindprimitiveparam" }}{{/* an empty test definition to test template repo dependencies resolution - DO NOT CHANGE THIS */}}
+{{- end }}
 {{ define "bodyvalidator" }}
   {{- if .HasModelBodyParams }}
   // validate body object{{/* delegate validation to model object */}}
@@ -22,6 +21,7 @@
 
   // validate array of body objects
     {{- end }}
+
     {{- if .Schema.HasSliceValidations }}
       {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
       {{ template "sliceparamvalidator" . }}
@@ -237,6 +237,7 @@ if err := validate.EnumCase(
     {{ template "validationPrimitive" . }}
   {{- end }}
   {{- if and .IsCustomFormatter (not .IsStream) (not .IsBase64) }}
+
 if err := validate.FormatOf({{.Path}}, "{{.Location}}", "{{.SwaggerFormat}}", {{ .ValueExpression}}.String(), formats); err != nil {
   return err
 }
@@ -322,7 +323,7 @@ var {{ pascalize .Name }}MaxParseMemory int64 = 32 << 20
 {{- end }}
 
 // New{{ pascalize .Name }}Params creates a new {{ pascalize .Name }}Params object
-{{ if .Params.HasSomeDefaults }}
+{{- if .Params.HasSomeDefaults }}
 // with the default values initialized.
 {{- else }}
 //
@@ -568,6 +569,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
 }
   {{- else if not .IsBodyParam }}
     {{- if or .IsPrimitive .IsCustomFormatter }}
+
 // bind{{ pascalize .ID }} binds and validates parameter {{ .ID }} from {{ .Location }}.
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{- if and (not .IsPathParam) .Required }}
@@ -581,63 +583,88 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
     }
 
   // Required: {{ .Required }}
-      {{- if .IsQueryParam }}// AllowEmptyValue: {{ .AllowEmptyValue }}{{ end }}{{ if .IsPathParam }}// Parameter is provided by construction from the route{{ end }}
-        {{- if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}
+      {{- if .IsQueryParam }}
+  // AllowEmptyValue: {{ .AllowEmptyValue }}
+      {{- end }}
+      {{- if .IsPathParam }}
+  // Parameter is provided by construction from the route
+      {{- end }}
+
+      {{- if and (not .IsPathParam) .Required (not .AllowEmptyValue) }}
 
   if err := validate.RequiredString({{ .Path }}, {{ printf "%q" .Location }}, raw); err != nil {
     return err
   }
-        {{- else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}
-  if raw == "" { // empty values pass all other validations{{ if .HasDefault }}
-    // Default values have been previously initialized by New{{ $className }}Params(){{ end }}
+      {{- else if and ( not .IsPathParam ) (or (not .Required) .AllowEmptyValue) }}
+
+  if raw == "" { // empty values pass all other validations
+        {{- if .HasDefault }}
+    // Default values have been previously initialized by New{{ $className }}Params()
+        {{- end }}
     return nil
   }
-        {{- end }}
-      {{ if .Converter }}value, err := {{ .Converter }}(raw)
+      {{- end }}
+
+      {{- if .Converter }}
+
+  value, err := {{ .Converter }}(raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
   {{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}value
-      {{ else if .IsCustomFormatter }}// Format: {{ .SwaggerFormat }}
+      {{- else if .IsCustomFormatter }}
+
+  // Format: {{ .SwaggerFormat }}
   value, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, raw)
   if err != nil {
     return errors.InvalidType({{ .Path }}, {{ printf "%q" .Location }}, {{ printf "%q" .GoType }}, raw)
   }
   {{ .ValueExpression }} = {{ if or .IsArray .HasDiscriminator .IsFileParam .IsStream (not .IsNullable) }}*{{ end }}(value.(*{{ .GoType }}))
-      {{else}}{{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}raw
-      {{ end }}
-      {{if .HasValidations }}if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
+      {{- else}}
+  {{ .ValueExpression }} = {{ if .IsNullable }}&{{ end }}raw
+      {{- end }}
+
+      {{- if .HasValidations }}
+
+  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
     return err
   }
-      {{ end }}
+      {{- end }}
+
   return nil
 }
     {{- else if .IsArray }}
+
 // bind{{ pascalize .ID }} binds and validates array parameter {{ .ID }} from {{ .Location }}.
 //
 // Arrays are parsed according to CollectionFormat: "{{ .CollectionFormat }}" (defaults to "csv" when empty).
 func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
-      {{if .Required }}if !hasKey {
+      {{- if .Required }}
+  if !hasKey {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
   }
-      {{ end }}
-      {{ if eq .CollectionFormat "multi" -}}
+      {{- end }}
+      {{- if eq .CollectionFormat "multi" }}
   // CollectionFormat: {{ .CollectionFormat }}
   {{ varname .Child.ValueExpression }}C := rawData
-      {{ else -}}
+      {{- else }}
   var qv{{ pascalize .Name }} string
   if len(rawData) > 0 {
     qv{{ pascalize .Name }} = rawData[len(rawData) - 1]
   }
 
   // CollectionFormat: {{ .CollectionFormat }}
-  {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }}){{ end }}
-      {{if and .Required (not .AllowEmptyValue) }}
+  {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }})
+      {{- end }}
+      {{- if and .Required (not .AllowEmptyValue) }}
   if len({{ varname .Child.ValueExpression }}C) == 0 {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, {{ varname .Child.ValueExpression }}C)
   }
-      {{ else }}if len({{ varname .Child.ValueExpression }}C) == 0 { {{ if .HasDefault }}
-    // Default values have been previously initialized by New{{ $className }}Params(){{ end }}
+      {{- else }}
+  if len({{ varname .Child.ValueExpression }}C) == 0 {
+        {{- if .HasDefault }}
+    // Default values have been previously initialized by New{{ $className }}Params()
+        {{- end }}
     return nil
   }   {{- end }}
       {{ template "sliceparambinder" . }}
@@ -650,17 +677,21 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 
   return nil
 }
-    {{ end }}
-    {{ if or (and (not .IsArray) .HasValidations) (and .IsArray .HasSliceValidations) }}
+    {{- end }}
+
+    {{- if or (and (not .IsArray) .HasValidations) (and .IsArray .HasSliceValidations) }}
+
 // validate{{ pascalize .ID }} carries on validations for parameter {{ .ID }}
 func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}(formats strfmt.Registry) error {
   {{ template "propertyparamvalidator" . }}
   return nil
 }
-    {{ end }}
+    {{- end }}
+
   {{- else if .IsBodyParam }}{{/* validation method for inline body parameters with validations */}}
     {{- if and .HasSimpleBodyParams (not .HasModelBodyItems) (not .HasModelBodyMap) }}
       {{- if .Schema.HasValidations }}
+
 // validate{{ pascalize .ID }}Body validates an inline body parameter
 func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}Body(formats strfmt.Registry) error {
         {{- if .IsArray }}
@@ -684,4 +715,4 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}Bo
       {{- end }}
     {{- end }}
   {{- end }}
-{{ end }}
+{{- end }}

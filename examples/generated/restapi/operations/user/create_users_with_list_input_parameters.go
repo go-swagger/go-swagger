@@ -16,7 +16,8 @@ import (
 )
 
 // NewCreateUsersWithListInputParams creates a new CreateUsersWithListInputParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
 
 	return CreateUsersWithListInputParams{}
@@ -52,6 +53,7 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
 		} else {
+
 			// validate array of body objects
 			for i := range body {
 				if body[i] == nil {
@@ -62,6 +64,7 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 					break
 				}
 			}
+
 			if len(res) == 0 {
 				o.Body = body
 			}

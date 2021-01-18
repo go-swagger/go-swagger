@@ -29,7 +29,7 @@ func NewFindPetsByTags(ctx *middleware.Context, handler FindPetsByTagsHandler) *
 	return &FindPetsByTags{Context: ctx, Handler: handler}
 }
 
-/*FindPetsByTags swagger:route GET /pets/findByTags pet findPetsByTags
+/* FindPetsByTags swagger:route GET /pets/findByTags pet findPetsByTags
 
 Finds Pets by tags
 

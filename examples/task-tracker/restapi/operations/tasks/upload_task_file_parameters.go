@@ -17,8 +17,16 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+// UploadTaskFileMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var UploadTaskFileMaxParseMemory int64 = 32 << 20
+
 // NewUploadTaskFileParams creates a new UploadTaskFileParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUploadTaskFileParams() UploadTaskFileParams {
 
 	return UploadTaskFileParams{}
@@ -57,7 +65,7 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(UploadTaskFileMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -86,7 +94,6 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -105,7 +112,6 @@ func (o *UploadTaskFileParams) bindDescription(rawData []string, hasKey bool, fo
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Description = &raw
 
 	return nil

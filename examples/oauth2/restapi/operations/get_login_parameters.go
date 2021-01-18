@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetLoginParams creates a new GetLoginParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetLoginParams() GetLoginParams {
 
 	return GetLoginParams{}

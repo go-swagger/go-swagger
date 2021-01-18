@@ -16,7 +16,8 @@ import (
 )
 
 // NewElapseParams creates a new ElapseParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewElapseParams() ElapseParams {
 
 	return ElapseParams{}
@@ -53,7 +54,6 @@ func (o *ElapseParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 	if err := o.bindLength(rLength, rhkLength, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

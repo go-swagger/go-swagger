@@ -16,7 +16,8 @@ import (
 )
 
 // NewPostTestParams creates a new PostTestParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostTestParams() PostTestParams {
 
 	return PostTestParams{}
@@ -56,6 +57,7 @@ func (o *PostTestParams) BindRequest(r *http.Request, route *middleware.MatchedR
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("customizedStrings", "body", "", err))
 		} else {
+
 			// validate array of body objects
 			for i := range body {
 				if err := body[i].Validate(route.Formats); err != nil {
@@ -63,6 +65,7 @@ func (o *PostTestParams) BindRequest(r *http.Request, route *middleware.MatchedR
 					break
 				}
 			}
+
 			if len(res) == 0 {
 				o.CustomizedStrings = body
 			}

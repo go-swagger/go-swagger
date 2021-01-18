@@ -29,7 +29,7 @@ func NewInventoryGet(ctx *middleware.Context, handler InventoryGetHandler) *Inve
 	return &InventoryGet{Context: ctx, Handler: handler}
 }
 
-/*InventoryGet swagger:route GET /store/inventory store inventoryGet
+/* InventoryGet swagger:route GET /store/inventory store inventoryGet
 
 Returns pet inventories by status
 

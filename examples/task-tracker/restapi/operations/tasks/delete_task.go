@@ -29,7 +29,7 @@ func NewDeleteTask(ctx *middleware.Context, handler DeleteTaskHandler) *DeleteTa
 	return &DeleteTask{Context: ctx, Handler: handler}
 }
 
-/*DeleteTask swagger:route DELETE /tasks/{id} tasks deleteTask
+/* DeleteTask swagger:route DELETE /tasks/{id} tasks deleteTask
 
 Deletes a task.
 

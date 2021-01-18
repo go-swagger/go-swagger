@@ -29,7 +29,7 @@ func NewPostTest(ctx *middleware.Context, handler PostTestHandler) *PostTest {
 	return &PostTest{Context: ctx, Handler: handler}
 }
 
-/*PostTest swagger:route POST /test postTest
+/* PostTest swagger:route POST /test postTest
 
 PostTest post test API
 

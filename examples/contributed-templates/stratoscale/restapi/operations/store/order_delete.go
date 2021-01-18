@@ -29,7 +29,7 @@ func NewOrderDelete(ctx *middleware.Context, handler OrderDeleteHandler) *OrderD
 	return &OrderDelete{Context: ctx, Handler: handler}
 }
 
-/*OrderDelete swagger:route DELETE /store/order/{orderId} store orderDelete
+/* OrderDelete swagger:route DELETE /store/order/{orderId} store orderDelete
 
 Delete purchase order by ID
 

@@ -15,7 +15,8 @@ import (
 )
 
 // NewLoginUserParams creates a new LoginUserParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewLoginUserParams() LoginUserParams {
 
 	return LoginUserParams{}
@@ -60,7 +61,6 @@ func (o *LoginUserParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindUsername(qUsername, qhkUsername, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -76,10 +76,10 @@ func (o *LoginUserParams) bindPassword(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Password = &raw
 
 	return nil
@@ -94,10 +94,10 @@ func (o *LoginUserParams) bindUsername(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Username = &raw
 
 	return nil

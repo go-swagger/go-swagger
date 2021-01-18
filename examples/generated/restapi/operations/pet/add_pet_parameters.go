@@ -18,7 +18,8 @@ import (
 )
 
 // NewAddPetParams creates a new AddPetParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewAddPetParams() AddPetParams {
 
 	return AddPetParams{}
