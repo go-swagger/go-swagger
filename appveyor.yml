@@ -11,17 +11,30 @@ skip_branch_with_pr: true
 # appveyor.yml
 build: off
 
+image:
+  - Visual Studio 2019
+
 environment:
+  GO111MODULE: on
   GOPATH: c:\gopath
+
+matrix:
+  fast_finish: true
 
 stack: go 1.15
 
 test_script:
-  - echo "disabled for now"
-  #- hack\gomod-download.cmd
+  - go mod download
+  - set PATH=%GOPATH%\bin;%PATH%
+  # only sanity test performed
+  - go install github.com/go-swagger/go-swagger/cmd/swagger
+  - swagger validate fixtures/bugs/2493/fixture-2492.json
+  - swagger validate fixtures/bugs/2493/fixture-2493.json
+  - swagger validate fixtures/bugs/2493/fixture-2492.yaml
+  - swagger validate fixtures/bugs/2493/fixture-2493.yaml
+  - echo "full test suite disabled for now"
   #- go test -timeout 20m ./...
-#artifacts:
-#  - path: '%GOPATH%\bin\*.exe'
+
 deploy: off
 
 notifications:
