@@ -24,3 +24,4 @@
 # is enough to proceed
 - dir: fixtures/canary/docker-v1.41
   spec: swagger-fixed.yaml
+- dir: fixtures/canary/docker-v19.03.13/swagger.yaml

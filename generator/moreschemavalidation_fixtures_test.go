@@ -14,6 +14,19 @@
 
 package generator
 
+func initFixture2494() {
+	f := newModelFixture("../fixtures/bugs/2494/fixture-2494.yaml", "map of nullable array")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("port_map.go", []string{
+		`type PortMap map[string][]PortBinding`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("port_list.go", []string{
+		`type PortList [][]*PortBinding`,
+	}, todo, noLines, noLines)
+}
+
 func initFixture2444() {
 	f := newModelFixture("../fixtures/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
