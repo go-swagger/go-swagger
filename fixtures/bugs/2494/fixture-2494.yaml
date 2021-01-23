@@ -1,0 +1,82 @@
+swagger: "2.0"
+schemes:
+  - "http"
+  - "https"
+produces:
+  - "application/json"
+  - "text/plain"
+consumes:
+  - "application/json"
+  - "text/plain"
+basePath: "/v1.40"
+info:
+  title: "Docker Engine API"
+  version: "1.40"
+  x-logo:
+    url: "https://docs.docker.com/images/logo-docker-main.png"
+  description: |
+    Fixture from swagger v19.03.13
+
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/PortMap'
+
+definitions:
+  PortBinding:
+    description: |
+      PortBinding represents a binding between a host IP address and a host
+      port.
+    type: "object"
+    properties:
+      HostIp:
+        description: "Host IP address that the container's port is mapped to."
+        type: "string"
+        example: "127.0.0.1"
+      HostPort:
+        description: "Host port number that the container's port is mapped to."
+        type: "string"
+        example: "4443"
+
+  PortMap:
+    description: |
+      PortMap describes the mapping of container ports to host ports, using the
+      container's port-number and protocol as key in the format `<port>/<protocol>`,
+      for example, `80/udp`.
+
+      If a container's port is mapped for multiple protocols, separate entries
+      are added to the mapping table.
+    type: "object"
+    additionalProperties:
+      type: "array"
+      x-nullable: true
+      items:
+        $ref: "#/definitions/PortBinding"
+    example:
+      "443/tcp":
+        - HostIp: "127.0.0.1"
+          HostPort: "4443"
+      "80/tcp":
+        - HostIp: "0.0.0.0"
+          HostPort: "80"
+        - HostIp: "0.0.0.0"
+          HostPort: "8080"
+      "80/udp":
+        - HostIp: "0.0.0.0"
+          HostPort: "80"
+      "53/udp":
+        - HostIp: "0.0.0.0"
+          HostPort: "53"
+      "2377/tcp": null
+
+  PortList:
+    type: array
+    items:
+      type: array
+      x-nullable: true
+      items:
+        $ref: '#/definitions/PortBinding'

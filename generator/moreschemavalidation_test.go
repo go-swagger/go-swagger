@@ -283,6 +283,9 @@ func initModelFixtures() {
 
 	// min / maxProperties
 	initFixture2444()
+
+	// map of nullable array
+	initFixture2494()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
