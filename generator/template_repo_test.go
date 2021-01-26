@@ -555,6 +555,9 @@ func TestFuncMap_Pascalize(t *testing.T) {
 	assert.Equal(t, "Minus1", pascalize("-1"))
 	assert.Equal(t, "Minus", pascalize("-"))
 	assert.Equal(t, "Nr8", pascalize("8"))
+	assert.Equal(t, "Asterisk", pascalize("*"))
+	assert.Equal(t, "ForwardSlash", pascalize("/"))
+	assert.Equal(t, "EqualSign", pascalize("="))
 
 	assert.Equal(t, "Hello", pascalize("+hello"))
 
