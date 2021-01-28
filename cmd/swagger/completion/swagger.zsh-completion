@@ -115,7 +115,7 @@ __generate_spec() {
     '(-m,--scan-models)'{-m,--scan-models}"[includes models that were annotated with 'swagger:model']" \
     "(--compact)--compact[when present, doesn't prettify the the json]" \
     '(-o,--output)'{-o,--output}"[the file to write to]:output" \
-    '(-i,--input)'{-i,--input}"[the file to use as input]:input" && return 0
+    '(-i,--input)'{-i,--input}"[an input swagger file with which to merge]:input" && return 0
 }
 
 __generate_support() {
