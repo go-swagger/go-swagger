@@ -19,7 +19,7 @@ Help Options:
       -m, --scan-models        includes models that were annotated with 'swagger:model'
           --compact            when present, doesn't prettify the json
       -o, --output=            the file to write to
-      -i, --input=             the file to use as input
+      -i, --input=             an input swagger file with which to merge
       -c, --include=           include packages matching pattern
       -x, --exclude=           exclude packages matching pattern
           --include-tag=       include routes having specified tags (can be specified many times)
