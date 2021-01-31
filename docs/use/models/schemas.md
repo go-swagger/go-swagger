@@ -154,7 +154,7 @@ There are some small differences or implementation details to be aware of.
 | empty object: `{ "type": "object"}`   |   Y| Y    | Y      | Rendered as `interface{}` (anything) rather than `map[string]inferface{}` (any JSON object, e.g. not arrays)|
 | `"pattern"`                           |   Y| Y    | partial| Speed for strictness trade-off: support go regexp, which slighty differ from JSONSchema ECMA regexp (e.g does not support backtracking)|
 |  large number, arbitrary precision    |   Y| **N**| N      |    |
-| `"readOnly"`                          |   N| Y    | N      | `readOnly` is currently not supported by the model validation method |
+| `"readOnly"`                          |   N| Y    | Y      |    |
 | `"type": [ "object", ... ]`           |   Y| N    | N      | JSONSchema multiple types are not supported: use Swagger polymorphism instead|
 | implicit type from values in `enum`   |   Y| ?    | N      | As of v0.15, when the type is empty, the object is rendered as `interface{}` and the `enum` constraint is ignored|
 | tuple `type: "array" items:[...]      |   Y| Y    | partial| As of v0.15, incomplete tuples and tuples with array validation are not properly validated|
@@ -171,11 +171,7 @@ Explicitly specifying `true` will produce models that retain those additional pr
 
 ### Known limitations with go-swagger models
 
-Recap as of release `>0.25`:
-
-- re [Swagger 2.0 specification][swagger]
-
-  - no validation support for the `readOnly` attribute
+Recap as of release `>0.26`:
 
 - re [JSON-schema-draft4][json-schema]
 
