@@ -200,9 +200,10 @@ func initFixtureGuardFormats() {
 			`validate.FormatOf(`,
 		},
 		[]string{
-			`warning: validation pattern`,
-			`warning: validation minLength (value: 16) not compatible with type for format "binary". Skipped`,
-			`warning: validation maxLength (value: 20) not compatible with type for format "binary". Skipped`,
+			// disable log assertions (dodgy with parallel tests)
+			// `warning: validation pattern`,
+			// `warning: validation minLength (value: 16) not compatible with type for format "binary". Skipped`,
+			// `warning: validation maxLength (value: 20) not compatible with type for format "binary". Skipped`,
 		}, noLines,
 	)
 
@@ -300,10 +301,11 @@ func initFixtureGuardFormats() {
 		`	if err := validate.Required("p9", "body", AliasedReader(m.P9)); err != nil {`,
 	}, todo,
 		[]string{
+			// disable log assertions (dodgy with parallel tests)
 			// warnings about no validations for binary
-			`warning: validation minLength (value: 12) not compatible with type for format "binary". Skipped`,
-			`warning: validation maxLength (value: 16) not compatible with type for format "binary". Skipped`,
-			`warning: validation pattern`,
+			// `warning: validation minLength (value: 12) not compatible with type for format "binary". Skipped`,
+			// `warning: validation maxLength (value: 16) not compatible with type for format "binary". Skipped`,
+			// `warning: validation pattern`,
 		}, noLines)
 }
 
@@ -2693,8 +2695,10 @@ func initFixtureComplexAllOf() {
 	},
 		// not expected
 		todo,
+		// disable log assertions (dodgy with parallel tests)
 		// output in log
-		warning,
+		// warning,
+		noLines,
 		noLines)
 
 	expandRun.AddExpectations("slice_mix.go", []string{
@@ -6186,7 +6190,8 @@ func initFixtureErrors() {
 		validatable,
 		// output in log
 		// expect warning
-		warning,
+		// warning,
+		noLines,
 		noLines)
 
 	expandRun.AddExpectations("multiple_types.go", flattenRun.ExpectedFor("MultipleTypes").ExpectedLines, validatable, noLines, noLines)

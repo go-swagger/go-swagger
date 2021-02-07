@@ -23,17 +23,19 @@ matrix:
 
 stack: go 1.15
 
-test_script:
+before_test:
   - go mod download
+
+test_script:
+  # sanity test: basic build on windows works
   - set PATH=%GOPATH%\bin;%PATH%
-  # only sanity test performed
   - go install github.com/go-swagger/go-swagger/cmd/swagger
   - swagger validate fixtures/bugs/2493/fixture-2492.json
   - swagger validate fixtures/bugs/2493/fixture-2493.json
   - swagger validate fixtures/bugs/2493/fixture-2492.yaml
   - swagger validate fixtures/bugs/2493/fixture-2493.yaml
-  - echo "full test suite disabled for now"
-  #- go test -timeout 20m ./...
+  # full test suite
+  - go test -timeout 20m ./...
 
 deploy: off
 
