@@ -78,6 +78,15 @@
 {{- end }}
 {{- if and .IncludeValidator (not .IsSuperAlias) (not .IsEmbedded) }}{{/* aliased types type A = B do not redefine methods */}}
   {{- if and (not (or .IsInterface .IsStream)) (or .Required .HasValidations .HasBaseType) }}
+    {{- if (eq .SwaggerType "string") }}{{/* Enum factory for enums for which we generate const (atm, only strings)*/}}
+      {{- if .Enum }}
+
+func New{{ pascalize .Name }}(value {{ .GoType }}) *{{ .GoType }} {
+  v := value
+  return &v
+}
+      {{- end }}
+    {{- end }}
     {{ template "schemavalidator" . }}
   {{- else if not (or .IsInterface .IsStream) }}
 // Validate validates this {{ humanize .Name }}{{/* this schema implements the runtime.Validatable interface but has no validations to check */}}

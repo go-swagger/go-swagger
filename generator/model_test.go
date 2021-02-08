@@ -2669,3 +2669,27 @@ func TestGenerateModels(t *testing.T) {
 		}
 	})
 }
+
+func Test_Issue2482(t *testing.T) {
+	// generation of a pointer converter for enum vars
+	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "SodaBrand"
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	require.NoError(t, err)
+	require.False(t, genModel.IsNullable)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	assertInCode(t, "func NewSodaBrand(value SodaBrand) *SodaBrand {", res)
+	assertInCode(t, "v := value", res)
+	assertInCode(t, "return &v", res)
+}
