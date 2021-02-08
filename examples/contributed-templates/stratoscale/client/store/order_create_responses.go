@@ -35,7 +35,6 @@ func (o *OrderCreateReader) ReadResponse(response runtime.ClientResponse, consum
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -46,7 +45,7 @@ func NewOrderCreateOK() *OrderCreateOK {
 	return &OrderCreateOK{}
 }
 
-/*OrderCreateOK handles this case with default header values.
+/* OrderCreateOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -57,7 +56,6 @@ type OrderCreateOK struct {
 func (o *OrderCreateOK) Error() string {
 	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
 }
-
 func (o *OrderCreateOK) GetPayload() *models.Order {
 	return o.Payload
 }
@@ -79,7 +77,7 @@ func NewOrderCreateBadRequest() *OrderCreateBadRequest {
 	return &OrderCreateBadRequest{}
 }
 
-/*OrderCreateBadRequest handles this case with default header values.
+/* OrderCreateBadRequest describes a response with status code 400, with default header values.
 
 Invalid Order
 */

@@ -29,7 +29,7 @@ func NewGetOrderByID(ctx *middleware.Context, handler GetOrderByIDHandler) *GetO
 	return &GetOrderByID{Context: ctx, Handler: handler}
 }
 
-/*GetOrderByID swagger:route GET /stores/order/{orderId} store getOrderById
+/* GetOrderByID swagger:route GET /stores/order/{orderId} store getOrderById
 
 Find purchase order by ID
 
@@ -47,14 +47,12 @@ func (o *GetOrderByID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetOrderByIDParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -41,7 +41,6 @@ func (o *PetGetReader) ReadResponse(response runtime.ClientResponse, consumer ru
 			return nil, err
 		}
 		return nil, result
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -52,7 +51,7 @@ func NewPetGetOK() *PetGetOK {
 	return &PetGetOK{}
 }
 
-/*PetGetOK handles this case with default header values.
+/* PetGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -63,7 +62,6 @@ type PetGetOK struct {
 func (o *PetGetOK) Error() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
 }
-
 func (o *PetGetOK) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -85,7 +83,7 @@ func NewPetGetBadRequest() *PetGetBadRequest {
 	return &PetGetBadRequest{}
 }
 
-/*PetGetBadRequest handles this case with default header values.
+/* PetGetBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -106,7 +104,7 @@ func NewPetGetNotFound() *PetGetNotFound {
 	return &PetGetNotFound{}
 }
 
-/*PetGetNotFound handles this case with default header values.
+/* PetGetNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */

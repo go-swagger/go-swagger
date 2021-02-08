@@ -46,7 +46,7 @@ func NewUpdateOneOK() *UpdateOneOK {
 	return &UpdateOneOK{}
 }
 
-/*UpdateOneOK handles this case with default header values.
+/* UpdateOneOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -57,7 +57,6 @@ type UpdateOneOK struct {
 func (o *UpdateOneOK) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
 }
-
 func (o *UpdateOneOK) GetPayload() *models.Item {
 	return o.Payload
 }
@@ -81,7 +80,7 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 	}
 }
 
-/*UpdateOneDefault handles this case with default header values.
+/* UpdateOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -99,7 +98,6 @@ func (o *UpdateOneDefault) Code() int {
 func (o *UpdateOneDefault) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *UpdateOneDefault) GetPayload() *models.Error {
 	return o.Payload
 }

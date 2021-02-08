@@ -16,7 +16,8 @@ import (
 )
 
 // NewOrderGetParams creates a new OrderGetParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewOrderGetParams() OrderGetParams {
 
 	return OrderGetParams{}
@@ -53,7 +54,6 @@ func (o *OrderGetParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	if err := o.bindOrderID(rOrderID, rhkOrderID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -86,11 +86,11 @@ func (o *OrderGetParams) bindOrderID(rawData []string, hasKey bool, formats strf
 // validateOrderID carries on validations for parameter OrderID
 func (o *OrderGetParams) validateOrderID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("orderId", "path", int64(o.OrderID), 1, false); err != nil {
+	if err := validate.MinimumInt("orderId", "path", o.OrderID, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("orderId", "path", int64(o.OrderID), 10, false); err != nil {
+	if err := validate.MaximumInt("orderId", "path", o.OrderID, 10, false); err != nil {
 		return err
 	}
 

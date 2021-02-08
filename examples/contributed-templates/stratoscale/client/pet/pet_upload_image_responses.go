@@ -29,7 +29,6 @@ func (o *PetUploadImageReader) ReadResponse(response runtime.ClientResponse, con
 			return nil, err
 		}
 		return result, nil
-
 	default:
 		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
 	}
@@ -40,7 +39,7 @@ func NewPetUploadImageOK() *PetUploadImageOK {
 	return &PetUploadImageOK{}
 }
 
-/*PetUploadImageOK handles this case with default header values.
+/* PetUploadImageOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -51,7 +50,6 @@ type PetUploadImageOK struct {
 func (o *PetUploadImageOK) Error() string {
 	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
 }
-
 func (o *PetUploadImageOK) GetPayload() *models.APIResponse {
 	return o.Payload
 }

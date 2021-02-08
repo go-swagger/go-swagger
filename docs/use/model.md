@@ -36,4 +36,6 @@ See the full list of available options [here](../generate/model.md).
     * [Additional properties](./models/schemas.md#additional-properties)
     * [Tuples and additional items](./models/schemas.md#tuples-and-additional-items)
   * [Polymorphic types](./models/schemas.md#polymorphic-types)
-  * [Serialization interfaces](./models/schemas.md#serialization-insterfaces)
+  * [Serialization interfaces](./models/schemas.md#serialization-interfaces)
+  * [External types](./models/schemas.md#external-types)
+  * [Customizing struct tags](./models/schemas.md#customizing-struct-tags)

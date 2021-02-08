@@ -29,7 +29,7 @@ func NewFindTodos(ctx *middleware.Context, handler FindTodosHandler) *FindTodos 
 	return &FindTodos{Context: ctx, Handler: handler}
 }
 
-/*FindTodos swagger:route GET / todos findTodos
+/* FindTodos swagger:route GET / todos findTodos
 
 FindTodos find todos API
 
@@ -45,14 +45,12 @@ func (o *FindTodos) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewFindTodosParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

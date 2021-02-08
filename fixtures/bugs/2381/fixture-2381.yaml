@@ -1,0 +1,66 @@
+---
+swagger: "2.0"
+info:
+  version: 0.1.0
+  title: foo
+
+paths:
+  /mypath:
+    post:
+      parameters:
+        - $ref: "#/parameters/my_param"
+      responses:
+        202:
+          description: foo
+
+parameters:
+  my_param:
+    name: my_param
+    in: body
+    required: true
+    schema:
+      $ref: "#/definitions/my_object"
+
+definitions:
+  my_object:
+    type: object
+    required:
+      - required_string
+      - required_referenced_object
+      - required_referenced_string
+      - required_referenced_struct
+      - required_referenced_array
+      - required_referenced_map
+    properties:
+      required_string:
+        type: string
+      required_referenced_object:
+        $ref: '#/definitions/my_object_ref'
+      required_referenced_string:
+        $ref: '#/definitions/my_string_ref'
+      required_referenced_struct:
+        $ref: '#/definitions/my_struct_ref'
+      required_referenced_array:
+        $ref: '#/definitions/my_array_ref'
+      required_referenced_map:
+        $ref: '#/definitions/my_map_ref'
+  my_object_ref:  # <- interface
+    type: object
+  my_string_ref:  # <- aliased type
+    type: string
+  my_struct_ref:  # <- struct
+    type: object
+    properties:
+      x:
+        type: integer
+  my_array_ref:  # <- slice
+    type: array
+    items:
+      type: object
+  my_map_ref:  # <- map
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        'y':
+          type: integer

@@ -31,7 +31,7 @@ func NewAddOrder(ctx *middleware.Context, handler AddOrderHandler) *AddOrder {
 	return &AddOrder{Context: ctx, Handler: handler}
 }
 
-/*AddOrder swagger:route POST /order/add addOrder
+/* AddOrder swagger:route POST /order/add addOrder
 
 post a new order
 
@@ -51,7 +51,6 @@ func (o *AddOrder) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewAddOrderParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -71,7 +70,6 @@ func (o *AddOrder) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -1,0 +1,30 @@
+swagger: "2.0"
+info:
+  description: Example server uploading a file
+  version: "1.0.0"
+  title: File Upload
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /upload:
+    post:
+      tags:
+      - uploads
+      summary: uploads
+      operationId: uploadFile
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: file
+        in: formData
+        type: file
+        required: true
+      responses:
+        "200":
+          description: OK

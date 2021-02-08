@@ -55,7 +55,7 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
     return nil, err
   }
 
-  if len({{ .ValueExpression }}) == 0 {
+  if len({{ .ValueExpression }}) == 0 { // no additional properties
     return props, nil
   }
 
@@ -65,13 +65,12 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
     return nil, err
   }
 
-  if len(props) < 3 {
+  if len(props) < 3 { // "{}": only additional properties
     return additional, nil
   }
 
   // concatenate the 2 objects
-  props[len(props)-1] = ','
-  return append(props, additional[1:]...), nil
+  return swag.ConcatJSON(props, additional), nil
 }
 {{- end }}
 

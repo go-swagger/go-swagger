@@ -93,6 +93,7 @@ definitions:
         package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
         hints:
           kind: primitive
+          novalidation: true
     x-nullable: true
 
   Embedded:

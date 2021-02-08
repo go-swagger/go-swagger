@@ -17,59 +17,75 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewOrderDeleteParams creates a new OrderDeleteParams object
-// with the default values initialized.
+// NewOrderDeleteParams creates a new OrderDeleteParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewOrderDeleteParams() *OrderDeleteParams {
-	var ()
 	return &OrderDeleteParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewOrderDeleteParamsWithTimeout creates a new OrderDeleteParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewOrderDeleteParamsWithTimeout(timeout time.Duration) *OrderDeleteParams {
-	var ()
 	return &OrderDeleteParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewOrderDeleteParamsWithContext creates a new OrderDeleteParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewOrderDeleteParamsWithContext(ctx context.Context) *OrderDeleteParams {
-	var ()
 	return &OrderDeleteParams{
-
 		Context: ctx,
 	}
 }
 
 // NewOrderDeleteParamsWithHTTPClient creates a new OrderDeleteParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewOrderDeleteParamsWithHTTPClient(client *http.Client) *OrderDeleteParams {
-	var ()
 	return &OrderDeleteParams{
 		HTTPClient: client,
 	}
 }
 
-/*OrderDeleteParams contains all the parameters to send to the API endpoint
-for the order delete operation typically these are written to a http.Request
+/* OrderDeleteParams contains all the parameters to send to the API endpoint
+   for the order delete operation.
+
+   Typically these are written to a http.Request.
 */
 type OrderDeleteParams struct {
 
-	/*OrderID
-	  ID of the order that needs to be deleted
+	/* OrderID.
 
+	   ID of the order that needs to be deleted
+
+	   Format: int64
 	*/
 	OrderID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the order delete params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderDeleteParams) WithDefaults() *OrderDeleteParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the order delete params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *OrderDeleteParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the order delete params

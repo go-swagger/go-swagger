@@ -16,52 +16,66 @@ import (
 	"github.com/go-openapi/strfmt"
 )
 
-// NewInventoryGetParams creates a new InventoryGetParams object
-// with the default values initialized.
+// NewInventoryGetParams creates a new InventoryGetParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewInventoryGetParams() *InventoryGetParams {
-
 	return &InventoryGetParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewInventoryGetParamsWithTimeout creates a new InventoryGetParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewInventoryGetParamsWithTimeout(timeout time.Duration) *InventoryGetParams {
-
 	return &InventoryGetParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewInventoryGetParamsWithContext creates a new InventoryGetParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewInventoryGetParamsWithContext(ctx context.Context) *InventoryGetParams {
-
 	return &InventoryGetParams{
-
 		Context: ctx,
 	}
 }
 
 // NewInventoryGetParamsWithHTTPClient creates a new InventoryGetParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewInventoryGetParamsWithHTTPClient(client *http.Client) *InventoryGetParams {
-
 	return &InventoryGetParams{
 		HTTPClient: client,
 	}
 }
 
-/*InventoryGetParams contains all the parameters to send to the API endpoint
-for the inventory get operation typically these are written to a http.Request
+/* InventoryGetParams contains all the parameters to send to the API endpoint
+   for the inventory get operation.
+
+   Typically these are written to a http.Request.
 */
 type InventoryGetParams struct {
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the inventory get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *InventoryGetParams) WithDefaults() *InventoryGetParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the inventory get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *InventoryGetParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the inventory get params

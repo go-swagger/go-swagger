@@ -11,16 +11,32 @@ skip_branch_with_pr: true
 # appveyor.yml
 build: off
 
+image:
+  - Visual Studio 2019
+
 environment:
+  GO111MODULE: on
   GOPATH: c:\gopath
 
-stack: go 1.12
+matrix:
+  fast_finish: true
+
+stack: go 1.15
+
+before_test:
+  - go mod download
 
 test_script:
-  - hack\gomod-download.cmd
+  # sanity test: basic build on windows works
+  - set PATH=%GOPATH%\bin;%PATH%
+  - go install github.com/go-swagger/go-swagger/cmd/swagger
+  - swagger validate fixtures/bugs/2493/fixture-2492.json
+  - swagger validate fixtures/bugs/2493/fixture-2493.json
+  - swagger validate fixtures/bugs/2493/fixture-2492.yaml
+  - swagger validate fixtures/bugs/2493/fixture-2493.yaml
+  # full test suite
   - go test -timeout 20m ./...
-#artifacts:
-#  - path: '%GOPATH%\bin\*.exe'
+
 deploy: off
 
 notifications:

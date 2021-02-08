@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -121,8 +122,7 @@ func TestBaseImport(t *testing.T) {
 
 		// Create Paths
 		for _, paths := range item.path {
-			err = os.MkdirAll(paths, 0700)
-			require.NoError(t, err)
+			require.NoError(t, os.MkdirAll(paths, 0700))
 		}
 
 		if item.symlinksrc == "" {
@@ -130,8 +130,7 @@ func TestBaseImport(t *testing.T) {
 		}
 
 		// Create Symlink
-		err := os.Symlink(item.symlinkdest, item.symlinksrc)
-		require.NoErrorf(t, err,
+		require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
 			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v\n%s",
 			item.symlinksrc, item.symlinkdest, err,
 			"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",
@@ -147,5 +146,32 @@ func TestBaseImport(t *testing.T) {
 
 		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
 	}
+}
 
+func TestGenerateMarkdown(t *testing.T) {
+	defer discardOutput()()
+
+	tempdir, err := ioutil.TempDir("", "test-markdown")
+	require.NoError(t, err)
+	defer func() {
+		_ = os.RemoveAll(tempdir)
+	}()
+
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
+	output := filepath.Join(tempdir, "markdown.md")
+
+	require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
+	expectedCode := []string{
+		"# Markdown generator demo",
+	}
+
+	code, err := ioutil.ReadFile(output)
+	require.NoError(t, err)
+
+	for line, codeLine := range expectedCode {
+		if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+			t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", output, line, expectedCode[line])
+		}
+	}
 }

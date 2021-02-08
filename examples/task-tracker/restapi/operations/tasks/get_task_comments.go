@@ -29,7 +29,7 @@ func NewGetTaskComments(ctx *middleware.Context, handler GetTaskCommentsHandler)
 	return &GetTaskComments{Context: ctx, Handler: handler}
 }
 
-/*GetTaskComments swagger:route GET /tasks/{id}/comments tasks getTaskComments
+/* GetTaskComments swagger:route GET /tasks/{id}/comments tasks getTaskComments
 
 Gets the comments for a task
 
@@ -48,14 +48,12 @@ func (o *GetTaskComments) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetTaskCommentsParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

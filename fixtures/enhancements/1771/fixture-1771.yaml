@@ -1,0 +1,76 @@
+---
+  swagger: "2.0"
+  info:
+    title: "invalid slice validations in simple parameters"
+    version: "0.0.1"
+    description: "repro issue 1771"
+    license:
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths:
+    /getRecords:
+      get:
+        summary: retrieves a batch of key data
+        parameters:
+        - name: keys
+          description: a list of keys to retrieve data for
+          in: query
+          type: array
+          required: true
+          items:
+            minItems: 1
+            maxItems: 10
+            type: string
+          collectionFormat: multi
+        - name: fault1
+          in: query
+          type: string
+          minimum: 12
+          exclusiveMinimum: true
+          maximum: 15
+          exclusiveMaximum: true
+          multipleOf: 2
+          minLength: 10
+        - name: fault2
+          in: query
+          type: number
+          minLength: 1
+          pattern: "abc"
+          maxLength: 15
+          uniqueItems: true
+          maximum: 20
+        - name: fault3
+          in: query
+          type: integer
+          minLength: 1
+          pattern: "abc"
+          maxLength: 15
+          uniqueItems: true
+          maximum: 20
+        - name: fault4
+          in: query
+          type: boolean
+          minLength: 1
+          pattern: "abc"
+          maxLength: 15
+          uniqueItems: true
+          maximum: 20
+        responses:
+          200:
+            description: "OK"
+
+    /getFiles:
+      get:
+        consumes: [ multipart/form-data ]
+        parameters:
+        - name: upload
+          in: formData
+          type: file
+          minLength: 1
+          pattern: "abc"
+          maxLength: 15
+          uniqueItems: true
+          maximum: 20
+        responses:
+          200:
+            description: "OK"

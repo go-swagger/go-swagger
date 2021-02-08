@@ -14,6 +14,552 @@
 
 package generator
 
+func initFixture2494() {
+	f := newModelFixture("../fixtures/bugs/2494/fixture-2494.yaml", "map of nullable array")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("port_map.go", []string{
+		`type PortMap map[string][]PortBinding`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("port_list.go", []string{
+		`type PortList [][]*PortBinding`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2444() {
+	f := newModelFixture("../fixtures/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("all_of_with_min_max_properties.go", []string{
+		`func (m *AllOfWithMinMaxProperties) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.AllOfWithMinMaxPropertiesAO0P0.Validate(formats); err != nil {`,
+		`func (m *AllOfWithMinMaxPropertiesAO0P0) Validate(formats strfmt.Registry) error {`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	if err := m.validateUID(formats); err != nil {`,
+		`	for k := range m.AllOfWithMinMaxPropertiesAO0P0 {`,
+		`		if err := validate.MaximumUint(k, "body", uint64(m.AllOfWithMinMaxPropertiesAO0P0[k]), 100, false); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("array_items_with_min_max_properties.go", []string{
+		`type ArrayItemsWithMinMaxProperties []map[string]interface{}`,
+		`func (m ArrayItemsWithMinMaxProperties) Validate(formats strfmt.Registry) error {`,
+		`	for i := 0; i < len(m); i++ {`,
+		`		nprops := len(m[i])`,
+		`		if nprops < 3 {`,
+		`			return errors.TooFewProperties(strconv.Itoa(i), "body", 3)`,
+		`		if nprops > 5 {`,
+		`			return errors.TooManyProperties(strconv.Itoa(i), "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_max_properties.go", []string{
+		`	HasMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops > 2 {`,
+		`		return errors.TooManyProperties("", "body", 2)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_min_max_properties.go", []string{
+		`	HasMinMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("has_min_properties.go", []string{
+		`HasMinPropertiesAdditionalProperties map[string]interface{}`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 2)`,
+		`	props := make(map[string]json.RawMessage, 1+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 2 {`,
+		`		return errors.TooFewProperties("", "body", 2)`,
+		`	if err := m.validateA(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_arrays_with_min_max_properties.go", []string{
+		`type MapOfArraysWithMinMaxProperties map[string][]HasMaxProperties`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+		`		for i := 0; i < len(m[k]); i++ {`,
+		`			if err := m[k][i].Validate(formats); err != nil {`,
+		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`					return ve.ValidateName(k + "." + strconv.Itoa(i))`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_integers_with_min_max_properties.go", []string{
+		`type MapOfIntegersWithMinMaxProperties map[string]int64`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_of_objects_with_min_max_properties.go", []string{
+		`type MapOfObjectsWithMinMaxProperties map[string]HasMaxProperties`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	for k := range m {`,
+		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+		`		if val, ok := m[k]; ok {`,
+		`			if err := val.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("map_with_min_max_properties.go", []string{
+		`type MapWithMinMaxProperties map[string]interface{}`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object_with_min_max_properties.go", []string{
+		`	ObjectWithMinMaxProperties map[string]*HasMaxProperties`,
+		`	if m == nil {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	props := make(map[string]json.RawMessage, 2+10)`,
+		`	j, err := swag.WriteJSON(m)`,
+		`	if err = swag.ReadJSON(j, &props); err != nil {`,
+		`	nprops := len(props)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`	if err := m.validateB(formats); err != nil {`,
+		`	if err := m.validateID(formats); err != nil {`,
+		`	for k := range m.ObjectWithMinMaxProperties {`,
+		`		if err := validate.Required(k, "body", m.ObjectWithMinMaxProperties[k]); err != nil {`,
+		`		if val, ok := m.ObjectWithMinMaxProperties[k]; ok {`,
+		`			if val != nil {`,
+		`				if err := val.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("untyped_with_min_max_properties.go", []string{
+		`type UntypedWithMinMaxProperties map[string]interface{}`,
+		`	nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+	}, todo, noLines, noLines)
+}
+
+func initFixtureGuardFormats() {
+	f := newModelFixture("../fixtures/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("aliased_date.go", []string{
+		`type AliasedDate strfmt.Date`,
+		`func (m AliasedDate) Validate(formats strfmt.Registry) error {`,
+		`if err := validate.MinLength("", "body", strfmt.Date(m).String(), 16); err != nil {`,
+		`if err := validate.MaxLength("", "body", strfmt.Date(m).String(), 20); err != nil {`,
+		"if err := validate.Pattern(\"\", \"body\", strfmt.Date(m).String(), `(\\d+)/(\\d+)`); err != nil {",
+		`if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("aliased_reader.go",
+		[]string{
+			`type AliasedReader io.ReadCloser`,
+		},
+		// no validations for binary
+		[]string{
+			`validate.MinLength(`,
+			`validate.MaxLength(`,
+			`validate.Pattern(`,
+			`validate.FormatOf(`,
+		},
+		[]string{
+			// disable log assertions (dodgy with parallel tests)
+			// `warning: validation pattern`,
+			// `warning: validation minLength (value: 16) not compatible with type for format "binary". Skipped`,
+			// `warning: validation maxLength (value: 20) not compatible with type for format "binary". Skipped`,
+		}, noLines,
+	)
+
+	flattenRun.AddExpectations("aliased_string.go", []string{
+		`type AliasedString string`,
+		`func (m AliasedString) Validate(formats strfmt.Registry) error {`,
+		`if err := validate.MinLength("", "body", string(m), 16); err != nil {`,
+		`if err := validate.MaxLength("", "body", string(m), 20); err != nil {`,
+		"if err := validate.Pattern(\"\", \"body\", string(m), `(\\d+)/(\\d+)`); err != nil {",
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("object.go", []string{
+		`func (m *Object) Validate(formats strfmt.Registry) error {`,
+		`if err := m.validateP0(formats); err != nil {`,
+		`if err := m.validateP1(formats); err != nil {`,
+		`if err := m.validateP10(formats); err != nil {`,
+		`if err := m.validateP11(formats); err != nil {`,
+		`if err := m.validateP1Nullable(formats); err != nil {`,
+		`if err := m.validateP2(formats); err != nil {`,
+		`if err := m.validateP3(formats); err != nil {`,
+		`if err := m.validateP4(formats); err != nil {`,
+		`if err := m.validateP5(formats); err != nil {`,
+		`if err := m.validateP6(formats); err != nil {`,
+		`if err := m.validateP7(formats); err != nil {`,
+		`if err := m.validateP8(formats); err != nil {`,
+		`if err := m.validateP9(formats); err != nil {`,
+		`func (m *Object) validateP0(formats strfmt.Registry) error {`,
+		`if err := validate.Required("p0", "body", m.P0); err != nil {`,
+		`if err := validate.MinLength("p0", "body", *m.P0, 12); err != nil {`,
+		`if err := validate.MaxLength("p0", "body", *m.P0, 16); err != nil {`,
+		"if err := validate.Pattern(\"p0\", \"body\", *m.P0, `(\\d+)-(\\d+)`); err != nil {",
+		`func (m *Object) validateP1(formats strfmt.Registry) error {`,
+		`if err := validate.Required("p1", "body", m.P1); err != nil {`,
+		`if err := validate.MinLength("p1", "body", m.P1.String(), 12); err != nil {`,
+		`if err := validate.MaxLength("p1", "body", m.P1.String(), 16); err != nil {`,
+		"if err := validate.Pattern(\"p1\", \"body\", m.P1.String(), `(\\d+)/(\\d+)`); err != nil {",
+		`if err := validate.FormatOf("p1", "body", "date", m.P1.String(), formats); err != nil {`,
+		`func (m *Object) validateP10(formats strfmt.Registry) error {`,
+		`if err := validate.RequiredString("p10", "body", m.P10); err != nil {`,
+		`if err := validate.MinLength("p10", "body", m.P10, 12); err != nil {`,
+		`if err := validate.MaxLength("p10", "body", m.P10, 16); err != nil {`,
+		"if err := validate.Pattern(\"p10\", \"body\", m.P10, `(\\d+)-(\\d+)`); err != nil {",
+		`func (m *Object) validateP11(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("p11", "body", m.P11); err != nil {`,
+		`	if err := validate.Required("p11", "body", m.P11); err != nil {`,
+		`	if m.P11 != nil {`,
+		`		if err := m.P11.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("p11")`,
+		`func (m *Object) validateP1Nullable(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P1Nullable) {`,
+		`	if err := validate.MinLength("p1Nullable", "body", m.P1Nullable.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p1Nullable", "body", m.P1Nullable.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p1Nullable\", \"body\", m.P1Nullable.String(), `(\\d+)/(\\d+)`); err != nil {",
+		`	if err := validate.FormatOf("p1Nullable", "body", "date", m.P1Nullable.String(), formats); err != nil {`,
+		`func (m *Object) validateP2(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P2) {`,
+		`	if err := validate.MinLength("p2", "body", m.P2.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p2", "body", m.P2.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p2\", \"body\", m.P2.String(), `(\\d+)-(\\d+)`); err != nil {",
+		`	if err := validate.FormatOf("p2", "body", "uuid", m.P2.String(), formats); err != nil {`,
+		`func (m *Object) validateP3(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P3) {`,
+		`	if err := validate.MinLength("p3", "body", m.P3.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p3", "body", m.P3.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p3\", \"body\", m.P3.String(), `(\\d+)-(\\d+)`); err != nil {",
+		`	if err := validate.FormatOf("p3", "body", "datetime", m.P3.String(), formats); err != nil {`,
+		`func (m *Object) validateP4(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P4) {`,
+		`	if err := validate.MinLength("p4", "body", m.P4.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p4", "body", m.P4.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p4\", \"body\", m.P4.String(), `(\\d+)-(\\d+)`); err != nil {",
+		`	if err := validate.FormatOf("p4", "body", "bsonobjectid", m.P4.String(), formats); err != nil {`,
+		`func (m *Object) validateP5(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P5) {`,
+		`	if err := validate.MinLength("p5", "body", m.P5.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p5", "body", m.P5.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p5\", \"body\", m.P5.String(), `(\\d+)-(\\d+)`); err != nil {",
+		`	if err := validate.FormatOf("p5", "body", "duration", m.P5.String(), formats); err != nil {`,
+		`func (m *Object) validateP6(formats strfmt.Registry) error {`,
+		`	if swag.IsZero(m.P6) {`,
+		`	if err := validate.MinLength("p6", "body", m.P6.String(), 12); err != nil {`,
+		`	if err := validate.MaxLength("p6", "body", m.P6.String(), 16); err != nil {`,
+		"	if err := validate.Pattern(\"p6\", \"body\", m.P6.String(), `(\\d+)-(\\d+)`); err != nil {",
+		`func (m *Object) validateP7(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("p7", "body", io.ReadCloser(m.P7)); err != nil {`,
+		`func (m *Object) validateP8(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("p8", "body", m.P8); err != nil {`,
+		`	if err := validate.Required("p8", "body", m.P8); err != nil {`,
+		`	if m.P8 != nil {`,
+		`		if err := m.P8.Validate(formats); err != nil {`,
+		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`				return ve.ValidateName("p8")`,
+		`func (m *Object) validateP9(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("p9", "body", AliasedReader(m.P9)); err != nil {`,
+	}, todo,
+		[]string{
+			// disable log assertions (dodgy with parallel tests)
+			// warnings about no validations for binary
+			// `warning: validation minLength (value: 12) not compatible with type for format "binary". Skipped`,
+			// `warning: validation maxLength (value: 16) not compatible with type for format "binary". Skipped`,
+			// `warning: validation pattern`,
+		}, noLines)
+}
+
+func initFixture2448() {
+	f := newModelFixture("../fixtures/bugs/2448/fixture-2448.yaml", "numerical validations")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("integers.go", []string{
+		`if err := validate.MinimumInt("i0", "body", m.I0, 10, true); err != nil {`,
+		`if err := validate.MaximumInt("i0", "body", m.I0, 100, true); err != nil {`,
+		`if err := validate.MultipleOfInt("i0", "body", m.I0, 10); err != nil {`,
+		`if err := validate.MinimumInt("i1", "body", int64(m.I1), 10, true); err != nil {`,
+		`if err := validate.MaximumInt("i1", "body", int64(m.I1), 100, true); err != nil {`,
+		`if err := validate.MultipleOfInt("i1", "body", int64(m.I1), 10); err != nil {`,
+		`if err := validate.MinimumInt("i2", "body", m.I2, 10, true); err != nil {`,
+		`if err := validate.MaximumInt("i2", "body", m.I2, 100, true); err != nil {`,
+		`if err := validate.MultipleOfInt("i2", "body", m.I2, 10); err != nil {`,
+		`if err := validate.MinimumInt("i3", "body", int64(m.I3), 10, true); err != nil {`,
+		`if err := validate.MaximumInt("i3", "body", int64(m.I3), 100, true); err != nil {`,
+		`if err := validate.MultipleOfInt("i3", "body", int64(m.I3), 10); err != nil {`,
+		`if err := validate.MultipleOf("i4", "body", float64(m.I4), 10.5); err != nil {`,
+		`if err := validate.MinimumUint("ui1", "body", uint64(m.Ui1), 10, true); err != nil {`,
+		`if err := validate.MaximumUint("ui1", "body", uint64(m.Ui1), 100, true); err != nil {`,
+		`if err := validate.MultipleOfUint("ui1", "body", uint64(m.Ui1), 10); err != nil {`,
+		`if err := validate.MinimumUint("ui2", "body", m.Ui2, 10, true); err != nil {`,
+		`if err := validate.MaximumUint("ui2", "body", m.Ui2, 100, true); err != nil {`,
+		`if err := validate.MultipleOfUint("ui2", "body", m.Ui2, 10); err != nil {`,
+		`if err := validate.MinimumUint("ui3", "body", uint64(m.Ui3), 10, true); err != nil {`,
+		`if err := validate.MaximumUint("ui3", "body", uint64(m.Ui3), 100, true); err != nil {`,
+		`if err := validate.MultipleOfUint("ui3", "body", uint64(m.Ui3), 10); err != nil {`,
+		`if err := validate.MultipleOf("ui4", "body", float64(m.Ui4), 10.5); err != nil {`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("numbers.go", []string{
+		`if err := validate.Minimum("f0", "body", m.F0, 10, true); err != nil {`,
+		`if err := validate.Maximum("f0", "body", m.F0, 100, true); err != nil {`,
+		`if err := validate.MultipleOf("f0", "body", m.F0, 10); err != nil {`,
+		`if err := validate.Minimum("f1", "body", float64(m.F1), 10, true); err != nil {`,
+		`if err := validate.Maximum("f1", "body", float64(m.F1), 100, true); err != nil {`,
+		`if err := validate.MultipleOf("f1", "body", float64(m.F1), 10); err != nil {`,
+		`if err := validate.Minimum("f2", "body", m.F2, 10, true); err != nil {`,
+		`if err := validate.Maximum("f2", "body", m.F2, 100, true); err != nil {`,
+		`if err := validate.MultipleOf("f2", "body", m.F2, 10); err != nil {`,
+	}, todo, noLines, noLines)
+}
+func initFixture2400() {
+	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("signup_request.go", []string{
+		`type SignupRequest struct {`,
+		`Email *string`,
+	}, todo, noLines, noLines)
+	flattenRun.AddExpectations("signup_request2.go", []string{
+		`type SignupRequest2 struct {`,
+		`Email *Email`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2381() {
+	f := newModelFixture("../fixtures/bugs/2381/fixture-2381.yaml", "required $ref primitive")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+	expandRun := f.AddRun(true)
+
+	flattenRun.AddExpectations("my_object.go", []string{
+		`RequiredReferencedObject MyObjectRef`,  // this is an interface{}
+		`RequiredReferencedString *MyStringRef`, // alias to primitive
+		`RequiredString *string`,                // unaliased primitive
+		`RequiredReferencedArray MyArrayRef`,    // no need to use a pointer
+		`RequiredReferencedMap MyMapRef`,        // no need to use a pointer
+		`RequiredReferencedStruct *MyStructRef`, // pointer to struct
+		`func (m *MyObject) validateRequiredReferencedObject(formats strfmt.Registry) error {`,
+		`	if m.RequiredReferencedObject == nil {`,
+		`		return errors.Required("required_referenced_object", "body", nil)`,
+		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_referenced_string", "body", m.RequiredReferencedString); err != nil {`,
+		`	if err := m.RequiredReferencedString.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("required_referenced_string")`,
+		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedStruct(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_struct", "body", m.RequiredReferencedStruct); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedArray(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_array", "body", m.RequiredReferencedArray); err != nil {`,
+		`func (m *MyObject) validateRequiredReferencedMap(formats strfmt.Registry) error {`,
+		`if err := validate.Required("required_referenced_map", "body", m.RequiredReferencedMap); err != nil {`,
+	}, todo, noLines, noLines)
+
+	expandRun.AddExpectations("my_object.go", []string{
+		`func (m *MyObject) validateRequiredReferencedObject(formats strfmt.Registry) error {`,
+		`	if m.RequiredReferencedObject == nil {`,
+		`		return errors.Required("required_referenced_object", "body", nil)`,
+		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_referenced_string", "body", m.RequiredReferencedString); err != nil {`,
+		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2300() {
+	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required interface{} is validated with against nil")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// test behaviour with all structs made anonymous (inlined)
+	expandRun := f.AddRun(true)
+
+	flattenRun.AddExpectations("obj.go", []string{
+		`func (m *Obj) validateReq1(formats strfmt.Registry) error {`,
+		`	if m.Req1 == nil {`,
+		`		return errors.Required("req1", "body", nil)`,
+		`func (m *Obj) validateReq2(formats strfmt.Registry) error {`,
+		`	if m.Req2 == nil {`,
+		`		return errors.Required("req2", "body", nil)`,
+		`func (m *Obj) validateReq3(formats strfmt.Registry) error {`,
+		`	if m.Req3 == nil {`,
+		`		return errors.Required("req3", "body", nil)`,
+		`func (m *Obj) validateReq4(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req4", "body", m.Req4); err != nil {`,
+		`	if m.Req4 != nil {`,
+		`		if err := m.Req4.Validate(formats); err != nil {`,
+		`func (m *Obj) validateReq5(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req5", "body", m.Req5); err != nil {`,
+		`	if m.Req5 != nil {`,
+		`		if err := m.Req5.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+
+	// on anonymous
+	expandRun.AddExpectations("obj.go", []string{
+		`Req4 map[string]interface{}`,
+		`func (m *Obj) validateReq1(formats strfmt.Registry) error {`,
+		`	if m.Req1 == nil {`,
+		`		return errors.Required("req1", "body", nil)`,
+		`func (m *Obj) validateReq2(formats strfmt.Registry) error {`,
+		`	if m.Req2 == nil {`,
+		`		return errors.Required("req2", "body", nil)`,
+		`func (m *Obj) validateReq3(formats strfmt.Registry) error {`,
+		`	if m.Req3 == nil {`,
+		`		return errors.Required("req3", "body", nil)`,
+		`func (m *Obj) validateReq4(formats strfmt.Registry) error {`,
+		`if err := validate.Required("req4", "body", m.Req4); err != nil {`,
+		`for k := range m.Req4 {`,
+		`if err := validate.Required("req4"+"."+k, "body", m.Req4[k]); err != nil {`,
+		`func (m *Obj) validateReq5(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("req5", "body", m.Req5); err != nil {`,
+		`	if m.Req5 != nil {`,
+		`		if err := m.Req5.Validate(formats); err != nil {`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2081() {
+	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required interface{} is validated with against nil")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// interface{}
+	flattenRun.AddExpectations("event.go", []string{
+		`func (m *Event) validateValue(formats strfmt.Registry) error {`,
+		`if m.Value == nil {`,
+		`return errors.Required("value", "body", nil)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("events.go", []string{
+		`func (m *EventsItems0) validateA(formats strfmt.Registry) error {`,
+		`if m.A == nil {`,
+		`return errors.Required("a", "body", nil)`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture936ReadOnly() {
+	f := newModelFixture("../fixtures/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	// object simple has 2 read only feilds
+	flattenRun.AddExpectations("object1.go", []string{
+		// object1
+		`func (m *Object1) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`m.contextValidateID(ctx, formats)`,
+		`m.contextValidateName(ctx, formats)`,
+		`) contextValidateID(ctx context.Context, formats strfmt.Registry)`,
+		`) contextValidateName(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object2 composed of object1
+	flattenRun.AddExpectations("object2.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`contextValidateObjectRef(ctx, formats)`,
+		`) contextValidateObjectRef(ctx context.Context, formats strfmt.Registry) `,
+		`m.ObjectRef.ContextValidate(ctx, formats)`,
+	}, todo, noLines, noLines)
+
+	// object3 has inline object
+	flattenRun.AddExpectations("object3.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`contextValidateName(ctx, formats)`,
+		`) contextValidateName(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object4 is array with readonly string element
+	flattenRun.AddExpectations("object4.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`for i := 0; i < len(m); i++`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object5 is string alias
+	flattenRun.AddExpectations("object5.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+
+	// object6 is array of object5
+	flattenRun.AddExpectations("object6.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`for i := 0; i < len(m); i++`,
+		`m[i].ContextValidate(ctx, formats)`,
+	}, todo, noLines, noLines)
+
+	// object7 is all of object5 and object4 and fields
+	flattenRun.AddExpectations("object7.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry)`,
+		`m.Object5.ContextValidate(ctx, formats)`,
+		`m.Object4.ContextValidate(ctx, formats)`,
+		// field one
+		`m.contextValidateObject7Field1(ctx, formats)`,
+		`contextValidateObject7Field1(ctx context.Context, formats strfmt.Registry)`,
+		// field two should missing since not readOnly
+		// field three
+		`m.contextValidateObject7Field3(ctx, formats)`,
+		`contextValidateObject7Field3(ctx context.Context, formats strfmt.Registry)`,
+		`m.Object7Field3.ContextValidate(ctx, formats)`,
+	}, todo, noLines,
+		[]string{
+			`m.contextValidateObject7Field2(ctx, formats)`,
+		})
+	// x go type
+	flattenRun.AddExpectations("time.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`var f interface{} = m.Time`,
+	}, todo, noLines, noLines)
+	// additional properties
+	flattenRun.AddExpectations("object8.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`for k := range m`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+	flattenRun.AddExpectations("object9.go", []string{
+		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
+		`m.contextValidateObject9Field1(ctx, formats)`,
+		`validate.ReadOnly(ctx`,
+	}, todo, noLines, noLines)
+}
+
 func initFixture2220() {
 	// NOTE(fred): this test merely asserts that template refactoring (essentially dealing with hite space gobbling etc)
 	// properly runs against the case of base type with additionalProperties.
@@ -207,21 +753,20 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
-		`	if err := validate.MinLength("Hostname", "body", string(m.Hostname), 1); err != nil {`,
+		`	if err := validate.MinLength("Hostname", "body", m.Hostname.String(), 1); err != nil {`,
 		`	if err := validate.FormatOf("Hostname", "body", "hostname", m.Hostname.String(), formats); err != nil {`,
 		`func (m *ContainerConfig) validateImage(formats strfmt.Registry) error {`,
-		`	if err := validate.RequiredString("Image", "body", string(m.Image)); err != nil {`,
+		`	if err := validate.RequiredString("Image", "body", m.Image); err != nil {`,
 		`var containerConfigTypeRichModePropEnum []interface{`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerConfigTypeRichModePropEnum = append(containerConfigTypeRichModePropEnum, v`,
-		`	ContainerConfigRichModeDumbInit string = "dumb-init"`,
-		`	ContainerConfigRichModeSbinInit string = "sbin-init"`,
+		`	ContainerConfigRichModeDumbDashInit string = "dumb-init"`,
+		`	ContainerConfigRichModeSbinDashInit string = "sbin-init"`,
 		`	ContainerConfigRichModeSystemd string = "systemd"`,
 		`func (m *ContainerConfig) validateRichModeEnum(path, location string, value string) error {`,
 		`	if err := validate.EnumCase(path, location, value, containerConfigTypeRichModePropEnum, true); err != nil {`,
@@ -238,7 +783,6 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 	},
 		// not expected
@@ -262,7 +806,7 @@ func initFixture1479Part() {
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		hostConfigAllOf0LogConfigTypeTypePropEnum = append(hostConfigAllOf0LogConfigTypeTypePropEnum, v`,
-		`	HostConfigAllOf0LogConfigTypeJSONFile string = "json-file"`,
+		`	HostConfigAllOf0LogConfigTypeJSONDashFile string = "json-file"`,
 		`	HostConfigAllOf0LogConfigTypeSyslog string = "syslog"`,
 		`	HostConfigAllOf0LogConfigTypeJournald string = "journald"`,
 		`	HostConfigAllOf0LogConfigTypeGelf string = "gelf"`,
@@ -373,8 +917,7 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...?
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
-		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
-		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.ConsoleSize[i]), 0, false); err != nil {`,
+		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigAllOf0TypeIsolationPropEnum []interface{`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"default\",\"process\",\"hyperv\"]`), &res); err != nil {",
@@ -396,8 +939,8 @@ func initFixture1479Part() {
 		`				return ve.ValidateName("LogConfig"`,
 		`func (m *HostConfigAllOf0) validateOomScoreAdj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.OomScoreAdj) {`,
-		`	if err := validate.MinimumInt("OomScoreAdj", "body", int64(m.OomScoreAdj), -1000, false); err != nil {`,
-		`	if err := validate.MaximumInt("OomScoreAdj", "body", int64(m.OomScoreAdj), 1000, false); err != nil {`,
+		`	if err := validate.MinimumInt("OomScoreAdj", "body", m.OomScoreAdj, -1000, false); err != nil {`,
+		`	if err := validate.MaximumInt("OomScoreAdj", "body", m.OomScoreAdj, 1000, false); err != nil {`,
 		`func (m *HostConfigAllOf0) validateRestartPolicy(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RestartPolicy) {`,
 		`	if m.RestartPolicy != nil {`,
@@ -409,8 +952,8 @@ func initFixture1479Part() {
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		hostConfigAllOf0TypeRichModePropEnum = append(hostConfigAllOf0TypeRichModePropEnum, v`,
-		`	HostConfigAllOf0RichModeDumbInit string = "dumb-init"`,
-		`	HostConfigAllOf0RichModeSbinInit string = "sbin-init"`,
+		`	HostConfigAllOf0RichModeDumbDashInit string = "dumb-init"`,
+		`	HostConfigAllOf0RichModeSbinDashInit string = "sbin-init"`,
 		`	HostConfigAllOf0RichModeSystemd string = "systemd"`,
 		`func (m *HostConfigAllOf0) validateRichModeEnum(path, location string, value string) error {`,
 		`	if err := validate.EnumCase(path, location, value, hostConfigAllOf0TypeRichModePropEnum, true); err != nil {`,
@@ -419,7 +962,7 @@ func initFixture1479Part() {
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
 		`func (m *HostConfigAllOf0) validateShmSize(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ShmSize) {`,
-		`	if err := validate.MinimumInt("ShmSize", "body", int64(*m.ShmSize), 0, false); err != nil {`,
+		`	if err := validate.MinimumInt("ShmSize", "body", *m.ShmSize, 0, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -504,8 +1047,7 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
-		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
-		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.ConsoleSize[i]), 0, false); err != nil {`,
+		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigTypeIsolationPropEnum []interface{`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"default\",\"process\",\"hyperv\"]`), &res); err != nil {",
@@ -524,8 +1066,8 @@ func initFixture1479Part() {
 		`				return ve.ValidateName("LogConfig"`,
 		`func (m *HostConfig) validateOomScoreAdj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.OomScoreAdj) {`,
-		`	if err := validate.MinimumInt("OomScoreAdj", "body", int64(m.OomScoreAdj), -1000, false); err != nil {`,
-		`	if err := validate.MaximumInt("OomScoreAdj", "body", int64(m.OomScoreAdj), 1000, false); err != nil {`,
+		`	if err := validate.MinimumInt("OomScoreAdj", "body", m.OomScoreAdj, -1000, false); err != nil {`,
+		`	if err := validate.MaximumInt("OomScoreAdj", "body", m.OomScoreAdj, 1000, false); err != nil {`,
 		`func (m *HostConfig) validateRestartPolicy(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RestartPolicy) {`,
 		`	if m.RestartPolicy != nil {`,
@@ -544,11 +1086,11 @@ func initFixture1479Part() {
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
 		`func (m *HostConfig) validateShmSize(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ShmSize) {`,
-		`	if err := validate.MinimumInt("ShmSize", "body", int64(*m.ShmSize), 0, false); err != nil {`,
+		`	if err := validate.MinimumInt("ShmSize", "body", *m.ShmSize, 0, false); err != nil {`,
 		`func (m *HostConfig) validateBlkioWeight(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.BlkioWeight) {`,
-		`	if err := validate.MinimumInt("BlkioWeight", "body", int64(m.BlkioWeight), 0, false); err != nil {`,
-		`	if err := validate.MaximumInt("BlkioWeight", "body", int64(m.BlkioWeight), 1000, false); err != nil {`,
+		`	if err := validate.MinimumUint("BlkioWeight", "body", uint64(m.BlkioWeight), 0, false); err != nil {`,
+		`	if err := validate.MaximumUint("BlkioWeight", "body", uint64(m.BlkioWeight), 1000, false); err != nil {`,
 		`type HostConfigAO0LogConfig struct {`,
 		"	Config map[string]string `json:\"Config,omitempty\"`",
 		"	Type string `json:\"Type,omitempty\"`",
@@ -560,7 +1102,7 @@ func initFixture1479Part() {
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		hostConfigAO0LogConfigTypeTypePropEnum = append(hostConfigAO0LogConfigTypeTypePropEnum, v`,
-		`	HostConfigAO0LogConfigTypeJSONFile string = "json-file"`,
+		`	HostConfigAO0LogConfigTypeJSONDashFile string = "json-file"`,
 		`	HostConfigAO0LogConfigTypeSyslog string = "syslog"`,
 		`	HostConfigAO0LogConfigTypeJournald string = "journald"`,
 		`	HostConfigAO0LogConfigTypeGelf string = "gelf"`,
@@ -697,14 +1239,13 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
-		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
-		`	if err := validate.MinLength("Hostname", "body", string(m.Hostname), 1); err != nil {`,
+		`	if err := validate.MinLength("Hostname", "body", m.Hostname.String(), 1); err != nil {`,
 		`	if err := validate.FormatOf("Hostname", "body", "hostname", m.Hostname.String(), formats); err != nil {`,
 		`func (m *ContainerCreateConfig) validateImage(formats strfmt.Registry) error {`,
-		`	if err := validate.RequiredString("Image", "body", string(m.Image)); err != nil {`,
+		`	if err := validate.RequiredString("Image", "body", m.Image); err != nil {`,
 		`var containerCreateConfigTypeRichModePropEnum []interface{`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
@@ -725,7 +1266,6 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
-		//`		if swag.IsZero(m.Volumes[k]) {`,
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 		`func (m *ContainerCreateConfig) validateHostConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.HostConfig) {`,
@@ -735,8 +1275,7 @@ func initFixture1479Part() {
 		`	for i := 0; i < len(m.HostConfig.ConsoleSize); i++ {`,
 		// do we need... ?
 		`		if swag.IsZero(m.HostConfig.ConsoleSize[i]) {`,
-		//`if err := validate.Required("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", m.HostConfig.ConsoleSize[i]); err != nil {`,
-		`		if err := validate.MinimumInt("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.HostConfig.ConsoleSize[i]), 0, false); err != nil {`,
+		`		if err := validate.MinimumInt("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", *m.HostConfig.ConsoleSize[i], 0, false); err != nil {`,
 		// TODO: enum if anonymous allOf is not honored (missing func)
 		// => will do that with Enum refactoring
 		`	if err := m.validateIsolationEnum("HostConfig"+"."+"Isolation", "body", m.HostConfig.Isolation); err != nil {`,
@@ -744,16 +1283,16 @@ func initFixture1479Part() {
 		`		if err := m.HostConfig.LogConfig.Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName("HostConfig" + "." + "LogConfig"`,
-		`	if err := validate.MinimumInt("HostConfig"+"."+"OomScoreAdj", "body", int64(m.HostConfig.OomScoreAdj), -1000, false); err != nil {`,
-		`	if err := validate.MaximumInt("HostConfig"+"."+"OomScoreAdj", "body", int64(m.HostConfig.OomScoreAdj), 1000, false); err != nil {`,
+		`	if err := validate.MinimumInt("HostConfig"+"."+"OomScoreAdj", "body", m.HostConfig.OomScoreAdj, -1000, false); err != nil {`,
+		`	if err := validate.MaximumInt("HostConfig"+"."+"OomScoreAdj", "body", m.HostConfig.OomScoreAdj, 1000, false); err != nil {`,
 		`	if m.HostConfig.RestartPolicy != nil {`,
 		`		if err := m.HostConfig.RestartPolicy.Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName("HostConfig" + "." + "RestartPolicy"`,
 		`	if err := m.validateRichModeEnum("HostConfig"+"."+"RichMode", "body", m.HostConfig.RichMode); err != nil {`,
-		`	if err := validate.MinimumInt("HostConfig"+"."+"ShmSize", "body", int64(*m.HostConfig.ShmSize), 0, false); err != nil {`,
-		`	if err := validate.MinimumInt("HostConfig"+"."+"BlkioWeight", "body", int64(m.HostConfig.BlkioWeight), 0, false); err != nil {`,
-		`	if err := validate.MaximumInt("HostConfig"+"."+"BlkioWeight", "body", int64(m.HostConfig.BlkioWeight), 1000, false); err != nil {`,
+		`	if err := validate.MinimumInt("HostConfig"+"."+"ShmSize", "body", *m.HostConfig.ShmSize, 0, false); err != nil {`,
+		`	if err := validate.MinimumUint("HostConfig"+"."+"BlkioWeight", "body", uint64(m.HostConfig.BlkioWeight), 0, false); err != nil {`,
+		`	if err := validate.MaximumUint("HostConfig"+"."+"BlkioWeight", "body", uint64(m.HostConfig.BlkioWeight), 1000, false); err != nil {`,
 		`func (m *ContainerCreateConfig) validateNetworkingConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.NetworkingConfig) {`,
 		`	if m.NetworkingConfig != nil {`,
@@ -771,7 +1310,6 @@ func initFixture1479Part() {
 		`		if swag.IsZero(m.EndpointsConfig[k]) {`,
 		`		if val, ok := m.EndpointsConfig[k]; ok {`,
 		// NOTE: fixed incorrect IsNullable status in map element
-		//`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`type ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnon struct {`,
 		"	Aliases []string `json:\"Aliases\"`",
@@ -813,7 +1351,7 @@ func initFixture1479Part() {
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum = append(containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum, v`,
-		`	ContainerCreateConfigHostConfigAO0LogConfigTypeJSONFile string = "json-file"`,
+		`	ContainerCreateConfigHostConfigAO0LogConfigTypeJSONDashFile string = "json-file"`,
 		`	ContainerCreateConfigHostConfigAO0LogConfigTypeSyslog string = "syslog"`,
 		`	ContainerCreateConfigHostConfigAO0LogConfigTypeJournald string = "journald"`,
 		`	ContainerCreateConfigHostConfigAO0LogConfigTypeGelf string = "gelf"`,
@@ -852,8 +1390,8 @@ func initFixture1479Part() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *Resources) validateBlkioWeight(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.BlkioWeight) {`,
-		`	if err := validate.MinimumInt("BlkioWeight", "body", int64(m.BlkioWeight), 0, false); err != nil {`,
-		`	if err := validate.MaximumInt("BlkioWeight", "body", int64(m.BlkioWeight), 1000, false); err != nil {`,
+		`	if err := validate.MinimumUint("BlkioWeight", "body", uint64(m.BlkioWeight), 0, false); err != nil {`,
+		`	if err := validate.MaximumUint("BlkioWeight", "body", uint64(m.BlkioWeight), 1000, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -867,14 +1405,12 @@ func initFixture1479Part() {
 	flattenRun.AddExpectations("networking_config.go", []string{
 		`type NetworkingConfig struct {`,
 		// maps are now simple types
-		//"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
 		"	EndpointsConfig map[string]*EndpointSettings `json:\"EndpointsConfig,omitempty\"`",
 		`func (m *NetworkingConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateEndpointsConfig(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NetworkingConfig) validateEndpointsConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.EndpointsConfig) {`,
-		//`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
 		`       for k := range m.EndpointsConfig {`,
 		`	if err := validate.Required("EndpointsConfig"+"."+k, "body", m.EndpointsConfig[k]); err != nil {`,
 		`       	if val, ok := m.EndpointsConfig[k]; ok {`,
@@ -1198,8 +1734,8 @@ func initFixtureSimpleAllOf() {
 		`	if err := validate.FormatOf("prop6", "body", "uuid", m.Prop6.String(), formats); err != nil {`,
 		`func (m *BreakNestedObject) validateProp7(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop7) {`,
-		`	if err := validate.MinimumInt("prop7"+"."+"prop8", "body", int64(m.Prop7.Prop8), 12, false); err != nil {`,
-		`	if err := validate.MaximumInt("prop7"+"."+"prop9", "body", int64(m.Prop7.Prop9), 12, false); err != nil {`,
+		`	if err := validate.MinimumInt("prop7"+"."+"prop8", "body", m.Prop7.Prop8, 12, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop7"+"."+"prop9", "body", m.Prop7.Prop9, 12, false); err != nil {`,
 		`func (m *BreakNestedObject) MarshalBinary() ([]byte, error) {`,
 		`	if m == nil {`,
 		`		return nil, nil`,
@@ -1687,7 +2223,7 @@ func initFixtureSimpleAllOf() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *BreakNestedObjectAllOf1Prop7AllOf0) validateProp8(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop8) {`,
-		`	if err := validate.MinimumInt("prop8", "body", int64(m.Prop8), 12, false); err != nil {`,
+		`	if err := validate.MinimumInt("prop8", "body", m.Prop8, 12, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -1721,7 +2257,7 @@ func initFixtureSimpleAllOf() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *BreakNestedObjectAllOf1Prop7AllOf1) validateProp9(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop9) {`,
-		`	if err := validate.MaximumInt("prop9", "body", int64(m.Prop9), 12, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop9", "body", m.Prop9, 12, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -1921,7 +2457,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		// nullable required:
-		//`	if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil`,
 		`		if err := validate.FormatOf("prop2"+"."+strconv.Itoa(i), "body", "date", m.Prop2[i].String(), formats); err != nil {`,
 	},
 		// not expected
@@ -2025,7 +2560,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2047,7 +2581,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2162,8 +2695,10 @@ func initFixtureComplexAllOf() {
 	},
 		// not expected
 		todo,
+		// disable log assertions (dodgy with parallel tests)
 		// output in log
-		warning,
+		// warning,
+		noLines,
 		noLines)
 
 	expandRun.AddExpectations("slice_mix.go", []string{
@@ -2181,7 +2716,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2255,7 +2789,6 @@ func initFixtureComplexAllOf() {
 		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil {`,
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2465,7 +2998,6 @@ func initFixtureItching() {
 		`func (m EmptyObjectWithAdditionalNonNullablePrimitive) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		// fix undue IsZero call
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -2655,7 +3187,6 @@ func initFixtureItching() {
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		// fixed undue Required on this aliased type
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2674,7 +3205,6 @@ func initFixtureItching() {
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		// fixed undue Required on this aliased type
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2957,12 +3487,11 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithFormatedThing {`,
 		// removed undue IZero call
-		//`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithFormatedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithFormatedThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("blob", "body", m.Blob); err != nil {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(*m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", *m.Blob, 1, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -2996,7 +3525,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := m.AdditionalArrayOfRefedThing[k][i].Validate(formats); err != nil {`,
@@ -3005,7 +3533,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3021,14 +3549,13 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
 		// removed undue IsZero() call
-		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalArrayOfRefedThing[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3051,7 +3578,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3071,7 +3598,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3097,7 +3624,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateStatus(formats); err != nil {`,
 		`	for k := range m.AdditionalThings {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalThings[k]) {`,
 		`		if err := m.validateAdditionalThingsValueEnum(k, "body", m.AdditionalThings[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var additionalThingsTypeOriginPropEnum []interface{`,
@@ -3106,7 +3632,7 @@ func initFixtureAdditionalProps() {
 		`	for _, v := range res {`,
 		`		additionalThingsTypeOriginPropEnum = append(additionalThingsTypeOriginPropEnum, v`,
 		`	AdditionalThingsOriginPrint string = "print"`,
-		`	AdditionalThingsOriginEBook string = "e-book"`,
+		`	AdditionalThingsOriginEDashBook string = "e-book"`,
 		`	AdditionalThingsOriginCollection string = "collection"`,
 		`	AdditionalThingsOriginMuseum string = "museum"`,
 		`func (m *AdditionalThings) validateOriginEnum(path, location string, value string) error {`,
@@ -3195,10 +3721,10 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectAnon) validateMockA(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.MockA) {`,
-		"	if err := validate.Pattern(\"mockA\", \"body\", string(m.MockA), `^[A-Z]$`); err != nil {",
+		"	if err := validate.Pattern(\"mockA\", \"body\", m.MockA, `^[A-Z]$`); err != nil {",
 		`func (m *AdditionalObjectAnon) validateMockB(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("mockB", "body", m.MockB); err != nil {`,
-		`	if err := validate.MinLength("mockB", "body", string(*m.MockB), 1); err != nil {`,
+		`	if err := validate.MinLength("mockB", "body", *m.MockB, 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3228,7 +3754,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
 		// removed undue IsSzero call
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3236,7 +3761,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if m.AdditionalSliceOfAliasedNullablePrimitives[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfAliasedNullablePrimitives[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3259,7 +3783,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
 		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
@@ -3267,7 +3790,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfAliasedNullablePrimitives[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) validateProp3(formats strfmt.Registry) error {`,
@@ -3297,7 +3819,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
 		// nullable not required:
-		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3329,7 +3850,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
 		// nullable required:
-		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3345,7 +3865,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfSliceItems0) validateProp5(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop5) {`,
-		`	if err := validate.MaximumInt("prop5", "body", int64(m.Prop5), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop5", "body", m.Prop5, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3362,13 +3882,12 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if val, ok := m.AdditionalObjectWithAliasedThing[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3383,12 +3902,11 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
-		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithAliasedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithAliasedThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3480,7 +3998,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfSliceAdditionalPropertiesItemsItems) validateProp5(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop5) {`,
-		`	if err := validate.MaximumInt("prop5", "body", int64(m.Prop5), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop5", "body", m.Prop5, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3500,10 +4018,10 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectAdditionalProperties) validateMockA(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.MockA) {`,
-		"	if err := validate.Pattern(\"mockA\", \"body\", string(m.MockA), `^[A-Z]$`); err != nil {",
+		"	if err := validate.Pattern(\"mockA\", \"body\", m.MockA, `^[A-Z]$`); err != nil {",
 		`func (m *AdditionalObjectAdditionalProperties) validateMockB(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("mockB", "body", m.MockB); err != nil {`,
-		`	if err := validate.MinLength("mockB", "body", string(*m.MockB), 1); err != nil {`,
+		`	if err := validate.MinLength("mockB", "body", *m.MockB, 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3526,7 +4044,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3534,7 +4051,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3556,7 +4073,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3564,7 +4080,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 		`type AdditionalTransitiveRefedThingItems0 struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0 map[string]*AdditionalTransitiveRefedThingItems0Anon `json:\"-\"`",
@@ -3577,7 +4093,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThingItems0) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 		`type AdditionalTransitiveRefedThingItems0Anon struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0Anon map[string]*AdditionalTransitiveRefedThingItems0AnonAnon `json:\"-\"`",
@@ -3612,14 +4128,13 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalNullableArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalNullableArrayThing {`,
-		//`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalNullableArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalNullableArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "isbn", m.AdditionalNullableArrayThing[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalNullableArrayThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3636,7 +4151,6 @@ func initFixtureAdditionalProps() {
 		"	AdditionalSliceOfPrimitives map[string][]strfmt.Date `json:\"-\"`",
 		`func (m *AdditionalSliceOfPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AdditionalSliceOfPrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfPrimitives[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfPrimitives[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfPrimitives[k][i].String(), formats); err != nil {`,
@@ -3658,14 +4172,13 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayThing {`,
-		//`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "uuid", m.AdditionalArrayThing[k][i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3691,7 +4204,6 @@ func initFixtureAdditionalProps() {
 	flattenRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3709,7 +4221,6 @@ func initFixtureAdditionalProps() {
 	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
-		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3746,7 +4257,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
 		// nullable required:
-		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3772,7 +4282,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
 		// nullable required:
-		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3807,7 +4316,7 @@ func initFixtureAdditionalProps() {
 		`	for _, v := range res {`,
 		`		additionalThingsNestedTypeOriginPropEnum = append(additionalThingsNestedTypeOriginPropEnum, v`,
 		`	AdditionalThingsNestedOriginGoPrint string = "goPrint"`,
-		`	AdditionalThingsNestedOriginGoEBook string = "goE-book"`,
+		`	AdditionalThingsNestedOriginGoEDashBook string = "goE-book"`,
 		`	AdditionalThingsNestedOriginGoCollection string = "goCollection"`,
 		`	AdditionalThingsNestedOriginGoMuseum string = "goMuseum"`,
 		`func (m *AdditionalThingsNested) validateOriginEnum(path, location string, value string) error {`,
@@ -3839,7 +4348,7 @@ func initFixtureAdditionalProps() {
 		`	for _, v := range res {`,
 		`		additionalThingsNestedTypeOriginPropEnum = append(additionalThingsNestedTypeOriginPropEnum, v`,
 		`	AdditionalThingsNestedOriginGoPrint string = "goPrint"`,
-		`	AdditionalThingsNestedOriginGoEBook string = "goE-book"`,
+		`	AdditionalThingsNestedOriginGoEDashBook string = "goE-book"`,
 		`	AdditionalThingsNestedOriginGoCollection string = "goCollection"`,
 		`	AdditionalThingsNestedOriginGoMuseum string = "goMuseum"`,
 		`func (m *AdditionalThingsNested) validateOriginEnum(path, location string, value string) error {`,
@@ -3920,12 +4429,11 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfInterface {`,
 		// remove undue IsZero call
-		//`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfInterface[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfInterface) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -3940,7 +4448,6 @@ func initFixtureAdditionalProps() {
 		`type AdditionalFormatedThing map[string]strfmt.Date`,
 		`func (m AdditionalFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3982,7 +4489,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3990,7 +4496,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -4012,7 +4518,6 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -4020,7 +4525,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 		`type AdditionalArrayOfRefedObjectItems0 struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
@@ -4043,7 +4548,6 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
 		// removed undue IsZero call
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4068,7 +4572,6 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
-		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -4098,7 +4601,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TransitiveRefedThing) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -4119,7 +4622,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TransitiveRefedThing) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 		`type TransitiveRefedThingAnon struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	TransitiveRefedThingAnon map[string]*TransitiveRefedThingAnonAnon `json:\"-\"`",
@@ -4179,7 +4682,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalDateWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 		`func (m *AdditionalDateWithNullableThing) validateNullableDate(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.NullableDate) {`,
 		`	if m.NullableDate != nil {`,
@@ -4207,7 +4710,7 @@ func initFixtureAdditionalProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalDateWithNullableThing) validateBlob(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Blob) {`,
-		`	if err := validate.MinimumInt("blob", "body", int64(m.Blob), 1, false); err != nil {`,
+		`	if err := validate.MinimumInt("blob", "body", m.Blob, 1, false); err != nil {`,
 		`func (m *AdditionalDateWithNullableThing) validateNullableDate(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.NullableDate) {`,
 		`	if err := validate.FormatOf("nullableDate", "body", "date", m.NullableDate.String(), formats); err != nil {`,
@@ -4360,7 +4863,6 @@ func initFixtureTuple() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsClassicsItemsTuple0P2 {`,
 		// removed undue IsZero() call
-		//`		if swag.IsZero(m.ClassicsClassicsItemsTuple0P2[k]) {`,
 		`		if err := m.validateClassicsClassicsItemsTuple0P2ValueEnum("P2"+"."+k, "body", m.ClassicsClassicsItemsTuple0P2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsClassicsItemsTuple0P2TypeOriginPropEnum []interface{`,
@@ -4369,7 +4871,7 @@ func initFixtureTuple() {
 		`	for _, v := range res {`,
 		`		classicsClassicsItemsTuple0P2TypeOriginPropEnum = append(classicsClassicsItemsTuple0P2TypeOriginPropEnum, v`,
 		`	ClassicsClassicsItemsTuple0P2OriginPrint string = "print"`,
-		`	ClassicsClassicsItemsTuple0P2OriginEBook string = "e-book"`,
+		`	ClassicsClassicsItemsTuple0P2OriginEDashBook string = "e-book"`,
 		`	ClassicsClassicsItemsTuple0P2OriginCollection string = "collection"`,
 		`	ClassicsClassicsItemsTuple0P2OriginMuseum string = "museum"`,
 		`func (m *ClassicsClassicsItemsTuple0P2) validateOriginEnum(path, location string, value string) error {`,
@@ -4438,10 +4940,10 @@ func initFixtureTuple() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P3) validateAuthor(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Author) {`,
-		`	if err := validate.MinLength("P3"+"."+"author", "body", string(*m.Author), 1); err != nil {`,
+		`	if err := validate.MinLength("P3"+"."+"author", "body", *m.Author, 1); err != nil {`,
 		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P3) validateCharacter(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Character) {`,
-		"	if err := validate.Pattern(\"P3\"+\".\"+\"character\", \"body\", string(*m.Character), `^[A-Z]+$`); err != nil {",
+		"	if err := validate.Pattern(\"P3\"+\".\"+\"character\", \"body\", *m.Character, `^[A-Z]+$`); err != nil {",
 		`type ClassicsTuple0 struct {`,
 		"	P0 *string `json:\"-\"`",
 		"	P1 *ClassicsTuple0P1 `json:\"-\"`",
@@ -4503,10 +5005,10 @@ func initFixtureTuple() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ClassicsTuple0P3) validateAuthor(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Author) {`,
-		`	if err := validate.MinLength("P3"+"."+"author", "body", string(*m.Author), 1); err != nil {`,
+		`	if err := validate.MinLength("P3"+"."+"author", "body", *m.Author, 1); err != nil {`,
 		`func (m *ClassicsTuple0P3) validateCharacter(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Character) {`,
-		"	if err := validate.Pattern(\"P3\"+\".\"+\"character\", \"body\", string(*m.Character), `^[A-Z]+$`); err != nil {",
+		"	if err := validate.Pattern(\"P3\"+\".\"+\"character\", \"body\", *m.Character, `^[A-Z]+$`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -4543,7 +5045,6 @@ func initFixtureTuple() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsItemsAdditionalItemsItems2 {`,
 		// removed undue IsZero()
-		//`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
 		`		if err := m.validateClassicsItemsAdditionalItemsItems2ValueEnum(k, "body", m.ClassicsItemsAdditionalItemsItems2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []interface{`,
@@ -4552,7 +5053,7 @@ func initFixtureTuple() {
 		`	for _, v := range res {`,
 		`		classicsItemsAdditionalItemsItems2TypeOriginPropEnum = append(classicsItemsAdditionalItemsItems2TypeOriginPropEnum, v`,
 		`	ClassicsItemsAdditionalItemsItems2OriginPrint string = "print"`,
-		`	ClassicsItemsAdditionalItemsItems2OriginEBook string = "e-book"`,
+		`	ClassicsItemsAdditionalItemsItems2OriginEDashBook string = "e-book"`,
 		`	ClassicsItemsAdditionalItemsItems2OriginCollection string = "collection"`,
 		`	ClassicsItemsAdditionalItemsItems2OriginMuseum string = "museum"`,
 		`func (m *ClassicsItemsAdditionalItemsItems2) validateOriginEnum(path, location string, value string) error {`,
@@ -4713,10 +5214,10 @@ func initFixtureTuple() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ComicsItems3) validateAuthor(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Author) {`,
-		`	if err := validate.MinLength("author", "body", string(m.Author), 1); err != nil {`,
+		`	if err := validate.MinLength("author", "body", m.Author, 1); err != nil {`,
 		`func (m *ComicsItems3) validateCharacter(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Character) {`,
-		"	if err := validate.Pattern(\"character\", \"body\", string(m.Character), `^[A-Z]+$`); err != nil {",
+		"	if err := validate.Pattern(\"character\", \"body\", m.Character, `^[A-Z]+$`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -4814,7 +5315,6 @@ func initFixture1042() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.BAllOf1 = aO1`,
 		`func (m B) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.A`,
@@ -4896,8 +5396,8 @@ func initFixture1042V2() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ErrorModel) validateCode(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("code", "body", m.Code); err != nil {`,
-		`	if err := validate.MinimumInt("code", "body", int64(*m.Code), 100, false); err != nil {`,
-		`	if err := validate.MaximumInt("code", "body", int64(*m.Code), 600, false); err != nil {`,
+		`	if err := validate.MinimumInt("code", "body", *m.Code, 100, false); err != nil {`,
+		`	if err := validate.MaximumInt("code", "body", *m.Code, 600, false); err != nil {`,
 		`func (m *ErrorModel) validateMessage(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("message", "body", m.Message); err != nil {`,
 	},
@@ -4920,7 +5420,6 @@ func initFixture1042V2() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.ExtendedErrorModelAllOf1 = aO1`,
 		`func (m ExtendedErrorModel) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.ErrorModel`,
@@ -4983,7 +5482,6 @@ func initFixture979() {
 		`	if err := swag.ReadJSON(raw, &aO1); err != nil {`,
 		`	m.ClusterAllOf1 = aO1`,
 		`func (m Cluster) MarshalJSON() ([]byte, error) {`,
-		//`	var _parts [][]byte`,
 		// slight optimization of allocations
 		`	_parts := make([][]byte, 0, 2)`,
 		`	aO0, err := swag.WriteJSON(m.NewCluster`,
@@ -5692,7 +6190,8 @@ func initFixtureErrors() {
 		validatable,
 		// output in log
 		// expect warning
-		warning,
+		// warning,
+		noLines,
 		noLines)
 
 	expandRun.AddExpectations("multiple_types.go", flattenRun.ExpectedFor("MultipleTypes").ExpectedLines, validatable, noLines, noLines)
@@ -5751,9 +6250,9 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiTagsSize, 3); err != nil {`,
 		`			if err := validate.MaxItems("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiTagsSize, 10); err != nil {`,
 		`			for iii := 0; iii < len(m.Tags[i][ii]); iii++ {`,
-		`				if err := validate.MinLength("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Tags[i][ii][iii]), 3); err != nil {`,
-		`				if err := validate.MaxLength("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Tags[i][ii][iii]), 10); err != nil {`,
-		"				if err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Tags[i][ii][iii]), `\\w+`); err != nil {",
+		`				if err := validate.MinLength("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Tags[i][ii][iii], 3); err != nil {`,
+		`				if err := validate.MaxLength("tags"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Tags[i][ii][iii], 10); err != nil {`,
+		"				if err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Tags[i][ii][iii], `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -5773,7 +6272,6 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
 		`		if err := validate.MinimumInt("opts"+"."+k, "body", int64(m.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("opts"+"."+k, "body", int64(m.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
@@ -5797,14 +6295,14 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *SimpleZeroAllowed) validateID(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ID) {`,
-		`	if err := validate.MinLength("id", "body", string(m.ID), 2); err != nil {`,
-		`	if err := validate.MaxLength("id", "body", string(m.ID), 50); err != nil {`,
-		"	if err := validate.Pattern(\"id\", \"body\", string(m.ID), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("id", "body", m.ID, 2); err != nil {`,
+		`	if err := validate.MaxLength("id", "body", m.ID, 50); err != nil {`,
+		"	if err := validate.Pattern(\"id\", \"body\", m.ID, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`func (m *SimpleZeroAllowed) validateName(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("name", "body", m.Name); err != nil {`,
-		`	if err := validate.MinLength("name", "body", string(*m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(*m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(*m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", *m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", *m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", *m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`func (m *SimpleZeroAllowed) validateUrls(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("urls", "body", m.Urls); err != nil {`,
 	},
@@ -5825,9 +6323,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedAllOfAllOf6CoordsAllOf0) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -5866,14 +6364,14 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedArrayMulti) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *NamedArrayMulti) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("1", "body", *m.P1, 1.5); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -5891,9 +6389,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("", "body", iNamedArraySize, 3); err != nil {`,
 		`	if err := validate.MaxItems("", "body", iNamedArraySize, 10); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
-		`		if err := validate.MinLength(strconv.Itoa(i), "body", string(m[i]), 3); err != nil {`,
-		`		if err := validate.MaxLength(strconv.Itoa(i), "body", string(m[i]), 10); err != nil {`,
-		"		if err := validate.Pattern(strconv.Itoa(i), \"body\", string(m[i]), `\\w+`); err != nil {",
+		`		if err := validate.MinLength(strconv.Itoa(i), "body", m[i], 3); err != nil {`,
+		`		if err := validate.MaxLength(strconv.Itoa(i), "body", m[i], 10); err != nil {`,
+		"		if err := validate.Pattern(strconv.Itoa(i), \"body\", m[i], `\\w+`); err != nil {",
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -5931,14 +6429,11 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
-		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 3, false); err != nil {`,
-		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 6, false); err != nil {`,
-		`				if err := validate.MultipleOf("meta"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta[k][kk][kkk]), 1); err != nil {`,
+		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 3, false); err != nil {`,
+		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 6, false); err != nil {`,
+		`				if err := validate.MultipleOfInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -5959,14 +6454,14 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ArrayMultiValidationsArgs) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *ArrayMultiValidationsArgs) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("1", "body", *m.P1, 1.5); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -5987,12 +6482,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedMapComplexAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6003,13 +6498,10 @@ func initTodolistSchemavalidation() {
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
 		// maps are now simple types
-		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
 		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
@@ -6026,11 +6518,8 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -6045,12 +6534,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedNestedMapComplexAnon) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6185,14 +6674,14 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ArrayMultiValidationsArgsTuple0) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("P0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("P0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"P0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("P0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("P0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"P0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *ArrayMultiValidationsArgsTuple0) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("P1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("P1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("P1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("P1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("P1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("P1", "body", *m.P1, 1.5); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -6209,9 +6698,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *StringValidations) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6270,11 +6759,8 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -6290,10 +6776,9 @@ func initTodolistSchemavalidation() {
 		`type NamedMap map[string]int64`,
 		`func (m NamedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
-		`		if err := validate.MinimumInt(k, "body", int64(m[k]), 3, false); err != nil {`,
-		`		if err := validate.MaximumInt(k, "body", int64(m[k]), 6, false); err != nil {`,
-		`		if err := validate.MultipleOf(k, "body", float64(m[k]), 1); err != nil {`,
+		`		if err := validate.MinimumInt(k, "body", m[k], 3, false); err != nil {`,
+		`		if err := validate.MaximumInt(k, "body", m[k], 6, false); err != nil {`,
+		`		if err := validate.MultipleOfInt(k, "body", m[k], 1); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -6342,9 +6827,9 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 5); err != nil {`,
 		`			if err := validate.MaxItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 20); err != nil {`,
 		`			for iii := 0; iii < len(m.Assoc[i][ii]); iii++ {`,
-		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 2); err != nil {`,
-		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 50); err != nil {`,
-		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Assoc[i][ii][iii]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 2); err != nil {`,
+		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 50); err != nil {`,
+		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Assoc[i][ii][iii], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6356,16 +6841,12 @@ func initTodolistSchemavalidation() {
 	flattenRun.AddExpectations("map_complex_validations.go", []string{
 		`type MapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta MapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"Meta map[string]MapComplexValidationsMetaAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *MapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		//`	if err := m.Meta.Validate(formats); err != nil {`,
-		//`		if ve, ok := err.(*errors.Validation); ok {`,
-		//`			return ve.ValidateName("meta"`,
 		`            		for k := range m.Meta {`,
 		`            			if val, ok := m.Meta[k]; ok {`,
 		`            				if err := val.Validate(formats); err != nil {`,
@@ -6385,7 +6866,6 @@ func initTodolistSchemavalidation() {
 		`func (m *MapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		if val, ok := m.Meta[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`type MapComplexValidationsMetaAnon struct {`,
@@ -6399,12 +6879,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *MapComplexValidationsMetaAnon) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6425,12 +6905,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6467,9 +6947,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("tags", "body", iTagsSize, 3); err != nil {`,
 		`	if err := validate.MaxItems("tags", "body", iTagsSize, 10); err != nil {`,
 		`	for i := 0; i < len(m.Tags); i++ {`,
-		`		if err := validate.MinLength("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i]), 3); err != nil {`,
-		`		if err := validate.MaxLength("tags"+"."+strconv.Itoa(i), "body", string(m.Tags[i]), 10); err != nil {`,
-		"		if err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i), \"body\", string(m.Tags[i]), `\\w+`); err != nil {",
+		`		if err := validate.MinLength("tags"+"."+strconv.Itoa(i), "body", m.Tags[i], 3); err != nil {`,
+		`		if err := validate.MaxLength("tags"+"."+strconv.Itoa(i), "body", m.Tags[i], 10); err != nil {`,
+		"		if err := validate.Pattern(\"tags\"+\".\"+strconv.Itoa(i), \"body\", m.Tags[i], `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6518,12 +6998,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *MapComplexValidationsMetaAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6574,9 +7054,9 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 5); err != nil {`,
 		`			if err := validate.MaxItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 20); err != nil {`,
 		`			for iii := 0; iii < len(m.Assoc[i][ii]); iii++ {`,
-		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 2); err != nil {`,
-		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 50); err != nil {`,
-		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Assoc[i][ii][iii]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 2); err != nil {`,
+		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 50); err != nil {`,
+		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Assoc[i][ii][iii], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6640,9 +7120,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedObjectValidationsArgsMeta) validateFirst(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.First) {`,
-		`	if err := validate.MinLength("args"+"."+"meta"+"."+"first", "body", string(m.First), 2); err != nil {`,
-		`	if err := validate.MaxLength("args"+"."+"meta"+"."+"first", "body", string(m.First), 50); err != nil {`,
-		"	if err := validate.Pattern(\"args\"+\".\"+\"meta\"+\".\"+\"first\", \"body\", string(m.First), `^\\w+`); err != nil {",
+		`	if err := validate.MinLength("args"+"."+"meta"+"."+"first", "body", m.First, 2); err != nil {`,
+		`	if err := validate.MaxLength("args"+"."+"meta"+"."+"first", "body", m.First, 50); err != nil {`,
+		"	if err := validate.Pattern(\"args\"+\".\"+\"meta\"+\".\"+\"first\", \"body\", m.First, `^\\w+`); err != nil {",
 		`func (m *NestedObjectValidationsArgsMeta) validateFourth(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Fourth) {`,
 		`	iFourthSize := int64(len(m.Fourth)`,
@@ -6662,9 +7142,9 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MultipleOf("args"+"."+"meta"+"."+"fourth"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", float64(m.Fourth[i][ii][iii]), 0.5); err != nil {`,
 		`func (m *NestedObjectValidationsArgsMeta) validateSecond(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Second) {`,
-		`	if err := validate.Minimum("args"+"."+"meta"+"."+"second", "body", float64(m.Second), 3, false); err != nil {`,
-		`	if err := validate.Maximum("args"+"."+"meta"+"."+"second", "body", float64(m.Second), 51, false); err != nil {`,
-		`	if err := validate.MultipleOf("args"+"."+"meta"+"."+"second", "body", float64(m.Second), 1.5); err != nil {`,
+		`	if err := validate.Minimum("args"+"."+"meta"+"."+"second", "body", m.Second, 3, false); err != nil {`,
+		`	if err := validate.Maximum("args"+"."+"meta"+"."+"second", "body", m.Second, 51, false); err != nil {`,
+		`	if err := validate.MultipleOf("args"+"."+"meta"+"."+"second", "body", m.Second, 1.5); err != nil {`,
 		`func (m *NestedObjectValidationsArgsMeta) validateThird(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Third) {`,
 		`	iThirdSize := int64(len(m.Third)`,
@@ -6694,19 +7174,19 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedArrayAdditional) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *NamedArrayAdditional) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("1", "body", *m.P1, 1.5); err != nil {`,
 		`func (m *NamedArrayAdditional) validateNamedArrayAdditionalItems(formats strfmt.Registry) error {`,
 		`	for i := range m.NamedArrayAdditionalItems {`,
-		`		if err := validate.MinimumInt(strconv.Itoa(i+2), "body", int64(m.NamedArrayAdditionalItems[i]), 3, false); err != nil {`,
-		`		if err := validate.MaximumInt(strconv.Itoa(i+2), "body", int64(m.NamedArrayAdditionalItems[i]), 6, false); err != nil {`,
-		`		if err := validate.MultipleOf(strconv.Itoa(i+2), "body", float64(m.NamedArrayAdditionalItems[i]), 1); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i+2), "body", m.NamedArrayAdditionalItems[i], 3, false); err != nil {`,
+		`		if err := validate.MaximumInt(strconv.Itoa(i+2), "body", m.NamedArrayAdditionalItems[i], 6, false); err != nil {`,
+		`		if err := validate.MultipleOfInt(strconv.Itoa(i+2), "body", m.NamedArrayAdditionalItems[i], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -6762,7 +7242,6 @@ func initTodolistSchemavalidation() {
 		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -6819,7 +7298,6 @@ func initTodolistSchemavalidation() {
 		// nullable not required:
 		`		if swag.IsZero(m.Tags[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required("tags"+"."+strconv.Itoa(i), "body", m.Tags[i]); err != nil {`,
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -6857,19 +7335,19 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ArrayAdditionalValidationsArgs) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *ArrayAdditionalValidationsArgs) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("1", "body", *m.P1, 1.5); err != nil {`,
 		`func (m *ArrayAdditionalValidationsArgs) validateArrayAdditionalValidationsArgsItems(formats strfmt.Registry) error {`,
 		`	for i := range m.ArrayAdditionalValidationsArgsItems {`,
-		`		if err := validate.MinimumInt(strconv.Itoa(i+2), "body", int64(m.ArrayAdditionalValidationsArgsItems[i]), 3, false); err != nil {`,
-		`		if err := validate.MaximumInt(strconv.Itoa(i+2), "body", int64(m.ArrayAdditionalValidationsArgsItems[i]), 6, false); err != nil {`,
-		`		if err := validate.MultipleOf(strconv.Itoa(i+2), "body", float64(m.ArrayAdditionalValidationsArgsItems[i]), 1); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i+2), "body", m.ArrayAdditionalValidationsArgsItems[i], 3, false); err != nil {`,
+		`		if err := validate.MaximumInt(strconv.Itoa(i+2), "body", m.ArrayAdditionalValidationsArgsItems[i], 6, false); err != nil {`,
+		`		if err := validate.MultipleOfInt(strconv.Itoa(i+2), "body", m.ArrayAdditionalValidationsArgsItems[i], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -6890,9 +7368,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("args", "body", iArgsSize, 5); err != nil {`,
 		`	if err := validate.MaxItems("args", "body", iArgsSize, 20); err != nil {`,
 		`	for i := 0; i < len(m.Args); i++ {`,
-		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 2); err != nil {`,
-		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 50); err != nil {`,
-		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", string(m.Args[i]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 2); err != nil {`,
+		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 50); err != nil {`,
+		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", m.Args[i], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6909,9 +7387,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AllOfValidationsMetaAllOf0) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6929,10 +7407,9 @@ func initTodolistSchemavalidation() {
 		`func (m *NamedAllOfAllOf4) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
-		`		if err := validate.Minimum("opts"+"."+k, "body", float64(m.Opts[k]), 2, false); err != nil {`,
-		`		if err := validate.Maximum("opts"+"."+k, "body", float64(m.Opts[k]), 50, false); err != nil {`,
-		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
+		`		if err := validate.Minimum("opts"+"."+k, "body", m.Opts[k], 2, false); err != nil {`,
+		`		if err := validate.Maximum("opts"+"."+k, "body", m.Opts[k], 50, false); err != nil {`,
+		`		if err := validate.MultipleOf("opts"+"."+k, "body", m.Opts[k], 1.5); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -6949,9 +7426,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedAllOfAllOf0) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -6972,12 +7449,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -7039,8 +7516,8 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *UpdateOrg) validateTagExpiration(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.TagExpiration) {`,
-		`	if err := validate.MinimumInt("tag_expiration", "body", int64(*m.TagExpiration), 0, false); err != nil {`,
-		`	if err := validate.MaximumInt("tag_expiration", "body", int64(*m.TagExpiration), 2.592e+06, false); err != nil {`,
+		`	if err := validate.MinimumInt("tag_expiration", "body", *m.TagExpiration, 0, false); err != nil {`,
+		`	if err := validate.MaximumInt("tag_expiration", "body", *m.TagExpiration, 2.592e+06, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7075,18 +7552,14 @@ func initTodolistSchemavalidation() {
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		//`	if err := m.Meta.Validate(formats); err != nil {`,
 		`            		for k := range m.Meta {`,
-		//`            			if swag.IsZero(m.Meta[k]) { // not required`,
 		`            			for kk := range m.Meta[k] {`,
-		//`            				if swag.IsZero(m.Meta[k][kk]) { // not required`,
 		`            				for kkk := range m.Meta[k][kk] {`,
 		`	            				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
 		`            					if val, ok := m.Meta[k][kk][kkk]; ok {`,
@@ -7107,11 +7580,8 @@ func initTodolistSchemavalidation() {
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
 		`				if val, ok := m.Meta[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`type NestedMapComplexValidationsMetaAnon struct {`,
@@ -7125,12 +7595,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NestedMapComplexValidationsMetaAnon) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -7167,9 +7637,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("args", "body", iArgsSize, 5); err != nil {`,
 		`	if err := validate.MaxItems("args", "body", iArgsSize, 20); err != nil {`,
 		`	for i := 0; i < len(m.Args); i++ {`,
-		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 2); err != nil {`,
-		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 50); err != nil {`,
-		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", string(m.Args[i]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 2); err != nil {`,
+		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 50); err != nil {`,
+		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", m.Args[i], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -7199,9 +7669,9 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems(strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiNamedNestedArraySize, 3); err != nil {`,
 		`			if err := validate.MaxItems(strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiNamedNestedArraySize, 10); err != nil {`,
 		`			for iii := 0; iii < len(m[i][ii]); iii++ {`,
-		`				if err := validate.MinLength(strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m[i][ii][iii]), 3); err != nil {`,
-		`				if err := validate.MaxLength(strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m[i][ii][iii]), 10); err != nil {`,
-		"				if err := validate.Pattern(strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m[i][ii][iii]), `\\w+`); err != nil {",
+		`				if err := validate.MinLength(strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m[i][ii][iii], 3); err != nil {`,
+		`				if err := validate.MaxLength(strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m[i][ii][iii], 10); err != nil {`,
+		"				if err := validate.Pattern(strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m[i][ii][iii], `\\w+`); err != nil {",
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -7261,9 +7731,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedAllOf) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`func (m *NamedAllOf) validateAge(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 2, false); err != nil {`,
@@ -7275,9 +7745,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("args", "body", iArgsSize, 5); err != nil {`,
 		`	if err := validate.MaxItems("args", "body", iArgsSize, 20); err != nil {`,
 		`	for i := 0; i < len(m.Args); i++ {`,
-		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 2); err != nil {`,
-		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", string(m.Args[i]), 50); err != nil {`,
-		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", string(m.Args[i]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`		if err := validate.MinLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 2); err != nil {`,
+		`		if err := validate.MaxLength("args"+"."+strconv.Itoa(i), "body", m.Args[i], 50); err != nil {`,
+		"		if err := validate.Pattern(\"args\"+\".\"+strconv.Itoa(i), \"body\", m.Args[i], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`func (m *NamedAllOf) validateAssoc(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Assoc) {`,
 		`	iAssocSize := int64(len(m.Assoc)`,
@@ -7292,32 +7762,28 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 5); err != nil {`,
 		`			if err := validate.MaxItems("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 20); err != nil {`,
 		`			for iii := 0; iii < len(m.Assoc[i][ii]); iii++ {`,
-		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 2); err != nil {`,
-		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Assoc[i][ii][iii]), 50); err != nil {`,
-		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Assoc[i][ii][iii]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`				if err := validate.MinLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 2); err != nil {`,
+		`				if err := validate.MaxLength("assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Assoc[i][ii][iii], 50); err != nil {`,
+		"				if err := validate.Pattern(\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Assoc[i][ii][iii], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`func (m *NamedAllOf) validateOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Opts) {`,
 		`	for k := range m.Opts {`,
-		//`		if swag.IsZero(m.Opts[k]) {`,
-		`		if err := validate.Minimum("opts"+"."+k, "body", float64(m.Opts[k]), 2, false); err != nil {`,
-		`		if err := validate.Maximum("opts"+"."+k, "body", float64(m.Opts[k]), 50, false); err != nil {`,
-		`		if err := validate.MultipleOf("opts"+"."+k, "body", float64(m.Opts[k]), 1.5); err != nil {`,
+		`		if err := validate.Minimum("opts"+"."+k, "body", m.Opts[k], 2, false); err != nil {`,
+		`		if err := validate.Maximum("opts"+"."+k, "body", m.Opts[k], 50, false); err != nil {`,
+		`		if err := validate.MultipleOf("opts"+"."+k, "body", m.Opts[k], 1.5); err != nil {`,
 		`func (m *NamedAllOf) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
 		`func (m *NamedAllOf) validateCoords(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Coords) {`,
-		`	if err := validate.MinLength("coords"+"."+"name", "body", string(m.Coords.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("coords"+"."+"name", "body", string(m.Coords.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"coords\"+\".\"+\"name\", \"body\", string(m.Coords.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("coords"+"."+"name", "body", m.Coords.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("coords"+"."+"name", "body", m.Coords.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"coords\"+\".\"+\"name\", \"body\", m.Coords.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	if err := validate.MinimumInt("coords"+"."+"age", "body", int64(m.Coords.Age), 2, false); err != nil {`,
 		`	if err := validate.MaximumInt("coords"+"."+"age", "body", int64(m.Coords.Age), 50, false); err != nil {`,
 		`	if err := validate.MultipleOf("coords"+"."+"age", "body", float64(m.Coords.Age), 1.5); err != nil {`,
@@ -7348,7 +7814,6 @@ func initTodolistSchemavalidation() {
 		`type NamedMapComplex map[string]NamedMapComplexAnon`,
 		`func (m NamedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -7363,12 +7828,12 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedMapComplexAnon) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -7421,19 +7886,19 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *ArrayAdditionalValidationsArgsTuple0) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P0", "body", m.P0); err != nil {`,
-		`	if err := validate.MinLength("P0", "body", string(*m.P0), 3); err != nil {`,
-		`	if err := validate.MaxLength("P0", "body", string(*m.P0), 10); err != nil {`,
-		"	if err := validate.Pattern(\"P0\", \"body\", string(*m.P0), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("P0", "body", *m.P0, 3); err != nil {`,
+		`	if err := validate.MaxLength("P0", "body", *m.P0, 10); err != nil {`,
+		"	if err := validate.Pattern(\"P0\", \"body\", *m.P0, `\\w+`); err != nil {",
 		`func (m *ArrayAdditionalValidationsArgsTuple0) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
-		`	if err := validate.Minimum("P1", "body", float64(*m.P1), 3, false); err != nil {`,
-		`	if err := validate.Maximum("P1", "body", float64(*m.P1), 12, false); err != nil {`,
-		`	if err := validate.MultipleOf("P1", "body", float64(*m.P1), 1.5); err != nil {`,
+		`	if err := validate.Minimum("P1", "body", *m.P1, 3, false); err != nil {`,
+		`	if err := validate.Maximum("P1", "body", *m.P1, 12, false); err != nil {`,
+		`	if err := validate.MultipleOf("P1", "body", *m.P1, 1.5); err != nil {`,
 		`func (m *ArrayAdditionalValidationsArgsTuple0) validateArrayAdditionalValidationsArgsTuple0Items(formats strfmt.Registry) error {`,
 		`	for i := range m.ArrayAdditionalValidationsArgsTuple0Items {`,
-		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", int64(m.ArrayAdditionalValidationsArgsTuple0Items[i]), 3, false); err != nil {`,
-		`		if err := validate.MaximumInt(strconv.Itoa(i), "body", int64(m.ArrayAdditionalValidationsArgsTuple0Items[i]), 6, false); err != nil {`,
-		`		if err := validate.MultipleOf(strconv.Itoa(i), "body", float64(m.ArrayAdditionalValidationsArgsTuple0Items[i]), 1); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", m.ArrayAdditionalValidationsArgsTuple0Items[i], 3, false); err != nil {`,
+		`		if err := validate.MaximumInt(strconv.Itoa(i), "body", m.ArrayAdditionalValidationsArgsTuple0Items[i], 6, false); err != nil {`,
+		`		if err := validate.MultipleOfInt(strconv.Itoa(i), "body", m.ArrayAdditionalValidationsArgsTuple0Items[i], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7456,9 +7921,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NestedObjectValidationsArgsMeta) validateFirst(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.First) {`,
-		`	if err := validate.MinLength("first", "body", string(m.First), 2); err != nil {`,
-		`	if err := validate.MaxLength("first", "body", string(m.First), 50); err != nil {`,
-		"	if err := validate.Pattern(\"first\", \"body\", string(m.First), `^\\w+`); err != nil {",
+		`	if err := validate.MinLength("first", "body", m.First, 2); err != nil {`,
+		`	if err := validate.MaxLength("first", "body", m.First, 50); err != nil {`,
+		"	if err := validate.Pattern(\"first\", \"body\", m.First, `^\\w+`); err != nil {",
 		`func (m *NestedObjectValidationsArgsMeta) validateFourth(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Fourth) {`,
 		`	iFourthSize := int64(len(m.Fourth)`,
@@ -7478,9 +7943,9 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MultipleOf("fourth"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", float64(m.Fourth[i][ii][iii]), 0.5); err != nil {`,
 		`func (m *NestedObjectValidationsArgsMeta) validateSecond(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Second) {`,
-		`	if err := validate.Minimum("second", "body", float64(m.Second), 3, false); err != nil {`,
-		`	if err := validate.Maximum("second", "body", float64(m.Second), 51, false); err != nil {`,
-		`	if err := validate.MultipleOf("second", "body", float64(m.Second), 1.5); err != nil {`,
+		`	if err := validate.Minimum("second", "body", m.Second, 3, false); err != nil {`,
+		`	if err := validate.Maximum("second", "body", m.Second, 51, false); err != nil {`,
+		`	if err := validate.MultipleOf("second", "body", m.Second, 1.5); err != nil {`,
 		`func (m *NestedObjectValidationsArgsMeta) validateThird(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Third) {`,
 		`	iThirdSize := int64(len(m.Third)`,
@@ -7507,10 +7972,9 @@ func initTodolistSchemavalidation() {
 		`func (m *MapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
-		`		if err := validate.MinimumInt("meta"+"."+k, "body", int64(m.Meta[k]), 3, false); err != nil {`,
-		`		if err := validate.MaximumInt("meta"+"."+k, "body", int64(m.Meta[k]), 6, false); err != nil {`,
-		`		if err := validate.MultipleOf("meta"+"."+k, "body", float64(m.Meta[k]), 1); err != nil {`,
+		`		if err := validate.MinimumInt("meta"+"."+k, "body", m.Meta[k], 3, false); err != nil {`,
+		`		if err := validate.MaximumInt("meta"+"."+k, "body", m.Meta[k], 6, false); err != nil {`,
+		`		if err := validate.MultipleOfInt("meta"+"."+k, "body", m.Meta[k], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7549,11 +8013,8 @@ func initTodolistSchemavalidation() {
 		`func (m *AllOfValidationsMetaAllOf5) validateExtOpts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExtOpts) {`,
 		`	for k := range m.ExtOpts {`,
-		//`		if swag.IsZero(m.ExtOpts[k]) {`,
 		`		for kk := range m.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
@@ -7603,9 +8064,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AllOfValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
-		`	if err := validate.MinLength("meta"+"."+"name", "body", string(m.Meta.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("meta"+"."+"name", "body", string(m.Meta.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"meta\"+\".\"+\"name\", \"body\", string(m.Meta.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("meta"+"."+"name", "body", m.Meta.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("meta"+"."+"name", "body", m.Meta.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"meta\"+\".\"+\"name\", \"body\", m.Meta.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	if err := validate.MinimumInt("meta"+"."+"age", "body", int64(m.Meta.Age), 2, false); err != nil {`,
 		`	if err := validate.MaximumInt("meta"+"."+"age", "body", int64(m.Meta.Age), 50, false); err != nil {`,
 		`	if err := validate.MultipleOf("meta"+"."+"age", "body", float64(m.Meta.Age), 1.5); err != nil {`,
@@ -7613,9 +8074,9 @@ func initTodolistSchemavalidation() {
 		`	if err := validate.MinItems("meta"+"."+"args", "body", iArgsSize, 5); err != nil {`,
 		`	if err := validate.MaxItems("meta"+"."+"args", "body", iArgsSize, 20); err != nil {`,
 		`	for i := 0; i < len(m.Meta.Args); i++ {`,
-		`		if err := validate.MinLength("meta"+"."+"args"+"."+strconv.Itoa(i), "body", string(m.Meta.Args[i]), 2); err != nil {`,
-		`		if err := validate.MaxLength("meta"+"."+"args"+"."+strconv.Itoa(i), "body", string(m.Meta.Args[i]), 50); err != nil {`,
-		"		if err := validate.Pattern(\"meta\"+\".\"+\"args\"+\".\"+strconv.Itoa(i), \"body\", string(m.Meta.Args[i]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`		if err := validate.MinLength("meta"+"."+"args"+"."+strconv.Itoa(i), "body", m.Meta.Args[i], 2); err != nil {`,
+		`		if err := validate.MaxLength("meta"+"."+"args"+"."+strconv.Itoa(i), "body", m.Meta.Args[i], 50); err != nil {`,
+		"		if err := validate.Pattern(\"meta\"+\".\"+\"args\"+\".\"+strconv.Itoa(i), \"body\", m.Meta.Args[i], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	iAssocSize := int64(len(m.Meta.Assoc)`,
 		`	if err := validate.MinItems("meta"+"."+"assoc", "body", iAssocSize, 5); err != nil {`,
 		`	if err := validate.MaxItems("meta"+"."+"assoc", "body", iAssocSize, 20); err != nil {`,
@@ -7628,26 +8089,22 @@ func initTodolistSchemavalidation() {
 		`			if err := validate.MinItems("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 5); err != nil {`,
 		`			if err := validate.MaxItems("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", iiiAssocSize, 20); err != nil {`,
 		`			for iii := 0; iii < len(m.Meta.Assoc[i][ii]); iii++ {`,
-		`				if err := validate.MinLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Meta.Assoc[i][ii][iii]), 2); err != nil {`,
-		`				if err := validate.MaxLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", string(m.Meta.Assoc[i][ii][iii]), 50); err != nil {`,
-		"				if err := validate.Pattern(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", string(m.Meta.Assoc[i][ii][iii]), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`				if err := validate.MinLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Meta.Assoc[i][ii][iii], 2); err != nil {`,
+		`				if err := validate.MaxLength("meta"+"."+"assoc"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", m.Meta.Assoc[i][ii][iii], 50); err != nil {`,
+		"				if err := validate.Pattern(\"meta\"+\".\"+\"assoc\"+\".\"+strconv.Itoa(i)+\".\"+strconv.Itoa(ii)+\".\"+strconv.Itoa(iii), \"body\", m.Meta.Assoc[i][ii][iii], `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	for k := range m.Meta.Opts {`,
-		//`		if swag.IsZero(m.Meta.Opts[k]) {`,
 		`		if err := validate.MinimumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 2, false); err != nil {`,
 		`		if err := validate.MaximumInt("meta"+"."+"opts"+"."+k, "body", int64(m.Meta.Opts[k]), 50, false); err != nil {`,
 		`		if err := validate.MultipleOf("meta"+"."+"opts"+"."+k, "body", float64(m.Meta.Opts[k]), 1.5); err != nil {`,
 		`	for k := range m.Meta.ExtOpts {`,
-		//`		if swag.IsZero(m.Meta.ExtOpts[k]) {`,
 		`		for kk := range m.Meta.ExtOpts[k] {`,
-		//`			if swag.IsZero(m.Meta.ExtOpts[k][kk]) {`,
 		`			for kkk := range m.Meta.ExtOpts[k][kk] {`,
-		//`				if swag.IsZero(m.Meta.ExtOpts[k][kk][kkk]) {`,
 		`				if err := validate.MinimumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 2, false); err != nil {`,
 		`				if err := validate.MaximumInt("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta.ExtOpts[k][kk][kkk]), 50, false); err != nil {`,
 		`				if err := validate.MultipleOf("meta"+"."+"extOpts"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta.ExtOpts[k][kk][kkk]), 1.5); err != nil {`,
-		`	if err := validate.MinLength("meta"+"."+"coords"+"."+"name", "body", string(m.Meta.Coords.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("meta"+"."+"coords"+"."+"name", "body", string(m.Meta.Coords.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"meta\"+\".\"+\"coords\"+\".\"+\"name\", \"body\", string(m.Meta.Coords.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("meta"+"."+"coords"+"."+"name", "body", m.Meta.Coords.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("meta"+"."+"coords"+"."+"name", "body", m.Meta.Coords.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"meta\"+\".\"+\"coords\"+\".\"+\"name\", \"body\", m.Meta.Coords.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 		`	if err := validate.MinimumInt("meta"+"."+"coords"+"."+"age", "body", int64(m.Meta.Coords.Age), 2, false); err != nil {`,
 		`	if err := validate.MaximumInt("meta"+"."+"coords"+"."+"age", "body", int64(m.Meta.Coords.Age), 50, false); err != nil {`,
 		`	if err := validate.MultipleOf("meta"+"."+"coords"+"."+"age", "body", float64(m.Meta.Coords.Age), 1.5); err != nil {`,
@@ -7673,9 +8130,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedNestedObjectMeta) validateFirst(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.First) {`,
-		`	if err := validate.MinLength("first", "body", string(m.First), 2); err != nil {`,
-		`	if err := validate.MaxLength("first", "body", string(m.First), 50); err != nil {`,
-		"	if err := validate.Pattern(\"first\", \"body\", string(m.First), `^\\w+`); err != nil {",
+		`	if err := validate.MinLength("first", "body", m.First, 2); err != nil {`,
+		`	if err := validate.MaxLength("first", "body", m.First, 50); err != nil {`,
+		"	if err := validate.Pattern(\"first\", \"body\", m.First, `^\\w+`); err != nil {",
 		`func (m *NamedNestedObjectMeta) validateFourth(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Fourth) {`,
 		`	iFourthSize := int64(len(m.Fourth)`,
@@ -7695,9 +8152,9 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MultipleOf("fourth"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", float64(m.Fourth[i][ii][iii]), 0.5); err != nil {`,
 		`func (m *NamedNestedObjectMeta) validateSecond(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Second) {`,
-		`	if err := validate.Minimum("second", "body", float64(m.Second), 3, false); err != nil {`,
-		`	if err := validate.Maximum("second", "body", float64(m.Second), 51, false); err != nil {`,
-		`	if err := validate.MultipleOf("second", "body", float64(m.Second), 1.5); err != nil {`,
+		`	if err := validate.Minimum("second", "body", m.Second, 3, false); err != nil {`,
+		`	if err := validate.Maximum("second", "body", m.Second, 51, false); err != nil {`,
+		`	if err := validate.MultipleOf("second", "body", m.Second, 1.5); err != nil {`,
 		`func (m *NamedNestedObjectMeta) validateThird(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Third) {`,
 		`	iThirdSize := int64(len(m.Third)`,
@@ -7759,9 +8216,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NamedNestedObjectMeta) validateFirst(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.First) {`,
-		`	if err := validate.MinLength("meta"+"."+"first", "body", string(m.First), 2); err != nil {`,
-		`	if err := validate.MaxLength("meta"+"."+"first", "body", string(m.First), 50); err != nil {`,
-		"	if err := validate.Pattern(\"meta\"+\".\"+\"first\", \"body\", string(m.First), `^\\w+`); err != nil {",
+		`	if err := validate.MinLength("meta"+"."+"first", "body", m.First, 2); err != nil {`,
+		`	if err := validate.MaxLength("meta"+"."+"first", "body", m.First, 50); err != nil {`,
+		"	if err := validate.Pattern(\"meta\"+\".\"+\"first\", \"body\", m.First, `^\\w+`); err != nil {",
 		`func (m *NamedNestedObjectMeta) validateFourth(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Fourth) {`,
 		`	iFourthSize := int64(len(m.Fourth)`,
@@ -7781,9 +8238,9 @@ func initTodolistSchemavalidation() {
 		`				if err := validate.MultipleOf("meta"+"."+"fourth"+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii)+"."+strconv.Itoa(iii), "body", float64(m.Fourth[i][ii][iii]), 0.5); err != nil {`,
 		`func (m *NamedNestedObjectMeta) validateSecond(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Second) {`,
-		`	if err := validate.Minimum("meta"+"."+"second", "body", float64(m.Second), 3, false); err != nil {`,
-		`	if err := validate.Maximum("meta"+"."+"second", "body", float64(m.Second), 51, false); err != nil {`,
-		`	if err := validate.MultipleOf("meta"+"."+"second", "body", float64(m.Second), 1.5); err != nil {`,
+		`	if err := validate.Minimum("meta"+"."+"second", "body", m.Second, 3, false); err != nil {`,
+		`	if err := validate.Maximum("meta"+"."+"second", "body", m.Second, 51, false); err != nil {`,
+		`	if err := validate.MultipleOf("meta"+"."+"second", "body", m.Second, 1.5); err != nil {`,
 		`func (m *NamedNestedObjectMeta) validateThird(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Third) {`,
 		`	iThirdSize := int64(len(m.Third)`,
@@ -7809,9 +8266,9 @@ func initTodolistSchemavalidation() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AllOfValidationsMetaAllOf6CoordsAllOf0) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 2); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `[A-Za-z0-9][\\w- ]+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 2); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `[A-Za-z0-9][\\w- ]+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -7824,14 +8281,11 @@ func initTodolistSchemavalidation() {
 		`type NamedNestedMap map[string]map[string]map[string]int64`,
 		`func (m NamedNestedMap) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
-		`				if err := validate.MinimumInt(k+"."+kk+"."+kkk, "body", int64(m[k][kk][kkk]), 3, false); err != nil {`,
-		`				if err := validate.MaximumInt(k+"."+kk+"."+kkk, "body", int64(m[k][kk][kkk]), 6, false); err != nil {`,
-		`				if err := validate.MultipleOf(k+"."+kk+"."+kkk, "body", float64(m[k][kk][kkk]), 1); err != nil {`,
+		`				if err := validate.MinimumInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 3, false); err != nil {`,
+		`				if err := validate.MaximumInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 6, false); err != nil {`,
+		`				if err := validate.MultipleOfInt(k+"."+kk+"."+kkk, "body", m[k][kk][kkk], 1); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -7902,14 +8356,11 @@ func initFixtureNestedMaps() {
 		`func (m *NestedMapValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`	for k := range m.Meta {`,
-		//`		if swag.IsZero(m.Meta[k]) {`,
 		`		for kk := range m.Meta[k] {`,
-		//`			if swag.IsZero(m.Meta[k][kk]) {`,
 		`			for kkk := range m.Meta[k][kk] {`,
-		//`				if swag.IsZero(m.Meta[k][kk][kkk]) {`,
-		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 3, false); err != nil {`,
-		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", int64(m.Meta[k][kk][kkk]), 6, false); err != nil {`,
-		`				if err := validate.MultipleOf("meta"+"."+k+"."+kk+"."+kkk, "body", float64(m.Meta[k][kk][kkk]), 1); err != nil {`,
+		`				if err := validate.MinimumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 3, false); err != nil {`,
+		`				if err := validate.MaximumInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 6, false); err != nil {`,
+		`				if err := validate.MultipleOfInt("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk], 1); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -7921,13 +8372,10 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: named_nested_map_complex.go
 	flattenRun.AddExpectations("named_nested_map_complex.go", []string{
-		//`type NamedNestedMapComplex map[string]NamedNestedMapComplexAdditionalProperties`,
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
 		`				if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
@@ -7944,11 +8392,8 @@ func initFixtureNestedMaps() {
 		`type NamedNestedMapComplex map[string]map[string]map[string]NamedNestedMapComplexAnon`,
 		`func (m NamedNestedMapComplex) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -7963,12 +8408,12 @@ func initFixtureNestedMaps() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedNestedMapComplexAnon) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -8010,12 +8455,12 @@ func initFixtureNestedMaps() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NamedNestedMapComplexAdditionalPropertiesAdditionalPropertiesAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -8030,11 +8475,8 @@ func initFixtureNestedMaps() {
 		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAnon`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		for kk := range m[k] {`,
-		//`			if swag.IsZero(m[k][kk]) {`,
 		`			for kkk := range m[k][kk] {`,
-		//`				if swag.IsZero(m[k][kk][kkk]) {`,
 		`				if val, ok := m[k][kk][kkk]; ok {`,
 		`					if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -8058,13 +8500,10 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: nested_map_no_validations.go
 	flattenRun.AddExpectations("nested_map_no_validations.go", []string{
-		//`type NestedMapNoValidations map[string]NestedMapNoValidationsAdditionalProperties`,
 		`type NestedMapNoValidations map[string]map[string]map[string]NestedMapNoValidationsAdditionalPropertiesAdditionalPropertiesAdditionalProperties`,
 		`func (m NestedMapNoValidations) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`       	for kk := range m[k] {`,
-		//`        		if swag.IsZero(m[k][kk]) { // not required`,
 		`            		for kkk := range m[k][kk] {`,
 		`            			if val, ok := m[k][kk][kkk]; ok {`,
 		`            			if err := validate.Required(k+"."+kk+"."+kkk, "body", m[k][kk][kkk]); err != nil {`,
@@ -8090,12 +8529,12 @@ func initFixtureNestedMaps() {
 		`	if swag.IsZero(m.Age) {`,
 		`	if err := validate.MinimumInt("age", "body", int64(m.Age), 1, true); err != nil {`,
 		`	if err := validate.MaximumInt("age", "body", int64(m.Age), 200, true); err != nil {`,
-		`	if err := validate.MultipleOf("age", "body", float64(m.Age), 1); err != nil {`,
+		`	if err := validate.MultipleOfInt("age", "body", int64(m.Age), 1); err != nil {`,
 		`func (m *NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties) validateName(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Name) {`,
-		`	if err := validate.MinLength("name", "body", string(m.Name), 10); err != nil {`,
-		`	if err := validate.MaxLength("name", "body", string(m.Name), 50); err != nil {`,
-		"	if err := validate.Pattern(\"name\", \"body\", string(m.Name), `\\w+`); err != nil {",
+		`	if err := validate.MinLength("name", "body", m.Name, 10); err != nil {`,
+		`	if err := validate.MaxLength("name", "body", m.Name, 50); err != nil {`,
+		"	if err := validate.Pattern(\"name\", \"body\", m.Name, `\\w+`); err != nil {",
 	},
 		// not expected
 		todo,
@@ -8107,7 +8546,6 @@ func initFixtureNestedMaps() {
 	flattenRun.AddExpectations("nested_map_complex_validations.go", []string{
 		`type NestedMapComplexValidations struct {`,
 		// maps are now simple types
-		//"	Meta NestedMapComplexValidationsMeta `json:\"meta,omitempty\"`",
 		"	Meta map[string]map[string]map[string]NestedMapComplexValidationsMetaAdditionalPropertiesAdditionalPropertiesAdditionalProperties `json:\"meta,omitempty\"`",
 		`func (m *NestedMapComplexValidations) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateMeta(formats); err != nil {`,
@@ -8115,9 +8553,7 @@ func initFixtureNestedMaps() {
 		`func (m *NestedMapComplexValidations) validateMeta(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Meta) {`,
 		`          		for k := range m.Meta {`,
-		//`          			if swag.IsZero(m.Meta[k]) { // not required`,
 		`          			for kk := range m.Meta[k] {`,
-		//`          				if swag.IsZero(m.Meta[k][kk]) { // not required`,
 		`          				for kkk := range m.Meta[k][kk] {`,
 		`          				if err := validate.Required("meta"+"."+k+"."+kk+"."+kkk, "body", m.Meta[k][kk][kkk]); err != nil {`,
 		`          					if val, ok := m.Meta[k][kk][kkk]; ok {`,
@@ -8258,9 +8694,10 @@ func initFixture844Variations() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TupleVariation) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	if err := m.P2.Validate(formats); err != nil {`,
 		`		if ve, ok := err.(*errors.Validation); ok {`,
@@ -8273,7 +8710,10 @@ func initFixture844Variations() {
 		"func (m *TupleVariation) validateTupleVariationItems(formats strfmt.Registry) error {\n\n	return nil\n}",
 	},
 		// not expected
-		todo,
+		append(todo,
+			`	if err := validate.Required("1", "body", m.P1)`, // check we don't have redundant validations
+			`	if err := validate.Required("1", "body", Bar(m.P1))`,
+		),
 		// output in log
 		noLines,
 		noLines)
@@ -8294,12 +8734,12 @@ func initFixture844Variations() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TupleVariation) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	for k := range m.P2 {`,
-		//`		if swag.IsZero(m.P2[k]) {`,
 		`		if err := validate.FormatOf("2"+"."+k, "body", "date", m.P2[k].String(), formats); err != nil {`,
 		`func (m *TupleVariation) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("3", "body", m.P3); err != nil {`,
@@ -8327,9 +8767,10 @@ func initFixture844Variations() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AddItemsVariation) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
 		`		if err := validate.UniqueItems(strconv.Itoa(i+2), "body", m.AddItemsVariationItems[i]); err != nil {`,
@@ -8352,9 +8793,10 @@ func initFixture844Variations() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AddItemsVariation) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MaximumInt("0", "body", int64(*m.P0), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
 		`		if err := validate.UniqueItems(strconv.Itoa(i+2), "body", m.AddItemsVariationItems[i]); err != nil {`,
@@ -8370,7 +8812,6 @@ func initFixture844Variations() {
 		`type NonInterface map[string]strfmt.Date`,
 		`func (m NonInterface) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -8432,7 +8873,6 @@ func initFixture844Variations() {
 		"	AO1 map[string]strfmt.Date `json:\"-\"`",
 		`func (m *Variation1) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AO1 {`,
-		//`		if swag.IsZero(m.AO1[k]) {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AO1[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type Variation1AllOf0 interface{}`,
@@ -8561,7 +9001,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -8584,7 +9024,6 @@ func initFixtureMoreAddProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable not required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -8592,7 +9031,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -8629,7 +9068,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedObjectThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -8689,7 +9128,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItems) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -8770,7 +9209,6 @@ func initFixtureMoreAddProps() {
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
-		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -8778,7 +9216,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 		`type AdditionalTransitiveRefedThingItems0 struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0 map[string]*AdditionalTransitiveRefedThingItems0Anon `json:\"-\"`",
@@ -8791,7 +9229,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThingItems0) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 		`type AdditionalTransitiveRefedThingItems0Anon struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	B1 strfmt.DateTime `json:\"b1,omitempty\"`",
@@ -8837,7 +9275,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedObjectThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
-		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("thisOneNotRequired", "body", m.ThisOneNotRequired, 10, false); err != nil {`,
 		`type AdditionalTransitiveRefedObjectThingAnon struct {`,
 		"	Prop1 *AdditionalTransitiveRefedObjectThingAnonProp1 `json:\"prop1,omitempty\"`",
 		"	AdditionalTransitiveRefedObjectThingAnon map[string]*AdditionalTransitiveRefedObjectThingAnonAnon `json:\"-\"`",
@@ -8870,7 +9308,7 @@ func initFixtureMoreAddProps() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1) validateThisOneNotRequiredEither(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequiredEither) {`,
-		`	if err := validate.MaximumInt("prop1"+"."+"thisOneNotRequiredEither", "body", int64(m.ThisOneNotRequiredEither), 20, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop1"+"."+"thisOneNotRequiredEither", "body", m.ThisOneNotRequiredEither, 20, false); err != nil {`,
 		`type AdditionalTransitiveRefedObjectThingAnonProp1Anon struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	B1 strfmt.Date `json:\"b1,omitempty\"`",
@@ -8921,7 +9359,6 @@ func initFixture1537() {
 		// nullable not required:
 		`		if swag.IsZero(m.ProfileCfg[i]) {`,
 		// nullable required:
-		//`if err := validate.Required("profileCfg"+"."+strconv.Itoa(i), "body", m.ProfileCfg[i]); err != nil {`,
 		`		if m.ProfileCfg[i] != nil {`,
 		`			if err := m.ProfileCfg[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -8961,7 +9398,6 @@ func initFixture1537() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9045,7 +9481,6 @@ func initFixture1537v2() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9069,7 +9504,6 @@ func initFixture1537v2() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -9129,8 +9563,7 @@ func initFixture15365() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
-		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", int64(*m[i]), 0, false); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", *m[i], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9147,7 +9580,7 @@ func initFixture15365() {
 		// do we need Required when element is nullable?
 		// nullable not required:
 		`		if swag.IsZero(m[k]) {`,
-		`		if err := validate.MinimumInt(k, "body", int64(*m[k]), 0, false); err != nil {`,
+		`		if err := validate.MinimumInt(k, "body", *m[k], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9177,11 +9610,6 @@ func initFixture15365() {
 		// nullable not required:
 		"func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
-		//`func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {`,
-		//`func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {`,
-		//`for i := 0; i < len(m); i++ {`,
-		//`	if swag.IsZero(m[k]) {`,
-		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -9198,7 +9626,6 @@ func initFixture15365() {
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
-		//`		if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 		`		if err := validate.FormatOf(strconv.Itoa(i), "body", "uuid", m[i].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9215,12 +9642,10 @@ func initFixture15365() {
 		`	for k := range m {`,
 		// do we need Required when element is nullable?
 		// nullable not required:
-		//`		if swag.IsZero(m[k]) {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		//`			if swag.IsZero(m[k][i]) {`,
-		`			if err := validate.MinimumInt(k+"."+strconv.Itoa(i), "body", int64(*m[k][i]), 0, false); err != nil {`,
+		`			if err := validate.MinimumInt(k+"."+strconv.Itoa(i), "body", *m[k][i], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9234,7 +9659,6 @@ func initFixture15365() {
 		`type ModelMapOfRef map[string]ModelArrayWithMax`,
 		`func (m ModelMapOfRef) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		//`		if swag.IsZero(m[k]) {`,
 		`		if err := m[k].Validate(formats); err != nil {`,
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName(k`,
@@ -9277,7 +9701,7 @@ func initFixture15365() {
 		`type ModelArrayOfNotNullable []int64`,
 		`func (m ModelArrayOfNotNullable) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
-		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", int64(m[i]), 10, false); err != nil {`,
+		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", m[i], 10, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9294,9 +9718,6 @@ func initFixture15365() {
 		// empty validation
 		"func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
-		//`func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {`,
-		//`for i := 0; i < len(m); i++ {`,
-		//`	if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -9311,7 +9732,7 @@ func initFixture15365() {
 		`	for k := range m {`,
 		// do we need...?
 		`		if swag.IsZero(m[k]) {`,
-		`		if err := validate.MinimumInt(k, "body", int64(*m[k]), 100, false); err != nil {`,
+		`		if err := validate.MinimumInt(k, "body", *m[k], 100, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9406,7 +9827,7 @@ func initFixture1548() {
 		`type Base64Map map[string]strfmt.Base64`,
 		`func (m Base64Map) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if err := validate.MaxLength(k, "body", string(m[k]), 100); err != nil {`,
+		`		if err := validate.MaxLength(k, "body", m[k].String(), 100); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -9512,11 +9933,11 @@ func initFixtureSimpleTuple() {
 		`func (m *TupleThingWithMapElement) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	for k := range m.P0 {`,
-		`		if err := validate.MaxLength("0"+"."+k, "body", string(m.P0[k]), 10); err != nil {`,
+		`		if err := validate.MaxLength("0"+"."+k, "body", m.P0[k], 10); err != nil {`,
 		`func (m *TupleThingWithMapElement) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	for k := range m.P1 {`,
-		`		if err := validate.MinimumInt("1"+"."+k, "body", int64(m.P1[k]), 10, false); err != nil {`,
+		`		if err := validate.MinimumInt("1"+"."+k, "body", m.P1[k], 10, false); err != nil {`,
 		`func (m *TupleThingWithMapElement) validateTupleThingWithMapElementItems(formats strfmt.Registry) error {`,
 		`	for i := range m.TupleThingWithMapElementItems {`,
 		`		for k := range m.TupleThingWithMapElementItems[i] {`,
@@ -9694,11 +10115,11 @@ func initFixtureSimpleTuple() {
 		`	if err := m.validateTupleThingWithNotNullableItems(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TupleThingWithNotNullable) validateP0(formats strfmt.Registry) error {`,
-		`	if err := validate.RequiredString("0", "body", string(m.P0)); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(m.P0), 10); err != nil {`,
+		`	if err := validate.RequiredString("0", "body", m.P0); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", m.P0, 10); err != nil {`,
 		`func (m *TupleThingWithNotNullable) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("1", "body", *m.P1, 10, false); err != nil {`,
 		`func (m *TupleThingWithNotNullable) validateTupleThingWithNotNullableItems(formats strfmt.Registry) error {`,
 	},
 		// not expected
@@ -9831,7 +10252,7 @@ func initFixtureSimpleTuple() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`func (m *TupleThingWithAdditionalItems) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
+		`	if err := validate.MaximumInt("1", "body", *m.P1, 10, false); err != nil {`,
 		`var tupleThingWithAdditionalItemsItemsEnum []interface{`,
 		`	var res []int64`,
 		"	if err := json.Unmarshal([]byte(`[1,2]`), &res); err != nil {",
@@ -9909,13 +10330,13 @@ func initFixtureSimpleTuple() {
 		`	iP0Size := int64(len(m.P0)`,
 		`	if err := validate.MaxItems("0", "body", iP0Size, 10); err != nil {`,
 		`	for i := 0; i < len(m.P0); i++ {`,
-		`		if err := validate.MaxLength("0"+"."+strconv.Itoa(i), "body", string(m.P0[i]), 10); err != nil {`,
+		`		if err := validate.MaxLength("0"+"."+strconv.Itoa(i), "body", m.P0[i], 10); err != nil {`,
 		`func (m *TupleThingWithArrayElement) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	iP1Size := int64(len(m.P1)`,
 		`	if err := validate.MinItems("1", "body", iP1Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.P1); i++ {`,
-		`		if err := validate.MinimumInt("1"+"."+strconv.Itoa(i), "body", int64(m.P1[i]), 10, false); err != nil {`,
+		`		if err := validate.MinimumInt("1"+"."+strconv.Itoa(i), "body", m.P1[i], 10, false); err != nil {`,
 		`func (m *TupleThingWithArrayElement) validateTupleThingWithArrayElementItems(formats strfmt.Registry) error {`,
 		`	for i := range m.TupleThingWithArrayElementItems {`,
 		`		for ii := 0; ii < len(m.TupleThingWithArrayElementItems[i]); ii++ {`,
@@ -9994,14 +10415,14 @@ func initFixtureSimpleTuple() {
 		`	iP0Size := int64(len(m.P0)`,
 		`	if err := validate.MaxItems("P0", "body", iP0Size, 10); err != nil {`,
 		`	for i := 0; i < len(m.P0); i++ {`,
-		`		if err := validate.MaxLength("P0"+"."+strconv.Itoa(i), "body", string(m.P0[i]), 10); err != nil {`,
+		`		if err := validate.MaxLength("P0"+"."+strconv.Itoa(i), "body", m.P0[i], 10); err != nil {`,
 		`func (m *ArrayOfTuplesTuple0) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
+		`	if err := validate.Required("P0", "body", m.P0); err != nil {`,
 		`	iP1Size := int64(len(m.P1)`,
 		`	if err := validate.MinItems("P1", "body", iP1Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.P1); i++ {`,
 		`		if err := validate.MinimumInt("P1"+"."+strconv.Itoa(i), ` +
-			`"body", int64(m.P1[i]), 10, false); err != nil {`,
+			`"body", m.P1[i], 10, false); err != nil {`,
 		`func (m *ArrayOfTuplesTuple0) validateArrayOfTuplesTuple0Items(formats strfmt.Registry) error {`,
 		`	for i := range m.ArrayOfTuplesTuple0Items {`,
 		`		for ii := 0; ii < len(m.ArrayOfTuplesTuple0Items[i]); ii++ {`,
@@ -10073,9 +10494,9 @@ func initFixtureSimpleTuple() {
 		`			if ve, ok := err.(*errors.Validation); ok {`,
 		`				return ve.ValidateName("0"`,
 		`func (m *TupleThingWithObjectElement) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
+		`if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	for k := range m.P1 {`,
-		`		if err := validate.MinimumInt("1"+"."+k, "body", int64(m.P1[k]), 10, false); err != nil {`,
+		`		if err := validate.MinimumInt("1"+"."+k, "body", m.P1[k], 10, false); err != nil {`,
 		`func (m *TupleThingWithObjectElement) validateTupleThingWithObjectElementItems(formats strfmt.Registry)` +
 			` error {`,
 		`	for i := range m.TupleThingWithObjectElementItems {`,
@@ -10089,7 +10510,7 @@ func initFixtureSimpleTuple() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TupleThingWithObjectElementItems0) validateProp1(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop1) {`,
-		`	if err := validate.MaxLength("prop1", "body", string(m.Prop1), 10); err != nil {`,
+		`	if err := validate.MaxLength("prop1", "body", m.Prop1, 10); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -10137,8 +10558,8 @@ func initFixtureSimpleTuple() {
 		`func (m *TupleThingWithNoAdditionalItems) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`func (m *TupleThingWithNoAdditionalItems) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
+		`	if err := validate.MaximumInt("1", "body", *m.P1, 10, false); err != nil {`,
 	},
 		// not expected
 		todo,
@@ -10200,10 +10621,10 @@ func initFixtureSimpleTuple() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *TupleThingWithAnyAdditionalItems) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
-		`	if err := validate.MaxLength("0", "body", string(*m.P0), 10); err != nil {`,
+		`	if err := validate.MaxLength("0", "body", *m.P0, 10); err != nil {`,
 		`func (m *TupleThingWithAnyAdditionalItems) validateP1(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
-		`	if err := validate.MaximumInt("1", "body", int64(*m.P1), 10, false); err != nil {`,
+		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
+		`	if err := validate.MaximumInt("1", "body", *m.P1, 10, false); err != nil {`,
 		`func (m *TupleThingWithAnyAdditionalItems) ` +
 			`validateTupleThingWithAnyAdditionalItemsItems(formats strfmt.Registry) error {`,
 	},
@@ -10420,7 +10841,7 @@ func initFixtureRealiasedTypes() {
 		`	iA1vSize := int64(len(m)`,
 		`	if err := validate.MaxItems("", "body", iA1vSize, 100); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
-		`		if err := validate.MaximumInt(strconv.Itoa(i), "body", int64(m[i]), 100, false); err != nil {`,
+		`		if err := validate.MaximumInt(strconv.Itoa(i), "body", m[i], 100, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -10626,7 +11047,7 @@ func initFixtureRealiasedTypes() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *G1v) validateProp1v(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop1v) {`,
-		`	if err := validate.MaximumInt("prop1v", "body", int64(m.Prop1v), 100, false); err != nil {`,
+		`	if err := validate.MaximumInt("prop1v", "body", m.Prop1v, 100, false); err != nil {`,
 		`func (m *G1v) validateProp2v(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("prop2v", "body", m.Prop2v); err != nil {`,
 	},
@@ -10675,7 +11096,7 @@ func initFixtureRealiasedTypes() {
 		`type B1v map[string]int64`,
 		`func (m B1v) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
-		`		if err := validate.MaximumInt(k, "body", int64(m[k]), 100, false); err != nil {`,
+		`		if err := validate.MaximumInt(k, "body", m[k], 100, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -11091,6 +11512,8 @@ func initFixture2364() {
 		`type BundleAttributesResponse struct {`,
 		`Items []BundleItemResponse`,
 		`Sections []ItemBundleSectionResponse`,
+		`NullableSections []*NullableItemBundleSectionResponse`,
+		`OtherSections []*OtherItemBundleSectionResponse`,
 		`Type BundleType`,
 	},
 		// not expected

@@ -1,0 +1,33 @@
+---
+swagger: '2.0'
+info:
+  description: Test
+  version: 0.0.1
+  title: Test
+host: test
+basePath: /test/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /test:
+    post:
+      operationId: test
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TestRequest'
+      responses:
+        200:
+          description: OK
+definitions:
+  TestRequest:
+    type: object
+    properties:
+      name:
+        type: string

@@ -1,0 +1,150 @@
+swagger: '2.0'
+basePath: /
+host: localhost
+info:
+  version: 0.1.0
+  title: Simple To Do List API
+  description: |
+    This is a simple todo list API
+    illustrating go-swagger codegen
+    capabilities.
+  termsOfService: |
+    There are actually none.
+    This is for demonstration purpose only.
+  license:
+    name: 'Apache 2.0'
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: go-openapi maintainers
+    email: nowhere@example.com
+    url: https://github.com/go-openapi
+
+consumes:
+  - application/json
+produces:
+  - application/json
+schemes:
+  - http
+  - https
+x-schemes:
+  - unix
+paths:
+  /:
+    get:
+      tags: ["todos"]
+      operationId: find
+      parameters:
+        - name: body
+          in: body
+          schema:
+           $ref: '#/definitions/object_2'
+      responses:
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+    post:
+      tags: ["todos"]
+      operationId: add
+      parameters:
+        - name: body
+          in: body
+          schema:
+           $ref: '#/definitions/object_2'
+      responses:
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/error"
+definitions:
+  object_1:
+    type: object
+    properties: 
+      name:
+        type: string
+        readOnly: true
+      id:
+        type: integer
+        readOnly: true
+  object_2:
+    type: object
+    properties: 
+      object_ref:
+        type: object
+        $ref: '#/definitions/object_1'
+  object_3:
+    type: object
+    properties: 
+      inline_object:
+        type: object
+        properties: 
+          name:
+            type: string
+            readOnly: true
+  object_4:
+    type: array
+    items: 
+      type: string
+      readOnly: true
+  object_5:
+    type: string
+    readOnly: true
+  object_6:
+    type: array
+    items:
+      $ref: '#/definitions/object_5'
+  object_7:
+    type: object
+    allOf:
+      - $ref: '#/definitions/object_5'
+      - $ref: '#/definitions/object_4'
+      - type: object
+        properties: 
+          object_7_field_1: 
+            type: string
+            readOnly: true
+          object_7_field_2:
+            type: string
+          object_7_field_3:
+            $ref: '#/definitions/object_6'
+
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+
+  # x go type
+  Time:
+    type: string
+    format: date-time
+    x-go-type:
+      import:
+        package: time
+      embedded: true
+      type: Time
+    x-nullable: true
+
+  # additional properties
+  object_8:
+    type: object
+    additionalProperties: 
+      type: string
+      readOnly: true
+      format: datetime
+  object_9:
+    type: object
+    additionalProperties: 
+      type: object
+      properties: 
+        object_9_field_1:
+          type: string
+          format: datetime
+          readOnly: true
+        object_9_field_2:
+          type: integer

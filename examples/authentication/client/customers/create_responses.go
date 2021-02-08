@@ -46,7 +46,7 @@ func NewCreateCreated() *CreateCreated {
 	return &CreateCreated{}
 }
 
-/*CreateCreated handles this case with default header values.
+/* CreateCreated describes a response with status code 201, with default header values.
 
 created
 */
@@ -57,7 +57,6 @@ type CreateCreated struct {
 func (o *CreateCreated) Error() string {
 	return fmt.Sprintf("[POST /customers][%d] createCreated  %+v", 201, o.Payload)
 }
-
 func (o *CreateCreated) GetPayload() *models.Customer {
 	return o.Payload
 }
@@ -81,7 +80,7 @@ func NewCreateDefault(code int) *CreateDefault {
 	}
 }
 
-/*CreateDefault handles this case with default header values.
+/* CreateDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -99,7 +98,6 @@ func (o *CreateDefault) Code() int {
 func (o *CreateDefault) Error() string {
 	return fmt.Sprintf("[POST /customers][%d] create default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *CreateDefault) GetPayload() *models.Error {
 	return o.Payload
 }

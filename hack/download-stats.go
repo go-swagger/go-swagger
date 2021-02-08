@@ -11,7 +11,7 @@ import (
 
 func main() {
 	req, err := http.NewRequest("GET", "https://api.github.com/repos/go-swagger/go-swagger/releases", nil)
-	//req, err := http.NewRequest("GET", "https://api.github.com/repos/go-swagger/go-swagger/releases/latest", nil)
+	// req, err := http.NewRequest("GET", "https://api.github.com/repos/go-swagger/go-swagger/releases/latest", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -27,9 +27,9 @@ func main() {
 	if resp.StatusCode/100 != 2 {
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Fatalln(err)
+			log.Fatalln(err) //nolint: gocritic
 		}
-		log.Fatalf("%s: %s", resp.Status, b)
+		log.Fatalf("%s: %s", resp.Status, b) //nolint: gocritic
 	}
 
 	var results []struct {

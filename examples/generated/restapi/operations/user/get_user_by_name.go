@@ -29,7 +29,7 @@ func NewGetUserByName(ctx *middleware.Context, handler GetUserByNameHandler) *Ge
 	return &GetUserByName{Context: ctx, Handler: handler}
 }
 
-/*GetUserByName swagger:route GET /users/{username} user getUserByName
+/* GetUserByName swagger:route GET /users/{username} user getUserByName
 
 Get user by user name
 
@@ -45,14 +45,12 @@ func (o *GetUserByName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetUserByNameParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

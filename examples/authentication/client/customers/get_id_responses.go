@@ -58,7 +58,7 @@ func NewGetIDOK() *GetIDOK {
 	return &GetIDOK{}
 }
 
-/*GetIDOK handles this case with default header values.
+/* GetIDOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -69,7 +69,6 @@ type GetIDOK struct {
 func (o *GetIDOK) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
 }
-
 func (o *GetIDOK) GetPayload() *models.Customer {
 	return o.Payload
 }
@@ -91,7 +90,7 @@ func NewGetIDUnauthorized() *GetIDUnauthorized {
 	return &GetIDUnauthorized{}
 }
 
-/*GetIDUnauthorized handles this case with default header values.
+/* GetIDUnauthorized describes a response with status code 401, with default header values.
 
 unauthorized
 */
@@ -102,7 +101,6 @@ type GetIDUnauthorized struct {
 func (o *GetIDUnauthorized) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
 }
-
 func (o *GetIDUnauthorized) GetPayload() *models.Error {
 	return o.Payload
 }
@@ -124,7 +122,7 @@ func NewGetIDNotFound() *GetIDNotFound {
 	return &GetIDNotFound{}
 }
 
-/*GetIDNotFound handles this case with default header values.
+/* GetIDNotFound describes a response with status code 404, with default header values.
 
 resource not found
 */
@@ -135,7 +133,6 @@ type GetIDNotFound struct {
 func (o *GetIDNotFound) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
 }
-
 func (o *GetIDNotFound) GetPayload() *models.Error {
 	return o.Payload
 }
@@ -159,7 +156,7 @@ func NewGetIDDefault(code int) *GetIDDefault {
 	}
 }
 
-/*GetIDDefault handles this case with default header values.
+/* GetIDDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -177,7 +174,6 @@ func (o *GetIDDefault) Code() int {
 func (o *GetIDDefault) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *GetIDDefault) GetPayload() *models.Error {
 	return o.Payload
 }

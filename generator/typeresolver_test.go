@@ -237,7 +237,9 @@ func TestTypeResolver_Refs(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.True(t, rt.IsArray)
-		assert.Equal(t, "[]"+val.Expected, rt.GoType)
+		// now this behavior has moved down to the type resolver:
+		// * it used to be hidden to the type resolver, but rendered like that eventually
+		assert.Equal(t, "[]*"+val.Expected, rt.GoType)
 	}
 	// for named objects
 	// referenced objects
@@ -263,7 +265,9 @@ func TestTypeResolver_Refs(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.True(t, rt.IsArray)
-		assert.Equal(t, "[]"+val.Expected, rt.GoType)
+		// now this behavior has moved down to the type resolver:
+		// * it used to be hidden to the type resolver, but rendered like that eventually
+		assert.Equal(t, "[]*"+val.Expected, rt.GoType)
 	}
 }
 
@@ -397,7 +401,7 @@ func TestTypeResolver_Notables(t *testing.T) {
 	assert.True(t, rest.IsArray)
 	assert.False(t, rest.IsAnonymous)
 	assert.False(t, rest.IsNullable)
-	assert.Equal(t, "[]models.Notable", rest.GoType)
+	assert.Equal(t, "[]*models.Notable", rest.GoType)
 }
 
 func specResolver(t testing.TB, path string) (*loads.Document, *typeResolver, error) {
@@ -514,7 +518,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 	resolver.KnownDefs["TheModel"] = struct{}{}
 	defer func() { resolver.ModelName = "" }()
 
-	//very poor schema definitions (as in none)
+	// very poor schema definitions (as in none)
 	types := []string{"object", ""}
 	for _, tpe := range types {
 		sch := new(spec.Schema)
@@ -603,11 +607,11 @@ func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
 	doc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
-	resolver := newTypeResolver("model", doc)
+	resolver := newTypeResolver("model", "", doc)
 	require.NoError(t, err)
 
 	def := doc.Spec().Definitions["JsonWebKey"]
-	tpe, pkg, alias := knownDefGoType("JsonWebKey", def, nil)
+	tpe, pkg, alias := resolver.knownDefGoType("JsonWebKey", def, nil)
 	assert.Equal(t, "jwk.Key", tpe)
 	assert.Equal(t, "github.com/user/package", pkg)
 	assert.Equal(t, "jwk", alias)
@@ -618,7 +622,7 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 	assert.False(t, rest.IsArray)
 	assert.False(t, rest.IsTuple)
 	assert.False(t, rest.IsStream)
-	assert.False(t, rest.IsAliased)
+	assert.True(t, rest.IsAliased)
 	assert.False(t, rest.IsBaseType)
 	assert.False(t, rest.IsInterface)
 	assert.True(t, rest.IsNullable)
@@ -646,7 +650,7 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 	assert.False(t, rest.IsAnonymous)
 	assert.False(t, rest.IsComplexObject)
 	assert.False(t, rest.IsCustomFormatter)
-	assert.Equal(t, "[]jwk.Key", rest.GoType)
+	assert.Equal(t, "[]*jwk.Key", rest.GoType)
 	assert.Equal(t, "", rest.Pkg)
 	assert.Equal(t, "", rest.PkgAlias)
 }

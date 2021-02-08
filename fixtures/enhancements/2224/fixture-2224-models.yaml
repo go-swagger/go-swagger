@@ -55,6 +55,8 @@ definitions:
       import:
         package: net/http
       type: Request
+      hints:
+        noValidation: true
 
   OldStyleRenamed:
     type: object
@@ -62,6 +64,8 @@ definitions:
       import:
         package: net/http
       type: Request
+      hints:
+        noValidation: true
     x-go-name: OldRenamed
 
   ObjectWithEmbedded:

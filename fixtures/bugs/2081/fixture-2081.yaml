@@ -1,0 +1,52 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Another bug"
+host: "localhost"
+basePath: "/"
+tags:
+  - name: "events"
+schemes:
+  - "http"
+definitions:
+  event:
+    type: object
+    required:
+      - "value"
+    properties:
+      value:
+        description: Problem property
+        example: 1
+  events:
+    type: array
+    items:
+      type: object
+      required: [ a ]
+      properties:
+        a:
+          type: object
+
+paths:
+  /events:
+    post:
+      tags:
+        - "events"
+      summary: "Add event"
+      operationId: "addEvent"
+      description: ""
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Event object."
+          required: true
+          schema:
+            $ref: '#/definitions/event'
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: '#/definitions/events'

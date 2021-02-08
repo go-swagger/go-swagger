@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -49,7 +50,7 @@ func NewAddCommentToTaskCreated() *AddCommentToTaskCreated {
 	return &AddCommentToTaskCreated{}
 }
 
-/*AddCommentToTaskCreated handles this case with default header values.
+/* AddCommentToTaskCreated describes a response with status code 201, with default header values.
 
 Comment added
 */
@@ -72,14 +73,13 @@ func NewAddCommentToTaskDefault(code int) *AddCommentToTaskDefault {
 	}
 }
 
-/*AddCommentToTaskDefault handles this case with default header values.
+/* AddCommentToTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type AddCommentToTaskDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -92,15 +92,18 @@ func (o *AddCommentToTaskDefault) Code() int {
 func (o *AddCommentToTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *AddCommentToTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *AddCommentToTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 
@@ -162,6 +165,11 @@ func (o *AddCommentToTaskBody) validateUserID(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this add comment to task body based on context it is used
+func (o *AddCommentToTaskBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

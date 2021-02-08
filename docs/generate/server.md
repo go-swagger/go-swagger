@@ -31,6 +31,7 @@ Help Options:
           --main-package=                                                         the location of the generated main. Defaults to cmd/{name}-server
       -P, --principal=                                                            the model to use for the security principal
           --default-scheme=                                                       the default scheme for this API (default: http)
+          --principal-is-interface                                                the security principal provided is an interface, not a struct
           --default-produces=                                                     the default mime type that API operations produce (default: application/json)
           --default-consumes=                                                     the default mime type that API operations consume (default: application/json)
           --skip-models                                                           no models will be generated when this flag is specified

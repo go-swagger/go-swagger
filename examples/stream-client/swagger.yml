@@ -1,0 +1,22 @@
+---
+  swagger: "2.0"
+  info:
+    description: "Chunked Encoding Example"
+    version: "1.0.0"
+    title: "Jigsaw"
+  basePath: "/"
+  schemes:
+    - "https"
+  paths:
+    # https://jigsaw.w3.org/HTTP/ChunkedScript
+    /HTTP/ChunkedScript:
+      get:
+        summary: "chunked"
+        description: "delivers text/plain via Encoding: Chunked"
+        operationId: "chunked"
+        responses:
+          200:
+            description: "chunked data delivered"
+            schema:
+              type: string
+              format: binary

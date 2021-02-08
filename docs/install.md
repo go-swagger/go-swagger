@@ -19,7 +19,7 @@ docker pull quay.io/goswagger/swagger
 #### For Mac And Linux users:
 
 ```bash
-alias swagger="docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=$HOME/go:/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger"
+alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=$(go env GOPATH):/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger'
 swagger version
 ```
 
@@ -64,8 +64,8 @@ This repo will work for any debian, the only file it contains gets copied to `/u
 sudo apt install gnupg ca-certificates
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
 echo "deb https://dl.bintray.com/go-swagger/goswagger-debian ubuntu main" | sudo tee /etc/apt/sources.list.d/goswagger.list
-apt update 
-apt install swagger
+sudo apt update 
+sudo apt install swagger
 ```
 
 ### RPM packages [ ![Download](https://api.bintray.com/packages/go-swagger/goswagger-rpm/swagger/images/download.svg) ](https://bintray.com/go-swagger/goswagger-rpm/swagger/_latestVersion)
@@ -86,6 +86,16 @@ dir=$(mktemp -d)
 git clone https://github.com/go-swagger/go-swagger "$dir" 
 cd "$dir"
 go install ./cmd/swagger
+```
+
+To install a specific version from source an appropriate tag needs to be checked out first (e.g. `v0.25.0`). Additional `-ldflags` are just to make `swagger version` command print the version and commit id instead of `dev`.
+
+```
+dir=$(mktemp -d)
+git clone https://github.com/go-swagger/go-swagger "$dir" 
+cd "$dir"
+go checkout v0.25.0
+go install -ldflags "-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=$(git describe --tags) -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=$(git rev-parse HEAD)" ./cmd/swagger
 ```
 
 You are welcome to clone this repo and start contributing:

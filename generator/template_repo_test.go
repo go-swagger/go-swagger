@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -55,6 +56,7 @@ PascalizeSpecialChar2={{ pascalize "-1" }}
 PascalizeSpecialChar3={{ pascalize "1" }}
 PascalizeSpecialChar4={{ pascalize "-" }}
 PascalizeSpecialChar5={{ pascalize "+" }}
+PascalizeCleanupEnumVariant1={{ pascalize (cleanupEnumVariant "2.4Ghz") }}
 Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture" "table" }}
 {{ define "dictTemplate" }}{{ .Animal }} of the {{ .Shape }} {{ .Furniture }}{{ end }}
 `
@@ -429,6 +431,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar3=Nr1\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar4=Minus\n")
 	assert.Contains(t, rendered.String(), "PascalizeSpecialChar5=Plus\n")
+	assert.Contains(t, rendered.String(), "PascalizeCleanupEnumVariant1=Nr2Dot4Ghz")
 	assert.Contains(t, rendered.String(), "Dict=Pony of the round table\n")
 }
 
@@ -552,6 +555,9 @@ func TestFuncMap_Pascalize(t *testing.T) {
 	assert.Equal(t, "Minus1", pascalize("-1"))
 	assert.Equal(t, "Minus", pascalize("-"))
 	assert.Equal(t, "Nr8", pascalize("8"))
+	assert.Equal(t, "Asterisk", pascalize("*"))
+	assert.Equal(t, "ForwardSlash", pascalize("/"))
+	assert.Equal(t, "EqualSign", pascalize("="))
 
 	assert.Equal(t, "Hello", pascalize("+hello"))
 
@@ -616,4 +622,61 @@ func TestFuncMap_Dict(t *testing.T) {
 	// none-string key
 	_, err = dict("a", "b", 3, "d")
 	require.Error(t, err)
+}
+
+func TestIsInteger(t *testing.T) {
+	var (
+		nilString *string
+		nilInt    *int
+		nilFloat  *float32
+	)
+
+	for _, anInteger := range []interface{}{
+		int8(4),
+		int16(4),
+		int32(4),
+		int64(4),
+		int(4),
+		swag.Int(4),
+		swag.Int32(4),
+		swag.Int64(4),
+		swag.Uint(4),
+		swag.Uint32(4),
+		swag.Uint64(4),
+		float32(12),
+		float64(12),
+		swag.Float32(12),
+		swag.Float64(12),
+		"12",
+		swag.String("12"),
+	} {
+		val := anInteger
+		require.Truef(t, isInteger(val), "expected %#v to be detected an integer value", val)
+	}
+
+	for _, notAnInteger := range []interface{}{
+		float32(12.5),
+		float64(12.5),
+		swag.Float32(12.5),
+		swag.Float64(12.5),
+		[]string{"a"},
+		struct{}{},
+		nil,
+		map[string]int{"a": 1},
+		"abc",
+		"2.34",
+		swag.String("2.34"),
+		nilString,
+		nilInt,
+		nilFloat,
+	} {
+		val := notAnInteger
+		require.Falsef(t, isInteger(val), "did not expect %#v to be detected an integer value", val)
+	}
+}
+
+func TestGt0(t *testing.T) {
+	require.True(t, gt0(swag.Int64(1)))
+	require.False(t, gt0(swag.Int64(0)))
+	require.False(t, gt0(nil))
 }

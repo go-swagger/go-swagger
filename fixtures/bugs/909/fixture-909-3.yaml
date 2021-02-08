@@ -44,6 +44,7 @@ paths:
         items:
           type: array
           uniqueItems: true
+          collectionFormat: tsv
           items:
             type: array
             collectionFormat: pipes

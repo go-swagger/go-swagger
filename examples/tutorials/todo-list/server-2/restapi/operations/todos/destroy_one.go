@@ -29,7 +29,7 @@ func NewDestroyOne(ctx *middleware.Context, handler DestroyOneHandler) *DestroyO
 	return &DestroyOne{Context: ctx, Handler: handler}
 }
 
-/*DestroyOne swagger:route DELETE /{id} todos destroyOne
+/* DestroyOne swagger:route DELETE /{id} todos destroyOne
 
 DestroyOne destroy one API
 
@@ -45,14 +45,12 @@ func (o *DestroyOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDestroyOneParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

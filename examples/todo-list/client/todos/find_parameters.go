@@ -17,60 +17,80 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewFindParams creates a new FindParams object
-// with the default values initialized.
+// NewFindParams creates a new FindParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewFindParams() *FindParams {
-	var ()
 	return &FindParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewFindParamsWithTimeout creates a new FindParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewFindParamsWithTimeout(timeout time.Duration) *FindParams {
-	var ()
 	return &FindParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewFindParamsWithContext creates a new FindParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewFindParamsWithContext(ctx context.Context) *FindParams {
-	var ()
 	return &FindParams{
-
 		Context: ctx,
 	}
 }
 
 // NewFindParamsWithHTTPClient creates a new FindParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewFindParamsWithHTTPClient(client *http.Client) *FindParams {
-	var ()
 	return &FindParams{
 		HTTPClient: client,
 	}
 }
 
-/*FindParams contains all the parameters to send to the API endpoint
-for the find operation typically these are written to a http.Request
+/* FindParams contains all the parameters to send to the API endpoint
+   for the find operation.
+
+   Typically these are written to a http.Request.
 */
 type FindParams struct {
 
-	/*XRateLimit*/
+	// XRateLimit.
+	//
+	// Format: int32
 	XRateLimit int32
-	/*Limit*/
+
+	// Limit.
+	//
+	// Format: int32
 	Limit int32
-	/*Tags*/
+
+	// Tags.
 	Tags []int32
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the find params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *FindParams) WithDefaults() *FindParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the find params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *FindParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the find params
@@ -159,19 +179,36 @@ func (o *FindParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry
 		return err
 	}
 
-	var valuesTags []string
-	for _, v := range o.Tags {
-		valuesTags = append(valuesTags, swag.FormatInt32(v))
-	}
+	if o.Tags != nil {
 
-	joinedTags := swag.JoinByFormat(valuesTags, "multi")
-	// form array param tags
-	if err := r.SetFormParam("tags", joinedTags...); err != nil {
-		return err
+		// binding items for tags
+		joinedTags := o.bindParamTags(reg)
+
+		// form array param tags
+		if err := r.SetFormParam("tags", joinedTags...); err != nil {
+			return err
+		}
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
 	return nil
+}
+
+// bindParamFind binds the parameter tags
+func (o *FindParams) bindParamTags(formats strfmt.Registry) []string {
+	tagsIR := o.Tags
+
+	var tagsIC []string
+	for _, tagsIIR := range tagsIR { // explode []int32
+
+		tagsIIV := swag.FormatInt32(tagsIIR) // int32 as string
+		tagsIC = append(tagsIC, tagsIIV)
+	}
+
+	// items.CollectionFormat: "multi"
+	tagsIS := swag.JoinByFormat(tagsIC, "multi")
+
+	return tagsIS
 }

@@ -17,59 +17,75 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewGetTaskDetailsParams creates a new GetTaskDetailsParams object
-// with the default values initialized.
+// NewGetTaskDetailsParams creates a new GetTaskDetailsParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetTaskDetailsParams() *GetTaskDetailsParams {
-	var ()
 	return &GetTaskDetailsParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetTaskDetailsParamsWithTimeout creates a new GetTaskDetailsParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetTaskDetailsParamsWithTimeout(timeout time.Duration) *GetTaskDetailsParams {
-	var ()
 	return &GetTaskDetailsParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetTaskDetailsParamsWithContext creates a new GetTaskDetailsParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetTaskDetailsParamsWithContext(ctx context.Context) *GetTaskDetailsParams {
-	var ()
 	return &GetTaskDetailsParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetTaskDetailsParamsWithHTTPClient creates a new GetTaskDetailsParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetTaskDetailsParamsWithHTTPClient(client *http.Client) *GetTaskDetailsParams {
-	var ()
 	return &GetTaskDetailsParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetTaskDetailsParams contains all the parameters to send to the API endpoint
-for the get task details operation typically these are written to a http.Request
+/* GetTaskDetailsParams contains all the parameters to send to the API endpoint
+   for the get task details operation.
+
+   Typically these are written to a http.Request.
 */
 type GetTaskDetailsParams struct {
 
-	/*ID
-	  The id of the item
+	/* ID.
 
+	   The id of the item
+
+	   Format: int64
 	*/
 	ID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get task details params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetTaskDetailsParams) WithDefaults() *GetTaskDetailsParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get task details params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetTaskDetailsParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the get task details params

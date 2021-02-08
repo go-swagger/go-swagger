@@ -14,7 +14,8 @@ import (
 )
 
 // NewGetOrderParams creates a new GetOrderParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetOrderParams() GetOrderParams {
 
 	return GetOrderParams{}
@@ -49,7 +50,6 @@ func (o *GetOrderParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	if err := o.bindOrderID(rOrderID, rhkOrderID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -65,7 +65,6 @@ func (o *GetOrderParams) bindOrderID(rawData []string, hasKey bool, formats strf
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.OrderID = raw
 
 	return nil

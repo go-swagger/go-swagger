@@ -1,0 +1,19 @@
+swagger: "2.0"
+info:
+  description: Test
+  title: Test
+  version: "0.0.1"
+basePath: /v1
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /test/a:
+    $ref: "#/paths/~1test"
+  /test:
+    get:
+      responses:
+        200:
+          description: OK

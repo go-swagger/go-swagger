@@ -29,7 +29,7 @@ func NewDeleteUser(ctx *middleware.Context, handler DeleteUserHandler) *DeleteUs
 	return &DeleteUser{Context: ctx, Handler: handler}
 }
 
-/*DeleteUser swagger:route DELETE /users/{username} user deleteUser
+/* DeleteUser swagger:route DELETE /users/{username} user deleteUser
 
 Delete user
 
@@ -47,14 +47,12 @@ func (o *DeleteUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDeleteUserParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

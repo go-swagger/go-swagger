@@ -14,7 +14,8 @@ import (
 )
 
 // NewDeleteUserParams creates a new DeleteUserParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteUserParams() DeleteUserParams {
 
 	return DeleteUserParams{}
@@ -49,7 +50,6 @@ func (o *DeleteUserParams) BindRequest(r *http.Request, route *middleware.Matche
 	if err := o.bindUsername(rUsername, rhkUsername, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -65,7 +65,6 @@ func (o *DeleteUserParams) bindUsername(rawData []string, hasKey bool, formats s
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Username = raw
 
 	return nil

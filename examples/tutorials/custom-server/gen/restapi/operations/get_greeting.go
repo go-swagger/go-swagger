@@ -29,7 +29,7 @@ func NewGetGreeting(ctx *middleware.Context, handler GetGreetingHandler) *GetGre
 	return &GetGreeting{Context: ctx, Handler: handler}
 }
 
-/*GetGreeting swagger:route GET /hello getGreeting
+/* GetGreeting swagger:route GET /hello getGreeting
 
 GetGreeting get greeting API
 
@@ -45,14 +45,12 @@ func (o *GetGreeting) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetGreetingParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

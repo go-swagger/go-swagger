@@ -14,7 +14,8 @@ import (
 )
 
 // NewDeleteOrderParams creates a new DeleteOrderParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteOrderParams() DeleteOrderParams {
 
 	return DeleteOrderParams{}
@@ -49,7 +50,6 @@ func (o *DeleteOrderParams) BindRequest(r *http.Request, route *middleware.Match
 	if err := o.bindOrderID(rOrderID, rhkOrderID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -65,7 +65,6 @@ func (o *DeleteOrderParams) bindOrderID(rawData []string, hasKey bool, formats s
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.OrderID = raw
 
 	return nil

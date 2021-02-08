@@ -1,0 +1,54 @@
+swagger: '2.0'
+info:
+  title: Foo Bar
+  version: "1.0"
+  description: Temp description
+schemes:
+  - http
+basePath: /api
+produces:
+  - application/json
+  - text/plain
+consumes:
+  - application/json
+
+securityDefinitions:
+  apikey:
+    type: apiKey
+    name: api_key
+    in: header
+
+paths:
+  '/ping':
+    get:
+      security:
+      - apikey: []
+      summary: Ping the server
+      description: Ping the server
+      operationId: ping
+      produces:
+        - text/plain
+      responses:
+        200:
+          description: OK
+          schema:
+            type: string
+            example:
+              'pong'
+        500:
+          $ref: "#/responses/internalServerError"
+
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+      description:
+        type: string
+
+responses:
+  internalServerError:
+    description: Server error
+    schema:
+      $ref: '#/definitions/Error'

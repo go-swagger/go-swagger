@@ -230,6 +230,25 @@
           }
         }
       }
+    },
+    "/c/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties":{
+                  "id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -249,6 +268,16 @@
             "empathic",
             "saucy"
           ]
+        },
+        "busby": {
+          "type": "string"
+        },
+        "onceWasArray": {
+          "type": "array",
+          "items":{"type": "object"}
+        },
+        "sameWideness": {
+          "type": "number"
         }
       }
     },
@@ -269,6 +298,7 @@
     },
     "A3": {
       "type": "object",
+      "required":["name"],
       "properties": {
         "id": {
           "type": "integer"

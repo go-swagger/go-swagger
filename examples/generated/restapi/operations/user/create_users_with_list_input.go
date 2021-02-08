@@ -29,7 +29,7 @@ func NewCreateUsersWithListInput(ctx *middleware.Context, handler CreateUsersWit
 	return &CreateUsersWithListInput{Context: ctx, Handler: handler}
 }
 
-/*CreateUsersWithListInput swagger:route POST /users/createWithList user createUsersWithListInput
+/* CreateUsersWithListInput swagger:route POST /users/createWithList user createUsersWithListInput
 
 Creates list of users with given input array
 
@@ -45,14 +45,12 @@ func (o *CreateUsersWithListInput) ServeHTTP(rw http.ResponseWriter, r *http.Req
 		r = rCtx
 	}
 	var Params = NewCreateUsersWithListInputParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

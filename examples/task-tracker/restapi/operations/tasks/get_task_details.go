@@ -29,7 +29,7 @@ func NewGetTaskDetails(ctx *middleware.Context, handler GetTaskDetailsHandler) *
 	return &GetTaskDetails{Context: ctx, Handler: handler}
 }
 
-/*GetTaskDetails swagger:route GET /tasks/{id} tasks getTaskDetails
+/* GetTaskDetails swagger:route GET /tasks/{id} tasks getTaskDetails
 
 Gets the details for a task.
 
@@ -51,14 +51,12 @@ func (o *GetTaskDetails) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetTaskDetailsParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -15,8 +15,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// UpdatePetWithFormMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var UpdatePetWithFormMaxParseMemory int64 = 32 << 20
+
 // NewUpdatePetWithFormParams creates a new UpdatePetWithFormParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdatePetWithFormParams() UpdatePetWithFormParams {
 
 	return UpdatePetWithFormParams{}
@@ -57,7 +65,7 @@ func (o *UpdatePetWithFormParams) BindRequest(r *http.Request, route *middleware
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(UpdatePetWithFormMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -80,7 +88,6 @@ func (o *UpdatePetWithFormParams) BindRequest(r *http.Request, route *middleware
 	if err := o.bindStatus(fdStatus, fdhkStatus, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -102,7 +109,6 @@ func (o *UpdatePetWithFormParams) bindName(rawData []string, hasKey bool, format
 	if err := validate.RequiredString("name", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Name = raw
 
 	return nil
@@ -117,7 +123,6 @@ func (o *UpdatePetWithFormParams) bindPetID(rawData []string, hasKey bool, forma
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.PetID = raw
 
 	return nil
@@ -138,7 +143,6 @@ func (o *UpdatePetWithFormParams) bindStatus(rawData []string, hasKey bool, form
 	if err := validate.RequiredString("status", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Status = raw
 
 	return nil

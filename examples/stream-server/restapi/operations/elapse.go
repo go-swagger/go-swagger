@@ -29,7 +29,7 @@ func NewElapse(ctx *middleware.Context, handler ElapseHandler) *Elapse {
 	return &Elapse{Context: ctx, Handler: handler}
 }
 
-/*Elapse swagger:route GET /elapse/{length} elapse
+/* Elapse swagger:route GET /elapse/{length} elapse
 
 Count down the number of seconds
 
@@ -47,14 +47,12 @@ func (o *Elapse) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewElapseParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

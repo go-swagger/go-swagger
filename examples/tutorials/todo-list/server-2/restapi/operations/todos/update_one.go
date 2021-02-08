@@ -29,7 +29,7 @@ func NewUpdateOne(ctx *middleware.Context, handler UpdateOneHandler) *UpdateOne 
 	return &UpdateOne{Context: ctx, Handler: handler}
 }
 
-/*UpdateOne swagger:route PUT /{id} todos updateOne
+/* UpdateOne swagger:route PUT /{id} todos updateOne
 
 UpdateOne update one API
 
@@ -45,14 +45,12 @@ func (o *UpdateOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewUpdateOneParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

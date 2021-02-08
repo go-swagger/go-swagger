@@ -15,7 +15,8 @@ import (
 )
 
 // NewFindPetsByStatusParams creates a new FindPetsByStatusParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewFindPetsByStatusParams() FindPetsByStatusParams {
 
 	return FindPetsByStatusParams{}
@@ -52,7 +53,6 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindStatus(qStatus, qhkStatus, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -63,10 +63,8 @@ func (o *FindPetsByStatusParams) BindRequest(r *http.Request, route *middleware.
 //
 // Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
 func (o *FindPetsByStatusParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	// CollectionFormat: multi
 	statusIC := rawData
-
 	if len(statusIC) == 0 {
 		return nil
 	}

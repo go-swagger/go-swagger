@@ -52,7 +52,7 @@ func NewGetTaskDetailsOK() *GetTaskDetailsOK {
 	return &GetTaskDetailsOK{}
 }
 
-/*GetTaskDetailsOK handles this case with default header values.
+/* GetTaskDetailsOK describes a response with status code 200, with default header values.
 
 Task details
 */
@@ -63,7 +63,6 @@ type GetTaskDetailsOK struct {
 func (o *GetTaskDetailsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
 }
-
 func (o *GetTaskDetailsOK) GetPayload() *models.Task {
 	return o.Payload
 }
@@ -85,7 +84,7 @@ func NewGetTaskDetailsUnprocessableEntity() *GetTaskDetailsUnprocessableEntity {
 	return &GetTaskDetailsUnprocessableEntity{}
 }
 
-/*GetTaskDetailsUnprocessableEntity handles this case with default header values.
+/* GetTaskDetailsUnprocessableEntity describes a response with status code 422, with default header values.
 
 Validation error
 */
@@ -96,7 +95,6 @@ type GetTaskDetailsUnprocessableEntity struct {
 func (o *GetTaskDetailsUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
 }
-
 func (o *GetTaskDetailsUnprocessableEntity) GetPayload() *models.ValidationError {
 	return o.Payload
 }
@@ -120,14 +118,13 @@ func NewGetTaskDetailsDefault(code int) *GetTaskDetailsDefault {
 	}
 }
 
-/*GetTaskDetailsDefault handles this case with default header values.
+/* GetTaskDetailsDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type GetTaskDetailsDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -140,15 +137,18 @@ func (o *GetTaskDetailsDefault) Code() int {
 func (o *GetTaskDetailsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *GetTaskDetailsDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *GetTaskDetailsDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

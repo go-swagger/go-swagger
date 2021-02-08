@@ -18,56 +18,70 @@ import (
 	"github.com/go-swagger/go-swagger/examples/authentication/models"
 )
 
-// NewGetIDParams creates a new GetIDParams object
-// with the default values initialized.
+// NewGetIDParams creates a new GetIDParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewGetIDParams() *GetIDParams {
-	var ()
 	return &GetIDParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewGetIDParamsWithTimeout creates a new GetIDParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewGetIDParamsWithTimeout(timeout time.Duration) *GetIDParams {
-	var ()
 	return &GetIDParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewGetIDParamsWithContext creates a new GetIDParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewGetIDParamsWithContext(ctx context.Context) *GetIDParams {
-	var ()
 	return &GetIDParams{
-
 		Context: ctx,
 	}
 }
 
 // NewGetIDParamsWithHTTPClient creates a new GetIDParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewGetIDParamsWithHTTPClient(client *http.Client) *GetIDParams {
-	var ()
 	return &GetIDParams{
 		HTTPClient: client,
 	}
 }
 
-/*GetIDParams contains all the parameters to send to the API endpoint
-for the get Id operation typically these are written to a http.Request
+/* GetIDParams contains all the parameters to send to the API endpoint
+   for the get Id operation.
+
+   Typically these are written to a http.Request.
 */
 type GetIDParams struct {
 
-	/*Info*/
+	// Info.
 	Info *models.SocialID
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the get Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetIDParams) WithDefaults() *GetIDParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the get Id params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *GetIDParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the get Id params
@@ -121,7 +135,6 @@ func (o *GetIDParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registr
 		return err
 	}
 	var res []error
-
 	if o.Info != nil {
 		if err := r.SetBodyParam(o.Info); err != nil {
 			return err

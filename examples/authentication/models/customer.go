@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -91,7 +93,7 @@ func (m *Customer) validateFipsCode(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("fipsCode", "body", string(*m.FipsCode), 1); err != nil {
+	if err := validate.MinLength("fipsCode", "body", *m.FipsCode, 1); err != nil {
 		return err
 	}
 
@@ -104,7 +106,7 @@ func (m *Customer) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("name", "body", string(*m.Name), 1); err != nil {
+	if err := validate.MinLength("name", "body", *m.Name, 1); err != nil {
 		return err
 	}
 
@@ -117,7 +119,7 @@ func (m *Customer) validateSsn(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("ssn", "body", string(*m.Ssn), 11); err != nil {
+	if err := validate.MinLength("ssn", "body", *m.Ssn, 11); err != nil {
 		return err
 	}
 
@@ -130,7 +132,30 @@ func (m *Customer) validateSurname(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("surname", "body", string(*m.Surname), 1); err != nil {
+	if err := validate.MinLength("surname", "body", *m.Surname, 1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this customer based on the context it is used
+func (m *Customer) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateCustomerID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Customer) contextValidateCustomerID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "customerId", "body", int64(m.CustomerID)); err != nil {
 		return err
 	}
 

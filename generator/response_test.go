@@ -17,9 +17,6 @@ package generator
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -323,10 +320,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 
 // Issue776 includes references that span multiple files. Flattening or Expanding is required
 func TestGenResponses_Issue776_Spec(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/spec.yaml")
 	require.NoError(t, err)
@@ -346,12 +340,7 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 }
 
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
-	//spec.Debug = true
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-		//spec.Debug = false
-	}()
+	defer discardOutput()()
 
 	b, err := opBuilderWithFlatten("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
 	require.NoError(t, err)
@@ -480,10 +469,7 @@ func TestGenResponses_Issue1013(t *testing.T) {
 }
 
 func TestGenResponse_15362_WithExpand(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 		// load expectations for parameters in operation get_nested_required_responses.go
@@ -517,10 +503,7 @@ func TestGenResponse_15362_WithExpand(t *testing.T) {
 }
 
 func TestGenResponse_1572(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	// testing fixture-1572.yaml with minimal flatten
 	// edge cases for operations schemas
@@ -639,10 +622,7 @@ func TestGenResponse_1572(t *testing.T) {
 }
 
 func TestGenResponse_1893(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
 		// load expectations for parameters in operation get_nested_required_responses.go

@@ -1,16 +1,13 @@
 package generator_test
 
 import (
-	"bytes"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
@@ -24,6 +21,15 @@ const (
 )
 
 func TestGenerateAndBuild(t *testing.T) {
+	// This test generates and actually compiles the output
+	// of generated clients.
+	//
+	// We run this in parallel now. Therefore it is no more
+	// possible to assert the output on stdout.
+	//
+	// NOTE: test cases are randomized (map)
+	t.Parallel()
+
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -46,35 +52,36 @@ func TestGenerateAndBuild(t *testing.T) {
 		"issue 2278": {
 			"../fixtures/bugs/2278/fixture-2278.yaml",
 		},
+		"issue 2163": {
+			"../fixtures/enhancements/2163/fixture-2163.yaml",
+		},
+		"issue 1771": {
+			"../fixtures/enhancements/1771/fixture-1771.yaml",
+		},
 	}
 
-	for name, cas := range cases {
-		var captureLog bytes.Buffer
-		log.SetOutput(&captureLog)
+	t.Run("build client", func(t *testing.T) {
+		for name, cas := range cases {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+				log.SetOutput(ioutil.Discard)
 
-		t.Run(name, func(t *testing.T) {
-			spec := filepath.FromSlash(cas.spec)
+				spec := filepath.FromSlash(cas.spec)
 
-			generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
-			if err != nil {
-				t.Fatalf("TempDir()=%s", generated)
-			}
-			defer func() { _ = os.RemoveAll(generated) }()
+				generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
+				require.NoErrorf(t, err, "TempDir()=%s", generated)
+				defer func() { _ = os.RemoveAll(generated) }()
 
-			err = newTestClient(spec, generated).Execute(nil)
-			require.NoErrorf(t, err, "Execute()=%s", err)
+				require.NoErrorf(t, newTestClient(spec, generated).Execute(nil), "Execute()=%s", err)
 
-			assert.Contains(t, strings.ToLower(captureLog.String()), "generation completed")
+				packages := filepath.Join(generated, "...")
 
-			packages := filepath.Join(generated, "...")
+				goExecInDir(t, "", "get")
 
-			p, err := exec.Command("go", "get", packages).CombinedOutput()
-			require.NoErrorf(t, err, "go get %s: %s\n%s", packages, err, p)
-
-			p, err = exec.Command("go", "build", packages).CombinedOutput()
-			require.NoErrorf(t, err, "go build %s: %s\n%s", packages, err, p)
-		})
-	}
+				goExecInDir(t, "", "build", packages)
+			})
+		}
+	})
 }
 
 func newTestClient(input, output string) *generate.Client {
@@ -87,4 +94,11 @@ func newTestClient(input, output string) *generate.Client {
 	c.Models.ModelPackage = defaultModelPackage
 	c.ClientPackage = defaultClientPackage
 	return c
+}
+
+func goExecInDir(t testing.TB, target string, args ...string) {
+	cmd := exec.Command("go", args...)
+	cmd.Dir = target
+	p, err := cmd.CombinedOutput()
+	require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
 }

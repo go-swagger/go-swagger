@@ -46,7 +46,7 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 	return &DestroyOneNoContent{}
 }
 
-/*DestroyOneNoContent handles this case with default header values.
+/* DestroyOneNoContent describes a response with status code 204, with default header values.
 
 Deleted
 */
@@ -69,7 +69,7 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 	}
 }
 
-/*DestroyOneDefault handles this case with default header values.
+/* DestroyOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -87,7 +87,6 @@ func (o *DestroyOneDefault) Code() int {
 func (o *DestroyOneDefault) Error() string {
 	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *DestroyOneDefault) GetPayload() *models.Error {
 	return o.Payload
 }

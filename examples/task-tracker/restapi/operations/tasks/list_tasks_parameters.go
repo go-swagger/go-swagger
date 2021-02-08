@@ -93,7 +93,6 @@ func (o *ListTasksParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindTags(qTags, qhkTags, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -109,6 +108,7 @@ func (o *ListTasksParams) bindPageSize(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewListTasksParams()
 		return nil
@@ -132,6 +132,7 @@ func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -149,7 +150,6 @@ func (o *ListTasksParams) bindSinceID(rawData []string, hasKey bool, formats str
 //
 // Arrays are parsed according to CollectionFormat: "pipes" (defaults to "csv" when empty).
 func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvStatus string
 	if len(rawData) > 0 {
 		qvStatus = rawData[len(rawData)-1]
@@ -187,7 +187,6 @@ func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("status", "query", o.Status); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -195,7 +194,6 @@ func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvTags string
 	if len(rawData) > 0 {
 		qvTags = rawData[len(rawData)-1]
@@ -229,6 +227,5 @@ func (o *ListTasksParams) validateTags(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("tags", "query", o.Tags); err != nil {
 		return err
 	}
-
 	return nil
 }

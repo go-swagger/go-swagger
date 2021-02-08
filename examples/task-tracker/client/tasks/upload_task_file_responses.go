@@ -46,7 +46,7 @@ func NewUploadTaskFileCreated() *UploadTaskFileCreated {
 	return &UploadTaskFileCreated{}
 }
 
-/*UploadTaskFileCreated handles this case with default header values.
+/* UploadTaskFileCreated describes a response with status code 201, with default header values.
 
 File added
 */
@@ -69,14 +69,13 @@ func NewUploadTaskFileDefault(code int) *UploadTaskFileDefault {
 	}
 }
 
-/*UploadTaskFileDefault handles this case with default header values.
+/* UploadTaskFileDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type UploadTaskFileDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -89,15 +88,18 @@ func (o *UploadTaskFileDefault) Code() int {
 func (o *UploadTaskFileDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *UploadTaskFileDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *UploadTaskFileDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

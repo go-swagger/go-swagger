@@ -139,7 +139,7 @@ jobs:
           name: Install golangci-lint
           command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - run:
-          name: Run unit tests
+          name: Run linting
           command: golangci-lint run --timeout 2m --new-from-rev master
           no_output_timeout: 2m
 
@@ -164,16 +164,8 @@ jobs:
       - prepare_directory_layout
 
       - run:
-          name: Run unit tests
-          command: gotestsum --junitfile /usr/share/testresults/go-test-report.xml -f short-verbose
-          no_output_timeout: 30m
-
-      - run:
-          name: Build docker images
+          name: Build binary
           command: ./hack/build-docker.sh --circleci
-
-      - store_test_results:
-          path: /usr/share/testresults
 
   test:
     docker:
@@ -242,7 +234,7 @@ jobs:
 
       - run:
           name: Test codegen builds
-          command: go test -v -timeout 20m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
+          command: go test -v -timeout 30m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
           no_output_timeout: 30m
 
   canary_tests:
@@ -266,7 +258,7 @@ jobs:
 
       - run:
           name: Test canary builds
-          command: go test -v -timeout 20m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
+          command: go test -v -timeout 30m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
           no_output_timeout: 30m
 
   publish_release:

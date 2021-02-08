@@ -52,7 +52,7 @@ func NewUpdateTaskOK() *UpdateTaskOK {
 	return &UpdateTaskOK{}
 }
 
-/*UpdateTaskOK handles this case with default header values.
+/* UpdateTaskOK describes a response with status code 200, with default header values.
 
 Task details
 */
@@ -63,7 +63,6 @@ type UpdateTaskOK struct {
 func (o *UpdateTaskOK) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK  %+v", 200, o.Payload)
 }
-
 func (o *UpdateTaskOK) GetPayload() *models.Task {
 	return o.Payload
 }
@@ -85,7 +84,7 @@ func NewUpdateTaskUnprocessableEntity() *UpdateTaskUnprocessableEntity {
 	return &UpdateTaskUnprocessableEntity{}
 }
 
-/*UpdateTaskUnprocessableEntity handles this case with default header values.
+/* UpdateTaskUnprocessableEntity describes a response with status code 422, with default header values.
 
 Validation error
 */
@@ -96,7 +95,6 @@ type UpdateTaskUnprocessableEntity struct {
 func (o *UpdateTaskUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity  %+v", 422, o.Payload)
 }
-
 func (o *UpdateTaskUnprocessableEntity) GetPayload() *models.ValidationError {
 	return o.Payload
 }
@@ -120,14 +118,13 @@ func NewUpdateTaskDefault(code int) *UpdateTaskDefault {
 	}
 }
 
-/*UpdateTaskDefault handles this case with default header values.
+/* UpdateTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
 type UpdateTaskDefault struct {
 	_statusCode int
-
-	XErrorCode string
+	XErrorCode  string
 
 	Payload *models.Error
 }
@@ -140,15 +137,18 @@ func (o *UpdateTaskDefault) Code() int {
 func (o *UpdateTaskDefault) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
 }
-
 func (o *UpdateTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }
 
 func (o *UpdateTaskDefault) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	// response header X-Error-Code
-	o.XErrorCode = response.GetHeader("X-Error-Code")
+	// hydrates response header X-Error-Code
+	hdrXErrorCode := response.GetHeader("X-Error-Code")
+
+	if hdrXErrorCode != "" {
+		o.XErrorCode = hdrXErrorCode
+	}
 
 	o.Payload = new(models.Error)
 

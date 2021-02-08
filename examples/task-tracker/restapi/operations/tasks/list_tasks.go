@@ -29,7 +29,7 @@ func NewListTasks(ctx *middleware.Context, handler ListTasksHandler) *ListTasks 
 	return &ListTasks{Context: ctx, Handler: handler}
 }
 
-/*ListTasks swagger:route GET /tasks tasks listTasks
+/* ListTasks swagger:route GET /tasks tasks listTasks
 
 Lists the tasks
 
@@ -51,14 +51,12 @@ func (o *ListTasks) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewListTasksParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

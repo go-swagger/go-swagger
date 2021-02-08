@@ -1,0 +1,9 @@
+ErrorPayload:
+  title: Error Payload
+  required:
+    - errors
+  properties:
+    errors:
+      type: array
+      items:
+        $ref: './items.yml#/ErrorDetailsItem'

@@ -17,59 +17,75 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewPetGetParams creates a new PetGetParams object
-// with the default values initialized.
+// NewPetGetParams creates a new PetGetParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewPetGetParams() *PetGetParams {
-	var ()
 	return &PetGetParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewPetGetParamsWithTimeout creates a new PetGetParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewPetGetParamsWithTimeout(timeout time.Duration) *PetGetParams {
-	var ()
 	return &PetGetParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewPetGetParamsWithContext creates a new PetGetParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewPetGetParamsWithContext(ctx context.Context) *PetGetParams {
-	var ()
 	return &PetGetParams{
-
 		Context: ctx,
 	}
 }
 
 // NewPetGetParamsWithHTTPClient creates a new PetGetParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewPetGetParamsWithHTTPClient(client *http.Client) *PetGetParams {
-	var ()
 	return &PetGetParams{
 		HTTPClient: client,
 	}
 }
 
-/*PetGetParams contains all the parameters to send to the API endpoint
-for the pet get operation typically these are written to a http.Request
+/* PetGetParams contains all the parameters to send to the API endpoint
+   for the pet get operation.
+
+   Typically these are written to a http.Request.
 */
 type PetGetParams struct {
 
-	/*PetID
-	  ID of pet to return
+	/* PetID.
 
+	   ID of pet to return
+
+	   Format: int64
 	*/
 	PetID int64
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the pet get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetGetParams) WithDefaults() *PetGetParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the pet get params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *PetGetParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the pet get params

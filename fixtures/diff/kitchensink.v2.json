@@ -223,11 +223,31 @@
           }
         }
       }
+    },
+    "/c/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "maxItems": 1,
+              "items": {
+                "type": "object",
+                "properties":{
+                  "id": {"type": "integer"}
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
     "A1": {
       "type": "object",
+      "required": ["busby"],
       "properties": {
         "id": {
           "type": "integer"
@@ -242,14 +262,40 @@
             "empathic",
             "saucy"
           ]
+        },
+        "busby": {
+          "type": "string"
+        },
+        "newProp": {
+          "type": "string"
+        },
+        "onceWasArray": {
+          "type": "string"
+        },
+        "sameWideness": {
+          "type": "number",
+          "format":"float"
         }
       }
     },
     "A2": {
       "type": "object",
       "required": [
-        "name",
-        "description"
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "ThisWasAdded": {
+      "type": "object",
+      "required": [
+        "name"
       ],
       "properties": {
         "name": {

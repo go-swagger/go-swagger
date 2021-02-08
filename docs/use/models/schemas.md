@@ -1,9 +1,9 @@
 # Schema generation rules
 
 Lots of the work carried out by go-swagger is to generate models, which can have all kinds of rules like polymorphism and
-validations.  Go-swagger models are the go data structures used for serialization and validation.
+validations. Go-swagger models are the go data structures used for serialization and validation.
 
-Of course none of this is possible without a set of rules and trade offs.
+Of course none of this is possible without a set of rules and trade-offs.
 
 ### About schemas
 
@@ -28,7 +28,7 @@ The generated models implements:
     - standard structures use JSON decoder tags (serialization tags are customizable)
     - composed and extensible structures use custom marshalers (`allOf`, `additionalProperties`, tuples and polymorphic types)
   - `MarshalBinary()`, `UnmarshalBinary()` interfaces (`encoding/BinaryMarshaler`, `encoding/BinaryUnmarshaler`),
- which may use the fast [`mailru/easyjson`][easy-json] package
+  which may use the fast [`mailru/easyjson`][easy-json] package
 - a validation interface ([`go-openapi/runtime/Validatable`][Validatable]), with a `Validate(strfmt.Registry) error` method
 
 Validation methods are wired at generation time, and rely mostly on native types: this makes validation faster than a
@@ -105,154 +105,6 @@ Previously generated models can be reused when constructing a new API server or 
 The generator makes every effort to keep the go code readable, idiomatic and commented: models may thus be manually customized or extended.
 Such customized types may be later on reused in other specs, using the `x-go-type` extension.
 
-##### Using custom types
-
-NOTE: what follows only applies to _schema_ models, not simple types used a query parameters or headers.
-
-You can bind models to external type definitions. The latter may have been generated models or bespoke types.
-
-This is done with the `x-go-type` extension.
-
-Examples:
-
-This example replaces all references to `myModel` by `github.com/example/models/MyCustomModel`
-```yaml
-definitions:
-  myModel:
-    type: object
-    x-go-type:
-      type: MyCustomModel
-      import:
-        package: github.com/example/models
-```
-
-Note that the external model must implement the `github.com/go-openapi/runtime.Validatable` interface: it must know how to validate a schema.
-No model is generated for this definition.
-
-Sometimes, it is impractical to impose this constraint on the external type. You can then use the "embedded" option to create an embedded type
-based on the external model.
-
-Example:
-```yaml
-definitions:
-  Time:
-    type: string
-    format: date-time         # <- documentary only (external types takes over). This has no impact on generation.
-    x-go-type:
-      type: Time
-      import:
-        package: time
-      embedded: true
-```
-
-This example generates a type in the package model with a `Validate` method like this:
-
-```go
-import (
-	"time"
-
-	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
-)
-
-// Time time
-//
-// swagger:model Time
-type Time struct {
-	time.Time
-}
-
-func (m Time) Validate(formats strfmt.Registry) error {
-	var f interface{} = m.Time
-	if v, ok := f.(runtime.Validatable); ok {
-		return v.Validate(formats)
-	}
-	return nil
-}
-```
-
-The generated `Validate` method uses any existing `Validate` method or just returns `nil` (i.e. data is valid).
-
-NOTE: at the moment, we do not support the `format` specification over the embedded type. Format will be documentary only in that case.
-
-Other examples:
-```yaml 
-  Raw:
-    x-go-type:
-      type: RawMessage
-      import:
-        package: encoding/json
-      hints:
-        kind: primitive
-      embedded: true
-```
-```go 
-type Raw struct {
-	json.RawMessage
-}
-
-func (m Raw) Validate(formats strfmt.Registry) error {
-	var f interface{} = m.RawMessage
-	if v, ok := f.(runtime.Validatable); ok {
-		return v.Validate(formats)
-	}
-	return nil
-}
-```
-
-You can embed types as pointers just the same.
-
-Example:
-```yaml
-definitions:
-  Time:
-    type: string
-    x-go-type:
-      type: Time
-      import:
-        package: time
-      hints:
-        nullable: true  # <- nullable here refers to the nullability of the embedded external type 
-      embedded: true
-```
-
-```go
-type Time struct {
-	*time.Time
-}
-```
-
-
-Using external types is powerful, but normally you still have to describe your type in the specification. That is expected,
-since this is how you document your API.
-
-If you don't (that is the type referred to doesn't correspond to the type in the spec), then the generator may fail to produce correct code,
-because it simply has no way to infer what _kind_ of object is being referred to.
-
-To solve this kind of problem, you may hint the generator to produce a correct usage of the external types, even though the specification
-doesn't reflect the correct nature of the object.
-
-Example:
-```yaml 
-definitions:
-  Error:
-    type: object
-
-  Hotspot:
-    x-go-type:
-      type: Hotspot
-      import:
-        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
-      hints:
-        kind: object
-    x-nullable: true
-```
-In this example, the `Hotspot` schema is empty in the specification. The generator therefore can only guess that this is some `interface{}` type.
-Now thanks to the hint `kind: object`, we instruct the generator to expect an object so as to correctly reference this object.
-
-At the moment, valid hints are: ` map|object|array|interface|primitive|tuple|stream`.
-
 
 ### Swagger vs JSONSchema
 
@@ -288,11 +140,11 @@ Other minor differences:
 go-swagger models implements _almost_ all Swagger 2.0 schema features.
 
 We also wanted to support as much JSONSchema features as possible: the model generator may be used independently
-to generate data structure using the Swagger specification as a serialization description language.
+to generate data structures using the Swagger specification as a serialization description language.
 
 There are some small differences or implementation details to be aware of.
 
-|   Feature                             | JSON-schema-draft4 |  Swagger 2.0 |  go-swagger |   Comment | 
+|   Feature                             | JSON-schema-draft4 |  Swagger 2.0 |  go-swagger |   Comment |
 |---                                    |---                 |---           |---          |---        |
 | `"format"`                            |   Y| Y    | Y      | Formats are provided by the extensible [`go-openapi/strfmt` package][strfmt]. See also [here](#formatted-types)|
 | `"additionalProperties": {schema}`    |   Y| Y    | Y      | Rendered as `map[string]T`                           |
@@ -302,13 +154,13 @@ There are some small differences or implementation details to be aware of.
 | empty object: `{ "type": "object"}`   |   Y| Y    | Y      | Rendered as `interface{}` (anything) rather than `map[string]inferface{}` (any JSON object, e.g. not arrays)|
 | `"pattern"`                           |   Y| Y    | partial| Speed for strictness trade-off: support go regexp, which slighty differ from JSONSchema ECMA regexp (e.g does not support backtracking)|
 |  large number, arbitrary precision    |   Y| **N**| N      |    |
-| `"readOnly"`                          |   N| Y    | N      | `readOnly` is currently not supported by the model validation method |
+| `"readOnly"`                          |   N| Y    | Y      |    |
 | `"type": [ "object", ... ]`           |   Y| N    | N      | JSONSchema multiple types are not supported: use Swagger polymorphism instead|
 | implicit type from values in `enum`   |   Y| ?    | N      | As of v0.15, when the type is empty, the object is rendered as `interface{}` and the `enum` constraint is ignored|
 | tuple `type: "array" items:[...]      |   Y| Y    | partial| As of v0.15, incomplete tuples and tuples with array validation are not properly validated|
 
 
-JSONSchema defaults to `"additionalProperties": true`, `go-swagger` defaults to ignoring this. Same for `additionalItems`.
+JSONSchema defaults to `"additionalProperties": true`, `go-swagger` defaults to ignoring extra properties. Same for `additionalItems`.
 
 When`"additionalProperties": false` (resp. `"additionalItems": false`), uwanted properties (resp. items) do not invalidate data
 but they are not kept in the model.
@@ -319,22 +171,17 @@ Explicitly specifying `true` will produce models that retain those additional pr
 
 ### Known limitations with go-swagger models
 
-Recap as of release `0.15`:
+Recap as of release `>0.26`:
 
-- re [Swagger 2.0 specification][swagger]
-
-  - no validation support for the `readOnly` attribute
- 
 - re [JSON-schema-draft4][json-schema]
 
   - `"additionalProperties": false`, `"additionalItems": false` do not invalidate data with extra properties. We trade strictness for speed and
-  truncate unwanted properties or items without further validation.
+    truncate unwanted properties or items without further validation.
+  - the generation flag `--strict-additional-properties` invalidates data with extra properties when `"additionalProperties": false`
   - when `enum` values cannot be marshalled into their schema, a runtime panic occurs - the `go-openapi/validate` package does not yet detect this situation
-  - `minProperties`, `maxProperties` are not supported
   - `patternProperties` and `dependencies`are not supported
   - use of `additionalItems` requires the `--skip-validation` flag (`go-openapi/validate` is strict regarding Swagger specification)
-  - JSONSchema defaults to the `"additionalProperties": true`, `go-swagger` defaults to ignore this. Same for `additionalItems`.
-  - use of `additionalItems` requires the `--skip-validation` flag (`go-openapi/validate` is strict regarding Swagger specification)
+  - JSONSchema defaults to the `"additionalProperties": true`, `go-swagger` defaults to ignoring extra properties. Same for `additionalItems`.
   - array validations (`minItems`, etc.) are not yet supported for tuples, as of v0.15
   - objects with no properties and no additional properties schema have no validation at all (e.g. passing an array is not invalid) (rendered as `interface{}`)
   - `null` JSON type: the `null` type is not supported by Swagger - use of the `x-nullable` extension makes `null` values valid
@@ -344,12 +191,14 @@ Recap as of release `0.15`:
 
 Model generation may be altered with the following extensions:
 
-- `x-go-name: "string"`: give explicit type name to the generated model 
-- `x-go-custom-tag: "string"`: add serialization tags to an object property
+- `x-go-name: "string"`: give explicit type name to the generated model
+- `x-go-custom-tag: "string"`: add serialization tags to an object property (see [Customizing struct tags](#customizing-struct-tags))
 - `x-nullable: true|false` (or equivalently `x-is-nullable:true|false`): accepts null values (i.e. rendered as a pointer)
 - `x-go-type: "string"`: explicitly reuse an already available go type
 - `x-class: "string"`: give explicit polymorphic class name in discriminator
 - `x-order: number`: indicates explicit generation ordering for schemas (e.g. models, properties, allOf, ...)
+- `x-omitempty: true|false`: force the omitempty modifier in struct json and xml tags
+- `x-go-json-string: true:false`: force the string modifier in struct json tags
 
 ### Primitive types
 
@@ -419,7 +268,7 @@ definitions:
 
 > NOTE: read-only properties are not rendered as pointers.
 
-API developers may use the converter utilities provided by the `go-openapi/swag` and `go-openapi/strfmt/conv` packages
+API developers may use the conversion utilities provided by the `go-openapi/swag` and `go-openapi/strfmt/conv` packages
 to manipulate pointers more easily.
 
 > **Known limitations**:
@@ -432,15 +281,21 @@ to manipulate pointers more easily.
 > to a zero value when the type is not a pointer. In cases where this is
 > important, use the `x-nullable` extension
 > - using `null` as a proxy for unset, makes uneasy the explicit use of the JSON `null` type
-> Swagger APIs are not supposed to carry `null` values. 
+> Swagger APIs are not supposed to carry `null` values.
 > `go-swagger` generated APIs can, using the `x-nullable` extension, and it is then not possible
 > to distinguish a field explicitly set to `null` from an unset field
 >
 > An alternate design has been experimented but not released. For those interested in pushing forward this project again,
 > see [this pull request][lifting-pointers]
 
+#### Common use cases
+
+You don't always have to resort to pointers to figure out whether a value is empty.
+
+* The idiomatic way to check for a null/empty string is: `minLength: 1`
 
 ### Validation
+
 All produced models implement the [Validatable] interface.
 
 Exceptions:
@@ -867,12 +722,6 @@ Note that the marshalling of a base type into JSON is processed naturally, so th
 
 <!--
 
-TODO
-
-##### Serializer's tags
-
-##### Custom tags
-
 JSON
 
 XML
@@ -896,6 +745,566 @@ TODO
 -->
 
 <!-- References -->
+
+##### External types
+
+External types refer to custom type definitions, short-circuiting the use of generated models.
+
+This is helpful for use-cases when custom marshaling or validation is needed.
+
+Models may also be generated once, customized manually, then reused in spec as external types.
+
+The extension annotation to declare an external type is `x-go-type`.
+
+A complete example is provided [here](../../../examples/external-types/swagger-external.yaml)
+to illustrate the different capabilities to inject custom types.
+
+
+Examples:
+
+External types are typically used in top-level model definitions, like so:
+
+```yaml
+definitions:
+  myType:
+    type: object
+    x-go-type:
+      type: MyExternalType                          # <- abide by go conventions! The type must be exported
+      import:
+        package: github.com/example/models/custom     # <- use fully qualified package names
+```
+
+Such definitions do not produce any generated model.
+
+References in the generated code to this type will produce code like this:
+
+```go
+custom.MyExternalType
+```
+
+If no package is provided, it defaults to the models package indicated for codegen:
+```yaml
+definitions:
+  generatedType:
+    type: array
+    items:
+      $ref: '#/definitions/myType'
+
+  myType:
+    type: object
+    x-go-type:
+      type: MyExternalType
+```
+
+```sh
+swagger generate models --model-package custom --target ./codegen
+
+ls ./codegen/custom   # <- myType is NOT GENERATED
+cat ./codegen/custom/generated_type.go
+```
+
+```go
+package custom
+
+type GeneratedType []MyType
+```
+
+External types may also be injected at lower schema levels:
+
+```yaml
+definitions:
+  MyType:
+    type: array
+    items:
+      type: string
+      x-go-type:
+        type: MyExternalString
+        import:
+          package: github.com/example/models/custom
+```
+or:
+```yaml
+  MyObject:
+    type: object
+    properties:
+      p1:
+        x-go-type:
+          type: RawMessage
+          import:
+            package: encoding/json
+          hints:
+            kind: interface
+```
+
+This also works for inlined types defined at the operation level:
+
+```yaml
+  parameters:
+  - in: body
+    name: corpus
+    schema:
+      type: object
+      x-go-type:
+        type: MyExternalStruct
+        import:
+          package: github.com/example/models/custom
+```
+
+> **NOTE**: when defining inline arrays or maps, you should know that the external type is
+> not considered nullable by default.
+>
+> Therefore, unless you explicitly hint the generator to consider it nullable, you'll
+> get constructs such as `[]external.MyType` or `map[string]external.MyType` instead of `[]*external.MyType`
+> and `map[string]*external.MyType` respectively. You can use the `nullable` hint or the `x-nullable` extension
+> to control this behavior.
+
+###### Known limitations
+
+* External types only apply to schema objects. Simple swagger types
+  used in operations for query or path parameters or for response headers
+  cannot be externalized at this moment.
+
+* Inlined external types cannot be declared inside polymorphic types (discriminated types).
+
+* Inlined external types cannot be declared as embedded. Only top-level definitions are supported.
+
+
+###### External package aliasing
+
+
+The following example replaces all references to `myModel` by `github.com/example/models/MyCustomModel`.
+
+Example:
+
+```yaml
+definitions:
+  myModel:
+    type: object
+    x-go-type:
+      type: MyCustomModel
+      import:
+        package: github.com/example/models
+```
+
+Note that the external model must implement the `github.com/go-openapi/runtime.Validatable` interface: it must know how to validate a schema.
+No model is generated for this definition.
+
+External packages may be imported with an alias, like so:
+
+```yaml
+  parameters:
+    in: body
+    schema:
+      type: object
+      x-go-type:
+        type: MyExternalStruct
+        import:
+          package: github.com/example/models/custom
+          alias: fred
+```
+
+Imports will look like so:
+```go
+import (
+  fred "github.com/example/models/custom"
+)
+...
+```
+
+Some deconfliction with other known import is applied automatically. Automatic deconfliction is not perfect, though.
+
+For example:
+```yaml
+  MyObject:
+    type: object
+    properties:
+      p1:
+        x-go-type:
+          type: RawMessage
+          import:
+            package: encoding/json
+          hints:
+            kind: interface
+```
+
+```go
+import (
+  jsonext "encoding/json"
+)
+```
+
+
+###### Embedding external types
+
+Sometimes, it is impractical to impose the constraint that the external type has a validation method.
+You can then use the "embedded" option to create an embedded type based on the external model, and wraps the Validate
+method.
+
+Example:
+```yaml
+definitions:
+  Time:
+    type: string
+    format: date-time         # <- documentary only (external types takes over). This has no impact on generation.
+    x-go-type:
+      type: Time
+      import:
+        package: time
+      embedded: true
+```
+
+This example generates a wrapper type in the package model with a `Validate` method like this:
+
+```go
+import (
+	timeext "time"
+
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
+)
+
+// Time time
+//
+// swagger:model Time
+type Time struct {
+	timeext.Time
+}
+
+func (m Time) Validate(formats strfmt.Registry) error {
+	var f interface{} = m.Time
+	if v, ok := f.(runtime.Validatable); ok {
+		return v.Validate(formats)
+	}
+	return nil
+}
+```
+
+The generated `Validate` method uses any existing `Validate` method or just returns `nil` (i.e. data is valid).
+
+> **NOTE**: at the moment, we do not support the `format` specification over the embedded type. Format will be documentary only in that case.
+
+Other examples:
+```yaml
+  Raw:
+    x-go-type:
+      type: RawMessage
+      import:
+        package: encoding/json
+      hints:
+        kind: primitive
+      embedded: true
+```
+```go
+import (
+ ...
+ jsonext "encoding/json"
+ ...
+)
+
+type Raw struct {
+	jsonext.RawMessage
+}
+
+func (m Raw) Validate(formats strfmt.Registry) error {
+	var f interface{} = m.RawMessage
+	if v, ok := f.(runtime.Validatable); ok {
+		return v.Validate(formats)
+	}
+	return nil
+}
+```
+
+You can embed types as pointers just the same.
+
+Example:
+```yaml
+definitions:
+  Time:
+    type: string
+    x-go-type:
+      type: Time
+      import:
+        package: time
+      hints:
+        nullable: true  # <- nullable here refers to the nullability of the embedded external type
+      embedded: true
+```
+
+```go
+type Time struct {
+	*time.Time
+}
+```
+
+
+Using external types is powerful, but normally you still have to describe your type in the specification. That is expected,
+since this is how you document your API.
+
+If you don't (that is the type referred to doesn't correspond to the type in the spec), then the generator may fail to produce correct code,
+because it simply has no way to infer what _kind_ of object is being referred to.
+
+To solve this kind of problem, you may hint the generator to produce a correct usage of the external types, even though the specification
+doesn't reflect the correct nature of the object.
+
+Example:
+```yaml
+definitions:
+  Error:
+    type: object
+
+  Hotspot:
+    x-go-type:
+      type: Hotspot
+      import:
+        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+      hints:
+        kind: object
+    x-nullable: true
+```
+In this example, the `Hotspot` schema is empty in the specification. The generator therefore can only guess that this is some `interface{}` type.
+Now thanks to the hint `kind: object`, we instruct the generator to expect an object so as to correctly reference this object.
+
+
+###### Validation of external types
+
+By default, the generator assumes that external types can be validated and will generate code that calls the "Validate"
+method of the type.
+
+This can be disabled  by providing an explicit hint:
+```yaml
+  MyObject:
+    type: object
+    properties:
+      p1:
+        x-go-type:
+          type: RawMessage
+          import:
+            package: encoding/json
+          hints:
+            noValidation: true
+```
+
+External types with an hint type "interface" or "stream" do not call validations.
+
+Embedded types use type assertion to dynamically determine if the external type implements the `runtime.Validatable` interface.
+
+
+###### External type hints
+
+The generator does not attempt to introspect external types. They may even not exist at generation time.
+
+Therefore, the generator has no idea of whether it is safe to generate pointers to the external type.
+
+By default, external types are considered non nullable. This can be altered with the nullable hint or
+by hinting a type that is considered nullable (such as "object").
+
+Supported hints:
+```yaml
+        x-go-type:
+          type: {external type name (exported symbol, without package qualifier)}
+          import:
+            package: {fully qualified package name - defaults to the target models defined by the --model-package flag}
+          hints:
+            kind: {map|object|array|interface|primitive|tuple|stream}
+            noValidation: true|false  # <- skips validation: defaults to true for embedded types, defaults to false for non-embedded, always false for kinds interface and stream
+            nullable: true|false      # <- default to true for kinds object,primitive and tuple
+          embedded: true|false        # <- defaults to false, generates a struct that wraps the external type
+```
+
+###### Caveats with imports
+
+At this moment, external packages and aliases are deconflicted against other known imports and variables.
+
+Example:
+```yaml
+  MyObject:
+    type: object
+    properties:
+      p1:
+        x-go-type:
+          type: RawMessage
+          import:
+            package: encoding/json
+          hints:
+            kind: interface
+```
+
+will generate an import deconflicted against the standard lib import:
+```go
+import(
+    ...
+    jsonext "encoding/json"
+    ...
+    )
+```
+
+###### External package aliasing
+
+External packages may be imported with an alias, like so:
+
+```yaml
+  parameters:
+    in: body
+    schema:
+      type: object
+      x-go-type:
+        type: MyExternalStruct
+        import:
+          package: github.com/example/models/custom
+          alias: fred
+```
+
+Imports will look like so:
+```go
+import (
+  fred "github.com/example/models/custom"
+)
+...
+```
+
+Some deconfliction with other known imports is applied automatically. Automatic deconfliction is not perfect, though.
+
+For example:
+```yaml
+  MyObject:
+    type: object
+    properties:
+      p1:
+        x-go-type:
+          type: RawMessage
+          import:
+            package: encoding/json
+          hints:
+            kind: interface
+```
+
+```go
+import (
+  jsonext "encoding/json"
+)
+```
+
+Package aliases may still conflict with packages produces by operation tags or other external imports.
+
+In such cases, modify the type alias under `x-go-type` to resolve the conflict manually.
+
+### Customizing struct tags
+
+When a model struct is generated, tags for json are generated to keep the original name:
+
+```go
+type ObjectWithTag struct {
+    StandardTag string `json:"standardTag,omitempty"`
+}
+```
+
+#### Extra tags
+
+Extra tags may be defined with the CLI generation option `--sruct-tags`.
+
+Extra tags essentially repeat the name of the field can be added from the command line option.
+
+> **NOTE**: at this moment, all tag modifiers (omitempty, string) are repeated like for the json tag.
+
+```bash
+swagger generate model ... --struct-tags yaml,db
+```
+
+```go
+type ObjectWithTag struct {
+    StandardTag string `json:"standardTag,omitempty" yaml:"standardTag,omitempty" db:"standardTag,omitempty"`
+}
+```
+
+#### Custom tags
+
+A custom may be added to a field using the `x-go-custom-tag` extension. Like so:
+
+#### Omit empty values
+
+By default, a struct field is omitted when it holds the zero value (tag modifier: `omitempty`).
+
+Required fields are never omitted.
+
+```go
+type ObjectWithTag struct {
+    RequiredField *string `json:"requiredField"`
+}
+```
+
+This property can be altered using the `x-omitempty` extension. Like so:
+```yaml
+objectWithTag:
+  type: object
+  properties:
+    field:
+      type: string
+      x-omitempty: false
+```
+
+```go
+type ObjectWithTag struct {
+    Field string `json:"field"`
+}
+```
+
+The extension does not force a required field to get the "omitempty" modifier.
+
+#### Numerical values as string
+
+For some specific requirements, the standard json library may consider numbers as strings.
+This is done by adding the modifier `json:"...,string"` to the tag.
+
+With go-swagger you can specify this modifier by adding the `x-go-json-string: true` extension to your type.
+
+```go
+type ObjectWithTag struct {
+    NumericField int `json:"field,omitempty,string"`
+}
+```
+
+#### XML tags
+
+The XML name and attribute Swagger properties are used to generate extra tags.
+```yaml
+definitions:
+ objectWithXML:
+   type: object
+   properties:
+     field:
+       type: string
+       xml:
+         name: xmlObject
+         attribute: true
+```
+
+```go
+type ObjectWithXML struct {
+    Field string `json:"field,omitempty" xml:"xmlObject,attr,omitempty"`
+}
+```
+
+#### The example tag
+
+If you add `example` to the list of generated tags from the CLI (`swagger generate ... --struct-tags example`),
+a special example tag is created with the example value taken from the specification.
+
+```yaml
+definitions:
+  objectWithExample:
+   properties:
+     field:
+       type: string
+       example: "sample"
+```
+
+```go
+type ObjectWithExample struct {
+    Field string `json:"field,omitempty" example:"\"sample\""`
+}
+```
+
 
 [swagger]: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema-object
 [strfmt]: https://github.com/go-openapi/strfmt

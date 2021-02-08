@@ -69,10 +69,10 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
       {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler:
         {{- if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}HandlerFunc(func(params {{ if ne .Package $package }}{{ .PackageAlias }}.{{end }}
     {{- if $.GenOpts.StrictResponders}}
-        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Responder {
+        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Responder {
       return {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}NotImplemented()
     {{else}}
-        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
+        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
       return middleware.NotImplemented("operation {{ if ne .Package $package }}{{ .Package }}.{{ end }}{{pascalize .Name}} has not yet been implemented")
     {{ end -}}
     }),
@@ -80,18 +80,18 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
     {{ range .SecurityDefinitions }}
       {{- if .IsBasicAuth }}
       // Applies when the Authorization header is set with the Basic scheme
-    {{ pascalize .ID }}Auth: func(user string, pass string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    {{ pascalize .ID }}Auth: func(user string, pass string) ({{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("basic auth  ({{ .ID }}) has not yet been implemented")
     },
       {{- end }}
       {{- if .IsAPIKeyAuth }}
       // Applies when the "{{ .Name }}" {{ .Source }} is set
-    {{ pascalize .ID }}Auth: func(token string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    {{ pascalize .ID }}Auth: func(token string) ({{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("api key auth ({{ .ID }}) {{.Name}} from {{.Source}} param [{{ .Name }}] has not yet been implemented")
     },
       {{- end }}
       {{- if .IsOAuth2 }}
-    {{ pascalize .ID }}Auth: func(token string, scopes []string) ({{if not ( eq .Principal "interface{}" )}}*{{ end }}{{.Principal}}, error) {
+    {{ pascalize .ID }}Auth: func(token string, scopes []string) ({{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}, error) {
       return nil, errors.NotImplemented("oauth2 bearer auth ({{ .ID }}) has not yet been implemented")
     },
       {{- end }}
@@ -119,9 +119,11 @@ type {{ pascalize .Name }}API struct {
   // BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
   BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+
   // APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
   APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+
   // BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
   // It has a default implementation in the security package, however you can replace it for your particular usage.
   BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
@@ -144,19 +146,19 @@ type {{ pascalize .Name }}API struct {
 
   // {{ pascalize .ID }}Auth registers a function that takes username and password and returns a principal
   // it performs authentication with basic auth
-  {{ pascalize .ID }}Auth func(string, string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{ pascalize .ID }}Auth func(string, string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
     {{- end }}
     {{- if .IsAPIKeyAuth}}
 
   // {{ pascalize .ID }}Auth registers a function that takes a token and returns a principal
   // it performs authentication based on an api key {{ .Name }} provided in the {{.Source}}
-  {{ pascalize .ID }}Auth func(string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{ pascalize .ID }}Auth func(string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
     {{- end }}
     {{- if .IsOAuth2 }}
 
   // {{ pascalize .ID }}Auth registers a function that takes an access token and a collection of required scopes and returns a principal
   // it performs authentication based on an oauth2 bearer token provided in the request
-  {{ pascalize .ID }}Auth func(string, []string) ({{ if not ( eq .Principal "interface{}" ) }}*{{ end }}{{ .Principal }}, error)
+  {{ pascalize .ID }}Auth func(string, []string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
     {{- end }}
   {{- end }}
   {{- if .SecurityDefinitions }}
@@ -169,6 +171,7 @@ type {{ pascalize .Name }}API struct {
     // {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler sets the operation handler for the {{ humanize .Name }} operation
     {{ if ne  .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler {{ if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}Handler
   {{- end }}
+
   // ServeError is called when an error is received, there is a default handler
   // but you can set your own with this
   ServeError     func(http.ResponseWriter, *http.Request, error)

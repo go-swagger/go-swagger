@@ -29,7 +29,7 @@ func NewDeleteOrder(ctx *middleware.Context, handler DeleteOrderHandler) *Delete
 	return &DeleteOrder{Context: ctx, Handler: handler}
 }
 
-/*DeleteOrder swagger:route DELETE /stores/order/{orderId} store deleteOrder
+/* DeleteOrder swagger:route DELETE /stores/order/{orderId} store deleteOrder
 
 Delete purchase order by ID
 
@@ -47,14 +47,12 @@ func (o *DeleteOrder) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDeleteOrderParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

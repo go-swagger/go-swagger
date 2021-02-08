@@ -19,7 +19,7 @@ func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	k := "Statix"
 	schema := definitions[k]
 
-	tr := newTypeResolver("models", specDoc)
+	tr := newTypeResolver("models", "", specDoc)
 	specDoc.Spec().Definitions["StatixItems0"] = *schema.Items.Schema.Items.Schema.Items.Schema
 	schema.Items.Schema.Items.Schema.Items.Schema = spec.RefProperty("#/definitions/StatixItems0")
 	tr.KnownDefs["StatixItems0"] = struct{}{}
@@ -27,7 +27,7 @@ func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	rt, err := tr.ResolveSchema(&schema, false, false)
 	require.NoError(t, err)
 
-	assert.Equal(t, "[][][]models.StatixItems0", rt.AliasedType)
+	assert.Equal(t, "[][][]*models.StatixItems0", rt.AliasedType)
 }
 
 func TestTypeResolver_PointerLifting(t *testing.T) {

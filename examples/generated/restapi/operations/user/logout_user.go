@@ -29,7 +29,7 @@ func NewLogoutUser(ctx *middleware.Context, handler LogoutUserHandler) *LogoutUs
 	return &LogoutUser{Context: ctx, Handler: handler}
 }
 
-/*LogoutUser swagger:route GET /users/logout user logoutUser
+/* LogoutUser swagger:route GET /users/logout user logoutUser
 
 Logs out current logged in user session
 
@@ -45,14 +45,12 @@ func (o *LogoutUser) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewLogoutUserParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -1,0 +1,183 @@
+swagger: '2.0'
+basePath: /
+host: localhost
+info:
+  version: 0.1.0
+  title: Check format validations
+  termsOfService: |
+    There are actually none.
+  license:
+    name: 'Apache 2.0'
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /{p0}/{p1}:
+    get:
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: '#/definitions/object'
+        - name: p0
+          in: path
+          required: true
+          type: string
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p1
+          required: true
+          in: path
+          type: string
+          format: date
+          pattern: '(\d+)/(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p2
+          in: query
+          type: string
+          format: uuid
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p3
+          in: query
+          type: string
+          format: datetime
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p4
+          in: query
+          type: string
+          format: bsonobjectid
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p5
+          in: query
+          type: string
+          format: duration
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+        - name: p6
+          in: query
+          type: string
+          format: byte
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+      responses:
+        default:
+          description: error
+
+  /:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+        - name: upload
+          required: true
+          in: formData
+          type: file
+          pattern: '(\d+)-(\d+)'
+          minLength: 12
+          maxLength: 16
+      responses:
+        default:
+          description: error
+
+definitions:
+  object:
+    required: [ p0, p1, p7, p8, p9, p10, p11 ]
+    properties:
+      p0:
+        type: string
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p1:
+        type: string
+        format: date
+        pattern: '(\d+)/(\d+)'
+        minLength: 12
+        maxLength: 16
+      p1Nullable:
+        type: string
+        format: date
+        pattern: '(\d+)/(\d+)'
+        minLength: 12
+        maxLength: 16
+        x-nullable: true
+      p2:
+        type: string
+        format: uuid
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p3:
+        type: string
+        format: datetime
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p4:
+        type: string
+        format: bsonobjectid
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p5:
+        type: string
+        format: duration
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p6:
+        type: string
+        format: byte
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p7:
+        type: string
+        format: binary
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+      p8:
+        $ref: '#/definitions/aliasedDate'
+      p9:
+        $ref: '#/definitions/aliasedReader'
+      p10:
+        type: string
+        pattern: '(\d+)-(\d+)'
+        minLength: 12
+        maxLength: 16
+        x-nullable: false
+      p11:
+        $ref: '#/definitions/aliasedString'
+
+  aliasedDate:
+        type: string
+        format: date
+        pattern: '(\d+)/(\d+)'
+        minLength: 16
+        maxLength: 20
+
+  aliasedReader:
+        type: string
+        format: binary
+        pattern: '(\d+)/(\d+)'
+        minLength: 16
+        maxLength: 20
+  aliasedString:
+        type: string
+        pattern: '(\d+)/(\d+)'
+        minLength: 16
+        maxLength: 20

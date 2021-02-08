@@ -1,0 +1,14 @@
+response:
+  get:
+    responses:
+      200:
+        description: OK
+        schema:
+          $ref: '#/definitions/SameFileReference'
+
+definitions:
+  SameFileReference:
+    type: object
+    properties:
+      name:
+        type: string

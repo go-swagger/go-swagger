@@ -50,6 +50,9 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	//
 	// Example:
 	// api.APIAuthorizer = security.Authorized()
+	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
+	// todos.FindMaxParseMemory = 32 << 20
+
 	if api.TodosAddOneHandler == nil {
 		api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
 			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
@@ -86,18 +89,18 @@ func configureTLS(tlsConfig *tls.Config) {
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
-// scheme value will be set accordingly: "http", "https" or "unix"
+// scheme value will be set accordingly: "http", "https" or "unix".
 func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
-// The middleware executes after routing but before authentication, binding and validation
+// The middleware executes after routing but before authentication, binding and validation.
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
-// So this is a good place to plug in a panic handling middleware, logging and metrics
+// So this is a good place to plug in a panic handling middleware, logging and metrics.
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	return handler
 }
