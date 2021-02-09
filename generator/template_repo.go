@@ -179,15 +179,16 @@ func defaultAssets() map[string][]byte {
 		"swagger_json_embed.gotmpl": MustAsset("templates/swagger_json_embed.gotmpl"),
 
 		// server templates
-		"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
-		"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),
-		"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
-		"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
-		"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
-		"server/server.gotmpl":       MustAsset("templates/server/server.gotmpl"),
-		"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
-		"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
-		"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
+		"server/parameter.gotmpl":        MustAsset("templates/server/parameter.gotmpl"),
+		"server/urlbuilder.gotmpl":       MustAsset("templates/server/urlbuilder.gotmpl"),
+		"server/responses.gotmpl":        MustAsset("templates/server/responses.gotmpl"),
+		"server/operation.gotmpl":        MustAsset("templates/server/operation.gotmpl"),
+		"server/builder.gotmpl":          MustAsset("templates/server/builder.gotmpl"),
+		"server/server.gotmpl":           MustAsset("templates/server/server.gotmpl"),
+		"server/configureapi.gotmpl":     MustAsset("templates/server/configureapi.gotmpl"),
+		"server/autoconfigureapi.gotmpl": MustAsset("templates/server/autoconfigureapi.gotmpl"),
+		"server/main.gotmpl":             MustAsset("templates/server/main.gotmpl"),
+		"server/doc.gotmpl":              MustAsset("templates/server/doc.gotmpl"),
 
 		// client templates
 		"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
