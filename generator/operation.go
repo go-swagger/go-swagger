@@ -1288,3 +1288,8 @@ func renameAPIPackage(pkg string) string {
 	// favors readability over perfect deconfliction
 	return "swagger" + pkg
 }
+
+func renameImplementationPackage(pkg string) string {
+	// favors readability over perfect deconfliction
+	return "swagger" + pkg + "impl"
+}

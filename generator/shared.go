@@ -40,13 +40,14 @@ import (
 
 const (
 	// default generation targets structure
-	defaultModelsTarget     = "models"
-	defaultServerTarget     = "restapi"
-	defaultClientTarget     = "client"
-	defaultOperationsTarget = "operations"
-	defaultClientName       = "rest"
-	defaultServerName       = "swagger"
-	defaultScheme           = "http"
+	defaultModelsTarget         = "models"
+	defaultServerTarget         = "restapi"
+	defaultClientTarget         = "client"
+	defaultOperationsTarget     = "operations"
+	defaultClientName           = "rest"
+	defaultServerName           = "swagger"
+	defaultScheme               = "http"
+	defaultImplementationTarget = "implementation"
 )
 
 func init() {
@@ -152,14 +153,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				},
 			}
 		} else {
-			sec.Application = []TemplateOpts{
-				{
-					Name:       "configure",
-					Source:     "asset:serverConfigureapi",
-					Target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
-					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
-					SkipExists: !gen.RegenerateConfigureAPI,
-				},
+			opts := []TemplateOpts{
 				{
 					Name:     "main",
 					Source:   "asset:serverMain",
@@ -191,6 +185,25 @@ func DefaultSectionOpts(gen *GenOpts) {
 					FileName: "doc.go",
 				},
 			}
+			if gen.ImplementationPackage != "" {
+				// Use auto configure template
+				opts = append(opts, TemplateOpts{
+					Name:     "autoconfigure",
+					Source:   "asset:serverAutoconfigureapi",
+					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					FileName: "auto_configure_{{ (snakize (pascalize .Name)) }}.go",
+				})
+
+			} else {
+				opts = append(opts, TemplateOpts{
+					Name:       "configure",
+					Source:     "asset:serverConfigureapi",
+					Target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
+					SkipExists: !gen.RegenerateConfigureAPI,
+				})
+			}
+			sec.Application = opts
 		}
 	}
 	gen.Sections = sec
@@ -263,6 +276,7 @@ type GenOpts struct {
 	ModelPackage           string
 	ServerPackage          string
 	ClientPackage          string
+	ImplementationPackage  string
 	Principal              string
 	PrincipalCustomIface   bool // user-provided interface for Principal (non-nullable)
 	Target                 string
