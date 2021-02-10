@@ -47,6 +47,8 @@ func testClientGenOpts() *GenOpts {
 	g.TemplateDir = ""
 	g.DumpData = false
 	g.IsClient = true
+	g.WithOpenTracing = true
+	g.OpenTracingTags = map[string]string{"tag": "value"}
 	if err := g.EnsureDefaults(); err != nil {
 		panic(err)
 	}

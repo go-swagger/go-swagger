@@ -277,6 +277,8 @@ type GenOpts struct {
 	ServerPackage          string
 	ClientPackage          string
 	ImplementationPackage  string
+	WithOpenTracing        bool
+	OpenTracingTags        map[string]string
 	Principal              string
 	PrincipalCustomIface   bool // user-provided interface for Principal (non-nullable)
 	Target                 string

@@ -21,11 +21,15 @@ import (
 )
 
 type clientOptions struct {
-	ClientPackage string `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
+	ClientPackage   string            `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
+	WithOpenTracing bool              `long:"with-opentracing" description:"includes opentracing support" default:"false"`
+	OpenTracingTags map[string]string `long:"opentracing-tags" description:"the opentracing tags to include in every client span"`
 }
 
 func (co clientOptions) apply(opts *generator.GenOpts) {
 	opts.ClientPackage = co.ClientPackage
+	opts.WithOpenTracing = co.WithOpenTracing
+	opts.OpenTracingTags = co.OpenTracingTags
 }
 
 // Client the command to generate a swagger client

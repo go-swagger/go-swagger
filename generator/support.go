@@ -119,6 +119,8 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		DefaultScheme:     opts.DefaultScheme,
 		DefaultProduces:   opts.DefaultProduces,
 		DefaultConsumes:   opts.DefaultConsumes,
+		WithOpenTracing:   opts.WithOpenTracing,
+		OpenTracingTags:   opts.OpenTracingTags,
 		GenOpts:           opts,
 	}, nil
 }
@@ -143,6 +145,8 @@ type appGenerator struct {
 	DefaultScheme     string
 	DefaultProduces   string
 	DefaultConsumes   string
+	WithOpenTracing   bool
+	OpenTracingTags   map[string]string
 	GenOpts           *GenOpts
 }
 

@@ -59,6 +59,8 @@ func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error
 		DefaultScheme:   "http",
 		DefaultProduces: runtime.JSONMime,
 		DefaultConsumes: runtime.JSONMime,
+		WithOpenTracing: opts.WithOpenTracing,
+		OpenTracingTags: opts.OpenTracingTags,
 		GenOpts:         opts,
 	}, nil
 }
