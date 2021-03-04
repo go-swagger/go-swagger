@@ -1,5 +1,36 @@
 # Authentication sample
 
+The full code of this example is [here][example_code].
+
+Define the following security scheme (in `swagger.yml` specification document):
+
+```yaml
+securityDefinitions:
+  key:
+    type: apiKey
+    in: header
+    name: x-token
+```
+
+Specify the following security requirements for all endpoints: so by default,
+all endpoints use the API key auth.
+
+```yaml
+security:
+  - key: []
+```
+
+Add security princial model definition:
+
+```yaml
+definitions:
+
+...
+
+  principal:
+    type: string
+```
+
 Generate the code with a security principal:
 
 ```shell
@@ -76,5 +107,7 @@ Content-Type: application/keyauth.api.v1+json
 Date: Fri, 25 Nov 2016 19:16:49 GMT
 Content-Length: 47
 
-{"code":401,"message":"incorrect api key auth"}       
+{"code":401,"message":"incorrect api key auth"}
 ```
+
+[example_code]: https://github.com/go-swagger/go-swagger/tree/master/examples/authentication
