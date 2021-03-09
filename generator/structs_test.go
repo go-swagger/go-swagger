@@ -149,6 +149,15 @@ func TestPrintTags(t *testing.T) {
 			},
 			ExpectedTags: "\"json:\\\"field\\\" example:\\\"{\\\\\\\"a\\\\\\\":\\\\\\\"`xyz`\\\\\\\",\\\\\\\"b\\\\\\\":12}\\\" metric:\\\"`on`\\\"\"",
 		},
+		{
+			Title: "with description",
+			Schema: GenSchema{
+				OriginalName: "field",
+				Description: "some description",
+				StructTags: []string{"description"},
+			},
+			ExpectedTags: "`json:\"field\" description:\"some description\"`",
+		},
 	}
 
 	for _, toPin := range fixtures {

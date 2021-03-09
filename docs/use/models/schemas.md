@@ -1305,6 +1305,26 @@ type ObjectWithExample struct {
 }
 ```
 
+#### The description tag
+
+If you add `description` to the list of generated tags from the CLI (`swagger generate ... --struct-tags description`),
+a special description tag is created with the description value taken from the specification.
+
+```yaml
+definitions:
+  objectWithDescription:
+   properties:
+     field:
+       type: string
+       description: "some description"
+```
+
+```go
+type ObjectWithDescription struct {
+    Field string `json:"field,omitempty" description:"\"some description\""`
+}
+```
+
 
 [swagger]: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema-object
 [strfmt]: https://github.com/go-openapi/strfmt
