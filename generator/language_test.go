@@ -74,6 +74,11 @@ func TestGolang_SliceInitializer(t *testing.T) {
 		B func() string
 	}{A: "good", B: func() string { return "" }})
 	require.Error(t, err)
+
+	a3 := []interface{}{}
+	res, err = goSliceInitializer(a3)
+	assert.NoError(t, err)
+	assert.Equal(t, `{}`, res)
 }
 
 func TestGolangInit(t *testing.T) {
