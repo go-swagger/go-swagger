@@ -46,17 +46,21 @@ func makeClient(cmd *cobra.Command, args []string) (*client.{{ pascalize .Name }
 	{{- /* user might define custom mediatype xxx/json and there is no registered ones to handle. */}}
 	// set custom producer and consumer to use the default ones
 	{{ range .Consumes }}
-		{{- if stringContains .MediaType "json" }}
+		{{ range .AllSerializers }}
+			{{- if stringContains .MediaType "json" }}
 		r.Consumers["{{ .MediaType }}"] = runtime.JSONConsumer()
-		{{- else }}
+			{{- else }}
 		// warning: consumes {{ .MediaType }} is not supported by go-swagger cli yet
+			{{- end }}
 		{{- end }}
 	{{ end }}
 	{{ range .Produces }}
-		{{- if stringContains .MediaType "json" }}
+		{{- range .AllSerializers }}
+			{{- if stringContains .MediaType "json" }}
 		r.Producers["{{ .MediaType }}"] = runtime.JSONProducer()
-		{{- else }}
+			{{- else }}
 		// warning: produces {{ .MediaType }} is not supported by go-swagger cli yet
+			{{- end }}
 		{{- end }}
 	{{ end }}
 
