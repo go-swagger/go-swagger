@@ -8,5 +8,6 @@ func (i *AuthImpl) KeyAuth(token string) (interface{}, error) {
 	if token != "example token" {
 		return nil, errors.New("Wrong token")
 	}
-	return nil, nil
+	// if return nil, nil, will cause 401 error
+	return true, nil
 }

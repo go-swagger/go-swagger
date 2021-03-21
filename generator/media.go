@@ -127,6 +127,7 @@ func (a *appGenerator) makeSerializers(mediaTypes []string, known func(string) (
 				ReceiverName:   a.Receiver,
 				Name:           name,
 				Implementation: impl,
+				MediaType:      media,
 			},
 		}
 	}
@@ -146,6 +147,7 @@ func (a *appGenerator) makeSerializers(mediaTypes []string, known func(string) (
 				AppName:        a.Name,
 				ReceiverName:   a.Receiver,
 				Name:           jsonSerializer,
+				MediaType:      runtime.JSONMime,
 				Implementation: impl,
 			},
 		}

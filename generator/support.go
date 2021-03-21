@@ -217,6 +217,12 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	app.DefaultImports[pkgAlias] = serverPath
 	app.ServerPackageAlias = pkgAlias
 
+	// add client import for cli generation
+	clientPath := path.Join(baseImport,
+		a.GenOpts.LanguageOpts.ManglePackagePath(a.ClientPackage, defaultClientTarget))
+	clientPkgAlias := importAlias(clientPath)
+	app.DefaultImports[clientPkgAlias] = clientPath
+
 	return a.GenOpts.renderApplication(app)
 }
 

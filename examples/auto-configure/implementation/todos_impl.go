@@ -1,6 +1,7 @@
 package implementation
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -23,14 +24,18 @@ func (i *TodosHandlerImpl) AddOne(params todos.AddOneParams, principal interface
 	defer i.lock.Unlock()
 	newItem := params.Body
 	if newItem == nil {
-		return todos.NewAddOneDefault(http.StatusBadRequest).WithPayload(&models.Error{})
+		return todos.NewAddOneDefault(http.StatusBadRequest).
+			WithPayload(&models.Error{
+				Code:    http.StatusBadRequest,
+				Message: &[]string{"Item Body is nil"}[0],
+			})
 	}
 	// assign new id
 	newItem.ID = i.idx
 	i.idx++
 
 	i.items[newItem.ID] = newItem
-	return todos.NewAddOneCreated()
+	return todos.NewAddOneCreated().WithPayload(newItem)
 }
 
 func (i *TodosHandlerImpl) DestroyOne(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
@@ -74,10 +79,15 @@ func (i *TodosHandlerImpl) UpdateOne(params todos.UpdateOneParams, principal int
 	defer i.lock.Unlock()
 
 	if _, ok := i.items[params.ID]; !ok {
-		return todos.NewUpdateOneDefault(http.StatusNotFound)
+		errStr := fmt.Sprintf("Item with id %v is not found", params.ID)
+		return todos.NewUpdateOneDefault(http.StatusNotFound).
+			WithPayload(&models.Error{
+				Code:    http.StatusNotFound,
+				Message: &errStr,
+			})
 	}
-
+	params.Body.ID = params.ID
 	i.items[params.ID] = params.Body
 
-	return todos.NewUpdateOneOK()
+	return todos.NewUpdateOneOK().WithPayload(params.Body)
 }
