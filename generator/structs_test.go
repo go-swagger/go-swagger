@@ -158,6 +158,15 @@ func TestPrintTags(t *testing.T) {
 			},
 			ExpectedTags: "`json:\"field\" description:\"some description\"`",
 		},
+		{
+			Title: "with multiline description",
+			Schema: GenSchema{
+				OriginalName: "field",
+				Description: "a\ndescription\nspanning\nmultiple\nlines",
+				StructTags: []string{"description"},
+			},
+			ExpectedTags: "\"json:\\\"field\\\" description:\\\"a\\\\ndescription\\\\nspanning\\\\nmultiple\\\\nlines\\\"\"",
+		},
 	}
 
 	for _, toPin := range fixtures {
