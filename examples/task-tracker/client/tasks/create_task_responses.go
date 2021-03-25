@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
@@ -51,6 +52,12 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 Task created
 */
 type CreateTaskCreated struct {
+
+	/* URL to the newly added Task
+
+	   Format: uri
+	*/
+	Location strfmt.URI
 }
 
 func (o *CreateTaskCreated) Error() string {
@@ -58,6 +65,17 @@ func (o *CreateTaskCreated) Error() string {
 }
 
 func (o *CreateTaskCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// hydrates response header Location
+	hdrLocation := response.GetHeader("Location")
+
+	if hdrLocation != "" {
+		vallocation, err := formats.Parse("uri", hdrLocation)
+		if err != nil {
+			return errors.InvalidType("Location", "header", "strfmt.URI", hdrLocation)
+		}
+		o.Location = *(vallocation.(*strfmt.URI))
+	}
 
 	return nil
 }

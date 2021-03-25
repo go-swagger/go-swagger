@@ -23,11 +23,14 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientOption is the option for Client methods
+type ClientOption func(*runtime.ClientOperation)
+
 // ClientService is the interface for Client methods
 type ClientService interface {
-	Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter) (*CreateCreated, error)
+	Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCreated, error)
 
-	GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetIDOK, error)
+	GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetIDOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -35,13 +38,12 @@ type ClientService interface {
 /*
   Create creates a new customer to track
 */
-func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter) (*CreateCreated, error) {
+func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCreated, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewCreateParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "create",
 		Method:             "POST",
 		PathPattern:        "/customers",
@@ -53,7 +55,12 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +76,12 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 /*
   GetID gets a customer Id given an s s n
 */
-func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter) (*GetIDOK, error) {
+func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetIDOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewGetIDParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "getId",
 		Method:             "GET",
 		PathPattern:        "/customers",
@@ -87,7 +93,12 @@ func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWrite
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}

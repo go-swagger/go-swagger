@@ -151,7 +151,14 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Task created"
+            "description": "Task created",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the newly added Task"
+              }
+            }
           },
           "default": {
             "$ref": "#/responses/ErrorResponse"
@@ -942,7 +949,14 @@ func init() {
         ],
         "responses": {
           "201": {
-            "description": "Task created"
+            "description": "Task created",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the newly added Task"
+              }
+            }
           },
           "default": {
             "description": "Error response",
