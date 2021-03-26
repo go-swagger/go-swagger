@@ -94,7 +94,7 @@ To install a specific version from source an appropriate tag needs to be checked
 dir=$(mktemp -d)
 git clone https://github.com/go-swagger/go-swagger "$dir" 
 cd "$dir"
-go checkout v0.25.0
+git checkout v0.25.0
 go install -ldflags "-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=$(git describe --tags) -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=$(git rev-parse HEAD)" ./cmd/swagger
 ```
 
