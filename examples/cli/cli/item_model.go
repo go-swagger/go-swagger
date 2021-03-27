@@ -15,24 +15,75 @@ import (
 // register flags to command
 func registerItemFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	completedCmdStr := fmt.Sprintf("%v.completed", cmdPrefix)
-
-	var completedCmdStrDefault bool
-	_ = cmd.PersistentFlags().Bool(completedCmdStr, completedCmdStrDefault, "")
-
-	descriptionCmdStr := fmt.Sprintf("%v.description", cmdPrefix)
-
-	var descriptionCmdStrDefault string
-	_ = cmd.PersistentFlags().String(descriptionCmdStr, descriptionCmdStrDefault, "Required. ")
-
-	if err := cmd.MarkPersistentFlagRequired(descriptionCmdStr); err != nil {
+	if err := registerItemCompleted(cmdPrefix, cmd); err != nil {
 		return err
 	}
 
-	idCmdStr := fmt.Sprintf("%v.id", cmdPrefix)
+	if err := registerItemDescription(cmdPrefix, cmd); err != nil {
+		return err
+	}
 
-	var idCmdStrDefault int64
-	_ = cmd.PersistentFlags().Int64(idCmdStr, idCmdStrDefault, "ReadOnly. ")
+	if err := registerItemID(cmdPrefix, cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func registerItemCompleted(cmdPrefix string, cmd *cobra.Command) error {
+
+	completedDescription := ``
+
+	var completedFlagName string
+	if cmdPrefix == "" {
+		completedFlagName = "completed"
+	} else {
+		completedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
+	}
+
+	var completedFlagDefault bool
+
+	_ = cmd.PersistentFlags().Bool(completedFlagName, completedFlagDefault, completedDescription)
+
+	return nil
+}
+
+func registerItemDescription(cmdPrefix string, cmd *cobra.Command) error {
+
+	descriptionDescription := `Required. `
+
+	var descriptionFlagName string
+	if cmdPrefix == "" {
+		descriptionFlagName = "description"
+	} else {
+		descriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
+	}
+
+	var descriptionFlagDefault string
+
+	_ = cmd.PersistentFlags().String(descriptionFlagName, descriptionFlagDefault, descriptionDescription)
+
+	if err := cmd.MarkPersistentFlagRequired(descriptionFlagName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func registerItemID(cmdPrefix string, cmd *cobra.Command) error {
+
+	idDescription := ``
+
+	var idFlagName string
+	if cmdPrefix == "" {
+		idFlagName = "id"
+	} else {
+		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+	}
+
+	var idFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
 
 	return nil
 }
@@ -41,33 +92,92 @@ func registerItemFlags(cmdPrefix string, cmd *cobra.Command) error {
 func retrieveItemFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	completedCmdStr := fmt.Sprintf("%v.completed", cmdPrefix)
-	if cmd.Flags().Changed(completedCmdStr) {
-		completedValue, err := cmd.Flags().GetBool(completedCmdStr)
-		if err != nil {
-			return err, false
-		}
-		m.Completed = completedValue
-		retAdded = true
+	err, completedAdded := retrieveItemCompletedFlags(m, cmdPrefix, cmd)
+	if err != nil {
+		return err, false
 	}
-	descriptionCmdStr := fmt.Sprintf("%v.description", cmdPrefix)
-	if cmd.Flags().Changed(descriptionCmdStr) {
-		descriptionValue, err := cmd.Flags().GetString(descriptionCmdStr)
-		if err != nil {
-			return err, false
-		}
-		m.Description = &descriptionValue
-		retAdded = true
-	}
-	idCmdStr := fmt.Sprintf("%v.id", cmdPrefix)
-	if cmd.Flags().Changed(idCmdStr) {
-		idValue, err := cmd.Flags().GetInt64(idCmdStr)
-		if err != nil {
-			return err, false
-		}
-		m.ID = idValue
-		retAdded = true
-	}
+	retAdded = retAdded || completedAdded
 
+	err, descriptionAdded := retrieveItemDescriptionFlags(m, cmdPrefix, cmd)
+	if err != nil {
+		return err, false
+	}
+	retAdded = retAdded || descriptionAdded
+
+	err, idAdded := retrieveItemIDFlags(m, cmdPrefix, cmd)
+	if err != nil {
+		return err, false
+	}
+	retAdded = retAdded || idAdded
+
+	return nil, retAdded
+}
+
+func retrieveItemCompletedFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	completedFlagName := fmt.Sprintf("%v.completed", cmdPrefix)
+	if cmd.Flags().Changed(completedFlagName) {
+
+		var completedFlagName string
+		if cmdPrefix == "" {
+			completedFlagName = "completed"
+		} else {
+			completedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
+		}
+
+		completedFlagValue, err := cmd.Flags().GetBool(completedFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Completed = completedFlagValue
+
+		retAdded = true
+	}
+	return nil, retAdded
+}
+
+func retrieveItemDescriptionFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	descriptionFlagName := fmt.Sprintf("%v.description", cmdPrefix)
+	if cmd.Flags().Changed(descriptionFlagName) {
+
+		var descriptionFlagName string
+		if cmdPrefix == "" {
+			descriptionFlagName = "description"
+		} else {
+			descriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
+		}
+
+		descriptionFlagValue, err := cmd.Flags().GetString(descriptionFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Description = &descriptionFlagValue
+
+		retAdded = true
+	}
+	return nil, retAdded
+}
+
+func retrieveItemIDFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	idFlagName := fmt.Sprintf("%v.id", cmdPrefix)
+	if cmd.Flags().Changed(idFlagName) {
+
+		var idFlagName string
+		if cmdPrefix == "" {
+			idFlagName = "id"
+		} else {
+			idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		}
+
+		idFlagValue, err := cmd.Flags().GetInt64(idFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.ID = idFlagValue
+
+		retAdded = true
+	}
 	return nil, retAdded
 }

@@ -1,0 +1,100 @@
+{{/*util functions to generate register and retrieve functions for a model*/}}
+
+{{ define "modelschemacli" }}
+    {{/*some guards to prevent rendering unsupported models types. TODO: remove this guard*/}}
+    {{if or .IsPrimitive .IsComplexObject }}
+        {{ template "modelschemacliinternal" . }}
+    {{ else }}
+        // {{ .GoType }} register and retrieve functions are not rendered by go-swagger cli
+    {{ end }}
+{{ end }}
+
+{{ define "modelschemacliinternal" }} {{/*used by model definition and in params model*/}}
+{{- $modelName := .Name }}
+
+// register flags to command
+func register{{pascalize .Name}}Flags(cmdPrefix string, cmd *cobra.Command) error {
+	{{ range .AllOf }}
+    // allOf {{.Name}} is not supported by go-swwagger cli yet
+    {{ end }}
+    {{ range .Properties }}
+    if err := register{{ pascalize $modelName }}{{ pascalize .Name }}(cmdPrefix, cmd); err != nil{
+        return err
+    }
+    {{ end }}
+    return nil
+}
+
+{{/*register functions for each fields in this model */}}
+{{ range .Properties }}
+func register{{ pascalize $modelName }}{{ pascalize .Name }}(cmdPrefix string, cmd *cobra.Command) error{
+        {{- if .IsPrimitive }}
+            {{ template "primitiveregistrator" . }}
+            {{- if .Required }}
+                {{ template "requiredregistrator" . }}
+		    {{ end }}
+        {{- else if .IsArray }}
+    // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet 
+        {{- else if .IsMap }}
+    // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
+        {{- else }} {{/* struct case */}}
+            {{ template "modelregistrator" . }}
+            {{- if .Required }}
+                {{ template "requiredregistrator" . }}
+		    {{ end }}
+        {{- end }}
+		{{/* mark required param for the flag */}}
+    return nil
+}
+{{ end }} {{/*Properties*/}}
+
+{{ $modelPkg := "" }} {{/*model will use GenDefinition's Package field, and operation schema will use Pkg field in resolvedType. TODO: find a better way to get pkg name*/}}
+{{ if hasfield . "Package"}}
+    {{ $modelPkg = .Package}}
+{{ else }}
+    {{ $modelPkg = .Pkg}}
+{{ end }}
+{{ $modelType := .GoType }}
+// retrieve flags from commands, and set value in model. Return true if any flag is passed by user to fill model field.
+func retrieve{{pascalize $modelName }}Flags(m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{.GoType}}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+    retAdded := false
+	{{ range .AllOf }}
+     // allOf {{.Name}} is not supported by go-swwagger cli yet
+    {{ end }}
+    {{ range .Properties }}
+        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(m, cmdPrefix, cmd)
+        if err != nil{
+            return err, false
+        }
+        retAdded = retAdded || {{ camelize .Name }}Added
+    {{ end }}
+    return nil, retAdded
+}
+
+{{ range .Properties }}
+func retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{ $modelType }}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+    retAdded := false
+    {{- $flagNameVar := printf "%vFlagName" (camelize .Name) }}
+    {{- $flagValueVar := printf "%vFlagValue" (camelize .Name) }}
+    {{ $flagNameVar }} := fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
+    if cmd.Flags().Changed({{ $flagNameVar }}) {
+        {{- if .IsPrimitive }}
+            {{ template "primitiveretriever" . }}
+            retAdded = true
+        {{- else if .IsArray }}
+        // warning: {{ .Name }} array type {{ .GoType }} is not supported by go-swagger cli yet
+        {{- else if .IsMap }}
+        // warning: {{ .Name }} map type {{ .GoType }} is not supported by go-swagger cli yet
+        {{- else if .IsComplexObject }} {{/*struct case. TODO: move this out of Changed() block, since we want to recurse regardless of flag set*/}}
+        {{ $flagValueVar }} := {{.Package}}.{{.GoType}}{}
+        err, added := retrieve{{pascalize .Name}}Flags({{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+        if err != nil{
+            return err, false
+        }
+        retAdded = retAdded || added
+        {{- end }}
+	}
+    return nil, retAdded
+}
+{{ end }} {{/*properties*/}}
+{{ end }} {{/*define*/}}

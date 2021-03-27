@@ -39,44 +39,52 @@ func runOperationTodosAddOne(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewAddOneParams()
-	if cmd.Flags().Changed("body") {
-		// Read body string from cmd and unmarshal
-		bodyValueStr, err := cmd.Flags().GetString("body")
-		if err != nil {
-			return err
-		}
-		bodyValue := models.Item{}
-		if err := bodyValue.UnmarshalBinary([]byte(bodyValueStr)); err != nil {
-			return fmt.Errorf("cannot unmarshal body string in models.Item: %v", err)
-		}
-		params.Body = &bodyValue
-	}
-	bodyValueModel := params.Body
-	if swag.IsZero(bodyValueModel) {
-		bodyValueModel = &models.Item{}
-	}
-	err, added := retrieveItemFlags(bodyValueModel, "item", cmd)
-	if err != nil {
+	if err, _ := retrieveOperationTodosAddOneBodyFlag(params, "", cmd); err != nil {
 		return err
 	}
-	if added {
-		params.Body = bodyValueModel
-	}
-	bodyValueDebugBytes, err := json.Marshal(params.Body)
-	if err != nil {
-		return err
-	}
-	logDebugf("Body payload: %v", string(bodyValueDebugBytes))
 	// make request and then print result
-	resp, respErr := appCli.Todos.AddOne(params, nil)
-	if err := printOperationTodosAddOneResult(resp, respErr); err != nil {
+	if err := printOperationTodosAddOneResult(appCli.Todos.AddOne(params, nil)); err != nil {
 		return err
 	}
 	return nil
 }
 
+func retrieveOperationTodosAddOneBodyFlag(m *todos.AddOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("body") {
+		// Read body string from cmd and unmarshal
+		bodyValueStr, err := cmd.Flags().GetString("body")
+		if err != nil {
+			return err, false
+		}
+
+		bodyValue := models.Item{}
+		if err := json.Unmarshal([]byte(bodyValueStr), &bodyValue); err != nil {
+			return fmt.Errorf("cannot unmarshal body string in models.Item: %v", err), false
+		}
+		m.Body = &bodyValue
+	}
+	bodyValueModel := m.Body
+	if swag.IsZero(bodyValueModel) {
+		bodyValueModel = &models.Item{}
+	}
+	err, added := retrieveItemFlags(bodyValueModel, "item", cmd)
+	if err != nil {
+		return err, false
+	}
+	if added {
+		m.Body = bodyValueModel
+	}
+	bodyValueDebugBytes, err := json.Marshal(m.Body)
+	if err != nil {
+		return err, false
+	}
+	logDebugf("Body payload: %v", string(bodyValueDebugBytes))
+	return nil, retAdded
+}
+
 // printOperationTodosAddOneResult prints output to stdout
-func printOperationTodosAddOneResult(resp *todos.AddOneCreated, respErr error) error {
+func printOperationTodosAddOneResult(resp0 *todos.AddOneCreated, respErr error) error {
 	if respErr != nil {
 
 		var iResp interface{} = respErr
@@ -96,8 +104,8 @@ func printOperationTodosAddOneResult(resp *todos.AddOneCreated, respErr error) e
 		return respErr
 	}
 
-	if resp.Payload != nil {
-		msgStr, err := json.Marshal(resp.Payload)
+	if resp0.Payload != nil {
+		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
 			return err
 		}
@@ -109,14 +117,31 @@ func printOperationTodosAddOneResult(resp *todos.AddOneCreated, respErr error) e
 
 // registerOperationTodosAddOneParamFlags registers all flags needed to fill params
 func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosAddOneBodyParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	var bodyFlagName string
+	if cmdPrefix == "" {
+		bodyFlagName = "body"
+	} else {
+		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+	}
 
 	exampleBodyStr, err := json.Marshal(&models.Item{})
 	if err != nil {
 		return err
 	}
-	_ = cmd.PersistentFlags().String("body", "", fmt.Sprintf("Optional json string for body of form %v.", string(exampleBodyStr)))
+	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
 
 	// add flags for body
-	registerItemFlags("item", cmd)
+	if err := registerItemFlags("item", cmd); err != nil {
+		return err
+	}
+
 	return nil
 }

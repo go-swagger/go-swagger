@@ -37,30 +37,62 @@ func runOperationTodosFindTodos(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewFindTodosParams()
-	if cmd.Flags().Changed("limit") {
-		limitValue, err := cmd.Flags().GetInt32("limit")
-		if err != nil {
-			return err
-		}
-		params.Limit = &limitValue
+	if err, _ := retrieveOperationTodosFindTodosLimitFlag(params, "", cmd); err != nil {
+		return err
 	}
-	if cmd.Flags().Changed("since") {
-		sinceValue, err := cmd.Flags().GetInt64("since")
-		if err != nil {
-			return err
-		}
-		params.Since = &sinceValue
+	if err, _ := retrieveOperationTodosFindTodosSinceFlag(params, "", cmd); err != nil {
+		return err
 	}
 	// make request and then print result
-	resp, respErr := appCli.Todos.FindTodos(params, nil)
-	if err := printOperationTodosFindTodosResult(resp, respErr); err != nil {
+	if err := printOperationTodosFindTodosResult(appCli.Todos.FindTodos(params, nil)); err != nil {
 		return err
 	}
 	return nil
 }
 
+func retrieveOperationTodosFindTodosLimitFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("limit") {
+
+		var limitFlagName string
+		if cmdPrefix == "" {
+			limitFlagName = "limit"
+		} else {
+			limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+		}
+
+		limitFlagValue, err := cmd.Flags().GetInt32(limitFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Limit = &limitFlagValue
+
+	}
+	return nil, retAdded
+}
+func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("since") {
+
+		var sinceFlagName string
+		if cmdPrefix == "" {
+			sinceFlagName = "since"
+		} else {
+			sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+		}
+
+		sinceFlagValue, err := cmd.Flags().GetInt64(sinceFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Since = &sinceFlagValue
+
+	}
+	return nil, retAdded
+}
+
 // printOperationTodosFindTodosResult prints output to stdout
-func printOperationTodosFindTodosResult(resp *todos.FindTodosOK, respErr error) error {
+func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) error {
 	if respErr != nil {
 
 		var iResp interface{} = respErr
@@ -80,8 +112,8 @@ func printOperationTodosFindTodosResult(resp *todos.FindTodosOK, respErr error) 
 		return respErr
 	}
 
-	if resp.Payload != nil {
-		msgStr, err := json.Marshal(resp.Payload)
+	if resp0.Payload != nil {
+		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
 			return err
 		}
@@ -93,12 +125,46 @@ func printOperationTodosFindTodosResult(resp *todos.FindTodosOK, respErr error) 
 
 // registerOperationTodosFindTodosParamFlags registers all flags needed to fill params
 func registerOperationTodosFindTodosParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosFindTodosLimitParamFlags("", cmd); err != nil {
+		return err
+	}
+	if err := registerOperationTodosFindTodosSinceParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
 
-	var limitDefault int32 = 20
-	_ = cmd.PersistentFlags().Int32("limit", limitDefault, "")
+func registerOperationTodosFindTodosLimitParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	var sinceDefault int64
-	_ = cmd.PersistentFlags().Int64("since", sinceDefault, "")
+	limitDescription := ``
+
+	var limitFlagName string
+	if cmdPrefix == "" {
+		limitFlagName = "limit"
+	} else {
+		limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+	}
+
+	var limitFlagDefault int32 = 20
+
+	_ = cmd.PersistentFlags().Int32(limitFlagName, limitFlagDefault, limitDescription)
+
+	return nil
+}
+func registerOperationTodosFindTodosSinceParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	sinceDescription := ``
+
+	var sinceFlagName string
+	if cmdPrefix == "" {
+		sinceFlagName = "since"
+	} else {
+		sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+	}
+
+	var sinceFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(sinceFlagName, sinceFlagDefault, sinceDescription)
 
 	return nil
 }
