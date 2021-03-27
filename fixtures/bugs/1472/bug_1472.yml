@@ -1,0 +1,28 @@
+swagger: '2.0'
+basePath: '/'
+consumes:
+  - application/json
+produces:
+  - application/json
+host: example.com
+info:
+  title: 'My'
+  version: '1.0.0'
+paths:
+  /endpoint:
+    get:
+      security:
+        - opBearer: []
+      operationId: getEndpoint
+      tags:
+        - ops
+      responses:
+        200:
+          description: OK
+
+securityDefinitions:          
+  opBearer:
+    in: header
+    name: Authorization
+    type: apiKey
+    x-go-name: OpBearer

@@ -56,7 +56,7 @@ type {{ pascalize .Name }} struct {
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
   route, rCtx, _ := {{ .ReceiverName }}.Context.RouteInfo(r)
   if rCtx != nil {
-    r = rCtx
+    *r = *rCtx
   }
   var Params = New{{ pascalize .Name }}Params()
 
@@ -67,7 +67,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
     return
   }
   if aCtx != nil {
-    r = aCtx
+    *r = *aCtx
   }
   var principal {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}
   if uprinc != nil {
