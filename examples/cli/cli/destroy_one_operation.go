@@ -37,23 +37,39 @@ func runOperationTodosDestroyOne(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewDestroyOneParams()
-	if cmd.Flags().Changed("id") {
-		idValue, err := cmd.Flags().GetInt64("id")
-		if err != nil {
-			return err
-		}
-		params.ID = idValue
+	if err, _ := retrieveOperationTodosDestroyOneIDFlag(params, "", cmd); err != nil {
+		return err
 	}
 	// make request and then print result
-	resp, respErr := appCli.Todos.DestroyOne(params, nil)
-	if err := printOperationTodosDestroyOneResult(resp, respErr); err != nil {
+	if err := printOperationTodosDestroyOneResult(appCli.Todos.DestroyOne(params, nil)); err != nil {
 		return err
 	}
 	return nil
 }
 
+func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("id") {
+
+		var idFlagName string
+		if cmdPrefix == "" {
+			idFlagName = "id"
+		} else {
+			idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		}
+
+		idFlagValue, err := cmd.Flags().GetInt64(idFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.ID = idFlagValue
+
+	}
+	return nil, retAdded
+}
+
 // printOperationTodosDestroyOneResult prints output to stdout
-func printOperationTodosDestroyOneResult(resp *todos.DestroyOneNoContent, respErr error) error {
+func printOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) error {
 	if respErr != nil {
 
 		var iResp interface{} = respErr
@@ -80,11 +96,28 @@ func printOperationTodosDestroyOneResult(resp *todos.DestroyOneNoContent, respEr
 
 // registerOperationTodosDestroyOneParamFlags registers all flags needed to fill params
 func registerOperationTodosDestroyOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosDestroyOneIDParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
 
-	var idDefault int64
-	_ = cmd.PersistentFlags().Int64("id", idDefault, "Required. ")
+func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	if err := cmd.MarkPersistentFlagRequired("id"); err != nil {
+	idDescription := `Required. `
+
+	var idFlagName string
+	if cmdPrefix == "" {
+		idFlagName = "id"
+	} else {
+		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+	}
+
+	var idFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+
+	if err := cmd.MarkPersistentFlagRequired(idFlagName); err != nil {
 		return err
 	}
 

@@ -1,0 +1,74 @@
+{{/*util functions to run or register cmd flags*/}}
+
+{{ define "flagdescriptionvar" }}
+    {{- $fullDescription := (escapeBackticks .Description) }}
+    {{- if .Required}}
+        {{- $fullDescription = printf "Required. %v" $fullDescription}}
+    {{- end}}
+    {{/*
+    {{- if .ReadOnly}}
+        {{- $fullDescription = printf "ReadOnly. %v" $fullDescription}}
+    {{- end}}
+     */}}
+    {{ camelize .Name }}Description := `{{ $fullDescription }}`
+{{ end }}
+
+{{ define "flagnamevar" }}
+    {{- $flagNameVar := printf "%vFlagName" (camelize .Name) }}
+    var {{ $flagNameVar }} string
+    if cmdPrefix == "" {
+        {{ $flagNameVar }} = "{{ .Name }}"
+    }else{
+        {{ $flagNameVar }} = fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
+    }
+{{ end }}
+
+{{ define "flagdefaultvar" }}
+    {{ $defaultVar := printf "%vFlagDefault" (camelize .Name) }}
+    var {{ $defaultVar}} {{ .GoType }} {{ if .Default }}= {{ printf "%#v" .Default }}{{ end }} 
+{{ end }}
+
+{{ define "requiredregistrator" }}
+	if err := cmd.MarkPersistentFlagRequired({{ camelize .Name }}FlagName); err != nil{
+		return err
+	}
+{{ end }}
+
+{{/* intended to be used on struct GenSchema with .IsPrimitive */}}
+{{ define "primitiveregistrator" }}
+    {{- if or (eq .GoType "int64") (eq .GoType "int32") (eq .GoType "string") (eq .GoType "float64") (eq .GoType "float32") (eq .GoType "bool") }}
+        {{ template "flagdescriptionvar" . }}
+        {{ template "flagnamevar" . }}
+        {{ template "flagdefaultvar" . }}
+        _ = cmd.PersistentFlags().{{ pascalize .GoType }}({{ camelize .Name }}FlagName, {{ camelize .Name }}FlagDefault, {{ (camelize .Name) }}Description)
+    {{- else if eq .GoType "strfmt.DateTime" }} {{/* read as string */}}
+        {{ template "flagdescriptionvar" . }}
+        {{ template "flagnamevar" . }}
+        _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", {{ (camelize .Name) }}Description)
+    {{- else }}
+        // warning: primitive {{.Name}} {{.GoType }} is not supported by go-swagger cli yet
+    {{- end }}
+{{ end }}
+
+{{ define "modelregistrator" }} {{/* register a model field that has a schema */}}
+    {{ template "flagnamevar" . }}
+    register{{ pascalize .Name }}Flags({{ camelize .Name }}FlagName, cmd)
+{{ end }}
+
+{{/* each body parameter gets a string flag to input json raw string */}}
+{{ define "modelparamstringregistrator" }}
+    {{ template "flagnamevar" . }}
+    {{/* TODO: maybe the example string is not required? Some fields do not show up since marked as omitempty*/}}
+    example{{pascalize .Name }}Str,err := json.Marshal(&{{if .Pkg}}{{toPackageName .Pkg}}.{{end}}{{ .GoType }}{})
+    if err != nil {
+        return err
+    }
+    _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", fmt.Sprintf("Optional json string for [{{ .Name }}] of form %v.{{ .Description }}", string(example{{pascalize .Name }}Str)))
+{{ end }}
+
+{{ define "modelparamregistrator" }} {{/* register a param that has a schema */}}
+    // add flags for body {{/*use go type as the flag prefix. There is no good way to determine the original str case in spec*/}}
+	if err := register{{ pascalize (dropPackage .GoType) }}Flags("{{ camelize (dropPackage .GoType) }}", cmd); err != nil {
+        return err
+    }
+{{ end }}

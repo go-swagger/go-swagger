@@ -23,7 +23,7 @@ import (
 func makeOperation{{pascalize .Package}}{{ pascalize .Name }}Cmd() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "{{ .Name }}",
-		Short: `{{.Description}}`,
+		Short: `{{ escapeBackticks .Description}}`,
 		RunE: runOperation{{pascalize .Package}}{{ pascalize .Name }},
 	}
 
@@ -34,8 +34,11 @@ func makeOperation{{pascalize .Package}}{{ pascalize .Name }}Cmd() (*cobra.Comma
 	return cmd, nil
 }
 
-// runOperation{{pascalize .Package}}{{ pascalize .Name }} uses cmd flags to call endpoint api
-func runOperation{{pascalize .Package}}{{ pascalize .Name }}(cmd *cobra.Command, args []string) error{
+{{ $operationGroup := .Package }}
+{{ $operation := .Name }}
+{{ $operationPkgAlias := .PackageAlias }}
+// runOperation{{pascalize $operationGroup }}{{ pascalize $operation }} uses cmd flags to call endpoint api
+func runOperation{{pascalize $operationGroup }}{{ pascalize $operation }}(cmd *cobra.Command, args []string) error{
 	appCli, err := makeClient(cmd, args)
 	if err != nil {
 		return err
@@ -43,80 +46,81 @@ func runOperation{{pascalize .Package}}{{ pascalize .Name }}(cmd *cobra.Command,
 	// retrieve flag values from cmd and fill params
 	params := {{ .PackageAlias }}.New{{ pascalize .Name}}Params()
 {{- range .Params }}
-	{{- $flagStr := .Name }}
-	{{- $flagValueVar := printf "%vValue" (camelize .Name) }}
-		{{- /*only set the param if user set the flag*/}}
-	if cmd.Flags().Changed("{{ $flagStr }}") {
-	{{- if .IsPrimitive }}
-		{{- if or (eq .GoType "int64") (eq .GoType "int32") (eq .GoType "string") (eq .GoType "float32") (eq .GoType "bool") }}
-		{{ $flagValueVar }}, err := cmd.Flags().Get{{pascalize .GoType}}("{{ $flagStr }}")
-		if err != nil{
-			return err
-		}
-		{{- else }}
-			// warning: primitive {{.GoType}} is not supported by go-swagger cli yet
-		{{- end}}
-	{{- else if and .IsBodyParam .Schema  }}
-		{{- /*schema payload can be passed in cmd as a string and here is unmarshalled to model struct and attached in params*/}}
-		// Read {{ $flagStr }} string from cmd and unmarshal
-		{{ $flagValueVar }}Str, err := cmd.Flags().GetString("{{ $flagStr }}")
-		if err != nil {
-			return err
-		}
-		{{ $flagValueVar }} := {{.GoType}}{}
-		if err := {{ $flagValueVar }}.UnmarshalBinary([]byte({{ $flagValueVar }}Str)); err!= nil{
-			return fmt.Errorf("cannot unmarshal {{ $flagStr }} string in {{.GoType}}: %v", err)
-		}
-	{{- else }}
-		// warning: {{.GoType}} is not supported by go-swagger cli yet
-	{{- end }} {{/*end go type case*/}}
-	{{- if .IsNullable }}
-		params.{{ .ID }} = &{{ $flagValueVar }} 
-	{{- else }}
-		params.{{ .ID }} = {{ $flagValueVar }} 
-	{{- end }}
-	}
-	{{- if and .IsBodyParam .Schema }}
-		{{- /* Add flags to capture fields in Body. If previously Body struct was constructed in unmarshalling body string,
-			then reuse the struct, otherwise construct an empty value struct to fill. Here body field flags overwrites
-			unmarshalled body string values. */}}
-		{{- $flagModelVar := printf "%vModel" (camelize $flagValueVar) }}
-	{{ $flagModelVar }} := params.{{ .ID }}
-	if swag.IsZero({{ $flagModelVar }}){
-		{{ $flagModelVar }} = {{- if .IsNullable }}&{{- end }}{{.GoType}}{}
-	}
-		{{- /*Only attach the body struct in params if user passed some flag filling some body fields.*/}}
-	err, added := retrieve{{ pascalize (dropPackage .GoType) }}Flags({{ $flagModelVar }}, "{{ camelize (dropPackage .GoType) }}", cmd)
-	if err != nil{
+	if err, _ := retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{ pascalize .Name }}Flag(params, "", cmd); err != nil{
 		return err
 	}
-	if added {
-		params.{{.ID}} = {{ $flagModelVar }}
-	}
-		{{- $bodyDebugVar := printf "%vDebugBytes" (camelize $flagValueVar) }}
-	{{ $bodyDebugVar }}, err := json.Marshal(params.{{.ID}})
-	if err != nil{
-		return err
-	}
-	logDebugf("{{.ID }} payload: %v", string({{ $bodyDebugVar }}))
-	{{- end }}
-{{- end }}
+{{- end }} {{/*Params*/}}
 	// make request and then print result
-{{- /*Package string is the operation name*/}} {{/*TODO: this is broken for multi success response case*/}}
-{{- if .Authorized}}
-	resp, respErr := appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params, nil)
-{{- else }}
-	resp, respErr := appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params)
-{{- end }}
-	if err :=  printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(resp, respErr); err != nil{
+{{- /*Package string is the operation name*/}}
+	if err :=  printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params {{- if .Authorized}}, nil{{ end }})); err != nil{
 		return err
 	}
 	return nil
 }
 
+{{/*functions to retreive each field of params*/}}
+{{- range .Params }}
+func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{ pascalize .Name }}Flag(m *{{ $operationPkgAlias }}.{{ pascalize $operation }}Params, cmdPrefix string, cmd *cobra.Command) (error,bool){
+	retAdded := false
+	{{- $flagStr := .Name }}
+	{{- $flagValueVar := printf "%vValue" (camelize .Name) }}
+		{{- /*only set the param if user set the flag*/}}
+	if cmd.Flags().Changed("{{ $flagStr }}") {
+	{{- if .IsPrimitive }}
+		{{ template "primitiveretriever" . }}
+	{{- else if .IsArray }} {{/*TODO: add a string to unmarshall into array*/}}
+		// warning: {{ .Name }} array type {{.GoType}} is not supported by go-swagger cli yet
+	{{- else if .IsMap }}
+		// warning: {{ .Name }} map type {{.GoType}} is not supported by go-swagger cli yet
+	{{- else if and .IsBodyParam .Schema  }}
+		{{- /*schema payload can be passed in cmd as a string and here is unmarshalled to model struct and attached in params*/}}
+		// Read {{ $flagStr }} string from cmd and unmarshal
+		{{ $flagValueVar }}Str, err := cmd.Flags().GetString("{{ $flagStr }}")
+		if err != nil {
+			return err, false
+		}
+		{{/*Note anonymous body schema is not pointer*/}}
+		{{ $flagValueVar }} := {{if .Pkg}}{{toPackageName .Pkg}}.{{end}}{{.GoType}}{}
+		if err := json.Unmarshal([]byte({{ $flagValueVar }}Str), &{{ $flagValueVar }}); err!= nil{
+			return fmt.Errorf("cannot unmarshal {{ $flagStr }} string in {{.GoType}}: %v", err), false
+		}
+		m.{{ .ID }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
+	{{- else }}
+		// warning: {{.GoType}} is not supported by go-swagger cli yet
+	{{- end }} {{/*end go type case*/}}
+	}
+	{{- if and .IsBodyParam .Schema (not .IsArray) (not .IsMap)}}
+		{{- /* Add flags to capture fields in Body. If previously Body struct was constructed in unmarshalling body string,
+			then reuse the struct, otherwise construct an empty value struct to fill. Here body field flags overwrites
+			unmarshalled body string values. */}}
+		{{- $flagModelVar := printf "%vModel" (camelize $flagValueVar) }}
+	{{ $flagModelVar }} := m.{{ .ID }}
+	if swag.IsZero({{ $flagModelVar }}){
+		{{ $flagModelVar }} = {{- if .IsNullable }}&{{- end }}{{if .Pkg}}{{toPackageName .Pkg}}.{{end}}{{.GoType}}{}
+	}
+		{{- /*Only attach the body struct in params if user passed some flag filling some body fields.*/}}
+		{{- /* add "&" to $flagModelVar when it is not nullable because the retrieve method always expects a pointer */}}
+	err, added := retrieve{{ pascalize (dropPackage .GoType) }}Flags({{if not .IsNullable}}&{{end}}{{ $flagModelVar }}, "{{ camelize (dropPackage .GoType) }}", cmd)
+	if err != nil{
+		return err, false
+	}
+	if added {
+		m.{{.ID}} = {{ $flagModelVar }}
+	}
+		{{- $bodyDebugVar := printf "%vDebugBytes" (camelize $flagValueVar) }}
+	{{ $bodyDebugVar }}, err := json.Marshal(m.{{.ID}})
+	if err != nil{
+		return err, false
+	}
+	logDebugf("{{.ID }} payload: %v", string({{ $bodyDebugVar }}))
+	{{- end }}
+	return nil, retAdded
+}
+{{- end }} {{/*Params*/}}
+
 // printOperation{{pascalize .Package}}{{ pascalize .Name }}Result prints output to stdout
 {{- /*TODO: handle multiple success response case*/}}
-func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(resp *{{ .SuccessResponse.Package }}.{{ pascalize .SuccessResponse.Name }}, respErr error) error{
+func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .SuccessResponse }}{{ range $i, $v := .SuccessResponses }} resp{{$i}} *{{$v.Package}}.{{pascalize $v.Name}},{{- end }}{{- end }} respErr error) error{
 	if respErr != nil {
 		{{- /*error is of type default model. If we can cast, then print the resp.*/}}
 		{{- with .DefaultResponse }}
@@ -140,10 +144,10 @@ func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(resp *{{ .S
 		{{ end }}
 		return respErr
 	}
-	{{- with .SuccessResponse }}
+	{{- range $i, $v := .SuccessResponses }}
 		{{ if .Schema }}
-	if resp.Payload != nil {
-		msgStr,err := json.Marshal(resp.Payload)
+	if resp{{$i}}.Payload != nil {
+		msgStr,err := json.Marshal(resp{{$i}}.Payload)
 		if err != nil{
 			return err
 		}
@@ -156,42 +160,42 @@ func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(resp *{{ .S
 	return nil
 }
 
-// registerOperation{{pascalize .Package}}{{ pascalize .Name }}ParamFlags registers all flags needed to fill params
-func registerOperation{{pascalize .Package}}{{ pascalize .Name }}ParamFlags(cmd *cobra.Command) error {
+// registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags registers all flags needed to fill params
+func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags(cmd *cobra.Command) error {
 {{- range .Params }}
-	{{- $fullDescription := .Description }}
-	{{- $flagStr := .Name }}
-	{{- if .Required}}
-		{{- $fullDescription = printf "Required. %v" $fullDescription}}
-	{{- end}}
+	if err := registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags("", cmd); err != nil{
+		return err
+	}
+{{- end }}
+	return nil
+}
+
+{{/*register functions for each fields in this operation*/}}
+{{- range .Params }}
+func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags(cmdPrefix string, cmd *cobra.Command) error{
 	{{- if .IsPrimitive }}
-		{{- if or (eq .GoType "int64") (eq .GoType "int32") (eq .GoType "string") (eq .GoType "float32") (eq .GoType "bool") }}
-		{{ $defaultVar := printf "%vDefault" (camelize $flagStr) }}
-		var {{ $defaultVar}} {{ .GoType }} {{ if .HasDefault }}= {{ printf "%#v" .Default }}{{ end }} 
-		_ = cmd.PersistentFlags().{{ pascalize .GoType }}("{{ $flagStr }}", {{ $defaultVar }}, "{{ $fullDescription }}")
-		{{- else }}
-		// warning: primitive {{.GoType }} is not supported by go-swagger cli yet
-		{{- end }}
+		{{ template "primitiveregistrator" . }}
+		{{ if .Required }}
+			{{ template "requiredregistrator" . }}
+		{{ end }}
 	{{- else if and .IsBodyParam .Schema }}
-		{{/* TODO: maybe the example string is not required? Some fields do not show up since marked as omitempty*/}}
-		example{{pascalize .Name }}Str,err := json.Marshal(&{{ .GoType }}{})
-		if err != nil {
-			return err
-		}
-		_ = cmd.PersistentFlags().String("{{ $flagStr }}", "", fmt.Sprintf("Optional json string for {{ $flagStr }} of form %v.{{ .Description }}", string(example{{pascalize .Name }}Str)))
+		{{ template "modelparamstringregistrator" . }}
+		{{ template "modelparamregistrator" . }}
+		{{/* Do not mark body flag as required, since the individial flag for body field will be added separately */}}
 	{{- else }}
 		// warning: go type {{ .GoType }} is not supported by go-swagger cli yet.
 	{{- end }}
-	{{/* mark required param for the flag, but not body string. Since the individial flag for body field will be added separately */}}
-	{{- if and .Required (not (and .IsBodyParam .Schema))}}
-		if err := cmd.MarkPersistentFlagRequired("{{ $flagStr }}"); err != nil{
-			return err
-		}
-	{{ end }}
-	{{- if and .IsBodyParam .Schema }}
-		// add flags for body {{/*use go type as the flag prefix. There is no good way to determine the original str case in spec*/}}
-		register{{ pascalize (dropPackage .GoType) }}Flags("{{ camelize (dropPackage .GoType) }}", cmd)
-	{{- end }}
-{{- end }} {{/*Params*/}}
 	return nil
 }
+{{- end }}
+
+{{/*for models defined in params, generate their register and retrieve flags functions*/}}
+{{- range .ExtraSchemas }}
+	{{ template "modelschemacli" . }}
+{{- end}}
+{{/* cannot generate params only since some schemas are owned by response but used by params*/}}
+{{/* {{- range .Params }}
+	{{if .Schema }}
+		{{ template "modelschemacli" .Schema }}
+	{{end}}
+{{- end }} */}}

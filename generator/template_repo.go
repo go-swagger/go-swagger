@@ -137,6 +137,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
+		"hasfield":            hasField,
 	})
 }
 
@@ -199,10 +200,13 @@ func defaultAssets() map[string][]byte {
 		"markdown/docs.gotmpl": MustAsset("templates/markdown/docs.gotmpl"),
 
 		// cli templates
-		"cli/cli.gotmpl":       MustAsset("templates/cli/cli.gotmpl"),
-		"cli/main.gotmpl":      MustAsset("templates/cli/main.gotmpl"),
-		"cli/modelcli.gotmpl":  MustAsset("templates/cli/modelcli.gotmpl"),
-		"cli/operation.gotmpl": MustAsset("templates/cli/operation.gotmpl"),
+		"cli/cli.gotmpl":          MustAsset("templates/cli/cli.gotmpl"),
+		"cli/main.gotmpl":         MustAsset("templates/cli/main.gotmpl"),
+		"cli/modelcli.gotmpl":     MustAsset("templates/cli/modelcli.gotmpl"),
+		"cli/operation.gotmpl":    MustAsset("templates/cli/operation.gotmpl"),
+		"cli/registerflag.gotmpl": MustAsset("templates/cli/registerflag.gotmpl"),
+		"cli/retrieveflag.gotmpl": MustAsset("templates/cli/retrieveflag.gotmpl"),
+		"cli/schema.gotmpl":       MustAsset("templates/cli/schema.gotmpl"),
 	}
 }
 
@@ -836,4 +840,16 @@ func gt0(in *int64) bool {
 	// NOTE: plain {{ gt .MinProperties 0 }} just refuses to work normally
 	// with a pointer
 	return in != nil && *in > 0
+}
+
+// returns struct v has field of name
+func hasField(v interface{}, name string) bool {
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+	if rv.Kind() != reflect.Struct {
+		return false
+	}
+	return rv.FieldByName(name).IsValid()
 }
