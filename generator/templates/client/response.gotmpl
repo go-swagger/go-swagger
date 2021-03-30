@@ -113,7 +113,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   v := (val{{ camelize .Name }}.({{ .GoType }}))
   {{ .ReceiverName }}.{{ pascalize .Name }} = &v
       {{- else }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = val{{ camelize .Name }}.({{ .GoType }})
+  {{ .ReceiverName }}.{{ pascalize .Name }} = *(val{{ camelize .Name }}.(*{{ .GoType }}))
       {{- end }}
     {{- else }}
       {{- if eq .GoType "string" }}

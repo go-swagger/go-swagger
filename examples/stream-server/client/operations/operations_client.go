@@ -26,9 +26,12 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientOption is the option for Client methods
+type ClientOption func(*runtime.ClientOperation)
+
 // ClientService is the interface for Client methods
 type ClientService interface {
-	Elapse(params *ElapseParams, writer io.Writer) (*ElapseOK, error)
+	Elapse(params *ElapseParams, writer io.Writer, opts ...ClientOption) (*ElapseOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -38,13 +41,12 @@ type ClientService interface {
 
   Count down the seconds remaining
 */
-func (a *Client) Elapse(params *ElapseParams, writer io.Writer) (*ElapseOK, error) {
+func (a *Client) Elapse(params *ElapseParams, writer io.Writer, opts ...ClientOption) (*ElapseOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewElapseParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "elapse",
 		Method:             "GET",
 		PathPattern:        "/elapse/{length}",
@@ -55,7 +57,12 @@ func (a *Client) Elapse(params *ElapseParams, writer io.Writer) (*ElapseOK, erro
 		Reader:             &ElapseReader{formats: a.formats, writer: writer},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
