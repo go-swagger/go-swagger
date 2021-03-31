@@ -15,7 +15,7 @@ require (
 	github.com/go-openapi/runtime v0.19.27
 	github.com/go-openapi/spec v0.20.3
 	github.com/go-openapi/strfmt v0.20.1
-	github.com/go-openapi/swag v0.19.14
+	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/toqueteos/webbrowser v1.2.0
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210330230544-e57232859fb2
+	golang.org/x/net v0.0.0-20210331060903-cb1fcc7394e5
 	golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558
 	golang.org/x/tools v0.1.0
 	google.golang.org/appengine v1.6.7 // indirect
