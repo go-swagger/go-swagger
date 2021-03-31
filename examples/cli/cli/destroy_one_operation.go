@@ -117,9 +117,5 @@ func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.C
 
 	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
 
-	if err := cmd.MarkPersistentFlagRequired(idFlagName); err != nil {
-		return err
-	}
-
 	return nil
 }

@@ -30,6 +30,10 @@ func logDebugf(format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
 
+{{/*TODO: make this a swagger cli option*/}}
+// depth of recursion to construct model flags
+var maxDepth int = 5
+
 // makeClient constructs a client object
 func makeClient(cmd *cobra.Command, args []string) (*client.{{ pascalize .Name }}, error) {
 	hostname, err := cmd.Flags().GetString("hostname")
@@ -90,18 +94,10 @@ func MakeRootCmd() (*cobra.Command, error) {
 
 	// register security flags
 	{{- if .SecurityDefinitions }}
-	{{- range .SecurityDefinitions }}
-		/* {{.Description}}*/
-		{{- if .IsBasicAuth }}
-	rootCmd.PersistentFlags().String("usr", "usr", "username")
-	rootCmd.PersistentFlags().String("pwd", "pwd", "password")
-    	{{- else if .IsAPIKeyAuth }}
-	rootCmd.PersistentFlags().String("{{.Name}}", "none", `{{.Description}}`)
-    	{{- else if .IsOAuth2 }}
-	// warning: OAuth2 is not supported by go-swagger cli yet
-    	{{- end }}
-  {{- end }}
-{{- end }}
+	if err := registerAuthInoWriterFlags(rootCmd); err != nil{
+		return nil, err
+	}
+	{{- end }}
 	// add all operation groups
 {{- range .OperationGroups -}}
 	{{- $operationGroupCmdVarName := printf "operationGroup%vCmd" (pascalize .Name) }}
@@ -117,24 +113,46 @@ func MakeRootCmd() (*cobra.Command, error) {
 {{- if .SecurityDefinitions }}
 {{- /*youyuan: rework this since spec may define multiple auth schemes. 
 	cli needs to detect which one user passed rather than add all of them.*/}}
+func registerAuthInoWriterFlags(cmd *cobra.Command) error {
+{{- range .SecurityDefinitions }}
+		/* {{.Description}}*/
+		{{- if .IsBasicAuth }}
+	cmd.PersistentFlags().String("usr", "usr", "username")
+	cmd.PersistentFlags().String("pwd", "pwd", "password")
+    	{{- else if .IsAPIKeyAuth }}
+	cmd.PersistentFlags().String("{{.Name}}", "none", `{{.Description}}`)
+    	{{- else if .IsOAuth2 }}
+	// warning: OAuth2 is not supported by go-swagger cli yet
+    	{{- end }}
+{{- end }}
+	return nil
+}
+
 // makeAuthInfoWriter retrieves cmd flags and construct an auth info writer
 func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error) {
-  {{- range .SecurityDefinitions }}
+	auths := []runtime.ClientAuthInfoWriter{}
+  	{{- range .SecurityDefinitions }}
 	/* {{.Description}}*/
 	{{- if .IsBasicAuth }}
 	// warning: basic auth is not yet supported by go-swagger cli yet
     {{- else if .IsAPIKeyAuth }}
-	key, err := cmd.Flags().GetString("{{.Name}}")
+	{{ pascalize .Name }}Key, err := cmd.Flags().GetString("{{.Name}}")
 	if err != nil {
 		return nil, err
 	}
-	return httptransport.APIKeyAuth("{{.Name}}", "{{.In}}", key), nil
+	auths = append(auths, httptransport.APIKeyAuth("{{.Name}}", "{{.In}}", {{ pascalize .Name }}Key))
     {{- else if .IsOAuth2 }}
 	// warning: auth2 is not yet supported by go-swagger cli yet
 	{{- else }}
 	return nil, nil
     {{- end }}
-  {{- end }}
+  	{{- end }}
+	if len(auths) == 0 {
+		logDebugf("Warning: No auth params detected.")
+		return nil, nil
+	}
+	// compose all auths together
+	return httptransport.Compose(auths...), nil
 }
 {{- end }}
 

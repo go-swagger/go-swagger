@@ -71,7 +71,7 @@ func retrieveOperationTodosUpdateOneBodyFlag(m *todos.UpdateOneParams, cmdPrefix
 	if swag.IsZero(bodyValueModel) {
 		bodyValueModel = &models.Item{}
 	}
-	err, added := retrieveItemFlags(bodyValueModel, "item", cmd)
+	err, added := retrieveModelItemFlags(0, bodyValueModel, "item", cmd)
 	if err != nil {
 		return err, false
 	}
@@ -127,7 +127,7 @@ func printOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error)
 		return respErr
 	}
 
-	if resp0.Payload != nil {
+	if !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
 			return err
@@ -158,14 +158,11 @@ func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.
 		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
 	}
 
-	exampleBodyStr, err := json.Marshal(&models.Item{})
-	if err != nil {
-		return err
-	}
+	exampleBodyStr := "go-swagger TODO"
 	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
 
 	// add flags for body
-	if err := registerItemFlags("item", cmd); err != nil {
+	if err := registerModelItemFlags(0, "item", cmd); err != nil {
 		return err
 	}
 
@@ -185,10 +182,6 @@ func registerOperationTodosUpdateOneIDParamFlags(cmdPrefix string, cmd *cobra.Co
 	var idFlagDefault int64
 
 	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
-
-	if err := cmd.MarkPersistentFlagRequired(idFlagName); err != nil {
-		return err
-	}
 
 	return nil
 }

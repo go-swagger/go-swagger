@@ -11,14 +11,21 @@
 
 {{ define "modelschemacliinternal" }} {{/*used by model definition and in params model*/}}
 {{- $modelName := .Name }}
+{{ $modelPkg := "" }} {{/*model will use GenDefinition's Package field, and operation schema will use Pkg field in resolvedType. TODO: find a better way to get pkg name*/}}
+{{ if hasfield . "Package"}}
+    {{ $modelPkg = toPackageName .Package}}
+{{ else }}
+    {{ $modelPkg = toPackageName .Pkg}}
+{{ end }}
+{{ $modelType := .GoType }}
 
 // register flags to command
-func register{{pascalize .Name}}Flags(cmdPrefix string, cmd *cobra.Command) error {
+func registerModel{{pascalize .Name}}Flags(depth int, cmdPrefix string, cmd *cobra.Command) error {
 	{{ range .AllOf }}
     // allOf {{.Name}} is not supported by go-swwagger cli yet
     {{ end }}
     {{ range .Properties }}
-    if err := register{{ pascalize $modelName }}{{ pascalize .Name }}(cmdPrefix, cmd); err != nil{
+    if err := register{{ pascalize $modelName }}{{ pascalize .Name }}(depth, cmdPrefix, cmd); err != nil{
         return err
     }
     {{ end }}
@@ -27,42 +34,41 @@ func register{{pascalize .Name}}Flags(cmdPrefix string, cmd *cobra.Command) erro
 
 {{/*register functions for each fields in this model */}}
 {{ range .Properties }}
-func register{{ pascalize $modelName }}{{ pascalize .Name }}(cmdPrefix string, cmd *cobra.Command) error{
+func register{{ pascalize $modelName }}{{ pascalize .Name }}(depth int, cmdPrefix string, cmd *cobra.Command) error{
+    if depth > maxDepth {
+        return nil
+    }
         {{- if .IsPrimitive }}
             {{ template "primitiveregistrator" . }}
-            {{- if .Required }}
+            {{/* {{- if .Required }}
                 {{ template "requiredregistrator" . }}
-		    {{ end }}
+		    {{ end }} */}}
         {{- else if .IsArray }}
     // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet 
         {{- else if .IsMap }}
     // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
-        {{- else }} {{/* struct case */}}
-            {{ template "modelregistrator" . }}
+        {{- else if .IsComplexObject }} {{/* struct case */}}
+    {{ template "flagnamevar" . }}
+    registerModel{{pascalize (dropPackage $modelType) }}Flags(depth + 1, {{ camelize .Name }}FlagName, cmd)
             {{- if .Required }}
                 {{ template "requiredregistrator" . }}
 		    {{ end }}
+        {{- else }}
+    // warning: {{.Name}} {{ .GoType }} unkown type is not supported by go-swagger cli yet
         {{- end }}
 		{{/* mark required param for the flag */}}
     return nil
 }
 {{ end }} {{/*Properties*/}}
 
-{{ $modelPkg := "" }} {{/*model will use GenDefinition's Package field, and operation schema will use Pkg field in resolvedType. TODO: find a better way to get pkg name*/}}
-{{ if hasfield . "Package"}}
-    {{ $modelPkg = .Package}}
-{{ else }}
-    {{ $modelPkg = .Pkg}}
-{{ end }}
-{{ $modelType := .GoType }}
 // retrieve flags from commands, and set value in model. Return true if any flag is passed by user to fill model field.
-func retrieve{{pascalize $modelName }}Flags(m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{.GoType}}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{.GoType}}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
     retAdded := false
 	{{ range .AllOf }}
      // allOf {{.Name}} is not supported by go-swwagger cli yet
     {{ end }}
     {{ range .Properties }}
-        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(m, cmdPrefix, cmd)
+        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
         if err != nil{
             return err, false
         }
@@ -72,7 +78,10 @@ func retrieve{{pascalize $modelName }}Flags(m *{{if $modelPkg}}{{$modelPkg}}.{{e
 }
 
 {{ range .Properties }}
-func retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{ $modelType }}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(depth int, m *{{if $modelPkg}}{{$modelPkg}}.{{end}}{{ $modelType }}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+    if depth > maxDepth {
+        return nil, false
+    }
     retAdded := false
     {{- $flagNameVar := printf "%vFlagName" (camelize .Name) }}
     {{- $flagValueVar := printf "%vFlagValue" (camelize .Name) }}
@@ -85,13 +94,17 @@ func retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(m *{{if $modelPk
         // warning: {{ .Name }} array type {{ .GoType }} is not supported by go-swagger cli yet
         {{- else if .IsMap }}
         // warning: {{ .Name }} map type {{ .GoType }} is not supported by go-swagger cli yet
-        {{- else if .IsComplexObject }} {{/*struct case. TODO: move this out of Changed() block, since we want to recurse regardless of flag set*/}}
-        {{ $flagValueVar }} := {{.Package}}.{{.GoType}}{}
-        err, added := retrieve{{pascalize .Name}}Flags({{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+        {{- else if .IsComplexObject }}
+        {{/*struct case. TODO: move this out of Changed() block, since we want to recurse regardless of flag set*/}}
+        {{/* always lift the payload to pointer and pass to model retrieve function */}}
+        {{ $flagValueVar }} := &{{if $modelPkg}}{{$modelPkg}}.{{end}}{{ $modelType }}{}
+        err, added := retrieveModel{{pascalize (dropPackage $modelType) }}Flags(depth + 1, {{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
         if err != nil{
             return err, false
         }
         retAdded = retAdded || added
+        {{- else }}
+        // warning: {{.Name}} {{ .GoType }} unkown type is not supported by go-swagger cli yet
         {{- end }}
 	}
     return nil, retAdded

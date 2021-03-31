@@ -1122,6 +1122,12 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		schema = sc.GenSchema
 	}
 
+	// pkg name for struct to be generated in operation pkg
+	pkg := "operations"
+	if len(b.Operation.Tags) != 0 {
+		pkg = b.Operation.Tags[0]
+	}
+
 	if schema.IsAnonymous {
 		// a generated name for anonymous schema
 		// TODO: support x-go-name
@@ -1129,13 +1135,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		isAllOf := len(schema.AllOf) > 0
 		isInterface := schema.IsInterface
 		hasValidations := schema.HasValidations
-
-		// TODO: remove this and find a better way to get package name for anonymous models
-		// get the package that the param will be generated. Used by generate CLI
-		pkg := "operations"
-		if len(b.Operation.Tags) != 0 {
-			pkg = b.Operation.Tags[0]
-		}
 
 		// for complex anonymous objects, produce an extra schema
 		if hasProperties || isAllOf {
@@ -1165,6 +1164,13 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.GoType = iface
 		}
 	}
+
+	// set pkg for all extra schemas
+	for name, sch := range b.ExtraSchemas {
+		sch.Pkg = pkg
+		b.ExtraSchemas[name] = sch
+	}
+
 	return schema, nil
 }
 

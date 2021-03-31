@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 
+	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
 )
 
@@ -112,7 +113,7 @@ func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		return respErr
 	}
 
-	if resp0.Payload != nil {
+	if !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
 			return err

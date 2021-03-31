@@ -28,6 +28,9 @@ func logDebugf(format string, v ...interface{}) {
 	log.Printf(format, v...)
 }
 
+// depth of recursion to construct model flags
+var maxDepth int = 5
+
 // makeClient constructs a client object
 func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication, error) {
 	hostname, err := cmd.Flags().GetString("hostname")
@@ -70,8 +73,9 @@ func MakeRootCmd() (*cobra.Command, error) {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "output debug logs")
 
 	// register security flags
-	/* */
-	rootCmd.PersistentFlags().String("x-todolist-token", "none", ``)
+	if err := registerAuthInoWriterFlags(rootCmd); err != nil {
+		return nil, err
+	}
 	// add all operation groups
 	operationGroupTodosCmd, err := makeOperationGroupTodosCmd()
 	if err != nil {
@@ -81,15 +85,27 @@ func MakeRootCmd() (*cobra.Command, error) {
 
 	return rootCmd, nil
 }
+func registerAuthInoWriterFlags(cmd *cobra.Command) error {
+	/* */
+	cmd.PersistentFlags().String("x-todolist-token", "none", ``)
+	return nil
+}
 
 // makeAuthInfoWriter retrieves cmd flags and construct an auth info writer
 func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error) {
+	auths := []runtime.ClientAuthInfoWriter{}
 	/* */
-	key, err := cmd.Flags().GetString("x-todolist-token")
+	XTodolistTokenKey, err := cmd.Flags().GetString("x-todolist-token")
 	if err != nil {
 		return nil, err
 	}
-	return httptransport.APIKeyAuth("x-todolist-token", "header", key), nil
+	auths = append(auths, httptransport.APIKeyAuth("x-todolist-token", "header", XTodolistTokenKey))
+	if len(auths) == 0 {
+		logDebugf("Warning: No auth params detected.")
+		return nil, nil
+	}
+	// compose all auths together
+	return httptransport.Compose(auths...), nil
 }
 
 func makeOperationGroupTodosCmd() (*cobra.Command, error) {
