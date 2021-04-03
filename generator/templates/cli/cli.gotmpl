@@ -46,7 +46,8 @@ func makeClient(cmd *cobra.Command, args []string) (*client.{{ pascalize .Name }
 	}
 
 	r := httptransport.New(hostname, client.DefaultBasePath, []string{scheme})
-	
+	r.Debug = debug
+
 	{{- /* user might define custom mediatype xxx/json and there is no registered ones to handle. */}}
 	// set custom producer and consumer to use the default ones
 	{{ range .Consumes }}

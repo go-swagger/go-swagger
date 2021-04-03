@@ -110,18 +110,17 @@ func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix s
 func printOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error) error {
 	if respErr != nil {
 
-		var iResp interface{} = respErr
-		defaultResp, ok := iResp.(*todos.UpdateOneDefault)
-		if !ok {
-			return respErr
-		}
-		if defaultResp.Payload != nil {
-			msgStr, err := json.Marshal(defaultResp.Payload)
-			if err != nil {
-				return err
+		var iResp0 interface{} = respErr
+		resp0, ok := iResp0.(*todos.UpdateOneOK)
+		if ok {
+			if !swag.IsZero(resp0.Payload) {
+				msgStr, err := json.Marshal(resp0.Payload)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(msgStr))
+				return nil
 			}
-			fmt.Println(string(msgStr))
-			return nil
 		}
 
 		return respErr

@@ -6,7 +6,6 @@ package cli
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
@@ -72,19 +71,7 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 func printOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) error {
 	if respErr != nil {
 
-		var iResp interface{} = respErr
-		defaultResp, ok := iResp.(*todos.DestroyOneDefault)
-		if !ok {
-			return respErr
-		}
-		if defaultResp.Payload != nil {
-			msgStr, err := json.Marshal(defaultResp.Payload)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(msgStr))
-			return nil
-		}
+		// Non schema case: warning destroyOneNoContent is not supported
 
 		return respErr
 	}

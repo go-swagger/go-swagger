@@ -123,20 +123,19 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .SuccessResponse }}{{ range $i, $v := .SuccessResponses }} resp{{$i}} *{{$v.Package}}.{{pascalize $v.Name}},{{- end }}{{- end }} respErr error) error{
 	if respErr != nil {
 		{{- /*error is of type default model. If we can cast, then print the resp.*/}}
-		{{- with .DefaultResponse }}
+		{{- range $i, $v := .Responses }}
 			{{ if .Schema }}
-		var iResp interface{} = respErr
-		defaultResp, ok := iResp.(*{{camelize .Package}}.{{ pascalize .Name }})
-		if !ok {
-			return respErr
-		}
-		if defaultResp.Payload != nil{
-			msgStr,err := json.Marshal(defaultResp.Payload)
-			if err != nil{
-				return err
+		var iResp{{$i}} interface{} = respErr
+		resp{{$i}}, ok := iResp{{$i}}.(*{{camelize .Package}}.{{ pascalize .Name }})
+		if ok {
+			if !swag.IsZero(resp{{$i}}.Payload) {
+				msgStr,err := json.Marshal(resp{{$i}}.Payload)
+				if err != nil{
+					return err
+				}
+				fmt.Println(string(msgStr))
+				return nil
 			}
-			fmt.Println(string(msgStr))
-			return nil
 		}
 			{{ else }}
 			// Non schema case: warning {{.Name}} is not supported

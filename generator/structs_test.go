@@ -153,8 +153,8 @@ func TestPrintTags(t *testing.T) {
 			Title: "with description",
 			Schema: GenSchema{
 				OriginalName: "field",
-				Description: "some description",
-				StructTags: []string{"description"},
+				Description:  "some description",
+				StructTags:   []string{"description"},
 			},
 			ExpectedTags: "`json:\"field\" description:\"some description\"`",
 		},
@@ -162,8 +162,8 @@ func TestPrintTags(t *testing.T) {
 			Title: "with multiline description",
 			Schema: GenSchema{
 				OriginalName: "field",
-				Description: "a\ndescription\nspanning\nmultiple\nlines",
-				StructTags: []string{"description"},
+				Description:  "a\ndescription\nspanning\nmultiple\nlines",
+				StructTags:   []string{"description"},
 			},
 			ExpectedTags: "\"json:\\\"field\\\" description:\\\"a\\\\ndescription\\\\nspanning\\\\nmultiple\\\\nlines\\\"\"",
 		},

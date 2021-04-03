@@ -43,6 +43,7 @@ func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication
 	}
 
 	r := httptransport.New(hostname, client.DefaultBasePath, []string{scheme})
+	r.Debug = debug
 	// set custom producer and consumer to use the default ones
 
 	r.Consumers["application/io.goswagger.examples.todo-list.v1+json"] = runtime.JSONConsumer()
