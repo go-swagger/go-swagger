@@ -8,6 +8,8 @@ package cli
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/go-swagger/go-swagger/examples/cli/client"
 
@@ -63,8 +65,9 @@ func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication
 
 // MakeRootCmd returns the root cmd
 func MakeRootCmd() (*cobra.Command, error) {
+	// Use executable name as the command name
 	rootCmd := &cobra.Command{
-		Use: "AToDoListApplication",
+		Use: filepath.Base(os.Args[0]),
 	}
 	// register basic flags
 	rootCmd.PersistentFlags().String("hostname", client.DefaultHost, "hostname of the service")
@@ -83,6 +86,9 @@ func MakeRootCmd() (*cobra.Command, error) {
 		return nil, err
 	}
 	rootCmd.AddCommand(operationGroupTodosCmd)
+
+	// add cobra completion
+	rootCmd.AddCommand(makeGenCompletionCmd())
 
 	return rootCmd, nil
 }

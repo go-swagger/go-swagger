@@ -182,6 +182,11 @@ func DefaultSectionOpts(gen *GenOpts) {
 					Source:   "asset:cliMain",
 					Target:   "{{ joinFilePath .Target \"cmd\" (toPackagePath .CliPackage) }}",
 					FileName: "main.go",
+				}, {
+					Name:     "cliAutoComplete",
+					Source:   "asset:cliCompletion",
+					Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+					FileName: "autocomplete.go",
 				}}...)
 			}
 			sec.Application = opts

@@ -207,6 +207,7 @@ func defaultAssets() map[string][]byte {
 		"cli/registerflag.gotmpl": MustAsset("templates/cli/registerflag.gotmpl"),
 		"cli/retrieveflag.gotmpl": MustAsset("templates/cli/retrieveflag.gotmpl"),
 		"cli/schema.gotmpl":       MustAsset("templates/cli/schema.gotmpl"),
+		"cli/completion.gotmpl":   MustAsset("templates/cli/completion.gotmpl"),
 	}
 }
 
