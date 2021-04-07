@@ -83,6 +83,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 			return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 		},
 		"dropPackage":      dropPackage,
+		"containsPkgStr":   containsPkgStr,
 		"upper":            strings.ToUpper,
 		"lower":            strings.ToLower,
 		"contains":         swag.ContainsStrings,
@@ -137,7 +138,6 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
-		"hasfield":            hasField,
 	})
 }
 
@@ -611,6 +611,12 @@ func dropPackage(str string) string {
 	return parts[len(parts)-1]
 }
 
+// return true if the GoType str contains pkg. For example "model.MyType" -> true, "MyType" -> false
+func containsPkgStr(str string) bool {
+	dropped := dropPackage(str)
+	return !(dropped == str)
+}
+
 func padSurround(entry, padWith string, i, ln int) string {
 	var res []string
 	if i > 0 {
@@ -841,16 +847,4 @@ func gt0(in *int64) bool {
 	// NOTE: plain {{ gt .MinProperties 0 }} just refuses to work normally
 	// with a pointer
 	return in != nil && *in > 0
-}
-
-// returns struct v has field of name
-func hasField(v interface{}, name string) bool {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Ptr {
-		rv = rv.Elem()
-	}
-	if rv.Kind() != reflect.Struct {
-		return false
-	}
-	return rv.FieldByName(name).IsValid()
 }

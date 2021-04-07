@@ -359,12 +359,20 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		"validate": "github.com/go-openapi/validate",
 	}
 
+	// fill pkg for all schemas
+	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
+	pg.GenSchema.Pkg = modelPkg
+	for name, extraSchema := range pg.ExtraSchemas {
+		extraSchema.Pkg = modelPkg
+		pg.ExtraSchemas[name] = extraSchema
+	}
+
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
 			TargetImportPath: opts.LanguageOpts.baseImport(opts.Target),
 		},
-		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
+		Package:        modelPkg,
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,

@@ -16,4 +16,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Schema cli for {{.GoType}}
 {{ template "modelschemacli" .}}
+
+{{ range .ExtraSchemas }}
+// Extra schema cli for {{.GoType}}
+	{{ template "modelschemacli" .}}
+{{ end }}
