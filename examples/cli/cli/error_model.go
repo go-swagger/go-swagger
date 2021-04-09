@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Schema cli for Error
+
 // register flags to command
 func registerModelErrorFlags(depth int, cmdPrefix string, cmd *cobra.Command) error {
 
@@ -92,6 +94,7 @@ func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *c
 		return nil, false
 	}
 	retAdded := false
+
 	codeFlagName := fmt.Sprintf("%v.code", cmdPrefix)
 	if cmd.Flags().Changed(codeFlagName) {
 
@@ -110,6 +113,7 @@ func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *c
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
@@ -118,6 +122,7 @@ func retrieveErrorMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd
 		return nil, false
 	}
 	retAdded := false
+
 	messageFlagName := fmt.Sprintf("%v.message", cmdPrefix)
 	if cmd.Flags().Changed(messageFlagName) {
 
@@ -136,5 +141,6 @@ func retrieveErrorMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }

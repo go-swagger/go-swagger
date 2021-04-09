@@ -361,9 +361,11 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 
 	// fill pkg for all schemas
 	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
-	pg.GenSchema.Pkg = modelPkg
+	//pg.GenSchema.Pkg = modelPkg
+	fillPkgForObjects(modelPkg, &pg.GenSchema)
 	for name, extraSchema := range pg.ExtraSchemas {
-		extraSchema.Pkg = modelPkg
+		//extraSchema.Pkg = modelPkg
+		fillPkgForObjects(modelPkg, &extraSchema)
 		pg.ExtraSchemas[name] = extraSchema
 	}
 
@@ -380,6 +382,34 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		Imports:        findImports(&pg.GenSchema),
 		External:       isExternal(schema),
 	}, nil
+}
+
+// Fill Pkg field recursively for GenSchema rendered as struct
+// This is useful for generating code that import models pkg and operation pkg,
+// since every declaration of struct in those pkgs needs the pkg name.
+// TODO(youyuan): find a way to fold this in type resolver.
+func fillPkgForObjects(pkg string, g *GenSchema) {
+	if !g.IsComplexObject && !(len(g.Enum) > 0) && !g.IsAliased { // complex object and enum are generated as a type and need pkg name
+		return
+	}
+	if g.Pkg == "" {
+		g.Pkg = pkg
+	}
+	if !g.IsComplexObject {
+		return
+	}
+	filledProperties := GenSchemaList{}
+	for _, p := range g.Properties {
+		fillPkgForObjects(pkg, &p)
+		filledProperties = append(filledProperties, p)
+	}
+	g.Properties = filledProperties
+	filledAllOf := GenSchemaList{}
+	for _, p := range g.AllOf {
+		fillPkgForObjects(pkg, &p)
+		filledAllOf = append(filledAllOf, p)
+	}
+	g.AllOf = filledAllOf
 }
 
 func findImports(sch *GenSchema) map[string]string {

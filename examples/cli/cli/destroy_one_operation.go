@@ -46,6 +46,32 @@ func runOperationTodosDestroyOne(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// registerOperationTodosDestroyOneParamFlags registers all flags needed to fill params
+func registerOperationTodosDestroyOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosDestroyOneIDParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	idDescription := `Required. `
+
+	var idFlagName string
+	if cmdPrefix == "" {
+		idFlagName = "id"
+	} else {
+		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+	}
+
+	var idFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+
+	return nil
+}
+
 func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 	if cmd.Flags().Changed("id") {
@@ -77,32 +103,6 @@ func printOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respE
 	}
 
 	// warning: non schema response destroyOneNoContent is not supported by go-swagger cli yet.
-
-	return nil
-}
-
-// registerOperationTodosDestroyOneParamFlags registers all flags needed to fill params
-func registerOperationTodosDestroyOneParamFlags(cmd *cobra.Command) error {
-	if err := registerOperationTodosDestroyOneIDParamFlags("", cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
-func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	idDescription := `Required. `
-
-	var idFlagName string
-	if cmdPrefix == "" {
-		idFlagName = "id"
-	} else {
-		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
-	}
-
-	var idFlagDefault int64
-
-	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
 
 	return nil
 }

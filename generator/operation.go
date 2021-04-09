@@ -1122,12 +1122,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		schema = sc.GenSchema
 	}
 
-	// pkg name for struct to be generated in operation pkg
-	pkg := "operations"
-	if len(b.Operation.Tags) != 0 {
-		pkg = b.Operation.Tags[0]
-	}
-
 	if schema.IsAnonymous {
 		// a generated name for anonymous schema
 		// TODO: support x-go-name
@@ -1144,7 +1138,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.Name = schemaName
 			schema.GoType = schemaName
 			schema.IsAnonymous = false
-			schema.Pkg = pkg
 			b.ExtraSchemas[schemaName] = schema
 
 			// constructs new schema to refer to the newly created type
@@ -1154,7 +1147,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.SwaggerType = schemaName
 			schema.HasValidations = hasValidations
 			schema.GoType = schemaName
-			schema.Pkg = pkg
 		} else if isInterface {
 			schema = GenSchema{}
 			schema.IsAnonymous = false
@@ -1165,9 +1157,16 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		}
 	}
 
+	// pkg name for struct to be generated in operation pkg
+	pkg := "operations"
+	if len(b.Operation.Tags) != 0 {
+		pkg = b.Operation.Tags[0]
+	}
+	pkg = b.GenOpts.LanguageOpts.ManglePackageName(pkg, "")
+	fillPkgForObjects(pkg, &schema)
 	// set pkg for all extra schemas
 	for name, sch := range b.ExtraSchemas {
-		sch.Pkg = pkg
+		fillPkgForObjects(pkg, &sch)
 		b.ExtraSchemas[name] = sch
 	}
 

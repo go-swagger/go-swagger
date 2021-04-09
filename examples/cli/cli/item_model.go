@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Schema cli for Item
+
 // register flags to command
 func registerModelItemFlags(depth int, cmdPrefix string, cmd *cobra.Command) error {
 
@@ -123,6 +125,7 @@ func retrieveItemCompletedFlags(depth int, m *models.Item, cmdPrefix string, cmd
 		return nil, false
 	}
 	retAdded := false
+
 	completedFlagName := fmt.Sprintf("%v.completed", cmdPrefix)
 	if cmd.Flags().Changed(completedFlagName) {
 
@@ -141,6 +144,7 @@ func retrieveItemCompletedFlags(depth int, m *models.Item, cmdPrefix string, cmd
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
@@ -149,6 +153,7 @@ func retrieveItemDescriptionFlags(depth int, m *models.Item, cmdPrefix string, c
 		return nil, false
 	}
 	retAdded := false
+
 	descriptionFlagName := fmt.Sprintf("%v.description", cmdPrefix)
 	if cmd.Flags().Changed(descriptionFlagName) {
 
@@ -167,6 +172,7 @@ func retrieveItemDescriptionFlags(depth int, m *models.Item, cmdPrefix string, c
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
@@ -175,6 +181,7 @@ func retrieveItemIDFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra
 		return nil, false
 	}
 	retAdded := false
+
 	idFlagName := fmt.Sprintf("%v.id", cmdPrefix)
 	if cmd.Flags().Changed(idFlagName) {
 
@@ -193,5 +200,6 @@ func retrieveItemIDFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }

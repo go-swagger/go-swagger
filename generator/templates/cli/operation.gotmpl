@@ -58,6 +58,36 @@ func runOperation{{pascalize $operationGroup }}{{ pascalize $operation }}(cmd *c
 	return nil
 }
 
+// registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags registers all flags needed to fill params
+func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags(cmd *cobra.Command) error {
+{{- range .Params }}
+	if err := registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags("", cmd); err != nil{
+		return err
+	}
+{{- end }}
+	return nil
+}
+
+{{/*register functions for each fields in this operation*/}}
+{{- range .Params }}
+func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags(cmdPrefix string, cmd *cobra.Command) error{
+	{{- if .IsPrimitive }}
+		{{ template "primitiveregistrator" . }}
+		{{/* Required is not working yet because not all types are supported in primitive registrator */}}
+		{{/* {{ if .Required }}
+			{{ template "requiredregistrator" . }}
+		{{ end }} */}}
+	{{- else if and .IsBodyParam .Schema (not .IsArray) (not .IsMap) (not .IsStream) }}
+		{{ template "modelparamstringregistrator" . }}
+		{{ template "modelparamregistrator" . }}
+		{{/* Do not mark body flag as required, since the individial flag for body field will be added separately */}}
+	{{- else }}
+		// warning: go type {{ .GoType }} is not supported by go-swagger cli yet.
+	{{- end }}
+	return nil
+}
+{{- end }}
+
 {{/*functions to retreive each field of params*/}}
 {{- range .Params }}
 func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{ pascalize .Name }}Flag(m *{{ $operationPkgAlias }}.{{ pascalize $operation }}Params, cmdPrefix string, cmd *cobra.Command) (error,bool){
@@ -80,7 +110,7 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 			return err, false
 		}
 		{{/*Note anonymous body schema is not pointer*/}}
-		{{ $flagValueVar }} := {{if .Pkg}}{{toPackageName .Pkg}}.{{end}}{{.GoType}}{}
+		{{ $flagValueVar }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
 		if err := json.Unmarshal([]byte({{ $flagValueVar }}Str), &{{ $flagValueVar }}); err!= nil{
 			return fmt.Errorf("cannot unmarshal {{ $flagStr }} string in {{.GoType}}: %v", err), false
 		}
@@ -96,7 +126,7 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 		{{- $flagModelVar := printf "%vModel" (camelize $flagValueVar) }}
 	{{ $flagModelVar }} := m.{{ .ID }}
 	if swag.IsZero({{ $flagModelVar }}){
-		{{ $flagModelVar }} = {{- if .IsNullable }}&{{- end }}{{if .Pkg}}{{toPackageName .Pkg}}.{{end}}{{.GoType}}{}
+		{{ $flagModelVar }} = {{- if .IsNullable }}&{{- end }}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
 	}
 		{{- /*Only attach the body struct in params if user passed some flag filling some body fields.*/}}
 		{{- /* add "&" to $flagModelVar when it is not nullable because the retrieve method always expects a pointer */}}
@@ -165,43 +195,7 @@ func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 	return nil
 }
 
-// registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags registers all flags needed to fill params
-func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}ParamFlags(cmd *cobra.Command) error {
-{{- range .Params }}
-	if err := registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags("", cmd); err != nil{
-		return err
-	}
-{{- end }}
-	return nil
-}
-
-{{/*register functions for each fields in this operation*/}}
-{{- range .Params }}
-func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags(cmdPrefix string, cmd *cobra.Command) error{
-	{{- if .IsPrimitive }}
-		{{ template "primitiveregistrator" . }}
-		{{/* Required is not working yet because not all types are supported in primitive registrator */}}
-		{{/* {{ if .Required }}
-			{{ template "requiredregistrator" . }}
-		{{ end }} */}}
-	{{- else if and .IsBodyParam .Schema (not .IsArray) (not .IsMap) (not .IsStream) }}
-		{{ template "modelparamstringregistrator" . }}
-		{{ template "modelparamregistrator" . }}
-		{{/* Do not mark body flag as required, since the individial flag for body field will be added separately */}}
-	{{- else }}
-		// warning: go type {{ .GoType }} is not supported by go-swagger cli yet.
-	{{- end }}
-	return nil
-}
-{{- end }}
-
 {{/*for models defined in params, generate their register and retrieve flags functions*/}}
 {{- range .ExtraSchemas }}
 	{{ template "modelschemacli" . }}
 {{- end}}
-{{/* cannot generate params only since some schemas are owned by response but used by params*/}}
-{{/* {{- range .Params }}
-	{{if .Schema }}
-		{{ template "modelschemacli" .Schema }}
-	{{end}}
-{{- end }} */}}

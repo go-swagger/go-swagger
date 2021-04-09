@@ -51,6 +51,52 @@ func runOperationTodosFindTodos(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// registerOperationTodosFindTodosParamFlags registers all flags needed to fill params
+func registerOperationTodosFindTodosParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosFindTodosLimitParamFlags("", cmd); err != nil {
+		return err
+	}
+	if err := registerOperationTodosFindTodosSinceParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosFindTodosLimitParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	limitDescription := ``
+
+	var limitFlagName string
+	if cmdPrefix == "" {
+		limitFlagName = "limit"
+	} else {
+		limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+	}
+
+	var limitFlagDefault int32 = 20
+
+	_ = cmd.PersistentFlags().Int32(limitFlagName, limitFlagDefault, limitDescription)
+
+	return nil
+}
+func registerOperationTodosFindTodosSinceParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	sinceDescription := ``
+
+	var sinceFlagName string
+	if cmdPrefix == "" {
+		sinceFlagName = "since"
+	} else {
+		sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+	}
+
+	var sinceFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(sinceFlagName, sinceFlagDefault, sinceDescription)
+
+	return nil
+}
+
 func retrieveOperationTodosFindTodosLimitFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 	if cmd.Flags().Changed("limit") {
@@ -119,52 +165,6 @@ func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		}
 		fmt.Println(string(msgStr))
 	}
-
-	return nil
-}
-
-// registerOperationTodosFindTodosParamFlags registers all flags needed to fill params
-func registerOperationTodosFindTodosParamFlags(cmd *cobra.Command) error {
-	if err := registerOperationTodosFindTodosLimitParamFlags("", cmd); err != nil {
-		return err
-	}
-	if err := registerOperationTodosFindTodosSinceParamFlags("", cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
-func registerOperationTodosFindTodosLimitParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	limitDescription := ``
-
-	var limitFlagName string
-	if cmdPrefix == "" {
-		limitFlagName = "limit"
-	} else {
-		limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
-	}
-
-	var limitFlagDefault int32 = 20
-
-	_ = cmd.PersistentFlags().Int32(limitFlagName, limitFlagDefault, limitDescription)
-
-	return nil
-}
-func registerOperationTodosFindTodosSinceParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	sinceDescription := ``
-
-	var sinceFlagName string
-	if cmdPrefix == "" {
-		sinceFlagName = "since"
-	} else {
-		sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
-	}
-
-	var sinceFlagDefault int64
-
-	_ = cmd.PersistentFlags().Int64(sinceFlagName, sinceFlagDefault, sinceDescription)
 
 	return nil
 }

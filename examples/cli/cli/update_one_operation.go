@@ -52,6 +52,54 @@ func runOperationTodosUpdateOne(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// registerOperationTodosUpdateOneParamFlags registers all flags needed to fill params
+func registerOperationTodosUpdateOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosUpdateOneBodyParamFlags("", cmd); err != nil {
+		return err
+	}
+	if err := registerOperationTodosUpdateOneIDParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	var bodyFlagName string
+	if cmdPrefix == "" {
+		bodyFlagName = "body"
+	} else {
+		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+	}
+
+	exampleBodyStr := "go-swagger TODO"
+	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
+
+	// add flags for body
+	if err := registerModelItemFlags(0, "item", cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+func registerOperationTodosUpdateOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	idDescription := `Required. `
+
+	var idFlagName string
+	if cmdPrefix == "" {
+		idFlagName = "id"
+	} else {
+		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+	}
+
+	var idFlagDefault int64
+
+	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+
+	return nil
+}
+
 func retrieveOperationTodosUpdateOneBodyFlag(m *todos.UpdateOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 	if cmd.Flags().Changed("body") {
@@ -133,54 +181,6 @@ func printOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error)
 		}
 		fmt.Println(string(msgStr))
 	}
-
-	return nil
-}
-
-// registerOperationTodosUpdateOneParamFlags registers all flags needed to fill params
-func registerOperationTodosUpdateOneParamFlags(cmd *cobra.Command) error {
-	if err := registerOperationTodosUpdateOneBodyParamFlags("", cmd); err != nil {
-		return err
-	}
-	if err := registerOperationTodosUpdateOneIDParamFlags("", cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
-func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	var bodyFlagName string
-	if cmdPrefix == "" {
-		bodyFlagName = "body"
-	} else {
-		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
-	}
-
-	exampleBodyStr := "go-swagger TODO"
-	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
-
-	// add flags for body
-	if err := registerModelItemFlags(0, "item", cmd); err != nil {
-		return err
-	}
-
-	return nil
-}
-func registerOperationTodosUpdateOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	idDescription := `Required. `
-
-	var idFlagName string
-	if cmdPrefix == "" {
-		idFlagName = "id"
-	} else {
-		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
-	}
-
-	var idFlagDefault int64
-
-	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
 
 	return nil
 }

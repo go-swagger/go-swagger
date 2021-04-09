@@ -49,6 +49,34 @@ func runOperationTodosAddOne(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// registerOperationTodosAddOneParamFlags registers all flags needed to fill params
+func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosAddOneBodyParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	var bodyFlagName string
+	if cmdPrefix == "" {
+		bodyFlagName = "body"
+	} else {
+		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+	}
+
+	exampleBodyStr := "go-swagger TODO"
+	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
+
+	// add flags for body
+	if err := registerModelItemFlags(0, "item", cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func retrieveOperationTodosAddOneBodyFlag(m *todos.AddOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 	if cmd.Flags().Changed("body") {
@@ -109,34 +137,6 @@ func printOperationTodosAddOneResult(resp0 *todos.AddOneCreated, respErr error) 
 			return err
 		}
 		fmt.Println(string(msgStr))
-	}
-
-	return nil
-}
-
-// registerOperationTodosAddOneParamFlags registers all flags needed to fill params
-func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
-	if err := registerOperationTodosAddOneBodyParamFlags("", cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
-func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	var bodyFlagName string
-	if cmdPrefix == "" {
-		bodyFlagName = "body"
-	} else {
-		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
-	}
-
-	exampleBodyStr := "go-swagger TODO"
-	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
-
-	// add flags for body
-	if err := registerModelItemFlags(0, "item", cmd); err != nil {
-		return err
 	}
 
 	return nil
