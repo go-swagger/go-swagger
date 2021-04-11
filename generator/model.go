@@ -1711,6 +1711,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 		tpe.IsBaseType = tpx.IsBaseType
 
 		tpe.GoType = sg.TypeResolver.goTypeName(path.Base(sg.Schema.Ref.String()))
+		tpe.Pkg = sg.TypeResolver.definitionPkg
 
 		tpe.IsNullable = tpx.IsNullable // TODO
 		tpe.IsInterface = tpx.IsInterface
@@ -1741,6 +1742,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 
 	tpe := resolvedType{}
 	tpe.GoType = sg.TypeResolver.goTypeName(sg.Name)
+	tpe.Pkg = sg.TypeResolver.definitionPkg
 	tpe.SwaggerType = "object"
 	tpe.IsComplexObject = true
 	tpe.IsMap = false

@@ -45,9 +45,19 @@ func runOperationTodosUpdateOne(cmd *cobra.Command, args []string) error {
 	if err, _ := retrieveOperationTodosUpdateOneIDFlag(params, "", cmd); err != nil {
 		return err
 	}
+	if dryRun {
+
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
-	if err := printOperationTodosUpdateOneResult(appCli.Todos.UpdateOne(params, nil)); err != nil {
+	msgStr, err := parseOperationTodosUpdateOneResult(appCli.Todos.UpdateOne(params, nil))
+	if err != nil {
 		return err
+	}
+	if !debug {
+
+		fmt.Println(msgStr)
 	}
 	return nil
 }
@@ -72,8 +82,7 @@ func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.
 		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
 	}
 
-	exampleBodyStr := "go-swagger TODO"
-	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
+	_ = cmd.PersistentFlags().String(bodyFlagName, "", "Optional json string for [body]. ")
 
 	// add flags for body
 	if err := registerModelItemFlags(0, "item", cmd); err != nil {
@@ -126,11 +135,16 @@ func retrieveOperationTodosUpdateOneBodyFlag(m *todos.UpdateOneParams, cmdPrefix
 	if added {
 		m.Body = bodyValueModel
 	}
-	bodyValueDebugBytes, err := json.Marshal(m.Body)
-	if err != nil {
-		return err, false
+	if dryRun && debug {
+
+		bodyValueDebugBytes, err := json.Marshal(m.Body)
+		if err != nil {
+			return err, false
+		}
+		logDebugf("Body dry-run payload: %v", string(bodyValueDebugBytes))
 	}
-	logDebugf("Body payload: %v", string(bodyValueDebugBytes))
+	retAdded = retAdded || added
+
 	return nil, retAdded
 }
 func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
@@ -154,8 +168,8 @@ func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix s
 	return nil, retAdded
 }
 
-// printOperationTodosUpdateOneResult prints output to stdout
-func printOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error) error {
+// parseOperationTodosUpdateOneResult parses request result and return the string content
+func parseOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error) (string, error) {
 	if respErr != nil {
 
 		var iResp0 interface{} = respErr
@@ -164,23 +178,22 @@ func printOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error)
 			if !swag.IsZero(resp0.Payload) {
 				msgStr, err := json.Marshal(resp0.Payload)
 				if err != nil {
-					return err
+					return "", err
 				}
-				fmt.Println(string(msgStr))
-				return nil
+				return string(msgStr), nil
 			}
 		}
 
-		return respErr
+		return "", respErr
 	}
 
 	if !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
-			return err
+			return "", err
 		}
-		fmt.Println(string(msgStr))
+		return string(msgStr), nil
 	}
 
-	return nil
+	return "", nil
 }

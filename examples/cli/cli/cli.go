@@ -28,6 +28,9 @@ var debug bool
 // config file location
 var configFile string
 
+// dry run flag
+var dryRun bool
+
 // name of the executable
 var exeName string = filepath.Base(os.Args[0])
 
@@ -48,7 +51,7 @@ func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication
 	scheme := viper.GetString("scheme")
 
 	r := httptransport.New(hostname, client.DefaultBasePath, []string{scheme})
-	r.Debug = debug
+	r.SetDebug(debug)
 	// set custom producer and consumer to use the default ones
 
 	r.Consumers["application/io.goswagger.examples.todo-list.v1+json"] = runtime.JSONConsumer()
@@ -85,6 +88,8 @@ func MakeRootCmd() (*cobra.Command, error) {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "output debug logs")
 	// configure config location
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "", "config file path")
+	// configure dry run flag
+	rootCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "do not send the request to server")
 
 	// register security flags
 	if err := registerAuthInoWriterFlags(rootCmd); err != nil {

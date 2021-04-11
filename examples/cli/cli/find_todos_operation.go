@@ -44,9 +44,19 @@ func runOperationTodosFindTodos(cmd *cobra.Command, args []string) error {
 	if err, _ := retrieveOperationTodosFindTodosSinceFlag(params, "", cmd); err != nil {
 		return err
 	}
+	if dryRun {
+
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
-	if err := printOperationTodosFindTodosResult(appCli.Todos.FindTodos(params, nil)); err != nil {
+	msgStr, err := parseOperationTodosFindTodosResult(appCli.Todos.FindTodos(params, nil))
+	if err != nil {
 		return err
+	}
+	if !debug {
+
+		fmt.Println(msgStr)
 	}
 	return nil
 }
@@ -138,8 +148,8 @@ func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefi
 	return nil, retAdded
 }
 
-// printOperationTodosFindTodosResult prints output to stdout
-func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) error {
+// parseOperationTodosFindTodosResult parses request result and return the string content
+func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) (string, error) {
 	if respErr != nil {
 
 		var iResp0 interface{} = respErr
@@ -148,23 +158,22 @@ func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 			if !swag.IsZero(resp0.Payload) {
 				msgStr, err := json.Marshal(resp0.Payload)
 				if err != nil {
-					return err
+					return "", err
 				}
-				fmt.Println(string(msgStr))
-				return nil
+				return string(msgStr), nil
 			}
 		}
 
-		return respErr
+		return "", respErr
 	}
 
 	if !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
-			return err
+			return "", err
 		}
-		fmt.Println(string(msgStr))
+		return string(msgStr), nil
 	}
 
-	return nil
+	return "", nil
 }

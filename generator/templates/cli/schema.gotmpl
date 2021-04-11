@@ -5,7 +5,7 @@
     {{if or .IsPrimitive .IsComplexObject }}
         {{ template "modelschemacliinternal" . }}
     {{ else }}
-        // {{ .GoType }} register and retrieve functions are not rendered by go-swagger cli
+        // Name: [{{.Name}}], Type:[{{ .GoType }}], register and retrieve functions are not rendered by go-swagger cli
     {{ end }}
 {{ end }}
 
@@ -47,22 +47,23 @@
         {{- else if .IsMap }}
         // warning: {{ .Name }} map type {{ .GoType }} is not supported by go-swagger cli yet
         {{- else if .IsComplexObject }}
-        {{/*struct case. TODO: move this out of Changed() block, since we want to recurse regardless of flag set*/}}
-        {{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use $modelPkg */}}
-        {{/* pkg is not filled properly in generator for inline type in params which references to models. TODO: fill in generator*/}}
-        {{ $flagValueVar }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
-        err, added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, &{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
-        if err != nil{
-            return err, false
-        }
-        retAdded = retAdded || added
-        if added {
-            m.{{pascalize .Name}} = {{if .IsNullable }}&{{end}}{{ $flagValueVar }}
-        }
+        // info: complex object {{.Name}} {{.GoType}} is retrieved outside this Changed() block
         {{- else }}
         // warning: {{.Name}} {{ .GoType }} unkown type is not supported by go-swagger cli yet
         {{- end }}
 	}
+    {{- if and  .IsComplexObject (not .IsArray) (not .IsMap) (not .IsStream) }}
+	{{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use .Pkg+.GoType */}}
+    {{ $flagValueVar }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
+    err, {{camelize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, &{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+    if err != nil{
+        return err, false
+    }
+    retAdded = retAdded || {{camelize .Name }}Added
+    if {{camelize .Name }}Added {
+        m.{{pascalize .Name}} = {{if .IsNullable }}&{{end}}{{ $flagValueVar }}
+    }
+	{{- end }}
 {{ end }}
 
 {{ define "modelschemacliinternal" }} {{/*used by model definition and in params model*/}}

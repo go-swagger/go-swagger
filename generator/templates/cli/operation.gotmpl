@@ -50,10 +50,20 @@ func runOperation{{pascalize $operationGroup }}{{ pascalize $operation }}(cmd *c
 		return err
 	}
 {{- end }} {{/*Params*/}}
+	if dryRun {
+		{{/* Note: dry run is not very useful for now, but useful when validation is added in future*/}}
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
 {{- /*Package string is the operation name*/}}
-	if err :=  printOperation{{pascalize .Package}}{{ pascalize .Name }}Result(appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params {{ if .HasStreamingResponse }}, &bytes.Buffer{}{{ end }}{{- if .Authorized}}, nil{{ end }})); err != nil{
+	msgStr, err :=  parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result(appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params {{ if .HasStreamingResponse }}, &bytes.Buffer{}{{ end }}{{- if .Authorized}}, nil{{ end }}))
+	if err != nil {
 		return err
+	}
+	if !debug{
+		{{/* In debug mode content should have been printed in transport layer, so do not print again*/}}
+		fmt.Println(msgStr)
 	}
 	return nil
 }
@@ -137,20 +147,25 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 	if added {
 		m.{{.ID}} = {{ $flagModelVar }}
 	}
+	if dryRun && debug {
+		{{/* dry run we don't get trasnport debug strings, so print it here*/}}
 		{{- $bodyDebugVar := printf "%vDebugBytes" (camelize $flagValueVar) }}
-	{{ $bodyDebugVar }}, err := json.Marshal(m.{{.ID}})
-	if err != nil{
-		return err, false
+		{{ $bodyDebugVar }}, err := json.Marshal(m.{{.ID}})
+		if err != nil{
+			return err, false
+		}
+		logDebugf("{{.ID }} dry-run payload: %v", string({{ $bodyDebugVar }}))
 	}
-	logDebugf("{{.ID }} payload: %v", string({{ $bodyDebugVar }}))
+	retAdded = retAdded || added
+		{{/*body debug string will be printed in transport layer*/}}
 	{{- end }}
 	return nil, retAdded
 }
 {{- end }} {{/*Params*/}}
 
-// printOperation{{pascalize .Package}}{{ pascalize .Name }}Result prints output to stdout
+// parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result parses request result and return the string content
 {{- /*TODO: handle multiple success response case*/}}
-func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .SuccessResponse }}{{ range $i, $v := .SuccessResponses }} resp{{$i}} *{{$v.Package}}.{{pascalize $v.Name}},{{- end }}{{- end }} respErr error) error{
+func parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .SuccessResponse }}{{ range $i, $v := .SuccessResponses }} resp{{$i}} *{{$v.Package}}.{{pascalize $v.Name}},{{- end }}{{- end }} respErr error) (string, error){
 	if respErr != nil {
 		{{- /*error is of type default model. If we can cast, then print the resp.*/}}
 		{{- range $i, $v := .Responses }}
@@ -161,17 +176,16 @@ func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 			if !swag.IsZero(resp{{$i}}.Payload) {
 				msgStr,err := json.Marshal(resp{{$i}}.Payload)
 				if err != nil{
-					return err
+					return "", err
 				}
-				fmt.Println(string(msgStr))
-				return nil
+				return string(msgStr), nil
 			}
 		}
 			{{ else }}
 			// Non schema case: warning {{.Name}} is not supported
 			{{ end }}
 		{{ end }}
-		return respErr
+		return "", respErr
 	}
 	{{- range $i, $v := .SuccessResponses }}
 		{{ if .Schema }}
@@ -180,19 +194,19 @@ func printOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 			{{- if or .IsComplexObject .IsArray .IsMap }}
 		msgStr,err := json.Marshal(resp{{$i}}.Payload)
 		if err != nil{
-			return err
+			return "", err
 		}
 			{{- else }}
 		msgStr := fmt.Sprintf("%v", resp{{$i}}.Payload)
 			{{- end }}
-		fmt.Println(string(msgStr))
+		return string(msgStr), nil
 	}
 		{{- end }}
 		{{ else }}
 		// warning: non schema response {{.Name}} is not supported by go-swagger cli yet.
 		{{ end }}
 	{{ end }}
-	return nil
+	return "", nil
 }
 
 {{/*for models defined in params, generate their register and retrieve flags functions*/}}

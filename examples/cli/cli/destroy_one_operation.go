@@ -39,9 +39,19 @@ func runOperationTodosDestroyOne(cmd *cobra.Command, args []string) error {
 	if err, _ := retrieveOperationTodosDestroyOneIDFlag(params, "", cmd); err != nil {
 		return err
 	}
+	if dryRun {
+
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
-	if err := printOperationTodosDestroyOneResult(appCli.Todos.DestroyOne(params, nil)); err != nil {
+	msgStr, err := parseOperationTodosDestroyOneResult(appCli.Todos.DestroyOne(params, nil))
+	if err != nil {
 		return err
+	}
+	if !debug {
+
+		fmt.Println(msgStr)
 	}
 	return nil
 }
@@ -93,16 +103,16 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 	return nil, retAdded
 }
 
-// printOperationTodosDestroyOneResult prints output to stdout
-func printOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) error {
+// parseOperationTodosDestroyOneResult parses request result and return the string content
+func parseOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) (string, error) {
 	if respErr != nil {
 
 		// Non schema case: warning destroyOneNoContent is not supported
 
-		return respErr
+		return "", respErr
 	}
 
 	// warning: non schema response destroyOneNoContent is not supported by go-swagger cli yet.
 
-	return nil
+	return "", nil
 }
