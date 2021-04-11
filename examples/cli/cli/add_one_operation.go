@@ -42,10 +42,47 @@ func runOperationTodosAddOne(cmd *cobra.Command, args []string) error {
 	if err, _ := retrieveOperationTodosAddOneBodyFlag(params, "", cmd); err != nil {
 		return err
 	}
+	if dryRun {
+
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
-	if err := printOperationTodosAddOneResult(appCli.Todos.AddOne(params, nil)); err != nil {
+	msgStr, err := parseOperationTodosAddOneResult(appCli.Todos.AddOne(params, nil))
+	if err != nil {
 		return err
 	}
+	if !debug {
+
+		fmt.Println(msgStr)
+	}
+	return nil
+}
+
+// registerOperationTodosAddOneParamFlags registers all flags needed to fill params
+func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
+	if err := registerOperationTodosAddOneBodyParamFlags("", cmd); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
+
+	var bodyFlagName string
+	if cmdPrefix == "" {
+		bodyFlagName = "body"
+	} else {
+		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+	}
+
+	_ = cmd.PersistentFlags().String(bodyFlagName, "", "Optional json string for [body]. ")
+
+	// add flags for body
+	if err := registerModelItemFlags(0, "item", cmd); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -68,80 +105,52 @@ func retrieveOperationTodosAddOneBodyFlag(m *todos.AddOneParams, cmdPrefix strin
 	if swag.IsZero(bodyValueModel) {
 		bodyValueModel = &models.Item{}
 	}
-	err, added := retrieveItemFlags(bodyValueModel, "item", cmd)
+	err, added := retrieveModelItemFlags(0, bodyValueModel, "item", cmd)
 	if err != nil {
 		return err, false
 	}
 	if added {
 		m.Body = bodyValueModel
 	}
-	bodyValueDebugBytes, err := json.Marshal(m.Body)
-	if err != nil {
-		return err, false
+	if dryRun && debug {
+
+		bodyValueDebugBytes, err := json.Marshal(m.Body)
+		if err != nil {
+			return err, false
+		}
+		logDebugf("Body dry-run payload: %v", string(bodyValueDebugBytes))
 	}
-	logDebugf("Body payload: %v", string(bodyValueDebugBytes))
+	retAdded = retAdded || added
+
 	return nil, retAdded
 }
 
-// printOperationTodosAddOneResult prints output to stdout
-func printOperationTodosAddOneResult(resp0 *todos.AddOneCreated, respErr error) error {
+// parseOperationTodosAddOneResult parses request result and return the string content
+func parseOperationTodosAddOneResult(resp0 *todos.AddOneCreated, respErr error) (string, error) {
 	if respErr != nil {
 
-		var iResp interface{} = respErr
-		defaultResp, ok := iResp.(*todos.AddOneDefault)
-		if !ok {
-			return respErr
-		}
-		if defaultResp.Payload != nil {
-			msgStr, err := json.Marshal(defaultResp.Payload)
-			if err != nil {
-				return err
+		var iResp0 interface{} = respErr
+		resp0, ok := iResp0.(*todos.AddOneCreated)
+		if ok {
+			if !swag.IsZero(resp0.Payload) {
+				msgStr, err := json.Marshal(resp0.Payload)
+				if err != nil {
+					return "", err
+				}
+				return string(msgStr), nil
 			}
-			fmt.Println(string(msgStr))
-			return nil
 		}
 
-		return respErr
+		return "", respErr
 	}
 
-	if resp0.Payload != nil {
+	if !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
-			return err
+			return "", err
 		}
-		fmt.Println(string(msgStr))
+		return string(msgStr), nil
 	}
 
-	return nil
-}
-
-// registerOperationTodosAddOneParamFlags registers all flags needed to fill params
-func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
-	if err := registerOperationTodosAddOneBodyParamFlags("", cmd); err != nil {
-		return err
-	}
-	return nil
-}
-
-func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
-
-	var bodyFlagName string
-	if cmdPrefix == "" {
-		bodyFlagName = "body"
-	} else {
-		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
-	}
-
-	exampleBodyStr, err := json.Marshal(&models.Item{})
-	if err != nil {
-		return err
-	}
-	_ = cmd.PersistentFlags().String(bodyFlagName, "", fmt.Sprintf("Optional json string for [body] of form %v.", string(exampleBodyStr)))
-
-	// add flags for body
-	if err := registerItemFlags("item", cmd); err != nil {
-		return err
-	}
-
-	return nil
+	return "", nil
 }

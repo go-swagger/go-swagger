@@ -155,10 +155,10 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 	if !isExternalType || extType.Embedded {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
-			return def, "", ""
+			return def, t.definitionPkg, ""
 		}
 		debugLog("known def type clear: %q -> %q", def, clear(def))
-		return clear(def), "", ""
+		return clear(def), t.definitionPkg, ""
 	}
 
 	// external type definition trumps regular type resolution
@@ -254,6 +254,7 @@ type typeResolver struct {
 	// unexported fields
 	keepDefinitionsPkg string
 	knownDefsKept      map[string]struct{}
+	definitionPkg      string // pkg alias to fill in GenSchema.Pkg
 }
 
 // NewWithModelName clones a type resolver and specifies a new model name
@@ -264,6 +265,7 @@ func (t *typeResolver) NewWithModelName(name string) *typeResolver {
 	// propagates kept definitions
 	tt.keepDefinitionsPkg = t.keepDefinitionsPkg
 	tt.knownDefsKept = t.knownDefsKept
+	tt.definitionPkg = t.definitionPkg
 	return tt
 }
 
@@ -275,6 +277,15 @@ func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *ty
 	for k := range t.KnownDefs {
 		t.knownDefsKept[k] = struct{}{}
 	}
+	return t
+}
+
+// withDefinitionPackage sets the definition pkg that object/struct types to be generated
+// in GenSchema.Pkg field.
+// ModelsPackage field can not replace definitionPkg since ModelsPackage will be prepend to .GoType,
+// while definitionPkg is just used to fill the .Pkg in GenSchema
+func (t *typeResolver) withDefinitionPackage(pkg string) *typeResolver {
+	t.definitionPkg = pkg
 	return t
 }
 
@@ -328,6 +339,7 @@ func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, 
 		result.AliasedType = result.GoType
 		result.IsAliased = true
 		result.GoType = t.goTypeName(t.ModelName)
+		result.Pkg = t.definitionPkg
 	}
 }
 

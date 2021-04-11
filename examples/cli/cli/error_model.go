@@ -12,21 +12,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// register flags to command
-func registerErrorFlags(cmdPrefix string, cmd *cobra.Command) error {
+// Schema cli for Error
 
-	if err := registerErrorCode(cmdPrefix, cmd); err != nil {
+// register flags to command
+func registerModelErrorFlags(depth int, cmdPrefix string, cmd *cobra.Command) error {
+
+	if err := registerErrorCode(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
-	if err := registerErrorMessage(cmdPrefix, cmd); err != nil {
+	if err := registerErrorMessage(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func registerErrorCode(cmdPrefix string, cmd *cobra.Command) error {
+func registerErrorCode(depth int, cmdPrefix string, cmd *cobra.Command) error {
+	if depth > maxDepth {
+		return nil
+	}
 
 	codeDescription := ``
 
@@ -44,7 +49,10 @@ func registerErrorCode(cmdPrefix string, cmd *cobra.Command) error {
 	return nil
 }
 
-func registerErrorMessage(cmdPrefix string, cmd *cobra.Command) error {
+func registerErrorMessage(depth int, cmdPrefix string, cmd *cobra.Command) error {
+	if depth > maxDepth {
+		return nil
+	}
 
 	messageDescription := `Required. `
 
@@ -59,24 +67,20 @@ func registerErrorMessage(cmdPrefix string, cmd *cobra.Command) error {
 
 	_ = cmd.PersistentFlags().String(messageFlagName, messageFlagDefault, messageDescription)
 
-	if err := cmd.MarkPersistentFlagRequired(messageFlagName); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 // retrieve flags from commands, and set value in model. Return true if any flag is passed by user to fill model field.
-func retrieveErrorFlags(m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveModelErrorFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	err, codeAdded := retrieveErrorCodeFlags(m, cmdPrefix, cmd)
+	err, codeAdded := retrieveErrorCodeFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
 	retAdded = retAdded || codeAdded
 
-	err, messageAdded := retrieveErrorMessageFlags(m, cmdPrefix, cmd)
+	err, messageAdded := retrieveErrorMessageFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
@@ -85,8 +89,12 @@ func retrieveErrorFlags(m *models.Error, cmdPrefix string, cmd *cobra.Command) (
 	return nil, retAdded
 }
 
-func retrieveErrorCodeFlags(m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	if depth > maxDepth {
+		return nil, false
+	}
 	retAdded := false
+
 	codeFlagName := fmt.Sprintf("%v.code", cmdPrefix)
 	if cmd.Flags().Changed(codeFlagName) {
 
@@ -105,11 +113,16 @@ func retrieveErrorCodeFlags(m *models.Error, cmdPrefix string, cmd *cobra.Comman
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
-func retrieveErrorMessageFlags(m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveErrorMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	if depth > maxDepth {
+		return nil, false
+	}
 	retAdded := false
+
 	messageFlagName := fmt.Sprintf("%v.message", cmdPrefix)
 	if cmd.Flags().Changed(messageFlagName) {
 
@@ -128,5 +141,6 @@ func retrieveErrorMessageFlags(m *models.Error, cmdPrefix string, cmd *cobra.Com
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }

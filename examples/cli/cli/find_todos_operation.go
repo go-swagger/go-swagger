@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 
+	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
 )
 
@@ -43,83 +44,20 @@ func runOperationTodosFindTodos(cmd *cobra.Command, args []string) error {
 	if err, _ := retrieveOperationTodosFindTodosSinceFlag(params, "", cmd); err != nil {
 		return err
 	}
+	if dryRun {
+
+		logDebugf("dry-run flag specified. Skip sending request.")
+		return nil
+	}
 	// make request and then print result
-	if err := printOperationTodosFindTodosResult(appCli.Todos.FindTodos(params, nil)); err != nil {
+	msgStr, err := parseOperationTodosFindTodosResult(appCli.Todos.FindTodos(params, nil))
+	if err != nil {
 		return err
 	}
-	return nil
-}
+	if !debug {
 
-func retrieveOperationTodosFindTodosLimitFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
-	retAdded := false
-	if cmd.Flags().Changed("limit") {
-
-		var limitFlagName string
-		if cmdPrefix == "" {
-			limitFlagName = "limit"
-		} else {
-			limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
-		}
-
-		limitFlagValue, err := cmd.Flags().GetInt32(limitFlagName)
-		if err != nil {
-			return err, false
-		}
-		m.Limit = &limitFlagValue
-
+		fmt.Println(msgStr)
 	}
-	return nil, retAdded
-}
-func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
-	retAdded := false
-	if cmd.Flags().Changed("since") {
-
-		var sinceFlagName string
-		if cmdPrefix == "" {
-			sinceFlagName = "since"
-		} else {
-			sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
-		}
-
-		sinceFlagValue, err := cmd.Flags().GetInt64(sinceFlagName)
-		if err != nil {
-			return err, false
-		}
-		m.Since = &sinceFlagValue
-
-	}
-	return nil, retAdded
-}
-
-// printOperationTodosFindTodosResult prints output to stdout
-func printOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) error {
-	if respErr != nil {
-
-		var iResp interface{} = respErr
-		defaultResp, ok := iResp.(*todos.FindTodosDefault)
-		if !ok {
-			return respErr
-		}
-		if defaultResp.Payload != nil {
-			msgStr, err := json.Marshal(defaultResp.Payload)
-			if err != nil {
-				return err
-			}
-			fmt.Println(string(msgStr))
-			return nil
-		}
-
-		return respErr
-	}
-
-	if resp0.Payload != nil {
-		msgStr, err := json.Marshal(resp0.Payload)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(msgStr))
-	}
-
 	return nil
 }
 
@@ -167,4 +105,75 @@ func registerOperationTodosFindTodosSinceParamFlags(cmdPrefix string, cmd *cobra
 	_ = cmd.PersistentFlags().Int64(sinceFlagName, sinceFlagDefault, sinceDescription)
 
 	return nil
+}
+
+func retrieveOperationTodosFindTodosLimitFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("limit") {
+
+		var limitFlagName string
+		if cmdPrefix == "" {
+			limitFlagName = "limit"
+		} else {
+			limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+		}
+
+		limitFlagValue, err := cmd.Flags().GetInt32(limitFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Limit = &limitFlagValue
+
+	}
+	return nil, retAdded
+}
+func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	retAdded := false
+	if cmd.Flags().Changed("since") {
+
+		var sinceFlagName string
+		if cmdPrefix == "" {
+			sinceFlagName = "since"
+		} else {
+			sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+		}
+
+		sinceFlagValue, err := cmd.Flags().GetInt64(sinceFlagName)
+		if err != nil {
+			return err, false
+		}
+		m.Since = &sinceFlagValue
+
+	}
+	return nil, retAdded
+}
+
+// parseOperationTodosFindTodosResult parses request result and return the string content
+func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) (string, error) {
+	if respErr != nil {
+
+		var iResp0 interface{} = respErr
+		resp0, ok := iResp0.(*todos.FindTodosOK)
+		if ok {
+			if !swag.IsZero(resp0.Payload) {
+				msgStr, err := json.Marshal(resp0.Payload)
+				if err != nil {
+					return "", err
+				}
+				return string(msgStr), nil
+			}
+		}
+
+		return "", respErr
+	}
+
+	if !swag.IsZero(resp0.Payload) {
+		msgStr, err := json.Marshal(resp0.Payload)
+		if err != nil {
+			return "", err
+		}
+		return string(msgStr), nil
+	}
+
+	return "", nil
 }

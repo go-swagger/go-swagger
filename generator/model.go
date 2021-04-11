@@ -230,7 +230,8 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	// Check if model is imported from external package using x-go-type
 	receiver := "m"
 	// models are resolved in the current package
-	resolver := newTypeResolver("", "", specDoc)
+	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
+	resolver := newTypeResolver("", "", specDoc).withDefinitionPackage(modelPkg)
 	resolver.ModelName = name
 	analyzed := analysis.New(specDoc.Spec())
 
@@ -364,7 +365,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			Copyright:        opts.Copyright,
 			TargetImportPath: opts.LanguageOpts.baseImport(opts.Target),
 		},
-		Package:        opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions"),
+		Package:        modelPkg,
 		GenSchema:      pg.GenSchema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
@@ -1710,6 +1711,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 		tpe.IsBaseType = tpx.IsBaseType
 
 		tpe.GoType = sg.TypeResolver.goTypeName(path.Base(sg.Schema.Ref.String()))
+		tpe.Pkg = sg.TypeResolver.definitionPkg
 
 		tpe.IsNullable = tpx.IsNullable // TODO
 		tpe.IsInterface = tpx.IsInterface
@@ -1740,6 +1742,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 
 	tpe := resolvedType{}
 	tpe.GoType = sg.TypeResolver.goTypeName(sg.Name)
+	tpe.Pkg = sg.TypeResolver.definitionPkg
 	tpe.SwaggerType = "object"
 	tpe.IsComplexObject = true
 	tpe.IsMap = false

@@ -27,6 +27,11 @@ func TestGenerateCLI(t *testing.T) {
 		wantError bool
 	}{
 		{
+			name:      "tasklist_basic",
+			spec:      "tasklist.basic.yml",
+			wantError: false,
+		},
+		{
 			name:      "tasklist_allparams",
 			spec:      "todolist.allparams.yml",
 			wantError: false,
@@ -49,6 +54,31 @@ func TestGenerateCLI(t *testing.T) {
 		{
 			name:      "tasklist_simplequery",
 			spec:      "todolist.simplequery.yml",
+			wantError: false,
+		},
+		{
+			name:      "todolist_responses",
+			spec:      "todolist.responses.yml",
+			wantError: false,
+		},
+		{
+			name:      "todo_simple-fixed",
+			spec:      "todolist.simple-fixed.yml",
+			wantError: false,
+		},
+		{
+			name:      "todo_simpleform",
+			spec:      "todolist.simpleform.yml",
+			wantError: false,
+		},
+		{
+			name:      "todo_simpleheader",
+			spec:      "todolist.simpleheader.yml",
+			wantError: false,
+		},
+		{
+			name:      "todo_simplepath",
+			spec:      "todolist.simplepath.yml",
 			wantError: false,
 		},
 	}
@@ -78,69 +108,6 @@ func TestGenerateCLI(t *testing.T) {
 				if runVet {
 					vet := exec.Command("go", "vet", generated+"/...")
 					output, err := vet.CombinedOutput()
-					assert.NoError(t, err, string(output))
-				}
-			}
-		})
-	}
-}
-
-// This tests holds not yet working specs. It will be moved/combined with above test once fixed.
-func TestGenerateCLIWorkInProgress(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	base := filepath.FromSlash("../../../../")
-
-	testcases := []struct {
-		name      string
-		spec      string
-		wantError bool
-	}{
-		// TODO: This one is not working for CLI
-		// {
-		// 	name:      "tasklist_basic",
-		// 	spec:      "tasklist.basic.yml",
-		// 	wantError: false,
-		// },
-		// TODO: Discriminator is not yet working for CLI.
-		// {
-		// 	name:      "todolist_discriminators",
-		// 	spec:      "todolist.discriminators.yml",
-		// 	wantError: false,
-		// },
-		// TODO: Not working yet. Need to find a way to detect pkg of model in schema
-		// {
-		// 	name:      "todolist_responses",
-		// 	spec:      "todolist.responses.yml",
-		// 	wantError: false,
-		// },
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			path := filepath.Join(base, "fixtures/codegen", tc.spec)
-			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
-			if err != nil {
-				t.Fatalf("TempDir()=%s", generated)
-			}
-			// defer func() {
-			// 	_ = os.RemoveAll(generated)
-			// }()
-			m := &generate.Cli{}
-			_, _ = flags.Parse(m)
-			m.Shared.Spec = flags.Filename(path)
-			m.Shared.Target = flags.Filename(generated)
-
-			err = m.Execute([]string{})
-			if tc.wantError {
-				assert.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				// run go vet on generated files
-				vet := exec.Command("go", "vet", generated+"/...")
-				output, err := vet.CombinedOutput()
-				if err != nil {
 					assert.NoError(t, err, string(output))
 				}
 			}

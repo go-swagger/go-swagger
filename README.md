@@ -25,6 +25,7 @@ it knows how to serialize and deserialize swagger specifications.
 
 * Generates a server from a swagger specification
 * Generates a client from a swagger specification
+* Generates a CLI (command line tool) from a swagger specification (alpha stage)
 * Supports most features offered by jsonschema and swagger, including polymorphism
 * Generates a swagger specification from annotated go code
 * Additional tools to work with a swagger spec
@@ -133,7 +134,11 @@ To generate a [client for a swagger spec](https://goswagger.io/generate/client.h
 ```
 swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 ```
-
+### Generate an CLI (Command line tool)
+To generate a [CLI for a swagger spec](https://github.com/go-swagger/go-swagger/tree/master/examples/cli) document:
+```
+swagger generate cli [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 ### Generate a spec from source
 To generate a [swagger spec document for a go application](https://goswagger.io/generate/spec.html):
 

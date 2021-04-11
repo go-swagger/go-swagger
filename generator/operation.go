@@ -1035,7 +1035,9 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *sp
 	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget)
 
 	// make a resolver for current package (i.e. operations)
-	pg.TypeResolver = newTypeResolver("", b.DefaultImports[b.APIPackage], rslv.Doc).withKeepDefinitionsPackage(pkg)
+	pg.TypeResolver = newTypeResolver("", b.DefaultImports[b.APIPackage], rslv.Doc).
+		withKeepDefinitionsPackage(pkg).
+		withDefinitionPackage(b.APIPackageAlias) // all new extra schemas are going to be in api pkg
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
 	pg.UseContainerInName = true
 
@@ -1122,6 +1124,10 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		schema = sc.GenSchema
 	}
 
+	// new schemas will be in api pkg
+	schemaPkg := b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "")
+	schema.Pkg = schemaPkg
+
 	if schema.IsAnonymous {
 		// a generated name for anonymous schema
 		// TODO: support x-go-name
@@ -1129,13 +1135,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		isAllOf := len(schema.AllOf) > 0
 		isInterface := schema.IsInterface
 		hasValidations := schema.HasValidations
-
-		// TODO: remove this and find a better way to get package name for anonymous models
-		// get the package that the param will be generated. Used by generate CLI
-		pkg := "operations"
-		if len(b.Operation.Tags) != 0 {
-			pkg = b.Operation.Tags[0]
-		}
 
 		// for complex anonymous objects, produce an extra schema
 		if hasProperties || isAllOf {
@@ -1145,7 +1144,6 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.Name = schemaName
 			schema.GoType = schemaName
 			schema.IsAnonymous = false
-			schema.Pkg = pkg
 			b.ExtraSchemas[schemaName] = schema
 
 			// constructs new schema to refer to the newly created type
@@ -1155,7 +1153,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.SwaggerType = schemaName
 			schema.HasValidations = hasValidations
 			schema.GoType = schemaName
-			schema.Pkg = pkg
+			schema.Pkg = schemaPkg
 		} else if isInterface {
 			schema = GenSchema{}
 			schema.IsAnonymous = false
@@ -1165,6 +1163,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.GoType = iface
 		}
 	}
+
 	return schema, nil
 }
 

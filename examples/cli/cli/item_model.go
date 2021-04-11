@@ -12,25 +12,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Schema cli for Item
+
 // register flags to command
-func registerItemFlags(cmdPrefix string, cmd *cobra.Command) error {
+func registerModelItemFlags(depth int, cmdPrefix string, cmd *cobra.Command) error {
 
-	if err := registerItemCompleted(cmdPrefix, cmd); err != nil {
+	if err := registerItemCompleted(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
-	if err := registerItemDescription(cmdPrefix, cmd); err != nil {
+	if err := registerItemDescription(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
-	if err := registerItemID(cmdPrefix, cmd); err != nil {
+	if err := registerItemID(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func registerItemCompleted(cmdPrefix string, cmd *cobra.Command) error {
+func registerItemCompleted(depth int, cmdPrefix string, cmd *cobra.Command) error {
+	if depth > maxDepth {
+		return nil
+	}
 
 	completedDescription := ``
 
@@ -48,7 +53,10 @@ func registerItemCompleted(cmdPrefix string, cmd *cobra.Command) error {
 	return nil
 }
 
-func registerItemDescription(cmdPrefix string, cmd *cobra.Command) error {
+func registerItemDescription(depth int, cmdPrefix string, cmd *cobra.Command) error {
+	if depth > maxDepth {
+		return nil
+	}
 
 	descriptionDescription := `Required. `
 
@@ -63,14 +71,13 @@ func registerItemDescription(cmdPrefix string, cmd *cobra.Command) error {
 
 	_ = cmd.PersistentFlags().String(descriptionFlagName, descriptionFlagDefault, descriptionDescription)
 
-	if err := cmd.MarkPersistentFlagRequired(descriptionFlagName); err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func registerItemID(cmdPrefix string, cmd *cobra.Command) error {
+func registerItemID(depth int, cmdPrefix string, cmd *cobra.Command) error {
+	if depth > maxDepth {
+		return nil
+	}
 
 	idDescription := ``
 
@@ -89,22 +96,22 @@ func registerItemID(cmdPrefix string, cmd *cobra.Command) error {
 }
 
 // retrieve flags from commands, and set value in model. Return true if any flag is passed by user to fill model field.
-func retrieveItemFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveModelItemFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	err, completedAdded := retrieveItemCompletedFlags(m, cmdPrefix, cmd)
+	err, completedAdded := retrieveItemCompletedFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
 	retAdded = retAdded || completedAdded
 
-	err, descriptionAdded := retrieveItemDescriptionFlags(m, cmdPrefix, cmd)
+	err, descriptionAdded := retrieveItemDescriptionFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
 	retAdded = retAdded || descriptionAdded
 
-	err, idAdded := retrieveItemIDFlags(m, cmdPrefix, cmd)
+	err, idAdded := retrieveItemIDFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
@@ -113,8 +120,12 @@ func retrieveItemFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (er
 	return nil, retAdded
 }
 
-func retrieveItemCompletedFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveItemCompletedFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	if depth > maxDepth {
+		return nil, false
+	}
 	retAdded := false
+
 	completedFlagName := fmt.Sprintf("%v.completed", cmdPrefix)
 	if cmd.Flags().Changed(completedFlagName) {
 
@@ -133,11 +144,16 @@ func retrieveItemCompletedFlags(m *models.Item, cmdPrefix string, cmd *cobra.Com
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
-func retrieveItemDescriptionFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveItemDescriptionFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	if depth > maxDepth {
+		return nil, false
+	}
 	retAdded := false
+
 	descriptionFlagName := fmt.Sprintf("%v.description", cmdPrefix)
 	if cmd.Flags().Changed(descriptionFlagName) {
 
@@ -156,11 +172,16 @@ func retrieveItemDescriptionFlags(m *models.Item, cmdPrefix string, cmd *cobra.C
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
 
-func retrieveItemIDFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveItemIDFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+	if depth > maxDepth {
+		return nil, false
+	}
 	retAdded := false
+
 	idFlagName := fmt.Sprintf("%v.id", cmdPrefix)
 	if cmd.Flags().Changed(idFlagName) {
 
@@ -179,5 +200,6 @@ func retrieveItemIDFlags(m *models.Item, cmdPrefix string, cmd *cobra.Command) (
 
 		retAdded = true
 	}
+
 	return nil, retAdded
 }
