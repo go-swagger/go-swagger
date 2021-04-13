@@ -180,7 +180,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				}, {
 					Name:     "climain",
 					Source:   "asset:cliMain",
-					Target:   "{{ joinFilePath .Target \"cmd\" (toPackagePath .CliPackage) }}",
+					Target:   "{{ joinFilePath .Target \"cmd\" (toPackagePath .CliAppName) }}",
 					FileName: "main.go",
 				}, {
 					Name:     "cliAutoComplete",
@@ -316,6 +316,7 @@ type GenOpts struct {
 	ServerPackage          string
 	ClientPackage          string
 	CliPackage             string
+	CliAppName             string // name of cli app. For example "dockerctl"
 	ImplementationPackage  string
 	Principal              string
 	PrincipalCustomIface   bool   // user-provided interface for Principal (non-nullable)
@@ -542,12 +543,13 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	}
 
 	d := struct {
-		Name, Package, APIPackage, ServerPackage, ClientPackage, CliPackage, ModelPackage, MainPackage, Target string
-		Tags                                                                                                   []string
-		UseTags                                                                                                bool
-		Context                                                                                                interface{}
+		Name, CliAppName, Package, APIPackage, ServerPackage, ClientPackage, CliPackage, ModelPackage, MainPackage, Target string
+		Tags                                                                                                               []string
+		UseTags                                                                                                            bool
+		Context                                                                                                            interface{}
 	}{
 		Name:          name,
+		CliAppName:    g.CliAppName,
 		Package:       pkg,
 		APIPackage:    g.APIPackage,
 		ServerPackage: g.ServerPackage,
