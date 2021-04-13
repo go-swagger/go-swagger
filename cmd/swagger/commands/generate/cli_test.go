@@ -114,3 +114,13 @@ func TestGenerateCLI(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateCli_Check(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	m := &generate.Cli{}
+	_, _ = flags.Parse(m)
+	err := m.Execute([]string{})
+	assert.Error(t, err)
+}
