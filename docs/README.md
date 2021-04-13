@@ -25,6 +25,7 @@ it knows how to serialize and deserialize swagger specifications.
 
 * Generates a server from a swagger specification
 * Generates a client from a swagger specification
+* Generates a CLI (command line tool) from a swagger specification (alpha stage)
 * Supports most features offered by jsonschema and swagger, including polymorphism
 * Generates a swagger specification from annotated go code
 * Additional tools to work with a swagger spec
@@ -133,7 +134,11 @@ To generate a [client for a swagger spec](https://goswagger.io/generate/client.h
 ```
 swagger generate client [-f ./swagger.json] -A [application-name [--principal [principal-name]]
 ```
-
+### Generate an CLI (Command line tool)
+To generate a [CLI for a swagger spec](https://github.com/go-swagger/go-swagger/tree/master/examples/cli) document:
+```
+swagger generate cli [-f ./swagger.json] -A [application-name [--principal [principal-name]]
+```
 ### Generate a spec from source
 To generate a [swagger spec document for a go application](https://goswagger.io/generate/spec.html):
 
@@ -227,7 +232,19 @@ Iron.io
 
 ## Note to users migrating from older releases
 
-### Migrating from 0.24 to [master]
+### Migrating from 0.25 to [master]
+
+Changes in the behavior of the generated client regarding defaults in parameters and response headers:
+
+  * default values for parameters are no more hydrated by default and sent over the wire
+    (assuming the server uses defaults).
+  * the previous behavior (explicitly sending defaults over the wire) can be obtained
+    with the SetDefaults() and WithDefaults() parameter methods.
+  * the body parameter is not pre-hydrated with the default from it schema
+  * default values for response headers are hydrated when the header is not received
+    (previously, headers remained with their zero value)
+
+### Migrating from 0.24 to 0.25
 
 The options for `generate model --all-definitions` and `--skip-struct` are marked for deprecation. 
 
