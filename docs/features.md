@@ -6,6 +6,7 @@
   - [x] Flexible code generation, with customizable templates (package generator)
   - [x] Generate API based on swagger spec
   - [x] Generate go client from a swagger spec
+  - [x] Generate CLI (command line tool) client from a swagger spec
   - [x] Support swagger polymorphism (discriminator with allOf composition)
   - [x] Validate a swagger spec document, with extra rules outlined [here](usage/validate.md)
   - [x] Validate JSON data against jsonschema (Draft 4), with full $ref support (see: [validate package](https://github.com/go-openapi/validate))
