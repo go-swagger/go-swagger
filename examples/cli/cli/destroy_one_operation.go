@@ -6,10 +6,12 @@ package cli
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 
+	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
 )
 
@@ -106,6 +108,18 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 // parseOperationTodosDestroyOneResult parses request result and return the string content
 func parseOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) (string, error) {
 	if respErr != nil {
+
+		var iRespD interface{} = respErr
+		respD, ok := iRespD.(*todos.DestroyOneDefault)
+		if ok {
+			if !swag.IsZero(respD.Payload) {
+				msgStr, err := json.Marshal(respD.Payload)
+				if err != nil {
+					return "", err
+				}
+				return string(msgStr), nil
+			}
+		}
 
 		// Non schema case: warning destroyOneNoContent is not supported
 

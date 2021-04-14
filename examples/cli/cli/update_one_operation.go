@@ -172,6 +172,18 @@ func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix s
 func parseOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error) (string, error) {
 	if respErr != nil {
 
+		var iRespD interface{} = respErr
+		respD, ok := iRespD.(*todos.UpdateOneDefault)
+		if ok {
+			if !swag.IsZero(respD.Payload) {
+				msgStr, err := json.Marshal(respD.Payload)
+				if err != nil {
+					return "", err
+				}
+				return string(msgStr), nil
+			}
+		}
+
 		var iResp0 interface{} = respErr
 		resp0, ok := iResp0.(*todos.UpdateOneOK)
 		if ok {
