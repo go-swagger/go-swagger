@@ -152,6 +152,18 @@ func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefi
 func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) (string, error) {
 	if respErr != nil {
 
+		var iRespD interface{} = respErr
+		respD, ok := iRespD.(*todos.FindTodosDefault)
+		if ok {
+			if !swag.IsZero(respD.Payload) {
+				msgStr, err := json.Marshal(respD.Payload)
+				if err != nil {
+					return "", err
+				}
+				return string(msgStr), nil
+			}
+		}
+
 		var iResp0 interface{} = respErr
 		resp0, ok := iResp0.(*todos.FindTodosOK)
 		if ok {

@@ -168,10 +168,27 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 func parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .SuccessResponse }}{{ range $i, $v := .SuccessResponses }} resp{{$i}} *{{$v.Package}}.{{pascalize $v.Name}},{{- end }}{{- end }} respErr error) (string, error){
 	if respErr != nil {
 		{{- /*error is of type default model. If we can cast, then print the resp.*/}}
+		{{ if .DefaultResponse }} {{with .DefaultResponse}}
+			{{ if .Schema }}
+		var iRespD interface{} = respErr
+		respD, ok := iRespD.(*{{ .Package }}.{{ pascalize .Name }})
+		if ok {
+			if !swag.IsZero(respD.Payload) {
+				msgStr,err := json.Marshal(respD.Payload)
+				if err != nil{
+					return "", err
+				}
+				return string(msgStr), nil
+			}
+		}
+			{{ else }}
+			// Non schema case: warning {{.Name}} is not supported
+			{{ end }}
+		{{ end }} {{ end }}
 		{{- range $i, $v := .Responses }}
 			{{ if .Schema }}
 		var iResp{{$i}} interface{} = respErr
-		resp{{$i}}, ok := iResp{{$i}}.(*{{camelize .Package}}.{{ pascalize .Name }})
+		resp{{$i}}, ok := iResp{{$i}}.(*{{ .Package }}.{{ pascalize .Name }})
 		if ok {
 			if !swag.IsZero(resp{{$i}}.Payload) {
 				msgStr,err := json.Marshal(resp{{$i}}.Payload)
