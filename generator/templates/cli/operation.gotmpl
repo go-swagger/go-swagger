@@ -83,10 +83,6 @@ func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}Pa
 func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags(cmdPrefix string, cmd *cobra.Command) error{
 	{{- if .IsPrimitive }}
 		{{ template "primitiveregistrator" . }}
-		{{/* Required is not working yet because not all types are supported in primitive registrator */}}
-		{{/* {{ if .Required }}
-			{{ template "requiredregistrator" . }}
-		{{ end }} */}}
 	{{- else if and .IsBodyParam .Schema (not .IsArray) (not .IsMap) (not .IsStream) }}
 		{{ template "modelparamstringregistrator" . }}
 		{{ template "modelparamregistrator" . }}

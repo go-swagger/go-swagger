@@ -23,11 +23,12 @@
     var {{ $defaultVar}} {{ .GoType }} {{ if .Default }}= {{ printf "%#v" .Default }}{{ end }} 
 {{ end }}
 
-{{ define "requiredregistrator" }}
+{{/* Not used. CLI does not mark flag as required, and required will be checked by validation in future */}}
+{{/* {{ define "requiredregistrator" }}
 	if err := cmd.MarkPersistentFlagRequired({{ camelize .Name }}FlagName); err != nil{
 		return err
 	}
-{{ end }}
+{{ end }} */}}
 
 {{/* intended to be used on struct GenSchema with .IsPrimitive */}}
 {{ define "primitiveregistrator" }}
