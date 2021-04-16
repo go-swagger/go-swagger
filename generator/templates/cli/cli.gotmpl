@@ -158,17 +158,21 @@ func initViperConfigs() {
 // registerAuthInoWriterFlags registers all flags needed to perform authentication
 func registerAuthInoWriterFlags(cmd *cobra.Command) error {
 {{- range .SecurityDefinitions }}
-		/* {{.Description}}*/
+		/*{{.Name}} {{.Description}}*/
 		{{- if .IsBasicAuth }}
-	cmd.PersistentFlags().String("usr", "usr", "username")
-	viper.BindPFlag("usr", cmd.PersistentFlags().Lookup("usr"))
-	cmd.PersistentFlags().String("pwd", "pwd", "password")
-	viper.BindPFlag("pwd", cmd.PersistentFlags().Lookup("pwd"))
-    	{{- else if .IsAPIKeyAuth }}
-	cmd.PersistentFlags().String("{{.Name}}", "none", `{{.Description}}`)
+	cmd.PersistentFlags().String("username", "", "username for basic auth")
+	viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
+	cmd.PersistentFlags().String("password", "", "password for basic auth")
+	viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
+		{{- end }}
+    	{{- if .IsAPIKeyAuth }}
+	cmd.PersistentFlags().String("{{.Name}}", "", `{{.Description}}`)
 	viper.BindPFlag("{{.Name}}", cmd.PersistentFlags().Lookup("{{.Name}}"))
-    	{{- else if .IsOAuth2 }}
-	// warning: OAuth2 is not supported by go-swagger cli yet
+    	{{- end }}
+		{{- if .IsOAuth2 }}
+	// oauth2: let user provide the token in a flag, rather than implement the logic to fetch the token.
+	cmd.PersistentFlags().String("oauth2-token", "", `{{.Description}}`)
+	viper.BindPFlag("oauth2-token", cmd.PersistentFlags().Lookup("oauth2-token"))
     	{{- end }}
 {{- end }}
 	return nil
@@ -177,19 +181,34 @@ func registerAuthInoWriterFlags(cmd *cobra.Command) error {
 // makeAuthInfoWriter retrieves cmd flags and construct an auth info writer
 func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error) {
 	auths := []runtime.ClientAuthInfoWriter{}
-  	{{- range .SecurityDefinitions }}
-	/* {{.Description}}*/
+{{- range .SecurityDefinitions }}
+	/*{{.Name}} {{.Description}}*/
 	{{- if .IsBasicAuth }}
-	// warning: basic auth is not yet supported by go-swagger cli yet
-    {{- else if .IsAPIKeyAuth }}
-	{{ pascalize .Name }}Key := viper.GetString("{{.Name}}")
-	auths = append(auths, httptransport.APIKeyAuth("{{.Name}}", "{{.In}}", {{ pascalize .Name }}Key))
-    {{- else if .IsOAuth2 }}
-	// warning: auth2 is not yet supported by go-swagger cli yet
-	{{- else }}
-	return nil, nil
+	if viper.IsSet("username") {
+		usr := viper.GetString("username")
+		if !viper.IsSet("password"){
+			return nil, fmt.Errorf("Basic Auth password for user [%v] is not provided.", usr)
+		}
+		pwd := viper.GetString("password")
+		auths = append(auths, httptransport.BasicAuth(usr,pwd))
+    }
+	{{- end }}
+    {{- if .IsAPIKeyAuth }}
+	if viper.IsSet("{{.Name}}") {
+		{{ pascalize .Name }}Key := viper.GetString("{{.Name}}")
+		auths = append(auths, httptransport.APIKeyAuth("{{.Name}}", "{{.In}}", {{ pascalize .Name }}Key))
+    }
+	{{- end }}
+	{{- if .IsOAuth2 }}
+	if viper.IsSet("oauth2-token") {
+		// oauth2 workflow for generated CLI is not ideal. 
+		// If you have suggestions on how to support it, raise an issue here: https://github.com/go-swagger/go-swagger/issues
+		// This will be added to header: "Authorization: Bearer {oauth2-token value}"
+		token := viper.GetString("oauth2-token")
+		auths = append(auths, httptransport.BearerToken(token))
+    }
     {{- end }}
-  	{{- end }}
+{{- end }}
 	if len(auths) == 0 {
 		logDebugf("Warning: No auth params detected.")
 		return nil, nil
