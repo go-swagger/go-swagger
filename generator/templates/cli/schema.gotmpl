@@ -46,15 +46,18 @@
         {{- end }}
 	}
     {{- if and  .IsComplexObject (not .IsArray) (not .IsMap) (not .IsStream) }}
-	{{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use .Pkg+.GoType */}}
-    {{ $flagValueVar }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
-    err, {{camelize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, &{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+    {{ $flagValueVar }} := m.{{pascalize .Name}}
+    if swag.IsZero({{ $flagValueVar }}){
+        {{ $flagValueVar }} = {{if .IsNullable }}&{{end}}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
+    }
+    {{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use .Pkg+.GoType */}}
+    err, {{camelize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{if not .IsNullable }}&{{end}}{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
     if err != nil{
         return err, false
     }
     retAdded = retAdded || {{camelize .Name }}Added
     if {{camelize .Name }}Added {
-        m.{{pascalize .Name}} = {{if .IsNullable }}&{{end}}{{ $flagValueVar }}
+        m.{{pascalize .Name}} = {{ $flagValueVar }}
     }
 	{{- end }}
 {{ end }}
