@@ -63,6 +63,13 @@ func (pt paramTypable) WithEnum(values ...interface{}) {
 	pt.param.WithEnum(values...)
 }
 
+func (pt paramTypable) WithEnumDescription(desc string) {
+	if desc == "" {
+		return
+	}
+	pt.param.AddExtension(extEnumDesc, desc)
+}
+
 type itemsTypable struct {
 	items *spec.Items
 	level int
@@ -96,6 +103,10 @@ func (pt itemsTypable) AddExtension(key string, value interface{}) {
 
 func (pt itemsTypable) WithEnum(values ...interface{}) {
 	pt.items.WithEnum(values...)
+}
+
+func (pt itemsTypable) WithEnumDescription(desc string) {
+	//no
 }
 
 type paramValidations struct {
@@ -361,7 +372,13 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		}
 
 		sp := new(sectionedParser)
-		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+		sp.setDescription = func(lines []string) {
+			ps.Description = joinDropLast(lines)
+			enumDesc := getEnumDesc(ps.Extensions)
+			if enumDesc != "" {
+				ps.Description += "\n" + enumDesc
+			}
+		}
 		if ps.Ref.String() == "" {
 			sp.taggers = []tagParser{
 				newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),

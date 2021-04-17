@@ -85,6 +85,10 @@ func (ht responseTypable) WithEnum(values ...interface{}) {
 	ht.header.WithEnum(values)
 }
 
+func (ht responseTypable) WithEnumDescription(desc string) {
+	//no
+}
+
 type headerValidations struct {
 	current *spec.Header
 }

@@ -155,7 +155,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assertProperty(t, &mod, "string", "status", "", "Status")
 	prop, ok = mod.Properties["status"]
 	assert.True(t, ok)
-	assert.Equal(t, "The current status of the pet in the store.", prop.Description)
+	assert.Equal(t, "The current status of the pet in the store.\navailable STATUS_AVAILABLE\npending STATUS_PENDING\nsold STATUS_SOLD", prop.Description)
 	assert.Equal(t, []interface{}{"available", "pending", "sold"}, prop.Enum)
 
 	assertProperty(t, &mod, "string", "birthday", "date", "Birthday")
@@ -250,7 +250,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	}
 	sort.Sort(names)
 	sparam := op.Get.Parameters[names[1].Index]
-	assert.Equal(t, "Status", sparam.Description)
+	assert.Equal(t, "Status\navailable STATUS_AVAILABLE\npending STATUS_PENDING\nsold STATUS_SOLD", sparam.Description)
 	assert.Equal(t, "query", sparam.In)
 	assert.Equal(t, "string", sparam.Type)
 	assert.Equal(t, "", sparam.Format)
