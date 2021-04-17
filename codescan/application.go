@@ -374,7 +374,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 									blValue := getEnumBasicLitValue(bl)
 									list = append(list, blValue)
 
-									//build the enum description
+									// build the enum description
 									var (
 										desc     = &strings.Builder{}
 										namesLen = len(vs.Names)
@@ -393,10 +393,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 										}
 										for i, doc := range vs.Doc.List {
 											if doc.Text != "" {
-												var text = doc.Text
-												if strings.HasPrefix(text, "//") {
-													text = text[2:]
-												}
+												var text = strings.TrimPrefix(doc.Text, "//")
 												desc.WriteString(text)
 												if i < docListLen-1 {
 													desc.WriteString(" ")

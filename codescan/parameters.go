@@ -106,7 +106,7 @@ func (pt itemsTypable) WithEnum(values ...interface{}) {
 }
 
 func (pt itemsTypable) WithEnumDescription(desc string) {
-	//no
+	// no
 }
 
 type paramValidations struct {

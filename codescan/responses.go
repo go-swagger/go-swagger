@@ -86,7 +86,7 @@ func (ht responseTypable) WithEnum(values ...interface{}) {
 }
 
 func (ht responseTypable) WithEnumDescription(desc string) {
-	//no
+	// no
 }
 
 type headerValidations struct {
