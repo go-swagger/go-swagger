@@ -134,8 +134,8 @@ func initViperConfigs() {
 
 // registerAuthInoWriterFlags registers all flags needed to perform authentication
 func registerAuthInoWriterFlags(cmd *cobra.Command) error {
-	/* */
-	cmd.PersistentFlags().String("x-todolist-token", "none", ``)
+	/*x-todolist-token */
+	cmd.PersistentFlags().String("x-todolist-token", "", ``)
 	viper.BindPFlag("x-todolist-token", cmd.PersistentFlags().Lookup("x-todolist-token"))
 	return nil
 }
@@ -143,9 +143,11 @@ func registerAuthInoWriterFlags(cmd *cobra.Command) error {
 // makeAuthInfoWriter retrieves cmd flags and construct an auth info writer
 func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error) {
 	auths := []runtime.ClientAuthInfoWriter{}
-	/* */
-	XTodolistTokenKey := viper.GetString("x-todolist-token")
-	auths = append(auths, httptransport.APIKeyAuth("x-todolist-token", "header", XTodolistTokenKey))
+	/*x-todolist-token */
+	if viper.IsSet("x-todolist-token") {
+		XTodolistTokenKey := viper.GetString("x-todolist-token")
+		auths = append(auths, httptransport.APIKeyAuth("x-todolist-token", "header", XTodolistTokenKey))
+	}
 	if len(auths) == 0 {
 		logDebugf("Warning: No auth params detected.")
 		return nil, nil
