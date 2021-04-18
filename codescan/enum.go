@@ -4,6 +4,8 @@ import (
 	"go/ast"
 	"strconv"
 	"strings"
+
+	"github.com/go-openapi/spec"
 )
 
 func getEnumBasicLitValue(basicLit *ast.BasicLit) interface{} {
@@ -20,4 +22,11 @@ func getEnumBasicLitValue(basicLit *ast.BasicLit) interface{} {
 		return strings.Trim(basicLit.Value, "\"")
 	}
 	return nil
+}
+
+const extEnumDesc = "x-go-enum-desc"
+
+func getEnumDesc(extensions spec.Extensions) (desc string) {
+	desc, _ = extensions.GetString(extEnumDesc)
+	return
 }
