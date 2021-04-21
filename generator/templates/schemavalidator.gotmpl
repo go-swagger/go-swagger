@@ -771,19 +771,19 @@ const (
     {{ end }}
 
 // for schema
-var {{ camelize .Name }}Enum []interface{}
+var {{ pascalize .Name }}Enum []interface{}
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
   if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
-    {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
+    {{ pascalize .Name }}Enum = append({{ pascalize .Name }}Enum, v)
   }
 }
 
 func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.EnumCase(path, location, value, {{ camelize .Name }}Enum, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
+  if err := validate.EnumCase(path, location, value, {{ pascalize .Name }}Enum, {{ if .IsEnumCI }}false{{ else }}true{{ end }}); err != nil {
     return err
   }
   return nil
