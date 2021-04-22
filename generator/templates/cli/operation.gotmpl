@@ -169,7 +169,7 @@ func parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 		var iRespD interface{} = respErr
 		respD, ok := iRespD.(*{{ .Package }}.{{ pascalize .Name }})
 		if ok {
-			if !swag.IsZero(respD.Payload) {
+			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
 				msgStr,err := json.Marshal(respD.Payload)
 				if err != nil{
 					return "", err
@@ -186,7 +186,7 @@ func parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 		var iResp{{$i}} interface{} = respErr
 		resp{{$i}}, ok := iResp{{$i}}.(*{{ .Package }}.{{ pascalize .Name }})
 		if ok {
-			if !swag.IsZero(resp{{$i}}.Payload) {
+			if !swag.IsZero(resp{{$i}}) && !swag.IsZero(resp{{$i}}.Payload) {
 				msgStr,err := json.Marshal(resp{{$i}}.Payload)
 				if err != nil{
 					return "", err
@@ -203,7 +203,7 @@ func parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result({{- if .Suc
 	{{- range $i, $v := .SuccessResponses }}
 		{{ if .Schema }}
 		{{- with .Schema}}
-	if !swag.IsZero(resp{{$i}}.Payload) {
+	if !swag.IsZero(resp{{$i}}) && !swag.IsZero(resp{{$i}}.Payload) {
 			{{- if or .IsComplexObject .IsArray .IsMap }}
 		msgStr,err := json.Marshal(resp{{$i}}.Payload)
 		if err != nil{
