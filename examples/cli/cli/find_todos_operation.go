@@ -155,7 +155,7 @@ func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		var iRespD interface{} = respErr
 		respD, ok := iRespD.(*todos.FindTodosDefault)
 		if ok {
-			if !swag.IsZero(respD.Payload) {
+			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
 				msgStr, err := json.Marshal(respD.Payload)
 				if err != nil {
 					return "", err
@@ -167,7 +167,7 @@ func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		var iResp0 interface{} = respErr
 		resp0, ok := iResp0.(*todos.FindTodosOK)
 		if ok {
-			if !swag.IsZero(resp0.Payload) {
+			if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
 				msgStr, err := json.Marshal(resp0.Payload)
 				if err != nil {
 					return "", err
@@ -179,7 +179,7 @@ func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		return "", respErr
 	}
 
-	if !swag.IsZero(resp0.Payload) {
+	if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
 			return "", err

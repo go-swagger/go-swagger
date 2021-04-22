@@ -112,7 +112,7 @@ func parseOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respE
 		var iRespD interface{} = respErr
 		respD, ok := iRespD.(*todos.DestroyOneDefault)
 		if ok {
-			if !swag.IsZero(respD.Payload) {
+			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
 				msgStr, err := json.Marshal(respD.Payload)
 				if err != nil {
 					return "", err
