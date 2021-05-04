@@ -160,6 +160,13 @@ func TestVariousCli(t *testing.T) {
 			spec:          "examples/composed-auth/swagger.yml",
 			preserveFiles: true,
 		},
+		// not working because of model generation order.
+		// {
+		// 	name:          "enum",
+		// 	spec:          "fixtures/enhancements/1623/swagger.yml",
+		// 	preserveFiles: true,
+		// 	runOnly:       true,
+		// },
 	}
 
 	for _, tc := range testcases {
