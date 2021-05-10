@@ -295,6 +295,7 @@ jobs:
             }
             build_binary -os="linux darwin windows" -arch="amd64 386"
             build_binary -os="linux" -arch="arm64 arm"
+            build_binary -os="linux" -arch="ppc64le"
             cp dist/bin/swagger_linux_amd64 dist/linux/amd64/usr/bin/swagger
 
       - run:
