@@ -5,8 +5,19 @@ before:
     # you may remove this if you don't use vgo
     - go mod tidy
 builds:
-- env:
+- main: ./cmd/swagger/swagger.go
+  env:
   - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
+    - ppc64le
 archives:
 - replacements:
     darwin: Darwin
