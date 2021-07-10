@@ -100,8 +100,8 @@ type {{ pascalize .Name }}Handler interface {
 	/* {{ pascalize .Name }} {{ .Description }} */
 	{{ end -}}
 	{{ pascalize .Name }}(params {{ if ne .Package $package }}{{ .PackageAlias }}{{ else }}{{- $apipackagealias }}{{ end }}.
-    {{- pascalize .Name }}Params {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) 
-    {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder { {{ else }} middleware.Responder {{ end }}
+    {{- pascalize .Name }}Params {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}})
+    {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder {{ else }} middleware.Responder {{ end }}
 {{ end -}}
 }
 {{ end }}
