@@ -1,4 +1,4 @@
-FROM golang:1.9
+FROM golang:1.15
 
 COPY hack/devtools.sh /opt/devtools.sh
 
