@@ -6,6 +6,9 @@ set -e -o pipefail -x
 cd $(git rev-parse --show-toplevel)
 echo "Building swagger from $(pwd)..."
 
+# debug
+go version
+
 if [[ ${1} == "--circleci" ]] ; then
     # CI build mode (for releases)
     username="${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}"
