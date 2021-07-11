@@ -42,6 +42,9 @@ commands:
         default: "./dist/swagger-musl"
     steps:
       - run:
+          name: Debug golang version
+          command: go version
+      - run:
           name: Build statically linked binary
           command: |
             rm -rf dist
