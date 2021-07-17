@@ -68,7 +68,7 @@ definitions:
 
 In this model definition we say that the model `item` is an _object_ with a required property `description`. This item model has 3 properties: `id`, `description`, and `completed`. The `id` property is an int64 value and is marked as _readOnly_, meaning that it will be provided by the API server and it will be ignored when the item is created.
 
-This document also says that the description must be at least 1 char long, which results in a string property that's [not a pointer](/use/schemas.md#nullability).
+This document also says that the description must be at least 1 char long, which results in a string property that's [not a pointer](../use/models/schemas.md#nullability).
 
 At this moment you have enough so that actual code could be generated, but let's continue defining the rest of the API so that the code generation will be more useful. Now that you have a model so you can add some endpoints to list the todo's:
 
