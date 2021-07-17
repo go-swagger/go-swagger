@@ -72,6 +72,8 @@
       if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
           return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        } else if ce, ok := err.(*errors.CompositeError); ok {
+          return ce.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
         }
         return err
       }
@@ -137,6 +139,8 @@
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
           return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        } else if ce, ok := err.(*errors.CompositeError); ok {
+          return ce.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
         }
         return err
       }
@@ -440,6 +444,8 @@
       if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
           return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        } else if ce, ok := err.(*errors.CompositeError); ok {
+          return ce.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
         }
         return err
       }
@@ -539,6 +545,8 @@
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
           return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
+        } else if ce, ok := err.(*errors.CompositeError); ok {
+          return ce.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})
         }
         return err
       }

@@ -188,6 +188,8 @@ if err := validate.EnumCase(
   if err := {{ .ValueExpression }}.Validate(formats) ; err != nil {
     if ve, ok := err.(*errors.Validation); ok {
       return ve.ValidateName({{ .Path }})
+    } else if ce, ok := err.(*errors.CompositeError); ok {
+      return ce.ValidateName({{ .Path }})
     }
     return err
   }
