@@ -353,7 +353,7 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, _ bool) {
+func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, descList []string, _ bool) {
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			gd, ok := d.(*ast.GenDecl)
@@ -371,7 +371,37 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 						if vsIdent.Name == enumName {
 							if len(vs.Values) > 0 {
 								if bl, ok := vs.Values[0].(*ast.BasicLit); ok {
-									list = append(list, getEnumBasicLitValue(bl))
+									blValue := getEnumBasicLitValue(bl)
+									list = append(list, blValue)
+
+									// build the enum description
+									var (
+										desc     = &strings.Builder{}
+										namesLen = len(vs.Names)
+									)
+									desc.WriteString(fmt.Sprintf("%v ", blValue))
+									for i, name := range vs.Names {
+										desc.WriteString(name.Name)
+										if i < namesLen-1 {
+											desc.WriteString(" ")
+										}
+									}
+									if vs.Doc != nil {
+										docListLen := len(vs.Doc.List)
+										if docListLen > 0 {
+											desc.WriteString(" ")
+										}
+										for i, doc := range vs.Doc.List {
+											if doc.Text != "" {
+												var text = strings.TrimPrefix(doc.Text, "//")
+												desc.WriteString(text)
+												if i < docListLen-1 {
+													desc.WriteString(" ")
+												}
+											}
+										}
+									}
+									descList = append(descList, desc.String())
 								}
 							}
 						}
@@ -380,7 +410,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 			}
 		}
 	}
-	return list, true
+	return list, descList, true
 }
 
 func newTypeIndex(pkgs []*packages.Package,

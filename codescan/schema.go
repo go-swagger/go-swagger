@@ -76,6 +76,13 @@ func (st schemaTypable) WithEnum(values ...interface{}) {
 	st.schema.WithEnum(values...)
 }
 
+func (st schemaTypable) WithEnumDescription(desc string) {
+	if desc == "" {
+		return
+	}
+	st.AddExtension(extEnumDesc, desc)
+}
+
 type schemaValidations struct {
 	current *spec.Schema
 }
@@ -159,7 +166,13 @@ func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) err
 	// analyze doc comment for the model
 	sp := new(sectionedParser)
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
-	sp.setDescription = func(lines []string) { schema.Description = joinDropLast(lines) }
+	sp.setDescription = func(lines []string) {
+		schema.Description = joinDropLast(lines)
+		enumDesc := getEnumDesc(schema.VendorExtensible.Extensions)
+		if enumDesc != "" {
+			schema.Description += "\n" + enumDesc
+		}
+	}
 	if err := sp.Parse(s.decl.Comments); err != nil {
 		return err
 	}
@@ -308,11 +321,14 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			}
 
 			if enumName, ok := enumName(cmt); ok {
-				enumValues, _ := s.ctx.FindEnumValues(pkg, enumName)
+				enumValues, enumDesces, _ := s.ctx.FindEnumValues(pkg, enumName)
 				if len(enumValues) > 0 {
 					tgt.WithEnum(enumValues...)
 					enumTypeName := reflect.TypeOf(enumValues[0]).String()
 					_ = swaggerSchemaForType(enumTypeName, tgt)
+				}
+				if len(enumDesces) > 0 {
+					tgt.WithEnumDescription(strings.Join(enumDesces, "\n"))
 				}
 				return nil
 			}
@@ -879,7 +895,13 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 	}
 
 	if ps.Ref.String() == "" {
-		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
+		sp.setDescription = func(lines []string) {
+			ps.Description = joinDropLast(lines)
+			enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
+			if enumDesc != "" {
+				ps.Description += "\n" + enumDesc
+			}
+		}
 		sp.taggers = []tagParser{
 			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
 			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),

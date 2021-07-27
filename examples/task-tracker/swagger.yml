@@ -146,6 +146,11 @@ paths:
           $ref: "#/responses/ErrorResponse"
         201:
           description: Task created
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URL to the newly added Task
 
   /tasks/{id}:
     parameters:

@@ -1,0 +1,28 @@
+swagger: '2.0'
+info:
+  description: Test for impl package
+  version: 0.0.1
+  title: Test for impl package
+schemes:
+  - http
+paths:
+  /ping:
+    get:
+      summary: Ping
+      description: Ping
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/pong'
+
+definitions:
+  pong:
+    type: object
+    properties:
+      pong:
+        type: string

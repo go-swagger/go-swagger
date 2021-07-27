@@ -1035,7 +1035,9 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *sp
 	pkg := b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget)
 
 	// make a resolver for current package (i.e. operations)
-	pg.TypeResolver = newTypeResolver("", b.DefaultImports[b.APIPackage], rslv.Doc).withKeepDefinitionsPackage(pkg)
+	pg.TypeResolver = newTypeResolver("", b.DefaultImports[b.APIPackage], rslv.Doc).
+		withKeepDefinitionsPackage(pkg).
+		withDefinitionPackage(b.APIPackageAlias) // all new extra schemas are going to be in api pkg
 	pg.ExtraSchemas = make(map[string]GenSchema, len(sc.ExtraSchemas))
 	pg.UseContainerInName = true
 
@@ -1122,6 +1124,10 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		schema = sc.GenSchema
 	}
 
+	// new schemas will be in api pkg
+	schemaPkg := b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, "")
+	schema.Pkg = schemaPkg
+
 	if schema.IsAnonymous {
 		// a generated name for anonymous schema
 		// TODO: support x-go-name
@@ -1147,6 +1153,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.SwaggerType = schemaName
 			schema.HasValidations = hasValidations
 			schema.GoType = schemaName
+			schema.Pkg = schemaPkg
 		} else if isInterface {
 			schema = GenSchema{}
 			schema.IsAnonymous = false
@@ -1156,6 +1163,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 			schema.GoType = iface
 		}
 	}
+
 	return schema, nil
 }
 
@@ -1287,4 +1295,9 @@ func renameServerPackage(pkg string) string {
 func renameAPIPackage(pkg string) string {
 	// favors readability over perfect deconfliction
 	return "swagger" + pkg
+}
+
+func renameImplementationPackage(pkg string) string {
+	// favors readability over perfect deconfliction
+	return "swagger" + pkg + "impl"
 }

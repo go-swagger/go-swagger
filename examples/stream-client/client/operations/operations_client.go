@@ -26,9 +26,12 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
+// ClientOption is the option for Client methods
+type ClientOption func(*runtime.ClientOperation)
+
 // ClientService is the interface for Client methods
 type ClientService interface {
-	Chunked(params *ChunkedParams, writer io.Writer) (*ChunkedOK, error)
+	Chunked(params *ChunkedParams, writer io.Writer, opts ...ClientOption) (*ChunkedOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -38,13 +41,12 @@ type ClientService interface {
 
   delivers text/plain via Encoding: Chunked
 */
-func (a *Client) Chunked(params *ChunkedParams, writer io.Writer) (*ChunkedOK, error) {
+func (a *Client) Chunked(params *ChunkedParams, writer io.Writer, opts ...ClientOption) (*ChunkedOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
 		params = NewChunkedParams()
 	}
-
-	result, err := a.transport.Submit(&runtime.ClientOperation{
+	op := &runtime.ClientOperation{
 		ID:                 "chunked",
 		Method:             "GET",
 		PathPattern:        "/HTTP/ChunkedScript",
@@ -55,7 +57,12 @@ func (a *Client) Chunked(params *ChunkedParams, writer io.Writer) (*ChunkedOK, e
 		Reader:             &ChunkedReader{formats: a.formats, writer: writer},
 		Context:            params.Context,
 		Client:             params.HTTPClient,
-	})
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}

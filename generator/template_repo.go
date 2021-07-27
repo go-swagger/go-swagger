@@ -83,6 +83,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 			return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 		},
 		"dropPackage":      dropPackage,
+		"containsPkgStr":   containsPkgStr,
 		"upper":            strings.ToUpper,
 		"lower":            strings.ToLower,
 		"contains":         swag.ContainsStrings,
@@ -179,15 +180,16 @@ func defaultAssets() map[string][]byte {
 		"swagger_json_embed.gotmpl": MustAsset("templates/swagger_json_embed.gotmpl"),
 
 		// server templates
-		"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
-		"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),
-		"server/responses.gotmpl":    MustAsset("templates/server/responses.gotmpl"),
-		"server/operation.gotmpl":    MustAsset("templates/server/operation.gotmpl"),
-		"server/builder.gotmpl":      MustAsset("templates/server/builder.gotmpl"),
-		"server/server.gotmpl":       MustAsset("templates/server/server.gotmpl"),
-		"server/configureapi.gotmpl": MustAsset("templates/server/configureapi.gotmpl"),
-		"server/main.gotmpl":         MustAsset("templates/server/main.gotmpl"),
-		"server/doc.gotmpl":          MustAsset("templates/server/doc.gotmpl"),
+		"server/parameter.gotmpl":        MustAsset("templates/server/parameter.gotmpl"),
+		"server/urlbuilder.gotmpl":       MustAsset("templates/server/urlbuilder.gotmpl"),
+		"server/responses.gotmpl":        MustAsset("templates/server/responses.gotmpl"),
+		"server/operation.gotmpl":        MustAsset("templates/server/operation.gotmpl"),
+		"server/builder.gotmpl":          MustAsset("templates/server/builder.gotmpl"),
+		"server/server.gotmpl":           MustAsset("templates/server/server.gotmpl"),
+		"server/configureapi.gotmpl":     MustAsset("templates/server/configureapi.gotmpl"),
+		"server/autoconfigureapi.gotmpl": MustAsset("templates/server/autoconfigureapi.gotmpl"),
+		"server/main.gotmpl":             MustAsset("templates/server/main.gotmpl"),
+		"server/doc.gotmpl":              MustAsset("templates/server/doc.gotmpl"),
 
 		// client templates
 		"client/parameter.gotmpl": MustAsset("templates/client/parameter.gotmpl"),
@@ -196,6 +198,16 @@ func defaultAssets() map[string][]byte {
 		"client/facade.gotmpl":    MustAsset("templates/client/facade.gotmpl"),
 
 		"markdown/docs.gotmpl": MustAsset("templates/markdown/docs.gotmpl"),
+
+		// cli templates
+		"cli/cli.gotmpl":          MustAsset("templates/cli/cli.gotmpl"),
+		"cli/main.gotmpl":         MustAsset("templates/cli/main.gotmpl"),
+		"cli/modelcli.gotmpl":     MustAsset("templates/cli/modelcli.gotmpl"),
+		"cli/operation.gotmpl":    MustAsset("templates/cli/operation.gotmpl"),
+		"cli/registerflag.gotmpl": MustAsset("templates/cli/registerflag.gotmpl"),
+		"cli/retrieveflag.gotmpl": MustAsset("templates/cli/retrieveflag.gotmpl"),
+		"cli/schema.gotmpl":       MustAsset("templates/cli/schema.gotmpl"),
+		"cli/completion.gotmpl":   MustAsset("templates/cli/completion.gotmpl"),
 	}
 }
 
@@ -597,6 +609,12 @@ func pluralizeFirstWord(arg string) string {
 func dropPackage(str string) string {
 	parts := strings.Split(str, ".")
 	return parts[len(parts)-1]
+}
+
+// return true if the GoType str contains pkg. For example "model.MyType" -> true, "MyType" -> false
+func containsPkgStr(str string) bool {
+	dropped := dropPackage(str)
+	return !(dropped == str)
 }
 
 func padSurround(entry, padWith string, i, ln int) string {

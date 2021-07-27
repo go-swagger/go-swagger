@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/models"
 )
@@ -21,6 +22,10 @@ const CreateTaskCreatedCode int = 201
 swagger:response createTaskCreated
 */
 type CreateTaskCreated struct {
+	/*URL to the newly added Task
+
+	 */
+	Location strfmt.URI `json:"Location"`
 }
 
 // NewCreateTaskCreated creates CreateTaskCreated with default headers values
@@ -29,8 +34,26 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 	return &CreateTaskCreated{}
 }
 
+// WithLocation adds the location to the create task created response
+func (o *CreateTaskCreated) WithLocation(location strfmt.URI) *CreateTaskCreated {
+	o.Location = location
+	return o
+}
+
+// SetLocation sets the location to the create task created response
+func (o *CreateTaskCreated) SetLocation(location strfmt.URI) {
+	o.Location = location
+}
+
 // WriteResponse to the client
 func (o *CreateTaskCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	// response header Location
+
+	location := o.Location.String()
+	if location != "" {
+		rw.Header().Set("Location", location)
+	}
 
 	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 

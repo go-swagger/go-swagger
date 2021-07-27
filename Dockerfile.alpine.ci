@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:1.15-alpine
 
 ENV GOCOVMODE atomic
 
@@ -9,7 +9,7 @@ RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
   && go get -u golang.org/x/tools/cmd/... \
   && go get -u github.com/axw/gocov/gocov \
-  && go get -u gopkg.in/matm/v1/gocov-html \
+  && go get -u github.com/matm/gocov-html \
   && go get -u -t github.com/cee-dub/go-junit-report \
   && go get -u github.com/aktau/github-release \
   && go get -u github.com/mitchellh/gox \
