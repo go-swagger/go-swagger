@@ -22,6 +22,17 @@
             return err, false
         }
         m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
+    {{- else if eq .GoType "strfmt.ObjectId" }} {{/*Get flag value as string, then parse it*/}}
+        {{ template "flagnamevar" . }}
+        {{ $flagValueVar }}Str, err := cmd.Flags().GetString({{ $flagNameVar }})
+        if err != nil{
+            return err, false
+        }
+        {{ $flagValueVar }} := strfmt.ObjectId{}
+		if err := {{ $flagValueVar }}.UnmarshalText([]byte({{ $flagValueVar }}Str)); err != nil{
+            return err, false
+        }
+        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
     {{- else if eq .GoType "strfmt.UUID" }} {{/*Many of the strfmt string alias types can be added here*/}}
         {{ template "flagnamevar" . }}
         {{ $flagValueVar }}Str, err := cmd.Flags().GetString({{ $flagNameVar }})

@@ -56,7 +56,7 @@ if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName,
         {{ template "flagdefaultvar" . }}
         _ = cmd.PersistentFlags().{{ pascalize .GoType }}({{ camelize .Name }}FlagName, {{ camelize .Name }}FlagDefault, {{ (camelize .Name) }}Description)
         {{ template "enumcompletion" . }}
-    {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.UUID") }} {{/* read as string */}}
+    {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.UUID") (eq .GoType "strfmt.ObjectId") }} {{/* read as string */}}
         {{ template "flagdescriptionvar" . }}
         {{ template "flagnamevar" . }}
         _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", {{ (camelize .Name) }}Description)
