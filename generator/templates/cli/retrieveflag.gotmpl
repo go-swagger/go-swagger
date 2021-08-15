@@ -11,36 +11,15 @@
         }
         {{- /* reciever by convention is m for CLI */}}
         m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
-    {{- else if eq .GoType "strfmt.DateTime" }} {{/*Get flag value as string, then parse it*/}}
+    {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.ObjectId") (eq .GoType "strfmt.UUID" ) }} {{/*Get flag value as string, then parse it*/}}
+        {{/*Many of the strfmt types can be added here*/}}
         {{ template "flagnamevar" . }}
         {{ $flagValueVar }}Str, err := cmd.Flags().GetString({{ $flagNameVar }})
         if err != nil{
             return err, false
         }
-        {{ $flagValueVar }} := strfmt.NewDateTime()
+        var {{ $flagValueVar }} {{ .GoType }}
 		if err := {{ $flagValueVar }}.UnmarshalText([]byte({{ $flagValueVar }}Str)); err != nil{
-            return err, false
-        }
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
-    {{- else if eq .GoType "strfmt.ObjectId" }} {{/*Get flag value as string, then parse it*/}}
-        {{ template "flagnamevar" . }}
-        {{ $flagValueVar }}Str, err := cmd.Flags().GetString({{ $flagNameVar }})
-        if err != nil{
-            return err, false
-        }
-        {{ $flagValueVar }} := strfmt.ObjectId{}
-		if err := {{ $flagValueVar }}.UnmarshalText([]byte({{ $flagValueVar }}Str)); err != nil{
-            return err, false
-        }
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
-    {{- else if eq .GoType "strfmt.UUID" }} {{/*Many of the strfmt string alias types can be added here*/}}
-        {{ template "flagnamevar" . }}
-        {{ $flagValueVar }}Str, err := cmd.Flags().GetString({{ $flagNameVar }})
-        if err != nil{
-            return err, false
-        }
-        {{ $flagValueVar }} := {{ .GoType }}("")
-        if err := {{ $flagValueVar }}.UnmarshalText([]byte({{ $flagValueVar }}Str)); err != nil{
             return err, false
         }
         m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
