@@ -54,6 +54,6 @@
         }
         m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
     {{- else }}
-        // warning: primitive {{.Name}} {{.GoType }} is not supported by go-swagger cli yet
+        // warning: array {{.Name}} {{.GoType }} is not supported by go-swagger cli yet
     {{- end }}
 {{ end }}
