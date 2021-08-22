@@ -85,3 +85,30 @@ func TestShared_Issue1614(t *testing.T) {
 	_, err = opts.validateAndFlattenSpec()
 	assert.NoError(t, err)
 }
+
+func Test_analyzeSpec_Issue2216(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	t.Run("single-swagger-file", func(t *testing.T) {
+		specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger-single.yml")
+
+		opts := testGenOpts()
+		opts.Spec = specPath
+		opts.ValidateSpec = true
+		opts.PropertiesSpecOrder = true
+		_, _, err := opts.analyzeSpec()
+		assert.NoError(t, err)
+	})
+
+	t.Run("splitted-swagger-file", func(t *testing.T) {
+		specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger.yml")
+
+		opts := testGenOpts()
+		opts.Spec = specPath
+		opts.ValidateSpec = true
+		opts.PropertiesSpecOrder = true
+		_, _, err := opts.analyzeSpec()
+		assert.NoError(t, err)
+	})
+}
