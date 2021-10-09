@@ -202,6 +202,8 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 			if err := m.Comments[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("comments" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -235,6 +237,8 @@ func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 		if err := m.LastUpdatedBy.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("lastUpdatedBy")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("lastUpdatedBy")
 			}
 			return err
 		}
@@ -253,6 +257,8 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 		if err := m.ReportedBy.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("reportedBy")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("reportedBy")
 			}
 			return err
 		}
@@ -323,6 +329,8 @@ func (m *Task) contextValidateComments(ctx context.Context, formats strfmt.Regis
 			if err := m.Comments[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("comments" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -348,6 +356,8 @@ func (m *Task) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.
 		if err := m.LastUpdatedBy.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("lastUpdatedBy")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("lastUpdatedBy")
 			}
 			return err
 		}
@@ -362,6 +372,8 @@ func (m *Task) contextValidateReportedBy(ctx context.Context, formats strfmt.Reg
 		if err := m.ReportedBy.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("reportedBy")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("reportedBy")
 			}
 			return err
 		}

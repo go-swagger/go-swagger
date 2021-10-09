@@ -114,6 +114,8 @@ func (m *Milestone) validateStats(formats strfmt.Registry) error {
 		if err := m.Stats.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("stats")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("stats")
 			}
 			return err
 		}
@@ -142,6 +144,8 @@ func (m *Milestone) contextValidateStats(ctx context.Context, formats strfmt.Reg
 		if err := m.Stats.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("stats")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("stats")
 			}
 			return err
 		}

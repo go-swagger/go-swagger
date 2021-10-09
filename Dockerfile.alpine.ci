@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine
+FROM golang:1.17-alpine
 
 ENV GOCOVMODE atomic
 
@@ -7,12 +7,12 @@ RUN apk add -U --no-cache bash tar gzip xz procps git curl ruby ruby-dev alpine-
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
-  && go get -u golang.org/x/tools/cmd/... \
-  && go get -u github.com/axw/gocov/gocov \
-  && go get -u github.com/matm/gocov-html \
-  && go get -u -t github.com/cee-dub/go-junit-report \
-  && go get -u github.com/aktau/github-release \
-  && go get -u github.com/mitchellh/gox \
+  && go get golang.org/x/tools/cmd/...@latest \
+  && go get github.com/axw/gocov/gocov@latest \
+  && go get github.com/matm/gocov-html@latest \
+  && go get -t github.com/cee-dub/go-junit-report@latest \
+  && go get github.com/aktau/github-release@latest \
+  && go get github.com/mitchellh/gox@latest \
   && gem install --no-document fpm etc \
   && gem sources -c
 

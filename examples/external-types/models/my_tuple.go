@@ -147,6 +147,8 @@ func (m *MyTuple) validateP0(formats strfmt.Registry) error {
 		if err := m.P0.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("0")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("0")
 			}
 			return err
 		}
@@ -165,6 +167,8 @@ func (m *MyTuple) validateP1(formats strfmt.Registry) error {
 		if err := m.P1.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("1")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("1")
 			}
 			return err
 		}
@@ -212,6 +216,8 @@ func (m *MyTuple) contextValidateP0(ctx context.Context, formats strfmt.Registry
 		if err := m.P0.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("0")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("0")
 			}
 			return err
 		}

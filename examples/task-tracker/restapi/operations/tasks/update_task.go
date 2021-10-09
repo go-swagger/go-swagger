@@ -47,7 +47,7 @@ type UpdateTask struct {
 func (o *UpdateTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewUpdateTaskParams()
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
@@ -56,7 +56,7 @@ func (o *UpdateTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal interface{}
 	if uprinc != nil {
