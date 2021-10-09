@@ -152,6 +152,8 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 		if err := m.AssignedTo.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("assignedTo")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("assignedTo")
 			}
 			return err
 		}
@@ -201,6 +203,8 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 		if err := m.Milestone.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("milestone")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("milestone")
 			}
 			return err
 		}
@@ -365,6 +369,8 @@ func (m *TaskCard) contextValidateAssignedTo(ctx context.Context, formats strfmt
 		if err := m.AssignedTo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("assignedTo")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("assignedTo")
 			}
 			return err
 		}
@@ -388,6 +394,8 @@ func (m *TaskCard) contextValidateMilestone(ctx context.Context, formats strfmt.
 		if err := m.Milestone.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("milestone")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("milestone")
 			}
 			return err
 		}

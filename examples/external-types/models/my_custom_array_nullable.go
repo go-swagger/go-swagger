@@ -37,6 +37,8 @@ func (m MyCustomArrayNullable) Validate(formats strfmt.Registry) error {
 			if err := m[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName(strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName(strconv.Itoa(i))
 				}
 				return err
 			}

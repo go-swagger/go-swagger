@@ -44,7 +44,7 @@ type GetID struct {
 func (o *GetID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewGetIDParams()
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
@@ -53,7 +53,7 @@ func (o *GetID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
 	var principal *models.Principal
 	if uprinc != nil {

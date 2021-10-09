@@ -365,16 +365,13 @@ jobs:
       - run:
           name: Build container
           command: |
-            mkdir -p deploybuild/templates/
-            cp -r generator/templates/contrib/* deploybuild/templates/
-            cp Dockerfile ./dist/swagger-musl ./deploybuild
-            docker build --pull -t quay.io/goswagger/swagger:latest -t quay.io/goswagger/swagger:$CIRCLE_TAG ./deploybuild
+            docker build --pull --build-arg commit_hash="$CIRCLE_SHA1" --build-arg tag_name="${CIRCLE_TAG-dev}" -t quay.io/goswagger/swagger:latest -t quay.io/goswagger/swagger:${CIRCLE_TAG-dev} ./deploybuild
 
       - run:
           name: Publish container
           command: |
             echo $QUAY_PASS | docker login -u $API_USERNAME --password-stdin https://quay.io
-            docker push quay.io/goswagger/swagger:$CIRCLE_TAG
+            docker push quay.io/goswagger/swagger:${CIRCLE_TAG-dev}
             docker push quay.io/goswagger/swagger:latest
 
       - store_artifacts:
@@ -403,10 +400,7 @@ jobs:
       - run:
           name: Build container
           command: |
-            mkdir -p deploybuild/templates/
-            cp -r generator/templates/contrib/* deploybuild/templates/
-            cp Dockerfile ./dist/swagger-musl ./deploybuild
-            docker build --pull -t quay.io/goswagger/swagger:dev ./deploybuild
+            docker build --pull --build-arg commit_hash="$CIRCLE_SHA1" --build-arg tag_name="dev" -t quay.io/goswagger/swagger:dev .
 
       - run:
           name: Publish container
