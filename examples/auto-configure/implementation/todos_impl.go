@@ -42,7 +42,11 @@ func (i *TodosHandlerImpl) DestroyOne(params todos.DestroyOneParams, principal i
 	i.lock.Lock()
 	defer i.lock.Unlock()
 	if _, ok := i.items[params.ID]; !ok {
-		return todos.NewDestroyOneDefault(http.StatusNotFound)
+		return todos.NewDestroyOneDefault(http.StatusNotFound).
+			WithPayload(&models.Error{
+				Code:    http.StatusNotFound,
+				Message: &[]string{fmt.Sprintf("item with id %d is not found.", params.ID)}[0],
+			})
 	}
 	delete(i.items, params.ID)
 	return todos.NewDestroyOneNoContent()
