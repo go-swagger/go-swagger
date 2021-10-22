@@ -40,8 +40,7 @@ docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagge
 ### Homebrew/Linuxbrew
 
 ```
-brew tap go-swagger/go-swagger
-brew install go-swagger
+brew install swagger-codegen
 ```
 
 ### Static binary
