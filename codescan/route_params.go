@@ -153,6 +153,21 @@ func (s *setOpParams) finalizeParam(param *spec.Parameter, data map[string]strin
 	}
 
 	processSchema(data, param)
+
+	// schema is only allowed for parameters in "body"
+	// see https://swagger.io/specification/v2/#parameterObject
+	switch {
+	case param.In == "body":
+		param.Type = ""
+
+	case param.Schema != nil:
+		// convert schema into validations
+		param.SetValidations(param.Schema.Validations())
+		param.Default = param.Schema.Default
+		param.Format = param.Schema.Format
+		param.Schema = nil
+	}
+
 	s.parameters = append(s.parameters, param)
 }
 
