@@ -83,6 +83,8 @@ func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}Pa
 func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{pascalize .Name }}ParamFlags(cmdPrefix string, cmd *cobra.Command) error{
 	{{- if .IsPrimitive }}
 		{{ template "primitiveregistrator" . }}
+	{{- else if .IsArray }}
+		{{ template "arrayregistrator" . }}
 	{{- else if and .IsBodyParam .Schema (not .IsArray) (not .IsMap) (not .IsStream) }}
 		{{ template "modelparamstringregistrator" . }}
 		{{ template "modelparamregistrator" . }}
@@ -104,8 +106,8 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 	if cmd.Flags().Changed("{{ $flagStr }}") {
 	{{- if .IsPrimitive }}
 		{{ template "primitiveretriever" . }}
-	{{- else if .IsArray }} {{/*TODO: add a string to unmarshall into array*/}}
-		// warning: {{ .Name }} array type {{.GoType}} is not supported by go-swagger cli yet
+	{{- else if .IsArray }}
+		{{ template "arrayretriever" . }}
 	{{- else if .IsMap }}
 		// warning: {{ .Name }} map type {{.GoType}} is not supported by go-swagger cli yet
 	{{- else if and .IsBodyParam .Schema .IsComplexObject (not .IsStream) }}

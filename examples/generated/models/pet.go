@@ -77,6 +77,8 @@ func (m *Pet) validateCategory(formats strfmt.Registry) error {
 		if err := m.Category.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("category")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("category")
 			}
 			return err
 		}
@@ -117,6 +119,8 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 			if err := m.Tags[i].Validate(formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("tags" + "." + strconv.Itoa(i))
 				}
 				return err
 			}
@@ -151,6 +155,8 @@ func (m *Pet) contextValidateCategory(ctx context.Context, formats strfmt.Regist
 		if err := m.Category.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("category")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("category")
 			}
 			return err
 		}
@@ -167,6 +173,8 @@ func (m *Pet) contextValidateTags(ctx context.Context, formats strfmt.Registry) 
 			if err := m.Tags[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
+				} else if ce, ok := err.(*errors.CompositeError); ok {
+					return ce.ValidateName("tags" + "." + strconv.Itoa(i))
 				}
 				return err
 			}

@@ -89,15 +89,15 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 }
 
 func (g *GenOpts) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
-	// spec preprocessing option
-	if g.PropertiesSpecOrder {
-		g.Spec = WithAutoXOrder(g.Spec)
-	}
-
 	// load, validate and flatten
 	specDoc, err := g.validateAndFlattenSpec()
 	if err != nil {
 		return nil, nil, err
+	}
+
+	// spec preprocessing option
+	if g.PropertiesSpecOrder {
+		g.Spec = WithAutoXOrder(g.Spec)
 	}
 
 	// analyze the spec
@@ -214,14 +214,16 @@ func WithAutoXOrder(specPath string) string {
 		panic(err)
 	}
 
-	tmpFile, err := ioutil.TempFile("", filepath.Base(specPath))
+	tmpDir, err := ioutil.TempDir("", "go-swagger-")
 	if err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(tmpFile.Name(), out, 0); err != nil {
+
+	tmpFile := filepath.Join(tmpDir, filepath.Base(specPath))
+	if err := ioutil.WriteFile(tmpFile, out, 0600); err != nil {
 		panic(err)
 	}
-	return tmpFile.Name()
+	return tmpFile
 }
 
 func applyDefaultSwagger(doc *loads.Document) (*loads.Document, error) {

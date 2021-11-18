@@ -1,0 +1,14 @@
+definitions:
+  MyObject:
+    title: My object
+    type: object
+    properties:
+      string1:
+        type: string
+        title: A string
+      bool1:
+        type: boolean
+        title: A boolean
+    default:
+      string1: "first"
+      bool1:   false

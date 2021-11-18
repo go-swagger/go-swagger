@@ -28,6 +28,7 @@ type ServeCmd struct {
 	Flatten  bool   `long:"flatten" description:"when present, flatten the swagger spec before serving it"`
 	Port     int    `long:"port" short:"p" description:"the port to serve this site" env:"PORT"`
 	Host     string `long:"host" description:"the interface to serve this site, defaults to 0.0.0.0" default:"0.0.0.0" env:"HOST"`
+	Path     string `long:"path" description:"the uri path at which the docs will be served" default:"docs"`
 }
 
 // Execute the serve command
@@ -82,16 +83,16 @@ func (s *ServeCmd) Execute(args []string) error {
 			handler = middleware.Redoc(middleware.RedocOpts{
 				BasePath: basePath,
 				SpecURL:  path.Join(basePath, "swagger.json"),
-				Path:     "docs",
+				Path:     s.Path,
 			}, handler)
 			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "docs"))
 		} else if visit != "" || s.Flavor == "swagger" {
 			handler = middleware.SwaggerUI(middleware.SwaggerUIOpts{
 				BasePath: basePath,
 				SpecURL:  path.Join(basePath, "swagger.json"),
-				Path:     "docs",
+				Path:     s.Path,
 			}, handler)
-			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "docs"))
+			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, s.Path))
 		}
 	}
 
