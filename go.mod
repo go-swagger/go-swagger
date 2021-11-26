@@ -13,10 +13,10 @@ require (
 	github.com/go-openapi/errors v0.20.1
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
-	github.com/go-openapi/loads v0.20.3
+	github.com/go-openapi/loads v0.21.0
 	github.com/go-openapi/runtime v0.20.0
 	github.com/go-openapi/spec v0.20.4
-	github.com/go-openapi/strfmt v0.20.3
+	github.com/go-openapi/strfmt v0.21.0
 	github.com/go-openapi/swag v0.19.15
 	github.com/go-openapi/validate v0.20.3
 	github.com/go-stack/stack v1.8.1 // indirect
@@ -55,7 +55,6 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -72,5 +71,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	gotest.tools v2.2.0+incompatible // indirect
 )
+
+replace github.com/go-openapi/runtime => github.com/alswl/go-openapi-runtime v0.21.1-0.20211126140648-459bdd306e8a

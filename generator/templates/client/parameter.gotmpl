@@ -35,6 +35,7 @@ import (
 func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
   return &{{ pascalize .Name}}Params{
     {{ camelize .TimeoutName }}: cr.DefaultTimeout,
+	  pathParamEscaped: map[string]bool{},
   }
 }
 
@@ -43,6 +44,7 @@ func New{{ pascalize .Name }}Params() *{{ pascalize .Name }}Params {
 func New{{ pascalize .Name }}ParamsWithTimeout(timeout time.Duration) *{{ pascalize .Name }}Params {
   return &{{ pascalize .Name}}Params{
     {{ camelize .TimeoutName }}: timeout,
+	  pathParamEscaped: map[string]bool{},
   }
 }
 
@@ -51,6 +53,7 @@ func New{{ pascalize .Name }}ParamsWithTimeout(timeout time.Duration) *{{ pascal
 func New{{ pascalize .Name }}ParamsWithContext(ctx context.Context) *{{ pascalize .Name }}Params {
   return &{{ pascalize .Name}}Params{
     Context: ctx,
+	  pathParamEscaped: map[string]bool{},
   }
 }
 
@@ -59,6 +62,7 @@ func New{{ pascalize .Name }}ParamsWithContext(ctx context.Context) *{{ pascaliz
 func New{{ pascalize .Name }}ParamsWithHTTPClient(client *http.Client) *{{ pascalize .Name }}Params {
   return &{{ pascalize .Name}}Params{
     HTTPClient: client,
+	  pathParamEscaped: map[string]bool{},
   }
 }
 
@@ -103,6 +107,7 @@ type {{ pascalize .Name }}Params struct {
   {{ camelize .TimeoutName }} time.Duration
   Context context.Context
   HTTPClient *http.Client
+	pathParamEscaped map[string]bool
 }
 
 // WithDefaults hydrates default values in the {{ humanize .Name }} params (not the query body).
@@ -198,6 +203,19 @@ func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }
 // Set{{ pascalize .ID }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} params
 func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}({{ varname .Name  }} {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (not .IsStream) (or .IsNullable  ) }}*{{ end }}{{ if not .IsFileParam }}{{ .GoType }}{{ else }}runtime.NamedReadCloser{{ end }}) {
   {{ $.ReceiverName }}.{{ pascalize .ID }} = {{ varname .Name  }}
+}
+{{- end }}
+
+{{- range .PathParams }}
+// With{{ pascalize .ID }}Escaped sets should escape the {{ varname .Name  }} of the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) With{{ pascalize .ID }}Escaped(escaped bool) *{{ pascalize $.Name }}Params {
+  {{ $.ReceiverName }}.pathParamEscaped["{{ snakize (pascalize .ID) }}"] = escaped
+  return {{ .ReceiverName }}
+}
+
+// Set{{ pascalize .ID }}Escaped sets should escape the {{ camelize .Name  }} of the {{ humanize $.Name }} params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Set{{ pascalize .ID }}Escaped(escaped bool) {
+  {{ $.ReceiverName }}.pathParamEscaped["{{ snakize (pascalize .ID) }}"] = escaped
 }
 {{- end }}
 
@@ -358,6 +376,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) WriteToRequest(r runtime
     {{- end }}
 
   {{- end }}
+
+  for k, v := range o.pathParamEscaped {
+  	r.SetPathParamEscaped(k, v)
+  }
 
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
