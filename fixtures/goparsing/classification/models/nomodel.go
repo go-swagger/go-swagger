@@ -592,24 +592,27 @@ type ModelS struct {
 	Edition string `json:"edition"`
 }
 
-// The ModelX version of the tesla car
-//
-// swagger:model modelX
-type ModelX struct {
-	// swagger:allOf com.tesla.models.ModelX
-	TeslaCar
-	// The number of doors on this Model X
-	Doors int `json:"doors"`
-}
+// Test proper parsing of type declaration _blocks_:
+type (
+	// The ModelX version of the tesla car
+	//
+	// swagger:model modelX
+	ModelX struct {
+		// swagger:allOf com.tesla.models.ModelX
+		TeslaCar
+		// The number of doors on this Model X
+		Doors int `json:"doors"`
+	}
 
-// The ModelA version of the tesla car
-//
-// swagger:model modelA
-type ModelA struct {
-	Tesla TeslaCar
-	// The number of doors on this Model A
-	Doors int `json:"doors"`
-}
+	// The ModelA version of the tesla car
+	//
+	// swagger:model modelA
+	ModelA struct {
+		Tesla TeslaCar
+		// The number of doors on this Model A
+		Doors int `json:"doors"`
+	}
+)
 
 // Cars is a collection of cars
 //

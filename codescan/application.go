@@ -265,8 +265,14 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 							debugLog("%s is not a named type but a %T", ts.Name, def.Type())
 							continue
 						}
+
+						comments := ts.Doc // type ( /* doc */ Foo struct{} )
+						if comments == nil {
+							comments = gd.Doc // /* doc */  type ( Foo struct{} )
+						}
+
 						decl := &entityDecl{
-							Comments: gd.Doc,
+							Comments: comments,
 							Type:     nt,
 							Ident:    ts.Name,
 							Spec:     ts,
@@ -553,8 +559,14 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 				debugLog("%s is not a named type but a %T", ts.Name, def.Type())
 				continue
 			}
+
+			comments := ts.Doc // type ( /* doc */ Foo struct{} )
+			if comments == nil {
+				comments = gd.Doc // /* doc */  type ( Foo struct{} )
+			}
+
 			decl := &entityDecl{
-				Comments: gd.Doc,
+				Comments: comments,
 				Type:     nt,
 				Ident:    ts.Name,
 				Spec:     ts,
