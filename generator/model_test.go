@@ -2670,7 +2670,7 @@ func TestGenerateModels(t *testing.T) {
 	})
 }
 
-func Test_Issue2482(t *testing.T) {
+func Test_PointerConversions(t *testing.T) {
 	// generation of a pointer converter for enum vars
 	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
 	require.NoError(t, err)
@@ -2689,7 +2689,20 @@ func Test_Issue2482(t *testing.T) {
 	require.NoError(t, err)
 
 	res := string(ct)
-	assertInCode(t, "func NewSodaBrand(value SodaBrand) *SodaBrand {", res)
-	assertInCode(t, "v := value", res)
-	assertInCode(t, "return &v", res)
+	funcLines := [][]string{
+		{
+			"func NewSodaBrand(value SodaBrand) *SodaBrand {",
+			"\treturn &value",
+			"}",
+		},
+		{
+			"func (m SodaBrand) Pointer() *SodaBrand {",
+			"\treturn &m",
+			"}",
+		},
+	}
+	for _, f := range funcLines {
+		joined := strings.Join(f, "\n")
+		assert.Contains(t, res, joined)
+	}
 }
