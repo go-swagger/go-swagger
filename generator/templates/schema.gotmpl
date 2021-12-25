@@ -82,8 +82,12 @@
       {{- if .Enum }}
 
 func New{{ pascalize .Name }}(value {{ .GoType }}) *{{ .GoType }} {
-  v := value
-  return &v
+  return &value
+}
+
+// Pointer returns a pointer to a freshly-allocated {{ .GoType }}.
+func ({{ .ReceiverName }} {{ .GoType }}) Pointer() *{{ .GoType }} {
+  return &{{ .ReceiverName }}
 }
       {{- end }}
     {{- end }}
