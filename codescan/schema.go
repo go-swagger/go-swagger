@@ -691,7 +691,11 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 	}
 
 	if tgt == nil {
-		tgt = schema
+		if schema != nil {
+			tgt = schema
+		} else {
+			tgt = &spec.Schema{}
+		}
 	}
 	// We can finally build the actual schema for the struct
 	if tgt.Properties == nil {
