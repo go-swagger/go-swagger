@@ -15,7 +15,7 @@ Basically, here are the required packages:
 
 And depending on your generation options, a command line flags handling package:
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
-- [`github.com/spf13/pflags`](https://www.github.com/spf13/pflags)
+- [`github.com/spf13/pflag`](https://www.github.com/spf13/pflag)
 - [`flag`](flag)
 
 This dependency used to be necessary up to release 0.14:
