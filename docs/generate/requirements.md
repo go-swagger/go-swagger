@@ -50,7 +50,7 @@ Additional packages required by the (default) generated server
 depend on your generation options, a command line flags handling package:
 
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
-- [`github.com/spf13/pflags`](https://www.github.com/spf13/pflags)
+- [`github.com/spf13/pflag`](https://www.github.com/spf13/pflag)
 
 ### What are the dependencies required by the generated client?
 
