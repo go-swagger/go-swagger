@@ -77,6 +77,7 @@ func (s Server) apply(opts *generator.GenOpts) {
 	opts.IncludeURLBuilder = !s.SkipOperations
 	opts.IncludeSupport = !s.SkipSupport
 	opts.IncludeMain = !s.ExcludeMain
+	opts.ExcludeSpec = s.ExcludeSpec
 	opts.FlagStrategy = s.FlagStrategy
 	opts.CompatibilityMode = s.CompatibilityMode
 	opts.RegenerateConfigureAPI = s.RegenerateConfigureAPI
