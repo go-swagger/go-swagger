@@ -138,17 +138,7 @@ The whole `go-openapi` and `go-swagger` has adopted go modules and no more use v
 
 `go-swagger` is built with an in-memory image of templates.
 
-Binary encoded assets are auto-generated from the `generator/templates` directory using `bindata`
-(the result is `generator/bindata.go`).
-
-While developing, you may work with dynamically updated templates (i.e. no need to rebuild)
-using `bindata.go` generated in debug mode (use script: `./generator/gen-debug.sh`).
-
-There is a `.githook` script configured as pre-commit: if you configure githooks locally for this repo,
-every time you commit,`generator/bindata.go`
-will be regenerated and added to the current commit (without debug mode).
-
-For `bindata` please use the fork found at: `github.com/kevinburke/go-bindata`.
+Binary encoded assets are auto-generated from the `generator/templates` directory using `go:embed`.
 
 > **NOTE**: we are carrying out unit tests on codegen mostly by asserting lines in generated code.
 > There is a bunch of test utility functions for this. See `generator/*_test.go`.
