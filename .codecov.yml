@@ -3,4 +3,3 @@ coverage:
     patch:
       default:
         target: 80%
-ignore: generator/bindata.go
