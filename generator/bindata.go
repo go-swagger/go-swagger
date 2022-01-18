@@ -3,7 +3,6 @@ package generator
 import (
 	"embed"
 	"io/fs"
-	"path/filepath"
 )
 
 //go:embed templates
@@ -12,7 +11,7 @@ var _bindata embed.FS
 // AssetNames returns the names of the assets.
 func AssetNames() []string {
 	names := make([]string, 0)
-	_ = filepath.WalkDir("templates", func(path string, d fs.DirEntry, err error) error {
+	_ = fs.WalkDir(_bindata, "templates", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
