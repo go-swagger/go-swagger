@@ -301,8 +301,8 @@ jobs:
       - run:
           name: Build packages
           command: |
-            fpm -t deb -p ./dist/build -s dir -C ./dist/linux/amd64 -v ${CIRCLE_TAG:1} -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
-            fpm -t rpm -p ./dist/build -s dir -C ./dist/linux/amd64 -v ${CIRCLE_TAG:1} -n swagger --license "ASL 2.0" -a x86_64 -m $API_EMAIL --url "https://goswagger.io" usr
+            nfpm p -p deb -t dist/build
+            nfpm p -p rpm -t dist/build
 
       - run:
           name: Upload to bintray
