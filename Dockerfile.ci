@@ -3,8 +3,9 @@ FROM golang:latest
 ENV GOCOVMODE atomic
 
 RUN apt-get update -qq &&\
-    apt-get install -yqq tar gzip procps git curl build-essential rpm openssh-client ncurses-term &&\
+    apt-get install -yqq tar gzip procps git curl build-essential rpm openssh-client ncurses-term python3-pip &&\
     curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz | tar -C /usr/bin --strip-components=1 -xzf - &&\
+    pip install --upgrade cloudsmith-cli &&\
     apt-get clean autoclean &&\
     apt-get autoremove --yes &&\
     rm -rf /var/lib/{apt,dpkg,cache,log}
