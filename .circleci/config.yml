@@ -306,8 +306,8 @@ jobs:
           name: Upload to cloudsmith
           command: |
             nver="${CIRCLE_TAG:1}"
-            cloudsmith push deb "dist/build/swagger_${nver}_amd64.deb"
-            cloudsmith push rpm "dist/build/swagger_${nver}.x86_64.rpm"
+            cloudsmith push deb go-swagger/go-swagger/debian/any-version "dist/build/swagger_${nver}_amd64.deb"
+            cloudsmith push rpm go-swagger/go-swagger/fedora/any-version "dist/build/swagger-${nver}.x86_64.rpm"
 
       - run:
           name: Upload to github

@@ -56,26 +56,44 @@ curl -o /usr/local/bin/swagger -L'#' "$download_url"
 chmod +x /usr/local/bin/swagger
 ```
 
-### Debian packages [ ![Download](https://api.bintray.com/packages/go-swagger/goswagger-debian/swagger/images/download.svg) ](https://bintray.com/go-swagger/goswagger-debian/swagger/_latestVersion)
+### Debian packages [![Download](https://api-prd.cloudsmith.io/v1/badges/version/go-swagger/go-swagger/deb/swagger/latest/a=amd64;d=debian%252Fany-version;t=binary/?render=true&show_latest=true)](https://cloudsmith.io/~go-swagger/repos/go-swagger/packages/detail/deb/swagger/latest/a=amd64;d=debian%252Fany-version;t=binary/)
 
 This repo will work for any debian, the only file it contains gets copied to `/usr/bin`
 
+without sudo:
+
+```sh
+apt update
+apt install -y apt-transport-https gnupg curl
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | apt-key add -
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/config.deb.txt?distro=debian&codename=any-version' > /etc/apt/sources.list.d/go-swagger-go-swagger.list
+apt update 
+apt install swagger
 ```
-sudo apt install gnupg ca-certificates
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
-echo "deb https://dl.bintray.com/go-swagger/goswagger-debian ubuntu main" | sudo tee /etc/apt/sources.list.d/goswagger.list
+
+with sudo:
+
+```sh
+sudo apt update
+sudo apt install -y apt-transport-https gnupg curl
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | sudo apt-key add -
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/config.deb.txt?distro=debian&codename=any-version' | sudo tee /etc/apt/sources.list.d/go-swagger-go-swagger.list
 sudo apt update 
 sudo apt install swagger
 ```
 
-### RPM packages [ ![Download](https://api.bintray.com/packages/go-swagger/goswagger-rpm/swagger/images/download.svg) ](https://bintray.com/go-swagger/goswagger-rpm/swagger/_latestVersion)
+### RPM packages [![Download](https://api-prd.cloudsmith.io/v1/badges/version/go-swagger/go-swagger/rpm/swagger/latest/a=x86_64;d=fedora%252Fany-version;t=binary/?render=true&show_latest=true)](https://cloudsmith.io/~go-swagger/repos/go-swagger/packages/detail/rpm/swagger/latest/a=x86_64;d=fedora%252Fany-version;t=binary/)
 
 This repo should work on any distro that wants rpm packages, the only file it contains gets copied to `/usr/bin`
 
+```sh
+dnf install -y yum-utils
+rpm --import 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key'
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/config.rpm.txt?distro=fedora&codename=any-version' > /tmp/go-swagger-go-swagger.repo
+dnf config-manager --add-repo '/tmp/go-swagger-go-swagger.repo'
+dnf -q makecache -y --disablerepo='*' --enablerepo='go-swagger-go-swagger' --enablerepo='go-swagger-go-swagger-source'
+dnf install -y swagger
 ```
-wget https://bintray.com/go-swagger/goswagger-rpm/rpm -O bintray-go-swagger-goswagger-rpm.repo
-```
-
 
 ### Installing from source
 
