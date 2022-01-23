@@ -8,8 +8,8 @@ echo "Building swagger from $(pwd)..."
 
 if [[ ${1} == "--circleci" ]] ; then
     # CI build mode (for releases)
-    username="${CIRCLE_PROJECT_USERNAME-"$(basename `pwd`)"}"
-    project="${CIRCLE_PROJECT_REPONAME-"$(basename `pwd`)"}"
+    username="${CIRCLE_PROJECT_USERNAME-"$(basename "$PWD")"}"
+    project="${CIRCLE_PROJECT_REPONAME-"$(basename "$PWD")"}"
     commit_property="github.com/$username/$project/cmd/swagger/commands.Commit=${CIRCLE_SHA1}"
     tag_property="github.com/$username/$project/cmd/swagger/commands.Version=${CIRCLE_TAG-dev}"
 

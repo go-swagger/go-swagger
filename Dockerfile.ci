@@ -1,25 +1,25 @@
-FROM golang:1.17
+FROM golang:latest
 
 ENV GOCOVMODE atomic
 
 RUN apt-get update -qq &&\
-    apt-get install -yqq tar gzip procps git curl ruby ruby-dev build-essential rpm openssh-client ncurses-term &&\
-  curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.2.tgz | tar -C /usr/bin --strip-components=1 -xzf - &&\
+    apt-get install -yqq tar gzip procps git curl build-essential rpm openssh-client ncurses-term python3-pip &&\
+    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz | tar -C /usr/bin --strip-components=1 -xzf - &&\
+    pip install --upgrade cloudsmith-cli &&\
     apt-get clean autoclean &&\
     apt-get autoremove --yes &&\
     rm -rf /var/lib/{apt,dpkg,cache,log}
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
-  && go get golang.org/x/tools/cmd/...@latest \
-  && go get github.com/axw/gocov/gocov@latest \
-  && go get github.com/matm/gocov-html@latest \
+  && go install golang.org/x/tools/cmd/...@latest \
+  && go install github.com/axw/gocov/gocov@latest \
+  && go install github.com/matm/gocov-html@latest \
   && go get -t github.com/cee-dub/go-junit-report@latest \
-  && go get github.com/aktau/github-release@latest \
-  && go get github.com/mitchellh/gox@latest \
-  && go get -u gotest.tools/gotestsum@latest \
-  && gem install --no-document fpm etc \
-  && gem sources -c
+  && go install github.com/aktau/github-release@latest \
+  && go install github.com/mitchellh/gox@latest \
+  && go install gotest.tools/gotestsum@latest \
+  && go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
 VOLUME /usr/share/coverage
 VOLUME /usr/share/testresults
