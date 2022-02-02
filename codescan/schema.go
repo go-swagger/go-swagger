@@ -362,6 +362,11 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 					tgt.Typed("string", sfnm)
 					return nil
 				}
+				if sfnm == "bsonobjectid" {
+					tgt.Typed("string", sfnm)
+					return nil
+				}
+
 				tgt.Items().Typed("string", sfnm)
 				return nil
 			}
