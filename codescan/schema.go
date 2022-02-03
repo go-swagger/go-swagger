@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
+	"go/importer"
 	"go/types"
 	"log"
 	"os"
@@ -260,7 +261,16 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 		}
 		eleProp := schemaTypable{sch, tgt.Level()}
 		key := titpe.Key()
-		if key.Underlying().String() == "string" {
+
+		// check if key implements encoding.TextMarshaler interface
+		pkg, err := importer.Default().Import("encoding")
+		if err != nil {
+			return nil
+		}
+		ifc := pkg.Scope().Lookup("TextMarshaler").Type().Underlying().(*types.Interface)
+		isTextMarshaler := types.Implements(key, ifc)
+
+		if key.Underlying().String() == "string" || isTextMarshaler {
 			if err := s.buildFromType(titpe.Elem(), eleProp.AdditionalProperties()); err != nil {
 				return err
 			}
