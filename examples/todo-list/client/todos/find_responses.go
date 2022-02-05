@@ -54,9 +54,39 @@ type FindOK struct {
 	Payload []*models.Item
 }
 
+// IsSuccess returns true when this find o k response returns a 2xx status code
+func (o *FindOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this find o k response returns a 3xx status code
+func (o *FindOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this find o k response returns a 4xx status code
+func (o *FindOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this find o k response returns a 5xx status code
+func (o *FindOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this find o k response returns a 4xx status code
+func (o *FindOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FindOK) Error() string {
 	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
 }
+
+func (o *FindOK) String() string {
+	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
+}
+
 func (o *FindOK) GetPayload() []*models.Item {
 	return o.Payload
 }
@@ -93,9 +123,39 @@ func (o *FindDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this find default response returns a 2xx status code
+func (o *FindDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this find default response returns a 3xx status code
+func (o *FindDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this find default response returns a 4xx status code
+func (o *FindDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this find default response returns a 5xx status code
+func (o *FindDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this find default response returns a 4xx status code
+func (o *FindDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FindDefault) Error() string {
 	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FindDefault) String() string {
+	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FindDefault) GetPayload() *models.Error {
 	return o.Payload
 }

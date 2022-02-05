@@ -54,9 +54,39 @@ type GetTaskCommentsOK struct {
 	Payload []*models.Comment
 }
 
+// IsSuccess returns true when this get task comments o k response returns a 2xx status code
+func (o *GetTaskCommentsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get task comments o k response returns a 3xx status code
+func (o *GetTaskCommentsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get task comments o k response returns a 4xx status code
+func (o *GetTaskCommentsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get task comments o k response returns a 5xx status code
+func (o *GetTaskCommentsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get task comments o k response returns a 4xx status code
+func (o *GetTaskCommentsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetTaskCommentsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskCommentsOK  %+v", 200, o.Payload)
 }
+
+func (o *GetTaskCommentsOK) String() string {
+	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskCommentsOK  %+v", 200, o.Payload)
+}
+
 func (o *GetTaskCommentsOK) GetPayload() []*models.Comment {
 	return o.Payload
 }
@@ -94,9 +124,39 @@ func (o *GetTaskCommentsDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get task comments default response returns a 2xx status code
+func (o *GetTaskCommentsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get task comments default response returns a 3xx status code
+func (o *GetTaskCommentsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get task comments default response returns a 4xx status code
+func (o *GetTaskCommentsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get task comments default response returns a 5xx status code
+func (o *GetTaskCommentsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get task comments default response returns a 4xx status code
+func (o *GetTaskCommentsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetTaskCommentsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GetTaskCommentsDefault) String() string {
+	return fmt.Sprintf("[GET /tasks/{id}/comments][%d] getTaskComments default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GetTaskCommentsDefault) GetPayload() *models.Error {
 	return o.Payload
 }
