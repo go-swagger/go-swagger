@@ -54,9 +54,39 @@ type CreateCreated struct {
 	Payload *models.Customer
 }
 
+// IsSuccess returns true when this create created response returns a 2xx status code
+func (o *CreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this create created response returns a 3xx status code
+func (o *CreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create created response returns a 4xx status code
+func (o *CreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create created response returns a 5xx status code
+func (o *CreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create created response returns a 4xx status code
+func (o *CreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *CreateCreated) Error() string {
 	return fmt.Sprintf("[POST /customers][%d] createCreated  %+v", 201, o.Payload)
 }
+
+func (o *CreateCreated) String() string {
+	return fmt.Sprintf("[POST /customers][%d] createCreated  %+v", 201, o.Payload)
+}
+
 func (o *CreateCreated) GetPayload() *models.Customer {
 	return o.Payload
 }
@@ -95,9 +125,39 @@ func (o *CreateDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this create default response returns a 2xx status code
+func (o *CreateDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this create default response returns a 3xx status code
+func (o *CreateDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this create default response returns a 4xx status code
+func (o *CreateDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this create default response returns a 5xx status code
+func (o *CreateDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this create default response returns a 4xx status code
+func (o *CreateDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *CreateDefault) Error() string {
 	return fmt.Sprintf("[POST /customers][%d] create default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *CreateDefault) String() string {
+	return fmt.Sprintf("[POST /customers][%d] create default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *CreateDefault) GetPayload() *models.Error {
 	return o.Payload
 }

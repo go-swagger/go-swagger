@@ -53,9 +53,39 @@ type PetListOK struct {
 	Payload []*models.Pet
 }
 
+// IsSuccess returns true when this pet list o k response returns a 2xx status code
+func (o *PetListOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet list o k response returns a 3xx status code
+func (o *PetListOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet list o k response returns a 4xx status code
+func (o *PetListOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet list o k response returns a 5xx status code
+func (o *PetListOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet list o k response returns a 4xx status code
+func (o *PetListOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PetListOK) Error() string {
 	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
 }
+
+func (o *PetListOK) String() string {
+	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
+}
+
 func (o *PetListOK) GetPayload() []*models.Pet {
 	return o.Payload
 }
@@ -82,7 +112,36 @@ Invalid status value
 type PetListBadRequest struct {
 }
 
+// IsSuccess returns true when this pet list bad request response returns a 2xx status code
+func (o *PetListBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet list bad request response returns a 3xx status code
+func (o *PetListBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet list bad request response returns a 4xx status code
+func (o *PetListBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet list bad request response returns a 5xx status code
+func (o *PetListBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet list bad request response returns a 4xx status code
+func (o *PetListBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *PetListBadRequest) Error() string {
+	return fmt.Sprintf("[GET /pet][%d] petListBadRequest ", 400)
+}
+
+func (o *PetListBadRequest) String() string {
 	return fmt.Sprintf("[GET /pet][%d] petListBadRequest ", 400)
 }
 

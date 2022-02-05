@@ -55,9 +55,39 @@ type ElapseOK struct {
 	Payload io.Writer
 }
 
+// IsSuccess returns true when this elapse o k response returns a 2xx status code
+func (o *ElapseOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this elapse o k response returns a 3xx status code
+func (o *ElapseOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this elapse o k response returns a 4xx status code
+func (o *ElapseOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this elapse o k response returns a 5xx status code
+func (o *ElapseOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this elapse o k response returns a 4xx status code
+func (o *ElapseOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ElapseOK) Error() string {
 	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK  %+v", 200, o.Payload)
 }
+
+func (o *ElapseOK) String() string {
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK  %+v", 200, o.Payload)
+}
+
 func (o *ElapseOK) GetPayload() io.Writer {
 	return o.Payload
 }
@@ -84,7 +114,36 @@ Contrived - thrown when length of 11 is chosen
 type ElapseForbidden struct {
 }
 
+// IsSuccess returns true when this elapse forbidden response returns a 2xx status code
+func (o *ElapseForbidden) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this elapse forbidden response returns a 3xx status code
+func (o *ElapseForbidden) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this elapse forbidden response returns a 4xx status code
+func (o *ElapseForbidden) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this elapse forbidden response returns a 5xx status code
+func (o *ElapseForbidden) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this elapse forbidden response returns a 4xx status code
+func (o *ElapseForbidden) IsCode(code int) bool {
+	return code == 403
+}
+
 func (o *ElapseForbidden) Error() string {
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden ", 403)
+}
+
+func (o *ElapseForbidden) String() string {
 	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden ", 403)
 }
 

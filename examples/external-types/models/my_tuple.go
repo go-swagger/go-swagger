@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -185,6 +186,11 @@ func (m *MyTuple) validateMyTupleItems(formats strfmt.Registry) error {
 
 			if val, ok := m.MyTupleItems[i][k]; ok {
 				if err := val.Validate(formats); err != nil {
+					if ve, ok := err.(*errors.Validation); ok {
+						return ve.ValidateName(strconv.Itoa(i+2) + "." + k)
+					} else if ce, ok := err.(*errors.CompositeError); ok {
+						return ce.ValidateName(strconv.Itoa(i+2) + "." + k)
+					}
 					return err
 				}
 			}

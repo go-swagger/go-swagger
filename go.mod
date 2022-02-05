@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/loads v0.21.0
-	github.com/go-openapi/runtime v0.21.1
+	github.com/go-openapi/runtime v0.23.0
 	github.com/go-openapi/spec v0.20.4
 	github.com/go-openapi/strfmt v0.21.1
 	github.com/go-openapi/swag v0.19.15

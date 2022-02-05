@@ -60,9 +60,39 @@ type GetTaskDetailsOK struct {
 	Payload *models.Task
 }
 
+// IsSuccess returns true when this get task details o k response returns a 2xx status code
+func (o *GetTaskDetailsOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get task details o k response returns a 3xx status code
+func (o *GetTaskDetailsOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get task details o k response returns a 4xx status code
+func (o *GetTaskDetailsOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get task details o k response returns a 5xx status code
+func (o *GetTaskDetailsOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get task details o k response returns a 4xx status code
+func (o *GetTaskDetailsOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetTaskDetailsOK) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
 }
+
+func (o *GetTaskDetailsOK) String() string {
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
+}
+
 func (o *GetTaskDetailsOK) GetPayload() *models.Task {
 	return o.Payload
 }
@@ -92,9 +122,39 @@ type GetTaskDetailsUnprocessableEntity struct {
 	Payload *models.ValidationError
 }
 
+// IsSuccess returns true when this get task details unprocessable entity response returns a 2xx status code
+func (o *GetTaskDetailsUnprocessableEntity) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this get task details unprocessable entity response returns a 3xx status code
+func (o *GetTaskDetailsUnprocessableEntity) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get task details unprocessable entity response returns a 4xx status code
+func (o *GetTaskDetailsUnprocessableEntity) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this get task details unprocessable entity response returns a 5xx status code
+func (o *GetTaskDetailsUnprocessableEntity) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get task details unprocessable entity response returns a 4xx status code
+func (o *GetTaskDetailsUnprocessableEntity) IsCode(code int) bool {
+	return code == 422
+}
+
 func (o *GetTaskDetailsUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
 }
+
+func (o *GetTaskDetailsUnprocessableEntity) String() string {
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
+}
+
 func (o *GetTaskDetailsUnprocessableEntity) GetPayload() *models.ValidationError {
 	return o.Payload
 }
@@ -134,9 +194,39 @@ func (o *GetTaskDetailsDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get task details default response returns a 2xx status code
+func (o *GetTaskDetailsDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get task details default response returns a 3xx status code
+func (o *GetTaskDetailsDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get task details default response returns a 4xx status code
+func (o *GetTaskDetailsDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get task details default response returns a 5xx status code
+func (o *GetTaskDetailsDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get task details default response returns a 4xx status code
+func (o *GetTaskDetailsDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetTaskDetailsDefault) Error() string {
 	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GetTaskDetailsDefault) String() string {
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GetTaskDetailsDefault) GetPayload() *models.Error {
 	return o.Payload
 }

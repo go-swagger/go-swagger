@@ -55,7 +55,36 @@ Deleted successfully
 type OrderDeleteNoContent struct {
 }
 
+// IsSuccess returns true when this order delete no content response returns a 2xx status code
+func (o *OrderDeleteNoContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this order delete no content response returns a 3xx status code
+func (o *OrderDeleteNoContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order delete no content response returns a 4xx status code
+func (o *OrderDeleteNoContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this order delete no content response returns a 5xx status code
+func (o *OrderDeleteNoContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order delete no content response returns a 4xx status code
+func (o *OrderDeleteNoContent) IsCode(code int) bool {
+	return code == 204
+}
+
 func (o *OrderDeleteNoContent) Error() string {
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent ", 204)
+}
+
+func (o *OrderDeleteNoContent) String() string {
 	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent ", 204)
 }
 
@@ -76,7 +105,36 @@ Invalid ID supplied
 type OrderDeleteBadRequest struct {
 }
 
+// IsSuccess returns true when this order delete bad request response returns a 2xx status code
+func (o *OrderDeleteBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this order delete bad request response returns a 3xx status code
+func (o *OrderDeleteBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order delete bad request response returns a 4xx status code
+func (o *OrderDeleteBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this order delete bad request response returns a 5xx status code
+func (o *OrderDeleteBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order delete bad request response returns a 4xx status code
+func (o *OrderDeleteBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *OrderDeleteBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest ", 400)
+}
+
+func (o *OrderDeleteBadRequest) String() string {
 	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest ", 400)
 }
 
@@ -97,7 +155,36 @@ Order not found
 type OrderDeleteNotFound struct {
 }
 
+// IsSuccess returns true when this order delete not found response returns a 2xx status code
+func (o *OrderDeleteNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this order delete not found response returns a 3xx status code
+func (o *OrderDeleteNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order delete not found response returns a 4xx status code
+func (o *OrderDeleteNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this order delete not found response returns a 5xx status code
+func (o *OrderDeleteNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order delete not found response returns a 4xx status code
+func (o *OrderDeleteNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *OrderDeleteNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound ", 404)
+}
+
+func (o *OrderDeleteNotFound) String() string {
 	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound ", 404)
 }
 

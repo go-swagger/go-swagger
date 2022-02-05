@@ -59,9 +59,39 @@ type OrderGetOK struct {
 	Payload *models.Order
 }
 
+// IsSuccess returns true when this order get o k response returns a 2xx status code
+func (o *OrderGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this order get o k response returns a 3xx status code
+func (o *OrderGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order get o k response returns a 4xx status code
+func (o *OrderGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this order get o k response returns a 5xx status code
+func (o *OrderGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order get o k response returns a 4xx status code
+func (o *OrderGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *OrderGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
 }
+
+func (o *OrderGetOK) String() string {
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
+}
+
 func (o *OrderGetOK) GetPayload() *models.Order {
 	return o.Payload
 }
@@ -90,7 +120,36 @@ Invalid ID supplied
 type OrderGetBadRequest struct {
 }
 
+// IsSuccess returns true when this order get bad request response returns a 2xx status code
+func (o *OrderGetBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this order get bad request response returns a 3xx status code
+func (o *OrderGetBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order get bad request response returns a 4xx status code
+func (o *OrderGetBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this order get bad request response returns a 5xx status code
+func (o *OrderGetBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order get bad request response returns a 4xx status code
+func (o *OrderGetBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *OrderGetBadRequest) Error() string {
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest ", 400)
+}
+
+func (o *OrderGetBadRequest) String() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest ", 400)
 }
 
@@ -111,7 +170,36 @@ Order not found
 type OrderGetNotFound struct {
 }
 
+// IsSuccess returns true when this order get not found response returns a 2xx status code
+func (o *OrderGetNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this order get not found response returns a 3xx status code
+func (o *OrderGetNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order get not found response returns a 4xx status code
+func (o *OrderGetNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this order get not found response returns a 5xx status code
+func (o *OrderGetNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order get not found response returns a 4xx status code
+func (o *OrderGetNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *OrderGetNotFound) Error() string {
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound ", 404)
+}
+
+func (o *OrderGetNotFound) String() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound ", 404)
 }
 

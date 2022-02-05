@@ -53,7 +53,36 @@ Task deleted
 type DeleteTaskNoContent struct {
 }
 
+// IsSuccess returns true when this delete task no content response returns a 2xx status code
+func (o *DeleteTaskNoContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this delete task no content response returns a 3xx status code
+func (o *DeleteTaskNoContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete task no content response returns a 4xx status code
+func (o *DeleteTaskNoContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete task no content response returns a 5xx status code
+func (o *DeleteTaskNoContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this delete task no content response returns a 4xx status code
+func (o *DeleteTaskNoContent) IsCode(code int) bool {
+	return code == 204
+}
+
 func (o *DeleteTaskNoContent) Error() string {
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent ", 204)
+}
+
+func (o *DeleteTaskNoContent) String() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent ", 204)
 }
 
@@ -85,9 +114,39 @@ func (o *DeleteTaskDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this delete task default response returns a 2xx status code
+func (o *DeleteTaskDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this delete task default response returns a 3xx status code
+func (o *DeleteTaskDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this delete task default response returns a 4xx status code
+func (o *DeleteTaskDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this delete task default response returns a 5xx status code
+func (o *DeleteTaskDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this delete task default response returns a 4xx status code
+func (o *DeleteTaskDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *DeleteTaskDefault) Error() string {
 	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *DeleteTaskDefault) String() string {
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *DeleteTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }
