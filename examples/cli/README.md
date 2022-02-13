@@ -56,12 +56,13 @@ $ ./examples/cli/cmd/todoctl/todoctl --help
 $ ./examples/cli/cmd/todoctl/todoctl todos updateOne --help
 ```
 ### Use config file to store common flag values
-`hostname`, `scheme`, and auth tokens can be read from a config file, so that you do not need to enter it every time via command line.
+`hostname`, `scheme`, `base_path` (default: `/`), and auth tokens can be read from a config file, so that you do not need to enter it every time via command line.
 For example, todo-cli config file looks like this:
 ```json
 {
     "hostname":"localhost:12345",
     "scheme":"http",
+    "base_path":"/base-path/",
     "x-todolist-token":"example token"
 }
 ```
