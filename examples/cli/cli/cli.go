@@ -48,9 +48,11 @@ var maxDepth int = 5
 // makeClient constructs a client object
 func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication, error) {
 	hostname := viper.GetString("hostname")
+	viper.SetDefault("base_path", client.DefaultBasePath)
+	basePath := viper.GetString("base_path")
 	scheme := viper.GetString("scheme")
 
-	r := httptransport.New(hostname, client.DefaultBasePath, []string{scheme})
+	r := httptransport.New(hostname, basePath, []string{scheme})
 	r.SetDebug(debug)
 	// set custom producer and consumer to use the default ones
 
