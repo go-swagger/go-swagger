@@ -14,5 +14,5 @@ To run the full server you need to build the binary and run it with sudo enabled
 
 ```shellsession
 go build ./cmd/todo-list-server
-sudo ./todo-list-server --tls-certificate mycert1.crt --tls-certificate-key mycert1.key
+sudo ./todo-list-server --tls-certificate mycert1.crt --tls-key mycert1.key
 ```
