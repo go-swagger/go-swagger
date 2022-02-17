@@ -268,14 +268,15 @@ func defaultAssets() map[string][]byte {
 		"markdown/docs.gotmpl": MustAsset("templates/markdown/docs.gotmpl"),
 
 		// cli templates
-		"cli/cli.gotmpl":          MustAsset("templates/cli/cli.gotmpl"),
-		"cli/main.gotmpl":         MustAsset("templates/cli/main.gotmpl"),
-		"cli/modelcli.gotmpl":     MustAsset("templates/cli/modelcli.gotmpl"),
-		"cli/operation.gotmpl":    MustAsset("templates/cli/operation.gotmpl"),
-		"cli/registerflag.gotmpl": MustAsset("templates/cli/registerflag.gotmpl"),
-		"cli/retrieveflag.gotmpl": MustAsset("templates/cli/retrieveflag.gotmpl"),
-		"cli/schema.gotmpl":       MustAsset("templates/cli/schema.gotmpl"),
-		"cli/completion.gotmpl":   MustAsset("templates/cli/completion.gotmpl"),
+		"cli/cli.gotmpl":           MustAsset("templates/cli/cli.gotmpl"),
+		"cli/main.gotmpl":          MustAsset("templates/cli/main.gotmpl"),
+		"cli/modelcli.gotmpl":      MustAsset("templates/cli/modelcli.gotmpl"),
+		"cli/operation.gotmpl":     MustAsset("templates/cli/operation.gotmpl"),
+		"cli/registerflag.gotmpl":  MustAsset("templates/cli/registerflag.gotmpl"),
+		"cli/retrieveflag.gotmpl":  MustAsset("templates/cli/retrieveflag.gotmpl"),
+		"cli/schema.gotmpl":        MustAsset("templates/cli/schema.gotmpl"),
+		"cli/completion.gotmpl":    MustAsset("templates/cli/completion.gotmpl"),
+		"cli/documentation.gotmpl": MustAsset("templates/cli/documentation.gotmpl"),
 	}
 }
 
