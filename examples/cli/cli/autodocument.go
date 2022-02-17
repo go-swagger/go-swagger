@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func makeMarkdownCmd() *cobra.Command {
+func makeMarkdownDocumentationCmd() *cobra.Command {
 
 	var markdownCmd = &cobra.Command{
 		Use:                   "markdown",
