@@ -19,7 +19,8 @@ commands:
             done
             <<# parameters.test >>
             # test dependencies
-            go get -u gotest.tools/gotestsum gotest.tools/icmd github.com/logrusorgru/aurora
+            go install gotest.tools/gotestsum@latest
+            go get gotest.tools/icmd@latest
             <</ parameters.test >>
 
   prepare_directory_layout:
@@ -137,7 +138,7 @@ jobs:
             - go-mod-v1-{{ checksum "go.sum" }}
       - run:
           name: Install golangci-lint
-          command: go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          command: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - run:
           name: Run linting
           command: golangci-lint run --timeout 2m --new-from-rev master
