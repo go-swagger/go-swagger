@@ -19,7 +19,8 @@ commands:
             done
             <<# parameters.test >>
             # test dependencies
-            go install gotest.tools/gotestsum@latest gotest.tools/icmd@latest github.com/logrusorgru/aurora@latest
+            go install gotest.tools/gotestsum@latest
+            go get gotest.tools/icmd@latest
             <</ parameters.test >>
 
   prepare_directory_layout:
