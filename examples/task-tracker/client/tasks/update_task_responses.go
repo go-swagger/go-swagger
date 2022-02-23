@@ -60,9 +60,39 @@ type UpdateTaskOK struct {
 	Payload *models.Task
 }
 
+// IsSuccess returns true when this update task o k response returns a 2xx status code
+func (o *UpdateTaskOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this update task o k response returns a 3xx status code
+func (o *UpdateTaskOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this update task o k response returns a 4xx status code
+func (o *UpdateTaskOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this update task o k response returns a 5xx status code
+func (o *UpdateTaskOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this update task o k response returns a 4xx status code
+func (o *UpdateTaskOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UpdateTaskOK) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK  %+v", 200, o.Payload)
 }
+
+func (o *UpdateTaskOK) String() string {
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK  %+v", 200, o.Payload)
+}
+
 func (o *UpdateTaskOK) GetPayload() *models.Task {
 	return o.Payload
 }
@@ -92,9 +122,39 @@ type UpdateTaskUnprocessableEntity struct {
 	Payload *models.ValidationError
 }
 
+// IsSuccess returns true when this update task unprocessable entity response returns a 2xx status code
+func (o *UpdateTaskUnprocessableEntity) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this update task unprocessable entity response returns a 3xx status code
+func (o *UpdateTaskUnprocessableEntity) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this update task unprocessable entity response returns a 4xx status code
+func (o *UpdateTaskUnprocessableEntity) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this update task unprocessable entity response returns a 5xx status code
+func (o *UpdateTaskUnprocessableEntity) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this update task unprocessable entity response returns a 4xx status code
+func (o *UpdateTaskUnprocessableEntity) IsCode(code int) bool {
+	return code == 422
+}
+
 func (o *UpdateTaskUnprocessableEntity) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity  %+v", 422, o.Payload)
 }
+
+func (o *UpdateTaskUnprocessableEntity) String() string {
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity  %+v", 422, o.Payload)
+}
+
 func (o *UpdateTaskUnprocessableEntity) GetPayload() *models.ValidationError {
 	return o.Payload
 }
@@ -134,9 +194,39 @@ func (o *UpdateTaskDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this update task default response returns a 2xx status code
+func (o *UpdateTaskDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this update task default response returns a 3xx status code
+func (o *UpdateTaskDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this update task default response returns a 4xx status code
+func (o *UpdateTaskDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this update task default response returns a 5xx status code
+func (o *UpdateTaskDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this update task default response returns a 4xx status code
+func (o *UpdateTaskDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UpdateTaskDefault) Error() string {
 	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UpdateTaskDefault) String() string {
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UpdateTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }

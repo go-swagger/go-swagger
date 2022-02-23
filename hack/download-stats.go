@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,9 +10,18 @@ import (
 	"os"
 )
 
+var (
+	allVersions bool
+)
+
+func init() {
+	flag.BoolVar(&allVersions, "all", allVersions, "when specified it will download stats for all versions")
+}
+
 func main() {
+	flag.Parse()
+
 	req, err := http.NewRequest("GET", "https://api.github.com/repos/go-swagger/go-swagger/releases", nil)
-	// req, err := http.NewRequest("GET", "https://api.github.com/repos/go-swagger/go-swagger/releases/latest", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -46,6 +56,11 @@ func main() {
 	}
 
 	for i, result := range results {
+		if !allVersions {
+			if i > 0 {
+				break
+			}
+		}
 		if i > 0 {
 			fmt.Println()
 		}

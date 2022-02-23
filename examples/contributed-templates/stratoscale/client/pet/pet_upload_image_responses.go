@@ -47,9 +47,39 @@ type PetUploadImageOK struct {
 	Payload *models.APIResponse
 }
 
+// IsSuccess returns true when this pet upload image o k response returns a 2xx status code
+func (o *PetUploadImageOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet upload image o k response returns a 3xx status code
+func (o *PetUploadImageOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet upload image o k response returns a 4xx status code
+func (o *PetUploadImageOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet upload image o k response returns a 5xx status code
+func (o *PetUploadImageOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet upload image o k response returns a 4xx status code
+func (o *PetUploadImageOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PetUploadImageOK) Error() string {
 	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
 }
+
+func (o *PetUploadImageOK) String() string {
+	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
+}
+
 func (o *PetUploadImageOK) GetPayload() *models.APIResponse {
 	return o.Payload
 }

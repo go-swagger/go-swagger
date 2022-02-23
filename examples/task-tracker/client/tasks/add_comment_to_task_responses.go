@@ -57,7 +57,36 @@ Comment added
 type AddCommentToTaskCreated struct {
 }
 
+// IsSuccess returns true when this add comment to task created response returns a 2xx status code
+func (o *AddCommentToTaskCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this add comment to task created response returns a 3xx status code
+func (o *AddCommentToTaskCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this add comment to task created response returns a 4xx status code
+func (o *AddCommentToTaskCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this add comment to task created response returns a 5xx status code
+func (o *AddCommentToTaskCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this add comment to task created response returns a 4xx status code
+func (o *AddCommentToTaskCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *AddCommentToTaskCreated) Error() string {
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated ", 201)
+}
+
+func (o *AddCommentToTaskCreated) String() string {
 	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated ", 201)
 }
 
@@ -89,9 +118,39 @@ func (o *AddCommentToTaskDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this add comment to task default response returns a 2xx status code
+func (o *AddCommentToTaskDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this add comment to task default response returns a 3xx status code
+func (o *AddCommentToTaskDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this add comment to task default response returns a 4xx status code
+func (o *AddCommentToTaskDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this add comment to task default response returns a 5xx status code
+func (o *AddCommentToTaskDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this add comment to task default response returns a 4xx status code
+func (o *AddCommentToTaskDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *AddCommentToTaskDefault) Error() string {
 	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *AddCommentToTaskDefault) String() string {
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *AddCommentToTaskDefault) GetPayload() *models.Error {
 	return o.Payload
 }

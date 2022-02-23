@@ -45,9 +45,39 @@ type InventoryGetOK struct {
 	Payload map[string]int32
 }
 
+// IsSuccess returns true when this inventory get o k response returns a 2xx status code
+func (o *InventoryGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this inventory get o k response returns a 3xx status code
+func (o *InventoryGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this inventory get o k response returns a 4xx status code
+func (o *InventoryGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this inventory get o k response returns a 5xx status code
+func (o *InventoryGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this inventory get o k response returns a 4xx status code
+func (o *InventoryGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *InventoryGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
 }
+
+func (o *InventoryGetOK) String() string {
+	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
+}
+
 func (o *InventoryGetOK) GetPayload() map[string]int32 {
 	return o.Payload
 }

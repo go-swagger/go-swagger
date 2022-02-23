@@ -55,7 +55,36 @@ Deleted successfully
 type PetDeleteNoContent struct {
 }
 
+// IsSuccess returns true when this pet delete no content response returns a 2xx status code
+func (o *PetDeleteNoContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet delete no content response returns a 3xx status code
+func (o *PetDeleteNoContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet delete no content response returns a 4xx status code
+func (o *PetDeleteNoContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet delete no content response returns a 5xx status code
+func (o *PetDeleteNoContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet delete no content response returns a 4xx status code
+func (o *PetDeleteNoContent) IsCode(code int) bool {
+	return code == 204
+}
+
 func (o *PetDeleteNoContent) Error() string {
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent ", 204)
+}
+
+func (o *PetDeleteNoContent) String() string {
 	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent ", 204)
 }
 
@@ -76,7 +105,36 @@ Invalid ID supplied
 type PetDeleteBadRequest struct {
 }
 
+// IsSuccess returns true when this pet delete bad request response returns a 2xx status code
+func (o *PetDeleteBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet delete bad request response returns a 3xx status code
+func (o *PetDeleteBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet delete bad request response returns a 4xx status code
+func (o *PetDeleteBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet delete bad request response returns a 5xx status code
+func (o *PetDeleteBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet delete bad request response returns a 4xx status code
+func (o *PetDeleteBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *PetDeleteBadRequest) Error() string {
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest ", 400)
+}
+
+func (o *PetDeleteBadRequest) String() string {
 	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest ", 400)
 }
 
@@ -97,7 +155,36 @@ Pet not found
 type PetDeleteNotFound struct {
 }
 
+// IsSuccess returns true when this pet delete not found response returns a 2xx status code
+func (o *PetDeleteNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet delete not found response returns a 3xx status code
+func (o *PetDeleteNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet delete not found response returns a 4xx status code
+func (o *PetDeleteNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet delete not found response returns a 5xx status code
+func (o *PetDeleteNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet delete not found response returns a 4xx status code
+func (o *PetDeleteNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *PetDeleteNotFound) Error() string {
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound ", 404)
+}
+
+func (o *PetDeleteNotFound) String() string {
 	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound ", 404)
 }
 

@@ -66,9 +66,39 @@ type GetIDOK struct {
 	Payload *models.Customer
 }
 
+// IsSuccess returns true when this get Id o k response returns a 2xx status code
+func (o *GetIDOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this get Id o k response returns a 3xx status code
+func (o *GetIDOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get Id o k response returns a 4xx status code
+func (o *GetIDOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get Id o k response returns a 5xx status code
+func (o *GetIDOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get Id o k response returns a 4xx status code
+func (o *GetIDOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *GetIDOK) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
 }
+
+func (o *GetIDOK) String() string {
+	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
+}
+
 func (o *GetIDOK) GetPayload() *models.Customer {
 	return o.Payload
 }
@@ -98,9 +128,39 @@ type GetIDUnauthorized struct {
 	Payload *models.Error
 }
 
+// IsSuccess returns true when this get Id unauthorized response returns a 2xx status code
+func (o *GetIDUnauthorized) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this get Id unauthorized response returns a 3xx status code
+func (o *GetIDUnauthorized) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get Id unauthorized response returns a 4xx status code
+func (o *GetIDUnauthorized) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this get Id unauthorized response returns a 5xx status code
+func (o *GetIDUnauthorized) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get Id unauthorized response returns a 4xx status code
+func (o *GetIDUnauthorized) IsCode(code int) bool {
+	return code == 401
+}
+
 func (o *GetIDUnauthorized) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
 }
+
+func (o *GetIDUnauthorized) String() string {
+	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
+}
+
 func (o *GetIDUnauthorized) GetPayload() *models.Error {
 	return o.Payload
 }
@@ -130,9 +190,39 @@ type GetIDNotFound struct {
 	Payload *models.Error
 }
 
+// IsSuccess returns true when this get Id not found response returns a 2xx status code
+func (o *GetIDNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this get Id not found response returns a 3xx status code
+func (o *GetIDNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get Id not found response returns a 4xx status code
+func (o *GetIDNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this get Id not found response returns a 5xx status code
+func (o *GetIDNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this get Id not found response returns a 4xx status code
+func (o *GetIDNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *GetIDNotFound) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
 }
+
+func (o *GetIDNotFound) String() string {
+	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
+}
+
 func (o *GetIDNotFound) GetPayload() *models.Error {
 	return o.Payload
 }
@@ -171,9 +261,39 @@ func (o *GetIDDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this get Id default response returns a 2xx status code
+func (o *GetIDDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this get Id default response returns a 3xx status code
+func (o *GetIDDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this get Id default response returns a 4xx status code
+func (o *GetIDDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this get Id default response returns a 5xx status code
+func (o *GetIDDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this get Id default response returns a 4xx status code
+func (o *GetIDDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *GetIDDefault) Error() string {
 	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *GetIDDefault) String() string {
+	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *GetIDDefault) GetPayload() *models.Error {
 	return o.Payload
 }

@@ -53,9 +53,39 @@ type OrderCreateOK struct {
 	Payload *models.Order
 }
 
+// IsSuccess returns true when this order create o k response returns a 2xx status code
+func (o *OrderCreateOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this order create o k response returns a 3xx status code
+func (o *OrderCreateOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order create o k response returns a 4xx status code
+func (o *OrderCreateOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this order create o k response returns a 5xx status code
+func (o *OrderCreateOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order create o k response returns a 4xx status code
+func (o *OrderCreateOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *OrderCreateOK) Error() string {
 	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
 }
+
+func (o *OrderCreateOK) String() string {
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
+}
+
 func (o *OrderCreateOK) GetPayload() *models.Order {
 	return o.Payload
 }
@@ -84,7 +114,36 @@ Invalid Order
 type OrderCreateBadRequest struct {
 }
 
+// IsSuccess returns true when this order create bad request response returns a 2xx status code
+func (o *OrderCreateBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this order create bad request response returns a 3xx status code
+func (o *OrderCreateBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this order create bad request response returns a 4xx status code
+func (o *OrderCreateBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this order create bad request response returns a 5xx status code
+func (o *OrderCreateBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this order create bad request response returns a 4xx status code
+func (o *OrderCreateBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *OrderCreateBadRequest) Error() string {
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest ", 400)
+}
+
+func (o *OrderCreateBadRequest) String() string {
 	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest ", 400)
 }
 

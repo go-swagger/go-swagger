@@ -65,9 +65,39 @@ type PetUpdateCreated struct {
 	Payload *models.Pet
 }
 
+// IsSuccess returns true when this pet update created response returns a 2xx status code
+func (o *PetUpdateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet update created response returns a 3xx status code
+func (o *PetUpdateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet update created response returns a 4xx status code
+func (o *PetUpdateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet update created response returns a 5xx status code
+func (o *PetUpdateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet update created response returns a 4xx status code
+func (o *PetUpdateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *PetUpdateCreated) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
 }
+
+func (o *PetUpdateCreated) String() string {
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
+}
+
 func (o *PetUpdateCreated) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -96,7 +126,36 @@ Invalid ID supplied
 type PetUpdateBadRequest struct {
 }
 
+// IsSuccess returns true when this pet update bad request response returns a 2xx status code
+func (o *PetUpdateBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet update bad request response returns a 3xx status code
+func (o *PetUpdateBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet update bad request response returns a 4xx status code
+func (o *PetUpdateBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet update bad request response returns a 5xx status code
+func (o *PetUpdateBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet update bad request response returns a 4xx status code
+func (o *PetUpdateBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *PetUpdateBadRequest) Error() string {
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest ", 400)
+}
+
+func (o *PetUpdateBadRequest) String() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest ", 400)
 }
 
@@ -117,7 +176,36 @@ Pet not found
 type PetUpdateNotFound struct {
 }
 
+// IsSuccess returns true when this pet update not found response returns a 2xx status code
+func (o *PetUpdateNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet update not found response returns a 3xx status code
+func (o *PetUpdateNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet update not found response returns a 4xx status code
+func (o *PetUpdateNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet update not found response returns a 5xx status code
+func (o *PetUpdateNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet update not found response returns a 4xx status code
+func (o *PetUpdateNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *PetUpdateNotFound) Error() string {
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound ", 404)
+}
+
+func (o *PetUpdateNotFound) String() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound ", 404)
 }
 
@@ -138,7 +226,36 @@ Validation exception
 type PetUpdateMethodNotAllowed struct {
 }
 
+// IsSuccess returns true when this pet update method not allowed response returns a 2xx status code
+func (o *PetUpdateMethodNotAllowed) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet update method not allowed response returns a 3xx status code
+func (o *PetUpdateMethodNotAllowed) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet update method not allowed response returns a 4xx status code
+func (o *PetUpdateMethodNotAllowed) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet update method not allowed response returns a 5xx status code
+func (o *PetUpdateMethodNotAllowed) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet update method not allowed response returns a 4xx status code
+func (o *PetUpdateMethodNotAllowed) IsCode(code int) bool {
+	return code == 405
+}
+
 func (o *PetUpdateMethodNotAllowed) Error() string {
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed ", 405)
+}
+
+func (o *PetUpdateMethodNotAllowed) String() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed ", 405)
 }
 

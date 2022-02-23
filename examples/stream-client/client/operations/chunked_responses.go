@@ -49,9 +49,39 @@ type ChunkedOK struct {
 	Payload io.Writer
 }
 
+// IsSuccess returns true when this chunked o k response returns a 2xx status code
+func (o *ChunkedOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this chunked o k response returns a 3xx status code
+func (o *ChunkedOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this chunked o k response returns a 4xx status code
+func (o *ChunkedOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this chunked o k response returns a 5xx status code
+func (o *ChunkedOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this chunked o k response returns a 4xx status code
+func (o *ChunkedOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *ChunkedOK) Error() string {
 	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK  %+v", 200, o.Payload)
 }
+
+func (o *ChunkedOK) String() string {
+	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK  %+v", 200, o.Payload)
+}
+
 func (o *ChunkedOK) GetPayload() io.Writer {
 	return o.Payload
 }

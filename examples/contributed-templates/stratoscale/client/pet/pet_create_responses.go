@@ -53,9 +53,39 @@ type PetCreateCreated struct {
 	Payload *models.Pet
 }
 
+// IsSuccess returns true when this pet create created response returns a 2xx status code
+func (o *PetCreateCreated) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet create created response returns a 3xx status code
+func (o *PetCreateCreated) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet create created response returns a 4xx status code
+func (o *PetCreateCreated) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet create created response returns a 5xx status code
+func (o *PetCreateCreated) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet create created response returns a 4xx status code
+func (o *PetCreateCreated) IsCode(code int) bool {
+	return code == 201
+}
+
 func (o *PetCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
 }
+
+func (o *PetCreateCreated) String() string {
+	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
+}
+
 func (o *PetCreateCreated) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -84,7 +114,36 @@ Invalid input
 type PetCreateMethodNotAllowed struct {
 }
 
+// IsSuccess returns true when this pet create method not allowed response returns a 2xx status code
+func (o *PetCreateMethodNotAllowed) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet create method not allowed response returns a 3xx status code
+func (o *PetCreateMethodNotAllowed) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet create method not allowed response returns a 4xx status code
+func (o *PetCreateMethodNotAllowed) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet create method not allowed response returns a 5xx status code
+func (o *PetCreateMethodNotAllowed) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet create method not allowed response returns a 4xx status code
+func (o *PetCreateMethodNotAllowed) IsCode(code int) bool {
+	return code == 405
+}
+
 func (o *PetCreateMethodNotAllowed) Error() string {
+	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed ", 405)
+}
+
+func (o *PetCreateMethodNotAllowed) String() string {
 	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed ", 405)
 }
 

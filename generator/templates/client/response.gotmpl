@@ -71,16 +71,64 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Code() int {
 }
   {{- end }}
 
+// IsSuccess returns true when this {{ humanize .Name }} response has a 2xx status code
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsSuccess() bool {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode/100 == 2
+  {{- else }}
+  return {{ and (ge .Code 200) (lt .Code 300) }}
+  {{- end }}
+}
+
+// IsRedirect returns true when this {{ humanize .Name }} response has a 3xx status code
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsRedirect() bool {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode/100 == 3
+  {{- else }}
+  return {{ and (ge .Code 300) (lt .Code 400) }}
+  {{- end }}
+}
+
+// IsClientError returns true when this {{ humanize .Name }} response has a 4xx status code
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsClientError() bool {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode/100 == 4
+  {{- else }}
+  return {{ and (ge .Code 400) (lt .Code 500) }}
+  {{- end }}
+}
+
+// IsServerError returns true when this {{ humanize .Name }} response has a 5xx status code
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsServerError() bool {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode/100 == 5
+  {{- else }}
+  return {{ and (ge .Code 500) (lt .Code 600) }}
+  {{- end }}
+}
+
+// IsCode returns true when this {{ humanize .Name }} response a status code equal to that given
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsCode(code int) bool {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode == code
+  {{- else }}
+  return code == {{ .Code }}
+  {{- end }}
+}
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
 	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown error {{ end }}{{ if .Schema }} %+v{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}, o.Payload{{ end }})
 }
 
-  {{- if .Schema }}
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) String() string {
+	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown response {{ end }}{{ if .Schema }} %+v{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}, o.Payload{{ end }})
+}
+
+{{ if .Schema }}
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) GetPayload() {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject (not .Schema.IsStream) }}*{{ end }}{{ if (not .Schema.IsStream) }}{{ .Schema.GoType }}{{ else }}io.Writer{{end}} {
 	return o.Payload
 }
-  {{- end }}
+{{- end }}
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
   {{- range .Headers }}

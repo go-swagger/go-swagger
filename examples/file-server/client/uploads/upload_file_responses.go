@@ -43,7 +43,36 @@ OK
 type UploadFileOK struct {
 }
 
+// IsSuccess returns true when this upload file o k response returns a 2xx status code
+func (o *UploadFileOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this upload file o k response returns a 3xx status code
+func (o *UploadFileOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this upload file o k response returns a 4xx status code
+func (o *UploadFileOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this upload file o k response returns a 5xx status code
+func (o *UploadFileOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this upload file o k response returns a 4xx status code
+func (o *UploadFileOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UploadFileOK) Error() string {
+	return fmt.Sprintf("[POST /upload][%d] uploadFileOK ", 200)
+}
+
+func (o *UploadFileOK) String() string {
 	return fmt.Sprintf("[POST /upload][%d] uploadFileOK ", 200)
 }
 

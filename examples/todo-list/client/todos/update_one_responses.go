@@ -54,9 +54,39 @@ type UpdateOneOK struct {
 	Payload *models.Item
 }
 
+// IsSuccess returns true when this update one o k response returns a 2xx status code
+func (o *UpdateOneOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this update one o k response returns a 3xx status code
+func (o *UpdateOneOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this update one o k response returns a 4xx status code
+func (o *UpdateOneOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this update one o k response returns a 5xx status code
+func (o *UpdateOneOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this update one o k response returns a 4xx status code
+func (o *UpdateOneOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *UpdateOneOK) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
 }
+
+func (o *UpdateOneOK) String() string {
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+}
+
 func (o *UpdateOneOK) GetPayload() *models.Item {
 	return o.Payload
 }
@@ -95,9 +125,39 @@ func (o *UpdateOneDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this update one default response returns a 2xx status code
+func (o *UpdateOneDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this update one default response returns a 3xx status code
+func (o *UpdateOneDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this update one default response returns a 4xx status code
+func (o *UpdateOneDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this update one default response returns a 5xx status code
+func (o *UpdateOneDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this update one default response returns a 4xx status code
+func (o *UpdateOneDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *UpdateOneDefault) Error() string {
 	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *UpdateOneDefault) String() string {
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *UpdateOneDefault) GetPayload() *models.Error {
 	return o.Payload
 }

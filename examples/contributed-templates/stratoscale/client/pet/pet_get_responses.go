@@ -59,9 +59,39 @@ type PetGetOK struct {
 	Payload *models.Pet
 }
 
+// IsSuccess returns true when this pet get o k response returns a 2xx status code
+func (o *PetGetOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this pet get o k response returns a 3xx status code
+func (o *PetGetOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet get o k response returns a 4xx status code
+func (o *PetGetOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this pet get o k response returns a 5xx status code
+func (o *PetGetOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet get o k response returns a 4xx status code
+func (o *PetGetOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *PetGetOK) Error() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
 }
+
+func (o *PetGetOK) String() string {
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
+}
+
 func (o *PetGetOK) GetPayload() *models.Pet {
 	return o.Payload
 }
@@ -90,7 +120,36 @@ Invalid ID supplied
 type PetGetBadRequest struct {
 }
 
+// IsSuccess returns true when this pet get bad request response returns a 2xx status code
+func (o *PetGetBadRequest) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet get bad request response returns a 3xx status code
+func (o *PetGetBadRequest) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet get bad request response returns a 4xx status code
+func (o *PetGetBadRequest) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet get bad request response returns a 5xx status code
+func (o *PetGetBadRequest) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet get bad request response returns a 4xx status code
+func (o *PetGetBadRequest) IsCode(code int) bool {
+	return code == 400
+}
+
 func (o *PetGetBadRequest) Error() string {
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest ", 400)
+}
+
+func (o *PetGetBadRequest) String() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest ", 400)
 }
 
@@ -111,7 +170,36 @@ Pet not found
 type PetGetNotFound struct {
 }
 
+// IsSuccess returns true when this pet get not found response returns a 2xx status code
+func (o *PetGetNotFound) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this pet get not found response returns a 3xx status code
+func (o *PetGetNotFound) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this pet get not found response returns a 4xx status code
+func (o *PetGetNotFound) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this pet get not found response returns a 5xx status code
+func (o *PetGetNotFound) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this pet get not found response returns a 4xx status code
+func (o *PetGetNotFound) IsCode(code int) bool {
+	return code == 404
+}
+
 func (o *PetGetNotFound) Error() string {
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound ", 404)
+}
+
+func (o *PetGetNotFound) String() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound ", 404)
 }
 
