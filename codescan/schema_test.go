@@ -299,6 +299,29 @@ func TestSchemaBuilder_AddExtensions(t *testing.T) {
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
 }
 
+func TestTextMarhalCustomType(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	decl := getClassificationModel(sctx, "TextMarshalModel")
+	require.NotNil(t, decl)
+	prs := &schemaBuilder{
+		ctx:  sctx,
+		decl: decl,
+	}
+	models := make(map[string]spec.Schema)
+	require.NoError(t, prs.Build(models))
+	schema := models["TextMarshalModel"]
+	assertProperty(t, &schema, "string", "id", "uuid", "ID")
+	assertArrayProperty(t, &schema, "string", "ids", "uuid", "IDs")
+	assertProperty(t, &schema, "string", "struct", "", "Struct")
+	assertProperty(t, &schema, "string", "map", "", "Map")
+	assertMapProperty(t, &schema, "string", "mapUUID", "uuid", "MapUUID")
+	assertRef(t, &schema, "url", "URL", "#/definitions/URL")
+	assertProperty(t, &schema, "string", "time", "date-time", "Time")
+	assertProperty(t, &schema, "string", "structStrfmt", "date-time", "StructStrfmt")
+	assertProperty(t, &schema, "string", "structStrfmtPtr", "date-time", "StructStrfmtPtr")
+	assertProperty(t, &schema, "string", "customUrl", "url", "CustomURL")
+}
+
 func TestEmbeddedTypes(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "ComplexerOne")
