@@ -237,7 +237,70 @@ func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) err
 	return nil
 }
 
+func (s *schemaBuilder) buildFromTextMarshal(tpe types.Type, tgt swaggerTypable) error {
+	if typePtr, ok := tpe.(*types.Pointer); ok {
+		return s.buildFromTextMarshal(typePtr.Elem(), tgt)
+	}
+
+	typeNamed, ok := tpe.(*types.Named)
+	if !ok {
+		tgt.Typed("string", "")
+		return nil
+	}
+
+	tio := typeNamed.Obj()
+	if tio.Pkg() == nil && tio.Name() == "error" {
+		return swaggerSchemaForType(tio.Name(), tgt)
+	}
+
+	debugLog("named refined type %s.%s", tio.Pkg().Path(), tio.Name())
+	pkg, found := s.ctx.PkgForType(tpe)
+
+	if strings.ToLower(tio.Name()) == "uuid" {
+		tgt.Typed("string", "uuid")
+		return nil
+	}
+
+	if !found {
+		// this must be a builtin
+		debugLog("skipping because package is nil: %s", tpe.String())
+		return nil
+	}
+	if pkg.Name == "time" && tio.Name() == "Time" {
+		tgt.Typed("string", "date-time")
+		return nil
+	}
+	if pkg.PkgPath == "encoding/json" && tio.Name() == "RawMessage" {
+		tgt.Typed("object", "")
+		return nil
+	}
+	cmt, hasComments := s.ctx.FindComments(pkg, tio.Name())
+	if !hasComments {
+		cmt = new(ast.CommentGroup)
+	}
+
+	if sfnm, isf := strfmtName(cmt); isf {
+		tgt.Typed("string", sfnm)
+		return nil
+	}
+
+	tgt.Typed("string", "")
+	return nil
+}
+
 func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error {
+	pkg, err := importer.Default().Import("encoding")
+	if err != nil {
+		return nil
+	}
+	ifc := pkg.Scope().Lookup("TextMarshaler").Type().Underlying().(*types.Interface)
+
+	// check if the type implements encoding.TextMarshaler interface
+	isTextMarshaler := types.Implements(tpe, ifc)
+	if isTextMarshaler {
+		return s.buildFromTextMarshal(tpe, tgt)
+	}
+
 	switch titpe := tpe.(type) {
 	case *types.Basic:
 		return swaggerSchemaForType(titpe.String(), tgt)
@@ -261,15 +324,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 		}
 		eleProp := schemaTypable{sch, tgt.Level()}
 		key := titpe.Key()
-
-		// check if key implements encoding.TextMarshaler interface
-		pkg, err := importer.Default().Import("encoding")
-		if err != nil {
-			return nil
-		}
-		ifc := pkg.Scope().Lookup("TextMarshaler").Type().Underlying().(*types.Interface)
 		isTextMarshaler := types.Implements(key, ifc)
-
 		if key.Underlying().String() == "string" || isTextMarshaler {
 			if err := s.buildFromType(titpe.Elem(), eleProp.AdditionalProperties()); err != nil {
 				return err

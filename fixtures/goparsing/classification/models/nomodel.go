@@ -15,6 +15,7 @@
 package models
 
 import (
+	"net/url"
 	"time"
 
 	"github.com/go-openapi/strfmt"
@@ -694,4 +695,62 @@ type IgnoredFields struct {
 	// This swagger:ignore tag won't work - it needs to be in the field's doc
 	// block
 	SomeErroneouslyIncludedField string `json:"someErroneouslyIncludedField"` // swagger:ignore
+}
+
+// UUID is a type that represents a UUID as a string
+type UUID [16]byte
+
+func (uuid UUID) MarshalText() ([]byte, error) {
+	return []byte("hola desde UUID"), nil
+}
+
+type MarshalTextStruct struct {
+	Hola string
+}
+
+func (cm MarshalTextStruct) MarshalText() ([]byte, error) {
+	return []byte("hi from CustomStruct"), nil
+}
+
+type MarshalTextMap map[string]interface{}
+
+func (cm MarshalTextMap) MarshalText() ([]byte, error) {
+	return []byte("hola desde CustomMap"), nil
+}
+
+// swagger:strfmt date-time
+type MarshalTextStructStrfmt struct {
+	Foo string `json:"foo"`
+}
+
+func (cm MarshalTextStructStrfmt) MarshalText() ([]byte, error) {
+	return []byte("hi from CustomStructStrfmt"), nil
+}
+
+// swagger:strfmt date-time
+type MarshalTextStructStrfmtPtr struct {
+	Foo string `json:"foo"`
+}
+
+func (cm MarshalTextStructStrfmtPtr) MarshalText() ([]byte, error) {
+	return []byte("hi frome CustomStructStrfmtPtr"), nil
+}
+
+// swagger:strfmt url
+type URL url.URL
+
+// TextMarshalModel demostrates the use of MarshalText from different fields
+//
+// swagger:model TextMarshalModel
+type TextMarshalModel struct {
+	ID              UUID                        `json:"id"`
+	IDs             []UUID                      `json:"ids"`
+	Struct          MarshalTextStruct           `json:"struct"`
+	Map             MarshalTextMap              `json:"map"`
+	MapUUID         map[string]UUID             `json:"mapUUID"`
+	URL             url.URL                     `json:"url"` // url.URL not has TextMarshal!
+	Time            time.Time                   `json:"time"`
+	StructStrfmt    MarshalTextStructStrfmt     `json:"structStrfmt"`
+	StructStrfmtPtr *MarshalTextStructStrfmtPtr `json:"structStrfmtPtr"`
+	CustomURL       URL                         `json:"customUrl"`
 }
