@@ -259,13 +259,15 @@ func MarkdownSectionOpts(gen *GenOpts, output string) {
 	gen.Sections.OperationGroups = nil
 	gen.Sections.Operations = nil
 	gen.LanguageOpts = MarkdownOpts()
-	gen.Sections.Application = []TemplateOpts{
-		{
-			Name:     "markdowndocs",
-			Source:   "asset:markdownDocs",
-			Target:   filepath.Dir(output),
-			FileName: filepath.Base(output),
-		},
+	if len(gen.Sections.Application) == 0 {
+		gen.Sections.Application = []TemplateOpts{
+			{
+				Name:     "markdowndocs",
+				Source:   "asset:markdownDocs",
+				Target:   filepath.Dir(output),
+				FileName: filepath.Base(output),
+			},
+		}
 	}
 }
 
