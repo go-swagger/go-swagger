@@ -847,6 +847,18 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			addExtension(&ps.VendorExtensible, "x-go-name", fld.Name())
 		}
 
+		if validate, err := parseTag(afld, "validate"); err == nil {
+			if validate != "" {
+				addExtension(&ps.VendorExtensible, "x-go-validate", validate)
+			}
+		}
+
+		if dt, err := parseTag(afld, "default"); err == nil {
+			if dt != "" {
+				addExtension(&ps.VendorExtensible, "x-go-default", dt)
+			}
+		}
+
 		// we have 2 cases:
 		// 1. field with different name override tag
 		// 2. field with different name removes tag
@@ -1139,6 +1151,27 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 		}
 	}
 	return name, false, false, nil
+}
+
+func parseTag(field *ast.Field, tag string) (name string, err error) {
+	if len(field.Names) > 0 {
+		name = field.Names[0].Name
+	}
+	if field.Tag == nil || len(strings.TrimSpace(field.Tag.Value)) == 0 {
+		return "", nil
+	}
+
+	tv, err := strconv.Unquote(field.Tag.Value)
+	if err != nil {
+		return "", err
+	}
+
+	if strings.TrimSpace(tv) != "" {
+		st := reflect.StructTag(tv)
+		tg := st.Get(tag)
+		return tg, nil
+	}
+	return "", nil
 }
 
 // isFieldStringable check if the field type is a scalar. If the field type is
