@@ -38,7 +38,7 @@
             return err, false
         }
         {{- /* reciever by convention is m for CLI */}}
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
+        m.{{ pascalize .Name }} = {{ $flagValueVar }}
     {{- else if or (eq .GoType "[]strfmt.DateTime") (eq .GoType "[]strfmt.ObjectId") (eq .GoType "[]strfmt.UUID") }} {{/*Get flag value as string, then parse it*/}}
         {{ template "flagnamevar" . }}
         {{ $flagValueVar }}Str, err := cmd.Flags().GetStringSlice({{ $flagNameVar }})
