@@ -135,6 +135,8 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		},
 		"docCollectionFormat": resolvedDocCollectionFormat,
 		"trimSpace":           strings.TrimSpace,
+		"trimPrefix":          strings.TrimPrefix,
+		"trimSuffix":          strings.TrimSuffix,
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
