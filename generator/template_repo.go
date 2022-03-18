@@ -19,6 +19,7 @@ import (
 
 	"log"
 
+	"github.com/Masterminds/sprig"
 	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
@@ -54,10 +55,11 @@ func initTemplateRepo() {
 	}
 }
 
-// DefaultFuncMap yields a map with default functions for use n the templates.
+// DefaultFuncMap yields a map with default functions for use in the templates.
 // These are available in every template
 func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
-	return template.FuncMap(map[string]interface{}{
+	f := sprig.TxtFuncMap()
+	extra := template.FuncMap{
 		"pascalize": pascalize,
 		"camelize":  swag.ToJSONName,
 		"varname":   lang.MangleVarName,
@@ -84,8 +86,6 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		},
 		"dropPackage":      dropPackage,
 		"containsPkgStr":   containsPkgStr,
-		"upper":            strings.ToUpper,
-		"lower":            strings.ToLower,
 		"contains":         swag.ContainsStrings,
 		"padSurround":      padSurround,
 		"joinFilePath":     filepath.Join,
@@ -138,7 +138,13 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
-	})
+	}
+
+	for k, v := range extra {
+		f[k] = v
+	}
+
+	return f
 }
 
 func defaultAssets() map[string][]byte {
