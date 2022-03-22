@@ -15,7 +15,9 @@ We use the viper library to read config values, this means you can provide the c
 
 ## Available filters in templates
 
-There are a number of filters you can use inside a template to manipulate values:
+We use the [sprig](https://masterminds.github.io/sprig/) library to provide a large variety of template functions for creating custom templates.
+
+In addition to this there are a number of added filters you can use inside a template to manipulate values:
 
 Filter | Description
 -------|-------------
@@ -29,7 +31,6 @@ pluralizeFirstWord | pluralizes the first word of a sentence
 json | converts the argument to compact json
 prettyjson | converts the argument to pretty-printed json
 stripPackage | strips the package name from an identifier
-upper | converts the string to upper case
 contains | for use in conditions, returns true when the second argument is contained in the first argument, the first argument is a list of strings
 joinFilePath | joins the arguments as a file path, cross platform
 padSurround | surround an entry with a character n times before and m times after the entry
