@@ -287,8 +287,8 @@ type SectionOpts struct {
 	Models          []TemplateOpts `mapstructure:"models"`
 }
 
-// GenOpts the options for the generator
-type GenOpts struct {
+// GenOptsCommon the options for the generator
+type GenOptsCommon struct {
 	IncludeModel               bool
 	IncludeValidator           bool
 	IncludeHandler             bool
@@ -763,7 +763,7 @@ func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 	return nil
 }
 
-func (g *GenOpts) setTemplates() error {
+func (g *GenOptsCommon) setTemplates() error {
 	if g.Template != "" {
 		// set contrib templates
 		if err := g.templates.LoadContrib(g.Template); err != nil {

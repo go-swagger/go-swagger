@@ -502,17 +502,19 @@ func TestBuilder_Issue1703(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -539,17 +541,19 @@ func TestBuilder_Issue287(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -574,18 +578,20 @@ func TestBuilder_Issue465(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          true,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -610,17 +616,19 @@ func TestBuilder_Issue500(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -699,19 +707,21 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		ValidateSpec:      true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			ValidateSpec:      true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          true,
+		},
 	}
 
 	// Testing Server Generation
@@ -760,18 +770,20 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          true,
+		},
 	}
 
 	// Testing Server Generation
@@ -820,19 +832,21 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		ValidateSpec:      false,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			ValidateSpec:      false,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          true,
+		},
 	}
 
 	// Testing Server Generation
@@ -870,19 +884,21 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		ValidateSpec:      true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			ValidateSpec:      true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          true,
+		},
 	}
 
 	// Testing Server Generation
@@ -909,40 +925,44 @@ func TestGenServerWithTemplate(t *testing.T) {
 		{
 			name: "None_existing_contributor_template",
 			opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-				IncludeModel:      true,
-				IncludeHandler:    true,
-				IncludeParameters: true,
-				IncludeResponses:  true,
-				IncludeMain:       true,
-				ValidateSpec:      true,
-				APIPackage:        "restapi",
-				ModelPackage:      "model",
-				ServerPackage:     "server",
-				ClientPackage:     "client",
-				Target:            dr,
-				IsClient:          true,
-				Template:          "InvalidTemplate",
+				GenOptsCommon: GenOptsCommon{
+					Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+					IncludeModel:      true,
+					IncludeHandler:    true,
+					IncludeParameters: true,
+					IncludeResponses:  true,
+					IncludeMain:       true,
+					ValidateSpec:      true,
+					APIPackage:        "restapi",
+					ModelPackage:      "model",
+					ServerPackage:     "server",
+					ClientPackage:     "client",
+					Target:            dr,
+					IsClient:          true,
+					Template:          "InvalidTemplate",
+				},
 			},
 			wantError: true,
 		},
 		{
 			name: "Existing_contributor",
 			opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
-				IncludeModel:      true,
-				IncludeHandler:    true,
-				IncludeParameters: true,
-				IncludeResponses:  true,
-				IncludeMain:       true,
-				ValidateSpec:      true,
-				APIPackage:        "restapi",
-				ModelPackage:      "model",
-				ServerPackage:     "server",
-				ClientPackage:     "client",
-				Target:            dr,
-				IsClient:          true,
-				Template:          "stratoscale",
+				GenOptsCommon: GenOptsCommon{
+					Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+					IncludeModel:      true,
+					IncludeHandler:    true,
+					IncludeParameters: true,
+					IncludeResponses:  true,
+					IncludeMain:       true,
+					ValidateSpec:      true,
+					APIPackage:        "restapi",
+					ModelPackage:      "model",
+					ServerPackage:     "server",
+					ClientPackage:     "client",
+					Target:            dr,
+					IsClient:          true,
+					Template:          "stratoscale",
+				},
 			},
 			wantError: false,
 		},
@@ -995,18 +1015,20 @@ func TestBuilder_Issue1214(t *testing.T) {
 	const any = `(.|\n)+`
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          false,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          false,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -1170,14 +1192,16 @@ func TestGenerateServerOperation(t *testing.T) {
 		_ = os.RemoveAll(tgt)
 	}()
 	o := &GenOpts{
-		ValidateSpec:      false,
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		ModelPackage:      "models",
-		Spec:              fname,
-		Target:            tgt,
+		GenOptsCommon: GenOptsCommon{
+			ValidateSpec:      false,
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			ModelPackage:      "models",
+			Spec:              fname,
+			Target:            tgt,
+		},
 	}
 	require.NoError(t, o.EnsureDefaults())
 
@@ -1225,18 +1249,20 @@ func TestBuilder_Issue1646(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          false,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          false,
+		},
 	}
 	err := opts.EnsureDefaults()
 	require.NoError(t, err)
@@ -1265,18 +1291,20 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
-		IncludeModel:      true,
-		IncludeHandler:    true,
-		IncludeParameters: true,
-		IncludeResponses:  true,
-		IncludeMain:       true,
-		APIPackage:        "restapi",
-		ModelPackage:      "model",
-		ServerPackage:     "server",
-		ClientPackage:     "client",
-		Target:            dr,
-		IsClient:          false,
+		GenOptsCommon: GenOptsCommon{
+			Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
+			IncludeModel:      true,
+			IncludeHandler:    true,
+			IncludeParameters: true,
+			IncludeResponses:  true,
+			IncludeMain:       true,
+			APIPackage:        "restapi",
+			ModelPackage:      "model",
+			ServerPackage:     "server",
+			ClientPackage:     "client",
+			Target:            dr,
+			IsClient:          false,
+		},
 	}
 	err := opts.EnsureDefaults()
 	require.NoError(t, err)
@@ -1433,19 +1461,21 @@ func TestGenServer_2161_panic(t *testing.T) {
 	}()
 
 	opts := &GenOpts{
-		Spec:                       filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
-		IncludeModel:               true,
-		IncludeHandler:             true,
-		IncludeParameters:          true,
-		IncludeResponses:           true,
-		IncludeMain:                true,
-		APIPackage:                 "restapi",
-		ModelPackage:               "model",
-		ServerPackage:              "server",
-		ClientPackage:              "client",
-		Target:                     generated,
-		IsClient:                   false,
-		StrictAdditionalProperties: true,
+		GenOptsCommon: GenOptsCommon{
+			Spec:                       filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
+			IncludeModel:               true,
+			IncludeHandler:             true,
+			IncludeParameters:          true,
+			IncludeResponses:           true,
+			IncludeMain:                true,
+			APIPackage:                 "restapi",
+			ModelPackage:               "model",
+			ServerPackage:              "server",
+			ClientPackage:              "client",
+			Target:                     generated,
+			IsClient:                   false,
+			StrictAdditionalProperties: true,
+		},
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
@@ -1486,17 +1516,19 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "default",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
-				IncludeHandler:    true,
-				IncludeParameters: true,
-				IncludeResponses:  true,
-				IncludeMain:       false,
-				APIPackage:        "restapi",
-				ModelPackage:      "models",
-				ServerPackage:     "server",
-				ClientPackage:     "client",
-				Target:            dr,
-				IsClient:          false,
+				GenOptsCommon: GenOptsCommon{
+					Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+					IncludeHandler:    true,
+					IncludeParameters: true,
+					IncludeResponses:  true,
+					IncludeMain:       false,
+					APIPackage:        "restapi",
+					ModelPackage:      "models",
+					ServerPackage:     "server",
+					ClientPackage:     "client",
+					Target:            dr,
+					IsClient:          false,
+				},
 			},
 			Expected: map[string][]string{
 				"configure": {
@@ -1538,18 +1570,20 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "principal is struct",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
-				IncludeHandler:    true,
-				IncludeParameters: true,
-				IncludeResponses:  true,
-				IncludeMain:       false,
-				APIPackage:        "restapi",
-				ModelPackage:      "models",
-				ServerPackage:     "server",
-				ClientPackage:     "client",
-				Target:            dr,
-				Principal:         "github.com/example/security.Principal",
-				IsClient:          false,
+				GenOptsCommon: GenOptsCommon{
+					Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+					IncludeHandler:    true,
+					IncludeParameters: true,
+					IncludeResponses:  true,
+					IncludeMain:       false,
+					APIPackage:        "restapi",
+					ModelPackage:      "models",
+					ServerPackage:     "server",
+					ClientPackage:     "client",
+					Target:            dr,
+					Principal:         "github.com/example/security.Principal",
+					IsClient:          false,
+				},
 			},
 			Expected: map[string][]string{
 				"configure": {
@@ -1592,19 +1626,21 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "principal is interface",
 			Opts: &GenOpts{
-				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
-				IncludeHandler:       true,
-				IncludeParameters:    true,
-				IncludeResponses:     true,
-				IncludeMain:          false,
-				APIPackage:           "restapi",
-				ModelPackage:         "models",
-				ServerPackage:        "server",
-				ClientPackage:        "client",
-				Target:               dr,
-				Principal:            "github.com/example/security.PrincipalIface",
-				IsClient:             false,
-				PrincipalCustomIface: true,
+				GenOptsCommon: GenOptsCommon{
+					Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+					IncludeHandler:       true,
+					IncludeParameters:    true,
+					IncludeResponses:     true,
+					IncludeMain:          false,
+					APIPackage:           "restapi",
+					ModelPackage:         "models",
+					ServerPackage:        "server",
+					ClientPackage:        "client",
+					Target:               dr,
+					Principal:            "github.com/example/security.PrincipalIface",
+					IsClient:             false,
+					PrincipalCustomIface: true,
+				},
 			},
 			Expected: map[string][]string{
 				"configure": {
@@ -1647,19 +1683,21 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "stratoscale: principal is struct",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
-				IncludeHandler:    true,
-				IncludeParameters: true,
-				IncludeResponses:  true,
-				IncludeMain:       false,
-				APIPackage:        "restapi",
-				ModelPackage:      "models",
-				ServerPackage:     "server",
-				ClientPackage:     "client",
-				Target:            dr,
-				Principal:         "github.com/example/security.Principal",
-				IsClient:          false,
-				Template:          "stratoscale",
+				GenOptsCommon: GenOptsCommon{
+					Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+					IncludeHandler:    true,
+					IncludeParameters: true,
+					IncludeResponses:  true,
+					IncludeMain:       false,
+					APIPackage:        "restapi",
+					ModelPackage:      "models",
+					ServerPackage:     "server",
+					ClientPackage:     "client",
+					Target:            dr,
+					Principal:         "github.com/example/security.Principal",
+					IsClient:          false,
+					Template:          "stratoscale",
+				},
 			},
 			Expected: map[string][]string{
 				"configure": {
@@ -1694,20 +1732,22 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "stratoscale: principal is interface",
 			Opts: &GenOpts{
-				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
-				IncludeHandler:       true,
-				IncludeParameters:    true,
-				IncludeResponses:     true,
-				IncludeMain:          false,
-				APIPackage:           "restapi",
-				ModelPackage:         "models",
-				ServerPackage:        "server",
-				ClientPackage:        "client",
-				Target:               dr,
-				Principal:            "github.com/example/security.PrincipalIface",
-				IsClient:             false,
-				PrincipalCustomIface: true,
-				Template:             "stratoscale",
+				GenOptsCommon: GenOptsCommon{
+					Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+					IncludeHandler:       true,
+					IncludeParameters:    true,
+					IncludeResponses:     true,
+					IncludeMain:          false,
+					APIPackage:           "restapi",
+					ModelPackage:         "models",
+					ServerPackage:        "server",
+					ClientPackage:        "client",
+					Target:               dr,
+					Principal:            "github.com/example/security.PrincipalIface",
+					IsClient:             false,
+					PrincipalCustomIface: true,
+					Template:             "stratoscale",
+				},
 			},
 			Expected: map[string][]string{
 				"configure": {
