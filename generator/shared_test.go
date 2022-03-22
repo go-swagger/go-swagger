@@ -622,7 +622,7 @@ func TestResolvePrincipal(t *testing.T) {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
-			opts := &GenOpts{Principal: fixture.Principal}
+			opts := &GenOpts{GenOptsCommon: GenOptsCommon{Principal: fixture.Principal}}
 			err := opts.EnsureDefaults()
 			require.NoError(t, err)
 			alias, principal, target := opts.resolvePrincipal()
@@ -649,7 +649,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with base import",
 			Opts: &GenOpts{
-				Principal: "ext.Principal",
+				GenOptsCommon: GenOptsCommon{
+					Principal: "ext.Principal",
+				},
 			},
 			Expected: map[string]string{
 				"ext":    "github.com/go-swagger/go-swagger/generator/ext",
@@ -659,7 +661,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with full import",
 			Opts: &GenOpts{
-				Principal: "github.com/myproject/identity.Principal",
+				GenOptsCommon: GenOptsCommon{
+					Principal: "github.com/myproject/identity.Principal",
+				},
 			},
 			Expected: map[string]string{
 				"identity": "github.com/myproject/identity",
@@ -669,7 +673,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with name conflict",
 			Opts: &GenOpts{
-				Principal: "github.com/myproject/middleware.Principal",
+				GenOptsCommon: GenOptsCommon{
+					Principal: "github.com/myproject/middleware.Principal",
+				},
 			},
 			Expected: map[string]string{
 				"auth":   "github.com/myproject/middleware",
@@ -679,7 +685,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with name conflict (2)",
 			Opts: &GenOpts{
-				Principal: "github.com/myproject/principal.Principal",
+				GenOptsCommon: GenOptsCommon{
+					Principal: "github.com/myproject/principal.Principal",
+				},
 			},
 			Expected: map[string]string{
 				"auth":   "github.com/myproject/principal",
@@ -689,7 +697,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "alternate target for models",
 			Opts: &GenOpts{
-				ModelPackage: "target/bespoke",
+				GenOptsCommon: GenOptsCommon{
+					ModelPackage: "target/bespoke",
+				},
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -698,7 +708,9 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with existing models",
 			Opts: &GenOpts{
-				ExistingModels: "github.com/myproject/target/bespoke",
+				GenOptsCommon: GenOptsCommon{
+					ExistingModels: "github.com/myproject/target/bespoke",
+				},
 			},
 			Expected: map[string]string{
 				"models": "github.com/myproject/target/bespoke",
@@ -708,8 +720,10 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal, in dedicated package under generated target",
 			Opts: &GenOpts{
-				Principal:    "auth.Principal",
-				ModelPackage: "target/bespoke",
+				GenOptsCommon: GenOptsCommon{
+					Principal:    "auth.Principal",
+					ModelPackage: "target/bespoke",
+				},
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -719,8 +733,10 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal in models (1)",
 			Opts: &GenOpts{
-				Principal:    "bespoke.Principal",
-				ModelPackage: "target/bespoke",
+				GenOptsCommon: GenOptsCommon{
+					Principal:    "bespoke.Principal",
+					ModelPackage: "target/bespoke",
+				},
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -729,8 +745,10 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal in models (2)",
 			Opts: &GenOpts{
-				Principal:    "target/bespoke.Principal",
-				ModelPackage: "target/bespoke",
+				GenOptsCommon: GenOptsCommon{
+					Principal:    "target/bespoke.Principal",
+					ModelPackage: "target/bespoke",
+				},
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -740,8 +758,10 @@ func TestDefaultImports(t *testing.T) {
 			Title: "relative principal: not detected",
 			// NOTE: this case will probably not build: no way to determine the user intent
 			Opts: &GenOpts{
-				Principal:    "target/auth.Principal",
-				ModelPackage: "target/models",
+				GenOptsCommon: GenOptsCommon{
+					Principal:    "target/auth.Principal",
+					ModelPackage: "target/models",
+				},
 			},
 			Expected: map[string]string{
 				"models": "github.com/go-swagger/go-swagger/generator/target/models",
