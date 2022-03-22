@@ -47,10 +47,10 @@ security requirements may be composed out of several schemes, and use API author
 
 ### Prerequisites
 
-`jwt-go` ships with a nice JWT CLI utility. Although not required, you might want to install it and 
+`golang-jwt/jwt` ships with a nice JWT CLI utility. Although not required, you might want to install it and 
 play with your own tokens:
 
-- `go install github.com/dgrijalva/jwt-go/cmd/jwt`
+- `go install github.com/golang-jwt/jwt/cmd/jwt`
 
 ### Swagger specification
 
