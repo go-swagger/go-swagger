@@ -7,7 +7,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-openapi/analysis v0.21.2
@@ -22,6 +21,7 @@ require (
 	github.com/go-openapi/validate v0.20.3
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/handlers v1.5.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.0
