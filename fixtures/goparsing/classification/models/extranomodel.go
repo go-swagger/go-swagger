@@ -15,6 +15,7 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/go-openapi/strfmt"
@@ -97,3 +98,9 @@ type SomeStringTypeAlias string
 // SomeIntTypeAlias is a type that refines int64
 // swagger:alias
 type SomeIntTypeAlias int64
+
+// swagger:type string
+type NullString struct {
+	// swagger:ignore
+	sql.NullString
+}

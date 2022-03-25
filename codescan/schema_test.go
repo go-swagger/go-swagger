@@ -832,6 +832,21 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "cat", "", "Cat")
 }
 
+func TestSwaggerTypeStruct(t *testing.T) {
+	sctx := loadClassificationPkgsCtx(t)
+	decl := getClassificationModel(sctx, "NullString")
+	require.NotNil(t, decl)
+	prs := &schemaBuilder{
+		ctx:  sctx,
+		decl: decl,
+	}
+	models := make(map[string]spec.Schema)
+	require.NoError(t, prs.Build(models))
+	schema := models["NullString"]
+
+	assert.True(t, schema.Type.Contains("string"))
+}
+
 func TestStructDiscriminators(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 
