@@ -358,6 +358,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 
 		switch utitpe := tpe.Underlying().(type) {
 		case *types.Struct:
+
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
 				if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
 					tgt.Typed("string", "date-time")
@@ -367,6 +368,11 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 					tgt.Typed("string", sfnm)
 					return nil
 				}
+				if typeName, ok := typeName(cmt); ok {
+					_ = swaggerSchemaForType(typeName, tgt)
+					return nil
+				}
+
 				if err := s.makeRef(decl, tgt); err != nil {
 					return err
 				}
@@ -406,6 +412,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			if typeName, ok := typeName(cmt); ok {
 				_ = swaggerSchemaForType(typeName, tgt)
 				return nil
+
 			}
 
 			if isAliasParam(tgt) || aliasParam(cmt) {
@@ -673,6 +680,15 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 }
 
 func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, schema *spec.Schema, seen map[string]string) error {
+	s.ctx.FindComments(decl.Pkg, decl.Type.Obj().Name())
+	cmt, hasComments := s.ctx.FindComments(decl.Pkg, decl.Type.Obj().Name())
+	if !hasComments {
+		cmt = new(ast.CommentGroup)
+	}
+	if typeName, ok := typeName(cmt); ok {
+		_ = swaggerSchemaForType(typeName, schemaTypable{schema: schema})
+		return nil
+	}
 	// First check for all of schemas
 	var tgt *spec.Schema
 	hasAllOf := false
