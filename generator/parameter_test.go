@@ -460,7 +460,7 @@ func TestGenParameter_Enhancement936(t *testing.T) {
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
 	res := string(ff)
-	assertInCode(t, "ctx := validate.WithOperationRequest(context.Background())", res)
+	assertInCode(t, "ctx := validate.WithOperationRequest(r.Context())", res)
 	assertInCode(t, "if err := body.ContextValidate(ctx, route.Formats)", res)
 }
 
