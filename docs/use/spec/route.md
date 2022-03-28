@@ -26,6 +26,7 @@ Annotation | Format
 **Deprecated** | Route marked as deprecated if this value is true
 **Security** | a dictionary of key: []string{scopes}
 **Responses** | a dictionary of status code to named response
+**Extensions** | a dictionary of custom [vendor extensions](https://swagger.io/docs/specification/2-0/swagger-extensions/); each key must start with `x-`
 
 ##### Example:
 
@@ -60,6 +61,12 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	//       default: genericError
 	//       200: someResponse
 	//       422: validationError
+  //     Extensions:
+  //       x-example-flag: true
+  //       x-some-list:
+  //         - dog
+  //         - cat
+  //         - bird
 	mountItem("GET", basePath+"/pets", nil)
 }
 ```
@@ -101,4 +108,10 @@ paths:
           $ref: "#/responses/someResponse"
         422:
           $ref: "#/responses/validationError"
+      extensions:
+        x-example-flag: true
+        x-some-list:
+        - dog
+        - cat
+        - bird
 ```
