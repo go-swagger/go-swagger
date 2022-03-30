@@ -1683,7 +1683,7 @@ func (ss *setOpExtensions) Parse(lines []string) error {
 		if _, ok := ext.Root.(map[string]string); ok {
 			exts.AddExtension(ext.Extension, ext.Root.(map[string]string)[ext.Extension])
 		} else if _, ok := ext.Root.(map[string]*[]string); ok {
-			exts.AddExtension(ext.Extension, ext.Root.(map[string]*[]string)[ext.Extension])
+			exts.AddExtension(ext.Extension, *(ext.Root.(map[string]*[]string)[ext.Extension]))
 		} else if _, ok := ext.Root.(map[string]interface{}); ok {
 			exts.AddExtension(ext.Extension, ext.Root.(map[string]interface{})[ext.Extension])
 		} else {

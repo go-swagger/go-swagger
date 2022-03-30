@@ -48,6 +48,9 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// default: genericError
 	// 200: someResponse
 	// 422: validationError
+	//
+	// Extensions:
+	// x-some-flag: true
 	mountItem("GET", basePath+"/pets", nil)
 
 	/* swagger:route POST /pets pets users createPet
@@ -96,6 +99,20 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	// default: genericError
 	// 200: someResponse
 	// 422: validationError
+	//
+	// Extensions:
+	// x-some-flag: false
+	// x-some-list:
+	//	- item1
+	//	- item2
+	//	- item3
+	// x-some-object:
+	//	key1: value1
+	//	key2: value2
+	//	subobject:
+	//		subkey1: subvalue1
+	//		subkey2: subvalue2
+	//	key3: value3
 	mountItem("GET", basePath+"/orders", nil)
 
 	// swagger:route POST /orders orders createOrder
