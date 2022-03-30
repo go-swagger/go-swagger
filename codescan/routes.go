@@ -40,6 +40,14 @@ func opParamSetter(op *spec.Operation) func([]*spec.Parameter) {
 	}
 }
 
+func opExtensionsSetter(op *spec.Operation) func(*spec.Extensions) {
+	return func(exts *spec.Extensions) {
+		for name, value := range *exts {
+			op.AddExtension(name, value)
+		}
+	}
+}
+
 type routesBuilder struct {
 	ctx         *scanCtx
 	route       parsedPathContent
@@ -71,6 +79,7 @@ func (r *routesBuilder) Build(tgt *spec.Paths) error {
 		newMultiLineTagParser("Parameters", spa, false),
 		newMultiLineTagParser("Responses", sr, false),
 		newSingleLineTagParser("Deprecated", &setDeprecatedOp{op}),
+		newMultiLineTagParser("Extensions", newSetExtensions(opExtensionsSetter(op)), true),
 	}
 	if err := sp.Parse(r.route.Remaining); err != nil {
 		return fmt.Errorf("operation (%s): %v", op.ID, err)

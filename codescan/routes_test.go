@@ -29,6 +29,8 @@ func TestRoutesParser(t *testing.T) {
 	assert.Len(t, ops.Paths, 3)
 
 	po, ok := ops.Paths["/pets"]
+	ext := make(spec.Extensions)
+	ext.Add("x-some-flag", "true")
 	assert.True(t, ok)
 	assert.NotNil(t, po.Get)
 	assertOperation(t,
@@ -38,6 +40,7 @@ func TestRoutesParser(t *testing.T) {
 		"This will show all available pets by default.\nYou can get the pets that are out of stock",
 		[]string{"pets", "users"},
 		[]string{"read", "write"},
+		ext,
 	)
 	assertOperation(t,
 		po.Post,
@@ -46,9 +49,22 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		[]string{"pets", "users"},
 		[]string{"read", "write"},
+		nil,
 	)
 
 	po, ok = ops.Paths["/orders"]
+	ext = make(spec.Extensions)
+	ext.Add("x-some-flag", "false")
+	ext.Add("x-some-list", []string{"item1", "item2", "item3"})
+	ext.Add("x-some-object", map[string]interface{}{
+		"key1": "value1",
+		"key2": "value2",
+		"subobject": map[string]interface{}{
+			"subkey1": "subvalue1",
+			"subkey2": "subvalue2",
+		},
+		"key3": "value3",
+	})
 	assert.True(t, ok)
 	assert.NotNil(t, po.Get)
 	assertOperation(t,
@@ -58,6 +74,7 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		[]string{"orders"},
 		[]string{"orders:read", "https://www.googleapis.com/auth/userinfo.email"},
+		ext,
 	)
 	assertOperation(t,
 		po.Post,
@@ -66,6 +83,7 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		[]string{"orders"},
 		[]string{"read", "write"},
+		nil,
 	)
 
 	po, ok = ops.Paths["/orders/{id}"]
@@ -78,6 +96,7 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		[]string{"orders"},
 		[]string{"read", "write"},
+		nil,
 	)
 
 	assertOperation(t,
@@ -87,6 +106,7 @@ func TestRoutesParser(t *testing.T) {
 		"When the order doesn't exist this will return an error.",
 		[]string{"orders"},
 		[]string{"read", "write"},
+		nil,
 	)
 
 	assertOperation(t,
@@ -96,6 +116,7 @@ func TestRoutesParser(t *testing.T) {
 		"",
 		nil,
 		[]string{"read", "write"},
+		nil,
 	)
 
 	// additional check description tag at Responses
@@ -308,7 +329,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Empty(t, "", p.Type)
 }
 
-func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string) {
+func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string, extensions spec.Extensions) {
 	assert.NotNil(t, op)
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
@@ -337,6 +358,9 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	rsp, ok = op.Responses.StatusCodeResponses[422]
 	assert.True(t, ok)
 	assert.Equal(t, "#/responses/validationError", rsp.Ref.String())
+
+	ext := op.Extensions
+	assert.Equal(t, extensions, ext)
 }
 
 func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string) {
