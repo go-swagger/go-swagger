@@ -75,14 +75,14 @@ func registerOperationTodosUpdateOneParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	var bodyFlagName string
+	var BodyFlagName string
 	if cmdPrefix == "" {
-		bodyFlagName = "body"
+		BodyFlagName = "body"
 	} else {
-		bodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+		BodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
 	}
 
-	_ = cmd.PersistentFlags().String(bodyFlagName, "", "Optional json string for [body]. ")
+	_ = cmd.PersistentFlags().String(BodyFlagName, "", "Optional json string for [body]. ")
 
 	// add flags for body
 	if err := registerModelItemFlags(0, "item", cmd); err != nil {
@@ -93,18 +93,18 @@ func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.
 }
 func registerOperationTodosUpdateOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	idDescription := `Required. `
+	IDDescription := `Required. `
 
-	var idFlagName string
+	var IDFlagName string
 	if cmdPrefix == "" {
-		idFlagName = "id"
+		IDFlagName = "id"
 	} else {
-		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 	}
 
-	var idFlagDefault int64
+	var IDFlagDefault int64
 
-	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+	_ = cmd.PersistentFlags().Int64(IDFlagName, IDFlagDefault, IDDescription)
 
 	return nil
 }
@@ -151,18 +151,18 @@ func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix s
 	retAdded := false
 	if cmd.Flags().Changed("id") {
 
-		var idFlagName string
+		var IDFlagName string
 		if cmdPrefix == "" {
-			idFlagName = "id"
+			IDFlagName = "id"
 		} else {
-			idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+			IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 		}
 
-		idFlagValue, err := cmd.Flags().GetInt64(idFlagName)
+		IDFlagValue, err := cmd.Flags().GetInt64(IDFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.ID = idFlagValue
+		m.ID = IDFlagValue
 
 	}
 	return nil, retAdded

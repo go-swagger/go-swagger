@@ -74,35 +74,35 @@ func registerOperationTodosFindTodosParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosFindTodosLimitParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	limitDescription := ``
+	LimitDescription := ``
 
-	var limitFlagName string
+	var LimitFlagName string
 	if cmdPrefix == "" {
-		limitFlagName = "limit"
+		LimitFlagName = "limit"
 	} else {
-		limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+		LimitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
 	}
 
-	var limitFlagDefault int32 = 20
+	var LimitFlagDefault int32 = 20
 
-	_ = cmd.PersistentFlags().Int32(limitFlagName, limitFlagDefault, limitDescription)
+	_ = cmd.PersistentFlags().Int32(LimitFlagName, LimitFlagDefault, LimitDescription)
 
 	return nil
 }
 func registerOperationTodosFindTodosSinceParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	sinceDescription := ``
+	SinceDescription := ``
 
-	var sinceFlagName string
+	var SinceFlagName string
 	if cmdPrefix == "" {
-		sinceFlagName = "since"
+		SinceFlagName = "since"
 	} else {
-		sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+		SinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
 	}
 
-	var sinceFlagDefault int64
+	var SinceFlagDefault int64
 
-	_ = cmd.PersistentFlags().Int64(sinceFlagName, sinceFlagDefault, sinceDescription)
+	_ = cmd.PersistentFlags().Int64(SinceFlagName, SinceFlagDefault, SinceDescription)
 
 	return nil
 }
@@ -111,18 +111,18 @@ func retrieveOperationTodosFindTodosLimitFlag(m *todos.FindTodosParams, cmdPrefi
 	retAdded := false
 	if cmd.Flags().Changed("limit") {
 
-		var limitFlagName string
+		var LimitFlagName string
 		if cmdPrefix == "" {
-			limitFlagName = "limit"
+			LimitFlagName = "limit"
 		} else {
-			limitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
+			LimitFlagName = fmt.Sprintf("%v.limit", cmdPrefix)
 		}
 
-		limitFlagValue, err := cmd.Flags().GetInt32(limitFlagName)
+		LimitFlagValue, err := cmd.Flags().GetInt32(LimitFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Limit = &limitFlagValue
+		m.Limit = &LimitFlagValue
 
 	}
 	return nil, retAdded
@@ -131,18 +131,18 @@ func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefi
 	retAdded := false
 	if cmd.Flags().Changed("since") {
 
-		var sinceFlagName string
+		var SinceFlagName string
 		if cmdPrefix == "" {
-			sinceFlagName = "since"
+			SinceFlagName = "since"
 		} else {
-			sinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
+			SinceFlagName = fmt.Sprintf("%v.since", cmdPrefix)
 		}
 
-		sinceFlagValue, err := cmd.Flags().GetInt64(sinceFlagName)
+		SinceFlagValue, err := cmd.Flags().GetInt64(SinceFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Since = &sinceFlagValue
+		m.Since = &SinceFlagValue
 
 	}
 	return nil, retAdded

@@ -19,7 +19,7 @@
     // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
         {{- else if .IsComplexObject }} {{/* struct case */}}
     {{ template "flagnamevar" . }}
-    if err := registerModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{ camelize .Name }}FlagName, cmd); err != nil{
+    if err := registerModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{ pascalize .Name }}FlagName, cmd); err != nil{
         return err
     }
         {{- else }}
@@ -28,8 +28,8 @@
 {{ end }}
 
 {{ define "propertyretriever" }}
-    {{- $flagNameVar := printf "%vFlagName" (camelize .Name) }}
-    {{- $flagValueVar := printf "%vFlagValue" (camelize .Name) }}
+    {{- $flagNameVar := printf "%vFlagName" (pascalize .Name) }}
+    {{- $flagValueVar := printf "%vFlagValue" (pascalize .Name) }}
     {{ $flagNameVar }} := fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
     if cmd.Flags().Changed({{ $flagNameVar }}) {
         {{- if .IsPrimitive }}
@@ -51,12 +51,12 @@
         {{ $flagValueVar }} = {{if .IsNullable }}&{{end}}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
     }
     {{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use .Pkg+.GoType */}}
-    err, {{camelize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{if not .IsNullable }}&{{end}}{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+    err, {{pascalize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{if not .IsNullable }}&{{end}}{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
     if err != nil{
         return err, false
     }
-    retAdded = retAdded || {{camelize .Name }}Added
-    if {{camelize .Name }}Added {
+    retAdded = retAdded || {{pascalize .Name }}Added
+    if {{pascalize .Name }}Added {
         m.{{pascalize .Name}} = {{ $flagValueVar }}
     }
 	{{- end }}
@@ -133,11 +133,11 @@ func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if containsPkgS
         {{- if not .IsAnonymous }}{{/* named type composition */}}
             {{ if or  .IsPrimitive .IsComplexObject }}
     // retrieve model {{.GoType}}
-    err, {{camelize .Name }}Added := retrieveModel{{ pascalize (dropPackage .GoType) }}Flags(depth, &m.{{pascalize (dropPackage .GoType) }}, cmdPrefix, cmd)
+    err, {{pascalize .Name }}Added := retrieveModel{{ pascalize (dropPackage .GoType) }}Flags(depth, &m.{{pascalize (dropPackage .GoType) }}, cmdPrefix, cmd)
     if err != nil{
         return err, false
     }
-    retAdded = retAdded || {{camelize .Name }}Added
+    retAdded = retAdded || {{pascalize .Name }}Added
             {{ else }} {{/*inline anonymous case*/}}
 
             {{ end }}
@@ -145,20 +145,20 @@ func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if containsPkgS
     // retrieve allOf {{.Name}} fields
             {{ $anonName := .Name }}
             {{ range .Properties }}
-    err, {{camelize .Name}}Added := retrieve{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
+    err, {{pascalize .Name}}Added := retrieve{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
     if err != nil{
         return err, false
     }
-    retAdded = retAdded || {{ camelize .Name }}Added
+    retAdded = retAdded || {{ pascalize .Name }}Added
             {{ end }}
         {{- end }}
     {{ end }}
     {{ range .Properties }}
-        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}Prop{{pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
+        err, {{ pascalize .Name }}Added := retrieve{{pascalize $modelName }}Prop{{pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
         if err != nil{
             return err, false
         }
-        retAdded = retAdded || {{ camelize .Name }}Added
+        retAdded = retAdded || {{ pascalize .Name }}Added
     {{ end }}
     return nil, retAdded
 }

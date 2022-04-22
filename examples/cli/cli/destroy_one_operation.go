@@ -68,18 +68,18 @@ func registerOperationTodosDestroyOneParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	idDescription := `Required. `
+	IDDescription := `Required. `
 
-	var idFlagName string
+	var IDFlagName string
 	if cmdPrefix == "" {
-		idFlagName = "id"
+		IDFlagName = "id"
 	} else {
-		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 	}
 
-	var idFlagDefault int64
+	var IDFlagDefault int64
 
-	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+	_ = cmd.PersistentFlags().Int64(IDFlagName, IDFlagDefault, IDDescription)
 
 	return nil
 }
@@ -88,18 +88,18 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 	retAdded := false
 	if cmd.Flags().Changed("id") {
 
-		var idFlagName string
+		var IDFlagName string
 		if cmdPrefix == "" {
-			idFlagName = "id"
+			IDFlagName = "id"
 		} else {
-			idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+			IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 		}
 
-		idFlagValue, err := cmd.Flags().GetInt64(idFlagName)
+		IDFlagValue, err := cmd.Flags().GetInt64(IDFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.ID = idFlagValue
+		m.ID = IDFlagValue
 
 	}
 	return nil, retAdded

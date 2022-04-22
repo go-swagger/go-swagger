@@ -1,8 +1,8 @@
 {{/*util functions to retrieve flags*/}}
 
 {{ define "primitiveretriever" }}
-    {{- $flagValueVar := printf "%vFlagValue" (camelize .Name) }}
-    {{- $flagNameVar := printf "%vFlagName" (camelize .Name )}}
+    {{- $flagValueVar := printf "%vFlagValue" (pascalize .Name) }}
+    {{- $flagNameVar := printf "%vFlagName" (pascalize .Name )}}
     {{- if or (eq .GoType "int64") (eq .GoType "int32") (eq .GoType "string") (eq .GoType "float64") (eq .GoType "float32") (eq .GoType "bool") }}
         {{ template "flagnamevar" . }}
         {{ $flagValueVar }}, err := cmd.Flags().Get{{pascalize .GoType}}({{ $flagNameVar }})
@@ -29,8 +29,8 @@
 {{ end }}
 
 {{ define "arrayretriever" }}
-    {{- $flagValueVar := printf "%vFlagValues" (camelize .Name) }}
-    {{- $flagNameVar := printf "%vFlagName" (camelize .Name )}}
+    {{- $flagValueVar := printf "%vFlagValues" (pascalize .Name) }}
+    {{- $flagNameVar := printf "%vFlagName" (pascalize .Name )}}
     {{- if or (eq .GoType "[]int64") (eq .GoType "[]int32") (eq .GoType "[]string") (eq .GoType "[]float64") (eq .GoType "[]float32") (eq .GoType "[]bool") }}
         {{ template "flagnamevar" . }}
         {{ $flagValueVar }}, err := cmd.Flags().Get{{pascalize .GoType}}Slice({{ $flagNameVar }})

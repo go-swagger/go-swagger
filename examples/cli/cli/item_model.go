@@ -37,18 +37,18 @@ func registerItemCompleted(depth int, cmdPrefix string, cmd *cobra.Command) erro
 		return nil
 	}
 
-	completedDescription := ``
+	CompletedDescription := ``
 
-	var completedFlagName string
+	var CompletedFlagName string
 	if cmdPrefix == "" {
-		completedFlagName = "completed"
+		CompletedFlagName = "completed"
 	} else {
-		completedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
+		CompletedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
 	}
 
-	var completedFlagDefault bool
+	var CompletedFlagDefault bool
 
-	_ = cmd.PersistentFlags().Bool(completedFlagName, completedFlagDefault, completedDescription)
+	_ = cmd.PersistentFlags().Bool(CompletedFlagName, CompletedFlagDefault, CompletedDescription)
 
 	return nil
 }
@@ -58,18 +58,18 @@ func registerItemDescription(depth int, cmdPrefix string, cmd *cobra.Command) er
 		return nil
 	}
 
-	descriptionDescription := `Required. `
+	DescriptionDescription := `Required. `
 
-	var descriptionFlagName string
+	var DescriptionFlagName string
 	if cmdPrefix == "" {
-		descriptionFlagName = "description"
+		DescriptionFlagName = "description"
 	} else {
-		descriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
+		DescriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
 	}
 
-	var descriptionFlagDefault string
+	var DescriptionFlagDefault string
 
-	_ = cmd.PersistentFlags().String(descriptionFlagName, descriptionFlagDefault, descriptionDescription)
+	_ = cmd.PersistentFlags().String(DescriptionFlagName, DescriptionFlagDefault, DescriptionDescription)
 
 	return nil
 }
@@ -79,18 +79,18 @@ func registerItemID(depth int, cmdPrefix string, cmd *cobra.Command) error {
 		return nil
 	}
 
-	idDescription := ``
+	IDDescription := ``
 
-	var idFlagName string
+	var IDFlagName string
 	if cmdPrefix == "" {
-		idFlagName = "id"
+		IDFlagName = "id"
 	} else {
-		idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 	}
 
-	var idFlagDefault int64
+	var IDFlagDefault int64
 
-	_ = cmd.PersistentFlags().Int64(idFlagName, idFlagDefault, idDescription)
+	_ = cmd.PersistentFlags().Int64(IDFlagName, IDFlagDefault, IDDescription)
 
 	return nil
 }
@@ -99,23 +99,23 @@ func registerItemID(depth int, cmdPrefix string, cmd *cobra.Command) error {
 func retrieveModelItemFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	err, completedAdded := retrieveItemCompletedFlags(depth, m, cmdPrefix, cmd)
+	err, CompletedAdded := retrieveItemCompletedFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
-	retAdded = retAdded || completedAdded
+	retAdded = retAdded || CompletedAdded
 
-	err, descriptionAdded := retrieveItemDescriptionFlags(depth, m, cmdPrefix, cmd)
+	err, DescriptionAdded := retrieveItemDescriptionFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
-	retAdded = retAdded || descriptionAdded
+	retAdded = retAdded || DescriptionAdded
 
-	err, idAdded := retrieveItemIDFlags(depth, m, cmdPrefix, cmd)
+	err, IDAdded := retrieveItemIDFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
-	retAdded = retAdded || idAdded
+	retAdded = retAdded || IDAdded
 
 	return nil, retAdded
 }
@@ -126,21 +126,21 @@ func retrieveItemCompletedFlags(depth int, m *models.Item, cmdPrefix string, cmd
 	}
 	retAdded := false
 
-	completedFlagName := fmt.Sprintf("%v.completed", cmdPrefix)
-	if cmd.Flags().Changed(completedFlagName) {
+	CompletedFlagName := fmt.Sprintf("%v.completed", cmdPrefix)
+	if cmd.Flags().Changed(CompletedFlagName) {
 
-		var completedFlagName string
+		var CompletedFlagName string
 		if cmdPrefix == "" {
-			completedFlagName = "completed"
+			CompletedFlagName = "completed"
 		} else {
-			completedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
+			CompletedFlagName = fmt.Sprintf("%v.completed", cmdPrefix)
 		}
 
-		completedFlagValue, err := cmd.Flags().GetBool(completedFlagName)
+		CompletedFlagValue, err := cmd.Flags().GetBool(CompletedFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Completed = completedFlagValue
+		m.Completed = CompletedFlagValue
 
 		retAdded = true
 	}
@@ -154,21 +154,21 @@ func retrieveItemDescriptionFlags(depth int, m *models.Item, cmdPrefix string, c
 	}
 	retAdded := false
 
-	descriptionFlagName := fmt.Sprintf("%v.description", cmdPrefix)
-	if cmd.Flags().Changed(descriptionFlagName) {
+	DescriptionFlagName := fmt.Sprintf("%v.description", cmdPrefix)
+	if cmd.Flags().Changed(DescriptionFlagName) {
 
-		var descriptionFlagName string
+		var DescriptionFlagName string
 		if cmdPrefix == "" {
-			descriptionFlagName = "description"
+			DescriptionFlagName = "description"
 		} else {
-			descriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
+			DescriptionFlagName = fmt.Sprintf("%v.description", cmdPrefix)
 		}
 
-		descriptionFlagValue, err := cmd.Flags().GetString(descriptionFlagName)
+		DescriptionFlagValue, err := cmd.Flags().GetString(DescriptionFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Description = &descriptionFlagValue
+		m.Description = &DescriptionFlagValue
 
 		retAdded = true
 	}
@@ -182,21 +182,21 @@ func retrieveItemIDFlags(depth int, m *models.Item, cmdPrefix string, cmd *cobra
 	}
 	retAdded := false
 
-	idFlagName := fmt.Sprintf("%v.id", cmdPrefix)
-	if cmd.Flags().Changed(idFlagName) {
+	IDFlagName := fmt.Sprintf("%v.id", cmdPrefix)
+	if cmd.Flags().Changed(IDFlagName) {
 
-		var idFlagName string
+		var IDFlagName string
 		if cmdPrefix == "" {
-			idFlagName = "id"
+			IDFlagName = "id"
 		} else {
-			idFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+			IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
 		}
 
-		idFlagValue, err := cmd.Flags().GetInt64(idFlagName)
+		IDFlagValue, err := cmd.Flags().GetInt64(IDFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.ID = idFlagValue
+		m.ID = IDFlagValue
 
 		retAdded = true
 	}

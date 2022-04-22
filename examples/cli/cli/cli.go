@@ -85,6 +85,8 @@ func MakeRootCmd() (*cobra.Command, error) {
 	viper.BindPFlag("hostname", rootCmd.PersistentFlags().Lookup("hostname"))
 	rootCmd.PersistentFlags().String("scheme", client.DefaultSchemes[0], fmt.Sprintf("Choose from: %v", client.DefaultSchemes))
 	viper.BindPFlag("scheme", rootCmd.PersistentFlags().Lookup("scheme"))
+	rootCmd.PersistentFlags().String("base-path", client.DefaultBasePath, fmt.Sprintf("For example: %v", client.DefaultBasePath))
+	viper.BindPFlag("base_path", rootCmd.PersistentFlags().Lookup("base-path"))
 
 	// configure debug flag
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "output debug logs")
