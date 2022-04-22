@@ -55,9 +55,39 @@ type FindTodosOK struct {
 	Payload []*models.Item
 }
 
+// IsSuccess returns true when this find todos o k response has a 2xx status code
+func (o *FindTodosOK) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this find todos o k response has a 3xx status code
+func (o *FindTodosOK) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this find todos o k response has a 4xx status code
+func (o *FindTodosOK) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this find todos o k response has a 5xx status code
+func (o *FindTodosOK) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this find todos o k response a status code equal to that given
+func (o *FindTodosOK) IsCode(code int) bool {
+	return code == 200
+}
+
 func (o *FindTodosOK) Error() string {
 	return fmt.Sprintf("[GET /][%d] findTodosOK  %+v", 200, o.Payload)
 }
+
+func (o *FindTodosOK) String() string {
+	return fmt.Sprintf("[GET /][%d] findTodosOK  %+v", 200, o.Payload)
+}
+
 func (o *FindTodosOK) GetPayload() []*models.Item {
 	return o.Payload
 }
@@ -95,9 +125,39 @@ func (o *FindTodosDefault) Code() int {
 	return o._statusCode
 }
 
+// IsSuccess returns true when this find todos default response has a 2xx status code
+func (o *FindTodosDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this find todos default response has a 3xx status code
+func (o *FindTodosDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this find todos default response has a 4xx status code
+func (o *FindTodosDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this find todos default response has a 5xx status code
+func (o *FindTodosDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this find todos default response a status code equal to that given
+func (o *FindTodosDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 func (o *FindTodosDefault) Error() string {
 	return fmt.Sprintf("[GET /][%d] findTodos default  %+v", o._statusCode, o.Payload)
 }
+
+func (o *FindTodosDefault) String() string {
+	return fmt.Sprintf("[GET /][%d] findTodos default  %+v", o._statusCode, o.Payload)
+}
+
 func (o *FindTodosDefault) GetPayload() *models.Error {
 	return o.Payload
 }

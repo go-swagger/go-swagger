@@ -33,18 +33,18 @@ func registerErrorCode(depth int, cmdPrefix string, cmd *cobra.Command) error {
 		return nil
 	}
 
-	codeDescription := ``
+	CodeDescription := ``
 
-	var codeFlagName string
+	var CodeFlagName string
 	if cmdPrefix == "" {
-		codeFlagName = "code"
+		CodeFlagName = "code"
 	} else {
-		codeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
+		CodeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
 	}
 
-	var codeFlagDefault int64
+	var CodeFlagDefault int64
 
-	_ = cmd.PersistentFlags().Int64(codeFlagName, codeFlagDefault, codeDescription)
+	_ = cmd.PersistentFlags().Int64(CodeFlagName, CodeFlagDefault, CodeDescription)
 
 	return nil
 }
@@ -54,18 +54,18 @@ func registerErrorMessage(depth int, cmdPrefix string, cmd *cobra.Command) error
 		return nil
 	}
 
-	messageDescription := `Required. `
+	MessageDescription := `Required. `
 
-	var messageFlagName string
+	var MessageFlagName string
 	if cmdPrefix == "" {
-		messageFlagName = "message"
+		MessageFlagName = "message"
 	} else {
-		messageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
+		MessageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
 	}
 
-	var messageFlagDefault string
+	var MessageFlagDefault string
 
-	_ = cmd.PersistentFlags().String(messageFlagName, messageFlagDefault, messageDescription)
+	_ = cmd.PersistentFlags().String(MessageFlagName, MessageFlagDefault, MessageDescription)
 
 	return nil
 }
@@ -74,17 +74,17 @@ func registerErrorMessage(depth int, cmdPrefix string, cmd *cobra.Command) error
 func retrieveModelErrorFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	err, codeAdded := retrieveErrorCodeFlags(depth, m, cmdPrefix, cmd)
+	err, CodeAdded := retrieveErrorCodeFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
-	retAdded = retAdded || codeAdded
+	retAdded = retAdded || CodeAdded
 
-	err, messageAdded := retrieveErrorMessageFlags(depth, m, cmdPrefix, cmd)
+	err, MessageAdded := retrieveErrorMessageFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
-	retAdded = retAdded || messageAdded
+	retAdded = retAdded || MessageAdded
 
 	return nil, retAdded
 }
@@ -95,21 +95,21 @@ func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *c
 	}
 	retAdded := false
 
-	codeFlagName := fmt.Sprintf("%v.code", cmdPrefix)
-	if cmd.Flags().Changed(codeFlagName) {
+	CodeFlagName := fmt.Sprintf("%v.code", cmdPrefix)
+	if cmd.Flags().Changed(CodeFlagName) {
 
-		var codeFlagName string
+		var CodeFlagName string
 		if cmdPrefix == "" {
-			codeFlagName = "code"
+			CodeFlagName = "code"
 		} else {
-			codeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
+			CodeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
 		}
 
-		codeFlagValue, err := cmd.Flags().GetInt64(codeFlagName)
+		CodeFlagValue, err := cmd.Flags().GetInt64(CodeFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Code = codeFlagValue
+		m.Code = CodeFlagValue
 
 		retAdded = true
 	}
@@ -123,21 +123,21 @@ func retrieveErrorMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd
 	}
 	retAdded := false
 
-	messageFlagName := fmt.Sprintf("%v.message", cmdPrefix)
-	if cmd.Flags().Changed(messageFlagName) {
+	MessageFlagName := fmt.Sprintf("%v.message", cmdPrefix)
+	if cmd.Flags().Changed(MessageFlagName) {
 
-		var messageFlagName string
+		var MessageFlagName string
 		if cmdPrefix == "" {
-			messageFlagName = "message"
+			MessageFlagName = "message"
 		} else {
-			messageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
+			MessageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
 		}
 
-		messageFlagValue, err := cmd.Flags().GetString(messageFlagName)
+		MessageFlagValue, err := cmd.Flags().GetString(MessageFlagName)
 		if err != nil {
 			return err, false
 		}
-		m.Message = &messageFlagValue
+		m.Message = &MessageFlagValue
 
 		retAdded = true
 	}
