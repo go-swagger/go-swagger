@@ -669,7 +669,7 @@ func TestInterfaceField(t *testing.T) {
 	require.NoError(t, prs.Build(models))
 
 	schema := models["Interfaced"]
-	assertProperty(t, &schema, "object", "custom_data", "", "CustomData")
+	assertProperty(t, &schema, "", "custom_data", "", "CustomData")
 }
 
 func TestAliasedTypes(t *testing.T) {
@@ -1047,7 +1047,9 @@ func assertMapDefinition(t testing.TB, defs map[string]spec.Schema, defName, typ
 			assert.Equal(t, "object", schema.Type[0])
 			adl := schema.AdditionalProperties
 			if assert.NotNil(t, adl) && assert.NotNil(t, adl.Schema) {
-				assert.Equal(t, typeName, adl.Schema.Type[0])
+				if len(adl.Schema.Type) > 0 {
+					assert.Equal(t, typeName, adl.Schema.Type[0])
+				}
 				assert.Equal(t, formatName, adl.Schema.Format)
 			}
 			if goName != "" {
