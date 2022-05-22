@@ -356,6 +356,11 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			cmt = new(ast.CommentGroup)
 		}
 
+		if typeName, ok := typeName(cmt); ok {
+			_ = swaggerSchemaForType(typeName, tgt)
+			return nil
+		}
+
 		switch utitpe := tpe.Underlying().(type) {
 		case *types.Struct:
 
