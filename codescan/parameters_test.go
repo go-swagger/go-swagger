@@ -393,6 +393,4 @@ func TestParameterParser_Issue2011(t *testing.T) {
 	require.Len(t, op.Parameters, 1)
 	sch := op.Parameters[0].Schema
 	require.NotNil(t, sch)
-
-	require.True(t, sch.Type.Contains("object"))
 }

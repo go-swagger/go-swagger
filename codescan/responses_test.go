@@ -259,8 +259,6 @@ func TestParseResponses_Issue2011(t *testing.T) {
 	resp := responses["NumPlatesResp"]
 	require.Len(t, resp.Headers, 0)
 	require.NotNil(t, resp.Schema)
-
-	require.True(t, resp.Schema.Type.Contains("object"))
 }
 
 func TestParseResponses_Issue2145(t *testing.T) {
