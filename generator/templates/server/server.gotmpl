@@ -336,7 +336,7 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving {{ humanize .Name }} at unix://%s", s.SocketPath)
 		go func(l net.Listener){
 		  defer wg.Done()
-		  if err := domainSocket.Serve(l); err != nil && err != http.ErrServerClosed {
+		  if err = domainSocket.Serve(l); err != nil && err != http.ErrServerClosed {
 			s.Fatalf("%v", err)
 		  }
 		  s.Logf("Stopped serving {{ humanize .Name }} at unix://%s", s.SocketPath)
@@ -366,7 +366,7 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving {{ humanize .Name }} at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := httpServer.Serve(l); err != nil && err != http.ErrServerClosed {
+			if err = httpServer.Serve(l); err != nil && err != http.ErrServerClosed {
 				s.Fatalf("%v", err)
 			}
 			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
