@@ -366,8 +366,8 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving {{ humanize .Name }} at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err = httpServer.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if httpErr = httpServer.Serve(l); httpErr != nil && httpErr != http.ErrServerClosed {
+				s.Fatalf("%v", httpErr)
 			}
 			s.Logf("Stopped serving {{ humanize .Name }} at http://%s", l.Addr())
 		}(s.httpServerL)
