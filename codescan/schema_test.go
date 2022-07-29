@@ -29,11 +29,51 @@ func TestSchemaBuilder_Struct_Tag(t *testing.T) {
 	require.NoError(t, prs.Build(result))
 }
 
+func TestSchemaBuilder_Struct_Tag_WithCustomTag(t *testing.T) {
+	sctx := loadPetstoreCustomTagPkgsCtx(t)
+	var td *entityDecl
+	for k := range sctx.app.Models {
+		if k.Name != "Tag" {
+			continue
+		}
+		td = sctx.app.Models[k]
+		break
+	}
+	require.NotNil(t, td)
+
+	prs := &schemaBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	result := make(map[string]spec.Schema)
+	require.NoError(t, prs.Build(result))
+}
+
 func TestSchemaBuilder_Struct_Pet(t *testing.T) {
 	// Debug = true
 	// defer func() { Debug = false }()
 
 	sctx := loadPetstorePkgsCtx(t)
+	var td *entityDecl
+	for k := range sctx.app.Models {
+		if k.Name != "Pet" {
+			continue
+		}
+		td = sctx.app.Models[k]
+		break
+	}
+	require.NotNil(t, td)
+
+	prs := &schemaBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	result := make(map[string]spec.Schema)
+	require.NoError(t, prs.Build(result))
+}
+
+func TestSchemaBuilder_Struct_Pet_WithCustomTag(t *testing.T) {
+	sctx := loadPetstoreCustomTagPkgsCtx(t)
 	var td *entityDecl
 	for k := range sctx.app.Models {
 		if k.Name != "Pet" {

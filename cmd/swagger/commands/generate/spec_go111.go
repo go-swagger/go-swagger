@@ -30,6 +30,7 @@ type SpecFile struct {
 	IncludeTags []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
 	ExcludeTags []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
 	ExcludeDeps bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
+	StructTag   string         `long:"struct-tag" short:"" description:"specify which struct tag will be used" default:"json"`
 }
 
 // Execute runs this command
@@ -54,6 +55,8 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.IncludeTags = s.IncludeTags
 	opts.ExcludeTags = s.ExcludeTags
 	opts.ExcludeDeps = s.ExcludeDeps
+	opts.StructTag = s.StructTag
+
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err

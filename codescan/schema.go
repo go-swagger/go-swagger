@@ -731,7 +731,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			continue
 		}
 
-		_, ignore, _, err := parseJSONTag(afld)
+		_, ignore, _, err := parseCustomTag(afld, s.ctx.structTag)
 		if err != nil {
 			return err
 		}
@@ -831,7 +831,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			continue
 		}
 
-		name, ignore, isString, err := parseJSONTag(afld)
+		name, ignore, isString, err := parseCustomTag(afld, s.ctx.structTag)
 		if err != nil {
 			return err
 		}
@@ -1127,7 +1127,13 @@ func (t tagOptions) Name() string {
 	return t[0]
 }
 
-func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, err error) {
+const jsonTag = "json"
+
+func parseCustomTag(field *ast.Field, tag string) (name string, ignore bool, isString bool, err error) {
+	if tag == "" {
+		tag = jsonTag // use json as default
+	}
+
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
 	}
@@ -1142,21 +1148,21 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 
 	if strings.TrimSpace(tv) != "" {
 		st := reflect.StructTag(tv)
-		jsonParts := tagOptions(strings.Split(st.Get("json"), ","))
+		tagParts := tagOptions(strings.Split(st.Get(tag), ","))
 
-		if jsonParts.Contain("string") {
+		if tagParts.Contain("string") {
 			// Need to check if the field type is a scalar. Otherwise, the
 			// ",string" directive doesn't apply.
 			isString = isFieldStringable(field.Type)
 		}
 
-		switch jsonParts.Name() {
+		switch tagParts.Name() {
 		case "-":
 			return name, true, isString, nil
 		case "":
 			return name, false, isString, nil
 		default:
-			return jsonParts.Name(), false, isString, nil
+			return tagParts.Name(), false, isString, nil
 		}
 	}
 	return name, false, false, nil
