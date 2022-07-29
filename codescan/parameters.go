@@ -332,7 +332,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 			continue
 		}
 
-		name, ignore, _, err := parseJSONTag(afld)
+		name, ignore, _, err := parseCustomTag(afld, p.ctx.structTag)
 		if err != nil {
 			return err
 		}
