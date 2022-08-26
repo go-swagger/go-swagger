@@ -171,14 +171,15 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 }
 
 // x-go-type:
-//   type: mytype
-//   import:
-//     package:
-//     alias:
-//   hints:
-//     kind: map|object|array|interface|primitive|stream|tuple
-//     nullable: true|false
-//  embedded: true
+//
+//	 type: mytype
+//	 import:
+//	   package:
+//	   alias:
+//	 hints:
+//	   kind: map|object|array|interface|primitive|stream|tuple
+//	   nullable: true|false
+//	embedded: true
 type externalTypeDefinition struct {
 	Type   string
 	Import struct {

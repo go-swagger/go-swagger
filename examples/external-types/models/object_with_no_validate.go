@@ -19,7 +19,6 @@ import (
 //
 // If the "noValidation" hint is omitted in the definition above, this code won't build because `http.Request` has no `Validate` method.
 //
-//
 // swagger:model ObjectWithNoValidate
 type ObjectWithNoValidate struct {
 

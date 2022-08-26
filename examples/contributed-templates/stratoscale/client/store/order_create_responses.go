@@ -45,7 +45,8 @@ func NewOrderCreateOK() *OrderCreateOK {
 	return &OrderCreateOK{}
 }
 
-/* OrderCreateOK describes a response with status code 200, with default header values.
+/*
+	OrderCreateOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -107,7 +108,8 @@ func NewOrderCreateBadRequest() *OrderCreateBadRequest {
 	return &OrderCreateBadRequest{}
 }
 
-/* OrderCreateBadRequest describes a response with status code 400, with default header values.
+/*
+	OrderCreateBadRequest describes a response with status code 400, with default header values.
 
 Invalid Order
 */

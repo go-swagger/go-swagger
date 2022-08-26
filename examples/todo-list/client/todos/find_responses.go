@@ -46,7 +46,8 @@ func NewFindOK() *FindOK {
 	return &FindOK{}
 }
 
-/* FindOK describes a response with status code 200, with default header values.
+/*
+	FindOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -108,7 +109,8 @@ func NewFindDefault(code int) *FindDefault {
 	}
 }
 
-/* FindDefault describes a response with status code -1, with default header values.
+/*
+	FindDefault describes a response with status code -1, with default header values.
 
 error
 */

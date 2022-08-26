@@ -46,7 +46,8 @@ func NewAddOneCreated() *AddOneCreated {
 	return &AddOneCreated{}
 }
 
-/*AddOneCreated handles this case with default header values.
+/*
+AddOneCreated handles this case with default header values.
 
 Created
 */
@@ -81,7 +82,8 @@ func NewAddOneDefault(code int) *AddOneDefault {
 	}
 }
 
-/*AddOneDefault handles this case with default header values.
+/*
+AddOneDefault handles this case with default header values.
 
 error
 */

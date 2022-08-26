@@ -37,9 +37,9 @@ type ClientService interface {
 }
 
 /*
-  Elapse counts down the number of seconds
+Elapse counts down the number of seconds
 
-  Count down the seconds remaining
+Count down the seconds remaining
 */
 func (a *Client) Elapse(params *ElapseParams, writer io.Writer, opts ...ClientOption) (*ElapseOK, error) {
 	// TODO: Validate the params before sending

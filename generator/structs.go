@@ -143,12 +143,13 @@ func (g GenSchema) PrintTags() string {
 			continue
 		}
 
-		if tag == "example" && len(g.Example) > 0 {
+		switch {
+		case tag == "example" && len(g.Example) > 0:
 			// only add example tag if it's contained in the struct tags
 			tags["example"] = g.Example // json representation of the example object
-		} else if tag == "description" && len(g.Description) > 0 {
+		case tag == "description" && len(g.Description) > 0:
 			tags["description"] = g.Description
-		} else {
+		default:
 			tags[tag] = tags["json"]
 		}
 

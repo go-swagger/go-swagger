@@ -46,7 +46,8 @@ func NewUpdateOneOK() *UpdateOneOK {
 	return &UpdateOneOK{}
 }
 
-/*UpdateOneOK handles this case with default header values.
+/*
+UpdateOneOK handles this case with default header values.
 
 OK
 */
@@ -81,7 +82,8 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 	}
 }
 
-/*UpdateOneDefault handles this case with default header values.
+/*
+UpdateOneDefault handles this case with default header values.
 
 error
 */

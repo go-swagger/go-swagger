@@ -45,7 +45,8 @@ func NewPetListOK() *PetListOK {
 	return &PetListOK{}
 }
 
-/* PetListOK describes a response with status code 200, with default header values.
+/*
+	PetListOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -105,7 +106,8 @@ func NewPetListBadRequest() *PetListBadRequest {
 	return &PetListBadRequest{}
 }
 
-/* PetListBadRequest describes a response with status code 400, with default header values.
+/*
+	PetListBadRequest describes a response with status code 400, with default header values.
 
 Invalid status value
 */

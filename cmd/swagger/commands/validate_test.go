@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,7 +12,7 @@ import (
 
 // Commands requires at least one arg
 func TestCmd_Validate_MissingArgs(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 	v := ValidateSpec{}
 	result := v.Execute([]string{})
@@ -24,7 +24,7 @@ func TestCmd_Validate_MissingArgs(t *testing.T) {
 
 // Test proper validation: items in object error
 func TestCmd_Validate_Issue1238(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 	v := ValidateSpec{}
 	base := filepath.FromSlash("../../../")
@@ -42,7 +42,7 @@ func TestCmd_Validate_Issue1238(t *testing.T) {
 
 // Test proper validation: missing items in array error
 func TestCmd_Validate_Issue1171(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 	v := ValidateSpec{}
 	base := filepath.FromSlash("../../../")
@@ -53,7 +53,7 @@ func TestCmd_Validate_Issue1171(t *testing.T) {
 
 // Test proper validation: reference to inner property in schema
 func TestCmd_Validate_Issue342_ForbiddenProperty(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 	v := ValidateSpec{}
 	base := filepath.FromSlash("../../../")
@@ -89,9 +89,9 @@ func TestCmd_Validate_Issue342_CannotUnmarshal(t *testing.T) {
 
 // This one is a correct version of issue#342 and it validates
 func TestCmd_Validate_Issue342_Correct(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()

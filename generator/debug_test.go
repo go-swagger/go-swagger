@@ -15,7 +15,6 @@
 package generator
 
 import (
-	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
@@ -29,7 +28,7 @@ var (
 
 func TestDebug(t *testing.T) {
 	// test debugLog()
-	tmpFile, _ := ioutil.TempFile("", "debug-test")
+	tmpFile, _ := os.CreateTemp("", "debug-test")
 	tmpName := tmpFile.Name()
 	logMutex.Lock()
 	defer func() {
@@ -57,7 +56,7 @@ func TestDebug(t *testing.T) {
 	_ = flushed.Close()
 
 	// test debugLogAsJSON()
-	tmpJSONFile, _ := ioutil.TempFile("", "debug-test")
+	tmpJSONFile, _ := os.CreateTemp("", "debug-test")
 	tmpJSONName := tmpJSONFile.Name()
 	defer func() {
 		_ = os.Remove(tmpJSONName)

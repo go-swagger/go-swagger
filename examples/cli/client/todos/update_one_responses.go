@@ -46,7 +46,8 @@ func NewUpdateOneOK() *UpdateOneOK {
 	return &UpdateOneOK{}
 }
 
-/* UpdateOneOK describes a response with status code 200, with default header values.
+/*
+	UpdateOneOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -80,7 +81,8 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 	}
 }
 
-/* UpdateOneDefault describes a response with status code -1, with default header values.
+/*
+	UpdateOneDefault describes a response with status code -1, with default header values.
 
 error
 */

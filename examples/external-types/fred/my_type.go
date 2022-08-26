@@ -2,7 +2,7 @@ package fred
 
 import (
 	"context"
-  "io"
+	"io"
 
 	"github.com/go-openapi/strfmt"
 )

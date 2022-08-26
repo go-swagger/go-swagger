@@ -23,7 +23,6 @@ import (
 // Notice that "additionalItems" is not a construct that pass swagger validation,
 // but is supported by go-swagger.
 //
-//
 // swagger:model MyTuple
 type MyTuple struct {
 

@@ -16,7 +16,8 @@ import (
 // UpdateOneOKCode is the HTTP code returned for type UpdateOneOK
 const UpdateOneOKCode int = 200
 
-/*UpdateOneOK OK
+/*
+UpdateOneOK OK
 
 swagger:response updateOneOK
 */
@@ -57,7 +58,8 @@ func (o *UpdateOneOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
-/*UpdateOneDefault error
+/*
+UpdateOneDefault error
 
 swagger:response updateOneDefault
 */

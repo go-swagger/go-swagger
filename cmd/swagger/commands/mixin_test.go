@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,7 +15,7 @@ var fixtureBase = filepath.FromSlash("../../../fixtures")
 
 // Commands requires at least one arg
 func TestCmd_Mixin(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	v := MixinSpec{}
@@ -34,12 +34,12 @@ func TestCmd_Mixin(t *testing.T) {
 }
 
 func TestCmd_Mixin_NoError(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	specDoc1 := filepath.Join(fixtureBase, "bugs", "1536", "fixture-1536.yaml")
 	specDoc2 := filepath.Join(fixtureBase, "bugs", "1536", "fixture-1536-2.yaml")
-	outDir, err := ioutil.TempDir(filepath.Dir(specDoc1), "mixed")
+	outDir, err := os.MkdirTemp(filepath.Dir(specDoc1), "mixed")
 	assert.NoError(t, err)
 	defer os.RemoveAll(outDir)
 	v := MixinSpec{
@@ -65,12 +65,12 @@ func TestCmd_Mixin_BothConflictsAndIgnoreConflictsSpecified(t *testing.T) {
 }
 
 func TestCmd_Mixin_IgnoreConflicts(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	specDoc1 := filepath.Join(fixtureBase, "bugs", "1536", "fixture-1536.yaml")
 	specDoc2 := filepath.Join(fixtureBase, "bugs", "1536", "fixture-1536-2.yaml")
-	outDir, err := ioutil.TempDir(filepath.Dir(specDoc1), "mixed")
+	outDir, err := os.MkdirTemp(filepath.Dir(specDoc1), "mixed")
 	assert.NoError(t, err)
 	defer os.RemoveAll(outDir)
 	v := MixinSpec{

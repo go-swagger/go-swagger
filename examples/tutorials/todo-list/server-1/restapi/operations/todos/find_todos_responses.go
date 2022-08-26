@@ -16,7 +16,8 @@ import (
 // FindTodosOKCode is the HTTP code returned for type FindTodosOK
 const FindTodosOKCode int = 200
 
-/*FindTodosOK list the todo operations
+/*
+FindTodosOK list the todo operations
 
 swagger:response findTodosOK
 */
@@ -60,7 +61,8 @@ func (o *FindTodosOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
-/*FindTodosDefault generic error response
+/*
+FindTodosDefault generic error response
 
 swagger:response findTodosDefault
 */

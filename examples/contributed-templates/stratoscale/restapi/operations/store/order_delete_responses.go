@@ -14,7 +14,8 @@ import (
 // OrderDeleteNoContentCode is the HTTP code returned for type OrderDeleteNoContent
 const OrderDeleteNoContentCode int = 204
 
-/*OrderDeleteNoContent Deleted successfully
+/*
+OrderDeleteNoContent Deleted successfully
 
 swagger:response orderDeleteNoContent
 */
@@ -38,7 +39,8 @@ func (o *OrderDeleteNoContent) WriteResponse(rw http.ResponseWriter, producer ru
 // OrderDeleteBadRequestCode is the HTTP code returned for type OrderDeleteBadRequest
 const OrderDeleteBadRequestCode int = 400
 
-/*OrderDeleteBadRequest Invalid ID supplied
+/*
+OrderDeleteBadRequest Invalid ID supplied
 
 swagger:response orderDeleteBadRequest
 */
@@ -62,7 +64,8 @@ func (o *OrderDeleteBadRequest) WriteResponse(rw http.ResponseWriter, producer r
 // OrderDeleteNotFoundCode is the HTTP code returned for type OrderDeleteNotFound
 const OrderDeleteNotFoundCode int = 404
 
-/*OrderDeleteNotFound Order not found
+/*
+OrderDeleteNotFound Order not found
 
 swagger:response orderDeleteNotFound
 */

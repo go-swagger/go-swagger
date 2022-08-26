@@ -36,7 +36,7 @@ type ClientService interface {
 }
 
 /*
-  Create creates a new customer to track
+Create creates a new customer to track
 */
 func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCreated, error) {
 	// TODO: Validate the params before sending
@@ -74,7 +74,7 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  GetID gets a customer Id given an s s n
+GetID gets a customer Id given an s s n
 */
 func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetIDOK, error) {
 	// TODO: Validate the params before sending

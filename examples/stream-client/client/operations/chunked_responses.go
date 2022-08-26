@@ -41,7 +41,8 @@ func NewChunkedOK(writer io.Writer) *ChunkedOK {
 	}
 }
 
-/* ChunkedOK describes a response with status code 200, with default header values.
+/*
+	ChunkedOK describes a response with status code 200, with default header values.
 
 chunked data delivered
 */

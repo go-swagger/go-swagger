@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -107,7 +106,7 @@ func (c *DiffCommand) readIgnores() (diff.SpecDifferences, error) {
 	defer func() {
 		_ = jsonFile.Close()
 	}()
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", ignoreFile, err)
 	}

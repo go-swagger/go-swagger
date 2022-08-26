@@ -1,3 +1,5 @@
+//go:build go1.19
+
 // Copyright 2015 go-swagger maintainers
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +18,7 @@ package models
 
 import "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/transitive/mods"
 
-// StoreOrder represents an order in this application.
+// # StoreOrder represents an order in this application.
 //
 // An order can either be created, processed or completed.
 //

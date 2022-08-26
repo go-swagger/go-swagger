@@ -31,13 +31,12 @@ func NewGetOrder(ctx *middleware.Context, handler GetOrderHandler) *GetOrder {
 	return &GetOrder{Context: ctx, Handler: handler}
 }
 
-/* GetOrder swagger:route GET /order/{orderID} getOrder
+/*
+	GetOrder swagger:route GET /order/{orderID} getOrder
 
 retrieves an order
 
 Only registered customers should be able to retrieve orders
-
-
 */
 type GetOrder struct {
 	Context *middleware.Context

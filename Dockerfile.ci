@@ -15,7 +15,7 @@ RUN set -e -x \
   && go install golang.org/x/tools/cmd/...@latest \
   && go install github.com/axw/gocov/gocov@latest \
   && go install github.com/matm/gocov-html@latest \
-  && go get -t github.com/cee-dub/go-junit-report@latest \
+  && go install github.com/cee-dub/go-junit-report@latest \
   && go install github.com/aktau/github-release@latest \
   && go install github.com/mitchellh/gox@latest \
   && go install gotest.tools/gotestsum@latest \

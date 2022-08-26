@@ -51,7 +51,8 @@ func NewOrderGetOK() *OrderGetOK {
 	return &OrderGetOK{}
 }
 
-/* OrderGetOK describes a response with status code 200, with default header values.
+/*
+	OrderGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -113,7 +114,8 @@ func NewOrderGetBadRequest() *OrderGetBadRequest {
 	return &OrderGetBadRequest{}
 }
 
-/* OrderGetBadRequest describes a response with status code 400, with default header values.
+/*
+	OrderGetBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -163,7 +165,8 @@ func NewOrderGetNotFound() *OrderGetNotFound {
 	return &OrderGetNotFound{}
 }
 
-/* OrderGetNotFound describes a response with status code 404, with default header values.
+/*
+	OrderGetNotFound describes a response with status code 404, with default header values.
 
 Order not found
 */

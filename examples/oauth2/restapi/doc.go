@@ -2,17 +2,17 @@
 
 // Package restapi oauth2 debug
 //
-//  Schemes:
-//    http
-//  Host: localhost
-//  BasePath: /api
-//  Version: 0.3.0
+//	Schemes:
+//	  http
+//	Host: localhost
+//	BasePath: /api
+//	Version: 0.3.0
 //
-//  Consumes:
-//    - application/json
+//	Consumes:
+//	  - application/json
 //
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // swagger:meta
 package restapi

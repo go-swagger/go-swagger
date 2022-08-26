@@ -504,9 +504,10 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	var flist []*ast.Field
 	if specType, ok := decl.Spec.Type.(*ast.InterfaceType); ok {
 		flist = make([]*ast.Field, it.NumEmbeddeds()+it.NumExplicitMethods())
-		for i := range specType.Methods.List {
-			flist[i] = specType.Methods.List[i]
-		}
+		copy(flist, specType.Methods.List)
+		// for i := range specType.Methods.List {
+		// 	flist[i] = specType.Methods.List[i]
+		// }
 	}
 
 	// First collect the embedded interfaces

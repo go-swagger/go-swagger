@@ -28,7 +28,7 @@ var exampleFlags = struct {
 
 func configureFlags(api *operations.TodoListAPI) {
 	api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{
-		swag.CommandLineOptionsGroup{
+		{
 			ShortDescription: "Example Flags",
 			LongDescription:  "",
 			Options:          &exampleFlags,

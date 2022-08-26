@@ -66,7 +66,8 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 	}
 }
 
-/*TodoListAPI This is a simple todo list API
+/*
+TodoListAPI This is a simple todo list API
 illustrating go-swagger codegen
 capabilities.
 */

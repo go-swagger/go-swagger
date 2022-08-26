@@ -54,10 +54,12 @@ func NewPetUpdateParamsWithHTTPClient(client *http.Client) *PetUpdateParams {
 	}
 }
 
-/* PetUpdateParams contains all the parameters to send to the API endpoint
-   for the pet update operation.
+/*
+PetUpdateParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the pet update operation.
+
+	Typically these are written to a http.Request.
 */
 type PetUpdateParams struct {
 

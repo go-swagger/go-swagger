@@ -3,7 +3,6 @@ package commands
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -80,7 +79,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 }
 
 func TestDiffReadIgnores(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -115,7 +114,7 @@ func TestDiffReadIgnores(t *testing.T) {
 }
 
 func TestDiffProcessIgnores(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -128,7 +127,7 @@ func TestDiffProcessIgnores(t *testing.T) {
 		expectedLines: linesInFile(t, fixturePath("ignoreDiffs.json")),
 	}
 
-	reportFile, err := ioutil.TempFile("", "report.txt")
+	reportFile, err := os.CreateTemp("", "report.txt")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.Remove(reportFile.Name())
@@ -167,7 +166,7 @@ func TestDiffNoArgs(t *testing.T) {
 }
 
 func TestDiffCannotReport(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -187,12 +186,12 @@ func TestDiffCannotReport(t *testing.T) {
 }
 
 func TestDiffOnlyBreaking(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
 
-	reportDir, err := ioutil.TempDir("", "diff-reports")
+	reportDir, err := os.MkdirTemp("", "diff-reports")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.RemoveAll(reportDir)

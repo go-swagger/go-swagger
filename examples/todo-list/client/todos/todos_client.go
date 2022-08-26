@@ -40,7 +40,7 @@ type ClientService interface {
 }
 
 /*
-  AddOne add one API
+AddOne add one API
 */
 func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AddOneCreated, error) {
 	// TODO: Validate the params before sending
@@ -78,7 +78,7 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 }
 
 /*
-  DestroyOne destroy one API
+DestroyOne destroy one API
 */
 func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DestroyOneNoContent, error) {
 	// TODO: Validate the params before sending
@@ -116,7 +116,7 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 }
 
 /*
-  Find find API
+Find find API
 */
 func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FindOK, error) {
 	// TODO: Validate the params before sending
@@ -154,7 +154,7 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter,
 }
 
 /*
-  UpdateOne update one API
+UpdateOne update one API
 */
 func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateOneOK, error) {
 	// TODO: Validate the params before sending

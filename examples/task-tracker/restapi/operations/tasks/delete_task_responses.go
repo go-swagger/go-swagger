@@ -16,7 +16,8 @@ import (
 // DeleteTaskNoContentCode is the HTTP code returned for type DeleteTaskNoContent
 const DeleteTaskNoContentCode int = 204
 
-/*DeleteTaskNoContent Task deleted
+/*
+DeleteTaskNoContent Task deleted
 
 swagger:response deleteTaskNoContent
 */
@@ -37,7 +38,8 @@ func (o *DeleteTaskNoContent) WriteResponse(rw http.ResponseWriter, producer run
 	rw.WriteHeader(204)
 }
 
-/*DeleteTaskDefault Error response
+/*
+DeleteTaskDefault Error response
 
 swagger:response deleteTaskDefault
 */

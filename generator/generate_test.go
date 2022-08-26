@@ -2,7 +2,7 @@ package generator
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -32,7 +32,7 @@ func TestGenerateAndTest(t *testing.T) {
 			t.Run(thisName, func(t *testing.T) {
 				t.Parallel()
 
-				log.SetOutput(ioutil.Discard)
+				log.SetOutput(io.Discard)
 				defer thisCas.warnFailed(t)
 
 				// default opts
@@ -86,7 +86,7 @@ func (f generateFixture) base(t testing.TB, root string) (string, func()) {
 	base := filepath.Join(cwd, root)
 	require.NoErrorf(t, os.MkdirAll(base, 0700), "error in test creating target dir")
 
-	generated, err := ioutil.TempDir(base, "generated")
+	generated, err := os.MkdirTemp(base, "generated")
 	require.NoErrorf(t, err, "error in test creating temp dir")
 
 	return generated, func() {
@@ -129,7 +129,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
 			target: "../fixtures/bugs/1943",
 			prepare: func(_ testing.TB, opts *GenOpts) {
-				input, err := ioutil.ReadFile("../fixtures/bugs/1943/datarace_test.go")
+				input, err := os.ReadFile("../fixtures/bugs/1943/datarace_test.go")
 				require.NoError(t, err)
 
 				// rewrite imports for the relocated test program
@@ -140,7 +140,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 					[]byte(filepath.ToSlash(strings.TrimPrefix(opts.Target, filepath.Dir(cwd)))),
 				)
 
-				require.NoError(t, ioutil.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0600))
+				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0600))
 				opts.ExcludeSpec = false
 			},
 			verify: func(t testing.TB, target string) {
@@ -189,7 +189,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 					assert.True(t, fileExists(opsTarget, fileOrDir))
 				}
 
-				buf, err := ioutil.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
+				buf, err := os.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
 				require.NoError(t, err)
 
 				code := string(buf)
@@ -207,7 +207,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				assertInCode(t, `api.StrfmtGetAnotherConflictHandler = strfmtops.GetAnotherConflictHandlerFunc(`, code)
 				assertInCode(t, `api.GetNotagHandler = operations.GetNotagHandlerFunc(`, code)
 
-				buf2, err := ioutil.ReadFile(filepath.Join(opsTarget, "unsafe_tag_names_api.go"))
+				buf2, err := os.ReadFile(filepath.Join(opsTarget, "unsafe_tag_names_api.go"))
 				require.NoError(t, err)
 
 				api := string(buf2)
@@ -264,7 +264,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 
 				assert.Truef(t, fileExists(opsTarget, "get_notag.go"), "expected %s in %s", "get_notag.go", opsTarget)
 
-				buf, err := ioutil.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
+				buf, err := os.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
 				require.NoError(t, err)
 				code := string(buf)
 
@@ -280,7 +280,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				assertInCode(t, `api.GetAnotherConflictHandler = operations.GetAnotherConflictHandlerFunc(`, code)
 				assertInCode(t, `api.GetNotagHandler = operations.GetNotagHandlerFunc(`, code)
 
-				buf2, err := ioutil.ReadFile(filepath.Join(opsTarget, "unsafe_tag_names_api.go"))
+				buf2, err := os.ReadFile(filepath.Join(opsTarget, "unsafe_tag_names_api.go"))
 				require.NoError(t, err)
 				api := string(buf2)
 
@@ -328,7 +328,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				require.NoError(t, GenerateModels(nil, &modelOpts))
 
 				t.Logf("generated external model")
-				require.True(t, fileExists(modelOpts.Target, filepath.Join("external")))
+				require.True(t, fileExists(modelOpts.Target, "external"))
 				require.True(t, fileExists(modelOpts.Target, filepath.Join("external", "error.go")))
 
 				opts.IncludeMain = true
@@ -358,7 +358,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				require.NoError(t, GenerateModels(nil, &modelOpts))
 
 				t.Logf("generated external model")
-				require.True(t, fileExists(modelOpts.Target, filepath.Join("external")))
+				require.True(t, fileExists(modelOpts.Target, "external"))
 
 				for _, model := range []string{
 					"access_point.go", "base.go",
@@ -376,7 +376,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 			},
 			verify: func(t testing.TB, target string) {
 				// generated models (not external)
-				require.True(t, fileExists(target, filepath.Join("models")))
+				require.True(t, fileExists(target, "models"))
 				for _, model := range []string{"error.go", "external_with_embed.go"} {
 					require.True(t, fileExists(target, filepath.Join("models", model)))
 				}
@@ -495,7 +495,7 @@ func addModelsToLocation(t testing.TB, location, file string) {
 	// (test external types)
 	require.NoError(t, os.MkdirAll(location, 0700))
 
-	require.NoError(t, ioutil.WriteFile(filepath.Join(location, file), []byte(`
+	require.NoError(t, os.WriteFile(filepath.Join(location, file), []byte(`
 package models
 
 import (

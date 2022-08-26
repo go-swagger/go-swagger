@@ -2,7 +2,7 @@ package generator
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"testing"
@@ -341,7 +341,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 // Simulates a definition environment for model templates
 func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
 	// Don't want stderr output to pollute CI
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
@@ -364,7 +364,7 @@ func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
 // Simulates a definition environment for operation templates
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
 	// Don't want stderr output to pollute CI
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	b, err := methodPathOpBuilder(operation, path, spec)

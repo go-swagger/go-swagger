@@ -21,7 +21,7 @@ environment:
 matrix:
   fast_finish: true
 
-stack: go 1.15
+stack: go 1.19
 
 before_test:
   - go mod download

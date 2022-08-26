@@ -14,7 +14,8 @@ import (
 // InventoryGetOKCode is the HTTP code returned for type InventoryGetOK
 const InventoryGetOKCode int = 200
 
-/*InventoryGetOK successful operation
+/*
+InventoryGetOK successful operation
 
 swagger:response inventoryGetOK
 */

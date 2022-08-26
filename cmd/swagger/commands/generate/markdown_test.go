@@ -1,7 +1,7 @@
 package generate_test
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,12 +14,12 @@ import (
 )
 
 func TestMarkdown(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
 
-	generated, err := ioutil.TempDir(".", "test-markdown")
+	generated, err := os.MkdirTemp(".", "test-markdown")
 	require.NoError(t, err)
 
 	defer func() {

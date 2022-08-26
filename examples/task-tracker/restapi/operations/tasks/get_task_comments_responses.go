@@ -16,7 +16,8 @@ import (
 // GetTaskCommentsOKCode is the HTTP code returned for type GetTaskCommentsOK
 const GetTaskCommentsOKCode int = 200
 
-/*GetTaskCommentsOK The list of comments
+/*
+GetTaskCommentsOK The list of comments
 
 swagger:response getTaskCommentsOK
 */
@@ -60,7 +61,8 @@ func (o *GetTaskCommentsOK) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
-/*GetTaskCommentsDefault Error response
+/*
+GetTaskCommentsDefault Error response
 
 swagger:response getTaskCommentsDefault
 */

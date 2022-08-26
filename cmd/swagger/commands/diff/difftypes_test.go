@@ -2,7 +2,7 @@ package diff
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"testing"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestSpecChangeCode(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -43,7 +43,7 @@ func TestSpecChangeCode(t *testing.T) {
 }
 
 func TestCompatibiliyCode(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()

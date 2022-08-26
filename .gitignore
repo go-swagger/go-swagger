@@ -63,3 +63,5 @@ enter-deploy-env.sh
 coverage.txt
 
 hack/deploy.env
+
+dist/

@@ -123,7 +123,7 @@ func TestSchemaValueExtractors(t *testing.T) {
 
 func makeMinMax(lower string) (res []string) {
 	for _, a := range []string{"", "imum"} {
-		res = append(res, lower+a, strings.Title(lower)+a)
+		res = append(res, lower+a, strings.Title(lower)+a) //nolint:staticcheck
 	}
 	return
 }
@@ -135,12 +135,12 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 	invalidArgs := []string{"TRUE", "FALSE", "t", "f", "1", "0", "True", "False", "true*", "false*"}
 	var nms []string
 	for _, nm := range names {
-		nms = append(nms, nm, strings.Title(nm))
+		nms = append(nms, nm, strings.Title(nm)) //nolint:staticcheck
 	}
 
 	var nms2 []string
 	for _, nm := range names2 {
-		nms2 = append(nms2, nm, strings.Title(nm))
+		nms2 = append(nms2, nm, strings.Title(nm)) //nolint:staticcheck
 	}
 
 	var rnms []string
@@ -198,7 +198,7 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 
 	var names []string
 	for _, w := range words {
-		names = append(names, w, strings.Title(w))
+		names = append(names, w, strings.Title(w)) //nolint:staticcheck
 	}
 
 	var cnt int
@@ -255,9 +255,9 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 						for _, vv := range validNumericArgs {
 							lines := []string{
 								strings.Join([]string{pref, es1, name1, es2, name2, es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, vv}, ""),
-								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, vv}, ""),
+								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, vv}, ""), //nolint:staticcheck
+								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, vv}, ""),                //nolint:staticcheck
+								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, vv}, ""),                //nolint:staticcheck
 							}
 							for _, line := range lines {
 								matches := matcher.FindStringSubmatch(line)
@@ -269,9 +269,9 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 						for _, iv := range invalidNumericArgs {
 							lines := []string{
 								strings.Join([]string{pref, es1, name1, es2, name2, es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, iv}, ""),
-								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, iv}, ""),
+								strings.Join([]string{pref, es1, strings.Title(name1), es2, strings.Title(name2), es3, ":", es4, iv}, ""), //nolint:staticcheck
+								strings.Join([]string{pref, es1, strings.Title(name1), es2, name2, es3, ":", es4, iv}, ""),                //nolint:staticcheck
+								strings.Join([]string{pref, es1, name1, es2, strings.Title(name2), es3, ":", es4, iv}, ""),                //nolint:staticcheck
 							}
 							for _, line := range lines {
 								matches := matcher.FindStringSubmatch(line)

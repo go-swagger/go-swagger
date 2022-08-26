@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -87,7 +87,7 @@ func testCwd(t testing.TB) string {
 
 func discardOutput() func() {
 	// discards log output then sends a function to set it back to stdout
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	return func() {
 		log.SetOutput(os.Stdout)

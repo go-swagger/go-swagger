@@ -16,7 +16,8 @@ import (
 // PetCreateCreatedCode is the HTTP code returned for type PetCreateCreated
 const PetCreateCreatedCode int = 201
 
-/*PetCreateCreated Created
+/*
+PetCreateCreated Created
 
 swagger:response petCreateCreated
 */
@@ -60,7 +61,8 @@ func (o *PetCreateCreated) WriteResponse(rw http.ResponseWriter, producer runtim
 // PetCreateMethodNotAllowedCode is the HTTP code returned for type PetCreateMethodNotAllowed
 const PetCreateMethodNotAllowedCode int = 405
 
-/*PetCreateMethodNotAllowed Invalid input
+/*
+PetCreateMethodNotAllowed Invalid input
 
 swagger:response petCreateMethodNotAllowed
 */

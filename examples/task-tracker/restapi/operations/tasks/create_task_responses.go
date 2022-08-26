@@ -17,7 +17,8 @@ import (
 // CreateTaskCreatedCode is the HTTP code returned for type CreateTaskCreated
 const CreateTaskCreatedCode int = 201
 
-/*CreateTaskCreated Task created
+/*
+CreateTaskCreated Task created
 
 swagger:response createTaskCreated
 */
@@ -60,7 +61,8 @@ func (o *CreateTaskCreated) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(201)
 }
 
-/*CreateTaskDefault Error response
+/*
+CreateTaskDefault Error response
 
 swagger:response createTaskDefault
 */

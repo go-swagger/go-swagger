@@ -297,6 +297,8 @@ func TestSchemaBuilder_AddExtensions(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
+	assert.Equal(t, "StoreOrder represents an order in this application.", msch.Title)
+
 }
 
 func TestTextMarhalCustomType(t *testing.T) {
@@ -919,18 +921,18 @@ func TestInterfaceDiscriminators(t *testing.T) {
 	schema, ok := models["fish"]
 
 	if assert.True(t, ok) && assert.Len(t, schema.AllOf, 5) {
-		sch := schema.AllOf[0]
+		sch := schema.AllOf[3]
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "string", "colorName", "", "ColorName")
 
-		sch = schema.AllOf[1]
+		sch = schema.AllOf[2]
 		assert.Equal(t, "#/definitions/extra", sch.Ref.String())
 
-		sch = schema.AllOf[2]
+		sch = schema.AllOf[0]
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "integer", "id", "int64", "ID")
 
-		sch = schema.AllOf[3]
+		sch = schema.AllOf[1]
 		assert.Equal(t, "#/definitions/water", sch.Ref.String())
 
 		sch = schema.AllOf[4]

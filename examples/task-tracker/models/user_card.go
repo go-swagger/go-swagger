@@ -18,7 +18,6 @@ import (
 //
 // This representation of a user is mainly meant for inclusion in other models, or for list views.
 //
-//
 // swagger:model UserCard
 type UserCard struct {
 

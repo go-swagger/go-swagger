@@ -1,10 +1,10 @@
-//+build ignore
+//go:build ignore
+// +build ignore
 
 package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,7 +23,7 @@ func Test_Base64Thing(t *testing.T) {
 		fixture := info.Name()
 		if !info.IsDir() && strings.HasPrefix(fixture, base) {
 			// read fixture
-			buf, _ := ioutil.ReadFile(fixture)
+			buf, _ := os.ReadFile(fixture)
 
 			t.Logf("INFO:Fixture: %s: %s", fixture, string(buf))
 			var input interface{}

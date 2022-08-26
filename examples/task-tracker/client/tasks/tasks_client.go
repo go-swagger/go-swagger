@@ -48,11 +48,11 @@ type ClientService interface {
 }
 
 /*
-  AddCommentToTask adds a comment to a task
+	AddCommentToTask adds a comment to a task
 
-  The comment can contain ___github markdown___ syntax.
+	The comment can contain ___github markdown___ syntax.
+
 Fenced codeblocks etc are supported through pygments.
-
 */
 func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AddCommentToTaskCreated, error) {
 	// TODO: Validate the params before sending
@@ -90,12 +90,12 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runti
 }
 
 /*
-  CreateTask creates a task object
+	CreateTask creates a task object
 
-  Allows for creating a task.
+	Allows for creating a task.
+
 This operation requires authentication so that we know which user
 created the task.
-
 */
 func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateTaskCreated, error) {
 	// TODO: Validate the params before sending
@@ -133,10 +133,9 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAut
 }
 
 /*
-  DeleteTask deletes a task
+DeleteTask deletes a task
 
-  This is a soft delete and changes the task status to ignored.
-
+This is a soft delete and changes the task status to ignored.
 */
 func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteTaskNoContent, error) {
 	// TODO: Validate the params before sending
@@ -174,10 +173,9 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAut
 }
 
 /*
-  GetTaskComments gets the comments for a task
+GetTaskComments gets the comments for a task
 
-  The comments require a size parameter.
-
+The comments require a size parameter.
 */
 func (a *Client) GetTaskComments(params *GetTaskCommentsParams, opts ...ClientOption) (*GetTaskCommentsOK, error) {
 	// TODO: Validate the params before sending
@@ -214,13 +212,13 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams, opts ...ClientOp
 }
 
 /*
-  GetTaskDetails gets the details for a task
+	GetTaskDetails gets the details for a task
 
-  The details view has more information than the card view.
+	The details view has more information than the card view.
+
 You can see who reported the issue and who last updated it when.
 
 There are also comments for each issue.
-
 */
 func (a *Client) GetTaskDetails(params *GetTaskDetailsParams, opts ...ClientOption) (*GetTaskDetailsOK, error) {
 	// TODO: Validate the params before sending
@@ -257,13 +255,13 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams, opts ...ClientOpti
 }
 
 /*
-  ListTasks lists the tasks
+	ListTasks lists the tasks
 
-  Allows for specifying a number of filter parameters to
+	Allows for specifying a number of filter parameters to
+
 narrow down the results.
 Also allows for specifying a **sinceId** and **pageSize** parameter
 to page through large result sets.
-
 */
 func (a *Client) ListTasks(params *ListTasksParams, opts ...ClientOption) (*ListTasksOK, error) {
 	// TODO: Validate the params before sending
@@ -300,12 +298,12 @@ func (a *Client) ListTasks(params *ListTasksParams, opts ...ClientOption) (*List
 }
 
 /*
-  UpdateTask updates the details for a task
+	UpdateTask updates the details for a task
 
-  Allows for updating a task.
+	Allows for updating a task.
+
 This operation requires authentication so that we know which user
 last updated the task.
-
 */
 func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateTaskOK, error) {
 	// TODO: Validate the params before sending
@@ -343,9 +341,9 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAut
 }
 
 /*
-  UploadTaskFile adds a file to a task
+UploadTaskFile adds a file to a task
 
-  The file can't be larger than **5MB**
+The file can't be larger than **5MB**
 */
 func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UploadTaskFileCreated, error) {
 	// TODO: Validate the params before sending

@@ -16,7 +16,8 @@ import (
 // AddCommentToTaskCreatedCode is the HTTP code returned for type AddCommentToTaskCreated
 const AddCommentToTaskCreatedCode int = 201
 
-/*AddCommentToTaskCreated Comment added
+/*
+AddCommentToTaskCreated Comment added
 
 swagger:response addCommentToTaskCreated
 */
@@ -37,7 +38,8 @@ func (o *AddCommentToTaskCreated) WriteResponse(rw http.ResponseWriter, producer
 	rw.WriteHeader(201)
 }
 
-/*AddCommentToTaskDefault Error response
+/*
+AddCommentToTaskDefault Error response
 
 swagger:response addCommentToTaskDefault
 */

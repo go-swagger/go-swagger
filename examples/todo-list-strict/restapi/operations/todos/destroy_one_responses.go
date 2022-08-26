@@ -17,7 +17,8 @@ import (
 // DestroyOneNoContentCode is the HTTP code returned for type DestroyOneNoContent
 const DestroyOneNoContentCode int = 204
 
-/*DestroyOneNoContent Deleted
+/*
+DestroyOneNoContent Deleted
 
 swagger:response destroyOneNoContent
 */
@@ -40,7 +41,8 @@ func (o *DestroyOneNoContent) WriteResponse(rw http.ResponseWriter, producer run
 
 func (o *DestroyOneNoContent) DestroyOneResponder() {}
 
-/*DestroyOneDefault error
+/*
+DestroyOneDefault error
 
 swagger:response destroyOneDefault
 */

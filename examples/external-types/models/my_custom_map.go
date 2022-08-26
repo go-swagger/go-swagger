@@ -19,7 +19,6 @@ import (
 //
 // The validation method of the external type is called by the generated map.
 //
-//
 // swagger:model MyCustomMap
 type MyCustomMap map[string]map[string]alternate.MyAlternateType
 

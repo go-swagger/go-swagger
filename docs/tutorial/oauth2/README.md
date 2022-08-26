@@ -276,7 +276,7 @@ func authenticated(token string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return false, fmt.Errorf("fail to get response: %v", err)
 	}

@@ -1,11 +1,11 @@
-//+build ignore
+//go:build ignore
+// +build ignore
 
 package main
 
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,7 +17,7 @@ import (
 	//color "github.com/logrusorgru/aurora"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"gotest.tools/icmd"
 )
 
@@ -261,7 +261,7 @@ func makeBuildDir(t *testing.T, spec string) string {
 	name := filepath.Base(spec)
 	parts := strings.Split(name, ".")
 	base := parts[0]
-	target, err := ioutil.TempDir(genDir, "gen-"+base+"-")
+	target, err := os.MkdirTemp(genDir, "gen-"+base+"-")
 	if err != nil {
 		failure(t, "cannot create temporary codegen dir for %s", base)
 		t.FailNow()
@@ -304,7 +304,7 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 
 	if !skip.KnownExpandFailure && !globalOpts.SkipExpand && !skip.SkipExpand {
 		// safeguard: avoid discriminator use case for expand
-		doc, err := ioutil.ReadFile(spec)
+		doc, err := os.ReadFile(spec)
 		if err == nil && !strings.Contains(string(doc), "discriminator") {
 			expandRun := template
 			expandRun.Name = "expand spec run"
@@ -372,7 +372,7 @@ func TestMain(m *testing.M) {
 }
 
 func loadFixtures(t *testing.T, in string) []fixtureT {
-	doc, err := ioutil.ReadFile(in)
+	doc, err := os.ReadFile(in)
 	require.NoError(t, err)
 	fixtures := make([]fixtureT, 0, 200)
 	err = yaml.Unmarshal(doc, &fixtures)

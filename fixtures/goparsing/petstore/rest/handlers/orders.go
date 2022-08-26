@@ -47,7 +47,7 @@ type OrderBodyParams struct {
 
 // An OrderResponse response model
 //
-// This is used for returning a response with a single order as body
+// # This is used for returning a response with a single order as body
 //
 // swagger:response orderResponse
 type OrderResponse struct {
@@ -60,8 +60,9 @@ type OrderResponse struct {
 // Gets the details for an order.
 //
 // Responses:
-//    default: genericError
-//        200: orderResponse
+//
+//	default: genericError
+//	    200: orderResponse
 func GetOrderDetails(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -71,8 +72,9 @@ func GetOrderDetails(rw http.ResponseWriter, req *http.Request, params denco.Par
 // Deletes an order.
 //
 // Responses:
-//    default: genericError
-//        204:
+//
+//	default: genericError
+//	    204:
 func CancelOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -82,9 +84,10 @@ func CancelOrder(rw http.ResponseWriter, req *http.Request, params denco.Params)
 // Updates an order.
 //
 // Responses:
-//    default: genericError
-//        200: order
-//        422: validationError
+//
+//	default: genericError
+//	    200: order
+//	    422: validationError
 func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -94,21 +97,23 @@ func UpdateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params)
 // Creates an order.
 //
 // Responses:
-//    default: genericError
-//        200: orderResponse
-//        422: validationError
+//
+//	default: genericError
+//	    200: orderResponse
+//	    422: validationError
 func CreateOrder(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
 
 // GetHelp swagger:route GET /help help
 //
-// Gets the help as markdown
+// # Gets the help as markdown
 //
 // Responses:
-//    default: genericError
-//        200: MarkdownRender
-//        422: validationError
+//
+//	default: genericError
+//	    200: MarkdownRender
+//	    422: validationError
 func GetHelp(rw http.ResponseWriter, req *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }

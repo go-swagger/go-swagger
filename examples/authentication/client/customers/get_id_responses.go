@@ -58,7 +58,8 @@ func NewGetIDOK() *GetIDOK {
 	return &GetIDOK{}
 }
 
-/* GetIDOK describes a response with status code 200, with default header values.
+/*
+	GetIDOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -120,7 +121,8 @@ func NewGetIDUnauthorized() *GetIDUnauthorized {
 	return &GetIDUnauthorized{}
 }
 
-/* GetIDUnauthorized describes a response with status code 401, with default header values.
+/*
+	GetIDUnauthorized describes a response with status code 401, with default header values.
 
 unauthorized
 */
@@ -182,7 +184,8 @@ func NewGetIDNotFound() *GetIDNotFound {
 	return &GetIDNotFound{}
 }
 
-/* GetIDNotFound describes a response with status code 404, with default header values.
+/*
+	GetIDNotFound describes a response with status code 404, with default header values.
 
 resource not found
 */
@@ -246,7 +249,8 @@ func NewGetIDDefault(code int) *GetIDDefault {
 	}
 }
 
-/* GetIDDefault describes a response with status code -1, with default header values.
+/*
+	GetIDDefault describes a response with status code -1, with default header values.
 
 error
 */

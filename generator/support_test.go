@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,7 +108,7 @@ func TestBaseImport(t *testing.T) {
 		_ = os.Setenv("GOPATH", oldgopath)
 	}()
 
-	tempdir, err := ioutil.TempDir("", "test-baseimport")
+	tempdir, err := os.MkdirTemp("", "test-baseimport")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.RemoveAll(tempdir)
@@ -151,7 +150,7 @@ func TestBaseImport(t *testing.T) {
 func TestGenerateMarkdown(t *testing.T) {
 	defer discardOutput()()
 
-	tempdir, err := ioutil.TempDir("", "test-markdown")
+	tempdir, err := os.MkdirTemp("", "test-markdown")
 	require.NoError(t, err)
 	defer func() {
 		_ = os.RemoveAll(tempdir)
@@ -166,7 +165,7 @@ func TestGenerateMarkdown(t *testing.T) {
 		"# Markdown generator demo",
 	}
 
-	code, err := ioutil.ReadFile(output)
+	code, err := os.ReadFile(output)
 	require.NoError(t, err)
 
 	for line, codeLine := range expectedCode {

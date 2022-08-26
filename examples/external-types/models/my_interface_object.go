@@ -21,7 +21,6 @@ import (
 // The generated code behaves as it is an interface{}: no pointers are generated, and no valication
 // is required.
 //
-//
 // swagger:model MyInterfaceObject
 type MyInterfaceObject struct {
 

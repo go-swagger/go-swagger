@@ -19,7 +19,6 @@ import (
 // This is especially useful if you want to reuse some types from the standard library,
 // such as `time.Time` or `json.RawMessage`.
 //
-//
 // swagger:model EmbeddedTime
 type EmbeddedTime struct {
 	timeext.Time

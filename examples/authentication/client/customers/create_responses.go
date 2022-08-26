@@ -46,7 +46,8 @@ func NewCreateCreated() *CreateCreated {
 	return &CreateCreated{}
 }
 
-/* CreateCreated describes a response with status code 201, with default header values.
+/*
+	CreateCreated describes a response with status code 201, with default header values.
 
 created
 */
@@ -110,7 +111,8 @@ func NewCreateDefault(code int) *CreateDefault {
 	}
 }
 
-/* CreateDefault describes a response with status code -1, with default header values.
+/*
+	CreateDefault describes a response with status code -1, with default header values.
 
 error
 */

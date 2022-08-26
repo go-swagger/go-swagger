@@ -13,10 +13,10 @@ import (
 	"github.com/go-swagger/go-swagger/examples/external-types/models"
 )
 
-/*GetTestDefault A reference to a type already defined in the models package
+/*
+GetTestDefault A reference to a type already defined in the models package
 (defaults to <<target>/models, defined by CLI flag --model-package).
 The response payload is defined as: *models.Zzz
-
 
 swagger:response getTestDefault
 */

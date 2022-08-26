@@ -52,10 +52,12 @@ func NewInventoryGetParamsWithHTTPClient(client *http.Client) *InventoryGetParam
 	}
 }
 
-/* InventoryGetParams contains all the parameters to send to the API endpoint
-   for the inventory get operation.
+/*
+InventoryGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the inventory get operation.
+
+	Typically these are written to a http.Request.
 */
 type InventoryGetParams struct {
 	timeout    time.Duration
