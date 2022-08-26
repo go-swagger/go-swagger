@@ -53,10 +53,12 @@ func NewElapseParamsWithHTTPClient(client *http.Client) *ElapseParams {
 	}
 }
 
-/* ElapseParams contains all the parameters to send to the API endpoint
-   for the elapse operation.
+/*
+ElapseParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the elapse operation.
+
+	Typically these are written to a http.Request.
 */
 type ElapseParams struct {
 

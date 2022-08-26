@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -274,7 +273,7 @@ func (s *Server) Serve() (err error) {
 
 		if s.TLSCACertificate != "" {
 			// include specified CA certificate
-			caCert, caCertErr := ioutil.ReadFile(string(s.TLSCACertificate))
+			caCert, caCertErr := os.ReadFile(string(s.TLSCACertificate))
 			if caCertErr != nil {
 				return caCertErr
 			}

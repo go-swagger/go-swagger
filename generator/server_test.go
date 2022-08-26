@@ -3,7 +3,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -262,14 +261,14 @@ func TestServer_OperationGroups(t *testing.T) {
 	_ = gen.GenOpts.templates.AddFile("opGroupTest", opGroupTpl)
 	require.NoError(t, gen.Generate())
 
-	genContent, err := ioutil.ReadFile("./search/search_opgroup_test.gol")
+	genContent, err := os.ReadFile("./search/search_opgroup_test.gol")
 	require.NoError(t, err, "Generator should have written a file")
 
 	assert.Contains(t, string(genContent), "// OperationGroupName=search")
 	assert.Contains(t, string(genContent), "// RootPackage=operations")
 	assert.Contains(t, string(genContent), "// OperationName=search")
 
-	genContent, err = ioutil.ReadFile("./tasks/tasks_opgroup_test.gol")
+	genContent, err = os.ReadFile("./tasks/tasks_opgroup_test.gol")
 	require.NoError(t, err, "Generator should have written a file")
 
 	assert.Contains(t, string(genContent), "// OperationGroupName=tasks")
@@ -382,7 +381,7 @@ func TestServer_Issue1648(t *testing.T) {
 func TestServer_Issue1746(t *testing.T) {
 	defer discardOutput()()
 
-	targetdir, err := ioutil.TempDir(".", "swagger_server")
+	targetdir, err := os.MkdirTemp(".", "swagger_server")
 	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
 	defer func() {
 		_ = os.RemoveAll(targetdir)
@@ -395,7 +394,7 @@ func TestServer_Issue1746(t *testing.T) {
 	}()
 
 	opts := testGenOpts()
-	opts.Target = filepath.Join("x")
+	opts.Target = "x"
 	opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "1746", "fixture-1746.yaml")
 	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
 
@@ -403,7 +402,7 @@ func TestServer_Issue1746(t *testing.T) {
 
 	require.NoError(t, GenerateServer("", nil, nil, opts))
 
-	gulp, err := ioutil.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
+	gulp, err := os.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
 	require.NoError(t, err)
 
 	res := string(gulp)

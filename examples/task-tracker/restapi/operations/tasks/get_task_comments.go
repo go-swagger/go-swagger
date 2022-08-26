@@ -29,13 +29,12 @@ func NewGetTaskComments(ctx *middleware.Context, handler GetTaskCommentsHandler)
 	return &GetTaskComments{Context: ctx, Handler: handler}
 }
 
-/* GetTaskComments swagger:route GET /tasks/{id}/comments tasks getTaskComments
+/*
+	GetTaskComments swagger:route GET /tasks/{id}/comments tasks getTaskComments
 
-Gets the comments for a task
+# Gets the comments for a task
 
 The comments require a size parameter.
-
-
 */
 type GetTaskComments struct {
 	Context *middleware.Context

@@ -53,10 +53,12 @@ func NewUploadTaskFileParamsWithHTTPClient(client *http.Client) *UploadTaskFileP
 	}
 }
 
-/* UploadTaskFileParams contains all the parameters to send to the API endpoint
-   for the upload task file operation.
+/*
+UploadTaskFileParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the upload task file operation.
+
+	Typically these are written to a http.Request.
 */
 type UploadTaskFileParams struct {
 

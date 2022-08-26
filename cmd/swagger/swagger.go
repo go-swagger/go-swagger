@@ -15,7 +15,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -127,7 +127,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 	}
 
 	opts.Quiet = func() {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 	opts.LogFile = func(logfile string) {
 		f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)

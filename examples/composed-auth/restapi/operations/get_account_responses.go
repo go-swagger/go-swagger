@@ -16,7 +16,8 @@ import (
 // GetAccountOKCode is the HTTP code returned for type GetAccountOK
 const GetAccountOKCode int = 200
 
-/*GetAccountOK registered user personal account infos
+/*
+GetAccountOK registered user personal account infos
 
 swagger:response getAccountOK
 */
@@ -58,7 +59,8 @@ func (o *GetAccountOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 // GetAccountUnauthorizedCode is the HTTP code returned for type GetAccountUnauthorized
 const GetAccountUnauthorizedCode int = 401
 
-/*GetAccountUnauthorized unauthorized access for a lack of authentication
+/*
+GetAccountUnauthorized unauthorized access for a lack of authentication
 
 swagger:response getAccountUnauthorized
 */
@@ -79,7 +81,8 @@ func (o *GetAccountUnauthorized) WriteResponse(rw http.ResponseWriter, producer 
 	rw.WriteHeader(401)
 }
 
-/*GetAccountDefault other error response
+/*
+GetAccountDefault other error response
 
 swagger:response getAccountDefault
 */

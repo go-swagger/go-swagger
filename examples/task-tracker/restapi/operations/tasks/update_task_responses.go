@@ -16,7 +16,8 @@ import (
 // UpdateTaskOKCode is the HTTP code returned for type UpdateTaskOK
 const UpdateTaskOKCode int = 200
 
-/*UpdateTaskOK Task details
+/*
+UpdateTaskOK Task details
 
 swagger:response updateTaskOK
 */
@@ -60,7 +61,8 @@ func (o *UpdateTaskOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 // UpdateTaskUnprocessableEntityCode is the HTTP code returned for type UpdateTaskUnprocessableEntity
 const UpdateTaskUnprocessableEntityCode int = 422
 
-/*UpdateTaskUnprocessableEntity Validation error
+/*
+UpdateTaskUnprocessableEntity Validation error
 
 swagger:response updateTaskUnprocessableEntity
 */
@@ -101,7 +103,8 @@ func (o *UpdateTaskUnprocessableEntity) WriteResponse(rw http.ResponseWriter, pr
 	}
 }
 
-/*UpdateTaskDefault Error response
+/*
+UpdateTaskDefault Error response
 
 swagger:response updateTaskDefault
 */

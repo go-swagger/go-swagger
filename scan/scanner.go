@@ -1,3 +1,4 @@
+//go:build !go1.11
 // +build !go1.11
 
 // Copyright 2015 go-swagger maintainers
@@ -33,7 +34,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	"golang.org/x/tools/go/loader"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 const (

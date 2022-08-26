@@ -29,12 +29,12 @@ func NewUpdateUser(ctx *middleware.Context, handler UpdateUserHandler) *UpdateUs
 	return &UpdateUser{Context: ctx, Handler: handler}
 }
 
-/* UpdateUser swagger:route PUT /users/{username} user updateUser
+/*
+	UpdateUser swagger:route PUT /users/{username} user updateUser
 
-Updated user
+# Updated user
 
 This can only be done by the logged in user.
-
 */
 type UpdateUser struct {
 	Context *middleware.Context

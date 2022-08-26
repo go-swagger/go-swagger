@@ -116,7 +116,8 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 	}
 }
 
-/*PetstoreAPI This is a sample server Petstore server.
+/*
+PetstoreAPI This is a sample server Petstore server.
 
 [Learn about Swagger](http://swagger.wordnik.com) or join the IRC channel '#swagger' on irc.freenode.net.
 

@@ -16,7 +16,8 @@ import (
 // GetLoginOKCode is the HTTP code returned for type GetLoginOK
 const GetLoginOKCode int = 200
 
-/*GetLoginOK login
+/*
+GetLoginOK login
 
 swagger:response getLoginOK
 */
@@ -57,7 +58,8 @@ func (o *GetLoginOK) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 	}
 }
 
-/*GetLoginDefault error
+/*
+GetLoginDefault error
 
 swagger:response getLoginDefault
 */

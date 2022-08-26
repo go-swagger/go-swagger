@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {
@@ -394,42 +394,6 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 	return uncommented[seenLine : lastContent+1]
 }
 
-// a shared function that can be used to split given headers
-// into a title and description
-func collectScannerTitleDescription(headers []string) (title, desc []string) {
-	hdrs := cleanupScannerLines(headers, rxUncommentHeaders, nil)
-
-	idx := -1
-	for i, line := range hdrs {
-		if strings.TrimSpace(line) == "" {
-			idx = i
-			break
-		}
-	}
-
-	if idx > -1 {
-		title = hdrs[:idx]
-		if len(hdrs) > idx+1 {
-			desc = hdrs[idx+1:]
-		} else {
-			desc = nil
-		}
-		return
-	}
-
-	if len(hdrs) > 0 {
-		line := hdrs[0]
-		if rxPunctuationEnd.MatchString(line) {
-			title = []string{line}
-			desc = hdrs[1:]
-		} else {
-			desc = hdrs
-		}
-	}
-
-	return
-}
-
 func (sp *yamlSpecScanner) collectTitleDescription() {
 	if sp.workedOutTitle {
 		return
@@ -546,6 +510,12 @@ func removeIndent(spec []string) []string {
 	for i := range spec {
 		if len(spec[i]) >= loc[1] {
 			spec[i] = spec[i][loc[1]-1:]
+			start := rxNotIndent.FindStringIndex(spec[i])
+			if start[1] == 0 {
+				continue
+			}
+
+			spec[i] = strings.Replace(spec[i], "\t", "  ", start[1])
 		}
 	}
 	return spec

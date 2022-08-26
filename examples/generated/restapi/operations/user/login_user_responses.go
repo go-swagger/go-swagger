@@ -14,7 +14,8 @@ import (
 // LoginUserOKCode is the HTTP code returned for type LoginUserOK
 const LoginUserOKCode int = 200
 
-/*LoginUserOK successful operation
+/*
+LoginUserOK successful operation
 
 swagger:response loginUserOK
 */
@@ -56,7 +57,8 @@ func (o *LoginUserOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 // LoginUserBadRequestCode is the HTTP code returned for type LoginUserBadRequest
 const LoginUserBadRequestCode int = 400
 
-/*LoginUserBadRequest Invalid username/password supplied
+/*
+LoginUserBadRequest Invalid username/password supplied
 
 swagger:response loginUserBadRequest
 */

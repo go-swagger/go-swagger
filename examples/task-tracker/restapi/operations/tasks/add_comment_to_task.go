@@ -34,14 +34,13 @@ func NewAddCommentToTask(ctx *middleware.Context, handler AddCommentToTaskHandle
 	return &AddCommentToTask{Context: ctx, Handler: handler}
 }
 
-/* AddCommentToTask swagger:route POST /tasks/{id}/comments tasks addCommentToTask
+/*
+	AddCommentToTask swagger:route POST /tasks/{id}/comments tasks addCommentToTask
 
-Adds a comment to a task
+# Adds a comment to a task
 
 The comment can contain ___github markdown___ syntax.
 Fenced codeblocks etc are supported through pygments.
-
-
 */
 type AddCommentToTask struct {
 	Context *middleware.Context
@@ -80,7 +79,6 @@ func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // AddCommentToTaskBody A comment to create
 //
 // These values can have github flavored markdown.
-//
 //
 // swagger:model AddCommentToTaskBody
 type AddCommentToTaskBody struct {

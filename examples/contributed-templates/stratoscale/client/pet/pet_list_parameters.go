@@ -53,10 +53,12 @@ func NewPetListParamsWithHTTPClient(client *http.Client) *PetListParams {
 	}
 }
 
-/* PetListParams contains all the parameters to send to the API endpoint
-   for the pet list operation.
+/*
+PetListParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the pet list operation.
+
+	Typically these are written to a http.Request.
 */
 type PetListParams struct {
 

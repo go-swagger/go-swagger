@@ -16,7 +16,8 @@ import (
 // PlaceOrderOKCode is the HTTP code returned for type PlaceOrderOK
 const PlaceOrderOKCode int = 200
 
-/*PlaceOrderOK successful operation
+/*
+PlaceOrderOK successful operation
 
 swagger:response placeOrderOK
 */
@@ -60,7 +61,8 @@ func (o *PlaceOrderOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pr
 // PlaceOrderBadRequestCode is the HTTP code returned for type PlaceOrderBadRequest
 const PlaceOrderBadRequestCode int = 400
 
-/*PlaceOrderBadRequest Invalid Order
+/*
+PlaceOrderBadRequest Invalid Order
 
 swagger:response placeOrderBadRequest
 */

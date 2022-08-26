@@ -16,7 +16,8 @@ import (
 // CreateCreatedCode is the HTTP code returned for type CreateCreated
 const CreateCreatedCode int = 201
 
-/*CreateCreated created
+/*
+CreateCreated created
 
 swagger:response createCreated
 */
@@ -57,7 +58,8 @@ func (o *CreateCreated) WriteResponse(rw http.ResponseWriter, producer runtime.P
 	}
 }
 
-/*CreateDefault error
+/*
+CreateDefault error
 
 swagger:response createDefault
 */

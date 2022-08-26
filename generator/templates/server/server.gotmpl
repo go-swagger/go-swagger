@@ -423,7 +423,7 @@ func (s *Server) Serve() (err error) {
 
 		if s.TLSCACertificate != "" {
 			// include specified CA certificate
-			caCert, caCertErr := ioutil.ReadFile({{ if .UseGoStructFlags }}string({{ end }}s.TLSCACertificate{{ if .UseGoStructFlags }}){{ end }})
+			caCert, caCertErr := os.ReadFile({{ if .UseGoStructFlags }}string({{ end }}s.TLSCACertificate{{ if .UseGoStructFlags }}){{ end }})
 			if caCertErr != nil {
 				return caCertErr
 			}

@@ -13,10 +13,10 @@ import (
 	"github.com/go-swagger/go-swagger/examples/external-types/models"
 )
 
-/*GetStreamDefault Uses an external definition for an interface (e.g. io.Reader)
+/*
+GetStreamDefault Uses an external definition for an interface (e.g. io.Reader)
 
 No validation is expected on binary format.
-
 
 swagger:response getStreamDefault
 */

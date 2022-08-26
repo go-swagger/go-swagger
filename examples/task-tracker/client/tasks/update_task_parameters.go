@@ -55,10 +55,12 @@ func NewUpdateTaskParamsWithHTTPClient(client *http.Client) *UpdateTaskParams {
 	}
 }
 
-/* UpdateTaskParams contains all the parameters to send to the API endpoint
-   for the update task operation.
+/*
+UpdateTaskParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the update task operation.
+
+	Typically these are written to a http.Request.
 */
 type UpdateTaskParams struct {
 

@@ -31,10 +31,10 @@ func NewGetID(ctx *middleware.Context, handler GetIDHandler) *GetID {
 	return &GetID{Context: ctx, Handler: handler}
 }
 
-/* GetID swagger:route GET /customers customers getId
+/*
+	GetID swagger:route GET /customers customers getId
 
 Get a customerId given an SSN
-
 */
 type GetID struct {
 	Context *middleware.Context

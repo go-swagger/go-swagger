@@ -53,10 +53,12 @@ func NewPetDeleteParamsWithHTTPClient(client *http.Client) *PetDeleteParams {
 	}
 }
 
-/* PetDeleteParams contains all the parameters to send to the API endpoint
-   for the pet delete operation.
+/*
+PetDeleteParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the pet delete operation.
+
+	Typically these are written to a http.Request.
 */
 type PetDeleteParams struct {
 

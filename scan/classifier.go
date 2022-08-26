@@ -1,3 +1,4 @@
+//go:build !go1.11
 // +build !go1.11
 
 // Copyright 2015 go-swagger maintainers
@@ -65,7 +66,7 @@ type classifiedProgram struct {
 // for processing by a swagger spec generator. This buckets files in
 // 3 groups: Meta, Models and Operations.
 //
-// Each of these buckets is then processed with an appropriate parsing strategy
+// # Each of these buckets is then processed with an appropriate parsing strategy
 //
 // When there are Include or Exclude filters provide they are used to limit the
 // candidates prior to parsing.

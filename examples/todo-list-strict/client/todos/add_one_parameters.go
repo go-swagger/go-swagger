@@ -57,7 +57,8 @@ func NewAddOneParamsWithHTTPClient(client *http.Client) *AddOneParams {
 	}
 }
 
-/*AddOneParams contains all the parameters to send to the API endpoint
+/*
+AddOneParams contains all the parameters to send to the API endpoint
 for the add one operation typically these are written to a http.Request
 */
 type AddOneParams struct {

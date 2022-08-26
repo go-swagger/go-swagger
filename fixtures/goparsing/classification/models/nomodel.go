@@ -26,7 +26,6 @@ import (
 // NoModel exists in a package
 // but is not annotated with the swagger model annotations
 // so it should now show up in a test.
-//
 type NoModel struct {
 	// ID of this no model instance.
 	// ids in this application start at 11 and are smaller than 1000

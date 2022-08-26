@@ -29,12 +29,12 @@ func NewUploadTaskFile(ctx *middleware.Context, handler UploadTaskFileHandler) *
 	return &UploadTaskFile{Context: ctx, Handler: handler}
 }
 
-/* UploadTaskFile swagger:route POST /tasks/{id}/files tasks uploadTaskFile
+/*
+	UploadTaskFile swagger:route POST /tasks/{id}/files tasks uploadTaskFile
 
 Adds a file to a task.
 
 The file can't be larger than **5MB**
-
 */
 type UploadTaskFile struct {
 	Context *middleware.Context

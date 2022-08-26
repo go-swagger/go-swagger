@@ -19,7 +19,6 @@ import (
 //
 // MapNullable map[string]map[string]*alternate.MyAlternateType
 //
-//
 // swagger:model MyCustomMapNullable
 type MyCustomMapNullable map[string]map[string]*alternate.MyAlternateType
 

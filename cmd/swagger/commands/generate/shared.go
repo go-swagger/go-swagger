@@ -2,7 +2,6 @@ package generate
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -147,7 +146,7 @@ func setCopyright(copyrightFile string) (string, error) {
 	if copyrightFile == "" {
 		return "", nil
 	}
-	bytebuffer, err := ioutil.ReadFile(copyrightFile)
+	bytebuffer, err := os.ReadFile(copyrightFile)
 	if err != nil {
 		return "", err
 	}

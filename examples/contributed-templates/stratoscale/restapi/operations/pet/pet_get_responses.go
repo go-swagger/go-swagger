@@ -16,7 +16,8 @@ import (
 // PetGetOKCode is the HTTP code returned for type PetGetOK
 const PetGetOKCode int = 200
 
-/*PetGetOK successful operation
+/*
+PetGetOK successful operation
 
 swagger:response petGetOK
 */
@@ -60,7 +61,8 @@ func (o *PetGetOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produc
 // PetGetBadRequestCode is the HTTP code returned for type PetGetBadRequest
 const PetGetBadRequestCode int = 400
 
-/*PetGetBadRequest Invalid ID supplied
+/*
+PetGetBadRequest Invalid ID supplied
 
 swagger:response petGetBadRequest
 */
@@ -84,7 +86,8 @@ func (o *PetGetBadRequest) WriteResponse(rw http.ResponseWriter, producer runtim
 // PetGetNotFoundCode is the HTTP code returned for type PetGetNotFound
 const PetGetNotFoundCode int = 404
 
-/*PetGetNotFound Pet not found
+/*
+PetGetNotFound Pet not found
 
 swagger:response petGetNotFound
 */

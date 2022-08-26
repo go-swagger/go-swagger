@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestSpec_Issue1429(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// acknowledge fix in go-openapi/spec
@@ -55,7 +55,7 @@ func TestSpec_FindSwaggerSpec(t *testing.T) {
 }
 
 func TestSpec_Issue1621(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// acknowledge fix in go-openapi/spec
@@ -71,7 +71,7 @@ func TestSpec_Issue1621(t *testing.T) {
 }
 
 func TestShared_Issue1614(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// acknowledge fix in go-openapi/spec
@@ -87,7 +87,7 @@ func TestShared_Issue1614(t *testing.T) {
 }
 
 func Test_analyzeSpec_Issue2216(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	t.Run("single-swagger-file", func(t *testing.T) {

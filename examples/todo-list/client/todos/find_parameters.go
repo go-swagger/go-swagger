@@ -53,10 +53,12 @@ func NewFindParamsWithHTTPClient(client *http.Client) *FindParams {
 	}
 }
 
-/* FindParams contains all the parameters to send to the API endpoint
-   for the find operation.
+/*
+FindParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the find operation.
+
+	Typically these are written to a http.Request.
 */
 type FindParams struct {
 

@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // ExpandSpec is a command that expands the $refs in a swagger document.
@@ -73,5 +73,5 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		return nil
 	}
 
-	return ioutil.WriteFile(output, b, 0644) // #nosec
+	return os.WriteFile(output, b, 0644) // #nosec
 }

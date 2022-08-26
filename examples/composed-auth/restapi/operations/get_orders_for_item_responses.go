@@ -16,7 +16,8 @@ import (
 // GetOrdersForItemOKCode is the HTTP code returned for type GetOrdersForItemOK
 const GetOrdersForItemOKCode int = 200
 
-/*GetOrdersForItemOK multiple orders
+/*
+GetOrdersForItemOK multiple orders
 
 swagger:response getOrdersForItemOK
 */
@@ -63,7 +64,8 @@ func (o *GetOrdersForItemOK) WriteResponse(rw http.ResponseWriter, producer runt
 // GetOrdersForItemUnauthorizedCode is the HTTP code returned for type GetOrdersForItemUnauthorized
 const GetOrdersForItemUnauthorizedCode int = 401
 
-/*GetOrdersForItemUnauthorized unauthorized access for a lack of authentication
+/*
+GetOrdersForItemUnauthorized unauthorized access for a lack of authentication
 
 swagger:response getOrdersForItemUnauthorized
 */
@@ -87,7 +89,8 @@ func (o *GetOrdersForItemUnauthorized) WriteResponse(rw http.ResponseWriter, pro
 // GetOrdersForItemForbiddenCode is the HTTP code returned for type GetOrdersForItemForbidden
 const GetOrdersForItemForbiddenCode int = 403
 
-/*GetOrdersForItemForbidden forbidden access for a lack of sufficient privileges
+/*
+GetOrdersForItemForbidden forbidden access for a lack of sufficient privileges
 
 swagger:response getOrdersForItemForbidden
 */
@@ -108,7 +111,8 @@ func (o *GetOrdersForItemForbidden) WriteResponse(rw http.ResponseWriter, produc
 	rw.WriteHeader(403)
 }
 
-/*GetOrdersForItemDefault other error response
+/*
+GetOrdersForItemDefault other error response
 
 swagger:response getOrdersForItemDefault
 */

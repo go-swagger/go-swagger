@@ -1,3 +1,4 @@
+//go:build go1.11
 // +build go1.11
 
 package generate
@@ -5,7 +6,6 @@ package generate
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/jessevdk/go-flags"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // SpecFile command to generate a swagger spec from a go application
@@ -94,7 +94,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 		fmt.Println(string(b))
 		return nil
 	}
-	return ioutil.WriteFile(output, b, 0644) // #nosec
+	return os.WriteFile(output, b, 0644) // #nosec
 }
 
 func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {

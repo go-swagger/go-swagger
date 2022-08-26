@@ -46,7 +46,8 @@ func NewAddOneCreated() *AddOneCreated {
 	return &AddOneCreated{}
 }
 
-/* AddOneCreated describes a response with status code 201, with default header values.
+/*
+	AddOneCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -110,7 +111,8 @@ func NewAddOneDefault(code int) *AddOneDefault {
 	}
 }
 
-/* AddOneDefault describes a response with status code -1, with default header values.
+/*
+	AddOneDefault describes a response with status code -1, with default header values.
 
 error
 */

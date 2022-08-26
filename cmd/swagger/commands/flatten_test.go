@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,7 +16,7 @@ type executable interface {
 }
 
 func testValidRefs(t *testing.T, v executable) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	specDoc := filepath.Join(fixtureBase, "expansion", "invalid-refs.json")
@@ -25,7 +25,7 @@ func testValidRefs(t *testing.T, v executable) {
 }
 
 func testRequireParam(t *testing.T, v executable) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	result := v.Execute([]string{})
@@ -36,7 +36,7 @@ func testRequireParam(t *testing.T, v executable) {
 }
 
 func getOutput(t *testing.T, specDoc, prefix, filename string) (string, string) {
-	outDir, err := ioutil.TempDir(filepath.Dir(specDoc), "flatten")
+	outDir, err := os.MkdirTemp(filepath.Dir(specDoc), "flatten")
 	if !assert.NoError(t, err) {
 		t.FailNow()
 	}
@@ -44,7 +44,7 @@ func getOutput(t *testing.T, specDoc, prefix, filename string) (string, string) 
 }
 
 func testProduceOutput(t *testing.T, v executable, specDoc, output string) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	result := v.Execute([]string{specDoc})

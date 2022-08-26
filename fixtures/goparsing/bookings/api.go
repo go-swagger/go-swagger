@@ -3,17 +3,15 @@
 // the purpose of this application is to provide an application
 // that is using plain go code to define an API
 //
+//	Schemes: https
+//	Host: localhost
+//	Version: 0.0.1
 //
-//     Schemes: https
-//     Host: localhost
-//     Version: 0.0.1
+//	Consumes:
+//	- application/json
 //
-//     Consumes:
-//     - application/json
-//
-//     Produces:
-//     - application/json
-//
+//	Produces:
+//	- application/json
 //
 // swagger:meta
 package booking
@@ -61,7 +59,6 @@ type BookingResponse struct {
 // Bookings swagger:route GET /admin/bookings/ booking Bookings
 //
 // Bookings lists all the appointments that have been made on the site.
-//
 //
 // Consumes:
 // application/json

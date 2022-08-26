@@ -16,7 +16,6 @@ import (
 
 // MyExtCollection This type demonstrates the import generation with name mangling
 //
-//
 // swagger:model MyExtCollection
 type MyExtCollection []go_ext.MyExtType
 

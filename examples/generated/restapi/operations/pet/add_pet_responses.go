@@ -14,7 +14,8 @@ import (
 // AddPetMethodNotAllowedCode is the HTTP code returned for type AddPetMethodNotAllowed
 const AddPetMethodNotAllowedCode int = 405
 
-/*AddPetMethodNotAllowed Invalid input
+/*
+AddPetMethodNotAllowed Invalid input
 
 swagger:response addPetMethodNotAllowed
 */

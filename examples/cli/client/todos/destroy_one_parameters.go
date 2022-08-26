@@ -53,10 +53,12 @@ func NewDestroyOneParamsWithHTTPClient(client *http.Client) *DestroyOneParams {
 	}
 }
 
-/* DestroyOneParams contains all the parameters to send to the API endpoint
-   for the destroy one operation.
+/*
+DestroyOneParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the destroy one operation.
+
+	Typically these are written to a http.Request.
 */
 type DestroyOneParams struct {
 

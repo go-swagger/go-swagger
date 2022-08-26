@@ -1,10 +1,10 @@
-//+build ignore
+//go:build ignore
+// +build ignore
 
 package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,7 +23,7 @@ func Test_TupleThing(t *testing.T) {
 	cwd = filepath.Join(cwd, "json-data")
 	schemaSource := filepath.Join(cwd, "tupleThing.json")
 	// read schema
-	jsonSchema, _ := ioutil.ReadFile(schemaSource)
+	jsonSchema, _ := os.ReadFile(schemaSource)
 	schema := new(spec.Schema)
 	err := json.Unmarshal(jsonSchema, schema)
 	if !assert.NoError(t, err) {
@@ -35,7 +35,7 @@ func Test_TupleThing(t *testing.T) {
 		//t.Logf("Found: %s", fixture)
 		if !info.IsDir() && strings.HasPrefix(fixture, base) {
 			// read fixture
-			buf, _ := ioutil.ReadFile(filepath.Join("json-data", fixture))
+			buf, _ := os.ReadFile(filepath.Join("json-data", fixture))
 
 			t.Logf("INFO:Fixture: %s: %s", fixture, string(buf))
 			input := []interface{}{}

@@ -17,7 +17,6 @@ import (
 //
 // If the "noValidation" hint is omitted in the definition above, this code won't build because `time.Duration` has no `Validate` method.
 //
-//
 // swagger:model MapOfPrimitives
 type MapOfPrimitives map[string]timeext.Duration
 

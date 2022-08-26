@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -8,7 +9,6 @@ import (
 	"context"
 	"crypto/tls"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -96,7 +96,7 @@ func chunkedBlocking(withChunks bool) error {
 		return err
 	}
 
-	data, err := ioutil.ReadAll(buf)
+	data, err := io.ReadAll(buf)
 	if err != nil {
 		return err
 	}

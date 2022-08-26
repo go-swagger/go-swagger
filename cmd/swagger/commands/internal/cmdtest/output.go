@@ -4,7 +4,6 @@ package cmdtest
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -15,10 +14,10 @@ import (
 
 // AssertReadersContent compares the contents from io.Readers, optionally stripping blanks
 func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reader) bool {
-	e, err := ioutil.ReadAll(expected)
+	e, err := io.ReadAll(expected)
 	require.NoError(t, err)
 
-	a, err := ioutil.ReadAll(actual)
+	a, err := io.ReadAll(actual)
 	require.NoError(t, err)
 
 	var wants, got strings.Builder
@@ -26,7 +25,7 @@ func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reade
 	_, _ = got.Write(a)
 
 	if noBlanks {
-		r := strings.NewReplacer(" ", "", "\t", "", "\n", "")
+		r := strings.NewReplacer(" ", "", "\t", "", "\n", "", "\r", "")
 		return assert.Equalf(t, r.Replace(wants.String()), r.Replace(got.String()), "expected:\n%s\ngot %s", wants.String(), got.String())
 	}
 	return assert.Equal(t, wants.String(), got.String())
@@ -43,7 +42,7 @@ func CatchStdOut(t testing.TB, runnable func() error) ([]byte, error) {
 	e := runnable()
 	// need to close here, otherwise ReadAll never gets "EOF".
 	require.NoError(t, fakeStdout.Close())
-	newOutBytes, err := ioutil.ReadAll(r)
+	newOutBytes, err := io.ReadAll(r)
 	require.NoError(t, err)
 	require.NoError(t, r.Close())
 	return newOutBytes, e

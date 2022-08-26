@@ -1,3 +1,4 @@
+//go:build !go1.11
 // +build !go1.11
 
 // Copyright 2015 go-swagger maintainers
@@ -631,13 +632,13 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
-//ResponseTag used when specifying a response to point to a defined swagger:response
+// ResponseTag used when specifying a response to point to a defined swagger:response
 const ResponseTag = "response"
 
-//BodyTag used when specifying a response to point to a model/schema
+// BodyTag used when specifying a response to point to a model/schema
 const BodyTag = "body"
 
-//DescriptionTag used when specifying a response that gives a description of the response
+// DescriptionTag used when specifying a response that gives a description of the response
 const DescriptionTag = "description"
 
 func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef bool, description string, err error) {

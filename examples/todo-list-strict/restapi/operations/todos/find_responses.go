@@ -17,7 +17,8 @@ import (
 // FindOKCode is the HTTP code returned for type FindOK
 const FindOKCode int = 200
 
-/*FindOK OK
+/*
+FindOK OK
 
 swagger:response findOK
 */
@@ -63,7 +64,8 @@ func (o *FindOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer
 
 func (o *FindOK) FindResponder() {}
 
-/*FindDefault error
+/*
+FindDefault error
 
 swagger:response findDefault
 */

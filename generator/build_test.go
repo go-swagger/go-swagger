@@ -1,7 +1,7 @@
 package generator_test
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -64,11 +64,11 @@ func TestGenerateAndBuild(t *testing.T) {
 		for name, cas := range cases {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
-				log.SetOutput(ioutil.Discard)
+				log.SetOutput(io.Discard)
 
 				spec := filepath.FromSlash(cas.spec)
 
-				generated, err := ioutil.TempDir(filepath.Dir(spec), "generated")
+				generated, err := os.MkdirTemp(filepath.Dir(spec), "generated")
 				require.NoErrorf(t, err, "TempDir()=%s", generated)
 				defer func() { _ = os.RemoveAll(generated) }()
 

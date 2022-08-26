@@ -46,7 +46,8 @@ func NewFindOK() *FindOK {
 	return &FindOK{}
 }
 
-/*FindOK handles this case with default header values.
+/*
+FindOK handles this case with default header values.
 
 OK
 */
@@ -79,7 +80,8 @@ func NewFindDefault(code int) *FindDefault {
 	}
 }
 
-/*FindDefault handles this case with default header values.
+/*
+FindDefault handles this case with default header values.
 
 error
 */

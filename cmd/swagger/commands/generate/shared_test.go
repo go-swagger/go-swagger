@@ -1,7 +1,7 @@
 package generate
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"testing"
@@ -21,7 +21,7 @@ func resetDefaultOpts() *analysis.FlattenOpts {
 }
 
 func Test_Shared_SetFlattenOptions(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// testing multiple options settings for flatten:
@@ -118,13 +118,13 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 }
 
 func Test_Shared_ReadConfig(t *testing.T) {
-	tmpFile, errio := ioutil.TempFile("", "tmp-config*.yaml")
+	tmpFile, errio := os.CreateTemp("", "tmp-config*.yaml")
 	require.NoError(t, errio)
 	defer func() {
 		_ = os.Remove(tmpFile.Name())
 	}()
 	tmpConfig := tmpFile.Name()
-	errio = ioutil.WriteFile(tmpConfig, []byte(`param: 123
+	errio = os.WriteFile(tmpConfig, []byte(`param: 123
 other: abc
 `), 0600)
 	require.NoError(t, errio)

@@ -2,19 +2,19 @@
 
 // Package restapi File Upload
 //
-//  Example server uploading a file
-//  Schemes:
-//    http
-//  Host: localhost
-//  BasePath: /
-//  Version: 1.0.0
+//	Example server uploading a file
+//	Schemes:
+//	  http
+//	Host: localhost
+//	BasePath: /
+//	Version: 1.0.0
 //
-//  Consumes:
-//    - application/json
-//    - multipart/form-data
+//	Consumes:
+//	  - application/json
+//	  - multipart/form-data
 //
-//  Produces:
-//    - application/json
+//	Produces:
+//	  - application/json
 //
 // swagger:meta
 package restapi

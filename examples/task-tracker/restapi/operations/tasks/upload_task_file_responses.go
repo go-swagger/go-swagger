@@ -16,7 +16,8 @@ import (
 // UploadTaskFileCreatedCode is the HTTP code returned for type UploadTaskFileCreated
 const UploadTaskFileCreatedCode int = 201
 
-/*UploadTaskFileCreated File added
+/*
+UploadTaskFileCreated File added
 
 swagger:response uploadTaskFileCreated
 */
@@ -37,7 +38,8 @@ func (o *UploadTaskFileCreated) WriteResponse(rw http.ResponseWriter, producer r
 	rw.WriteHeader(201)
 }
 
-/*UploadTaskFileDefault Error response
+/*
+UploadTaskFileDefault Error response
 
 swagger:response uploadTaskFileDefault
 */

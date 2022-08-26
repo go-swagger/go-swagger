@@ -29,12 +29,12 @@ func NewDeleteOrder(ctx *middleware.Context, handler DeleteOrderHandler) *Delete
 	return &DeleteOrder{Context: ctx, Handler: handler}
 }
 
-/* DeleteOrder swagger:route DELETE /stores/order/{orderId} store deleteOrder
+/*
+	DeleteOrder swagger:route DELETE /stores/order/{orderId} store deleteOrder
 
-Delete purchase order by ID
+# Delete purchase order by ID
 
 For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors
-
 */
 type DeleteOrder struct {
 	Context *middleware.Context

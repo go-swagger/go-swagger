@@ -1,3 +1,4 @@
+//go:build !go1.11
 // +build !go1.11
 
 // Copyright 2015 go-swagger maintainers

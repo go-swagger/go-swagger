@@ -26,26 +26,25 @@ import (
 //
 // In addition, it demonstrates how pointer generation may be controlled with the nullable hint or the x-nullable extension.
 //
-// type Zzz struct {
-// 	Beta []MyOtherType `json:"beta"`
-// 	Delta MyInteger `json:"delta,omitempty"`
-// 	Epsilon []custom.MyAlternateType `json:"epsilon"`
-// 	Gamma fred.MyAlternateInteger `json:"gamma,omitempty"`
-// 	Meta MyType `json:"meta,omitempty"`
+//	type Zzz struct {
+//		Beta []MyOtherType `json:"beta"`
+//		Delta MyInteger `json:"delta,omitempty"`
+//		Epsilon []custom.MyAlternateType `json:"epsilon"`
+//		Gamma fred.MyAlternateInteger `json:"gamma,omitempty"`
+//		Meta MyType `json:"meta,omitempty"`
 //
-// 	NullableBeta []*MyOtherType `json:"nullableBeta"`
-// 	NullableDelta *MyInteger `json:"nullableDelta,omitempty"`
-// 	NullableEpsilon []*custom.MyAlternateType `json:"nullableEpsilon"`
-// 	NullableGamma *fred.MyAlternateInteger `json:"nullableGamma,omitempty"`
-// 	NullableMeta MyType `json:"nullableMeta,omitempty"`
+//		NullableBeta []*MyOtherType `json:"nullableBeta"`
+//		NullableDelta *MyInteger `json:"nullableDelta,omitempty"`
+//		NullableEpsilon []*custom.MyAlternateType `json:"nullableEpsilon"`
+//		NullableGamma *fred.MyAlternateInteger `json:"nullableGamma,omitempty"`
+//		NullableMeta MyType `json:"nullableMeta,omitempty"`
 //
-// 	ReqBeta []MyOtherType `json:"reqBeta"`
-// 	ReqDelta *MyInteger `json:"reqDelta"`
-// 	ReqEpsilon []custom.MyAlternateType `json:"reqEpsilon"`
-// 	ReqGamma *fred.MyAlternateInteger `json:"reqGamma"`
-// 	ReqMeta *MyType `json:"reqMeta"`
-// }
-//
+//		ReqBeta []MyOtherType `json:"reqBeta"`
+//		ReqDelta *MyInteger `json:"reqDelta"`
+//		ReqEpsilon []custom.MyAlternateType `json:"reqEpsilon"`
+//		ReqGamma *fred.MyAlternateInteger `json:"reqGamma"`
+//		ReqMeta *MyType `json:"reqMeta"`
+//	}
 //
 // swagger:model Zzz
 type Zzz struct {

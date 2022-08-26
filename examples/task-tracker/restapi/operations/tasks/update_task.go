@@ -29,15 +29,14 @@ func NewUpdateTask(ctx *middleware.Context, handler UpdateTaskHandler) *UpdateTa
 	return &UpdateTask{Context: ctx, Handler: handler}
 }
 
-/* UpdateTask swagger:route PUT /tasks/{id} tasks updateTask
+/*
+	UpdateTask swagger:route PUT /tasks/{id} tasks updateTask
 
 Updates the details for a task.
 
 Allows for updating a task.
 This operation requires authentication so that we know which user
 last updated the task.
-
-
 */
 type UpdateTask struct {
 	Context *middleware.Context

@@ -14,7 +14,8 @@ import (
 // DeleteUserBadRequestCode is the HTTP code returned for type DeleteUserBadRequest
 const DeleteUserBadRequestCode int = 400
 
-/*DeleteUserBadRequest Invalid username supplied
+/*
+DeleteUserBadRequest Invalid username supplied
 
 swagger:response deleteUserBadRequest
 */
@@ -38,7 +39,8 @@ func (o *DeleteUserBadRequest) WriteResponse(rw http.ResponseWriter, producer ru
 // DeleteUserNotFoundCode is the HTTP code returned for type DeleteUserNotFound
 const DeleteUserNotFoundCode int = 404
 
-/*DeleteUserNotFound User not found
+/*
+DeleteUserNotFound User not found
 
 swagger:response deleteUserNotFound
 */

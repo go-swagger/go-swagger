@@ -16,7 +16,8 @@ import (
 // PetUploadImageOKCode is the HTTP code returned for type PetUploadImageOK
 const PetUploadImageOKCode int = 200
 
-/*PetUploadImageOK successful operation
+/*
+PetUploadImageOK successful operation
 
 swagger:response petUploadImageOK
 */

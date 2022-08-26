@@ -13,9 +13,9 @@ commands:
             n=0
             until [ $n -ge 5 ]
             do
-                go mod download && break
-                n=$[$n+1]
-                sleep 1
+              go mod download && break
+              n=$[$n+1]
+              sleep 1
             done
             <<# parameters.test >>
             # test dependencies
@@ -33,7 +33,7 @@ commands:
       - run:
           name: Prepare directory layout
           command: |
-             mkdir -p <<parameters.dir>>
+            mkdir -p <<parameters.dir>>
 
   build_statically_linked_binary:
     description: "builds a statically linked binary"

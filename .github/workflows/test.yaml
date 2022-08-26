@@ -1,0 +1,271 @@
+name: Run CI
+
+env:
+  GOCOVMODE: atomic
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - main
+
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        go: [1.19]
+        os: [ubuntu-latest]
+    name: lint
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.48
+          only-new-issues: true
+
+  test:
+    needs: [lint]
+    strategy:
+      matrix:
+        go: [1.18, 1.19]
+        os: [ubuntu-latest] # TODO: add macos-latest and windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install golang.org/x/tools/cmd/...@latest
+          go install gotest.tools/gotestsum@latest
+
+      - name: Build binary
+        run: ./hack/build-docker.sh --github-action
+
+      - name: Run unit tests with code coverage
+        run: gotestsum --junitfile ./go-test-report.xml -- -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+
+      - name: Publish To Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./go-test-report.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  sanity_check:
+    needs: [lint]
+    strategy:
+      matrix:
+        go: [1.18, 1.19]
+        os: [macos-latest, windows-latest] # TODO: add , windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install golang.org/x/tools/cmd/...@latest
+          go install gotest.tools/gotestsum@latest
+          go install ./cmd/swagger
+
+      - name: Run validation tests
+        run: |
+          swagger validate fixtures/bugs/2493/fixture-2492.json
+          swagger validate fixtures/bugs/2493/fixture-2493.json
+          swagger validate fixtures/bugs/2493/fixture-2492.yaml
+          swagger validate fixtures/bugs/2493/fixture-2493.yaml
+
+      - name: Run unit tests
+        run: go test -v -timeout 20m ./...
+
+  codegen_test:
+    needs: [lint]
+    strategy:
+      matrix:
+        go: [1.18, 1.19]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install golang.org/x/tools/cmd/...@latest
+          go install gotest.tools/gotestsum@latest
+          go get gotest.tools/icmd@latest
+
+      - name: Build binary
+        run: ./hack/build-docker.sh --github-action
+
+      - name: Run codegen tests
+        run: go test -v -timeout 30m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
+
+  canary_test:
+    needs: [lint]
+    strategy:
+      matrix:
+        go: [1.18, 1.19]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install golang.org/x/tools/cmd/...@latest
+          go install gotest.tools/gotestsum@latest
+          go get gotest.tools/icmd@latest
+
+      - name: Build binary
+        run: ./hack/build-docker.sh --github-action
+
+      - name: Run canary tests
+        run: go test -v -timeout 30m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
+
+  docker_dev:
+    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Quay Registry
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=dev
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+
+  docker:
+    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Quay Registry
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}

@@ -46,7 +46,8 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 	return &DestroyOneNoContent{}
 }
 
-/* DestroyOneNoContent describes a response with status code 204, with default header values.
+/*
+	DestroyOneNoContent describes a response with status code 204, with default header values.
 
 Deleted
 */
@@ -69,7 +70,8 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 	}
 }
 
-/* DestroyOneDefault describes a response with status code -1, with default header values.
+/*
+	DestroyOneDefault describes a response with status code -1, with default header values.
 
 error
 */
