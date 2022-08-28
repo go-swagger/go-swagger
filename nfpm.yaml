@@ -5,7 +5,7 @@
 name: "swagger"
 arch: "amd64"
 platform: "linux"
-version: "${CIRCLE_TAG}"
+version: "${GITHUB_REF_NAME}"
 section: "default"
 maintainer: "Ivan Porto Carrero <ivan@flanders.co.nz>"
 description: |

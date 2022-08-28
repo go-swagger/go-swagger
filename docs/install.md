@@ -16,17 +16,36 @@ First grab the image:
 docker pull quay.io/goswagger/swagger
 ```
 
+or 
+
+```
+docker pull ghcr.io/go-swagger/go-swagger
+```
+
 #### For Mac And Linux users:
 
 ```bash
-alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=/go -v $(go env GOPATH):/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger'
+alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $PWD quay.io/goswagger/swagger'
+swagger version
+```
+
+or 
+
+```bash
+alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $PWD ghcr.io/go-swagger/go-swagger'
 swagger version
 ```
 
 #### For windows users:
 
 ```cmd
-docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger
+docker run --rm -it  -v %CD%:/app -w /app quay.io/goswagger/swagger
+```
+
+or
+
+```cmd
+docker run --rm -it  -v %CD%:/app -w /app ghcr.io/go-swagger/go-swagger
 ```
 
 You can put the following in a file called **swagger.bat** and include it in your path environment variable to act as an alias.
@@ -34,7 +53,15 @@ You can put the following in a file called **swagger.bat** and include it in you
 ```batch
 @echo off
 echo.
-docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger %*
+docker run --rm -it -v %CD%:/app -w /app quay.io/goswagger/swagger %*
+```
+
+or
+
+```batch
+@echo off
+echo.
+docker run --rm -it -v %CD%:/app -w /app ghcr.io/go-swagger/go-swagger %*
 ```
 
 ### Homebrew/Linuxbrew
