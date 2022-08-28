@@ -9,7 +9,6 @@ on:
       - v*
     branches:
       - master
-      - main
 
   pull_request:
 
@@ -201,7 +200,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -213,6 +212,87 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
+
+  publish_release:
+    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install github.com/aktau/github-release@latest
+          go install github.com/mitchellh/gox@latest
+          go install gotest.tools/gotestsum@latest
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+      - name: Build release
+        run: |
+          rm -rf dist
+          mkdir -p dist/bin
+          mkdir -p dist/build
+
+          build_binary() {
+            LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
+            LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
+            gox -ldflags "$LDFLAGS" -tags netgo -output "./dist/bin/{{.Dir}}_{{.OS}}_{{.Arch}}" "$@" ./cmd/swagger
+          }
+          build_binary -os="linux darwin windows" -arch="amd64"
+          build_binary -os="linux darwin" -arch="arm64"
+          build_binary -os="linux" -arch="arm ppc64le"
+
+          nfpm p -p deb -t dist/build
+          nfpm p -p rpm -t dist/build
+
+      - name: Push RPM
+        id: push_rpm
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "rpm"
+          owner: "go-swagger/"
+          repo: "actions"
+          distro: "fedora"
+          version: "any-version"
+          file: "dist/build/swagger-*.x86_64.rpm"
+
+      - name: Push Deb
+        id: push
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "deb"
+          owner: "go-swagger/"
+          repo: "actions"
+          distro: "debian"
+          release: "any-version"
+          file: "dist/build/swagger_*_amd64.deb"
+
+      - name: Publish Binaries
+        run: |
+          set +x
+          notes="$(cat "notes/${GITHUB_REF_NAME}.md")"
+          set -x
+
+          pushd dist/bin || exit 1
+          sha1sum * > sha1sum.txt
+          sha256sum * > sha256sum.txt
+
+          github-release release -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -d "$notes"
+          for f in *; do
+            github-release upload -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -n "$f" -f "$f"
+          done
+
+          popd || exit 1
 
   docker:
     needs: [lint, test, sanity_check, codegen_test, canary_test]
@@ -257,7 +337,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.CR_PAT }}
 
       - name: Build and push
         uses: docker/build-push-action@v3
