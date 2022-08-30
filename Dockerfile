@@ -8,12 +8,12 @@ ARG tag_name="dev"
 ADD . /work
 WORKDIR /work
 
-RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base
+RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base binutils-gold
 
 RUN mkdir -p bin &&\
-  LDFLAGS="-X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=${commit_hash}" &&\
+  LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=${commit_hash}" &&\
   LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=${tag_name}" &&\
-  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o bin/swagger -ldflags "$LDFLAGS" -a ./cmd/swagger
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -tags osusergo,netgo -o bin/swagger -ldflags "$LDFLAGS" -a ./cmd/swagger
 
 FROM --platform=$TARGETPLATFORM golang:alpine
 

@@ -2,10 +2,10 @@
 # Make sure to check the documentation at http://goreleaser.com
 before:
   hooks:
-    # you may remove this if you don't use vgo
     - go mod tidy
 builds:
 - main: ./cmd/swagger/swagger.go
+  binary: "swagger_{{.Target}}"
   env:
   - CGO_ENABLED=0
   goos:
