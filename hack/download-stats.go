@@ -12,10 +12,12 @@ import (
 
 var (
 	allVersions bool
+	version     string = "latest"
 )
 
 func init() {
 	flag.BoolVar(&allVersions, "all", allVersions, "when specified it will download stats for all versions")
+	flag.StringVar(&version, "version", version, "the version to download stats for")
 }
 
 func main() {
@@ -57,17 +59,25 @@ func main() {
 
 	for i, result := range results {
 		if !allVersions {
-			if i > 0 {
+			if (version == "latest" || version == "") && i > 0 {
 				break
 			}
 		}
-		if i > 0 {
+		if allVersions && i > 0 {
 			fmt.Println()
+		}
+
+		if !allVersions && (version != "latest" && version != "") && result.TagName != version {
+			continue
 		}
 
 		fmt.Println("Stats for release:", result.TagName)
 		for _, asset := range result.Assets {
 			fmt.Printf("%25s: %d\n", asset.Name, asset.Downloads)
+		}
+
+		if !allVersions && (version != "latest" && version != "") && result.TagName != version {
+			break
 		}
 	}
 }

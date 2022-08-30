@@ -3,7 +3,7 @@
 # check https://nfpm.goreleaser.com/configuration for detailed usage
 #
 name: "swagger"
-arch: "amd64"
+arch: "${GOARCH}"
 platform: "linux"
 version: "${GITHUB_REF_NAME}"
 section: "default"
@@ -14,6 +14,6 @@ vendor: "go-swagger"
 homepage: "https://goswagger.io"
 license: "ASL 2.0"
 contents:
-- src: ./dist/bin/swagger_linux_amd64
+- src: ./dist/bin/swagger_linux_${GOARCH}
   dst: /usr/bin/swagger
 

@@ -65,3 +65,4 @@ coverage.txt
 hack/deploy.env
 
 dist/
+.circleci/*.sh

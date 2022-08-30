@@ -229,8 +229,6 @@ jobs:
       - name: Install Tools
         run: |
           go install github.com/aktau/github-release@latest
-          go install github.com/mitchellh/gox@master
-          go install gotest.tools/gotestsum@latest
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
 
       - name: Build release
@@ -242,11 +240,25 @@ jobs:
           build_binary() {
             LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
             LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
-            gox -ldflags "$LDFLAGS" -tags netgo -output "./dist/bin/{{.Dir}}_{{.OS}}_{{.Arch}}" "$@" ./cmd/swagger
+            out="swagger_$1_$2"
+            if [[ $1 == "windows" ]]; then
+              out="${out}.exe"
+            fi
+            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -tags osusergo,netgo -o "./dist/bin/$out" ./cmd/swagger
+
+            if [[ $1 == "linux" ]]; then
+              GOARCH=$2 nfpm p -p deb -t dist/build
+              GOARCH=$2 nfpm p -p rpm -t dist/build
+            fi
           }
-          build_binary -os="linux darwin windows" -arch="amd64"
-          build_binary -os="linux darwin" -arch="arm64"
-          build_binary -os="linux" -arch="arm ppc64le"
+          build_binary linux amd64
+          build_binary linux arm64
+          build_binary linux arm
+          build_binary linux ppc64le
+          build_binary darwin amd64
+          build_binary darwin arm64
+          build_binary windows amd64
+          build_binary windows arm64
 
           nfpm p -p deb -t dist/build
           nfpm p -p rpm -t dist/build

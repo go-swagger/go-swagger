@@ -6,6 +6,7 @@ before:
     - go mod tidy
 builds:
 - main: ./cmd/swagger/swagger.go
+  binary: "swagger_{{.Target}}"
   env:
   - CGO_ENABLED=0
   goos:
