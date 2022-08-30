@@ -18,17 +18,14 @@ permissions:
 
 jobs:
   lint:
-    strategy:
-      matrix:
-        go: [1.19]
-        os: [ubuntu-latest]
     name: lint
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: "^1"
+          check-latest: true
           cache: true
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
@@ -224,6 +221,8 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
+          go-version: "^1"
+          check-latest: true
           cache: true
 
       - name: Install Tools
@@ -233,6 +232,7 @@ jobs:
 
       - name: Build release
         run: |
+          set -x
           rm -rf dist
           mkdir -p dist/bin
           mkdir -p dist/build
@@ -245,20 +245,21 @@ jobs:
               out="${out}.exe"
             fi
             GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -tags osusergo,netgo -o "./dist/bin/$out" ./cmd/swagger
-
-            if [[ $1 == "linux" ]]; then
-              GOARCH=$2 nfpm p -p deb -t dist/build
-              GOARCH=$2 nfpm p -p rpm -t dist/build
-            fi
           }
-          build_binary linux amd64
-          build_binary linux arm64
-          build_binary linux arm
-          build_binary linux ppc64le
-          build_binary darwin amd64
-          build_binary darwin arm64
-          build_binary windows amd64
-          build_binary windows arm64
+
+          go mod download
+
+          build_binary linux amd64 &
+          build_binary linux arm64 &
+          build_binary linux arm &
+          build_binary linux ppc64le &
+          wait
+          build_binary darwin amd64 &
+          build_binary darwin arm64 &
+          wait
+          build_binary windows amd64 &
+          build_binary windows arm64 &
+          wait
 
           nfpm p -p deb -t dist/build
           nfpm p -p rpm -t dist/build
@@ -300,6 +301,7 @@ jobs:
           sha256sum * > sha256sum.txt
 
           github-release release -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -d "$notes"
+          sleep 1
           for f in *; do
             github-release upload -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -n "$f" -f "$f"
           done
