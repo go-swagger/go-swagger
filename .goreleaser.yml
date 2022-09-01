@@ -5,7 +5,7 @@ before:
     - go mod tidy
 builds:
 - main: ./cmd/swagger/swagger.go
-  binary: "swagger_{{.Target}}"
+  binary: "swagger"
   env:
   - CGO_ENABLED=0
   goos:
@@ -18,13 +18,17 @@ builds:
     - arm
     - arm64
     - ppc64le
+  goarm:
+    - "6"
+    - "7"
+  goamd64:
+    - v2
+    - v3
+    - v4
 archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
+- format: binary
+  wrap_in_directory: false
+  name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ if not (eq .Amd64 \"v1\") }}{{ .Amd64 }}{{ end }}"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
