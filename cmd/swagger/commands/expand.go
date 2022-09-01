@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
-	yaml "gopkg.in/yaml.v3"
 )
 
 // ExpandSpec is a command that expands the $refs in a swagger document.
@@ -47,6 +47,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 	var err error
 	asJSON := format == "json"
 
+	log.Println("format = ", format)
 	switch {
 	case pretty && asJSON:
 		b, err = json.MarshalIndent(swspec, "", "  ")
@@ -56,12 +57,15 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		// marshals as YAML
 		b, err = json.Marshal(swspec)
 		if err == nil {
-			d, ery := swag.BytesToYAMLDoc(b)
-			if ery != nil {
-				return ery
+			var data swag.JSONMapSlice
+			if erg := json.Unmarshal(b, &data); erg != nil {
+				log.Fatalln(erg)
 			}
-			b, err = yaml.Marshal(d)
+			var bb interface{}
+			bb, err = data.MarshalYAML()
+			b = bb.([]byte)
 		}
+
 	}
 
 	if err != nil {

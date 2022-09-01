@@ -271,10 +271,10 @@ jobs:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
           command: "push"
           format: "rpm"
-          owner: "go-swagger/"
-          repo: "actions"
+          owner: "go-swagger"
+          repo: "go-swagger"
           distro: "fedora"
-          version: "any-version"
+          release: "any-version"
           file: "dist/build/swagger-*.x86_64.rpm"
 
       - name: Push Deb
@@ -284,8 +284,8 @@ jobs:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
           command: "push"
           format: "deb"
-          owner: "go-swagger/"
-          repo: "actions"
+          owner: "go-swagger"
+          repo: "go-swagger"
           distro: "debian"
           release: "any-version"
           file: "dist/build/swagger_*_amd64.deb"
