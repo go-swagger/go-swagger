@@ -291,6 +291,8 @@ jobs:
           file: "dist/build/swagger_*_amd64.deb"
 
       - name: Publish Binaries
+        env:
+          CR_PAT: ${{ secrets.CR_PAT }}
         run: |
           set +x
           notes="$(cat "notes/${GITHUB_REF_NAME}.md")"
@@ -300,10 +302,10 @@ jobs:
           sha1sum * > sha1sum.txt
           sha256sum * > sha256sum.txt
 
-          github-release release -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -d "$notes"
+          github-release release -s "$CR_PAT" -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -d "$notes"
           sleep 1
           for f in *; do
-            github-release upload -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -n "$f" -f "$f"
+            github-release upload -s "$CR_PAT" -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -n "$f" -f "$f"
           done
 
           popd || exit 1
