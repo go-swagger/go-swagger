@@ -264,6 +264,11 @@ jobs:
           nfpm p -p deb -t dist/build
           nfpm p -p rpm -t dist/build
 
+          pushd dist/bin || exit 1
+          sha1sum * > sha1sum.txt
+          sha256sum * > sha256sum.txt
+          popd || exit 1
+
       - name: Push RPM
         id: push_rpm
         uses: cloudsmith-io/action@master
@@ -291,24 +296,10 @@ jobs:
           file: "dist/build/swagger_*_amd64.deb"
 
       - name: Publish Binaries
+        uses: fnkr/github-action-ghr@v1
         env:
-          CR_PAT: ${{ secrets.CR_PAT }}
-        run: |
-          set +x
-          notes="$(cat "notes/${GITHUB_REF_NAME}.md")"
-          set -x
-
-          pushd dist/bin || exit 1
-          sha1sum * > sha1sum.txt
-          sha256sum * > sha256sum.txt
-
-          github-release release -s "$CR_PAT" -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -d "$notes"
-          sleep 1
-          for f in *; do
-            github-release upload -s "$CR_PAT" -u "$GITHUB_REPOSITORY_OWNER" -r "${GITHUB_REPOSITORY##*/}" -t "$GITHUB_REF_NAME" -n "$f" -f "$f"
-          done
-
-          popd || exit 1
+          GHR_PATH: dist/bin/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     needs: [lint, test, sanity_check, codegen_test, canary_test]
