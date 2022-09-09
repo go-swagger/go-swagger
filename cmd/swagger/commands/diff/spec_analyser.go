@@ -33,6 +33,8 @@ type SpecAnalyser struct {
 	Definitions1          spec.Definitions
 	Definitions2          spec.Definitions
 	ReferencedDefinitions map[string]bool
+
+	schemasCompared map[string]struct{}
 }
 
 // NewSpecAnalyser returns an empty SpecDiffs
@@ -45,6 +47,7 @@ func NewSpecAnalyser() *SpecAnalyser {
 
 // Analyse the differences in two specs
 func (sd *SpecAnalyser) Analyse(spec1, spec2 *spec.Swagger) error {
+	sd.schemasCompared = make(map[string]struct{})
 	sd.Definitions1 = spec1.Definitions
 	sd.Definitions2 = spec2.Definitions
 	sd.urlMethods1 = getURLMethodsFor(spec1)
@@ -425,8 +428,14 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 	}
 
 	if isRefType(schema1) {
+		key := schemaLocationKey(location)
+		if _, ok := sd.schemasCompared[key]; ok {
+			return
+		}
+		sd.schemasCompared[key] = struct{}{}
 		schema1, _ = sd.schemaFromRef(getRef(schema1), &sd.Definitions1)
 	}
+
 	if isRefType(schema2) {
 		schema2, _ = sd.schemaFromRef(getRef(schema2), &sd.Definitions2)
 	}
@@ -520,6 +529,10 @@ func (sd *SpecAnalyser) schemaFromRef(ref spec.Ref, defns *spec.Definitions) (ac
 	actualSchema = &foundSchema
 	return
 
+}
+
+func schemaLocationKey(location DifferenceLocation) string {
+	return location.Method + location.URL + location.Node.Field + location.Node.TypeName
 }
 
 // PropertyDefn combines a property with its required-ness
