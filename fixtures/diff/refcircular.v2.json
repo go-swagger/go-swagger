@@ -30,7 +30,7 @@
     "A1": {
       "type": "object",
       "properties": {
-        "id": { "type": "integer" },`
+        "id": { "type": "integer" },
         "name": { "type": "string" },
         "a1":{ "$ref": "#/definitions/A1" }
       }
