@@ -396,6 +396,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
 				newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxExampleFmt, "")}),
 				newSingleLineTagParser("required", &setRequiredParam{&ps}),
+				newMultiLineTagParser("Extensions", newSetExtensions(opExtensionsSetter(op)), true),
 			}
 
 			itemsTaggers := func(items *spec.Items, level int) []tagParser {
