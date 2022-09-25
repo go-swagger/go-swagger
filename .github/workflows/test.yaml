@@ -244,22 +244,19 @@ jobs:
             if [[ $1 == "windows" ]]; then
               out="${out}.exe"
             fi
-            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -tags osusergo,netgo -o "./dist/bin/$out" ./cmd/swagger
+            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -tags osusergo,netgo -o "./dist/bin/$out" ./cmd/swagger
           }
 
           go mod download
 
-          build_binary linux amd64 &
-          build_binary linux arm64 &
-          build_binary linux arm &
-          build_binary linux ppc64le &
-          wait
-          build_binary darwin amd64 &
-          build_binary darwin arm64 &
-          wait
-          build_binary windows amd64 &
-          build_binary windows arm64 &
-          wait
+          build_binary linux amd64
+          build_binary linux arm64
+          build_binary linux arm
+          build_binary linux ppc64le
+          build_binary darwin amd64
+          build_binary darwin arm64
+          build_binary windows amd64
+          build_binary windows arm64
 
           nfpm p -p deb -t dist/build
           nfpm p -p rpm -t dist/build
