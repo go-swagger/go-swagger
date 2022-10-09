@@ -40,6 +40,7 @@ type ServeCmd struct {
 	SpecFiles               []string `long:"spec-file" description:"the specs to serve. if specs are set, the first argument as spec will be ignored. \"spec-file\" can be set multiple times to serve multiple spec files." `
 	AutoReloadSpecs         bool     `long:"auto-reload-specs" description:"auto reload the content of the specs to keep them on the latest version."`
 	AutoReloadSpecsInterval int      `long:"auto-reload-specs-interval" description:"the interval seconds of renewing the spec files." default:"30"`
+	SiteTitle               string   `long:"site-title" description:"title for the documentation site."`
 	specServeInfo           map[string]*SpecServeInfo
 	wg                      sync.WaitGroup
 	errFuture               chan error
@@ -95,6 +96,7 @@ func (s *ServeCmd) Execute(args []string) error {
 				BasePath: basePath,
 				SpecURL:  path.Join(basePath, "swagger.json"),
 				Path:     s.Path,
+				Title:    s.SiteTitle,
 			}, handler)
 			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, "docs"))
 		} else if visit != "" || s.Flavor == "swagger" {
@@ -112,6 +114,7 @@ func (s *ServeCmd) Execute(args []string) error {
 				SpecURL:  path.Join(basePath, "swagger.json"),
 				Path:     s.Path,
 				SpecURLs: swaggerSpecURLs,
+				Title:    s.SiteTitle,
 			}, handler)
 			visit = fmt.Sprintf("http://%s:%d%s", sh, sp, path.Join(basePath, s.Path))
 		}
