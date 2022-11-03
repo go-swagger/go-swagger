@@ -57,7 +57,7 @@ type Model struct {
 
 	NoStruct              bool     `long:"skip-struct" description:"when present will not generate the model struct" hidden:"deprecated"`
 	Name                  []string `long:"name" short:"n" description:"the model to generate, repeat for multiple (defaults to all). Same as --models"`
-	AcceptDefinitionsOnly bool     `long:"accept-definitions-only" description:"accepts a partial swagger spec wih only the definitions key"`
+	AcceptDefinitionsOnly bool     `long:"accept-definitions-only" description:"accepts a partial swagger spec with only the definitions key"`
 }
 
 func (m Model) apply(opts *generator.GenOpts) {

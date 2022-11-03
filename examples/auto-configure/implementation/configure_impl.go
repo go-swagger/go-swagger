@@ -44,7 +44,7 @@ func (i *ConfigureImpl) SetupMiddlewares(handler http.Handler) http.Handler {
 
 func (i *ConfigureImpl) SetupGlobalMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("Recieved request on path: %v", req.URL.String())
+		log.Printf("Received request on path: %v", req.URL.String())
 		handler.ServeHTTP(w, req)
 	})
 }
