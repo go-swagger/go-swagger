@@ -330,7 +330,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	}
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
-	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overriden for slices and maps
+	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overridden for slices and maps
 	result.IsEnumCI = false
 	return
 }

@@ -122,7 +122,7 @@ func (sd *SpecAnalyser) analyseEndpoints() {
 	sd.findAddedEndpoints()
 }
 
-// AnalyseDefinitions check for changes to defintion objects not referenced in any endpoint
+// AnalyseDefinitions check for changes to definition objects not referenced in any endpoint
 func (sd *SpecAnalyser) AnalyseDefinitions() {
 	alreadyReferenced := map[string]bool{}
 	for k := range sd.ReferencedDefinitions {
