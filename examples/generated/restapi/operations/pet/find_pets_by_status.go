@@ -29,12 +29,12 @@ func NewFindPetsByStatus(ctx *middleware.Context, handler FindPetsByStatusHandle
 	return &FindPetsByStatus{Context: ctx, Handler: handler}
 }
 
-/* FindPetsByStatus swagger:route GET /pets/findByStatus pet findPetsByStatus
+/*
+	FindPetsByStatus swagger:route GET /pets/findByStatus pet findPetsByStatus
 
-Finds Pets by status
+# Finds Pets by status
 
 Multiple status values can be provided with comma separated strings
-
 */
 type FindPetsByStatus struct {
 	Context *middleware.Context

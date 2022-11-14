@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,7 +15,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-	"gopkg.in/yaml.v2"
+
+	yamlv2 "gopkg.in/yaml.v2"
 )
 
 func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
@@ -149,11 +149,11 @@ func findSwaggerSpec(nm string) (string, error) {
 // WithAutoXOrder amends the spec to specify property order as they appear
 // in the spec (supports yaml documents only).
 func WithAutoXOrder(specPath string) string {
-	lookFor := func(ele interface{}, key string) (yaml.MapSlice, bool) {
-		if slice, ok := ele.(yaml.MapSlice); ok {
+	lookFor := func(ele interface{}, key string) (yamlv2.MapSlice, bool) {
+		if slice, ok := ele.(yamlv2.MapSlice); ok {
 			for _, v := range slice {
 				if v.Key == key {
-					if slice, ok := v.Value.(yaml.MapSlice); ok {
+					if slice, ok := v.Value.(yamlv2.MapSlice); ok {
 						return slice, ok
 					}
 				}
@@ -166,7 +166,7 @@ func WithAutoXOrder(specPath string) string {
 	addXOrder = func(element interface{}) {
 		if props, ok := lookFor(element, "properties"); ok {
 			for i, prop := range props {
-				if pSlice, ok := prop.Value.(yaml.MapSlice); ok {
+				if pSlice, ok := prop.Value.(yamlv2.MapSlice); ok {
 					isObject := false
 					xOrderIndex := -1 // find if x-order already exists
 
@@ -181,9 +181,9 @@ func WithAutoXOrder(specPath string) string {
 					}
 
 					if xOrderIndex > -1 { // override existing x-order
-						pSlice[xOrderIndex] = yaml.MapItem{Key: xOrder, Value: i}
+						pSlice[xOrderIndex] = yamlv2.MapItem{Key: xOrder, Value: i}
 					} else { // append new x-order
-						pSlice = append(pSlice, yaml.MapItem{Key: xOrder, Value: i})
+						pSlice = append(pSlice, yamlv2.MapItem{Key: xOrder, Value: i})
 					}
 					prop.Value = pSlice
 					props[i] = prop
@@ -196,7 +196,12 @@ func WithAutoXOrder(specPath string) string {
 		}
 	}
 
-	yamlDoc, err := swag.YAMLData(specPath)
+	data, err := swag.LoadFromFileOrHTTP(specPath)
+	if err != nil {
+		panic(err)
+	}
+
+	yamlDoc, err := BytesToYAMLv2Doc(data)
 	if err != nil {
 		panic(err)
 	}
@@ -209,21 +214,35 @@ func WithAutoXOrder(specPath string) string {
 
 	addXOrder(yamlDoc)
 
-	out, err := yaml.Marshal(yamlDoc)
+	out, err := yamlv2.Marshal(yamlDoc)
 	if err != nil {
 		panic(err)
 	}
 
-	tmpDir, err := ioutil.TempDir("", "go-swagger-")
+	tmpDir, err := os.MkdirTemp("", "go-swagger-")
 	if err != nil {
 		panic(err)
 	}
 
 	tmpFile := filepath.Join(tmpDir, filepath.Base(specPath))
-	if err := ioutil.WriteFile(tmpFile, out, 0600); err != nil {
+	if err := os.WriteFile(tmpFile, out, 0600); err != nil {
 		panic(err)
 	}
 	return tmpFile
+}
+
+// BytesToYAMLDoc converts a byte slice into a YAML document
+func BytesToYAMLv2Doc(data []byte) (interface{}, error) {
+	var canary map[interface{}]interface{} // validate this is an object and not a different type
+	if err := yamlv2.Unmarshal(data, &canary); err != nil {
+		return nil, err
+	}
+
+	var document yamlv2.MapSlice // preserve order that is present in the document
+	if err := yamlv2.Unmarshal(data, &document); err != nil {
+		return nil, err
+	}
+	return document, nil
 }
 
 func applyDefaultSwagger(doc *loads.Document) (*loads.Document, error) {

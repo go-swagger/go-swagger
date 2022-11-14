@@ -50,17 +50,15 @@ func (s *Support) generate(opts *generator.GenOpts) error {
 
 func (s Support) log(rp string) {
 
-	log.Printf(`Generation completed!
+	log.Println(`Generation completed!
 
-For this generation to compile you need to have some packages in your vendor or GOPATH:
+For this generation to compile you need to have some packages in go.mod:
 
   * github.com/go-openapi/runtime
   * github.com/asaskevich/govalidator
   * github.com/jessevdk/go-flags
-  * golang.org/x/net/context/ctxhttp
 
-You can get these now with: go get -u -f %s/...
-`, rp)
+You can get these now with: go mod tidy`)
 }
 
 // Execute generates the supporting files file

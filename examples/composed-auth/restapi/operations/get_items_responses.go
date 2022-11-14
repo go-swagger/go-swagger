@@ -16,7 +16,8 @@ import (
 // GetItemsOKCode is the HTTP code returned for type GetItemsOK
 const GetItemsOKCode int = 200
 
-/*GetItemsOK multiple items
+/*
+GetItemsOK multiple items
 
 swagger:response getItemsOK
 */
@@ -60,7 +61,8 @@ func (o *GetItemsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 	}
 }
 
-/*GetItemsDefault other error response
+/*
+GetItemsDefault other error response
 
 swagger:response getItemsDefault
 */

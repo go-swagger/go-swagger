@@ -16,7 +16,8 @@ import (
 // PetListOKCode is the HTTP code returned for type PetListOK
 const PetListOKCode int = 200
 
-/*PetListOK successful operation
+/*
+PetListOK successful operation
 
 swagger:response petListOK
 */
@@ -63,7 +64,8 @@ func (o *PetListOK) WriteResponse(rw http.ResponseWriter, producer runtime.Produ
 // PetListBadRequestCode is the HTTP code returned for type PetListBadRequest
 const PetListBadRequestCode int = 400
 
-/*PetListBadRequest Invalid status value
+/*
+PetListBadRequest Invalid status value
 
 swagger:response petListBadRequest
 */

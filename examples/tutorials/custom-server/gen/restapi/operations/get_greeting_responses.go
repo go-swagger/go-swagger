@@ -14,7 +14,8 @@ import (
 // GetGreetingOKCode is the HTTP code returned for type GetGreetingOK
 const GetGreetingOKCode int = 200
 
-/*GetGreetingOK returns a greeting
+/*
+GetGreetingOK returns a greeting
 
 swagger:response getGreetingOK
 */

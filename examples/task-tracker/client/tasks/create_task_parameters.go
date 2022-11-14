@@ -54,10 +54,12 @@ func NewCreateTaskParamsWithHTTPClient(client *http.Client) *CreateTaskParams {
 	}
 }
 
-/* CreateTaskParams contains all the parameters to send to the API endpoint
-   for the create task operation.
+/*
+CreateTaskParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the create task operation.
+
+	Typically these are written to a http.Request.
 */
 type CreateTaskParams struct {
 

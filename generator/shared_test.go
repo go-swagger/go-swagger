@@ -2,7 +2,7 @@ package generator
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -81,7 +81,7 @@ func testGenOpts() *GenOpts {
 func TestShared_CheckOpts(t *testing.T) {
 	testPath := filepath.Join("a", "b", "b")
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	var opts = new(GenOpts)
@@ -143,7 +143,7 @@ func TestShared_EnsureDefaults(t *testing.T) {
 // {{ .SpecPath }}, to construct the go generate
 // directive.
 func TestShared_TargetPath(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	cwd, _ := os.Getwd()
@@ -187,7 +187,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 // NOTE: file://url is not supported
 func TestShared_SpecPath(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	cwd, _ := os.Getwd()
@@ -214,7 +214,7 @@ func TestShared_SpecPath(t *testing.T) {
 	opts = new(GenOpts)
 	_ = opts.EnsureDefaults()
 	opts.Spec = filepath.Join(".", "a", "b", "c")
-	opts.Target = filepath.Join("d")
+	opts.Target = "d"
 	opts.ServerPackage = "y"
 	expected = filepath.Join("..", "..", "a", "b", "c")
 	result = opts.SpecPath()
@@ -273,7 +273,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 // Low level testing: templates not found (higher level calls raise panic(), see above)
 func TestShared_NotFoundTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	opts := testGenOpts()
@@ -294,7 +294,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 // Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
 // TODO: better error discrimination between absent definition and non-parsing template
 func TestShared_GarbledTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	garbled := "func x {{;;; garbled"
@@ -325,7 +325,7 @@ func (*myTemplateData) MyFaultyMethod() (string, error) {
 }
 
 func TestShared_ExecTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// Not a failure: no value data
@@ -369,7 +369,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 // Test correctly parsed templates, with bad formatting
 func TestShared_BadFormatTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	defer func() {
 		_ = os.Remove("test_badformat.gol")
@@ -439,7 +439,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 
 // Test dir creation
 func TestShared_DirectoryTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	defer func() {
 		_ = os.RemoveAll("TestGenDir")
@@ -481,7 +481,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 // Test templates which are not assets (open in file)
 // Low level testing: templates loaded from file
 func TestShared_LoadTemplate(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	opts := testGenOpts()
@@ -781,7 +781,7 @@ func TestDefaultImports(t *testing.T) {
 }
 
 func TestShared_Issue2113(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	// acknowledge fix in go-openapi/spec

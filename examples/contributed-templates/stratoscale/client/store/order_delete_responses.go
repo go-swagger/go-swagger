@@ -48,7 +48,8 @@ func NewOrderDeleteNoContent() *OrderDeleteNoContent {
 	return &OrderDeleteNoContent{}
 }
 
-/* OrderDeleteNoContent describes a response with status code 204, with default header values.
+/*
+	OrderDeleteNoContent describes a response with status code 204, with default header values.
 
 Deleted successfully
 */
@@ -98,7 +99,8 @@ func NewOrderDeleteBadRequest() *OrderDeleteBadRequest {
 	return &OrderDeleteBadRequest{}
 }
 
-/* OrderDeleteBadRequest describes a response with status code 400, with default header values.
+/*
+	OrderDeleteBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -148,7 +150,8 @@ func NewOrderDeleteNotFound() *OrderDeleteNotFound {
 	return &OrderDeleteNotFound{}
 }
 
-/* OrderDeleteNotFound describes a response with status code 404, with default header values.
+/*
+	OrderDeleteNotFound describes a response with status code 404, with default header values.
 
 Order not found
 */

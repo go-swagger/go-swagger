@@ -171,14 +171,15 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 }
 
 // x-go-type:
-//   type: mytype
-//   import:
-//     package:
-//     alias:
-//   hints:
-//     kind: map|object|array|interface|primitive|stream|tuple
-//     nullable: true|false
-//  embedded: true
+//
+//	 type: mytype
+//	 import:
+//	   package:
+//	   alias:
+//	 hints:
+//	   kind: map|object|array|interface|primitive|stream|tuple
+//	   nullable: true|false
+//	embedded: true
 type externalTypeDefinition struct {
 	Type   string
 	Import struct {
@@ -329,7 +330,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	}
 	result.HasDiscriminator = res.HasDiscriminator
 	result.IsBaseType = result.HasDiscriminator
-	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overriden for slices and maps
+	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overridden for slices and maps
 	result.IsEnumCI = false
 	return
 }

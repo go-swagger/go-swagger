@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -48,7 +47,7 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 	// You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
 	// uploads.UploadFileMaxParseMemory = 32 << 20
 
-	uploadFolder, err := ioutil.TempDir(".", "upload")
+	uploadFolder, err := os.MkdirTemp(".", "upload")
 	if err != nil {
 		panic("could not create upload folder")
 	}

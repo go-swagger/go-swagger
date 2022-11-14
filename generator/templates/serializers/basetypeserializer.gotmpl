@@ -20,7 +20,7 @@ func Unmarshal{{ pascalize .Name }}Slice(reader io.Reader, consumer runtime.Cons
 // Unmarshal{{ pascalize .Name }} unmarshals polymorphic {{ pascalize .Name }}
 func Unmarshal{{ pascalize .Name }}(reader io.Reader, consumer runtime.Consumer) ({{ pascalize .Name }}, error) {
   // we need to read this twice, so first into a buffer
-  data, err := ioutil.ReadAll(reader)
+  data, err := io.ReadAll(reader)
   if err != nil {
     return nil, err
   }

@@ -581,7 +581,7 @@ func TestGenResponse_1572(t *testing.T) {
 				`	payload := o.Payload`,
 				`	if err := producer.Produce(rw, payload); err != nil {`,
 				`const GetNullRequestProcessedCode int = 203`,
-				`/*GetNullRequestProcessed OK`,
+				genNullResponseDocComment,
 				`swagger:response getNullRequestProcessed`,
 				`*/`,
 				`type GetNullRequestProcessed struct {`,

@@ -46,7 +46,8 @@ func NewUploadTaskFileCreated() *UploadTaskFileCreated {
 	return &UploadTaskFileCreated{}
 }
 
-/* UploadTaskFileCreated describes a response with status code 201, with default header values.
+/*
+	UploadTaskFileCreated describes a response with status code 201, with default header values.
 
 File added
 */
@@ -98,7 +99,8 @@ func NewUploadTaskFileDefault(code int) *UploadTaskFileDefault {
 	}
 }
 
-/* UploadTaskFileDefault describes a response with status code -1, with default header values.
+/*
+	UploadTaskFileDefault describes a response with status code -1, with default header values.
 
 Error response
 */

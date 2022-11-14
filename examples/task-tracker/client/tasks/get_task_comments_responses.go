@@ -46,7 +46,8 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 	return &GetTaskCommentsOK{}
 }
 
-/* GetTaskCommentsOK describes a response with status code 200, with default header values.
+/*
+	GetTaskCommentsOK describes a response with status code 200, with default header values.
 
 The list of comments
 */
@@ -108,7 +109,8 @@ func NewGetTaskCommentsDefault(code int) *GetTaskCommentsDefault {
 	}
 }
 
-/* GetTaskCommentsDefault describes a response with status code -1, with default header values.
+/*
+	GetTaskCommentsDefault describes a response with status code -1, with default header values.
 
 Error response
 */

@@ -37,9 +37,9 @@ type ClientService interface {
 }
 
 /*
-  Chunked chunkeds
+Chunked chunkeds
 
-  delivers text/plain via Encoding: Chunked
+delivers text/plain via Encoding: Chunked
 */
 func (a *Client) Chunked(params *ChunkedParams, writer io.Writer, opts ...ClientOption) (*ChunkedOK, error) {
 	// TODO: Validate the params before sending

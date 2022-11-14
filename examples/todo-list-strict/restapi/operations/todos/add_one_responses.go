@@ -17,7 +17,8 @@ import (
 // AddOneCreatedCode is the HTTP code returned for type AddOneCreated
 const AddOneCreatedCode int = 201
 
-/*AddOneCreated Created
+/*
+AddOneCreated Created
 
 swagger:response addOneCreated
 */
@@ -60,7 +61,8 @@ func (o *AddOneCreated) WriteResponse(rw http.ResponseWriter, producer runtime.P
 
 func (o *AddOneCreated) AddOneResponder() {}
 
-/*AddOneDefault error
+/*
+AddOneDefault error
 
 swagger:response addOneDefault
 */

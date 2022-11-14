@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetInfoVersion(t *testing.T) {
@@ -154,11 +155,11 @@ This should demonstrate all the possible comment annotations
 that are available to turn go code into a fully compliant swagger 2.0 spec`
 	assert.Equal(t, descr, info.Description)
 
-	assert.NotNil(t, info.License)
+	require.NotNil(t, info.License)
 	assert.Equal(t, "MIT", info.License.Name)
 	assert.Equal(t, "http://opensource.org/licenses/MIT", info.License.URL)
 
-	assert.NotNil(t, info.Contact)
+	require.NotNil(t, info.Contact)
 	assert.Equal(t, "John Doe", info.Contact.Name)
 	assert.Equal(t, "john.doe@example.com", info.Contact.Email)
 	assert.Equal(t, "http://john.doe.com", info.Contact.URL)

@@ -64,8 +64,10 @@ var (
 			rxOpID + "\\p{Zs}*$")
 
 	rxSpace              = regexp.MustCompile(`\p{Zs}+`)
-	rxIndent             = regexp.MustCompile(`\p{Zs}*/*\p{Zs}*[^\p{Zs}]`)
+	rxIndent             = regexp.MustCompile(`[\p{Zs}\t]*/*[\p{Zs}\t]*[^\p{Zs}\t]`)
+	rxNotIndent          = regexp.MustCompile(`[^\p{Zs}\t]`)
 	rxPunctuationEnd     = regexp.MustCompile(`\p{Po}$`)
+	rxTitleStart         = regexp.MustCompile(`^[#]+\p{Zs}+`)
 	rxStripComments      = regexp.MustCompile(`^[^\p{L}\p{N}\p{Pd}\p{Pc}\+]*`)
 	rxStripTitleComments = regexp.MustCompile(`^[^\p{L}]*[Pp]ackage\p{Zs}+[^\p{Zs}]+\p{Zs}*`)
 	rxAllowedExtensions  = regexp.MustCompile(`^[Xx]-`)

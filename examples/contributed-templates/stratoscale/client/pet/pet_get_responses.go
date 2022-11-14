@@ -51,7 +51,8 @@ func NewPetGetOK() *PetGetOK {
 	return &PetGetOK{}
 }
 
-/* PetGetOK describes a response with status code 200, with default header values.
+/*
+	PetGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -113,7 +114,8 @@ func NewPetGetBadRequest() *PetGetBadRequest {
 	return &PetGetBadRequest{}
 }
 
-/* PetGetBadRequest describes a response with status code 400, with default header values.
+/*
+	PetGetBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -163,7 +165,8 @@ func NewPetGetNotFound() *PetGetNotFound {
 	return &PetGetNotFound{}
 }
 
-/* PetGetNotFound describes a response with status code 404, with default header values.
+/*
+	PetGetNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */

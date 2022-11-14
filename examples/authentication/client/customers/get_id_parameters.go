@@ -54,10 +54,12 @@ func NewGetIDParamsWithHTTPClient(client *http.Client) *GetIDParams {
 	}
 }
 
-/* GetIDParams contains all the parameters to send to the API endpoint
-   for the get Id operation.
+/*
+GetIDParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get Id operation.
+
+	Typically these are written to a http.Request.
 */
 type GetIDParams struct {
 

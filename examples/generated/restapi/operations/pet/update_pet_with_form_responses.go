@@ -14,7 +14,8 @@ import (
 // UpdatePetWithFormMethodNotAllowedCode is the HTTP code returned for type UpdatePetWithFormMethodNotAllowed
 const UpdatePetWithFormMethodNotAllowedCode int = 405
 
-/*UpdatePetWithFormMethodNotAllowed Invalid input
+/*
+UpdatePetWithFormMethodNotAllowed Invalid input
 
 swagger:response updatePetWithFormMethodNotAllowed
 */

@@ -16,17 +16,36 @@ First grab the image:
 docker pull quay.io/goswagger/swagger
 ```
 
+or 
+
+```
+docker pull ghcr.io/go-swagger/go-swagger
+```
+
 #### For Mac And Linux users:
 
 ```bash
-alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -e GOPATH=/go -v $(go env GOPATH):/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger'
+alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $PWD quay.io/goswagger/swagger'
+swagger version
+```
+
+or 
+
+```bash
+alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $PWD ghcr.io/go-swagger/go-swagger'
 swagger version
 ```
 
 #### For windows users:
 
 ```cmd
-docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger
+docker run --rm -it  -v %CD%:/app -w /app quay.io/goswagger/swagger
+```
+
+or
+
+```cmd
+docker run --rm -it  -v %CD%:/app -w /app ghcr.io/go-swagger/go-swagger
 ```
 
 You can put the following in a file called **swagger.bat** and include it in your path environment variable to act as an alias.
@@ -34,7 +53,15 @@ You can put the following in a file called **swagger.bat** and include it in you
 ```batch
 @echo off
 echo.
-docker run --rm -it --env GOPATH=/go -v %CD%:/go/src -w /go/src quay.io/goswagger/swagger %*
+docker run --rm -it -v %CD%:/app -w /app quay.io/goswagger/swagger %*
+```
+
+or
+
+```batch
+@echo off
+echo.
+docker run --rm -it -v %CD%:/app -w /app ghcr.io/go-swagger/go-swagger %*
 ```
 
 ### Homebrew/Linuxbrew
@@ -64,8 +91,8 @@ without sudo:
 
 ```sh
 apt update
-apt install -y apt-transport-https gnupg curl
-curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | apt-key add -
+apt install -y apt-transport-https gnupg curl debian-keyring debian-archive-keyring
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | gpg --dearmor -o /usr/share/keyrings/go-swagger-go-swagger-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/config.deb.txt?distro=debian&codename=any-version' > /etc/apt/sources.list.d/go-swagger-go-swagger.list
 apt update 
 apt install swagger
@@ -75,8 +102,8 @@ with sudo:
 
 ```sh
 sudo apt update
-sudo apt install -y apt-transport-https gnupg curl
-curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | sudo apt-key add -
+sudo apt install -y apt-transport-https gnupg curl debian-keyring debian-archive-keyring
+curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/gpg.2F8CB673971B5C9E.key' | sudo gpg --dearmor -o /usr/share/keyrings/go-swagger-go-swagger-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/go-swagger/go-swagger/config.deb.txt?distro=debian&codename=any-version' | sudo tee /etc/apt/sources.list.d/go-swagger-go-swagger.list
 sudo apt update 
 sudo apt install swagger

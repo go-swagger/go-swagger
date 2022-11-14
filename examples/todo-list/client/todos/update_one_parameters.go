@@ -54,10 +54,12 @@ func NewUpdateOneParamsWithHTTPClient(client *http.Client) *UpdateOneParams {
 	}
 }
 
-/* UpdateOneParams contains all the parameters to send to the API endpoint
-   for the update one operation.
+/*
+UpdateOneParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the update one operation.
+
+	Typically these are written to a http.Request.
 */
 type UpdateOneParams struct {
 

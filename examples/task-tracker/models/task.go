@@ -19,7 +19,6 @@ import (
 //
 // A Task is the main entity in this application. Everything revolves around tasks and managing them.
 //
-//
 // swagger:model Task
 type Task struct {
 	TaskCard

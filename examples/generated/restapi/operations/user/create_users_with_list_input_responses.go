@@ -11,7 +11,8 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-/*CreateUsersWithListInputDefault successful operation
+/*
+CreateUsersWithListInputDefault successful operation
 
 swagger:response createUsersWithListInputDefault
 */

@@ -80,7 +80,8 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 	}
 }
 
-/*MultiAuthExampleAPI This sample API demonstrates how to compose several authentication schemes
+/*
+MultiAuthExampleAPI This sample API demonstrates how to compose several authentication schemes
 and configure complex security requirements for your operations.
 
 This API simulates a very simple market place with customers and resellers

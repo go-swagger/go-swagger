@@ -2,7 +2,7 @@ package generator
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -468,7 +468,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 }
 
 func TestGuardValidations(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()

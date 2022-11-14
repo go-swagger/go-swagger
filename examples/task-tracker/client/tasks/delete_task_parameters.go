@@ -53,10 +53,12 @@ func NewDeleteTaskParamsWithHTTPClient(client *http.Client) *DeleteTaskParams {
 	}
 }
 
-/* DeleteTaskParams contains all the parameters to send to the API endpoint
-   for the delete task operation.
+/*
+DeleteTaskParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the delete task operation.
+
+	Typically these are written to a http.Request.
 */
 type DeleteTaskParams struct {
 

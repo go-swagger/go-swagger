@@ -85,7 +85,7 @@ First, we need some extra packages to work with OAuth2, OpenID and HTTP redirect
 ```go
 import (
 	oidc "github.com/coreos/go-oidc"            // Google OpenID client
-	"golang.org/x/net/context"
+	"context"
 	"golang.org/x/oauth2"                       // OAuth2 client
 )
 ```
@@ -274,7 +274,7 @@ func authenticated(token string) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return false, fmt.Errorf("fail to get response: %v", err)
 	}

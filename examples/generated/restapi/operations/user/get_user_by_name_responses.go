@@ -16,7 +16,8 @@ import (
 // GetUserByNameOKCode is the HTTP code returned for type GetUserByNameOK
 const GetUserByNameOKCode int = 200
 
-/*GetUserByNameOK successful operation
+/*
+GetUserByNameOK successful operation
 
 swagger:response getUserByNameOK
 */
@@ -60,7 +61,8 @@ func (o *GetUserByNameOK) WriteResponse(rw http.ResponseWriter, producer runtime
 // GetUserByNameBadRequestCode is the HTTP code returned for type GetUserByNameBadRequest
 const GetUserByNameBadRequestCode int = 400
 
-/*GetUserByNameBadRequest Invalid username supplied
+/*
+GetUserByNameBadRequest Invalid username supplied
 
 swagger:response getUserByNameBadRequest
 */
@@ -84,7 +86,8 @@ func (o *GetUserByNameBadRequest) WriteResponse(rw http.ResponseWriter, producer
 // GetUserByNameNotFoundCode is the HTTP code returned for type GetUserByNameNotFound
 const GetUserByNameNotFoundCode int = 404
 
-/*GetUserByNameNotFound User not found
+/*
+GetUserByNameNotFound User not found
 
 swagger:response getUserByNameNotFound
 */

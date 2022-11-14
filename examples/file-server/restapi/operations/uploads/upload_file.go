@@ -29,10 +29,10 @@ func NewUploadFile(ctx *middleware.Context, handler UploadFileHandler) *UploadFi
 	return &UploadFile{Context: ctx, Handler: handler}
 }
 
-/* UploadFile swagger:route POST /upload uploads uploadFile
+/*
+	UploadFile swagger:route POST /upload uploads uploadFile
 
 uploads
-
 */
 type UploadFile struct {
 	Context *middleware.Context

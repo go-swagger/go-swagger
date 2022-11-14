@@ -57,7 +57,8 @@ func NewPetUpdateCreated() *PetUpdateCreated {
 	return &PetUpdateCreated{}
 }
 
-/* PetUpdateCreated describes a response with status code 201, with default header values.
+/*
+	PetUpdateCreated describes a response with status code 201, with default header values.
 
 Updated successfully
 */
@@ -119,7 +120,8 @@ func NewPetUpdateBadRequest() *PetUpdateBadRequest {
 	return &PetUpdateBadRequest{}
 }
 
-/* PetUpdateBadRequest describes a response with status code 400, with default header values.
+/*
+	PetUpdateBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
@@ -169,7 +171,8 @@ func NewPetUpdateNotFound() *PetUpdateNotFound {
 	return &PetUpdateNotFound{}
 }
 
-/* PetUpdateNotFound describes a response with status code 404, with default header values.
+/*
+	PetUpdateNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */
@@ -219,7 +222,8 @@ func NewPetUpdateMethodNotAllowed() *PetUpdateMethodNotAllowed {
 	return &PetUpdateMethodNotAllowed{}
 }
 
-/* PetUpdateMethodNotAllowed describes a response with status code 405, with default header values.
+/*
+	PetUpdateMethodNotAllowed describes a response with status code 405, with default header values.
 
 Validation exception
 */

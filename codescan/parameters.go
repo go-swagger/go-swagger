@@ -285,6 +285,14 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 	}
 }
 
+func spExtensionsSetter(ps *spec.Parameter) func(*spec.Extensions) {
+	return func(exts *spec.Extensions) {
+		for name, value := range *exts {
+			addExtension(&ps.VendorExtensible, name, value)
+		}
+	}
+}
+
 func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, op *spec.Operation, seen map[string]spec.Parameter) error {
 	if tpe.NumFields() == 0 {
 		return nil
@@ -396,6 +404,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
 				newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxExampleFmt, "")}),
 				newSingleLineTagParser("required", &setRequiredParam{&ps}),
+				newMultiLineTagParser("Extensions", newSetExtensions(spExtensionsSetter(&ps)), true),
 			}
 
 			itemsTaggers := func(items *spec.Items, level int) []tagParser {
@@ -471,10 +480,10 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 			}
 
 		} else {
-
 			sp.taggers = []tagParser{
 				newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
 				newSingleLineTagParser("required", &matchOnlyParam{&ps, rxRequired}),
+				newMultiLineTagParser("Extensions", newSetExtensions(spExtensionsSetter(&ps)), true),
 			}
 		}
 		if err := sp.Parse(afld.Doc); err != nil {

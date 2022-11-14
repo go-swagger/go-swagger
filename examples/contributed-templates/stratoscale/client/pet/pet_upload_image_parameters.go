@@ -53,10 +53,12 @@ func NewPetUploadImageParamsWithHTTPClient(client *http.Client) *PetUploadImageP
 	}
 }
 
-/* PetUploadImageParams contains all the parameters to send to the API endpoint
-   for the pet upload image operation.
+/*
+PetUploadImageParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the pet upload image operation.
+
+	Typically these are written to a http.Request.
 */
 type PetUploadImageParams struct {
 

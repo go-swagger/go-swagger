@@ -53,10 +53,12 @@ func NewOrderGetParamsWithHTTPClient(client *http.Client) *OrderGetParams {
 	}
 }
 
-/* OrderGetParams contains all the parameters to send to the API endpoint
-   for the order get operation.
+/*
+OrderGetParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the order get operation.
+
+	Typically these are written to a http.Request.
 */
 type OrderGetParams struct {
 

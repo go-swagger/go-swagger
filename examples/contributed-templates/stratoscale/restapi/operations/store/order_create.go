@@ -29,10 +29,10 @@ func NewOrderCreate(ctx *middleware.Context, handler OrderCreateHandler) *OrderC
 	return &OrderCreate{Context: ctx, Handler: handler}
 }
 
-/* OrderCreate swagger:route POST /store/order store orderCreate
+/*
+	OrderCreate swagger:route POST /store/order store orderCreate
 
 Place an order for a pet
-
 */
 type OrderCreate struct {
 	Context *middleware.Context

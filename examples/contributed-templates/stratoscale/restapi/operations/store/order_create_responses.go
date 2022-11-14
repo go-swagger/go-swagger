@@ -16,7 +16,8 @@ import (
 // OrderCreateOKCode is the HTTP code returned for type OrderCreateOK
 const OrderCreateOKCode int = 200
 
-/*OrderCreateOK successful operation
+/*
+OrderCreateOK successful operation
 
 swagger:response orderCreateOK
 */
@@ -60,7 +61,8 @@ func (o *OrderCreateOK) WriteResponse(rw http.ResponseWriter, producer runtime.P
 // OrderCreateBadRequestCode is the HTTP code returned for type OrderCreateBadRequest
 const OrderCreateBadRequestCode int = 400
 
-/*OrderCreateBadRequest Invalid Order
+/*
+OrderCreateBadRequest Invalid Order
 
 swagger:response orderCreateBadRequest
 */

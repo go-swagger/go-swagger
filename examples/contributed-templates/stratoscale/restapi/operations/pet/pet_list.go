@@ -29,10 +29,10 @@ func NewPetList(ctx *middleware.Context, handler PetListHandler) *PetList {
 	return &PetList{Context: ctx, Handler: handler}
 }
 
-/* PetList swagger:route GET /pet pet petList
+/*
+	PetList swagger:route GET /pet pet petList
 
 List pets
-
 */
 type PetList struct {
 	Context *middleware.Context

@@ -20,7 +20,6 @@ import (
 //
 // The validation method of the external type is called by the generated array.
 //
-//
 // swagger:model MyCustomArray
 type MyCustomArray []alternate.MyAlternateType
 

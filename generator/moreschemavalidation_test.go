@@ -16,7 +16,7 @@ package generator
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -317,13 +317,13 @@ func initTxxx() {
 
 func TestModelGenerateDefinition(t *testing.T) {
 	// exercise the top level model generation func
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
 	fixtureSpec := "../fixtures/bugs/1487/fixture-is-nullable.yaml"
 	assert := assert.New(t)
-	gendir, erd := ioutil.TempDir(".", "model-test")
+	gendir, erd := os.MkdirTemp(".", "model-test")
 	defer func() {
 		_ = os.RemoveAll(gendir)
 	}()
@@ -369,7 +369,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 }
 
 func TestMoreModelValidations(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer func() {
 		log.SetOutput(os.Stdout)
 	}()
@@ -387,7 +387,7 @@ func TestMoreModelValidations(t *testing.T) {
 
 		t.Run(runTitle, func(t *testing.T) {
 			t.Parallel()
-			log.SetOutput(ioutil.Discard)
+			log.SetOutput(io.Discard)
 
 			for _, fixtureRun := range fixture.Runs {
 				opts := fixtureRun.FixtureOpts
@@ -441,7 +441,7 @@ func checkDefinitionCodegen(t testing.TB, definitionName, fixtureSpec string, sc
 		log.SetOutput(&logCapture)
 
 		defer func() {
-			log.SetOutput(ioutil.Discard)
+			log.SetOutput(io.Discard)
 			modelTestMutex.Unlock()
 		}()
 	}

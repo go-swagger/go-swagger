@@ -11,7 +11,8 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-/*CreateUserDefault successful operation
+/*
+CreateUserDefault successful operation
 
 swagger:response createUserDefault
 */

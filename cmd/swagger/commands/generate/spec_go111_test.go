@@ -1,10 +1,10 @@
+//go:build go1.11
 // +build go1.11
 
 package generate
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -12,7 +12,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -49,7 +49,7 @@ func TestGenerateJSONSpec(t *testing.T) {
 	data, err := marshalToJSONFormat(swspec, true)
 	assert.NoError(t, err)
 
-	expected, err := ioutil.ReadFile(jsonResultFile)
+	expected, err := os.ReadFile(jsonResultFile)
 	assert.NoError(t, err)
 
 	verifyJSONData(t, data, expected)
@@ -67,7 +67,7 @@ func TestGenerateYAMLSpec(t *testing.T) {
 	data, err := marshalToYAMLFormat(swspec)
 	assert.NoError(t, err)
 
-	expected, err := ioutil.ReadFile(yamlResultFile)
+	expected, err := os.ReadFile(yamlResultFile)
 	assert.NoError(t, err)
 
 	verifyYAMLData(t, data, expected)

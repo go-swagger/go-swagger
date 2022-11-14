@@ -57,7 +57,8 @@ func NewExternalTypesDemoAPI(spec *loads.Document) *ExternalTypesDemoAPI {
 	}
 }
 
-/*ExternalTypesDemoAPI This sample specification exercises external types, with both x-go-type in definitions and inlined.
+/*
+ExternalTypesDemoAPI This sample specification exercises external types, with both x-go-type in definitions and inlined.
 
 It demonstrates how to use the x-go-type extension to plug external type definitions in the generated code,
 for models (e.g. for properties, arrays or maps) or operations.

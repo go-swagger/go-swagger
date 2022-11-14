@@ -47,7 +47,8 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 	return &CreateTaskCreated{}
 }
 
-/* CreateTaskCreated describes a response with status code 201, with default header values.
+/*
+	CreateTaskCreated describes a response with status code 201, with default header values.
 
 Task created
 */
@@ -116,7 +117,8 @@ func NewCreateTaskDefault(code int) *CreateTaskDefault {
 	}
 }
 
-/* CreateTaskDefault describes a response with status code -1, with default header values.
+/*
+	CreateTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */

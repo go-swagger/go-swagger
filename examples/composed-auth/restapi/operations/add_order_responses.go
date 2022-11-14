@@ -16,7 +16,8 @@ import (
 // AddOrderOKCode is the HTTP code returned for type AddOrderOK
 const AddOrderOKCode int = 200
 
-/*AddOrderOK empty response
+/*
+AddOrderOK empty response
 
 swagger:response addOrderOK
 */
@@ -40,7 +41,8 @@ func (o *AddOrderOK) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
 // AddOrderUnauthorizedCode is the HTTP code returned for type AddOrderUnauthorized
 const AddOrderUnauthorizedCode int = 401
 
-/*AddOrderUnauthorized unauthorized access for a lack of authentication
+/*
+AddOrderUnauthorized unauthorized access for a lack of authentication
 
 swagger:response addOrderUnauthorized
 */
@@ -64,7 +66,8 @@ func (o *AddOrderUnauthorized) WriteResponse(rw http.ResponseWriter, producer ru
 // AddOrderForbiddenCode is the HTTP code returned for type AddOrderForbidden
 const AddOrderForbiddenCode int = 403
 
-/*AddOrderForbidden forbidden access for a lack of sufficient privileges
+/*
+AddOrderForbidden forbidden access for a lack of sufficient privileges
 
 swagger:response addOrderForbidden
 */
@@ -85,7 +88,8 @@ func (o *AddOrderForbidden) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(403)
 }
 
-/*AddOrderDefault other error response
+/*
+AddOrderDefault other error response
 
 swagger:response addOrderDefault
 */

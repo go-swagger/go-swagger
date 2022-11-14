@@ -53,10 +53,12 @@ func NewAddCommentToTaskParamsWithHTTPClient(client *http.Client) *AddCommentToT
 	}
 }
 
-/* AddCommentToTaskParams contains all the parameters to send to the API endpoint
-   for the add comment to task operation.
+/*
+AddCommentToTaskParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the add comment to task operation.
+
+	Typically these are written to a http.Request.
 */
 type AddCommentToTaskParams struct {
 

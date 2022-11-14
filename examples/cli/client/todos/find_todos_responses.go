@@ -46,7 +46,8 @@ func NewFindTodosOK() *FindTodosOK {
 	return &FindTodosOK{}
 }
 
-/* FindTodosOK describes a response with status code 200, with default header values.
+/*
+	FindTodosOK describes a response with status code 200, with default header values.
 
 list the todo operations
 */
@@ -78,7 +79,8 @@ func NewFindTodosDefault(code int) *FindTodosDefault {
 	}
 }
 
-/* FindTodosDefault describes a response with status code -1, with default header values.
+/*
+	FindTodosDefault describes a response with status code -1, with default header values.
 
 generic error response
 */

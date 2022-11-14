@@ -17,7 +17,8 @@ import (
 // ListTasksOKCode is the HTTP code returned for type ListTasksOK
 const ListTasksOKCode int = 200
 
-/*ListTasksOK Successful response
+/*
+ListTasksOK Successful response
 
 swagger:response listTasksOK
 */
@@ -86,7 +87,8 @@ func (o *ListTasksOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 // ListTasksUnprocessableEntityCode is the HTTP code returned for type ListTasksUnprocessableEntity
 const ListTasksUnprocessableEntityCode int = 422
 
-/*ListTasksUnprocessableEntity Validation error
+/*
+ListTasksUnprocessableEntity Validation error
 
 swagger:response listTasksUnprocessableEntity
 */
@@ -127,7 +129,8 @@ func (o *ListTasksUnprocessableEntity) WriteResponse(rw http.ResponseWriter, pro
 	}
 }
 
-/*ListTasksDefault Error response
+/*
+ListTasksDefault Error response
 
 swagger:response listTasksDefault
 */

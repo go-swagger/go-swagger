@@ -46,7 +46,8 @@ func NewDeleteTaskNoContent() *DeleteTaskNoContent {
 	return &DeleteTaskNoContent{}
 }
 
-/* DeleteTaskNoContent describes a response with status code 204, with default header values.
+/*
+	DeleteTaskNoContent describes a response with status code 204, with default header values.
 
 Task deleted
 */
@@ -98,7 +99,8 @@ func NewDeleteTaskDefault(code int) *DeleteTaskDefault {
 	}
 }
 
-/* DeleteTaskDefault describes a response with status code -1, with default header values.
+/*
+	DeleteTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */

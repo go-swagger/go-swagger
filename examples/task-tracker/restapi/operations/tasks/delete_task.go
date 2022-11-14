@@ -29,13 +29,12 @@ func NewDeleteTask(ctx *middleware.Context, handler DeleteTaskHandler) *DeleteTa
 	return &DeleteTask{Context: ctx, Handler: handler}
 }
 
-/* DeleteTask swagger:route DELETE /tasks/{id} tasks deleteTask
+/*
+	DeleteTask swagger:route DELETE /tasks/{id} tasks deleteTask
 
 Deletes a task.
 
 This is a soft delete and changes the task status to ignored.
-
-
 */
 type DeleteTask struct {
 	Context *middleware.Context

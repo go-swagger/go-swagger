@@ -53,10 +53,12 @@ func NewGetTaskCommentsParamsWithHTTPClient(client *http.Client) *GetTaskComment
 	}
 }
 
-/* GetTaskCommentsParams contains all the parameters to send to the API endpoint
-   for the get task comments operation.
+/*
+GetTaskCommentsParams contains all the parameters to send to the API endpoint
 
-   Typically these are written to a http.Request.
+	for the get task comments operation.
+
+	Typically these are written to a http.Request.
 */
 type GetTaskCommentsParams struct {
 

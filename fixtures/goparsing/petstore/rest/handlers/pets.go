@@ -93,8 +93,9 @@ type PetBodyParams struct {
 //
 // Deprecated: true
 // Responses:
-// 		default: genericError
-// 		    200: []pet
+//
+//	default: genericError
+//	    200: []pet
 func GetPets(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -104,8 +105,9 @@ func GetPets(w http.ResponseWriter, r *http.Request, params denco.Params) {
 // Gets the details for a pet.
 //
 // Responses:
-//    default: genericError
-//        200: pet
+//
+//	default: genericError
+//	    200: pet
 func GetPetByID(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -115,9 +117,10 @@ func GetPetByID(w http.ResponseWriter, r *http.Request, params denco.Params) {
 // Creates a new pet in the store.
 //
 // Responses:
-//    default: genericError
-//        200: pet
-//        422: validationError
+//
+//	default: genericError
+//	    200: pet
+//	    422: validationError
 func CreatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -127,9 +130,10 @@ func CreatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 // Updates the details for a pet.
 //
 // Responses:
-//    default: genericError
-//        200: pet
-//        422: validationError
+//
+//	default: genericError
+//	    200: pet
+//	    422: validationError
 func UpdatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }
@@ -139,8 +143,9 @@ func UpdatePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 // Deletes a pet from the store.
 //
 // Responses:
-//    default: genericError
-//        204:
+//
+//	default: genericError
+//	    204:
 func DeletePet(w http.ResponseWriter, r *http.Request, params denco.Params) {
 	// some actual stuff should happen in here
 }

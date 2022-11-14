@@ -29,12 +29,12 @@ func NewOrderGet(ctx *middleware.Context, handler OrderGetHandler) *OrderGet {
 	return &OrderGet{Context: ctx, Handler: handler}
 }
 
-/* OrderGet swagger:route GET /store/order/{orderId} store orderGet
+/*
+	OrderGet swagger:route GET /store/order/{orderId} store orderGet
 
-Find purchase order by ID
+# Find purchase order by ID
 
 For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
-
 */
 type OrderGet struct {
 	Context *middleware.Context

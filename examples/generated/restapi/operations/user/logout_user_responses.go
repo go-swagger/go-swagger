@@ -11,7 +11,8 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-/*LogoutUserDefault successful operation
+/*
+LogoutUserDefault successful operation
 
 swagger:response logoutUserDefault
 */

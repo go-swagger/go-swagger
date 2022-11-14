@@ -85,14 +85,13 @@ func (o *Operation) generate(opts *generator.GenOpts) error {
 
 func (o Operation) log(rp string) {
 
-	log.Printf(`Generation completed!
+	log.Println(`Generation completed!
 
-For this generation to compile you need to have some packages in your GOPATH:
+For this generation to compile you need to have some packages in your go.mod:
 
 	* github.com/go-openapi/runtime
 
-You can get these now with: go get -u -f %s/...
-`, rp)
+You can get these now with: go mod tidy`)
 }
 
 // Execute generates a model file

@@ -16,7 +16,8 @@ import (
 // GetAuthCallbackOKCode is the HTTP code returned for type GetAuthCallbackOK
 const GetAuthCallbackOKCode int = 200
 
-/*GetAuthCallbackOK login
+/*
+GetAuthCallbackOK login
 
 swagger:response getAuthCallbackOK
 */
@@ -57,7 +58,8 @@ func (o *GetAuthCallbackOK) WriteResponse(rw http.ResponseWriter, producer runti
 	}
 }
 
-/*GetAuthCallbackDefault error
+/*
+GetAuthCallbackDefault error
 
 swagger:response getAuthCallbackDefault
 */

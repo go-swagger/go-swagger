@@ -40,6 +40,7 @@ Annotation | Format
 **Unique** | when set to true the slice can only contain unique items
 **Required** | when set to true this value needs to be present in the request
 **Example** | an example value, parsed as the field's type<br/>(objects and slices are parsed as JSON)
+**Extensions** | a dictionary of custom [vendor extensions](https://swagger.io/docs/specification/2-0/swagger-extensions/); each key must start with `x-`
 
 For slice properties there are also items to be defined. This might be a nested collection, for indicating nesting
 level the value is a 0-based index, so items.minLength is the same as items.0.minLength
@@ -76,6 +77,12 @@ type BarSliceParam struct {
 	// collection format: pipe
 	// in: query
 	// example: [[["bar_000"]]]
+  // Extensions:
+  //   x-example-flag: true
+  //   x-some-list:
+  //     - dog
+  //     - cat
+  //     - bird
 	BarSlice [][][]string `json:"bar_slice"`
 }
 ```
@@ -111,6 +118,12 @@ operations:
                 minLength: 3
                 maxLength: 10
                 pattern: "\\w+"
+          extensions:
+            x-example-flag: true
+            x-some-list:
+              - dog
+              - cat
+              - bird
     post:
       operationId: addBars
       parameters:
@@ -136,4 +149,10 @@ operations:
                 minLength: 3
                 maxLength: 10
                 pattern: "\\w+"
+          extensions:
+            x-example-flag: true
+            x-some-list:
+              - dog
+              - cat
+              - bird
 ```

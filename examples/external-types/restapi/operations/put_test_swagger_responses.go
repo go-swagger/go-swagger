@@ -13,9 +13,9 @@ import (
 	custom "github.com/go-swagger/go-swagger/examples/external-types/fred"
 )
 
-/*PutTestDefault A map of an aliased external package. Now the alias is "custom".
+/*
+PutTestDefault A map of an aliased external package. Now the alias is "custom".
 This response is defined as: map[string]custom.MyAlternateString
-
 
 swagger:response putTestDefault
 */

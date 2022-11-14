@@ -20,7 +20,6 @@ import (
 //
 // []*alternate.MyAlternateType
 //
-//
 // swagger:model MyCustomArrayNullable
 type MyCustomArrayNullable []*alternate.MyAlternateType
 

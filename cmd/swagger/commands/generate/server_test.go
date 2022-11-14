@@ -1,7 +1,7 @@
 package generate_test
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -27,14 +27,14 @@ func testGenerateServer(t *testing.T, strict bool) {
 		"todolist.simplequery.yml",
 		"todolist.simplequery.yml",
 	}
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
 	for i, spec := range specs {
 		_ = t.Run(spec, func(t *testing.T) {
 			path := filepath.Join(base, "fixtures/codegen", spec)
-			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
+			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}
@@ -64,7 +64,7 @@ func testGenerateServer(t *testing.T, strict bool) {
 }
 
 func TestGenerateServer_Checks(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	m := &generate.Server{}
@@ -78,14 +78,14 @@ func TestRegressionIssue2601(t *testing.T) {
 	specs := []string{
 		"impl.yml",
 	}
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
 	for i, spec := range specs {
 		_ = t.Run(spec, func(t *testing.T) {
 			path := filepath.Join(base, "fixtures/codegen", spec)
-			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
+			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}

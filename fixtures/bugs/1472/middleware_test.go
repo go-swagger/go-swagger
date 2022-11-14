@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package bug_1472

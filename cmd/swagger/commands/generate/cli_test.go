@@ -1,7 +1,7 @@
 package generate_test
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -16,7 +16,7 @@ import (
 
 // Make sure generated code compiles
 func TestGenerateCLI(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
@@ -86,7 +86,7 @@ func TestGenerateCLI(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			path := filepath.Join(base, "fixtures/codegen", tc.spec)
-			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
+			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}
@@ -116,7 +116,7 @@ func TestGenerateCLI(t *testing.T) {
 }
 
 func TestGenerateCli_Check(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	m := &generate.Cli{}
@@ -131,7 +131,7 @@ func TestVariousCli(t *testing.T) {
 	// comment out this skip to run test
 	t.Skip()
 
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
 	base := filepath.FromSlash("../../../../")
@@ -178,7 +178,7 @@ func TestVariousCli(t *testing.T) {
 				tt.Skip()
 			}
 			path := filepath.Join(base, tc.spec)
-			generated, err := ioutil.TempDir(filepath.Dir(path), "generated")
+			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
 			if err != nil {
 				t.Fatalf("TempDir()=%s", generated)
 			}

@@ -29,10 +29,10 @@ func NewGetTest(ctx *middleware.Context, handler GetTestHandler) *GetTest {
 	return &GetTest{Context: ctx, Handler: handler}
 }
 
-/* GetTest swagger:route GET /test getTest
+/*
+	GetTest swagger:route GET /test getTest
 
 GetTest get test API
-
 */
 type GetTest struct {
 	Context *middleware.Context

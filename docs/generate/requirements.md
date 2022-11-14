@@ -56,7 +56,7 @@ depend on your generation options, a command line flags handling package:
 
 Same as above, plus:
 
-- `golang.org/x/net/context`
+- `context`
 
 ### What are the dependencies required by the generated models?
 

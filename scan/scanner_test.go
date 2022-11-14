@@ -1,3 +1,4 @@
+//go:build !go1.11
 // +build !go1.11
 
 // Copyright 2015 go-swagger maintainers
@@ -20,7 +21,6 @@ import (
 	"fmt"
 	"go/ast"
 	goparser "go/parser"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -1078,7 +1078,7 @@ func TestEnhancement793(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, bytes)
 
-		file, _ := ioutil.TempFile(os.TempDir(), "scanner")
+		file, _ := os.CreateTemp(os.TempDir(), "scanner")
 		file.Write(bytes)
 		file.Close()
 

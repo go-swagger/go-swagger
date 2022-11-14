@@ -2,7 +2,7 @@ package auth
 
 import (
 	"crypto/rsa"
-	"io/ioutil"
+	"os"
 
 	errors "github.com/go-openapi/errors"
 	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
@@ -37,7 +37,7 @@ func init() {
 	}
 
 	// loads public keys to verify our tokens
-	verifyKeyBuf, err := ioutil.ReadFile(publicKeyPath)
+	verifyKeyBuf, err := os.ReadFile(publicKeyPath)
 	if err != nil {
 		panic("Cannot load public key for tokens")
 	}

@@ -23,56 +23,56 @@
 // TermsOfService:
 // there are no TOS at this moment, use at your own risk we take no responsibility
 //
-//     Schemes: http, https
-//     Host: localhost
-//     BasePath: /v2
-//     Version: 0.0.1
-//     License: MIT http://opensource.org/licenses/MIT
-//     Contact: John Doe<john.doe@example.com> http://john.doe.com
+//	Schemes: http, https
+//	Host: localhost
+//	BasePath: /v2
+//	Version: 0.0.1
+//	License: MIT http://opensource.org/licenses/MIT
+//	Contact: John Doe<john.doe@example.com> http://john.doe.com
 //
-//     Consumes:
-//     - application/json
-//     - application/xml
+//	Consumes:
+//	- application/json
+//	- application/xml
 //
-//     Produces:
-//     - application/json
-//     - application/xml
+//	Produces:
+//	- application/json
+//	- application/xml
 //
-//     Extensions:
-//     x-meta-value: value
-//     x-meta-array:
-//       - value1
-//       - value2
-//     x-meta-array-obj:
-//       - name: obj
-//         value: field
+//	Extensions:
+//	x-meta-value: value
+//	x-meta-array:
+//	  - value1
+//	  - value2
+//	x-meta-array-obj:
+//	  - name: obj
+//	    value: field
 //
-//     InfoExtensions:
-//     x-info-value: value
-//     x-info-array:
-//       - value1
-//       - value2
-//     x-info-array-obj:
-//       - name: obj
-//         value: field
+//	InfoExtensions:
+//	x-info-value: value
+//	x-info-array:
+//	  - value1
+//	  - value2
+//	x-info-array-obj:
+//	  - name: obj
+//	    value: field
 //
-//     Security:
-//     - api_key:
+//	Security:
+//	- api_key:
 //
-//     SecurityDefinitions:
-//     api_key:
-//          type: apiKey
-//          name: KEY
-//          in: header
-//     oauth2:
-//         type: oauth2
-//         authorizationUrl: /oauth2/auth
-//         tokenUrl: /oauth2/token
-//         in: header
-//         scopes:
-//           bla1: foo1
-//           bla2: foo2
-//         flow: accessCode
+//	SecurityDefinitions:
+//	api_key:
+//	     type: apiKey
+//	     name: KEY
+//	     in: header
+//	oauth2:
+//	    type: oauth2
+//	    authorizationUrl: /oauth2/auth
+//	    tokenUrl: /oauth2/token
+//	    in: header
+//	    scopes:
+//	      bla1: foo1
+//	      bla2: foo2
+//	    flow: accessCode
 //
 // swagger:meta
 package meta

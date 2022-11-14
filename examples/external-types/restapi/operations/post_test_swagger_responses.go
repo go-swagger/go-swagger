@@ -13,11 +13,11 @@ import (
 	custom "github.com/go-swagger/go-swagger/examples/external-types/fred"
 )
 
-/*PostTestDefault An inlined reference to an aliased external package.
+/*
+PostTestDefault An inlined reference to an aliased external package.
 The response is defined as map[string][]map[string]custom.MyAlternateString
 
 No definition is generated in models.
-
 
 swagger:response postTestDefault
 */

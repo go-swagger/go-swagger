@@ -16,7 +16,8 @@ import (
 // GetTaskDetailsOKCode is the HTTP code returned for type GetTaskDetailsOK
 const GetTaskDetailsOKCode int = 200
 
-/*GetTaskDetailsOK Task details
+/*
+GetTaskDetailsOK Task details
 
 swagger:response getTaskDetailsOK
 */
@@ -60,7 +61,8 @@ func (o *GetTaskDetailsOK) WriteResponse(rw http.ResponseWriter, producer runtim
 // GetTaskDetailsUnprocessableEntityCode is the HTTP code returned for type GetTaskDetailsUnprocessableEntity
 const GetTaskDetailsUnprocessableEntityCode int = 422
 
-/*GetTaskDetailsUnprocessableEntity Validation error
+/*
+GetTaskDetailsUnprocessableEntity Validation error
 
 swagger:response getTaskDetailsUnprocessableEntity
 */
@@ -101,7 +103,8 @@ func (o *GetTaskDetailsUnprocessableEntity) WriteResponse(rw http.ResponseWriter
 	}
 }
 
-/*GetTaskDetailsDefault Error response
+/*
+GetTaskDetailsDefault Error response
 
 swagger:response getTaskDetailsDefault
 */

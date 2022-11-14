@@ -52,7 +52,8 @@ func NewGetTaskDetailsOK() *GetTaskDetailsOK {
 	return &GetTaskDetailsOK{}
 }
 
-/* GetTaskDetailsOK describes a response with status code 200, with default header values.
+/*
+	GetTaskDetailsOK describes a response with status code 200, with default header values.
 
 Task details
 */
@@ -114,7 +115,8 @@ func NewGetTaskDetailsUnprocessableEntity() *GetTaskDetailsUnprocessableEntity {
 	return &GetTaskDetailsUnprocessableEntity{}
 }
 
-/* GetTaskDetailsUnprocessableEntity describes a response with status code 422, with default header values.
+/*
+	GetTaskDetailsUnprocessableEntity describes a response with status code 422, with default header values.
 
 Validation error
 */
@@ -178,7 +180,8 @@ func NewGetTaskDetailsDefault(code int) *GetTaskDetailsDefault {
 	}
 }
 
-/* GetTaskDetailsDefault describes a response with status code -1, with default header values.
+/*
+	GetTaskDetailsDefault describes a response with status code -1, with default header values.
 
 Error response
 */

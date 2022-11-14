@@ -68,17 +68,16 @@ func (c *Client) generate(opts *generator.GenOpts) error {
 }
 
 func (c *Client) log(rp string) {
-	log.Printf(`Generation completed!
+	log.Println(`Generation completed!
 
-For this generation to compile you need to have some packages in your GOPATH:
+For this generation to compile you need to have some packages in your go.mod:
 
 	* github.com/go-openapi/errors
 	* github.com/go-openapi/runtime
 	* github.com/go-openapi/runtime/client
 	* github.com/go-openapi/strfmt
 
-You can get these now with: go get -u -f %s/...
-`, rp)
+You can get these now with: go mod tidy`)
 }
 
 // Execute runs this command

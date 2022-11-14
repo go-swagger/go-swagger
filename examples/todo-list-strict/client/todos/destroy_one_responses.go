@@ -46,7 +46,8 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 	return &DestroyOneNoContent{}
 }
 
-/*DestroyOneNoContent handles this case with default header values.
+/*
+DestroyOneNoContent handles this case with default header values.
 
 Deleted
 */
@@ -69,7 +70,8 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 	}
 }
 
-/*DestroyOneDefault handles this case with default header values.
+/*
+DestroyOneDefault handles this case with default header values.
 
 error
 */

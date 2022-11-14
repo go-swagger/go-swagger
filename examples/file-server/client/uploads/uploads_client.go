@@ -36,7 +36,7 @@ type ClientService interface {
 }
 
 /*
-  UploadFile uploads
+UploadFile uploads
 */
 func (a *Client) UploadFile(params *UploadFileParams, opts ...ClientOption) (*UploadFileOK, error) {
 	// TODO: Validate the params before sending

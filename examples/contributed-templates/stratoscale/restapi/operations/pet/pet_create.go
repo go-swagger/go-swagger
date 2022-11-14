@@ -29,10 +29,10 @@ func NewPetCreate(ctx *middleware.Context, handler PetCreateHandler) *PetCreate 
 	return &PetCreate{Context: ctx, Handler: handler}
 }
 
-/* PetCreate swagger:route POST /pet pet petCreate
+/*
+	PetCreate swagger:route POST /pet pet petCreate
 
 Add a new pet to the store
-
 */
 type PetCreate struct {
 	Context *middleware.Context

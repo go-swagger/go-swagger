@@ -15,7 +15,6 @@
 package generator
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -97,7 +96,7 @@ func Test_GenerateClient(t *testing.T) {
 	// generate remote spec
 	opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	defer func() {
 		_ = os.RemoveAll(tft)
 	}()
@@ -116,7 +115,7 @@ func Test_GenerateClient(t *testing.T) {
 	defer func() {
 		os.Stdout = origStdout
 	}()
-	tgt, _ := ioutil.TempDir(cwd, "dumped")
+	tgt, _ := os.MkdirTemp(cwd, "dumped")
 	defer func() {
 		_ = os.RemoveAll(tgt)
 	}()
@@ -159,7 +158,7 @@ func TestClient(t *testing.T) {
 		err := os.MkdirAll(base, 0755)
 		require.NoError(t, err)
 	}
-	targetdir, err := ioutil.TempDir(base, "swagger_nogo")
+	targetdir, err := os.MkdirTemp(base, "swagger_nogo")
 	require.NoError(t, err, "Failed to create a test target directory: %v", err)
 
 	defer func() {
@@ -225,12 +224,12 @@ func TestClient(t *testing.T) {
 				assert.True(t, fileExists(target, "override"))
 				assert.True(t, fileExists(target, "operationsops"))
 
-				buf, err := ioutil.ReadFile(filepath.Join(target, "foo_client.go"))
+				buf, err := os.ReadFile(filepath.Join(target, "foo_client.go"))
 				require.NoError(t, err)
 
 				// assert client import, with deconfliction
 				code := string(buf)
-				baseImport := `swagger_nogo\d+/packages_mangling/client`
+				baseImport := `github.com/go-swagger/go-swagger/generator/swagger_nogo\d+/packages_mangling/client`
 				assertImports(t, baseImport, code)
 
 				assertInCode(t, `cli.Strfmt = strfmtops.New(transport, formats)`, code)
@@ -323,7 +322,7 @@ func TestGenClient_1518(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "1518", "fixture-1518.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -367,7 +366,7 @@ func TestGenClient_1518(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
@@ -386,7 +385,7 @@ func TestGenClient_2471(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2471", "fixture-2471.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -436,7 +435,7 @@ func TestGenClient_2471(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
@@ -455,7 +454,7 @@ func TestGenClient_2096(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2096", "fixture-2096.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -484,7 +483,7 @@ func TestGenClient_2096(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
@@ -503,7 +502,7 @@ func TestGenClient_909_3(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-3.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -594,7 +593,7 @@ func TestGenClient_909_3(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
@@ -613,7 +612,7 @@ func TestGenClient_909_5(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-5.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -770,7 +769,7 @@ func TestGenClient_909_5(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
@@ -789,7 +788,7 @@ func TestGenClient_909_6(t *testing.T) {
 	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-6.yaml")
 
 	cwd, _ := os.Getwd()
-	tft, _ := ioutil.TempDir(cwd, "generated")
+	tft, _ := os.MkdirTemp(cwd, "generated")
 	opts.Target = tft
 
 	defer func() {
@@ -1059,7 +1058,7 @@ func TestGenClient_909_6(t *testing.T) {
 	}
 
 	for fileToInspect, expectedCode := range fixtureConfig {
-		code, err := ioutil.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
 		require.NoError(t, err)
 
 		for line, codeLine := range expectedCode {
