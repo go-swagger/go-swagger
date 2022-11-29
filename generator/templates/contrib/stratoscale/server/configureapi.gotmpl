@@ -80,6 +80,13 @@ type Config struct {
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
 	// Authenticator to use for all Basic authentication
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
+
+	{{ range .Consumes -}}
+	{{ if .Implementation -}}
+	// {{ pascalize .Name }}Consumer is a {{ .Name }} consumer that will replace the default if not nil.
+	{{ pascalize .Name }}Consumer runtime.Consumer
+	{{ end -}}
+	{{ end -}}
 }
 
 // Handler returns an http.Handler given the handler configuration
@@ -112,13 +119,17 @@ func HandlerAPI(c Config) (http.Handler, *{{.Package}}.{{ pascalize .Name }}API,
 	}
 
 	{{ range .Consumes -}}
-	{{ if .Implementation -}}
-	api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
-	{{ else }}
-	api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
-		return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
-	})
-	{{ end -}}
+	if c.{{ pascalize .Name }}Consumer != nil {
+		api.{{ pascalize .Name }}Consumer = c.{{ pascalize .Name }}Consumer
+	} else {
+		{{ if .Implementation -}}
+		api.{{ pascalize .Name }}Consumer = {{ .Implementation }}
+		{{ else }}
+		api.{{ pascalize .Name }}Consumer = runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {
+			return errors.NotImplemented("{{.Name}} consumer has not yet been implemented")
+		})
+		{{ end -}}
+	}
 	{{ end -}}
 	{{ range .Produces -}}
 	{{ if .Implementation -}}
