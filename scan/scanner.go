@@ -951,3 +951,24 @@ COMMENTS:
 	}
 	return nil
 }
+
+type vendorExtensibleParser struct {
+	setExtensions func(ext spec.Extensions, dest interface{})
+}
+
+func (extParser vendorExtensibleParser) ParseInto(dest interface{}) func(json.RawMessage) error {
+	return func(jsonValue json.RawMessage) error {
+		var jsonData spec.Extensions
+		err := json.Unmarshal(jsonValue, &jsonData)
+		if err != nil {
+			return err
+		}
+		for k := range jsonData {
+			if !rxAllowedExtensions.MatchString(k) {
+				return fmt.Errorf("invalid schema extension name, should start from `x-`: %s", k)
+			}
+		}
+		extParser.setExtensions(jsonData, dest)
+		return nil
+	}
+}

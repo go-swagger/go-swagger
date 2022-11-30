@@ -56,6 +56,11 @@ func TestRoutesParser(t *testing.T) {
 		[]string{"pets", "users"},
 		[]string{"read", "write"},
 	)
+	expectedListPetsExtensions := spec.Extensions{
+		"x-some-flag": true,
+	}
+	assert.EqualValues(t, expectedListPetsExtensions, po.Get.Extensions)
+
 	assertOperation(t,
 		po.Post,
 		"createPet",
@@ -76,6 +81,25 @@ func TestRoutesParser(t *testing.T) {
 		[]string{"orders"},
 		[]string{"orders:read", "https://www.googleapis.com/auth/userinfo.email"},
 	)
+	expectedListOrderExtensions := spec.Extensions{
+		"x-some-flag": false,
+		"x-some-list": []interface{}{
+			"item1",
+			"item2",
+			"item3",
+		},
+		"x-some-object": map[string]interface{}{
+			"key1": "value1",
+			"key2": "value2",
+			"subobject": map[string]interface{}{
+				"subkey1": "subvalue1",
+				"subkey2": "subvalue2",
+			},
+			"key3": "value3",
+		},
+	}
+	assert.EqualValues(t, expectedListOrderExtensions, po.Get.Extensions)
+
 	assertOperation(t,
 		po.Post,
 		"createOrder",
