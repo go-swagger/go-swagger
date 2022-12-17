@@ -22,7 +22,7 @@ import (
   {{ imports .Imports }}
 )
 
-//go:generate mockery -name API -inpkg
+//go:generate mockery --name API --inpackage
 
 // API is the interface of the {{ humanize .Name }} client
 type API interface {
