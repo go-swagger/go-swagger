@@ -46,7 +46,7 @@ func NewPetListOK() *PetListOK {
 }
 
 /*
-	PetListOK describes a response with status code 200, with default header values.
+PetListOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -54,27 +54,27 @@ type PetListOK struct {
 	Payload []*models.Pet
 }
 
-// IsSuccess returns true when this pet list o k response returns a 2xx status code
+// IsSuccess returns true when this pet list o k response has a 2xx status code
 func (o *PetListOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this pet list o k response returns a 3xx status code
+// IsRedirect returns true when this pet list o k response has a 3xx status code
 func (o *PetListOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet list o k response returns a 4xx status code
+// IsClientError returns true when this pet list o k response has a 4xx status code
 func (o *PetListOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this pet list o k response returns a 5xx status code
+// IsServerError returns true when this pet list o k response has a 5xx status code
 func (o *PetListOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet list o k response returns a 4xx status code
+// IsCode returns true when this pet list o k response a status code equal to that given
 func (o *PetListOK) IsCode(code int) bool {
 	return code == 200
 }
@@ -107,34 +107,34 @@ func NewPetListBadRequest() *PetListBadRequest {
 }
 
 /*
-	PetListBadRequest describes a response with status code 400, with default header values.
+PetListBadRequest describes a response with status code 400, with default header values.
 
 Invalid status value
 */
 type PetListBadRequest struct {
 }
 
-// IsSuccess returns true when this pet list bad request response returns a 2xx status code
+// IsSuccess returns true when this pet list bad request response has a 2xx status code
 func (o *PetListBadRequest) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet list bad request response returns a 3xx status code
+// IsRedirect returns true when this pet list bad request response has a 3xx status code
 func (o *PetListBadRequest) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet list bad request response returns a 4xx status code
+// IsClientError returns true when this pet list bad request response has a 4xx status code
 func (o *PetListBadRequest) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet list bad request response returns a 5xx status code
+// IsServerError returns true when this pet list bad request response has a 5xx status code
 func (o *PetListBadRequest) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet list bad request response returns a 4xx status code
+// IsCode returns true when this pet list bad request response a status code equal to that given
 func (o *PetListBadRequest) IsCode(code int) bool {
 	return code == 400
 }
