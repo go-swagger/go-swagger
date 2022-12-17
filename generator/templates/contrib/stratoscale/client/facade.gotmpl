@@ -77,7 +77,7 @@ func New(c Config) *{{ pascalize .Name }} {
 // {{ pascalize .Name }} is a client for {{ humanize .Name }}
 type {{ pascalize .Name }} struct {
 	{{ range .OperationGroups -}}
-	  {{ pascalize .Name }} *{{ .PackageAlias }}.Client
+	  {{ pascalize .Name }} {{ .PackageAlias }}.API
 	{{ end -}}
 	Transport runtime.ClientTransport
 }
