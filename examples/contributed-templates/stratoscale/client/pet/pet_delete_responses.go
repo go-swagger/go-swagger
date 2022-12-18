@@ -49,34 +49,34 @@ func NewPetDeleteNoContent() *PetDeleteNoContent {
 }
 
 /*
-	PetDeleteNoContent describes a response with status code 204, with default header values.
+PetDeleteNoContent describes a response with status code 204, with default header values.
 
 Deleted successfully
 */
 type PetDeleteNoContent struct {
 }
 
-// IsSuccess returns true when this pet delete no content response returns a 2xx status code
+// IsSuccess returns true when this pet delete no content response has a 2xx status code
 func (o *PetDeleteNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this pet delete no content response returns a 3xx status code
+// IsRedirect returns true when this pet delete no content response has a 3xx status code
 func (o *PetDeleteNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet delete no content response returns a 4xx status code
+// IsClientError returns true when this pet delete no content response has a 4xx status code
 func (o *PetDeleteNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this pet delete no content response returns a 5xx status code
+// IsServerError returns true when this pet delete no content response has a 5xx status code
 func (o *PetDeleteNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet delete no content response returns a 4xx status code
+// IsCode returns true when this pet delete no content response a status code equal to that given
 func (o *PetDeleteNoContent) IsCode(code int) bool {
 	return code == 204
 }
@@ -100,34 +100,34 @@ func NewPetDeleteBadRequest() *PetDeleteBadRequest {
 }
 
 /*
-	PetDeleteBadRequest describes a response with status code 400, with default header values.
+PetDeleteBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
 type PetDeleteBadRequest struct {
 }
 
-// IsSuccess returns true when this pet delete bad request response returns a 2xx status code
+// IsSuccess returns true when this pet delete bad request response has a 2xx status code
 func (o *PetDeleteBadRequest) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet delete bad request response returns a 3xx status code
+// IsRedirect returns true when this pet delete bad request response has a 3xx status code
 func (o *PetDeleteBadRequest) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet delete bad request response returns a 4xx status code
+// IsClientError returns true when this pet delete bad request response has a 4xx status code
 func (o *PetDeleteBadRequest) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet delete bad request response returns a 5xx status code
+// IsServerError returns true when this pet delete bad request response has a 5xx status code
 func (o *PetDeleteBadRequest) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet delete bad request response returns a 4xx status code
+// IsCode returns true when this pet delete bad request response a status code equal to that given
 func (o *PetDeleteBadRequest) IsCode(code int) bool {
 	return code == 400
 }
@@ -151,34 +151,34 @@ func NewPetDeleteNotFound() *PetDeleteNotFound {
 }
 
 /*
-	PetDeleteNotFound describes a response with status code 404, with default header values.
+PetDeleteNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */
 type PetDeleteNotFound struct {
 }
 
-// IsSuccess returns true when this pet delete not found response returns a 2xx status code
+// IsSuccess returns true when this pet delete not found response has a 2xx status code
 func (o *PetDeleteNotFound) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet delete not found response returns a 3xx status code
+// IsRedirect returns true when this pet delete not found response has a 3xx status code
 func (o *PetDeleteNotFound) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet delete not found response returns a 4xx status code
+// IsClientError returns true when this pet delete not found response has a 4xx status code
 func (o *PetDeleteNotFound) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet delete not found response returns a 5xx status code
+// IsServerError returns true when this pet delete not found response has a 5xx status code
 func (o *PetDeleteNotFound) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet delete not found response returns a 4xx status code
+// IsCode returns true when this pet delete not found response a status code equal to that given
 func (o *PetDeleteNotFound) IsCode(code int) bool {
 	return code == 404
 }

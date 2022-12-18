@@ -46,7 +46,7 @@ func NewPetCreateCreated() *PetCreateCreated {
 }
 
 /*
-	PetCreateCreated describes a response with status code 201, with default header values.
+PetCreateCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -54,27 +54,27 @@ type PetCreateCreated struct {
 	Payload *models.Pet
 }
 
-// IsSuccess returns true when this pet create created response returns a 2xx status code
+// IsSuccess returns true when this pet create created response has a 2xx status code
 func (o *PetCreateCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this pet create created response returns a 3xx status code
+// IsRedirect returns true when this pet create created response has a 3xx status code
 func (o *PetCreateCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet create created response returns a 4xx status code
+// IsClientError returns true when this pet create created response has a 4xx status code
 func (o *PetCreateCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this pet create created response returns a 5xx status code
+// IsServerError returns true when this pet create created response has a 5xx status code
 func (o *PetCreateCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet create created response returns a 4xx status code
+// IsCode returns true when this pet create created response a status code equal to that given
 func (o *PetCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
@@ -109,34 +109,34 @@ func NewPetCreateMethodNotAllowed() *PetCreateMethodNotAllowed {
 }
 
 /*
-	PetCreateMethodNotAllowed describes a response with status code 405, with default header values.
+PetCreateMethodNotAllowed describes a response with status code 405, with default header values.
 
 Invalid input
 */
 type PetCreateMethodNotAllowed struct {
 }
 
-// IsSuccess returns true when this pet create method not allowed response returns a 2xx status code
+// IsSuccess returns true when this pet create method not allowed response has a 2xx status code
 func (o *PetCreateMethodNotAllowed) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet create method not allowed response returns a 3xx status code
+// IsRedirect returns true when this pet create method not allowed response has a 3xx status code
 func (o *PetCreateMethodNotAllowed) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet create method not allowed response returns a 4xx status code
+// IsClientError returns true when this pet create method not allowed response has a 4xx status code
 func (o *PetCreateMethodNotAllowed) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet create method not allowed response returns a 5xx status code
+// IsServerError returns true when this pet create method not allowed response has a 5xx status code
 func (o *PetCreateMethodNotAllowed) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet create method not allowed response returns a 4xx status code
+// IsCode returns true when this pet create method not allowed response a status code equal to that given
 func (o *PetCreateMethodNotAllowed) IsCode(code int) bool {
 	return code == 405
 }

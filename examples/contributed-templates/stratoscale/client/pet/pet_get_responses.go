@@ -52,7 +52,7 @@ func NewPetGetOK() *PetGetOK {
 }
 
 /*
-	PetGetOK describes a response with status code 200, with default header values.
+PetGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -60,27 +60,27 @@ type PetGetOK struct {
 	Payload *models.Pet
 }
 
-// IsSuccess returns true when this pet get o k response returns a 2xx status code
+// IsSuccess returns true when this pet get o k response has a 2xx status code
 func (o *PetGetOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this pet get o k response returns a 3xx status code
+// IsRedirect returns true when this pet get o k response has a 3xx status code
 func (o *PetGetOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet get o k response returns a 4xx status code
+// IsClientError returns true when this pet get o k response has a 4xx status code
 func (o *PetGetOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this pet get o k response returns a 5xx status code
+// IsServerError returns true when this pet get o k response has a 5xx status code
 func (o *PetGetOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet get o k response returns a 4xx status code
+// IsCode returns true when this pet get o k response a status code equal to that given
 func (o *PetGetOK) IsCode(code int) bool {
 	return code == 200
 }
@@ -115,34 +115,34 @@ func NewPetGetBadRequest() *PetGetBadRequest {
 }
 
 /*
-	PetGetBadRequest describes a response with status code 400, with default header values.
+PetGetBadRequest describes a response with status code 400, with default header values.
 
 Invalid ID supplied
 */
 type PetGetBadRequest struct {
 }
 
-// IsSuccess returns true when this pet get bad request response returns a 2xx status code
+// IsSuccess returns true when this pet get bad request response has a 2xx status code
 func (o *PetGetBadRequest) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet get bad request response returns a 3xx status code
+// IsRedirect returns true when this pet get bad request response has a 3xx status code
 func (o *PetGetBadRequest) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet get bad request response returns a 4xx status code
+// IsClientError returns true when this pet get bad request response has a 4xx status code
 func (o *PetGetBadRequest) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet get bad request response returns a 5xx status code
+// IsServerError returns true when this pet get bad request response has a 5xx status code
 func (o *PetGetBadRequest) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet get bad request response returns a 4xx status code
+// IsCode returns true when this pet get bad request response a status code equal to that given
 func (o *PetGetBadRequest) IsCode(code int) bool {
 	return code == 400
 }
@@ -166,34 +166,34 @@ func NewPetGetNotFound() *PetGetNotFound {
 }
 
 /*
-	PetGetNotFound describes a response with status code 404, with default header values.
+PetGetNotFound describes a response with status code 404, with default header values.
 
 Pet not found
 */
 type PetGetNotFound struct {
 }
 
-// IsSuccess returns true when this pet get not found response returns a 2xx status code
+// IsSuccess returns true when this pet get not found response has a 2xx status code
 func (o *PetGetNotFound) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this pet get not found response returns a 3xx status code
+// IsRedirect returns true when this pet get not found response has a 3xx status code
 func (o *PetGetNotFound) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet get not found response returns a 4xx status code
+// IsClientError returns true when this pet get not found response has a 4xx status code
 func (o *PetGetNotFound) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this pet get not found response returns a 5xx status code
+// IsServerError returns true when this pet get not found response has a 5xx status code
 func (o *PetGetNotFound) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet get not found response returns a 4xx status code
+// IsCode returns true when this pet get not found response a status code equal to that given
 func (o *PetGetNotFound) IsCode(code int) bool {
 	return code == 404
 }

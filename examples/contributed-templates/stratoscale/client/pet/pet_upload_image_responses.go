@@ -40,7 +40,7 @@ func NewPetUploadImageOK() *PetUploadImageOK {
 }
 
 /*
-	PetUploadImageOK describes a response with status code 200, with default header values.
+PetUploadImageOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -48,27 +48,27 @@ type PetUploadImageOK struct {
 	Payload *models.APIResponse
 }
 
-// IsSuccess returns true when this pet upload image o k response returns a 2xx status code
+// IsSuccess returns true when this pet upload image o k response has a 2xx status code
 func (o *PetUploadImageOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this pet upload image o k response returns a 3xx status code
+// IsRedirect returns true when this pet upload image o k response has a 3xx status code
 func (o *PetUploadImageOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this pet upload image o k response returns a 4xx status code
+// IsClientError returns true when this pet upload image o k response has a 4xx status code
 func (o *PetUploadImageOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this pet upload image o k response returns a 5xx status code
+// IsServerError returns true when this pet upload image o k response has a 5xx status code
 func (o *PetUploadImageOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this pet upload image o k response returns a 4xx status code
+// IsCode returns true when this pet upload image o k response a status code equal to that given
 func (o *PetUploadImageOK) IsCode(code int) bool {
 	return code == 200
 }

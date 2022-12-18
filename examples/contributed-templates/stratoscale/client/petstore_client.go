@@ -66,7 +66,7 @@ func New(c Config) *Petstore {
 
 // Petstore is a client for petstore
 type Petstore struct {
-	Pet       *pet.Client
-	Store     *store.Client
+	Pet       pet.API
+	Store     store.API
 	Transport runtime.ClientTransport
 }

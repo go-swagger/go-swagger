@@ -38,7 +38,7 @@ func NewInventoryGetOK() *InventoryGetOK {
 }
 
 /*
-	InventoryGetOK describes a response with status code 200, with default header values.
+InventoryGetOK describes a response with status code 200, with default header values.
 
 successful operation
 */
@@ -46,27 +46,27 @@ type InventoryGetOK struct {
 	Payload map[string]int32
 }
 
-// IsSuccess returns true when this inventory get o k response returns a 2xx status code
+// IsSuccess returns true when this inventory get o k response has a 2xx status code
 func (o *InventoryGetOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this inventory get o k response returns a 3xx status code
+// IsRedirect returns true when this inventory get o k response has a 3xx status code
 func (o *InventoryGetOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this inventory get o k response returns a 4xx status code
+// IsClientError returns true when this inventory get o k response has a 4xx status code
 func (o *InventoryGetOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this inventory get o k response returns a 5xx status code
+// IsServerError returns true when this inventory get o k response has a 5xx status code
 func (o *InventoryGetOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this inventory get o k response returns a 4xx status code
+// IsCode returns true when this inventory get o k response a status code equal to that given
 func (o *InventoryGetOK) IsCode(code int) bool {
 	return code == 200
 }
