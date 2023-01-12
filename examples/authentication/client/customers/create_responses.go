@@ -47,7 +47,7 @@ func NewCreateCreated() *CreateCreated {
 }
 
 /*
-	CreateCreated describes a response with status code 201, with default header values.
+CreateCreated describes a response with status code 201, with default header values.
 
 created
 */
@@ -55,29 +55,34 @@ type CreateCreated struct {
 	Payload *models.Customer
 }
 
-// IsSuccess returns true when this create created response returns a 2xx status code
+// IsSuccess returns true when this create created response has a 2xx status code
 func (o *CreateCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this create created response returns a 3xx status code
+// IsRedirect returns true when this create created response has a 3xx status code
 func (o *CreateCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this create created response returns a 4xx status code
+// IsClientError returns true when this create created response has a 4xx status code
 func (o *CreateCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this create created response returns a 5xx status code
+// IsServerError returns true when this create created response has a 5xx status code
 func (o *CreateCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this create created response returns a 4xx status code
+// IsCode returns true when this create created response a status code equal to that given
 func (o *CreateCreated) IsCode(code int) bool {
 	return code == 201
+}
+
+// Code gets the status code for the create created response
+func (o *CreateCreated) Code() int {
+	return 201
 }
 
 func (o *CreateCreated) Error() string {
@@ -112,7 +117,7 @@ func NewCreateDefault(code int) *CreateDefault {
 }
 
 /*
-	CreateDefault describes a response with status code -1, with default header values.
+CreateDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -122,34 +127,34 @@ type CreateDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the create default response
-func (o *CreateDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this create default response returns a 2xx status code
+// IsSuccess returns true when this create default response has a 2xx status code
 func (o *CreateDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this create default response returns a 3xx status code
+// IsRedirect returns true when this create default response has a 3xx status code
 func (o *CreateDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this create default response returns a 4xx status code
+// IsClientError returns true when this create default response has a 4xx status code
 func (o *CreateDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this create default response returns a 5xx status code
+// IsServerError returns true when this create default response has a 5xx status code
 func (o *CreateDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this create default response returns a 4xx status code
+// IsCode returns true when this create default response a status code equal to that given
 func (o *CreateDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the create default response
+func (o *CreateDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *CreateDefault) Error() string {

@@ -51,36 +51,41 @@ func NewAddCommentToTaskCreated() *AddCommentToTaskCreated {
 }
 
 /*
-	AddCommentToTaskCreated describes a response with status code 201, with default header values.
+AddCommentToTaskCreated describes a response with status code 201, with default header values.
 
 Comment added
 */
 type AddCommentToTaskCreated struct {
 }
 
-// IsSuccess returns true when this add comment to task created response returns a 2xx status code
+// IsSuccess returns true when this add comment to task created response has a 2xx status code
 func (o *AddCommentToTaskCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this add comment to task created response returns a 3xx status code
+// IsRedirect returns true when this add comment to task created response has a 3xx status code
 func (o *AddCommentToTaskCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this add comment to task created response returns a 4xx status code
+// IsClientError returns true when this add comment to task created response has a 4xx status code
 func (o *AddCommentToTaskCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this add comment to task created response returns a 5xx status code
+// IsServerError returns true when this add comment to task created response has a 5xx status code
 func (o *AddCommentToTaskCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this add comment to task created response returns a 4xx status code
+// IsCode returns true when this add comment to task created response a status code equal to that given
 func (o *AddCommentToTaskCreated) IsCode(code int) bool {
 	return code == 201
+}
+
+// Code gets the status code for the add comment to task created response
+func (o *AddCommentToTaskCreated) Code() int {
+	return 201
 }
 
 func (o *AddCommentToTaskCreated) Error() string {
@@ -104,7 +109,7 @@ func NewAddCommentToTaskDefault(code int) *AddCommentToTaskDefault {
 }
 
 /*
-	AddCommentToTaskDefault describes a response with status code -1, with default header values.
+AddCommentToTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
@@ -115,34 +120,34 @@ type AddCommentToTaskDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the add comment to task default response
-func (o *AddCommentToTaskDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this add comment to task default response returns a 2xx status code
+// IsSuccess returns true when this add comment to task default response has a 2xx status code
 func (o *AddCommentToTaskDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this add comment to task default response returns a 3xx status code
+// IsRedirect returns true when this add comment to task default response has a 3xx status code
 func (o *AddCommentToTaskDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this add comment to task default response returns a 4xx status code
+// IsClientError returns true when this add comment to task default response has a 4xx status code
 func (o *AddCommentToTaskDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this add comment to task default response returns a 5xx status code
+// IsServerError returns true when this add comment to task default response has a 5xx status code
 func (o *AddCommentToTaskDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this add comment to task default response returns a 4xx status code
+// IsCode returns true when this add comment to task default response a status code equal to that given
 func (o *AddCommentToTaskDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the add comment to task default response
+func (o *AddCommentToTaskDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *AddCommentToTaskDefault) Error() string {

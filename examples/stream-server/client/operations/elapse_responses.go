@@ -48,7 +48,7 @@ func NewElapseOK(writer io.Writer) *ElapseOK {
 }
 
 /*
-	ElapseOK describes a response with status code 200, with default header values.
+ElapseOK describes a response with status code 200, with default header values.
 
 Secondly update on remaining time
 */
@@ -56,29 +56,34 @@ type ElapseOK struct {
 	Payload io.Writer
 }
 
-// IsSuccess returns true when this elapse o k response returns a 2xx status code
+// IsSuccess returns true when this elapse o k response has a 2xx status code
 func (o *ElapseOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this elapse o k response returns a 3xx status code
+// IsRedirect returns true when this elapse o k response has a 3xx status code
 func (o *ElapseOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this elapse o k response returns a 4xx status code
+// IsClientError returns true when this elapse o k response has a 4xx status code
 func (o *ElapseOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this elapse o k response returns a 5xx status code
+// IsServerError returns true when this elapse o k response has a 5xx status code
 func (o *ElapseOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this elapse o k response returns a 4xx status code
+// IsCode returns true when this elapse o k response a status code equal to that given
 func (o *ElapseOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the elapse o k response
+func (o *ElapseOK) Code() int {
+	return 200
 }
 
 func (o *ElapseOK) Error() string {
@@ -109,36 +114,41 @@ func NewElapseForbidden() *ElapseForbidden {
 }
 
 /*
-	ElapseForbidden describes a response with status code 403, with default header values.
+ElapseForbidden describes a response with status code 403, with default header values.
 
 Contrived - thrown when length of 11 is chosen
 */
 type ElapseForbidden struct {
 }
 
-// IsSuccess returns true when this elapse forbidden response returns a 2xx status code
+// IsSuccess returns true when this elapse forbidden response has a 2xx status code
 func (o *ElapseForbidden) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this elapse forbidden response returns a 3xx status code
+// IsRedirect returns true when this elapse forbidden response has a 3xx status code
 func (o *ElapseForbidden) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this elapse forbidden response returns a 4xx status code
+// IsClientError returns true when this elapse forbidden response has a 4xx status code
 func (o *ElapseForbidden) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this elapse forbidden response returns a 5xx status code
+// IsServerError returns true when this elapse forbidden response has a 5xx status code
 func (o *ElapseForbidden) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this elapse forbidden response returns a 4xx status code
+// IsCode returns true when this elapse forbidden response a status code equal to that given
 func (o *ElapseForbidden) IsCode(code int) bool {
 	return code == 403
+}
+
+// Code gets the status code for the elapse forbidden response
+func (o *ElapseForbidden) Code() int {
+	return 403
 }
 
 func (o *ElapseForbidden) Error() string {

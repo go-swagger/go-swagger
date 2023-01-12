@@ -53,7 +53,7 @@ func NewUpdateTaskOK() *UpdateTaskOK {
 }
 
 /*
-	UpdateTaskOK describes a response with status code 200, with default header values.
+UpdateTaskOK describes a response with status code 200, with default header values.
 
 Task details
 */
@@ -61,29 +61,34 @@ type UpdateTaskOK struct {
 	Payload *models.Task
 }
 
-// IsSuccess returns true when this update task o k response returns a 2xx status code
+// IsSuccess returns true when this update task o k response has a 2xx status code
 func (o *UpdateTaskOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this update task o k response returns a 3xx status code
+// IsRedirect returns true when this update task o k response has a 3xx status code
 func (o *UpdateTaskOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this update task o k response returns a 4xx status code
+// IsClientError returns true when this update task o k response has a 4xx status code
 func (o *UpdateTaskOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this update task o k response returns a 5xx status code
+// IsServerError returns true when this update task o k response has a 5xx status code
 func (o *UpdateTaskOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this update task o k response returns a 4xx status code
+// IsCode returns true when this update task o k response a status code equal to that given
 func (o *UpdateTaskOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the update task o k response
+func (o *UpdateTaskOK) Code() int {
+	return 200
 }
 
 func (o *UpdateTaskOK) Error() string {
@@ -116,7 +121,7 @@ func NewUpdateTaskUnprocessableEntity() *UpdateTaskUnprocessableEntity {
 }
 
 /*
-	UpdateTaskUnprocessableEntity describes a response with status code 422, with default header values.
+UpdateTaskUnprocessableEntity describes a response with status code 422, with default header values.
 
 Validation error
 */
@@ -124,29 +129,34 @@ type UpdateTaskUnprocessableEntity struct {
 	Payload *models.ValidationError
 }
 
-// IsSuccess returns true when this update task unprocessable entity response returns a 2xx status code
+// IsSuccess returns true when this update task unprocessable entity response has a 2xx status code
 func (o *UpdateTaskUnprocessableEntity) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this update task unprocessable entity response returns a 3xx status code
+// IsRedirect returns true when this update task unprocessable entity response has a 3xx status code
 func (o *UpdateTaskUnprocessableEntity) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this update task unprocessable entity response returns a 4xx status code
+// IsClientError returns true when this update task unprocessable entity response has a 4xx status code
 func (o *UpdateTaskUnprocessableEntity) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this update task unprocessable entity response returns a 5xx status code
+// IsServerError returns true when this update task unprocessable entity response has a 5xx status code
 func (o *UpdateTaskUnprocessableEntity) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this update task unprocessable entity response returns a 4xx status code
+// IsCode returns true when this update task unprocessable entity response a status code equal to that given
 func (o *UpdateTaskUnprocessableEntity) IsCode(code int) bool {
 	return code == 422
+}
+
+// Code gets the status code for the update task unprocessable entity response
+func (o *UpdateTaskUnprocessableEntity) Code() int {
+	return 422
 }
 
 func (o *UpdateTaskUnprocessableEntity) Error() string {
@@ -181,7 +191,7 @@ func NewUpdateTaskDefault(code int) *UpdateTaskDefault {
 }
 
 /*
-	UpdateTaskDefault describes a response with status code -1, with default header values.
+UpdateTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
@@ -192,34 +202,34 @@ type UpdateTaskDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the update task default response
-func (o *UpdateTaskDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this update task default response returns a 2xx status code
+// IsSuccess returns true when this update task default response has a 2xx status code
 func (o *UpdateTaskDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this update task default response returns a 3xx status code
+// IsRedirect returns true when this update task default response has a 3xx status code
 func (o *UpdateTaskDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this update task default response returns a 4xx status code
+// IsClientError returns true when this update task default response has a 4xx status code
 func (o *UpdateTaskDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this update task default response returns a 5xx status code
+// IsServerError returns true when this update task default response has a 5xx status code
 func (o *UpdateTaskDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this update task default response returns a 4xx status code
+// IsCode returns true when this update task default response a status code equal to that given
 func (o *UpdateTaskDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the update task default response
+func (o *UpdateTaskDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *UpdateTaskDefault) Error() string {

@@ -37,36 +37,41 @@ func NewUploadFileOK() *UploadFileOK {
 }
 
 /*
-	UploadFileOK describes a response with status code 200, with default header values.
+UploadFileOK describes a response with status code 200, with default header values.
 
 OK
 */
 type UploadFileOK struct {
 }
 
-// IsSuccess returns true when this upload file o k response returns a 2xx status code
+// IsSuccess returns true when this upload file o k response has a 2xx status code
 func (o *UploadFileOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this upload file o k response returns a 3xx status code
+// IsRedirect returns true when this upload file o k response has a 3xx status code
 func (o *UploadFileOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this upload file o k response returns a 4xx status code
+// IsClientError returns true when this upload file o k response has a 4xx status code
 func (o *UploadFileOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this upload file o k response returns a 5xx status code
+// IsServerError returns true when this upload file o k response has a 5xx status code
 func (o *UploadFileOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this upload file o k response returns a 4xx status code
+// IsCode returns true when this upload file o k response a status code equal to that given
 func (o *UploadFileOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the upload file o k response
+func (o *UploadFileOK) Code() int {
+	return 200
 }
 
 func (o *UploadFileOK) Error() string {

@@ -85,6 +85,11 @@ func (o *OrderGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the order get o k response
+func (o *OrderGetOK) Code() int {
+	return 200
+}
+
 func (o *OrderGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
 }
@@ -147,6 +152,11 @@ func (o *OrderGetBadRequest) IsCode(code int) bool {
 	return code == 400
 }
 
+// Code gets the status code for the order get bad request response
+func (o *OrderGetBadRequest) Code() int {
+	return 400
+}
+
 func (o *OrderGetBadRequest) Error() string {
 	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest ", 400)
 }
@@ -196,6 +206,11 @@ func (o *OrderGetNotFound) IsServerError() bool {
 // IsCode returns true when this order get not found response a status code equal to that given
 func (o *OrderGetNotFound) IsCode(code int) bool {
 	return code == 404
+}
+
+// Code gets the status code for the order get not found response
+func (o *OrderGetNotFound) Code() int {
+	return 404
 }
 
 func (o *OrderGetNotFound) Error() string {

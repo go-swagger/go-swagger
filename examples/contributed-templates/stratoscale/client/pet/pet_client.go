@@ -7,6 +7,7 @@ package pet
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-openapi/runtime"
 
@@ -76,8 +77,15 @@ func (a *Client) PetCreate(ctx context.Context, params *PetCreateParams) (*PetCr
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetCreateCreated), nil
-
+	switch value := result.(type) {
+	case *PetCreateCreated:
+		return value, nil
+	case *PetCreateMethodNotAllowed:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetCreate: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -101,8 +109,17 @@ func (a *Client) PetDelete(ctx context.Context, params *PetDeleteParams) (*PetDe
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetDeleteNoContent), nil
-
+	switch value := result.(type) {
+	case *PetDeleteNoContent:
+		return value, nil
+	case *PetDeleteBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *PetDeleteNotFound:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetDelete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -126,8 +143,17 @@ func (a *Client) PetGet(ctx context.Context, params *PetGetParams) (*PetGetOK, e
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetGetOK), nil
-
+	switch value := result.(type) {
+	case *PetGetOK:
+		return value, nil
+	case *PetGetBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *PetGetNotFound:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetGet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -151,8 +177,15 @@ func (a *Client) PetList(ctx context.Context, params *PetListParams) (*PetListOK
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetListOK), nil
-
+	switch value := result.(type) {
+	case *PetListOK:
+		return value, nil
+	case *PetListBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetList: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -176,8 +209,19 @@ func (a *Client) PetUpdate(ctx context.Context, params *PetUpdateParams) (*PetUp
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetUpdateCreated), nil
-
+	switch value := result.(type) {
+	case *PetUpdateCreated:
+		return value, nil
+	case *PetUpdateBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *PetUpdateNotFound:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *PetUpdateMethodNotAllowed:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetUpdate: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -201,6 +245,11 @@ func (a *Client) PetUploadImage(ctx context.Context, params *PetUploadImageParam
 	if err != nil {
 		return nil, err
 	}
-	return result.(*PetUploadImageOK), nil
-
+	switch value := result.(type) {
+	case *PetUploadImageOK:
+		return value, nil
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PetUploadImage: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }

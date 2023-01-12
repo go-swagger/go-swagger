@@ -81,6 +81,11 @@ func (o *PetDeleteNoContent) IsCode(code int) bool {
 	return code == 204
 }
 
+// Code gets the status code for the pet delete no content response
+func (o *PetDeleteNoContent) Code() int {
+	return 204
+}
+
 func (o *PetDeleteNoContent) Error() string {
 	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent ", 204)
 }
@@ -132,6 +137,11 @@ func (o *PetDeleteBadRequest) IsCode(code int) bool {
 	return code == 400
 }
 
+// Code gets the status code for the pet delete bad request response
+func (o *PetDeleteBadRequest) Code() int {
+	return 400
+}
+
 func (o *PetDeleteBadRequest) Error() string {
 	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest ", 400)
 }
@@ -181,6 +191,11 @@ func (o *PetDeleteNotFound) IsServerError() bool {
 // IsCode returns true when this pet delete not found response a status code equal to that given
 func (o *PetDeleteNotFound) IsCode(code int) bool {
 	return code == 404
+}
+
+// Code gets the status code for the pet delete not found response
+func (o *PetDeleteNotFound) Code() int {
+	return 404
 }
 
 func (o *PetDeleteNotFound) Error() string {

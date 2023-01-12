@@ -73,6 +73,11 @@ func (o *PetUploadImageOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the pet upload image o k response
+func (o *PetUploadImageOK) Code() int {
+	return 200
+}
+
 func (o *PetUploadImageOK) Error() string {
 	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
 }

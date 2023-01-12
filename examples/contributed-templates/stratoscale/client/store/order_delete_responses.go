@@ -81,6 +81,11 @@ func (o *OrderDeleteNoContent) IsCode(code int) bool {
 	return code == 204
 }
 
+// Code gets the status code for the order delete no content response
+func (o *OrderDeleteNoContent) Code() int {
+	return 204
+}
+
 func (o *OrderDeleteNoContent) Error() string {
 	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent ", 204)
 }
@@ -132,6 +137,11 @@ func (o *OrderDeleteBadRequest) IsCode(code int) bool {
 	return code == 400
 }
 
+// Code gets the status code for the order delete bad request response
+func (o *OrderDeleteBadRequest) Code() int {
+	return 400
+}
+
 func (o *OrderDeleteBadRequest) Error() string {
 	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest ", 400)
 }
@@ -181,6 +191,11 @@ func (o *OrderDeleteNotFound) IsServerError() bool {
 // IsCode returns true when this order delete not found response a status code equal to that given
 func (o *OrderDeleteNotFound) IsCode(code int) bool {
 	return code == 404
+}
+
+// Code gets the status code for the order delete not found response
+func (o *OrderDeleteNotFound) Code() int {
+	return 404
 }
 
 func (o *OrderDeleteNotFound) Error() string {

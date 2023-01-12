@@ -47,36 +47,41 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 }
 
 /*
-	DestroyOneNoContent describes a response with status code 204, with default header values.
+DestroyOneNoContent describes a response with status code 204, with default header values.
 
 Deleted
 */
 type DestroyOneNoContent struct {
 }
 
-// IsSuccess returns true when this destroy one no content response returns a 2xx status code
+// IsSuccess returns true when this destroy one no content response has a 2xx status code
 func (o *DestroyOneNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this destroy one no content response returns a 3xx status code
+// IsRedirect returns true when this destroy one no content response has a 3xx status code
 func (o *DestroyOneNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this destroy one no content response returns a 4xx status code
+// IsClientError returns true when this destroy one no content response has a 4xx status code
 func (o *DestroyOneNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this destroy one no content response returns a 5xx status code
+// IsServerError returns true when this destroy one no content response has a 5xx status code
 func (o *DestroyOneNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this destroy one no content response returns a 4xx status code
+// IsCode returns true when this destroy one no content response a status code equal to that given
 func (o *DestroyOneNoContent) IsCode(code int) bool {
 	return code == 204
+}
+
+// Code gets the status code for the destroy one no content response
+func (o *DestroyOneNoContent) Code() int {
+	return 204
 }
 
 func (o *DestroyOneNoContent) Error() string {
@@ -100,7 +105,7 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 }
 
 /*
-	DestroyOneDefault describes a response with status code -1, with default header values.
+DestroyOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -110,34 +115,34 @@ type DestroyOneDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the destroy one default response
-func (o *DestroyOneDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this destroy one default response returns a 2xx status code
+// IsSuccess returns true when this destroy one default response has a 2xx status code
 func (o *DestroyOneDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this destroy one default response returns a 3xx status code
+// IsRedirect returns true when this destroy one default response has a 3xx status code
 func (o *DestroyOneDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this destroy one default response returns a 4xx status code
+// IsClientError returns true when this destroy one default response has a 4xx status code
 func (o *DestroyOneDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this destroy one default response returns a 5xx status code
+// IsServerError returns true when this destroy one default response has a 5xx status code
 func (o *DestroyOneDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this destroy one default response returns a 4xx status code
+// IsCode returns true when this destroy one default response a status code equal to that given
 func (o *DestroyOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the destroy one default response
+func (o *DestroyOneDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *DestroyOneDefault) Error() string {

@@ -47,7 +47,7 @@ func NewUpdateOneOK() *UpdateOneOK {
 }
 
 /*
-	UpdateOneOK describes a response with status code 200, with default header values.
+UpdateOneOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -55,29 +55,34 @@ type UpdateOneOK struct {
 	Payload *models.Item
 }
 
-// IsSuccess returns true when this update one o k response returns a 2xx status code
+// IsSuccess returns true when this update one o k response has a 2xx status code
 func (o *UpdateOneOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this update one o k response returns a 3xx status code
+// IsRedirect returns true when this update one o k response has a 3xx status code
 func (o *UpdateOneOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this update one o k response returns a 4xx status code
+// IsClientError returns true when this update one o k response has a 4xx status code
 func (o *UpdateOneOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this update one o k response returns a 5xx status code
+// IsServerError returns true when this update one o k response has a 5xx status code
 func (o *UpdateOneOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this update one o k response returns a 4xx status code
+// IsCode returns true when this update one o k response a status code equal to that given
 func (o *UpdateOneOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the update one o k response
+func (o *UpdateOneOK) Code() int {
+	return 200
 }
 
 func (o *UpdateOneOK) Error() string {
@@ -112,7 +117,7 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 }
 
 /*
-	UpdateOneDefault describes a response with status code -1, with default header values.
+UpdateOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -122,34 +127,34 @@ type UpdateOneDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the update one default response
-func (o *UpdateOneDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this update one default response returns a 2xx status code
+// IsSuccess returns true when this update one default response has a 2xx status code
 func (o *UpdateOneDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this update one default response returns a 3xx status code
+// IsRedirect returns true when this update one default response has a 3xx status code
 func (o *UpdateOneDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this update one default response returns a 4xx status code
+// IsClientError returns true when this update one default response has a 4xx status code
 func (o *UpdateOneDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this update one default response returns a 5xx status code
+// IsServerError returns true when this update one default response has a 5xx status code
 func (o *UpdateOneDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this update one default response returns a 4xx status code
+// IsCode returns true when this update one default response a status code equal to that given
 func (o *UpdateOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the update one default response
+func (o *UpdateOneDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *UpdateOneDefault) Error() string {
