@@ -79,6 +79,11 @@ func (o *PetCreateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the pet create created response
+func (o *PetCreateCreated) Code() int {
+	return 201
+}
+
 func (o *PetCreateCreated) Error() string {
 	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
 }
@@ -139,6 +144,11 @@ func (o *PetCreateMethodNotAllowed) IsServerError() bool {
 // IsCode returns true when this pet create method not allowed response a status code equal to that given
 func (o *PetCreateMethodNotAllowed) IsCode(code int) bool {
 	return code == 405
+}
+
+// Code gets the status code for the pet create method not allowed response
+func (o *PetCreateMethodNotAllowed) Code() int {
+	return 405
 }
 
 func (o *PetCreateMethodNotAllowed) Error() string {

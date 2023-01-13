@@ -47,36 +47,41 @@ func NewDeleteTaskNoContent() *DeleteTaskNoContent {
 }
 
 /*
-	DeleteTaskNoContent describes a response with status code 204, with default header values.
+DeleteTaskNoContent describes a response with status code 204, with default header values.
 
 Task deleted
 */
 type DeleteTaskNoContent struct {
 }
 
-// IsSuccess returns true when this delete task no content response returns a 2xx status code
+// IsSuccess returns true when this delete task no content response has a 2xx status code
 func (o *DeleteTaskNoContent) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this delete task no content response returns a 3xx status code
+// IsRedirect returns true when this delete task no content response has a 3xx status code
 func (o *DeleteTaskNoContent) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this delete task no content response returns a 4xx status code
+// IsClientError returns true when this delete task no content response has a 4xx status code
 func (o *DeleteTaskNoContent) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this delete task no content response returns a 5xx status code
+// IsServerError returns true when this delete task no content response has a 5xx status code
 func (o *DeleteTaskNoContent) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this delete task no content response returns a 4xx status code
+// IsCode returns true when this delete task no content response a status code equal to that given
 func (o *DeleteTaskNoContent) IsCode(code int) bool {
 	return code == 204
+}
+
+// Code gets the status code for the delete task no content response
+func (o *DeleteTaskNoContent) Code() int {
+	return 204
 }
 
 func (o *DeleteTaskNoContent) Error() string {
@@ -100,7 +105,7 @@ func NewDeleteTaskDefault(code int) *DeleteTaskDefault {
 }
 
 /*
-	DeleteTaskDefault describes a response with status code -1, with default header values.
+DeleteTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
@@ -111,34 +116,34 @@ type DeleteTaskDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the delete task default response
-func (o *DeleteTaskDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this delete task default response returns a 2xx status code
+// IsSuccess returns true when this delete task default response has a 2xx status code
 func (o *DeleteTaskDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this delete task default response returns a 3xx status code
+// IsRedirect returns true when this delete task default response has a 3xx status code
 func (o *DeleteTaskDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this delete task default response returns a 4xx status code
+// IsClientError returns true when this delete task default response has a 4xx status code
 func (o *DeleteTaskDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this delete task default response returns a 5xx status code
+// IsServerError returns true when this delete task default response has a 5xx status code
 func (o *DeleteTaskDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this delete task default response returns a 4xx status code
+// IsCode returns true when this delete task default response a status code equal to that given
 func (o *DeleteTaskDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the delete task default response
+func (o *DeleteTaskDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *DeleteTaskDefault) Error() string {

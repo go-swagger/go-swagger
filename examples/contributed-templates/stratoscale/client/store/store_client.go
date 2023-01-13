@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-openapi/runtime"
 
@@ -74,8 +75,13 @@ func (a *Client) InventoryGet(ctx context.Context, params *InventoryGetParams) (
 	if err != nil {
 		return nil, err
 	}
-	return result.(*InventoryGetOK), nil
-
+	switch value := result.(type) {
+	case *InventoryGetOK:
+		return value, nil
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for InventoryGet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -99,8 +105,15 @@ func (a *Client) OrderCreate(ctx context.Context, params *OrderCreateParams) (*O
 	if err != nil {
 		return nil, err
 	}
-	return result.(*OrderCreateOK), nil
-
+	switch value := result.(type) {
+	case *OrderCreateOK:
+		return value, nil
+	case *OrderCreateBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for OrderCreate: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -126,8 +139,17 @@ func (a *Client) OrderDelete(ctx context.Context, params *OrderDeleteParams) (*O
 	if err != nil {
 		return nil, err
 	}
-	return result.(*OrderDeleteNoContent), nil
-
+	switch value := result.(type) {
+	case *OrderDeleteNoContent:
+		return value, nil
+	case *OrderDeleteBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *OrderDeleteNotFound:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for OrderDelete: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
@@ -153,6 +175,15 @@ func (a *Client) OrderGet(ctx context.Context, params *OrderGetParams) (*OrderGe
 	if err != nil {
 		return nil, err
 	}
-	return result.(*OrderGetOK), nil
-
+	switch value := result.(type) {
+	case *OrderGetOK:
+		return value, nil
+	case *OrderGetBadRequest:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	case *OrderGetNotFound:
+		return nil, runtime.NewAPIError("unsuccessful response", value, value.Code())
+	}
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for OrderGet: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }

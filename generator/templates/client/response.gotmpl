@@ -63,13 +63,6 @@ type {{ pascalize .Name }} struct {
   Payload {{ if and (not .Schema.IsBaseType) (not .Schema.IsInterface) .Schema.IsComplexObject (not .Schema.IsStream) }}*{{ end }}{{ if (not .Schema.IsStream) }}{{ .Schema.GoType }}{{ else }}io.Writer{{end}}
   {{- end }}
 }
-  {{- if eq .Code -1 }}
-
-// Code gets the status code for the {{ humanize .Name }} response
-func ({{ .ReceiverName }} *{{ pascalize .Name }}) Code() int {
-  return {{ .ReceiverName }}._statusCode
-}
-  {{- end }}
 
 // IsSuccess returns true when this {{ humanize .Name }} response has a 2xx status code
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsSuccess() bool {
@@ -113,6 +106,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) IsCode(code int) bool {
   return {{ .ReceiverName }}._statusCode == code
   {{- else }}
   return code == {{ .Code }}
+  {{- end }}
+}
+
+// Code gets the status code for the {{ humanize .Name }} response
+func ({{ .ReceiverName }} *{{ pascalize .Name }}) Code() int {
+  {{- if eq .Code -1 }}
+  return {{ .ReceiverName }}._statusCode
+  {{- else }}
+  return {{ .Code }}
   {{- end }}
 }
 

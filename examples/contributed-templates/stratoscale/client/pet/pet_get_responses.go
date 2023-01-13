@@ -85,6 +85,11 @@ func (o *PetGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the pet get o k response
+func (o *PetGetOK) Code() int {
+	return 200
+}
+
 func (o *PetGetOK) Error() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
 }
@@ -147,6 +152,11 @@ func (o *PetGetBadRequest) IsCode(code int) bool {
 	return code == 400
 }
 
+// Code gets the status code for the pet get bad request response
+func (o *PetGetBadRequest) Code() int {
+	return 400
+}
+
 func (o *PetGetBadRequest) Error() string {
 	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest ", 400)
 }
@@ -196,6 +206,11 @@ func (o *PetGetNotFound) IsServerError() bool {
 // IsCode returns true when this pet get not found response a status code equal to that given
 func (o *PetGetNotFound) IsCode(code int) bool {
 	return code == 404
+}
+
+// Code gets the status code for the pet get not found response
+func (o *PetGetNotFound) Code() int {
+	return 404
 }
 
 func (o *PetGetNotFound) Error() string {

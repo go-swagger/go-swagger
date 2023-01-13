@@ -79,6 +79,11 @@ func (o *PetListOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the pet list o k response
+func (o *PetListOK) Code() int {
+	return 200
+}
+
 func (o *PetListOK) Error() string {
 	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
 }
@@ -137,6 +142,11 @@ func (o *PetListBadRequest) IsServerError() bool {
 // IsCode returns true when this pet list bad request response a status code equal to that given
 func (o *PetListBadRequest) IsCode(code int) bool {
 	return code == 400
+}
+
+// Code gets the status code for the pet list bad request response
+func (o *PetListBadRequest) Code() int {
+	return 400
 }
 
 func (o *PetListBadRequest) Error() string {

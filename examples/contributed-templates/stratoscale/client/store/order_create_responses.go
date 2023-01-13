@@ -79,6 +79,11 @@ func (o *OrderCreateOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the order create o k response
+func (o *OrderCreateOK) Code() int {
+	return 200
+}
+
 func (o *OrderCreateOK) Error() string {
 	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
 }
@@ -139,6 +144,11 @@ func (o *OrderCreateBadRequest) IsServerError() bool {
 // IsCode returns true when this order create bad request response a status code equal to that given
 func (o *OrderCreateBadRequest) IsCode(code int) bool {
 	return code == 400
+}
+
+// Code gets the status code for the order create bad request response
+func (o *OrderCreateBadRequest) Code() int {
+	return 400
 }
 
 func (o *OrderCreateBadRequest) Error() string {

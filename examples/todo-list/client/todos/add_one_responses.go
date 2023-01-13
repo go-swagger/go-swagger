@@ -47,7 +47,7 @@ func NewAddOneCreated() *AddOneCreated {
 }
 
 /*
-	AddOneCreated describes a response with status code 201, with default header values.
+AddOneCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -55,29 +55,34 @@ type AddOneCreated struct {
 	Payload *models.Item
 }
 
-// IsSuccess returns true when this add one created response returns a 2xx status code
+// IsSuccess returns true when this add one created response has a 2xx status code
 func (o *AddOneCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this add one created response returns a 3xx status code
+// IsRedirect returns true when this add one created response has a 3xx status code
 func (o *AddOneCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this add one created response returns a 4xx status code
+// IsClientError returns true when this add one created response has a 4xx status code
 func (o *AddOneCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this add one created response returns a 5xx status code
+// IsServerError returns true when this add one created response has a 5xx status code
 func (o *AddOneCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this add one created response returns a 4xx status code
+// IsCode returns true when this add one created response a status code equal to that given
 func (o *AddOneCreated) IsCode(code int) bool {
 	return code == 201
+}
+
+// Code gets the status code for the add one created response
+func (o *AddOneCreated) Code() int {
+	return 201
 }
 
 func (o *AddOneCreated) Error() string {
@@ -112,7 +117,7 @@ func NewAddOneDefault(code int) *AddOneDefault {
 }
 
 /*
-	AddOneDefault describes a response with status code -1, with default header values.
+AddOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -122,34 +127,34 @@ type AddOneDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the add one default response
-func (o *AddOneDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this add one default response returns a 2xx status code
+// IsSuccess returns true when this add one default response has a 2xx status code
 func (o *AddOneDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this add one default response returns a 3xx status code
+// IsRedirect returns true when this add one default response has a 3xx status code
 func (o *AddOneDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this add one default response returns a 4xx status code
+// IsClientError returns true when this add one default response has a 4xx status code
 func (o *AddOneDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this add one default response returns a 5xx status code
+// IsServerError returns true when this add one default response has a 5xx status code
 func (o *AddOneDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this add one default response returns a 4xx status code
+// IsCode returns true when this add one default response a status code equal to that given
 func (o *AddOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the add one default response
+func (o *AddOneDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *AddOneDefault) Error() string {

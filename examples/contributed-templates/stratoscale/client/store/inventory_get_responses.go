@@ -71,6 +71,11 @@ func (o *InventoryGetOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the inventory get o k response
+func (o *InventoryGetOK) Code() int {
+	return 200
+}
+
 func (o *InventoryGetOK) Error() string {
 	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
 }

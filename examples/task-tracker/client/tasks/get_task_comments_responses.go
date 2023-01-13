@@ -47,7 +47,7 @@ func NewGetTaskCommentsOK() *GetTaskCommentsOK {
 }
 
 /*
-	GetTaskCommentsOK describes a response with status code 200, with default header values.
+GetTaskCommentsOK describes a response with status code 200, with default header values.
 
 The list of comments
 */
@@ -55,29 +55,34 @@ type GetTaskCommentsOK struct {
 	Payload []*models.Comment
 }
 
-// IsSuccess returns true when this get task comments o k response returns a 2xx status code
+// IsSuccess returns true when this get task comments o k response has a 2xx status code
 func (o *GetTaskCommentsOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this get task comments o k response returns a 3xx status code
+// IsRedirect returns true when this get task comments o k response has a 3xx status code
 func (o *GetTaskCommentsOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this get task comments o k response returns a 4xx status code
+// IsClientError returns true when this get task comments o k response has a 4xx status code
 func (o *GetTaskCommentsOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this get task comments o k response returns a 5xx status code
+// IsServerError returns true when this get task comments o k response has a 5xx status code
 func (o *GetTaskCommentsOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this get task comments o k response returns a 4xx status code
+// IsCode returns true when this get task comments o k response a status code equal to that given
 func (o *GetTaskCommentsOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the get task comments o k response
+func (o *GetTaskCommentsOK) Code() int {
+	return 200
 }
 
 func (o *GetTaskCommentsOK) Error() string {
@@ -110,7 +115,7 @@ func NewGetTaskCommentsDefault(code int) *GetTaskCommentsDefault {
 }
 
 /*
-	GetTaskCommentsDefault describes a response with status code -1, with default header values.
+GetTaskCommentsDefault describes a response with status code -1, with default header values.
 
 Error response
 */
@@ -121,34 +126,34 @@ type GetTaskCommentsDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the get task comments default response
-func (o *GetTaskCommentsDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this get task comments default response returns a 2xx status code
+// IsSuccess returns true when this get task comments default response has a 2xx status code
 func (o *GetTaskCommentsDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this get task comments default response returns a 3xx status code
+// IsRedirect returns true when this get task comments default response has a 3xx status code
 func (o *GetTaskCommentsDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this get task comments default response returns a 4xx status code
+// IsClientError returns true when this get task comments default response has a 4xx status code
 func (o *GetTaskCommentsDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this get task comments default response returns a 5xx status code
+// IsServerError returns true when this get task comments default response has a 5xx status code
 func (o *GetTaskCommentsDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this get task comments default response returns a 4xx status code
+// IsCode returns true when this get task comments default response a status code equal to that given
 func (o *GetTaskCommentsDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the get task comments default response
+func (o *GetTaskCommentsDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *GetTaskCommentsDefault) Error() string {

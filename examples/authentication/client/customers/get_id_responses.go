@@ -59,7 +59,7 @@ func NewGetIDOK() *GetIDOK {
 }
 
 /*
-	GetIDOK describes a response with status code 200, with default header values.
+GetIDOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -67,29 +67,34 @@ type GetIDOK struct {
 	Payload *models.Customer
 }
 
-// IsSuccess returns true when this get Id o k response returns a 2xx status code
+// IsSuccess returns true when this get Id o k response has a 2xx status code
 func (o *GetIDOK) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this get Id o k response returns a 3xx status code
+// IsRedirect returns true when this get Id o k response has a 3xx status code
 func (o *GetIDOK) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this get Id o k response returns a 4xx status code
+// IsClientError returns true when this get Id o k response has a 4xx status code
 func (o *GetIDOK) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this get Id o k response returns a 5xx status code
+// IsServerError returns true when this get Id o k response has a 5xx status code
 func (o *GetIDOK) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this get Id o k response returns a 4xx status code
+// IsCode returns true when this get Id o k response a status code equal to that given
 func (o *GetIDOK) IsCode(code int) bool {
 	return code == 200
+}
+
+// Code gets the status code for the get Id o k response
+func (o *GetIDOK) Code() int {
+	return 200
 }
 
 func (o *GetIDOK) Error() string {
@@ -122,7 +127,7 @@ func NewGetIDUnauthorized() *GetIDUnauthorized {
 }
 
 /*
-	GetIDUnauthorized describes a response with status code 401, with default header values.
+GetIDUnauthorized describes a response with status code 401, with default header values.
 
 unauthorized
 */
@@ -130,29 +135,34 @@ type GetIDUnauthorized struct {
 	Payload *models.Error
 }
 
-// IsSuccess returns true when this get Id unauthorized response returns a 2xx status code
+// IsSuccess returns true when this get Id unauthorized response has a 2xx status code
 func (o *GetIDUnauthorized) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this get Id unauthorized response returns a 3xx status code
+// IsRedirect returns true when this get Id unauthorized response has a 3xx status code
 func (o *GetIDUnauthorized) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this get Id unauthorized response returns a 4xx status code
+// IsClientError returns true when this get Id unauthorized response has a 4xx status code
 func (o *GetIDUnauthorized) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this get Id unauthorized response returns a 5xx status code
+// IsServerError returns true when this get Id unauthorized response has a 5xx status code
 func (o *GetIDUnauthorized) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this get Id unauthorized response returns a 4xx status code
+// IsCode returns true when this get Id unauthorized response a status code equal to that given
 func (o *GetIDUnauthorized) IsCode(code int) bool {
 	return code == 401
+}
+
+// Code gets the status code for the get Id unauthorized response
+func (o *GetIDUnauthorized) Code() int {
+	return 401
 }
 
 func (o *GetIDUnauthorized) Error() string {
@@ -185,7 +195,7 @@ func NewGetIDNotFound() *GetIDNotFound {
 }
 
 /*
-	GetIDNotFound describes a response with status code 404, with default header values.
+GetIDNotFound describes a response with status code 404, with default header values.
 
 resource not found
 */
@@ -193,29 +203,34 @@ type GetIDNotFound struct {
 	Payload *models.Error
 }
 
-// IsSuccess returns true when this get Id not found response returns a 2xx status code
+// IsSuccess returns true when this get Id not found response has a 2xx status code
 func (o *GetIDNotFound) IsSuccess() bool {
 	return false
 }
 
-// IsRedirect returns true when this get Id not found response returns a 3xx status code
+// IsRedirect returns true when this get Id not found response has a 3xx status code
 func (o *GetIDNotFound) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this get Id not found response returns a 4xx status code
+// IsClientError returns true when this get Id not found response has a 4xx status code
 func (o *GetIDNotFound) IsClientError() bool {
 	return true
 }
 
-// IsServerError returns true when this get Id not found response returns a 5xx status code
+// IsServerError returns true when this get Id not found response has a 5xx status code
 func (o *GetIDNotFound) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this get Id not found response returns a 4xx status code
+// IsCode returns true when this get Id not found response a status code equal to that given
 func (o *GetIDNotFound) IsCode(code int) bool {
 	return code == 404
+}
+
+// Code gets the status code for the get Id not found response
+func (o *GetIDNotFound) Code() int {
+	return 404
 }
 
 func (o *GetIDNotFound) Error() string {
@@ -250,7 +265,7 @@ func NewGetIDDefault(code int) *GetIDDefault {
 }
 
 /*
-	GetIDDefault describes a response with status code -1, with default header values.
+GetIDDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -260,34 +275,34 @@ type GetIDDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the get Id default response
-func (o *GetIDDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this get Id default response returns a 2xx status code
+// IsSuccess returns true when this get Id default response has a 2xx status code
 func (o *GetIDDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this get Id default response returns a 3xx status code
+// IsRedirect returns true when this get Id default response has a 3xx status code
 func (o *GetIDDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this get Id default response returns a 4xx status code
+// IsClientError returns true when this get Id default response has a 4xx status code
 func (o *GetIDDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this get Id default response returns a 5xx status code
+// IsServerError returns true when this get Id default response has a 5xx status code
 func (o *GetIDDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this get Id default response returns a 4xx status code
+// IsCode returns true when this get Id default response a status code equal to that given
 func (o *GetIDDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the get Id default response
+func (o *GetIDDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *GetIDDefault) Error() string {

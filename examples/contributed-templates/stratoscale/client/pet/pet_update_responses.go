@@ -91,6 +91,11 @@ func (o *PetUpdateCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the pet update created response
+func (o *PetUpdateCreated) Code() int {
+	return 201
+}
+
 func (o *PetUpdateCreated) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
 }
@@ -153,6 +158,11 @@ func (o *PetUpdateBadRequest) IsCode(code int) bool {
 	return code == 400
 }
 
+// Code gets the status code for the pet update bad request response
+func (o *PetUpdateBadRequest) Code() int {
+	return 400
+}
+
 func (o *PetUpdateBadRequest) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest ", 400)
 }
@@ -204,6 +214,11 @@ func (o *PetUpdateNotFound) IsCode(code int) bool {
 	return code == 404
 }
 
+// Code gets the status code for the pet update not found response
+func (o *PetUpdateNotFound) Code() int {
+	return 404
+}
+
 func (o *PetUpdateNotFound) Error() string {
 	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound ", 404)
 }
@@ -253,6 +268,11 @@ func (o *PetUpdateMethodNotAllowed) IsServerError() bool {
 // IsCode returns true when this pet update method not allowed response a status code equal to that given
 func (o *PetUpdateMethodNotAllowed) IsCode(code int) bool {
 	return code == 405
+}
+
+// Code gets the status code for the pet update method not allowed response
+func (o *PetUpdateMethodNotAllowed) Code() int {
+	return 405
 }
 
 func (o *PetUpdateMethodNotAllowed) Error() string {

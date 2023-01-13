@@ -48,7 +48,7 @@ func NewCreateTaskCreated() *CreateTaskCreated {
 }
 
 /*
-	CreateTaskCreated describes a response with status code 201, with default header values.
+CreateTaskCreated describes a response with status code 201, with default header values.
 
 Task created
 */
@@ -61,29 +61,34 @@ type CreateTaskCreated struct {
 	Location strfmt.URI
 }
 
-// IsSuccess returns true when this create task created response returns a 2xx status code
+// IsSuccess returns true when this create task created response has a 2xx status code
 func (o *CreateTaskCreated) IsSuccess() bool {
 	return true
 }
 
-// IsRedirect returns true when this create task created response returns a 3xx status code
+// IsRedirect returns true when this create task created response has a 3xx status code
 func (o *CreateTaskCreated) IsRedirect() bool {
 	return false
 }
 
-// IsClientError returns true when this create task created response returns a 4xx status code
+// IsClientError returns true when this create task created response has a 4xx status code
 func (o *CreateTaskCreated) IsClientError() bool {
 	return false
 }
 
-// IsServerError returns true when this create task created response returns a 5xx status code
+// IsServerError returns true when this create task created response has a 5xx status code
 func (o *CreateTaskCreated) IsServerError() bool {
 	return false
 }
 
-// IsCode returns true when this create task created response returns a 4xx status code
+// IsCode returns true when this create task created response a status code equal to that given
 func (o *CreateTaskCreated) IsCode(code int) bool {
 	return code == 201
+}
+
+// Code gets the status code for the create task created response
+func (o *CreateTaskCreated) Code() int {
+	return 201
 }
 
 func (o *CreateTaskCreated) Error() string {
@@ -118,7 +123,7 @@ func NewCreateTaskDefault(code int) *CreateTaskDefault {
 }
 
 /*
-	CreateTaskDefault describes a response with status code -1, with default header values.
+CreateTaskDefault describes a response with status code -1, with default header values.
 
 Error response
 */
@@ -129,34 +134,34 @@ type CreateTaskDefault struct {
 	Payload *models.Error
 }
 
-// Code gets the status code for the create task default response
-func (o *CreateTaskDefault) Code() int {
-	return o._statusCode
-}
-
-// IsSuccess returns true when this create task default response returns a 2xx status code
+// IsSuccess returns true when this create task default response has a 2xx status code
 func (o *CreateTaskDefault) IsSuccess() bool {
 	return o._statusCode/100 == 2
 }
 
-// IsRedirect returns true when this create task default response returns a 3xx status code
+// IsRedirect returns true when this create task default response has a 3xx status code
 func (o *CreateTaskDefault) IsRedirect() bool {
 	return o._statusCode/100 == 3
 }
 
-// IsClientError returns true when this create task default response returns a 4xx status code
+// IsClientError returns true when this create task default response has a 4xx status code
 func (o *CreateTaskDefault) IsClientError() bool {
 	return o._statusCode/100 == 4
 }
 
-// IsServerError returns true when this create task default response returns a 5xx status code
+// IsServerError returns true when this create task default response has a 5xx status code
 func (o *CreateTaskDefault) IsServerError() bool {
 	return o._statusCode/100 == 5
 }
 
-// IsCode returns true when this create task default response returns a 4xx status code
+// IsCode returns true when this create task default response a status code equal to that given
 func (o *CreateTaskDefault) IsCode(code int) bool {
 	return o._statusCode == code
+}
+
+// Code gets the status code for the create task default response
+func (o *CreateTaskDefault) Code() int {
+	return o._statusCode
 }
 
 func (o *CreateTaskDefault) Error() string {
