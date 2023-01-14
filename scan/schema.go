@@ -22,9 +22,9 @@ import (
 	"go/ast"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -878,6 +878,15 @@ func hasFilePathPrefix(s, prefix string) bool {
 	}
 }
 
+func goroot() string {
+	cmd := exec.Command("go", "env", "GOROOT")
+	out, err := cmd.Output()
+	if err != nil {
+		panic("Could not detect GOROOT")
+	}
+	return string(out)
+}
+
 func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*loader.PackageInfo, error) {
 	fn := scp.program.Fset.File(gofile.Pos()).Name()
 	if Debug {
@@ -895,7 +904,7 @@ func (scp *schemaParser) packageForFile(gofile *ast.File, tpe *ast.Ident) (*load
 	if gopath == "" {
 		gopath = filepath.Join(os.Getenv("HOME"), "go")
 	}
-	for _, p := range append(filepath.SplitList(gopath), runtime.GOROOT()) {
+	for _, p := range append(filepath.SplitList(gopath), goroot()) {
 		pref := filepath.Join(p, "src")
 		if hasFilePathPrefix(fa, pref) {
 			fgp = filepath.Dir(strings.TrimPrefix(fa, pref))[1:]
