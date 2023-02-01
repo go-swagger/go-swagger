@@ -191,8 +191,17 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
     {{- if not .Schema.IsBaseType }}
 
   // response payload
-  if err := consumer.Consume(response.Body(), {{ if not (or .Schema.IsComplexObject .Schema.IsStream) }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
-    return err
+
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(response.Body())
+	if err != nil {
+		return err
+	}
+	b := buf.Bytes()
+	responseBodyStr := string(b)
+  
+  if err := consumer.Consume(bytes.NewReader(b), {{ if not (or .Schema.IsComplexObject .Schema.IsStream) }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
+		return fmt.Errorf("error occured while consuming server response payload.\n%d\n%s", response.Code(), responseBodyStr)
   }
     {{- end }}
   {{- end }}
