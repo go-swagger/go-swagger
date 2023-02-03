@@ -200,9 +200,16 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
 	b := buf.Bytes()
 	responseBodyStr := string(b)
   
+  {{- if .Schema.IsArray and not .Schema.IsComplexObject}}
+	err = json.Unmarshal(b, &{{ .ReceiverName }}.Payload)
+	if err != nil {
+		return fmt.Errorf("error occured while consuming server response payload.\n%d\n%s", response.Code(), responseBodyStr)
+	}
+  {{- else }}
   if err := consumer.Consume(bytes.NewReader(b), {{ if not (or .Schema.IsComplexObject .Schema.IsStream) }}&{{ end}}{{ .ReceiverName }}.Payload); err != nil && err != io.EOF {
 		return fmt.Errorf("error occured while consuming server response payload.\n%d\n%s", response.Code(), responseBodyStr)
   }
+  {{- end }}
     {{- end }}
   {{- end }}
 
