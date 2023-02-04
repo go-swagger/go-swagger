@@ -251,6 +251,15 @@
         "a": { "type": "string" },
         "b": { "type": "string" }
       }
+    },
+    "C5": {
+      "required": [ "a"],
+      "properties": {
+        "a": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
     }
   }
 }

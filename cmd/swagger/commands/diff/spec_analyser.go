@@ -449,7 +449,11 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 	}
 
 	if isArray(schema1) {
-		sd.compareSchema(location, schema1.Items.Schema, schema2.Items.Schema)
+		if isArray(schema2) {
+			sd.compareSchema(location, schema1.Items.Schema, schema2.Items.Schema)
+		} else {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedType, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		}
 	}
 
 	diffs := CompareProperties(location, schema1, schema2, sd.getRefSchemaFromSpec1, sd.getRefSchemaFromSpec2, sd.compareSchema)

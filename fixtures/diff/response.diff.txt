@@ -9,4 +9,5 @@ NON-BREAKING CHANGES:
 BREAKING CHANGES:
 =================
 /a/:get -> 200 - Response - Body<array[A1]> - Deleted response
-compatibility test FAILED: 1 breaking changes detected
+Spec Definitions.C5.a<array[string]> - Changed type - <array[string]> -> <object>
+compatibility test FAILED: 2 breaking changes detected
