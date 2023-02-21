@@ -57,7 +57,7 @@ const (
 )
 
 var (
-	validIn    = []string{"path", "query", "header", "body", "form"}
+	validIn    = []string{"path", "query", "header", "body", "formData"}
 	basicTypes = []string{TypeInteger, TypeNumber, TypeString, TypeBoolean, TypeBool, TypeArray}
 )
 
