@@ -103,16 +103,7 @@ func TestBaseImport(t *testing.T) {
 	//  2.c Symlink from inside of GOPATH to outside.
 	// 3. Check results.
 
-	oldgopath := os.Getenv("GOPATH")
-	defer func() {
-		_ = os.Setenv("GOPATH", oldgopath)
-	}()
-
-	tempdir, err := os.MkdirTemp("", "test-baseimport")
-	require.NoError(t, err)
-	defer func() {
-		_ = os.RemoveAll(tempdir)
-	}()
+	tempdir := t.TempDir()
 
 	golang := GoLangOpts()
 
@@ -130,13 +121,13 @@ func TestBaseImport(t *testing.T) {
 
 		// Create Symlink
 		require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
-			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s: %v\n%s",
-			item.symlinksrc, item.symlinkdest, err,
+			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s\n%s",
+			item.symlinksrc, item.symlinkdest,
 			"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",
 		)
 
 		// Change GOPATH
-		_ = os.Setenv("GOPATH", item.gopath)
+		t.Setenv("GOPATH", item.gopath)
 
 		// Test (baseImport always with /)
 		actualpath := golang.baseImport(item.targetpath)
@@ -150,15 +141,9 @@ func TestBaseImport(t *testing.T) {
 func TestGenerateMarkdown(t *testing.T) {
 	defer discardOutput()()
 
-	tempdir, err := os.MkdirTemp("", "test-markdown")
-	require.NoError(t, err)
-	defer func() {
-		_ = os.RemoveAll(tempdir)
-	}()
-
 	opts := testGenOpts()
 	opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
-	output := filepath.Join(tempdir, "markdown.md")
+	output := filepath.Join(t.TempDir(), "markdown.md")
 
 	require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
 	expectedCode := []string{
