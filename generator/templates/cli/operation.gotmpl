@@ -57,7 +57,7 @@ func runOperation{{pascalize $operationGroup }}{{ pascalize $operation }}(cmd *c
 	}
 	// make request and then print result
 {{- /*Package string is the operation name*/}}
-	msgStr, err :=  parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result(appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params {{ if .HasStreamingResponse }}, &bytes.Buffer{}{{ end }}{{- if .Authorized}}, nil{{ end }}))
+	msgStr, err :=  parseOperation{{pascalize .Package}}{{ pascalize .Name }}Result(appCli.{{- pascalize .Package }}.{{ pascalize .Name }}(params {{- if .Authorized}}, nil{{ end }}{{ if .HasStreamingResponse }}, &bytes.Buffer{}{{ end }}))
 	if err != nil {
 		return err
 	}
