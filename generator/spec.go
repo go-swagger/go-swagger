@@ -98,6 +98,10 @@ func (g *GenOpts) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
 	// spec preprocessing option
 	if g.PropertiesSpecOrder {
 		g.Spec = WithAutoXOrder(g.Spec)
+		specDoc, err = loads.Spec(g.Spec)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	// analyze the spec
