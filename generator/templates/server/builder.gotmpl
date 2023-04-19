@@ -441,6 +441,6 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) AddMiddlewareFor(method, path
   }
   {{.ReceiverName}}.Init()
   if h, ok := {{.ReceiverName}}.handlers[um][path]; ok {
-    {{.ReceiverName}}.handlers[method][path] = builder(h)
+    {{.ReceiverName}}.handlers[um][path] = builder(h)
   }
 }
