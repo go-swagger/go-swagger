@@ -28,17 +28,13 @@
           {
             "name": "headerParam",
             "in": "header",
-            "schema": {
-              "type": "string"
-            }
+            "type": "string"
           },
           {
             "name": "addedHeaderParam",
             "in": "header",
-            "schema": {
-              "type": "string",
-              "format": "password"
-            }
+            "type": "string",
+            "format": "password"
           },
           {
             "name": "changeMaxInt",

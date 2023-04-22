@@ -1,11 +1,12 @@
 NON-BREAKING CHANGES:
 =====================
-/a/:get - Request - Header.addedHeaderParam - Added optional param
-/a/:get - Request - Header.deletedHeaderParam - Deleted optional param
+/a/:get - Request - Header.addedHeaderParam<string.password> - Added optional param
+/a/:get - Request - Header.deletedHeaderParam<string.password> - Deleted optional param
 /a/:get - Request - Header.headerParam<string> - Widened type - string.password -> string
 /a/:get - Request - Query.removeMaxInt<integer> - Widened type - Exclusive Maximum Removed:true->false
 /a/:get - Request - Query.wideryString<string> - Widened type - integer -> string
-/a/:get -> 200 - Response - Body<array[A1]> - Added response
+/a/:get -> 200 - Response - Body<array[A1]>.newProp<string> - Added property
+/a/:get -> 200 - Response - Body<array[A1]>.sameWideness<number> - Narrowed type - number -> number.float
 /a/:post - Request - Body.description<string> - Changed required param to optional
 /a/{id}:get -> 200 - Response - Body<array[A1]>.newProp<string> - Added property
 /a/{id}:get -> 200 - Response - Body<array[A1]>.sameWideness<number> - Narrowed type - number -> number.float
@@ -26,6 +27,9 @@ BREAKING CHANGES:
 /a/:get - Request - Query.changeMinInt<integer> - Narrowed type - Exclusive Minimum Added:false->true
 /a/:get - Request - Query.changeyPattern<string> - Changed type - Pattern Changed:*->anewpattern
 /a/:get - Request - Query.primToObj - Changed type - integer -> object
+/a/:get -> 200 - Response - Body<array[A1]>.busby<string> - Changed optional param to required
+/a/:get -> 200 - Response - Body<array[A1]>.onceWasArray<array[object]> - Changed type - <array[object]> -> <string>
+/a/:get -> 200 - Response - Headers.header1<integer> - Deleted response header
 /a/:post -> 200 - Response - Body<A3>.name<string> - Changed required param to optional
 /a/{id}:get -> 200 - Response - Body<array[A1]>.busby<string> - Changed optional param to required
 /a/{id}:get -> 200 - Response - Body<array[A1]>.onceWasArray<array[object]> - Changed type - <array[object]> -> <string>
@@ -39,4 +43,4 @@ Spec Metadata - Changed host URL - petstore.swagger.wordnik.com -> petstore.swag
 Spec.consumes - Deleted a consumes format - bill
 Spec.produces - Deleted produces format - bill
 Spec.schemes - Deleted schemes - http
-compatibility test FAILED: 18 breaking changes detected
+compatibility test FAILED: 21 breaking changes detected

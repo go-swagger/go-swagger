@@ -56,7 +56,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 			out, err, warn := diffs.ReportAllDiffs(false)
 			require.NoError(t, err)
 
-			if !cmdtest.AssertReadersContent(t, true, tc.expectedLines, out) {
+			if !cmdtest.AssertReadersContent(t, false, tc.expectedLines, out) {
 				t.Logf("unexpected content for fixture %q[%d] (file: %s)", tc.name, i, tc.expectedFile)
 			}
 

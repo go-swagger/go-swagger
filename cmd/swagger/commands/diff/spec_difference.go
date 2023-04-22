@@ -138,13 +138,16 @@ func (sd *SpecDifferences) ReportCompatibility() (io.Reader, error, error) {
 	var out bytes.Buffer
 	breakingCount := sd.BreakingChangeCount()
 	if breakingCount > 0 {
-		fmt.Fprintln(&out, "\nBREAKING CHANGES:\n=================")
+		if len(*sd) != breakingCount {
+			fmt.Fprintln(&out, "")
+		}
+		fmt.Fprintln(&out, "BREAKING CHANGES:\n=================")
 		_, _ = out.ReadFrom(sd.reportChanges(Breaking))
 		msg := fmt.Sprintf("compatibility test FAILED: %d breaking changes detected", breakingCount)
 		fmt.Fprintln(&out, msg)
 		return &out, nil, errors.New(msg)
 	}
-	fmt.Fprintf(&out, "compatibility test OK. No breaking changes identified.")
+	fmt.Fprintf(&out, "compatibility test OK. No breaking changes identified.\n")
 	return &out, nil, nil
 }
 
@@ -180,7 +183,7 @@ func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error)
 	}
 	numDiffs := len(sd)
 	if numDiffs == 0 {
-		return bytes.NewBuffer([]byte("No changes identified")), nil, nil
+		return bytes.NewBuffer([]byte("No changes identified\n")), nil, nil
 	}
 
 	var out bytes.Buffer
