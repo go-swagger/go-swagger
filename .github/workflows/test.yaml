@@ -37,7 +37,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.19,1.20]
+        go: ["1.19","1.20"]
         os: [ubuntu-latest] # TODO: add macos-latest and windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -72,7 +72,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.19,1.20]
+        go: ["1.19","1.20"]
         os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -105,7 +105,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.19,1.20]
+        go: ["1.19","1.20"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -134,7 +134,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.19,1.20]
+        go: ["1.19","1.20"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
