@@ -623,7 +623,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 	return res, nil
 }
 
-func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, valueExpression string, items, parent *spec.Items) (GenItems, error) {
+func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, valueExpression string, items, _ *spec.Items) (GenItems, error) {
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
 
@@ -665,7 +665,7 @@ func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolved
 	return
 }
 
-func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, parent *spec.Items) (GenItems, error) {
+func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, _ *spec.Items) (GenItems, error) {
 	debugLog("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
@@ -976,7 +976,7 @@ func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchem
 // As for current, these requirements are not used by codegen (sec. requirement is determined at runtime).
 // We keep the order of the slice from the original spec, but sort the inner slice which comes from a map,
 // as well as the map of scopes.
-func (b *codeGenOpBuilder) makeSecurityRequirements(receiver string) []GenSecurityRequirements {
+func (b *codeGenOpBuilder) makeSecurityRequirements(_ string) []GenSecurityRequirements {
 	if b.Security == nil {
 		// nil (default requirement) is different than [] (no requirement)
 		return nil
@@ -1282,7 +1282,7 @@ func renameOperationPackage(seenTags []string, pkg string) string {
 	return current
 }
 
-func renamePrincipalPackage(pkg string) string {
+func renamePrincipalPackage(_ string) string {
 	// favors readability over perfect deconfliction
 	return "auth"
 }

@@ -687,7 +687,7 @@ func fileName(in string) string {
 	return swag.ToFileName(strings.TrimSuffix(in, ext)) + ext
 }
 
-func (g *GenOpts) shouldRenderApp(t *TemplateOpts, app *GenApp) bool {
+func (g *GenOpts) shouldRenderApp(t *TemplateOpts, _ *GenApp) bool {
 	switch swag.ToFileName(swag.ToGoName(t.Name)) {
 	case "main":
 		return g.IncludeMain

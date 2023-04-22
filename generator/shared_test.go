@@ -770,6 +770,7 @@ func TestDefaultImports(t *testing.T) {
 		},
 	} {
 		fixture := toPin
+		i := i
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
 			err := fixture.Opts.EnsureDefaults()

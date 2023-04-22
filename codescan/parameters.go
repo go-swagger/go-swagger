@@ -105,7 +105,7 @@ func (pt itemsTypable) WithEnum(values ...interface{}) {
 	pt.items.WithEnum(values...)
 }
 
-func (pt itemsTypable) WithEnumDescription(desc string) {
+func (pt itemsTypable) WithEnumDescription(_ string) {
 	// no
 }
 

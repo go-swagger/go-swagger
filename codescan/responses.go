@@ -85,7 +85,7 @@ func (ht responseTypable) WithEnum(values ...interface{}) {
 	ht.header.WithEnum(values)
 }
 
-func (ht responseTypable) WithEnumDescription(desc string) {
+func (ht responseTypable) WithEnumDescription(_ string) {
 	// no
 }
 

@@ -163,7 +163,7 @@ func (s *schemaBuilder) Build(definitions map[string]spec.Schema) error {
 	return nil
 }
 
-func (s *schemaBuilder) buildFromDecl(decl *entityDecl, schema *spec.Schema) error {
+func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error {
 	// analyze doc comment for the model
 	sp := new(sectionedParser)
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
@@ -326,10 +326,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 		key := titpe.Key()
 		isTextMarshaler := types.Implements(key, ifc)
 		if key.Underlying().String() == "string" || isTextMarshaler {
-			if err := s.buildFromType(titpe.Elem(), eleProp.AdditionalProperties()); err != nil {
-				return err
-			}
-			return nil
+			return s.buildFromType(titpe.Elem(), eleProp.AdditionalProperties())
 		}
 	case *types.Named:
 		tio := titpe.Obj()
@@ -378,17 +375,11 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 					return nil
 				}
 
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 		case *types.Interface:
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 		case *types.Basic:
 			if sfnm, isf := strfmtName(cmt); isf {
@@ -427,10 +418,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 				}
 			}
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 			return swaggerSchemaForType(utitpe.String(), tgt)
 		case *types.Array:
@@ -448,10 +436,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 				return nil
 			}
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 			return s.buildFromType(utitpe.Elem(), tgt.Items())
 		case *types.Slice:
@@ -464,18 +449,12 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 				return nil
 			}
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 			return s.buildFromType(utitpe.Elem(), tgt.Items())
 		case *types.Map:
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if err := s.makeRef(decl, tgt); err != nil {
-					return err
-				}
-				return nil
+				return s.makeRef(decl, tgt)
 			}
 			return nil
 
@@ -909,10 +888,7 @@ func (s *schemaBuilder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 					return nil
 				}
 				if decl.HasModelAnnotation() {
-					if err := s.makeRef(decl, schemaTypable{schema, 0}); err != nil {
-						return err
-					}
-					return nil
+					return s.makeRef(decl, schemaTypable{schema, 0})
 				}
 				return s.buildFromStruct(decl, utpe, schema, make(map[string]string))
 			}
@@ -925,10 +901,7 @@ func (s *schemaBuilder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 					return nil
 				}
 				if decl.HasModelAnnotation() {
-					if err := s.makeRef(decl, schemaTypable{schema, 0}); err != nil {
-						return err
-					}
-					return nil
+					return s.makeRef(decl, schemaTypable{schema, 0})
 				}
 				return s.buildFromInterface(decl, utpe, schema, make(map[string]string))
 			}

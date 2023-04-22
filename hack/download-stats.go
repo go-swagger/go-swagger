@@ -12,7 +12,7 @@ import (
 
 var (
 	allVersions bool
-	version     string = "latest"
+	version     = "latest"
 )
 
 func init() {

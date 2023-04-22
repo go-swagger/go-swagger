@@ -1025,7 +1025,7 @@ func (mo *matchOnlyParam) Matches(line string) bool {
 	return mo.rx.MatchString(line)
 }
 
-func (mo *matchOnlyParam) Parse(lines []string) error {
+func (mo *matchOnlyParam) Parse(_ []string) error {
 	return nil
 }
 
@@ -1351,15 +1351,14 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 				}
 				description = strings.Join(descriptionWords, " ")
 				break
-			} else {
-				if tag == ResponseTag || tag == BodyTag || tag == DescriptionTag {
-					err = fmt.Errorf("valid tag %s, but not in a valid position", tag)
-				} else {
-					err = fmt.Errorf("invalid tag: %s", tag)
-				}
-				// return error
-				return
 			}
+			if tag == ResponseTag || tag == BodyTag || tag == DescriptionTag {
+				err = fmt.Errorf("valid tag %s, but not in a valid position", tag)
+			} else {
+				err = fmt.Errorf("invalid tag: %s", tag)
+			}
+			// return error
+			return
 		}
 	}
 

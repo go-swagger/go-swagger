@@ -131,7 +131,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 	return
 }
 
-func newTypeResolver(pkg, fullPkg string, doc *loads.Document) *typeResolver {
+func newTypeResolver(pkg, _ string, doc *loads.Document) *typeResolver {
 	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
 	resolver.KnownDefs = make(map[string]struct{}, len(doc.Spec().Definitions))
 	for k, sch := range doc.Spec().Definitions {
@@ -335,7 +335,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	return
 }
 
-func (t *typeResolver) inferAliasing(result *resolvedType, schema *spec.Schema, isAnonymous bool, isRequired bool) {
+func (t *typeResolver) inferAliasing(result *resolvedType, _ *spec.Schema, isAnonymous bool, _ bool) {
 	if !isAnonymous && t.ModelName != "" {
 		result.AliasedType = result.GoType
 		result.IsAliased = true
@@ -1200,7 +1200,7 @@ func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
 	rt.IsEmptyOmitted = (tpe != array) || (tpe == array && rt.IsAliased)
 }
 
-func (rt *resolvedType) setIsJSONString(schema *spec.Schema, tpe string) {
+func (rt *resolvedType) setIsJSONString(schema *spec.Schema, _ string) {
 	_, found := schema.Extensions[xGoJSONString]
 	if !found {
 		rt.IsJSONString = false

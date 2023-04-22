@@ -339,7 +339,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 }
 
 // Simulates a definition environment for model templates
-func getModelEnvironment(spec string, opts *GenOpts) (*GenDefinition, error) {
+func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 	// Don't want stderr output to pollute CI
 	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)

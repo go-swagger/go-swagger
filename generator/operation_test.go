@@ -1011,7 +1011,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 	defer discardOutput()()
 
 	dr := testCwd(t)
-	const any = `(.|\n)+`
+	const matchAny = `(.|\n)+`
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
@@ -1046,12 +1046,12 @@ func TestBuilder_Issue1214(t *testing.T) {
 		require.NoErrorf(t, err, buf.String())
 
 		res := string(ff)
-		assertRegexpInCode(t, any+
-			`api\.AAuth = func\(user string, pass string\)`+any+
-			`api\.BAuth = func\(token string\)`+any+
-			`api\.CAuth = func\(token string\)`+any+
-			`api\.DAuth = func\(token string\)`+any+
-			`api\.EAuth = func\(token string, scopes \[\]string\)`+any, res)
+		assertRegexpInCode(t, matchAny+
+			`api\.AAuth = func\(user string, pass string\)`+matchAny+
+			`api\.BAuth = func\(token string\)`+matchAny+
+			`api\.CAuth = func\(token string\)`+matchAny+
+			`api\.DAuth = func\(token string\)`+matchAny+
+			`api\.EAuth = func\(token string, scopes \[\]string\)`+matchAny, res)
 
 		buf = bytes.NewBuffer(nil)
 		require.NoError(t, opts.templates.MustGet("serverBuilder").Execute(buf, op))
@@ -1060,35 +1060,35 @@ func TestBuilder_Issue1214(t *testing.T) {
 		require.NoErrorf(t, err, buf.String())
 
 		res = string(ff)
-		assertRegexpInCode(t, any+
-			`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+any+
-			`BAuth: func\(token string\) \(interface{}, error\) {`+any+
-			`CAuth: func\(token string\) \(interface{}, error\) {`+any+
-			`DAuth: func\(token string\) \(interface{}, error\) {`+any+
-			`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+any+
+		assertRegexpInCode(t, matchAny+
+			`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+matchAny+
+			`BAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
+			`CAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
+			`DAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
+			`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+matchAny+
 
-			`AAuth func\(string, string\) \(interface{}, error\)`+any+
-			`BAuth func\(string\) \(interface{}, error\)`+any+
-			`CAuth func\(string\) \(interface{}, error\)`+any+
-			`DAuth func\(string\) \(interface{}, error\)`+any+
-			`EAuth func\(string, \[\]string\) \(interface{}, error\)`+any+
+			`AAuth func\(string, string\) \(interface{}, error\)`+matchAny+
+			`BAuth func\(string\) \(interface{}, error\)`+matchAny+
+			`CAuth func\(string\) \(interface{}, error\)`+matchAny+
+			`DAuth func\(string\) \(interface{}, error\)`+matchAny+
+			`EAuth func\(string, \[\]string\) \(interface{}, error\)`+matchAny+
 
-			`if o\.AAuth == nil {`+any+
-			`unregistered = append\(unregistered, "AAuth"\)`+any+
-			`if o\.BAuth == nil {`+any+
-			`unregistered = append\(unregistered, "K1Auth"\)`+any+
-			`if o\.CAuth == nil {`+any+
-			`unregistered = append\(unregistered, "K2Auth"\)`+any+
-			`if o\.DAuth == nil {`+any+
-			`unregistered = append\(unregistered, "K3Auth"\)`+any+
-			`if o\.EAuth == nil {`+any+
-			`unregistered = append\(unregistered, "EAuth"\)`+any+
+			`if o\.AAuth == nil {`+matchAny+
+			`unregistered = append\(unregistered, "AAuth"\)`+matchAny+
+			`if o\.BAuth == nil {`+matchAny+
+			`unregistered = append\(unregistered, "K1Auth"\)`+matchAny+
+			`if o\.CAuth == nil {`+matchAny+
+			`unregistered = append\(unregistered, "K2Auth"\)`+matchAny+
+			`if o\.DAuth == nil {`+matchAny+
+			`unregistered = append\(unregistered, "K3Auth"\)`+matchAny+
+			`if o\.EAuth == nil {`+matchAny+
+			`unregistered = append\(unregistered, "EAuth"\)`+matchAny+
 
-			`case "A":`+any+
-			`case "B":`+any+
-			`case "C":`+any+
-			`case "D":`+any+
-			`case "E":`+any, res)
+			`case "A":`+matchAny+
+			`case "B":`+matchAny+
+			`case "C":`+matchAny+
+			`case "D":`+matchAny+
+			`case "E":`+matchAny, res)
 	}
 }
 

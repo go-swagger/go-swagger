@@ -1857,7 +1857,7 @@ func goName(sch *spec.Schema, orig string) string {
 	return orig
 }
 
-func (sg *schemaGenContext) derefMapElement(outer *GenSchema, sch *GenSchema, elem *GenSchema) {
+func (sg *schemaGenContext) derefMapElement(outer *GenSchema, _ *GenSchema, elem *GenSchema) {
 	derefType := strings.TrimPrefix(elem.GoType, "*")
 
 	if outer.IsAliased {

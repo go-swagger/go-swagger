@@ -404,7 +404,7 @@ func TestTypeResolver_Notables(t *testing.T) {
 	assert.Equal(t, "[]*models.Notable", rest.GoType)
 }
 
-func specResolver(t testing.TB, path string) (*loads.Document, *typeResolver, error) {
+func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, error) {
 	tlb, err := loads.Spec(path)
 	if err != nil {
 		return nil, nil, err
@@ -420,7 +420,7 @@ func specResolver(t testing.TB, path string) (*loads.Document, *typeResolver, er
 	return tlb, resolver, nil
 }
 
-func basicTaskListResolver(t testing.TB) (*loads.Document, *typeResolver, error) {
+func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error) {
 	tlb, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
 	if err != nil {
 		return nil, nil, err

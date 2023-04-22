@@ -62,6 +62,7 @@ func TestGenerateAndBuild(t *testing.T) {
 
 	t.Run("build client", func(t *testing.T) {
 		for name, cas := range cases {
+			cas := cas
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 				log.SetOutput(io.Discard)
