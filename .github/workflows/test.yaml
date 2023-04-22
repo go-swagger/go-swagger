@@ -30,14 +30,14 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.48
+          version: v1.52.2
           only-new-issues: true
 
   test:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.18, 1.19]
+        go: [1.19,1.20]
         os: [ubuntu-latest] # TODO: add macos-latest and windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -72,8 +72,8 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.18, 1.19]
-        os: [macos-latest, windows-latest] # TODO: add , windows-latest
+        go: [1.19,1.20]
+        os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -105,7 +105,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.18, 1.19]
+        go: [1.19,1.20]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -134,7 +134,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: [1.18, 1.19]
+        go: [1.19,1.20]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
