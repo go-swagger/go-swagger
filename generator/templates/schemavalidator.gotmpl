@@ -451,6 +451,15 @@
       {{- if and .IsNullable (not .IsMapNullOverride) }}
       if {{ .ValueExpression }} != nil {
       {{- end }}
+      {{ if not .Required }}
+              {{- if .IsInterface }}
+      if {{ .ValueExpression }} == nil { // not required
+              {{- else }}
+      if swag.IsZero({{ .ValueExpression }}) { // not required
+              {{- end }}
+        return nil
+      }
+      {{ end }}
       if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
         if ve, ok := err.(*errors.Validation); ok {
           return ve.ValidateName({{ if .Path }}{{ .Path }}{{ else }}""{{ end }})

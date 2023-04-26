@@ -2209,6 +2209,34 @@ func TestGenModel_Issue1409(t *testing.T) {
 	assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
 }
 
+// This tests that a model with a discriminator doesn't validation if the field is zero.
+func TestGenModel_Issue2911(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/2911/fixture-2911.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "animal"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+
+	// Just verify that the validation call is generated with proper format
+	assertInCode(t, `func (m *Animal) contextValidateKind(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Kind()) { // not required
+		return nil
+	}`, res)
+}
+
 // This tests makes sure model definitions from inline schema in response are properly flattened and get validation
 func TestGenModel_Issue866(t *testing.T) {
 	defer discardOutput()()
