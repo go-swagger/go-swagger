@@ -1,0 +1,7 @@
+BREAKING CHANGES:
+=================
+/a/:get - Request - FormData.filter2<string> - Added required param
+/a/:get - Request - Header.X-Forwarded-For<array[string]> - Changed collection format
+/a/:get - Request - Query.limit<integer.double> - Changed optional param to required
+/a/:get - Request - Query.limit<integer.double> - Changed type - integer.float -> integer.double
+compatibility test FAILED: 4 breaking changes detected

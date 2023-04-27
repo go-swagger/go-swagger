@@ -246,7 +246,7 @@ func fixturePart(file string) string {
 func hasFixtureBreaking(part string) bool {
 	// these fixtures expect some breaking changes
 	switch part {
-	case "enum", "kitchensink", "param", "path", "response", "refprop":
+	case "enum", "kitchensink", "param", "path", "response", "refprop", "reqparam":
 		return true
 	default:
 		return false

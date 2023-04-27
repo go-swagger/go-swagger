@@ -60,6 +60,17 @@ func (sd SpecDifferences) BreakingChangeCount() int {
 	return count
 }
 
+// WarningChangeCount Calculates the warning change count
+func (sd SpecDifferences) WarningChangeCount() int {
+	count := 0
+	for _, eachDiff := range sd {
+		if eachDiff.Compatibility == Warning {
+			count++
+		}
+	}
+	return count
+}
+
 // FilterIgnores returns a copy of the list without the items in the specified ignore list
 func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences {
 	newDiffs := SpecDifferences{}
@@ -190,6 +201,10 @@ func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error)
 	if numDiffs != sd.BreakingChangeCount() {
 		fmt.Fprintln(&out, "NON-BREAKING CHANGES:\n=====================")
 		_, _ = out.ReadFrom(sd.reportChanges(NonBreaking))
+		if sd.WarningChangeCount() > 0 {
+			fmt.Fprintln(&out, "\nNON-BREAKING CHANGES WITH WARNING:\n==================================")
+			_, _ = out.ReadFrom(sd.reportChanges(Warning))
+		}
 	}
 
 	more, err, warn := sd.ReportCompatibility()
