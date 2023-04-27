@@ -1,0 +1,103 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Fixture",
+    "version": "1.0",
+    "x-ext-info-1": "a",
+    "x-ext-info-2": "b",
+    "contact": {
+      "name": "go-swagger",
+      "x-ext-contact-1": "ext contact 1",
+      "x-ext-contact-2": "ext contact 2"
+    },
+    "license": {
+      "name": "license",
+      "x-ext-license-1": "ext license 1",
+      "x-ext-license-2": "ext license 2"
+    }
+  },
+  "paths": {
+    "/b/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/A1",
+                "x-b-items-1": "b items 1",
+                "x-b-items-2": "b items 2"
+              },
+              "x-schema-1": "schema 1 ext"
+            },
+            "headers": {
+              "headerB-1": {
+                "type": "integer",
+                "x-header-ext-1": "header-ext-b-1"
+              },
+              "headerB-2": {
+                "type": "integer"
+              }
+            }
+          },
+          "x-ext-resp-1": "response ext 1"
+        },
+        "x-ext-2-operation": "ext b 2"
+      },
+      "x-ext-b-1": "ext b 1"
+    }
+  },
+  "definitions": {
+    "A1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string",
+          "enum": [
+            "crazy",
+            "empathic",
+            "saucy"
+          ]
+        },
+        "busby": {
+          "type": "string"
+        },
+        "onceWasArray": {
+          "type": "array",
+          "items":{"type": "object"}
+        },
+        "sameWideness": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "tag1"
+    },
+    {
+      "name": "tag2",
+      "x-ext-tag2": "ext tag 2"
+    }
+  ],
+  "securityDefinitions": {
+    "auth2": {
+      "x-security-def-1": "ext def 1",
+      "x-security-def-2": "ext def 2",
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "",
+      "tokenUrl": ""
+    }
+  },
+  "x-root-ext-1": "ext root 1",
+  "x-root-ext-2": "ext root 2"
+}

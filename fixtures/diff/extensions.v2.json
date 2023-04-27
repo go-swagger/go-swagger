@@ -1,0 +1,118 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Fixture",
+    "version": "1.0",
+    "x-ext-info-1": "a",
+    "x-ext-info-3": "c",
+    "contact": {
+      "name": "go-swagger",
+      "x-ext-contact-1": "ext contact 1",
+      "x-ext-contact-3": "ext contact 3"
+    },
+    "license": {
+      "name": "license",
+      "x-ext-license-1": "ext license 1",
+      "x-ext-license-3": "ext license 3"
+    }
+  },
+  "paths": {
+    "/a/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/A1" }
+            }
+          }
+        }
+      }
+    },
+    "/b/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/A1",
+                "x-b-items-1": "b items 1",
+                "x-b-items-3": "b items 3"
+              },
+              "x-schema-2": "schema 2 ext"
+            },
+            "headers": {
+              "headerB-1": {
+                "type": "integer"
+              },
+              "headerB-2": {
+                "type": "integer",
+                "x-header-ext-2": "header-ext-b-2"
+              }
+            }
+          },
+          "x-ext-resp-2": "response ext 2"
+        },
+        "x-ext-1-operation": "ext b 1",
+        "x-ext-3-operation": "ext b 3"
+      },
+      "x-ext-b-2": "ext b 2",
+      "x-ext-b-3": "ext b 3"
+    }
+  },
+  "definitions": {
+    "A1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string",
+          "enum": [
+            "crazy",
+            "empathic",
+            "saucy"
+          ]
+        },
+        "busby": {
+          "type": "string"
+        },
+        "onceWasArray": {
+          "type": "array",
+          "items":{"type": "object"}
+        },
+        "sameWideness": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "tag1",
+      "x-ext-tag1": "ext tag 1"
+    },
+    {
+      "name": "tag2"
+    }
+  ],
+  "securityDefinitions": {
+    "auth2": {
+      "x-security-def-1": "ext def 1",
+      "x-security-def-3": "ext def 3",
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "",
+      "tokenUrl": ""
+    }
+  },
+  "x-root-ext-1": "ext root 1",
+  "x-root-ext-3": "ext root 3"
+}
