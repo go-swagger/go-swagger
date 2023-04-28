@@ -13,7 +13,7 @@ The goal of the syntax is to make it look as a natural part of the documentation
 The generator is passed a main package and it uses that to discover all the code in use.
 To do this it makes use of go's loader package. The same package that is used by tools like goimports to discover which files to format.
 
-Once the parser has encountered a comment that matches on of its known tags, the parser will assume that the rest of the comment block is for swagger.
+Once the parser has encountered a comment that matches one of its known tags, the parser will assume that the rest of the comment block is for swagger.
 
 If it is your first time using this library for generating swagger 
 specification, you can also take a look at 
