@@ -140,7 +140,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) SetDefaults() {
   val := {{ pascalize .Name }}Params{
   {{- range .Params }}
     {{- if and .HasDefault (not .IsFileParam) (not .IsStream) (not .IsBodyParam) }}
-    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ varname .ID }}Default,
+    {{ pascalize .ID }}: {{ if and (not .IsArray) (not .IsMap) (not .HasDiscriminator) (or .IsNullable  ) }}&{{ end }}{{ varname .ID }}Default,
     {{- end }}
   {{- end }}
   }
