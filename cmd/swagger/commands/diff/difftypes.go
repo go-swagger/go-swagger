@@ -237,6 +237,8 @@ const (
 	Breaking Compatibility = iota
 	// NonBreaking This is a backwards-compatible API change
 	NonBreaking
+	// Warning changes are technically non-breaking but can cause behavior changes in client and thus should be reported differently
+	Warning
 )
 
 func (s Compatibility) String() string {
@@ -246,6 +248,7 @@ func (s Compatibility) String() string {
 var toStringCompatibility = map[Compatibility]string{
 	Breaking:    "Breaking",
 	NonBreaking: "NonBreaking",
+	Warning:     "Warning",
 }
 
 var toIDCompatibility = map[string]Compatibility{}
