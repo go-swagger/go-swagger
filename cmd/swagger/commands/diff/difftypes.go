@@ -99,6 +99,20 @@ const (
 	DeletedDefinition
 	// AddedDefinition removed one of the definitions
 	AddedDefinition
+	// ChangedDefault - Changed default value
+	ChangedDefault
+	// AddedDefault - Added a default value
+	AddedDefault
+	// DeletedDefault - Deleted a default value
+	DeletedDefault
+	// ChangedExample - Changed an example value
+	ChangedExample
+	// AddedExample - Added an example value
+	AddedExample
+	// DeletedExample - Deleted an example value
+	DeletedExample
+	// ChangedCollectionFormat - A collectionFormat has been changed to a collectionFormat whose relative compatibility cannot be determined
+	ChangedCollectionFormat
 )
 
 var toLongStringSpecChangeCode = map[SpecChangeCode]string{
@@ -146,6 +160,13 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedConstraint:           "Added a schema constraint",
 	DeletedDefinition:         "Deleted a schema definition",
 	AddedDefinition:           "Added a schema definition",
+	ChangedDefault:            "Default value is changed",
+	AddedDefault:              "Default value is added",
+	DeletedDefault:            "Default value is removed",
+	ChangedExample:            "Example value is changed",
+	AddedExample:              "Example value is added",
+	DeletedExample:            "Example value is removed",
+	ChangedCollectionFormat:   "Changed collection format",
 }
 
 var toStringSpecChangeCode = map[SpecChangeCode]string{
@@ -193,6 +214,13 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedConstraint:           "AddedConstraint",
 	DeletedDefinition:         "DeletedDefinition",
 	AddedDefinition:           "AddedDefinition",
+	ChangedDefault:            "ChangedDefault",
+	AddedDefault:              "AddedDefault",
+	DeletedDefault:            "DeletedDefault",
+	ChangedExample:            "ChangedExample",
+	AddedExample:              "AddedExample",
+	DeletedExample:            "DeletedExample",
+	ChangedCollectionFormat:   "ChangedCollectionFormat",
 }
 
 var toIDSpecChangeCode = map[string]SpecChangeCode{}

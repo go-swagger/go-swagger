@@ -1,0 +1,23 @@
+NON-BREAKING CHANGES:
+=====================
+/a/:get - Request - FormData.filter<string> - Deleted required param
+/a/:get - Request - FormData.format2<string> - Added optional param
+/a/:get - Request - FormData.format<string> - Deleted optional param
+/a/:get - Request - Query.sort<string> - Changed required param to optional
+/a/{id}:get - Request - FormData.widenedParam<integer.int32> - Example value is added
+/a/{id}:get - Request - Path.id<string> - Example value is changed
+/a/{id}:get - Request - Query.flavour<string> - Example value is removed
+
+NON-BREAKING CHANGES WITH WARNING:
+==================================
+/a/{id}:post - Request - FormData.address<string> - Default value is changed
+/a/{id}:post - Request - FormData.firstname<string> - Default value is removed
+/a/{id}:post - Request - FormData.lastname<string> - Default value is added
+
+BREAKING CHANGES:
+=================
+/a/:get - Request - FormData.filter2<string> - Added required param
+/a/:get - Request - Header.X-Forwarded-For<array[string]> - Changed collection format
+/a/:get - Request - Query.limit<integer.double> - Changed optional param to required
+/a/:get - Request - Query.limit<integer.double> - Changed type - integer.float -> integer.double
+compatibility test FAILED: 4 breaking changes detected

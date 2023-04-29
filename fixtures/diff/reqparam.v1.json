@@ -1,0 +1,186 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Swagger Fixture",
+    "version": "1.0"
+  },
+  "paths": {
+    "/a/": {
+      "get": {
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "float"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filter",
+            "in": "formData",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "format",
+            "in": "formData",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "X-Forwarded-For",
+            "in": "header",
+            "required": true,
+            "type": "array",
+            "collectionFormat": "csv",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/A1" }
+            }
+          }
+        }
+      }
+    },
+    "/a/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "flavour",
+            "required": false,
+            "in": "query",
+            "type": "string",
+            "example": "salty"
+          },
+          {
+            "name": "widenedParam",
+            "in": "formData",
+            "type": "integer",
+            "format":"int32"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "example": "123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/A1" }
+            },
+            "headers":{
+              "optResponseHeader":{
+                "schema":{ "type":"integer"}
+              }
+            }
+
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "firstname",
+            "in": "formData",
+            "type":"string",
+            "required":true,
+            "default": "fnu"
+          },
+          {
+            "name": "lastname",
+            "in": "formData",
+            "type":"string",
+            "required":false
+          },
+          {
+            "name": "address",
+            "in": "formData",
+            "type":"string",
+            "required":false,
+            "default": "unknown"
+          },
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/A2" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      }
+    },
+    "/b/": {
+      "post": {
+        "parameters": [
+          {
+            "name": "",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/A2" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": { "$ref": "#/definitions/A3" }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "A1": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" }
+      }
+    },
+    "A2": {
+      "type": "object",
+      "required": [ "name", "description" ],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "A3": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "otherDeletedName":{"type":"string","deprecated":true},
+        "description": { "type": "string" },
+        "letters": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

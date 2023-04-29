@@ -59,6 +59,13 @@ func init() {
 			DeletedTag:                NonBreaking,
 			DeletedConstraint:         NonBreaking,
 			AddedConstraint:           Breaking,
+			ChangedDefault:            Warning,
+			AddedDefault:              Warning,
+			DeletedDefault:            Warning,
+			ChangedExample:            NonBreaking,
+			AddedExample:              NonBreaking,
+			DeletedExample:            NonBreaking,
+			ChangedCollectionFormat:   Breaking,
 		},
 		ForChange: map[SpecChangeCode]Compatibility{
 			NoChangeDetected:          NonBreaking,

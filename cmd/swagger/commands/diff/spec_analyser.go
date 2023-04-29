@@ -169,7 +169,7 @@ func (sd *SpecAnalyser) analyseEndpointData() {
 }
 
 func (sd *SpecAnalyser) analyseRequestParams() {
-	locations := []string{"query", "path", "body", "header"}
+	locations := []string{"query", "path", "body", "header", "formData"}
 
 	for _, paramLocation := range locations {
 		rootNode := getNameOnlyDiffNode(strings.Title(paramLocation))
@@ -355,9 +355,9 @@ func (sd *SpecAnalyser) compareParams(urlMethod URLMethod, location string, name
 		if len(name) > 0 {
 			childLocation = childLocation.AddNode(getSchemaDiffNode(name, param2.Schema))
 		}
-
 		sd.compareSchema(childLocation, param1.Schema, param2.Schema)
 	}
+
 	diffs := sd.CompareProps(forParam(param1), forParam(param2))
 
 	childLocation = childLocation.AddNode(getSchemaDiffNode(name, &param2.SimpleSchema))
@@ -368,6 +368,10 @@ func (sd *SpecAnalyser) compareParams(urlMethod URLMethod, location string, name
 	diffs = CheckToFromRequired(param1.Required, param2.Required)
 	if len(diffs) > 0 {
 		sd.addDiffs(childLocation, diffs)
+	}
+
+	if &param1.SimpleSchema != nil && &param2.SimpleSchema != nil {
+		sd.compareSimpleSchema(childLocation, &param1.SimpleSchema, &param2.SimpleSchema)
 	}
 }
 
@@ -459,6 +463,51 @@ func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, sche
 	diffs := CompareProperties(location, schema1, schema2, sd.getRefSchemaFromSpec1, sd.getRefSchemaFromSpec2, sd.compareSchema)
 	for _, diff := range diffs {
 		sd.Diffs = sd.Diffs.addDiff(diff)
+	}
+}
+
+func (sd *SpecAnalyser) compareSimpleSchema(location DifferenceLocation, schema1, schema2 *spec.SimpleSchema) {
+	// check optional/required
+	if schema1.Nullable != schema2.Nullable {
+		// If optional is made required
+		if schema1.Nullable && !schema2.Nullable {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedOptionalToRequired, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		} else if !schema1.Nullable && schema2.Nullable {
+			// If required is made optional
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedRequiredToOptional, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		}
+	}
+
+	if schema1.CollectionFormat != schema2.CollectionFormat {
+		sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedCollectionFormat, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+	}
+
+	if schema1.Default != schema2.Default {
+		if schema1.Default == nil && schema2.Default != nil {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: AddedDefault, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		} else if schema1.Default != nil && schema2.Default == nil {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: DeletedDefault, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		} else {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedDefault, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		}
+	}
+
+	if schema1.Example != schema2.Example {
+		if schema1.Example == nil && schema2.Example != nil {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: AddedExample, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		} else if schema1.Example != nil && schema2.Example == nil {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: DeletedExample, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		} else {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedExample, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		}
+	}
+
+	if isArray(schema1) {
+		if isArray(schema2) {
+			sd.compareSimpleSchema(location, &schema1.Items.SimpleSchema, &schema2.Items.SimpleSchema)
+		} else {
+			sd.addDiffs(location, addTypeDiff([]TypeDiff{}, TypeDiff{Change: ChangedType, FromType: getSchemaTypeStr(schema1), ToType: getSchemaTypeStr(schema2)}))
+		}
 	}
 }
 
