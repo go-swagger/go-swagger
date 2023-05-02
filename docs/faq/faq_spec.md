@@ -23,7 +23,7 @@ https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/petstore
 
 **Answer**: only when it's used in a discriminator IIRC. There is code in the scan package that treats nullary methods as properties if certain conditions are met.
 
->My generated spec is now working but seems to be missing a parameter "description" to indicate to end user of the API URL endpoint of what's its doing. Example below, I wanted the line "Disable/enable a compute node EC2 machine with a given IP address" to show up as some sorta of description for the parameter... Am I missing something?
+>My generated spec is now working but seems to be missing a parameter "description" to indicate to end user of the API URL endpoint of what's its doing. Example below, I wanted the line "disable/enable a compute node EC2 machine with a given IP address" to show up as some sort of description for the parameter... Am I missing something?
 
 ```golang
 // v2PutXXX disable/enable a compute node EC2 machine with a given IP address
