@@ -229,6 +229,8 @@ Iron.io
 [StratoScale](https://github.com/Stratoscale/swagger)  
 [Terraform Provider OpenAPI](https://github.com/dikhan/terraform-provider-openapi)  
 [VMware](https://github.com/vmware/dispatch)  
+[Sunbird RC](https://github.com/Sunbird-RC/sunbird-rc-core/tree/main/services/notification-service)  
+[DIVOC](https://github.com/egovernments/DIVOC/tree/main/backend/portal_api)  
 ...
 
 ## Note to users migrating from older releases
