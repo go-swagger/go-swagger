@@ -103,10 +103,10 @@
         "responses": {
           "200": {
             "description": "200 response",
-            "headers":{
-              "header1":{
-                "type":"integer"
-              }
+            "headers": {
+                "header1":{
+                  "type":"integer"
+                }
             },
             "schema": {
               "type": "array",

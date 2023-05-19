@@ -113,6 +113,10 @@ const (
 	DeletedExample
 	// ChangedCollectionFormat - A collectionFormat has been changed to a collectionFormat whose relative compatibility cannot be determined
 	ChangedCollectionFormat
+	// DeletedExtension deleted an extension
+	DeletedExtension
+	// AddedExtension added an extension
+	AddedExtension
 )
 
 var toLongStringSpecChangeCode = map[SpecChangeCode]string{
@@ -167,6 +171,8 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedExample:              "Example value is added",
 	DeletedExample:            "Example value is removed",
 	ChangedCollectionFormat:   "Changed collection format",
+	DeletedExtension:          "Deleted Extension",
+	AddedExtension:            "Added Extension",
 }
 
 var toStringSpecChangeCode = map[SpecChangeCode]string{
@@ -221,6 +227,8 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedExample:              "AddedExample",
 	DeletedExample:            "DeletedExample",
 	ChangedCollectionFormat:   "ChangedCollectionFormat",
+	DeletedExtension:          "DeletedExtension",
+	AddedExtension:            "AddedExtension",
 }
 
 var toIDSpecChangeCode = map[string]SpecChangeCode{}

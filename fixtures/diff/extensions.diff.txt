@@ -1,0 +1,33 @@
+NON-BREAKING CHANGES:
+=====================
+/a/:get - Request - Added endpoint
+
+NON-BREAKING CHANGES WITH WARNING:
+==================================
+/b/ - x-ext-b-1 - Deleted Extension
+/b/ - x-ext-b-2 - Added Extension
+/b/ - x-ext-b-3 - Added Extension
+/b/:get - Request - Headers.headerB-1.x-header-ext-1 - Deleted Extension
+/b/:get - Request - Headers.headerB-2.x-header-ext-2 - Added Extension
+/b/:get - Request - Responses.x-ext-resp-1 - Deleted Extension
+/b/:get - Request - Responses.x-ext-resp-2 - Added Extension
+/b/:get - Request - x-ext-1-operation - Added Extension
+/b/:get - Request - x-ext-2-operation - Deleted Extension
+/b/:get - Request - x-ext-3-operation - Added Extension
+/b/:get -> 200 - Response - Body<A1>.x-b-items-2 - Deleted Extension
+/b/:get -> 200 - Response - Body<A1>.x-b-items-3 - Added Extension
+/b/:get -> 200 - Response - Body<array[A1]>.x-schema-1 - Deleted Extension
+/b/:get -> 200 - Response - Body<array[A1]>.x-schema-2 - Added Extension
+Security Definitions.x-security-def-2 - Deleted Extension
+Security Definitions.x-security-def-3 - Added Extension
+Spec Info.Contact.x-ext-contact-2 - Deleted Extension
+Spec Info.Contact.x-ext-contact-3 - Added Extension
+Spec Info.License.x-ext-license-2 - Deleted Extension
+Spec Info.License.x-ext-license-3 - Added Extension
+Spec Info.x-ext-info-2 - Deleted Extension
+Spec Info.x-ext-info-3 - Added Extension
+Spec Tags.x-ext-tag1 - Added Extension
+Spec Tags.x-ext-tag2 - Deleted Extension
+Spec.x-root-ext-2 - Deleted Extension
+Spec.x-root-ext-3 - Added Extension
+compatibility test OK. No breaking changes identified.

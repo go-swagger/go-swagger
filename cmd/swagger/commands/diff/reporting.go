@@ -31,6 +31,7 @@ func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 type PathItemOp struct {
 	ParentPathItem *spec.PathItem  `json:"pathitem"`
 	Operation      *spec.Operation `json:"operation"`
+	Extensions     spec.Extensions `json:"extensions"`
 }
 
 // URLMethod - combines url and method into a single keyed entity
