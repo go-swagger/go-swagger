@@ -1245,7 +1245,7 @@ func deconflictTag(seenTags []string, pkg string) string {
 }
 
 // deconflictPrincipal ensures that whenever an external principal package is added, it doesn't conflict
-// with standard inports
+// with standard imports
 func deconflictPrincipal(pkg string) string {
 	switch pkg {
 	case "principal":
