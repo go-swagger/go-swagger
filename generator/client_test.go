@@ -377,6 +377,43 @@ func TestGenClient_1518(t *testing.T) {
 	}
 }
 
+func TestGenClient_2945(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	opts := testClientGenOpts()
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2945", "fixture-2945.yaml")
+
+	cwd, _ := os.Getwd()
+	tft, _ := os.MkdirTemp(cwd, "generated")
+	opts.Target = tft
+
+	defer func() {
+		_ = os.RemoveAll(tft)
+	}()
+
+	err := GenerateClient("client", []string{}, []string{}, opts)
+	require.NoError(t, err)
+
+	fixtureConfig := map[string][]string{
+		"client/operations/get_version_responses.go": { // generated file
+			// expected code lines
+			`return nil, runtime.NewAPIError("[GET /version] getVersion", response, response.Code())`,
+		},
+	}
+
+	for fileToInspect, expectedCode := range fixtureConfig {
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		require.NoError(t, err)
+
+		for line, codeLine := range expectedCode {
+			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+			}
+		}
+	}
+}
+
 func TestGenClient_2471(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
