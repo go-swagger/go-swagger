@@ -18,6 +18,7 @@ run:
     - playground
     - fixtures
     - cmd
+  timeout: 5m
 
 linters:
   enable:
