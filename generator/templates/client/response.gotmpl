@@ -278,7 +278,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
     {{- if $.Responses}}
     default:
     {{- end }}
-      return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+      return nil, runtime.NewAPIError("[{{ upper .Method }} {{ .Path }}]{{ if .Name }} {{ .Name }}{{ end }}", response, response.Code())
   {{- end }}
   {{- if .Responses}}
   }
