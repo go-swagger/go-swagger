@@ -358,9 +358,12 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			return nil
 		}
 
+		if s.decl.Spec.Assign.IsValid() {
+			return s.buildFromType(titpe.Underlying(), tgt)
+		}
+
 		switch utitpe := tpe.Underlying().(type) {
 		case *types.Struct:
-
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
 				if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
 					tgt.Typed("string", "date-time")

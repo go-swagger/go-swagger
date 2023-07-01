@@ -25,7 +25,9 @@ import (
 // Customer of the site.
 //
 // swagger:model Customer
-type Customer struct {
+type Customer = User
+
+type User struct {
 	Name string `json:"name"`
 }
 
