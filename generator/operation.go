@@ -739,6 +739,16 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Extensions:       param.Extensions,
 	}
 
+	if goCustomTag, ok := param.Extensions["x-go-custom-tag"]; ok {
+		customTag, ok := goCustomTag.(string)
+		if !ok {
+			return GenParameter{}, fmt.Errorf(`%s %s, parameter %q: "x-go-custom-tag" field must be a string, not a %T`,
+				b.Method, b.Path, param.Name, goCustomTag)
+		}
+
+		res.CustomTag = customTag
+	}
+
 	if param.In == "body" {
 		// Process parameters declared in body (i.e. have a Schema)
 		res.Required = param.Required

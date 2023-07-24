@@ -361,6 +361,8 @@ type GenParameter struct {
 
 	CollectionFormat string
 
+	CustomTag string
+
 	Child  *GenItems
 	Parent *GenItems
 
