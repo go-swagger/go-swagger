@@ -749,6 +749,10 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		res.CustomTag = customTag
 	}
 
+	if fake, ok := param.Extensions["x-fake"]; ok {
+		res.CustomTag = strings.TrimSpace(fmt.Sprintf(`%s fake:"%s"`, res.CustomTag, fake))
+	}
+
 	if param.In == "body" {
 		// Process parameters declared in body (i.e. have a Schema)
 		res.Required = param.Required

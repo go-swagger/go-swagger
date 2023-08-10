@@ -46,6 +46,7 @@ const (
 const (
 	xClass        = "x-class"         // class name used by discriminator
 	xGoCustomTag  = "x-go-custom-tag" // additional tag for serializers on struct fields
+	xFake         = "x-fake"          // additional tag for generate fake data with go-faker
 	xGoName       = "x-go-name"       // name of the generated go variable
 	xGoType       = "x-go-type"       // reuse existing type (do not generate)
 	xIsNullable   = "x-isnullable"

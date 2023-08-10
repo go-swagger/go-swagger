@@ -915,6 +915,15 @@ func (sg *schemaGenContext) buildProperties() error {
 				log.Printf("warning: expect %s extension to be a string, got: %v. Skipped", xGoCustomTag, customTag)
 			}
 		}
+		// set custom fake generator
+		if customFake, found := tpe.Extensions[xFake]; found {
+			tagAsStr, ok := customFake.(string)
+			if ok {
+				emprop.GenSchema.CustomTag = strings.TrimSpace(fmt.Sprintf("%s faker:\"%s\"", emprop.GenSchema.CustomTag, tagAsStr))
+			} else {
+				log.Printf("warning: expect %s extension to be a string, got: %v. Skipped", xFake, customFake)
+			}
+		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
 	}
 	sort.Sort(sg.GenSchema.Properties)
