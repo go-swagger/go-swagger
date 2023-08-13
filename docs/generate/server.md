@@ -101,7 +101,7 @@ The generated server allows for a number of command line parameters to customize
       --tls-port int                 the port to listen on for secure connections, defaults to a random value
       --tls-read-timeout duration    maximum duration before timing out read of the request (default 30s)
       --tls-write-timeout duration   maximum duration before timing out write of the response (default 30s)
-      --write-timeout duration       maximum duration before timing out write of the response (default 30s)
+      --write-timeout duration       maximum duration before timing out write of the response (default 60s)
 ```
 
 The server takes care of a number of things when a request arrives:
