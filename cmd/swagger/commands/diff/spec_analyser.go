@@ -746,7 +746,11 @@ func (sd *SpecAnalyser) schemaFromRef(ref spec.Ref, defns *spec.Definitions) (ac
 }
 
 func schemaLocationKey(location DifferenceLocation) string {
-	return location.Method + location.URL + location.Node.Field + location.Node.TypeName
+	k := location.Method + location.URL + location.Node.Field + location.Node.TypeName
+	if location.Node.ChildNode != nil && location.Node.ChildNode.IsArray {
+		k += location.Node.ChildNode.Field + location.Node.ChildNode.TypeName
+	}
+	return k
 }
 
 // PropertyDefn combines a property with its required-ness
