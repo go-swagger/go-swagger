@@ -40,7 +40,7 @@ func (ht responseTypable) Typed(tpe, format string) {
 }
 
 func (ht responseTypable) WithEnum(values ...interface{}) {
-	ht.header.WithEnum(values)
+	ht.header.WithEnum(values...)
 }
 
 func bodyTypable(in string, schema *spec.Schema) (swaggerTypable, *spec.Schema) {

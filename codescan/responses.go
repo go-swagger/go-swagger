@@ -6,11 +6,9 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"golang.org/x/tools/go/ast/astutil"
-
 	"github.com/go-openapi/spec"
+	"github.com/pkg/errors"
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 type responseTypable struct {
@@ -82,7 +80,7 @@ func (ht responseTypable) AddExtension(key string, value interface{}) {
 }
 
 func (ht responseTypable) WithEnum(values ...interface{}) {
-	ht.header.WithEnum(values)
+	ht.header.WithEnum(values...)
 }
 
 func (ht responseTypable) WithEnumDescription(_ string) {
