@@ -947,12 +947,15 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 		}
 
 		oo, found := operations[nm]
-		if found && oo.Method != opr.Method && oo.Path != opr.Path {
+		if found {
 			nm = opr.Key
 		}
 		if len(operationIDs) == 0 || swag.ContainsStrings(operationIDs, opr.ID) || swag.ContainsStrings(operationIDs, nm) {
-			opr.ID = nm
-			opr.Op.ID = nm
+			// If the operation with the duplicate id is in the same group then use nm
+			if found && reflect.DeepEqual(oo.Op.Tags, opr.Op.Tags) {
+				opr.ID = nm
+				opr.Op.ID = nm
+			}
 			operations[nm] = opr
 		}
 	}
