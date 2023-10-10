@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
+	"github.com/ffalor/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
 )
 

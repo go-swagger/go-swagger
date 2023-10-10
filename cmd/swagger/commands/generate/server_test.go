@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
+	"github.com/ffalor/go-swagger/cmd/swagger/commands/generate"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -102,7 +102,7 @@ func TestRegressionIssue2601(t *testing.T) {
 
 			// Error was coming from these two being set together
 			m.Shared.StrictResponders = true
-			m.ImplementationPackage = "github.com/go-swagger/go-swagger/fixtures/codegen/impl"
+			m.ImplementationPackage = "github.com/ffalor/go-swagger/fixtures/codegen/impl"
 
 			// Load new copy of template
 			m.Shared.AllowTemplateOverride = true

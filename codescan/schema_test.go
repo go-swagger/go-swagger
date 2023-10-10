@@ -279,7 +279,7 @@ func TestSchemaBuilder(t *testing.T) {
 	require.NotNil(t, decl2)
 	require.NoError(t, (&schemaBuilder{decl: decl2, ctx: sctx}).Build(models))
 	msch, ok := models["order"]
-	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
+	pn := "github.com/ffalor/go-swagger/fixtures/goparsing/classification/models"
 	assert.True(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
@@ -293,7 +293,7 @@ func TestSchemaBuilder_AddExtensions(t *testing.T) {
 	require.NoError(t, (&schemaBuilder{decl: decl, ctx: sctx}).Build(models))
 
 	msch, ok := models["order"]
-	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
+	pn := "github.com/ffalor/go-swagger/fixtures/goparsing/classification/models"
 	assert.True(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
@@ -996,7 +996,7 @@ func TestAddExtension(t *testing.T) {
 }
 
 func getClassificationModel(sctx *scanCtx, nm string) *entityDecl {
-	decl, ok := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models", nm)
+	decl, ok := sctx.FindDecl("github.com/ffalor/go-swagger/fixtures/goparsing/classification/models", nm)
 	if !ok {
 		return nil
 	}

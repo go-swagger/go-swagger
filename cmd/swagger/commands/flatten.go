@@ -3,9 +3,9 @@ package commands
 import (
 	"errors"
 
+	"github.com/ffalor/go-swagger/cmd/swagger/commands/generate"
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
 )
 

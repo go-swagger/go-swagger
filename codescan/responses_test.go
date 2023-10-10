@@ -263,7 +263,7 @@ func TestParseResponses_Issue2011(t *testing.T) {
 
 func TestParseResponses_Issue2145(t *testing.T) {
 	sctx, err := newScanCtx(&Options{
-		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/product/..."},
+		Packages: []string{"github.com/ffalor/go-swagger/fixtures/goparsing/product/..."},
 	})
 	require.NoError(t, err)
 	responses := make(map[string]spec.Response)

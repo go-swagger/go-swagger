@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
+	"github.com/ffalor/go-swagger/cmd/swagger/commands"
 	flags "github.com/jessevdk/go-flags"
 )
 
