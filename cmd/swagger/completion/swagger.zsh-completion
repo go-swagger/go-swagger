@@ -111,7 +111,7 @@ __generate_server() {
 __generate_spec() {
   _arguments \
     '(-h,--help)'{-h,--help}'[Print help message]' \
-    '(-b,--base-path)'{-b,--base-path}"[the base path to use (default: .)]:base-path" \
+    '(-w,--work-dir)'{-w,--work-dir}"[the base path to use (default: .)]:work-dir" \
     '(-m,--scan-models)'{-m,--scan-models}"[includes models that were annotated with 'swagger:model']" \
     "(--compact)--compact[when present, doesn't prettify the the json]" \
     '(-o,--output)'{-o,--output}"[the file to write to]:output" \
