@@ -16,7 +16,7 @@ import (
 
   "github.com/go-openapi/errors"
   "github.com/go-openapi/runtime"
-  "github.com/go-openapi/runtime/client"
+  httptransport "github.com/go-openapi/runtime/client"
   "github.com/go-openapi/strfmt"
   "github.com/go-openapi/swag"
   "github.com/go-openapi/validate"
@@ -38,8 +38,8 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) ClientServi
 // - user: user for basic authentication header.
 // - password: password for basic authentication header.
 func NewClientWithBasicAuth(host, basePath, scheme, user, password string) ClientService {
-  transport := client.New(host, basePath, []string{scheme})
-  transport.DefaultAuthentication = client.BasicAuth(user, password)
+  transport := httptransport.New(host, basePath, []string{scheme})
+  transport.DefaultAuthentication = httptransport.BasicAuth(user, password)
   return &Client{transport: transport, formats: strfmt.Default}
 }
 
@@ -50,8 +50,8 @@ func NewClientWithBasicAuth(host, basePath, scheme, user, password string) Clien
 // - scheme: http scheme ("http", "https").
 // - bearerToken: bearer token for Bearer authentication header.
 func NewClientWithBearerToken(host, basePath, scheme, bearerToken string) ClientService {
-  transport := client.New(host, basePath, []string{scheme})
-  transport.DefaultAuthentication = client.BearerToken(bearerToken)
+  transport := httptransport.New(host, basePath, []string{scheme})
+  transport.DefaultAuthentication = httptransport.BearerToken(bearerToken)
   return &Client{transport: transport, formats: strfmt.Default}
 }
 
