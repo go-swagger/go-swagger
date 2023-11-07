@@ -6,28 +6,48 @@ NON-BREAKING CHANGES WITH WARNING:
 ==================================
 /b/ - x-ext-b-1 - Deleted Extension
 /b/ - x-ext-b-2 - Added Extension
-/b/ - x-ext-b-3 - Added Extension
+/b/ - x-ext-b-4 - Changed Extension Value
+/b/:get - Request - Body.c.x-ext-param-c - Deleted Extension
+/b/:get - Request - FormData.d.x-ext-param-d - Added Extension
 /b/:get - Request - Headers.headerB-1.x-header-ext-1 - Deleted Extension
+/b/:get - Request - Headers.headerB-1.x-header-ext-3 - Changed Extension Value
 /b/:get - Request - Headers.headerB-2.x-header-ext-2 - Added Extension
+/b/:get - Request - Path.b.x-ext-param-b - Added Extension
+/b/:get - Request - Query.a.x-ext-param-a - Deleted Extension
+/b/:get - Request - Query.a.x-ext-param-a-2 - Changed Extension Value
+/b/:get - Request - Query.limit.x-ext-param-limit - Deleted Extension
+/b/:get - Request - Query.offset.x-ext-param-offset - Added Extension
 /b/:get - Request - Responses.x-ext-resp-1 - Deleted Extension
 /b/:get - Request - Responses.x-ext-resp-2 - Added Extension
+/b/:get - Request - Responses.x-ext-resp-3 - Changed Extension Value
 /b/:get - Request - x-ext-1-operation - Added Extension
 /b/:get - Request - x-ext-2-operation - Deleted Extension
 /b/:get - Request - x-ext-3-operation - Added Extension
+/b/:get - Request - x-ext-4-operation - Changed Extension Value
 /b/:get -> 200 - Response - Body<A1>.x-b-items-2 - Deleted Extension
 /b/:get -> 200 - Response - Body<A1>.x-b-items-3 - Added Extension
 /b/:get -> 200 - Response - Body<array[A1]>.x-schema-1 - Deleted Extension
 /b/:get -> 200 - Response - Body<array[A1]>.x-schema-2 - Added Extension
+/b/:get -> 200 - Response - Body<array[A1]>.x-schema-3 - Changed Extension Value
+/b/:post - Request - Body.c.x-ext-param-c - Deleted Extension
+/b/:post - Request - FormData.d.x-ext-param-d - Added Extension
+/b/:post - Request - Path.b.x-ext-param-b - Added Extension
+/b/:post - Request - Query.a.x-ext-param-a - Deleted Extension
+/b/:post - Request - Query.a.x-ext-param-a-2 - Changed Extension Value
 Security Definitions.x-security-def-2 - Deleted Extension
 Security Definitions.x-security-def-3 - Added Extension
+Security Definitions.x-security-def-4 - Changed Extension Value
 Spec Info.Contact.x-ext-contact-2 - Deleted Extension
 Spec Info.Contact.x-ext-contact-3 - Added Extension
+Spec Info.Contact.x-ext-contact-4 - Changed Extension Value
 Spec Info.License.x-ext-license-2 - Deleted Extension
 Spec Info.License.x-ext-license-3 - Added Extension
+Spec Info.License.x-ext-license-4 - Changed Extension Value
 Spec Info.x-ext-info-2 - Deleted Extension
 Spec Info.x-ext-info-3 - Added Extension
 Spec Tags.x-ext-tag1 - Added Extension
 Spec Tags.x-ext-tag2 - Deleted Extension
 Spec.x-root-ext-2 - Deleted Extension
 Spec.x-root-ext-3 - Added Extension
+Spec.x-root-ext-4 - Changed Extension Value
 compatibility test OK. No breaking changes identified.
