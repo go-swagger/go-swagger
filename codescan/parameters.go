@@ -8,8 +8,6 @@ import (
 
 	"golang.org/x/tools/go/ast/astutil"
 
-	"github.com/pkg/errors"
-
 	"github.com/go-openapi/spec"
 )
 
@@ -117,6 +115,7 @@ func (sv paramValidations) SetMaximum(val float64, exclusive bool) {
 	sv.current.Maximum = &val
 	sv.current.ExclusiveMaximum = exclusive
 }
+
 func (sv paramValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
@@ -143,6 +142,7 @@ func (sv itemsValidations) SetMaximum(val float64, exclusive bool) {
 	sv.current.Maximum = &val
 	sv.current.ExclusiveMaximum = exclusive
 }
+
 func (sv itemsValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
@@ -168,7 +168,6 @@ type parameterBuilder struct {
 }
 
 func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
-
 	// check if there is a swagger:parameters tag that is followed by one or more words,
 	// these words are the ids of the operations this parameter struct applies to
 	// once type name is found convert it to a schema, by looking up the schema in the
@@ -210,10 +209,10 @@ func (p *parameterBuilder) buildFromType(otpe types.Type, op *spec.Operation, se
 			}
 			return p.buildFromStruct(p.decl, stpe, op, seen)
 		default:
-			return errors.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
+			return fmt.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
 		}
 	default:
-		return errors.Errorf("unhandled type (%T): %s", otpe, tpe.String())
+		return fmt.Errorf("unhandled type (%T): %s", otpe, tpe.String())
 	}
 }
 
@@ -279,9 +278,9 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 			p.postDecls = append(p.postDecls, sb.postDecls...)
 			return nil
 		}
-		return errors.Errorf("unable to find package and source file for: %s", ftpe.String())
+		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
 	default:
-		return errors.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
+		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
 	}
 }
 

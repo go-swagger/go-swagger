@@ -1,17 +1,24 @@
 linters-settings:
-  govet:
-    check-shadowing: true
-  golint:
-    min-confidence: 0
-  gocyclo:
-    min-complexity: 25
-  maligned:
-    suggest-new: true
+  depguard:
+    list-type: blacklist
+    include-go-root: true
+    packages-with-error-message:
+      - github.com/pkg/errors: "Use errors or fmt instead of github.com/pkg/errors"
   dupl:
     threshold: 200
   goconst:
     min-len: 2
     min-occurrences: 2
+  gocyclo:
+    min-complexity: 25
+  goimports:
+    local-prefixes: github.com/go-swagger/go-swagger
+  golint:
+    min-confidence: 0
+  govet:
+    check-shadowing: true
+  maligned:
+    suggest-new: true
 
 run:
   skip-dirs:
@@ -22,18 +29,20 @@ run:
 
 linters:
   enable:
-    - revive
+    - depguard
+    - errorlint
     - gocritic
-    - stylecheck
-    # - goimports
+    - gofumpt
+    - goimports
     - gosec
+    - revive
+    - stylecheck
     - unconvert
   disable:
-    - maligned
-    - unparam
-    - lll
-    - gochecknoinits
-    - gochecknoglobals
     - dupl
+    - gochecknoglobals
+    - gochecknoinits
+    - lll
+    - maligned
     - nakedret
-
+    - unparam
