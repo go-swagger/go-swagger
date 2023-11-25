@@ -1,12 +1,11 @@
 package codescan
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/types"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"golang.org/x/tools/go/ast/astutil"
 
@@ -215,9 +214,9 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 			r.postDecls = append(r.postDecls, sb.postDecls...)
 			return nil
 		}
-		return errors.Errorf("unable to find package and source file for: %s", ftpe.String())
+		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
 	default:
-		return errors.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
+		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
 	}
 }
 
@@ -256,7 +255,7 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 				r.postDecls = append(r.postDecls, sb.postDecls...)
 				return nil
 			}
-			return errors.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
+			return fmt.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
 		}
 	default:
 		return errors.New("anonymous types are currently not supported for responses")
