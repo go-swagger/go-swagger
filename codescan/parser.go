@@ -2,6 +2,7 @@ package codescan
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"go/ast"
 	"reflect"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 

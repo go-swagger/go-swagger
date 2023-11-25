@@ -92,6 +92,7 @@ func (sv schemaValidations) SetMaximum(val float64, exclusive bool) {
 	sv.current.Maximum = &val
 	sv.current.ExclusiveMaximum = exclusive
 }
+
 func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
@@ -895,7 +896,7 @@ func (s *schemaBuilder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 				}
 				return s.buildFromStruct(decl, utpe, schema, make(map[string]string))
 			}
-			return errors.Errorf("can't find source file for struct: %s", ftpe.String())
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
 		case *types.Interface:
 			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
 			if found {
@@ -908,7 +909,7 @@ func (s *schemaBuilder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 				}
 				return s.buildFromInterface(decl, utpe, schema, make(map[string]string))
 			}
-			return errors.Errorf("can't find source file for interface: %s", ftpe.String())
+			return fmt.Errorf("can't find source file for interface: %s", ftpe.String())
 		default:
 			log.Printf("WARNING: can't figure out object type for allOf named type (%T): %v", ftpe, ftpe.Underlying())
 			return fmt.Errorf("unable to locate source file for allOf %s", utpe.String())
@@ -932,13 +933,13 @@ func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen 
 			if found {
 				return s.buildFromStruct(decl, utpe, schema, seen)
 			}
-			return errors.Errorf("can't find source file for struct: %s", ftpe.String())
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
 		case *types.Interface:
 			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
 			if found {
 				return s.buildFromInterface(decl, utpe, schema, seen)
 			}
-			return errors.Errorf("can't find source file for struct: %s", ftpe.String())
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
 		default:
 			log.Printf("WARNING: can't figure out object type for embedded named type (%T): %v", ftpe, ftpe.Underlying())
 		}
