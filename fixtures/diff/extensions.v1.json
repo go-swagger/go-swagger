@@ -8,17 +8,62 @@
     "contact": {
       "name": "go-swagger",
       "x-ext-contact-1": "ext contact 1",
-      "x-ext-contact-2": "ext contact 2"
+      "x-ext-contact-2": "ext contact 2",
+      "x-ext-contact-4": []
     },
     "license": {
       "name": "license",
       "x-ext-license-1": "ext license 1",
-      "x-ext-license-2": "ext license 2"
+      "x-ext-license-2": "ext license 2",
+      "x-ext-license-4": 0.5
     }
   },
   "paths": {
     "/b/": {
+      "parameters": [
+        {
+          "name": "a",
+          "in": "query",
+          "x-ext-param-a": "ext param a",
+          "x-ext-param-a-2": true
+        },
+        {
+          "name": "b",
+          "in": "path"
+        },
+        {
+          "name": "c",
+          "in": "body",
+          "x-ext-param-c": "ext param c"
+        },
+        {
+          "name": "d",
+          "in": "header"
+        },
+        {
+          "name": "d",
+          "in": "formData"
+        }
+      ],
+      "post": {
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      },
       "get": {
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "x-ext-param-limit": "ext param limit"
+          },
+          {
+            "name": "offset",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "200 response",
@@ -29,23 +74,28 @@
                 "x-b-items-1": "b items 1",
                 "x-b-items-2": "b items 2"
               },
-              "x-schema-1": "schema 1 ext"
+              "x-schema-1": "schema 1 ext",
+              "x-schema-3": "schema 3 ext MODIFIED"
             },
             "headers": {
               "headerB-1": {
                 "type": "integer",
-                "x-header-ext-1": "header-ext-b-1"
+                "x-header-ext-1": "header-ext-b-1",
+                "x-header-ext-3": 1
               },
               "headerB-2": {
                 "type": "integer"
               }
             }
           },
-          "x-ext-resp-1": "response ext 1"
+          "x-ext-resp-1": "response ext 1",
+          "x-ext-resp-3": "response ext 3"
         },
-        "x-ext-2-operation": "ext b 2"
+        "x-ext-2-operation": "ext b 2",
+        "x-ext-4-operation": 0
       },
-      "x-ext-b-1": "ext b 1"
+      "x-ext-b-1": "ext b 1",
+      "x-ext-b-4": {}
     }
   },
   "definitions": {
@@ -85,13 +135,15 @@
     },
     {
       "name": "tag2",
-      "x-ext-tag2": "ext tag 2"
+      "x-ext-tag2": "ext tag 2",
+      "x-ext-tag3": {}
     }
   ],
   "securityDefinitions": {
     "auth2": {
       "x-security-def-1": "ext def 1",
       "x-security-def-2": "ext def 2",
+      "x-security-def-4": {"type": "oauth2"},
       "type": "oauth2",
       "flow": "accessCode",
       "authorizationUrl": "",
@@ -99,5 +151,6 @@
     }
   },
   "x-root-ext-1": "ext root 1",
-  "x-root-ext-2": "ext root 2"
+  "x-root-ext-2": "ext root 2",
+  "x-root-ext-4": "ext root 4"
 }
