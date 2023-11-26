@@ -70,12 +70,15 @@ type builtinVal struct {
 func nullableExt() spec.Extensions {
 	return spec.Extensions{"x-nullable": true}
 }
+
 func isNullableExt() spec.Extensions {
 	return spec.Extensions{"x-isnullable": true}
 }
+
 func notNullableExt() spec.Extensions {
 	return spec.Extensions{"x-nullable": false}
 }
+
 func isNotNullableExt() spec.Extensions {
 	return spec.Extensions{"x-isnullable": false}
 }
@@ -109,7 +112,6 @@ var boolPointerVals = []builtinVal{
 }
 
 func generateNumberPointerVals(t, v string) (result []builtinVal) {
-
 	vv := v
 	if vv == "" || vv == "int" {
 		if t == "integer" {
@@ -430,7 +432,6 @@ func testPointToSliceElements(t testing.TB, tr typeResolver, aliased bool) bool 
 	}
 	resolver := &tr
 	for i, val := range boolPointerVals {
-
 		if !assertBuiltinSliceElem(t, resolver, aliased, i, val) {
 			return false
 		}

@@ -184,7 +184,7 @@ func (a *appGenerator) Generate() error {
 			}
 			// optional OperationGroups templates generation
 			if err := a.GenOpts.renderOperationGroup(&opg); err != nil {
-				return fmt.Errorf("error while rendering operation group: %v", err)
+				return fmt.Errorf("error while rendering operation group: %w", err)
 			}
 		}
 	}
@@ -284,7 +284,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			a.GenOpts,
 		)
 		if err != nil {
-			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
+			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %w", mn, err)
 		}
 		if model != nil {
 			if !model.External {

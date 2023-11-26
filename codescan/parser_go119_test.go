@@ -10,7 +10,6 @@ import (
 )
 
 func TestSectionedParser_TitleDescriptionGo119(t *testing.T) {
-
 	text := `# This has a title that starts with a hash tag
 
 The punctuation here does indeed matter. But it won't for go.

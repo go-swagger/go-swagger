@@ -211,7 +211,7 @@ func TestServer_ErrorParsingTemplate(t *testing.T) {
 
 	defer discardOutput()()
 
-	var badParse = `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
+	badParse := `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 
 	gen, err := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
@@ -252,7 +252,7 @@ func TestServer_OperationGroups(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, strings.ToLower(err.Error()), "template doesn't exist") // Tolerates case variations on error message
 
-	var opGroupTpl = `
+	opGroupTpl := `
 // OperationGroupName={{.Name}}
 // RootPackage={{.RootPackage}}
 {{ range .Operations }}
@@ -398,7 +398,7 @@ func TestServer_Issue1746(t *testing.T) {
 	opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "1746", "fixture-1746.yaml")
 	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
 
-	require.NoError(t, os.Mkdir(opts.Target, 0755))
+	require.NoError(t, os.Mkdir(opts.Target, 0o755))
 
 	require.NoError(t, GenerateServer("", nil, nil, opts))
 

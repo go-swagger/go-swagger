@@ -95,7 +95,6 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 }
 
 func TestBaseImport(t *testing.T) {
-
 	// 1. Create a root folder /tmp/root
 	// 2. Simulate scenario
 	//	2.a No Symlink
@@ -112,7 +111,7 @@ func TestBaseImport(t *testing.T) {
 
 		// Create Paths
 		for _, paths := range item.path {
-			require.NoError(t, os.MkdirAll(paths, 0700))
+			require.NoError(t, os.MkdirAll(paths, 0o700))
 		}
 
 		if item.symlinksrc == "" {

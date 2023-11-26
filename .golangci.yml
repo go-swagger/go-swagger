@@ -35,6 +35,7 @@ linters:
     - gofumpt
     - goimports
     - gosec
+    - misspell
     - revive
     - stylecheck
     - unconvert

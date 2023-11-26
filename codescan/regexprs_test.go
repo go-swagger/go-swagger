@@ -184,7 +184,7 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 	if len(names2) > 0 {
 		nm2 = " " + names2[0]
 	}
-	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 	if Debug {
 		fmt.Printf("tested %d %s%s combinations\n", cnt, names[0], nm2)
 	}
@@ -233,10 +233,9 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 	if len(words) > 0 {
 		nm2 = " " + words[0]
 	}
-	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 	if Debug {
 		fmt.Printf("tested %d %s%s combinations\n", cnt, name1, nm2)
-
 	}
 }
 
@@ -284,7 +283,7 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 			}
 		}
 	}
-	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 	if Debug {
 		fmt.Printf("tested %d %s %s combinations\n", cnt, name1, name2)
 	}
@@ -325,7 +324,7 @@ func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators [
 			}
 		}
 	}
-	var Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 	if Debug {
 		fmt.Printf("tested %d %s combinations\n", cnt, name)
 	}

@@ -519,7 +519,6 @@ func TestGenResponse_1572(t *testing.T) {
 	*/
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for responses in operation get_interface_responses.go
 		"getInterface": { // fixture index
 			"serverResponses": { // executed template

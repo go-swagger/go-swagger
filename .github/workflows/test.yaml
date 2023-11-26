@@ -30,8 +30,10 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.52.2
+          args: --verbose
           only-new-issues: true
+          skip-cache: true
+          version: v1.52.2
 
   test:
     needs: [lint]
@@ -52,7 +54,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          go install golang.org/x/tools/cmd/...@latest
           go install gotest.tools/gotestsum@latest
 
       - name: Build binary
@@ -87,7 +88,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          go install golang.org/x/tools/cmd/...@latest
           go install gotest.tools/gotestsum@latest
           go install ./cmd/swagger
 
@@ -120,7 +120,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          go install golang.org/x/tools/cmd/...@latest
           go install gotest.tools/gotestsum@latest
           go get gotest.tools/icmd@latest
 
@@ -149,7 +148,6 @@ jobs:
 
       - name: Install Tools
         run: |
-          go install golang.org/x/tools/cmd/...@latest
           go install gotest.tools/gotestsum@latest
           go get gotest.tools/icmd@latest
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"path"
@@ -15,8 +16,6 @@ import (
 	"text/template"
 	"text/template/parse"
 	"unicode"
-
-	"log"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/go-openapi/inflect"
@@ -327,7 +326,6 @@ func (t *Repository) ShallowClone() *Repository {
 
 // LoadDefaults will load the embedded templates
 func (t *Repository) LoadDefaults() {
-
 	for name, asset := range assets {
 		if err := t.addFile(name, string(asset), true); err != nil {
 			log.Fatal(err)
@@ -338,12 +336,11 @@ func (t *Repository) LoadDefaults() {
 // LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
 func (t *Repository) LoadDir(templatePath string) error {
 	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
-
 		if strings.HasSuffix(path, ".gotmpl") {
 			if assetName, e := filepath.Rel(templatePath, path); e == nil {
 				if data, e := os.ReadFile(path); e == nil {
 					if ee := t.AddFile(assetName, string(data)); ee != nil {
-						return fmt.Errorf("could not add template: %v", ee)
+						return fmt.Errorf("could not add template: %w", ee)
 					}
 				}
 				// Non-readable files are skipped
@@ -356,7 +353,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("could not complete template processing in directory \"%s\": %v", templatePath, err)
+		return fmt.Errorf("could not complete template processing in directory \"%s\": %w", templatePath, err)
 	}
 	return nil
 }
@@ -392,9 +389,8 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
 
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
-
 	if err != nil {
-		return fmt.Errorf("failed to load template %s: %v", name, err)
+		return fmt.Errorf("failed to load template %s: %w", name, err)
 	}
 
 	// check if any protected templates are defined
@@ -441,7 +437,6 @@ func (t *Repository) SetAllowOverride(value bool) {
 }
 
 func findDependencies(n parse.Node) []string {
-
 	var deps []string
 	depMap := make(map[string]bool)
 
@@ -491,7 +486,6 @@ func findDependencies(n parse.Node) []string {
 	}
 
 	return deps
-
 }
 
 func (t *Repository) flattenDependencies(templ *template.Template, dependencies map[string]bool) map[string]bool {
@@ -516,11 +510,9 @@ func (t *Repository) flattenDependencies(templ *template.Template, dependencies 
 	}
 
 	return dependencies
-
 }
 
 func (t *Repository) addDependencies(templ *template.Template) (*template.Template, error) {
-
 	name := templ.Name()
 
 	deps := t.flattenDependencies(templ, nil)
@@ -547,7 +539,7 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			templ, err = templ.AddParseTree(dep, tt.Tree)
 
 			if err != nil {
-				return templ, fmt.Errorf("dependency error: %v", err)
+				return templ, fmt.Errorf("dependency error: %w", err)
 			}
 
 		}
@@ -576,7 +568,6 @@ func (t *Repository) DumpTemplates() {
 		fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
 
 		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
-
 			fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
 		}
 		fmt.Fprintln(buf, "\n---")

@@ -85,7 +85,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 	var gmp GenSchema
 	gmp.Title = "The title of the property"
 	gmp.Description = "The description of the property"
-	var expected = `The title of the property
+	expected := `The title of the property
 //
 // The description of the property`
 	tt.assertRender(gmp, expected)
@@ -146,7 +146,6 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true`)
-
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
@@ -261,6 +260,7 @@ func TestGenSchemaType(t *testing.T) {
 		tt.assertRender(v.Value, v.Expected)
 	}
 }
+
 func TestGenerateModel_Primitives(t *testing.T) {
 	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	for _, v := range schTypeGenDataSimple {
@@ -344,6 +344,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 		}
 	}
 }
+
 func TestGenerateModel_Nota(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -2403,7 +2404,6 @@ func TestGenModel_Issue1623(t *testing.T) {
 	assertInCode(t, "RefNoOmitEmpty Bar `json:\"refNoOmitEmpty,omitempty\"`", res)
 	assertInCode(t, "IntHasJSONString int64 `json:\"intHasJsonString,omitempty,string\"`", res)
 	assertInCode(t, "BoolHasJSONString bool `json:\"boolHasJsonString,omitempty,string\"`", res)
-
 }
 
 func TestGenerateModel_Issue2457(t *testing.T) {

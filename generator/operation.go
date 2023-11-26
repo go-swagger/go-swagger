@@ -149,7 +149,6 @@ type operationGenerator struct {
 
 // Generate a single operation
 func (o *operationGenerator) Generate() error {
-
 	defaultImports := o.GenOpts.defaultImports()
 
 	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
@@ -325,7 +324,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
-
 		if err != nil {
 			return GenOperation{}, err
 		}
@@ -974,7 +972,6 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 		p.HasModelBodyMap = hasModelBodyMap
 		p.HasSimpleBodyMap = hasSimpleBodyMap
 	}
-
 }
 
 // makeSecuritySchemes produces a sorted list of security schemes for this operation

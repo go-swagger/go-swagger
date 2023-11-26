@@ -92,7 +92,7 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	require.NoError(t, err)
 
-	var testCases = []struct {
+	testCases := []struct {
 		name         string      // input
 		typeStr      string      // expected type
 		defaultValue interface{} // expected result

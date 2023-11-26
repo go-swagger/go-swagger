@@ -22,9 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	logMutex = &sync.Mutex{}
-)
+var logMutex = &sync.Mutex{}
 
 func TestDebug(t *testing.T) {
 	// test debugLog()

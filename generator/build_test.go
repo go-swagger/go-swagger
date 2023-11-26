@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
-	flags "github.com/jessevdk/go-flags"
 )
 
 const (

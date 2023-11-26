@@ -63,7 +63,6 @@ Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture"
 }
 
 func TestTemplates_CustomTemplates(t *testing.T) {
-
 	var buf bytes.Buffer
 	headerTempl, err := templates.Get("bindprimitiveparam")
 	assert.NoError(t, err)
@@ -84,7 +83,6 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 	err = headerTempl.Execute(&buf, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "custom header", buf.String())
-
 }
 
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
@@ -121,7 +119,6 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoLoadingTemplates(t *testing.T) {
-
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("simple", singleTemplate)
@@ -138,7 +135,6 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -170,7 +166,6 @@ type testData struct {
 }
 
 func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -191,7 +186,6 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -291,7 +285,6 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
-
 }
 
 // Test TargetImportPath definition
@@ -311,7 +304,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	opts := opts()
 	// Non existing target would panic: to be tested too, but in another module
 	opts.Target = "../fixtures"
-	var expected = "github.com/go-swagger/go-swagger/fixtures"
+	expected := "github.com/go-swagger/go-swagger/fixtures"
 
 	// executes template against model definitions
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
@@ -335,7 +328,6 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
-
 }
 
 // Simulates a definition environment for model templates

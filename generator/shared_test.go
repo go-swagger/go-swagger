@@ -84,7 +84,7 @@ func TestShared_CheckOpts(t *testing.T) {
 	log.SetOutput(io.Discard)
 	defer log.SetOutput(os.Stdout)
 
-	var opts = new(GenOpts)
+	opts := new(GenOpts)
 	_ = opts.EnsureDefaults()
 	cwd, _ := os.Getwd()
 	opts.Spec = "../fixtures/codegen/simplesearch.yml"
@@ -149,7 +149,7 @@ func TestShared_TargetPath(t *testing.T) {
 	cwd, _ := os.Getwd()
 
 	// relative target
-	var opts = new(GenOpts)
+	opts := new(GenOpts)
 	_ = opts.EnsureDefaults()
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y"
@@ -193,7 +193,7 @@ func TestShared_SpecPath(t *testing.T) {
 	cwd, _ := os.Getwd()
 
 	// http URL spec
-	var opts = new(GenOpts)
+	opts := new(GenOpts)
 	_ = opts.EnsureDefaults()
 	opts.Spec = "http://a/b/c"
 	opts.ServerPackage = "y"
@@ -317,8 +317,7 @@ func TestShared_GarbledTemplate(t *testing.T) {
 }
 
 // Template execution failure
-type myTemplateData struct {
-}
+type myTemplateData struct{}
 
 func (*myTemplateData) MyFaultyMethod() (string, error) {
 	return "", fmt.Errorf("myFaultyError")
@@ -506,7 +505,6 @@ func TestShared_LoadTemplate(t *testing.T) {
 	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
-
 }
 
 func TestShared_AppNameOrDefault(t *testing.T) {

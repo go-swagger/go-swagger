@@ -29,7 +29,7 @@ definitions:
       Body:
         $ref: '#/definitions/Object-with-nullable-false'
 
-  Case-4--Pass--object-nullable-false-overriden-by-ref-sibling:
+  Case-4--Pass--object-nullable-false-overridden-by-ref-sibling:
     type: object
     properties:
       Body:
