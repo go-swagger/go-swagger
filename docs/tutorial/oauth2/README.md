@@ -84,7 +84,7 @@ First, we need some extra packages to work with OAuth2, OpenID and HTTP redirect
 
 ```go
 import (
-	oidc "github.com/coreos/go-oidc"            // Google OpenID client
+	"github.com/coreos/go-oidc/v3/oidc"         // Google OpenID client
 	"context"
 	"golang.org/x/oauth2"                       // OAuth2 client
 )
