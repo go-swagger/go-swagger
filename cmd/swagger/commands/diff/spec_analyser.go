@@ -231,7 +231,15 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 			// deleted responses
 			for code1 := range op1Responses {
 				if _, ok := op2Responses[code1]; !ok {
-					location := DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code1, Node: getSchemaDiffNode("Body", op1Responses[code1].Schema)}
+					location := DifferenceLocation{
+						URL:      eachURLMethodFrom2.Path,
+						Method:   eachURLMethodFrom2.Method,
+						Response: code1,
+						Node:     getNameOnlyDiffNode("NoContent"),
+					}
+					if op1Responses[code1].Schema != nil {
+						location.Node = getSchemaDiffNode("Body", op1Responses[code1].Schema)
+					}
 					sd.Diffs = sd.Diffs.addDiff(SpecDifference{DifferenceLocation: location, Code: DeletedResponse})
 				}
 			}
