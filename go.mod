@@ -2,6 +2,8 @@ module github.com/go-swagger/go-swagger
 
 go 1.19
 
+replace github.com/go-openapi/spec => github.com/fredbi/spec v0.20.9-fix148
+
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/coreos/go-oidc v2.2.1+incompatible
