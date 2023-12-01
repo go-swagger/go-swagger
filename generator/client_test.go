@@ -224,8 +224,10 @@ func TestClient(t *testing.T) {
 	defer discardOutput()()
 
 	base := os.Getenv("GOPATH")
+	var importBase string
 	if base == "" {
 		base = "."
+		importBase = "github.com/go-swagger/go-swagger/generator/"
 	} else {
 		base = filepath.Join(base, "src")
 		err := os.MkdirAll(base, 0o755)
@@ -302,8 +304,8 @@ func TestClient(t *testing.T) {
 
 				// assert client import, with deconfliction
 				code := string(buf)
-				baseImport := `github.com/go-swagger/go-swagger/generator/swagger_nogo\d+/packages_mangling/client`
-				assertImports(t, baseImport, code)
+				importRegexp := importBase + `swagger_nogo\d+/packages_mangling/client`
+				assertImports(t, importRegexp, code)
 
 				assertInCode(t, `cli.Strfmt = strfmtops.New(transport, formats)`, code)
 				assertInCode(t, `cli.API = apiops.New(transport, formats)`, code)
