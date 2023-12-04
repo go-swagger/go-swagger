@@ -37,7 +37,8 @@ func main() {
 		os.Exit(code)
 	}
 	log.Println("loading spec at:", server.Spec)
-	swaggerSpec, err := loads.Spec(string(server.Spec))
+	//swaggerSpec, err := loads.Spec(string(server.Spec))
+	swaggerSpec, err := loads.JSONSpec(string(server.Spec))
 	if err != nil {
 		log.Fatalln(err)
 	}

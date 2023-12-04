@@ -2,7 +2,7 @@ module github.com/go-swagger/go-swagger
 
 go 1.19
 
-replace github.com/go-openapi/spec => github.com/fredbi/spec v0.20.11-fix145
+replace github.com/go-openapi/spec => github.com/fredbi/spec v0.20.12-fred
 
 // replace github.com/go-openapi/spec => /home/fred/src/github.com/go-openapi/spec
 
