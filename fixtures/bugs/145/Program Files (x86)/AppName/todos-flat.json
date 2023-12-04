@@ -1,0 +1,523 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "This OAS2 (Swagger 2) file represents a real API that lives at http://todos.stoplight.io.\n\nFor authentication information, click the apikey security scheme in the editor sidebar.",
+    "title": "To-do Demo",
+    "contact": {
+      "name": "Stoplight",
+      "url": "https://stoplight.io"
+    },
+    "license": {
+      "name": "MIT"
+    },
+    "version": "1.0"
+  },
+  "host": "todos.stoplight.io",
+  "paths": {
+    "/todos": {
+      "get": {
+        "description": "​",
+        "tags": [
+          "Todos"
+        ],
+        "summary": "List Todos",
+        "parameters": [
+          {
+            "maximum": 100,
+            "type": "integer",
+            "description": "This is how it works.",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "skip",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/todo-full"
+              }
+            },
+            "headers": {
+              "foo": {
+                "type": "string",
+                "default": "bar"
+              }
+            },
+            "examples": {
+              "application/json": [
+                {
+                  "completed": true,
+                  "id": 1,
+                  "name": "design the thingz"
+                },
+                {
+                  "completed": true,
+                  "id": 2,
+                  "name": "mock the thingz"
+                },
+                {
+                  "completed": false,
+                  "id": 3,
+                  "name": "code the thingz"
+                }
+              ],
+              "empty": []
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Server Error",
+                "status": "500"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "API Key": []
+          },
+          {
+            "Basic": []
+          }
+        ],
+        "description": "This creates a Todo object.\n\nTesting `inline code`.",
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Create Todo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/todo-partial",
+              "example": {
+                "completed": false,
+                "name": "my todo's name"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/todo-full"
+            },
+            "examples": {
+              "/todos/chores": {
+                "completed": false,
+                "created_at": "2014-08-28T14:14:28.494Z",
+                "id": 9000,
+                "name": "Do Chores",
+                "updated_at": "2014-08-28T14:14:28.494Z"
+              },
+              "application/json": {
+                "completed": null,
+                "completed_at": null,
+                "created_at": "2014-08-28T14:14:28.494Z",
+                "id": 9000,
+                "name": "It's Over 9000!!!",
+                "updated_at": "2014-08-28T14:14:28.494Z"
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Authorized",
+                "status": "401"
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Server Error",
+                "status": "500"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/todos/{todoId}": {
+      "get": {
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Get Todo",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "extra",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/todo-full"
+            },
+            "examples": {
+              "/todos/chores": {
+                "completed": false,
+                "created_at": "2014-08-28T14:14:28.494Z",
+                "id": 9000,
+                "name": "Do Chores",
+                "updated_at": "2014-08-28T14:14:28.494Z"
+              },
+              "/todos/foobar": "{\n\t\"foo\": \"bar\"\n}\n",
+              "application/json": {
+                "completed": false,
+                "completed_at": "1955-04-23T13:22:52.685Z",
+                "created_at": "1994-11-05T03:26:51.471Z",
+                "id": 1,
+                "name": "get food",
+                "updated_at": "1989-07-29T11:30:06.701Z"
+              },
+              "new": {
+                "completed": null,
+                "completed_at": "2014-01-07T07:49:55.123Z",
+                "created_at": "1948-04-21T12:04:21.282Z",
+                "float": -47990796.228164576,
+                "id": 920778,
+                "name": "esse qui proident labore",
+                "updated_at": "1951-12-19T11:10:34.039Z",
+                "user": {
+                  "age": 121.45395681110494,
+                  "name": "irure deserunt fugiat"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Found",
+                "status": "404"
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Server Error",
+                "status": "500"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "Basic": []
+          },
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Update Todo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/todo-partial",
+              "example": {
+                "completed": false,
+                "name": "my todo's new name"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/todo-full"
+            },
+            "examples": {
+              "application/json": {
+                "completed": true,
+                "completed_at": null,
+                "created_at": "2014-08-28T14:14:28.494Z",
+                "id": 9000,
+                "name": "It's Over 9000!!!",
+                "updated_at": "2015-08-28T14:14:28.494Z"
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Authorized",
+                "status": "401"
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Found",
+                "status": "404"
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Server Error",
+                "status": "500"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Basic": []
+          },
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "Todos"
+        ],
+        "summary": "Delete Todo",
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Authorized",
+                "status": "401"
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Not Found",
+                "status": "404"
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/errorResponse"
+            },
+            "examples": {
+              "application/json": {
+                "error": "Server Error",
+                "status": "500"
+              }
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "type": "string",
+          "name": "todoId",
+          "in": "path",
+          "required": true
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "errorResponse": {
+      "type": "object",
+      "title": "Error Response",
+      "required": [
+        "status",
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "todo-full": {
+      "title": "Todo Full",
+      "allOf": [
+        {
+          "$ref": "#/definitions/todo-partial"
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "user"
+          ],
+          "properties": {
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "id": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "user": {
+              "$ref": "#/definitions/user"
+            }
+          }
+        }
+      ]
+    },
+    "todo-partial": {
+      "$ref": "#/definitions/todoPartial"
+    },
+    "todoPartial": {
+      "type": "object",
+      "title": "Todo Partial",
+      "required": [
+        "name",
+        "completed"
+      ],
+      "properties": {
+        "completed": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "title": "User",
+      "required": [
+        "name",
+        "age"
+      ],
+      "properties": {
+        "age": {
+          "type": "number",
+          "maximum": 150,
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/definitions/errorResponse"
+        },
+        "name": {
+          "description": "The user's full name.",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "limit": {
+      "maximum": 100,
+      "type": "integer",
+      "description": "This is how it works.",
+      "name": "limit",
+      "in": "query"
+    },
+    "skip": {
+      "type": "string",
+      "name": "skip",
+      "in": "query"
+    }
+  },
+  "securityDefinitions": {
+    "API Key": {
+      "type": "apiKey",
+      "name": "apikey",
+      "in": "query"
+    },
+    "Basic": {
+      "type": "basic"
+    }
+  },
+  "tags": [
+    {
+      "name": "Todos"
+    }
+  ]
+}

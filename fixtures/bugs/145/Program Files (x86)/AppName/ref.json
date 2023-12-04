@@ -1,0 +1,17 @@
+{
+"definitions": {
+    "todo-partial": {
+      "title": "Todo Partial",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "completed": {
+          "type": ["boolean"]
+        }
+      },
+      "required": ["name", "completed"]
+    }
+  }
+}
