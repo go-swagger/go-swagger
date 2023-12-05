@@ -1,5 +1,11 @@
 module github.com/go-swagger/go-swagger
 
+replace github.com/go-openapi/swag => github.com/fredbi/swag v0.22.4-fred
+
+replace github.com/go-openapi/spec => github.com/go-openapi/spec v0.0.0-20231205101439-7d71edaf6584
+
+replace github.com/go-openapi/loads => github.com/go-openapi/loads v0.0.0-20231205085740-8dae70765f79
+
 go 1.19
 
 require (
@@ -11,8 +17,8 @@ require (
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime v0.26.0
-	github.com/go-openapi/spec v0.20.9
-	github.com/go-openapi/strfmt v0.21.7
+	github.com/go-openapi/spec v0.20.11
+	github.com/go-openapi/strfmt v0.21.8
 	github.com/go-openapi/swag v0.22.4
 	github.com/go-openapi/validate v0.22.1
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
@@ -43,7 +49,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/jsonpointer v0.19.6 // indirect
+	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -62,13 +68,13 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
-	go.mongodb.org/mongo-driver v1.11.3 // indirect
+	go.mongodb.org/mongo-driver v1.13.0 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
