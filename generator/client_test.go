@@ -155,7 +155,7 @@ func TestClient(t *testing.T) {
 		base = "."
 	} else {
 		base = filepath.Join(base, "src")
-		err := os.MkdirAll(base, 0755)
+		err := os.MkdirAll(base, 0o755)
 		require.NoError(t, err)
 	}
 	targetdir, err := os.MkdirTemp(base, "swagger_nogo")
@@ -283,7 +283,7 @@ func TestClient(t *testing.T) {
 				opts := testClientGenOpts()
 				opts.Spec = basicFixture
 				opts.Target = filepath.Join(targetdir, opts.LanguageOpts.ManglePackageName(tt.name, "client_test"+strconv.Itoa(i)))
-				err := os.MkdirAll(opts.Target, 0755)
+				err := os.MkdirAll(opts.Target, 0o755)
 				require.NoError(t, err)
 
 				if tt.spec == "" {

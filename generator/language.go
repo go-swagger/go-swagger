@@ -141,7 +141,7 @@ func (l *LanguageOpts) baseImport(tgt string) string {
 
 // GoLangOpts for rendering items as golang code
 func GoLangOpts() *LanguageOpts {
-	var goOtherReservedSuffixes = map[string]bool{
+	goOtherReservedSuffixes := map[string]bool{
 		// see:
 		// https://golang.org/src/go/build/syslist.go
 		// https://golang.org/doc/install/source#environment
@@ -436,5 +436,4 @@ func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool,
 	}
 
 	return false, ""
-
 }

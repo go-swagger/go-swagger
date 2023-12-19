@@ -228,7 +228,6 @@ func DefaultSectionOpts(gen *GenOpts) {
 					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
 					FileName: "auto_configure_{{ (snakize (pascalize .Name)) }}.go",
 				})
-
 			} else {
 				opts = append(opts, TemplateOpts{
 					Name:       "configure",
@@ -242,7 +241,6 @@ func DefaultSectionOpts(gen *GenOpts) {
 		}
 	}
 	gen.Sections = sec
-
 }
 
 // MarkdownOpts for rendering a spec as markdown
@@ -356,7 +354,7 @@ func (g *GenOpts) CheckOpts() error {
 
 	if !filepath.IsAbs(g.Target) {
 		if _, err := filepath.Abs(g.Target); err != nil {
-			return fmt.Errorf("could not locate target %s: %v", g.Target, err)
+			return fmt.Errorf("could not locate target %s: %w", g.Target, err)
 		}
 	}
 
@@ -602,11 +600,11 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 		}
 		content, err := os.ReadFile(templateFile)
 		if err != nil {
-			return nil, fmt.Errorf("error while opening %s template file: %v", templateFile, err)
+			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
 		tt, err := template.New(t.Source).Funcs(FuncMapFunc(g.LanguageOpts)).Parse(string(content))
 		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %s: %v", t.Name, err)
+			return nil, fmt.Errorf("template parsing failed on template %s: %w", t.Name, err)
 		}
 		templ = tt
 	}
@@ -617,7 +615,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 
 	var tBuf bytes.Buffer
 	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, fmt.Errorf("template execution failed for template %s: %v", t.Name, err)
+		return nil, fmt.Errorf("template execution failed for template %s: %w", t.Name, err)
 	}
 	log.Printf("executed template %s", t.Source)
 
@@ -631,7 +629,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	dir, fname, err := g.location(t, data)
 	if err != nil {
-		return fmt.Errorf("failed to resolve template location for template %s: %v", t.Name, err)
+		return fmt.Errorf("failed to resolve template location for template %s: %w", t.Name, err)
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
@@ -643,7 +641,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
 	content, err := g.render(t, data)
 	if err != nil {
-		return fmt.Errorf("failed rendering template data for %s: %v", t.Name, err)
+		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
 	}
 
 	if dir != "" {
@@ -652,7 +650,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 			debugLog("creating directory %q for \"%s\"", dir, t.Name)
 			// Directory settings consistent with file privileges.
 			// Environment's umask may alter this setup
-			if e := os.MkdirAll(dir, 0755); e != nil {
+			if e := os.MkdirAll(dir, 0o755); e != nil {
 				return e
 			}
 		}
@@ -666,18 +664,18 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		formatted, err = g.LanguageOpts.FormatContent(filepath.Join(dir, fname), content)
 		if err != nil {
 			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
-			writeerr = os.WriteFile(filepath.Join(dir, fname), content, 0644) // #nosec
+			writeerr = os.WriteFile(filepath.Join(dir, fname), content, 0o644) // #nosec
 			if writeerr != nil {
-				return fmt.Errorf("failed to write (unformatted) file %q in %q: %v", fname, dir, writeerr)
+				return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
 			}
 			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
-			return fmt.Errorf("source formatting on generated source %q failed: %v", t.Name, err)
+			return fmt.Errorf("source formatting on generated source %q failed: %w", t.Name, err)
 		}
 	}
 
-	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, 0644) // #nosec
+	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, 0o644) // #nosec
 	if writeerr != nil {
-		return fmt.Errorf("failed to write file %q in %q: %v", fname, dir, writeerr)
+		return fmt.Errorf("failed to write file %q in %q: %w", fname, dir, writeerr)
 	}
 	return err
 }

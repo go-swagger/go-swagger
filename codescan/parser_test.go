@@ -109,7 +109,6 @@ Sample code block:
 
 	assert.EqualValues(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
-
 }
 
 func dummyBuilder() schemaValidations {
@@ -268,7 +267,7 @@ func ascg(txt string) *ast.CommentGroup {
 }
 
 func TestShouldAcceptTag(t *testing.T) {
-	var tagTests = []struct {
+	tagTests := []struct {
 		tags        []string
 		includeTags map[string]bool
 		excludeTags map[string]bool
@@ -285,7 +284,7 @@ func TestShouldAcceptTag(t *testing.T) {
 }
 
 func TestShouldAcceptPkg(t *testing.T) {
-	var pkgTests = []struct {
+	pkgTests := []struct {
 		path        string
 		includePkgs []string
 		excludePkgs []string

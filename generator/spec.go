@@ -41,8 +41,11 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 		if validationErrors != nil {
 			str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n",
 				g.Spec, specDoc.Version())
-			for _, desc := range validationErrors.(*swaggererrors.CompositeError).Errors {
-				str += fmt.Sprintf("- %s\n", desc)
+			var cerr *swaggererrors.CompositeError
+			if errors.As(validationErrors, &cerr) {
+				for _, desc := range cerr.Errors {
+					str += fmt.Sprintf("- %s\n", desc)
+				}
 			}
 			return nil, errors.New(str)
 		}
@@ -229,7 +232,7 @@ func WithAutoXOrder(specPath string) string {
 	}
 
 	tmpFile := filepath.Join(tmpDir, filepath.Base(specPath))
-	if err := os.WriteFile(tmpFile, out, 0600); err != nil {
+	if err := os.WriteFile(tmpFile, out, 0o600); err != nil {
 		panic(err)
 	}
 	return tmpFile

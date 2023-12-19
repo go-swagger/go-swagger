@@ -421,7 +421,6 @@ func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpIte
 		return ctx.Items.Assert(t, pItems.Items, gpItems.Child)
 	}
 	return true
-
 }
 
 var bug163Properties = []paramTestContext{
@@ -903,7 +902,6 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 	res := string(ff)
 	assertInCode(t, "Body *models.Item", res)
 	assertNotInCode(t, "type GetItemParamsBody struct", res)
-
 }
 
 func TestGenParameter_Issue1111(t *testing.T) {
@@ -941,7 +939,7 @@ func TestGenParameter_Issue1462(t *testing.T) {
 }
 
 func TestGenParameter_Issue1199(t *testing.T) {
-	var assertion = `if o.Body != nil {
+	assertion := `if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err
 		}
@@ -1696,7 +1694,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 func TestGenParameter_Issue1513(t *testing.T) {
 	defer discardOutput()()
 
-	var assertion = `r.SetBodyParam(o.Something)`
+	assertion := `r.SetBodyParam(o.Something)`
 
 	gen, err := opBuilderWithFlatten("put-enum", "../fixtures/bugs/1513/enums.yaml")
 	require.NoError(t, err)
@@ -1723,7 +1721,6 @@ func TestGenParameter_Issue1536(t *testing.T) {
 	// param body with array of empty objects
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation get_interface_parameters.go
 		"getInterface": { // fixture index
 			"serverParameter": { // executed template
@@ -2268,7 +2265,6 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 	defer discardOutput()()
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation get_map_interface_parameters.go
 		"getMapInterface": { // fixture index
 			"serverParameter": { // executed template
@@ -3135,6 +3131,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 	}
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
 }
+
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
@@ -3143,7 +3140,6 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	// param body with maps
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation get_nested_map04_parameters.go
 		"getNestedMap04": { // fixture index
 			"serverParameter": { // executed template
@@ -3947,7 +3943,6 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 	// testing fixture-1548.yaml with flatten
 	// My App API
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation my_method_parameters.go
 		"MyMethod": { // fixture index
 			"serverParameter": { // executed template
@@ -4033,7 +4028,6 @@ func TestGenParameter_1572(t *testing.T) {
 	*/
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters in operation get_interface_parameters.go
 		"getInterface": { // fixture index
 			"serverParameter": { // executed template
@@ -4156,7 +4150,6 @@ func TestGenParameter_1637(t *testing.T) {
 	// slice of polymorphic type in body param
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"test": { // fixture index
 			"serverParameter": { // executed template
@@ -4175,7 +4168,6 @@ func TestGenParameter_1755(t *testing.T) {
 	// body param is array with slice validation (e.g. minItems): initialize array with body
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"registerAsset": { // fixture index (operation name)
 			"serverParameter": { // executed template
@@ -4195,7 +4187,6 @@ func TestGenClientParameter_1490(t *testing.T) {
 	// body param is interface
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"getRecords": { // fixture index
 			"clientParameter": { // executed template
@@ -4224,7 +4215,6 @@ func TestGenClientParameter_973(t *testing.T) {
 	// header param is UUID, with or without required constraint
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"getResourceRecords": { // fixture index
 			"clientParameter": { // executed template
@@ -4244,7 +4234,6 @@ func TestGenClientParameter_1020(t *testing.T) {
 	// param is File
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"someTest": { // fixture index
 			"clientParameter": { // executed template
@@ -4263,7 +4252,6 @@ func TestGenClientParameter_1339(t *testing.T) {
 	// param is binary
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"postBin": { // fixture index
 			"clientParameter": { // executed template
@@ -4284,7 +4272,6 @@ func TestGenClientParameter_1937(t *testing.T) {
 	// param is binary
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for parameters
 		"getRecords": { // fixture index
 			"serverParameter": { // executed template

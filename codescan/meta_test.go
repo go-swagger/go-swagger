@@ -140,7 +140,6 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 	assert.EqualValues(t, expectedInfoExtensions, doc.Info.Extensions)
 	assert.Equal(t, "localhost", doc.Host)
 	assert.Equal(t, "/v2", doc.BasePath)
-
 }
 
 func verifyInfo(t testing.TB, info *spec.Info) {

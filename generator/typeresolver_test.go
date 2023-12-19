@@ -109,7 +109,6 @@ func TestTypeResolver_AdditionalItems(t *testing.T) {
 }
 
 func TestTypeResolver_BasicTypes(t *testing.T) {
-
 	_, resolver, e := basicTaskListResolver(t)
 	require.NoError(t, e)
 
@@ -210,7 +209,6 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 }
 
 func TestTypeResolver_Refs(t *testing.T) {
-
 	_, resolver, e := basicTaskListResolver(t)
 	require.NoError(t, e)
 
@@ -470,7 +468,6 @@ func TestTypeResolver_TupleTypes(t *testing.T) {
 }
 
 func TestTypeResolver_AnonymousStructs(t *testing.T) {
-
 	_, resolver, err := basicTaskListResolver(t)
 	require.NoError(t, err)
 

@@ -84,7 +84,7 @@ func (f generateFixture) base(t testing.TB, root string) (string, func()) {
 	cwd := testCwd(t)
 
 	base := filepath.Join(cwd, root)
-	require.NoErrorf(t, os.MkdirAll(base, 0700), "error in test creating target dir")
+	require.NoErrorf(t, os.MkdirAll(base, 0o700), "error in test creating target dir")
 
 	generated, err := os.MkdirTemp(base, "generated")
 	require.NoErrorf(t, err, "error in test creating temp dir")
@@ -110,7 +110,7 @@ func (f generateFixture) prepareTarget(t testing.TB, name, base, root string, op
 		opts.Target = filepath.Join(generated, filepath.Base(f.target))
 	}
 
-	require.NoErrorf(t, os.MkdirAll(opts.Target, 0700), "error in test creating target dir")
+	require.NoErrorf(t, os.MkdirAll(opts.Target, 0o700), "error in test creating target dir")
 
 	return clean
 }
@@ -140,7 +140,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 					[]byte(filepath.ToSlash(strings.TrimPrefix(opts.Target, filepath.Dir(cwd)))),
 				)
 
-				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0600))
+				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0o600))
 				opts.ExcludeSpec = false
 			},
 			verify: func(t testing.TB, target string) {
@@ -493,7 +493,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 func addModelsToLocation(t testing.TB, location, file string) {
 	// writes some external model to a file to supplement codegen
 	// (test external types)
-	require.NoError(t, os.MkdirAll(location, 0700))
+	require.NoError(t, os.MkdirAll(location, 0o700))
 
 	require.NoError(t, os.WriteFile(filepath.Join(location, file), []byte(`
 package models

@@ -351,6 +351,7 @@ func initFixture2448() {
 		`if err := validate.MultipleOf("f2", "body", m.F2, 10); err != nil {`,
 	}, todo, noLines, noLines)
 }
+
 func initFixture2400() {
 	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -596,7 +597,7 @@ func initFixture2116() {
 		"Body ObjectWithNullableFalse `json:\"Body,omitempty\"`",
 	}, todo, noLines, noLines)
 
-	flattenRun.AddExpectations("case4_pass_object_nullable_false_overriden_by_ref_sibling.go", []string{
+	flattenRun.AddExpectations("case4_pass_object_nullable_false_overridden_by_ref_sibling.go", []string{
 		"Body *ObjectWithNullableTrue `json:\"Body,omitempty\"`",
 	}, todo, noLines, noLines)
 
@@ -1496,6 +1497,7 @@ func initFixture1479Part() {
 	// load expectations for model: networking_config_endpoints_config.go
 	// NOTE(fredbi): maps are now simple types - this definition disappears
 }
+
 func initFixtureSimpleAllOf() {
 	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
 
@@ -2314,7 +2316,6 @@ func initFixtureSimpleAllOf() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureComplexAllOf() {
@@ -2799,7 +2800,6 @@ func initFixtureComplexAllOf() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureIsNullable() {
@@ -2834,7 +2834,6 @@ func initFixtureIsNullable() {
 		noLines)
 
 	expandRun.AddExpectations("thing_with_nullable_dates.go", flattenRun.ExpectedFor("ThingWithNullableDates").ExpectedLines, todo, noLines, noLines)
-
 }
 
 func initFixtureItching() {
@@ -4720,7 +4719,6 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureTuple() {
@@ -5264,7 +5262,6 @@ func initFixtureTuple() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1198() {
@@ -5287,7 +5284,6 @@ func initFixture1198() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1042() {
@@ -5370,7 +5366,6 @@ func initFixture1042() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1042V2() {
@@ -5457,7 +5452,6 @@ func initFixture1042V2() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture979() {
@@ -5530,7 +5524,6 @@ func initFixture979() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture842() {
@@ -5639,7 +5632,6 @@ func initFixture842() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture607() {
@@ -5905,7 +5897,6 @@ func initFixture607() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1336() {
@@ -6154,7 +6145,6 @@ func initFixture1336() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureErrors() {
@@ -8908,7 +8898,6 @@ func initFixture844Variations() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureMoreAddProps() {
@@ -9331,7 +9320,6 @@ func initFixtureMoreAddProps() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1537() {
@@ -9442,7 +9430,6 @@ func initFixture1537() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1537v2() {
@@ -9545,7 +9532,6 @@ func initFixture1537v2() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture15365() {
@@ -9814,7 +9800,8 @@ func initFixture1548() {
 		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
 	},
 		// not expected
-		[]string{"TODO",
+		[]string{
+			"TODO",
 			"validate.FormatOf(",
 			`return errors.CompositeValidationError(res...`,
 		},
