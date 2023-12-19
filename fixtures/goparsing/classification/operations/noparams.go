@@ -161,14 +161,14 @@ type NoParams struct {
 	// The Category of this model
 	//
 	// required: true
-	// enum: foo,bar,none
+	// enum: ["foo","bar","none"]
 	// default: bar
 	// in: query
 	Category string `json:"category"`
 
 	// Type of this model
 	//
-	// enum: 1,3,5
+	// enum: [1,3,5]
 	// default: 1
 	// in: query
 	Type int `json:"type"`
@@ -176,7 +176,7 @@ type NoParams struct {
 	// This is mix in enum. And actually on output should be valid form where int will be int and
 	// string will also be presented.
 	//
-	// enum: 1,rsq,qaz
+	// enum: [1,"rsq","qaz"]
 	// in: query
 	BadEnum int `json:"bad_enum"`
 
@@ -200,7 +200,7 @@ type NoParams struct {
 	// unique: true
 	// items.minItems: 4
 	// items.maxItems: 9
-	// items.enum: bar1,bar2,bar3
+	// items.enum: ["bar1","bar2","bar3"]
 	// items.default: bar2
 	// items.items.minItems: 5
 	// items.items.maxItems: 8
