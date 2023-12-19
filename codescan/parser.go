@@ -1467,16 +1467,10 @@ func (ss *setOpResponses) Parse(lines []string) error {
 }
 
 func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
-	list := strings.Split(val, ",")
-	interfaceSlice := make([]interface{}, len(list))
-	for i, d := range list {
-		v, err := parseValueFromSchema(d, s)
-		if err != nil {
-			interfaceSlice[i] = d
-			continue
-		}
-
-		interfaceSlice[i] = v
+	var interfaceSlice []interface{}
+	if err := json.Unmarshal([]byte(val), &interfaceSlice); err != nil {
+		// If we can't parse it, just return the string.
+		return []interface{}{val}
 	}
 	return interfaceSlice
 }
