@@ -58,6 +58,9 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 	if err := opts.EnsureDefaults(); err != nil {
 		return err
 	}
+	if opts.Target != "" && opts.Target != "." {
+		output = filepath.Join(opts.Target, output)
+	}
 	MarkdownSectionOpts(opts, output)
 
 	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
