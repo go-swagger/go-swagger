@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"log"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -1466,12 +1467,27 @@ func (ss *setOpResponses) Parse(lines []string) error {
 	return nil
 }
 
+func parseEnumOld(val string, s *spec.SimpleSchema) []interface{} {
+	list := strings.Split(val, ",")
+	interfaceSlice := make([]interface{}, len(list))
+	for i, d := range list {
+		v, err := parseValueFromSchema(d, s)
+		if err != nil {
+			interfaceSlice[i] = d
+			continue
+		}
+
+		interfaceSlice[i] = v
+	}
+	return interfaceSlice
+}
+
 func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
 	// obtain the raw elements of the list to latter process them with the parseValueFromSchema
 	var rawElements []json.RawMessage
 	if err := json.Unmarshal([]byte(val), &rawElements); err != nil {
-		// If we can't parse it, just return the string as a single element
-		return []interface{}{val}
+		log.Print("WARNING: item list for enum is not a valid JSON array, using the old deprecated format")
+		return parseEnumOld(val, s)
 	}
 
 	interfaceSlice := make([]interface{}, len(rawElements))
@@ -1482,9 +1498,6 @@ func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
 		if err != nil {
 			ds = string(d)
 		}
-
-		fmt.Println(string(d), s.TypeName())
-		fmt.Println(ds)
 
 		v, err := parseValueFromSchema(ds, s)
 		if err != nil {
