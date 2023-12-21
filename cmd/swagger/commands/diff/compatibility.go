@@ -41,7 +41,7 @@ func init() {
 		ForRequest: map[SpecChangeCode]Compatibility{
 			AddedRequiredProperty:     Breaking,
 			DeletedProperty:           Breaking,
-			AddedProperty:             Breaking,
+			AddedProperty:             NonBreaking,
 			AddedOptionalParam:        NonBreaking,
 			AddedRequiredParam:        Breaking,
 			DeletedOptionalParam:      NonBreaking,
