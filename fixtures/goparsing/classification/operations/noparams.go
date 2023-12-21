@@ -158,6 +158,14 @@ type NoParams struct {
 	// in: query
 	Created strfmt.DateTime `json:"created"`
 
+	// The Category of this model (old enum format)
+	//
+	// required: true
+	// enum: foo,bar,none
+	// default: bar
+	// in: query
+	CategoryOld string `json:"category_old"`
+
 	// The Category of this model
 	//
 	// required: true
@@ -165,6 +173,13 @@ type NoParams struct {
 	// default: bar
 	// in: query
 	Category string `json:"category"`
+
+	// Type of this model (old enum format)
+	//
+	// enum: 1,3,5
+	// default: 1
+	// in: query
+	TypeOld int `json:"type_old"`
 
 	// Type of this model
 	//
