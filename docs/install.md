@@ -71,6 +71,14 @@ brew tap go-swagger/go-swagger
 brew install go-swagger
 ```
 
+## Install to GOPATH using go install
+
+If you have `go` version `1.16` or greater installed the binary  can be installed by running:
+
+```
+go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+```
+
 ### Static binary
 
 You can download a binary for your platform from github:
