@@ -1,9 +1,11 @@
 linters-settings:
   depguard:
-    list-type: blacklist
-    include-go-root: true
-    packages-with-error-message:
-      - github.com/pkg/errors: "Use errors or fmt instead of github.com/pkg/errors"
+    rules:
+      main:
+        list-mode: lax
+        deny:
+          - pkg: github.com/pkg/errors
+            desc: "Use errors or fmt instead of github.com/pkg/errors"
   dupl:
     threshold: 200
   goconst:
