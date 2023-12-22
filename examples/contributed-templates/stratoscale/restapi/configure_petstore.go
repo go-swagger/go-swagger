@@ -23,7 +23,7 @@ type contextKey string
 
 const AuthKey contextKey = "Auth"
 
-//go:generate mockery --name PetAPI -inpackage
+//go:generate mockery -name PetAPI -inpkg
 
 /* PetAPI  */
 type PetAPI interface {
@@ -46,7 +46,7 @@ type PetAPI interface {
 	PetUploadImage(ctx context.Context, params pet.PetUploadImageParams) middleware.Responder
 }
 
-//go:generate mockery --name StoreAPI -inpackage
+//go:generate mockery -name StoreAPI -inpkg
 
 /* StoreAPI  */
 type StoreAPI interface {
