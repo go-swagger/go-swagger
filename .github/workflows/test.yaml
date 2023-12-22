@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
-          go-version: "^1"
+          go-version: stable
           check-latest: true
           cache: true
       - name: golangci-lint
@@ -33,13 +33,13 @@ jobs:
           args: --verbose
           only-new-issues: true
           skip-cache: true
-          version: v1.52.2
+          version: latest
 
   test:
     needs: [lint]
     strategy:
       matrix:
-        go: ["1.19","1.20"]
+        go: ['1.19','oldstable','stable']
         os: [ubuntu-latest] # TODO: add macos-latest and windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -47,9 +47,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
           cache: true
 
       - name: Install Tools
@@ -60,12 +61,14 @@ jobs:
         run: ./hack/build-docker.sh --github-action
 
       - name: Run unit tests with code coverage
-        run: gotestsum --junitfile ./go-test-report.xml -- -p 1 -timeout=20m -coverprofile=coverage.txt -covermode=atomic ./...
+        run: gotestsum --junitfile "./go-test-report-${{ matrix.os }}-${{ matrix.go }}.xml" -- -p 1 -timeout=20m -coverprofile="coverage-${{ matrix.os }}-${{ matrix.go }}.txt" -covermode=atomic ./...
 
       - name: Publish To Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./go-test-report.xml
+          files: './go-test-report-${{ matrix.os }}-${{ matrix.go }}.xml'
+          flags: '${{ matrix.go }}'
+          os: '${{ matrix.os }}'
           fail_ci_if_error: true
           verbose: true
 
@@ -73,7 +76,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ["1.19","1.20"]
+        go: ['1.19','oldstable','stable']
         os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -81,9 +84,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
           cache: true
 
       - name: Install Tools
@@ -105,7 +109,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ["1.19","1.20"]
+        go: ['1.19','stable']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -113,9 +117,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
           cache: true
 
       - name: Install Tools
@@ -133,7 +138,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ["1.19","1.20"]
+        go: ['1.19','stable']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -141,9 +146,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
           cache: true
 
       - name: Install Tools
@@ -217,9 +223,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
-          go-version: "^1"
+          go-version: 'stable'
           check-latest: true
           cache: true
 
