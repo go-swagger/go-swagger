@@ -1,0 +1,129 @@
+---
+
+paths:
+
+responses:
+  listAuthenticators:
+    description: A list of authenticators
+    schema:
+      $ref: '#/definitions/listAuthenticatorsEnvelope'
+  detailAuthenticator:
+    description: A singular authenticator resource
+    schema:
+      $ref: '#/definitions/detailAuthenticatorEnvelope'
+
+definitions:
+  listAuthenticatorsEnvelope:
+    type: object
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/authenticatorList'
+  detailAuthenticatorEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/authenticatorDetail'
+  authenticatorCreate:
+    description: Creates an authenticator for a specific identity which can be used for API authentication
+    type: object
+    required:
+      - method
+      - identityId
+    properties:
+      method:
+        type: string
+        description: The type of authenticator to create; which will dictate which properties on this object are required.
+      identityId:
+        type: string
+        description: The id of an existing identity that will be assigned this authenticator
+      tags:
+        $ref: 'base-entity.yml#/definitions/tags'
+      username:
+        type: string
+        description: The username that the identity will login with. Used only for method='updb'
+      password:
+        type: string
+        description: The password the identity will login with. Used only for method='updb'
+      certPem:
+        description: The client certificate the identity will login with. Used only for method='cert'
+        type: string
+  authenticatorList:
+    description: An array of authenticator resources
+    type: array
+    items:
+      $ref: '#/definitions/authenticatorDetail'
+  authenticatorDetail:
+    description: A singular authenticator resource
+    type: object
+    allOf:
+      - $ref: 'base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - method
+          - identityId
+          - identity
+        properties:
+          method:
+            type: string
+          identityId:
+            type: string
+          identity:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          certPem:
+            type: string
+          fingerprint:
+            type: string
+          username:
+            type: string
+  authenticatorUpdate:
+    description: All of the fields on an authenticator that will be updated
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      username:
+        $ref: 'authenticate.yml#/definitions/username'
+      password:
+        $ref: 'authenticate.yml#/definitions/password'
+      tags:
+        $ref: 'base-entity.yml#/definitions/tags'
+  authenticatorPatch:
+    description: All of the fields on an authenticator that may be updated
+    type: object
+    properties:
+      username:
+        $ref: 'authenticate.yml#/definitions/username-nullable'
+      password:
+        $ref: 'authenticate.yml#/definitions/password-nullable'
+      tags:
+        $ref: 'base-entity.yml#/definitions/tags'
+  authenticatorUpdateWithCurrent:
+    description: All of the fields on an authenticator that will be updated
+    type: object
+    allOf:
+      - $ref: '#/definitions/authenticatorUpdate'
+      - type: object
+        required:
+          - currentPassword
+        properties:
+          currentPassword:
+            $ref: 'authenticate.yml#/definitions/password'
+  authenticatorPatchWithCurrent:
+    description: All of the fields on an authenticator that may be updated
+    type: object
+    allOf:
+      - $ref: '#/definitions/authenticatorPatch'
+      - type: object
+        required:
+          - currentPassword
+        properties:
+          currentPassword:
+            $ref: 'authenticate.yml#/definitions/password'

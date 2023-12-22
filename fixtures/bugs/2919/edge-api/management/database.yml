@@ -1,0 +1,123 @@
+---
+paths:
+  database-snapshot:
+    post:
+      summary: Create a new database snapshot
+      description: Create a new database snapshot. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Database
+      operationId: createDatabaseSnapshot
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '429':
+          $ref: '../shared/standard-responses.yml#/responses/rateLimitedResponse'
+  database-check-data-integrity:
+    post:
+      summary: Starts a data integrity scan on the datastore
+      description: Starts a data integrity scan on the datastore. Requires admin access. Only once instance may run at a time, including runs of fixDataIntegrity.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Database
+      operationId: checkDataIntegrity
+      responses:
+        '202':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '429':
+          $ref: '../shared/standard-responses.yml#/responses/rateLimitedResponse'
+  database-fix-data-integrity:
+    post:
+      summary: Runs a data integrity scan on the datastore, attempts to fix any issues it can and returns any found issues
+      description: Runs a data integrity scan on the datastore, attempts to fix any issues it can, and returns any found issues. Requires admin access. Only once instance may run at a time, including runs of checkDataIntegrity.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Database
+      operationId: fixDataIntegrity
+      responses:
+        '202':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '429':
+          $ref: '../shared/standard-responses.yml#/responses/rateLimitedResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  database-data-integrity-results:
+    get:
+      summary: Returns any results found from in-progress integrity checks
+      description: Returns any results found from in-progress integrity checks. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Database
+      operationId: dataIntegrityResults
+      responses:
+        '200':
+          $ref: '#/responses/dataIntegrityCheckResult'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  dataIntegrityCheckResult:
+    description: A list of data integrity issues found
+    schema:
+      $ref: '#/definitions/dataIntegrityCheckResultEnvelope'
+
+definitions:
+  dataIntegrityCheckResultEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/dataIntegrityCheckDetails'
+  dataIntegrityCheckDetails:
+    type: object
+    required:
+      - inProgress
+      - fixingErrors
+      - tooManyErrors
+      - startTime
+      - endTime
+      - error
+      - results
+    properties:
+      inProgress:
+        type: boolean
+      startTime:
+        type: string
+        format: date-time
+      endTime:
+        type: string
+        format: date-time
+      fixingErrors:
+        type: boolean
+      error:
+        type: string
+      tooManyErrors:
+        type: boolean
+      results:
+        $ref: '#/definitions/dataIntegrityCheckDetailList'
+  dataIntegrityCheckDetailList:
+    type: array
+    items:
+      $ref: '#/definitions/dataIntegrityCheckDetail'
+  dataIntegrityCheckDetail:
+    type: object
+    required:
+      - description
+      - fixed
+    properties:
+      description:
+        type: string
+      fixed:
+        type: boolean

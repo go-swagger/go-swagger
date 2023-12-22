@@ -75,3 +75,15 @@ func TestCmd_Flatten_Error(t *testing.T) {
 	v := &FlattenSpec{}
 	testValidRefs(t, v)
 }
+
+func TestCmd_Flatten_Issue2919(t *testing.T) {
+	specDoc := filepath.Join(fixtureBase, "bugs", "2919", "edge-api", "client.yml")
+	outDir, output := getOutput(t, specDoc, "flatten", "fixture-2919-flat-minimal.yml")
+	defer os.RemoveAll(outDir)
+	v := &FlattenSpec{
+		Format:  "yaml",
+		Compact: true,
+		Output:  flags.Filename(output),
+	}
+	testProduceOutput(t, v, specDoc, output)
+}

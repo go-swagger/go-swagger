@@ -1,0 +1,239 @@
+---
+paths:
+  enrollments:
+    get:
+      summary: List outstanding enrollments
+      description: |
+        Retrieves a list of outstanding enrollments; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Enrollment
+      operationId: listEnrollments
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listEnrollments'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create an outstanding enrollment for an identity
+      description: >-
+        Creates a new OTT, OTTCA, or UPDB enrollment for a specific identity. If an enrollment of the same type
+        is already outstanding the request will fail with a 409 conflict. If desired, an existing enrollment
+        can be refreshed by `enrollments/:id/refresh` or deleted.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Enrollment
+      operationId: createEnrollment
+      parameters:
+        - name: enrollment
+          in: body
+          required: true
+          description: An enrollment to create
+          schema:
+            $ref: '#/definitions/enrollmentCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/conflictResponse'
+  enrollments-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves an outstanding enrollment
+      description: Retrieves a single outstanding enrollment by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Enrollment
+      operationId: detailEnrollment
+      responses:
+        '200':
+          $ref: '#/responses/detailEnrollment'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an outstanding enrollment
+      description: Delete an outstanding enrollment by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Enrollment
+      operationId: deleteEnrollment
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  enrollments-id-refresh:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Refreshes an enrollment record's expiration window
+      description: >-
+          For expired or unexpired enrollments, reset the expiration window. A new JWT will be generated
+          and must be used for the enrollment.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Enrollment
+      operationId: refreshEnrollment
+      parameters:
+        - name: refresh
+          in: body
+          required: true
+          description: An enrollment refresh request
+          schema:
+            $ref: '#/definitions/enrollmentRefresh'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  listEnrollments:
+    description: A list of enrollments
+    schema:
+      $ref: '#/definitions/listEnrollmentsEnvelope'
+  detailEnrollment:
+    description: A singular enrollment resource
+    schema:
+      $ref: '#/definitions/detailEnrollmentEnvelope'
+
+definitions:
+  listEnrollmentsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/enrollmentList'
+  detailEnrollmentEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/enrollmentDetail'
+  enrollmentList:
+    description: An array of enrollment resources
+    type: array
+    items:
+      $ref: '#/definitions/enrollmentDetail'
+  enrollmentDetail:
+    type: object
+    description: |
+      An enrollment object. Enrollments are tied to identities and potentially a CA. Depending on the
+      method, different fields are utilized. For example ottca enrollments use the `ca` field and updb enrollments
+      use the username field, but not vice versa.
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - token
+          - method
+          - expiresAt
+          - details
+        properties:
+          token:
+            type: string
+          method:
+            type: string
+          expiresAt:
+            type: string
+            format: date-time
+          identityId:
+            type: string
+          caId:
+            type: string
+            x-nullable: true
+          identity:
+            $ref: '../shared/base-entity.yml#/definitions/entityRef'
+          edgeRouterId:
+            type: string
+          edgeRouter:
+            $ref: '../shared/base-entity.yml#/definitions/entityRef'
+          transitRouterId:
+            type: string
+          transitRouter:
+            $ref: '../shared/base-entity.yml#/definitions/entityRef'
+          username:
+            type: string
+          jwt:
+            type: string
+    example:
+      id: 624fa53f-7629-4a7a-9e38-c1f4ce322c1d
+      createdAt: '0001-01-01T00:00:00Z'
+      updatedAt: '0001-01-01T00:00:00Z'
+      _links:
+        self:
+          href: './enrollments/624fa53f-7629-4a7a-9e38-c1f4ce322c1d'
+      tags:
+      token: 1e727c8f-07e4-4a1d-a8b0-da0c7a01c6e1
+      method: updb
+      expiresAt: '2020-03-11T20:20:24.0055543Z'
+      identity:
+        urlName: identities
+        id: f047ac96-dc3a-408a-a6f2-0ba487c08ef9
+        name: updb--0f245140-7f2e-4326-badf-6aba55e52475
+        _links:
+          self:
+            href: './identities/f047ac96-dc3a-408a-a6f2-0ba487c08ef9'
+      ca:
+      username: example-username
+  enrollmentCreate:
+    type: object
+    required:
+      - method
+      - expiresAt
+      - identityId
+    properties:
+      method:
+        type: string
+        enum:
+          - ott
+          - ottca
+          - updb
+      expiresAt:
+        type: string
+        format: date-time
+      identityId:
+        type: string
+      caId:
+        type: string
+        x-nullable: true
+      username:
+        type: string
+        x-nullable: true
+  enrollmentRefresh:
+    type: object
+    required:
+      - expiresAt
+    properties:
+      expiresAt:
+        type: string
+        format: date-time

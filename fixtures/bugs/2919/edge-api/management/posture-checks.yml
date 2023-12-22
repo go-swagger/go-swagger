@@ -1,0 +1,631 @@
+---
+paths:
+  posture-checks:
+    get:
+      summary: List a subset of posture checks
+      description: |
+        Retrieves a list of posture checks
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: listPostureChecks
+      produces:
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+        - $ref: '../shared/parameters.yml#/roleFilter'
+        - $ref: '../shared/parameters.yml#/roleSemantic'
+      responses:
+        '200':
+          $ref: '#/responses/listPostureChecks'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Creates a Posture Checks
+      description: Creates a Posture Checks
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: createPostureCheck
+      parameters:
+        - name: postureCheck
+          in: body
+          required: true
+          description: A Posture Check to create
+          schema:
+            $ref: '#/definitions/postureCheckCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  posture-checks-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single Posture Checks
+      description: Retrieves a single Posture Checks by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: detailPostureCheck
+      responses:
+        '200':
+          $ref: '#/responses/detailPostureCheck'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a Posture Checks
+      description: Update all fields on a Posture Checks by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: updatePostureCheck
+      parameters:
+        - name: postureCheck
+          in: body
+          required: true
+          description: A Posture Check update object
+          schema:
+            $ref: '#/definitions/postureCheckUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a Posture Checks
+      description: Update only the supplied fields on a Posture Checks by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: patchPostureCheck
+      parameters:
+        - name: postureCheck
+          in: body
+          required: true
+          description: A Posture Check patch object
+          schema:
+            $ref: '#/definitions/postureCheckPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Deletes an Posture Checks
+      description: Deletes and Posture Checks by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: deletePostureCheck
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '403':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listPostureChecks:
+    description: A list of posture checks
+    schema:
+      $ref: '#/definitions/listPostureCheckEnvelope'
+  detailPostureCheck:
+    description: Retrieves a singular posture check by id
+    schema:
+      $ref: '#/definitions/detailPostureCheckEnvelope'
+
+definitions:
+  listPostureCheckEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        #can't use postureCheckList as it will cause issues w/ the code generation as of 3/2021
+        type: array
+        items:
+          $ref: '#/definitions/postureCheckDetail'
+  detailPostureCheckEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/postureCheckDetail'
+  operatingSystem:
+    type: object
+    required:
+      - type
+      - versions
+    properties:
+      type:
+        $ref: '../shared/posture-checks.yml#/definitions/osType'
+      versions:
+        type: array
+        items:
+          type: string
+  postureCheckDetail:
+    type: object
+    discriminator: typeId
+    # base is duped here due to a bug in go-swagger that will try to embed a struct in an interface
+    # see https://github.com/go-swagger/go-swagger/issues/2413
+    required:
+      - name
+      - typeId
+      - version
+      - roleAttributes
+      - id
+      - createdAt
+      - updatedAt
+      - _links
+      - tags
+    properties:
+      name:
+        type: string
+      typeId:
+        type: string
+      version:
+        type: integer
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      id:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      _links:
+        $ref: '../shared/base-entity.yml#/definitions/links'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  postureCheckCreate:
+    type: object
+    discriminator: typeId
+    required:
+      - name
+      - typeId
+    properties:
+      name:
+        type: string
+      typeId:
+        $ref: '../shared/posture-checks.yml#/definitions/postureCheckType'
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  postureCheckUpdate:
+    type: object
+    discriminator: typeId
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      typeId:
+        $ref: '../shared/posture-checks.yml#/definitions/postureCheckType'
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  postureCheckPatch:
+    type: object
+    discriminator: typeId
+    required:
+      - typeId
+    properties:
+      name:
+        type: string
+      typeId:
+        $ref: '../shared/posture-checks.yml#/definitions/postureCheckType'
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+
+
+  ###################################################################
+  # Posture Check Operating System
+  ###################################################################
+  postureCheckOperatingSystemDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - type: object
+        required:
+          - operatingSystems
+        properties:
+          operatingSystems:
+            type: array
+            items:
+              $ref: '#/definitions/operatingSystem'
+    x-class: "OS"
+
+  postureCheckOperatingSystemCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - type: object
+        required:
+          - operatingSystems
+        properties:
+          operatingSystems:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/operatingSystem'
+    x-class: "OS"
+  postureCheckOperatingSystemUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - type: object
+        required:
+          - operatingSystems
+        properties:
+          operatingSystems:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/operatingSystem'
+    x-class: "OS"
+  postureCheckOperatingSystemPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - type: object
+        properties:
+          operatingSystems:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/operatingSystem'
+    x-class: "OS"
+
+  ###################################################################
+  # Posture Check Domain
+  ###################################################################
+  postureCheckDomainDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - type: object
+        required:
+          - domains
+        properties:
+          domains:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "DOMAIN"
+
+  postureCheckDomainCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - type: object
+        required:
+          - domains
+        properties:
+          domains:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "DOMAIN"
+
+  postureCheckDomainUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - type: object
+        required:
+          - domains
+        properties:
+          domains:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "DOMAIN"
+
+  postureCheckDomainPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - type: object
+        properties:
+          domains:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "DOMAIN"
+
+  ###################################################################
+  # Posture Check MAC Address
+  ###################################################################
+  postureCheckMacAddressDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - type: object
+        required:
+          - macAddresses
+        properties:
+          macAddresses:
+            type: array
+            minItems: 1
+            items:
+              type: string
+
+    x-class: "MAC"
+
+  postureCheckMacAddressCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - type: object
+        required:
+          - macAddresses
+        properties:
+          macAddresses:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "MAC"
+
+  postureCheckMacAddressUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - type: object
+        required:
+          - macAddresses
+        properties:
+          macAddresses:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "MAC"
+
+  postureCheckMacAddressPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - type: object
+        properties:
+          macAddresses:
+            type: array
+            minItems: 1
+            items:
+              type: string
+    x-class: "MAC"
+
+  ###################################################################
+  # Posture Check Process
+  ###################################################################
+  process:
+    type: object
+    required:
+      - osType
+      - path
+    properties:
+      osType:
+        $ref: '../shared/posture-checks.yml#/definitions/osType'
+      path:
+        type: string
+      hashes:
+        type: array
+        items:
+          type: string
+      signerFingerprint:
+        type: string
+
+  postureCheckProcessDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - type: object
+        required:
+          - process
+        properties:
+          process:
+            $ref: '#/definitions/process'
+    x-class: "PROCESS"
+
+  postureCheckProcessCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - type: object
+        required:
+          - process
+        properties:
+          process:
+            $ref: '#/definitions/process'
+    x-class: "PROCESS"
+
+  postureCheckProcessUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - type: object
+        required:
+          - process
+        properties:
+          process:
+            $ref: '#/definitions/process'
+    x-class: "PROCESS"
+
+  postureCheckProcessPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - type: object
+        properties:
+          process:
+            $ref: '#/definitions/process'
+    x-class: "PROCESS"
+
+  ###################################################################
+  # Posture Check Process Multi
+  ###################################################################
+  processMulti:
+    type: object
+    required:
+      - osType
+      - path
+    properties:
+      osType:
+        $ref: '../shared/posture-checks.yml#/definitions/osType'
+      path:
+        type: string
+      hashes:
+        type: array
+        items:
+          type: string
+      signerFingerprints:
+        type: array
+        items:
+          type: string
+
+  postureCheckProcessMultiDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - type: object
+        required:
+          - semantic
+          - processes
+        properties:
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          processes:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/processMulti'
+    x-class: "PROCESS_MULTI"
+
+  postureCheckProcessMultiCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - type: object
+        required:
+          - semantic
+          - processes
+        properties:
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          processes:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/processMulti'
+    x-class: "PROCESS_MULTI"
+
+  postureCheckProcessMultiUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - type: object
+        required:
+          - semantic
+          - processes
+        properties:
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          processes:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/processMulti'
+    x-class: "PROCESS_MULTI"
+
+  postureCheckProcessMultiPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - type: object
+        properties:
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          processes:
+            type: array
+            minItems: 1
+            items:
+              $ref: '#/definitions/processMulti'
+    x-class: "PROCESS_MULTI"
+
+  ###################################################################
+  # Posture Check MFA
+  ###################################################################
+  postureCheckMfaProperties:
+    type: object
+    properties:
+      timeoutSeconds:
+        type: integer
+      promptOnWake:
+        type: boolean
+      promptOnUnlock:
+        type: boolean
+      ignoreLegacyEndpoints:
+        type: boolean
+
+  postureCheckMfaPropertiesPatch:
+    type: object
+    properties:
+      timeoutSeconds:
+        type: integer
+        x-nullable: true
+      promptOnWake:
+        type: boolean
+        x-nullable: true
+      promptOnUnlock:
+        type: boolean
+        x-nullable: true
+      ignoreLegacyEndpoints:
+        type: boolean
+        x-nullable: true
+
+  postureCheckMfaDetail:
+    allOf:
+      - $ref: '#/definitions/postureCheckDetail'
+      - $ref: '#/definitions/postureCheckMfaProperties'
+    x-class: "MFA"
+
+  postureCheckMfaCreate:
+    allOf:
+      - $ref: '#/definitions/postureCheckCreate'
+      - $ref: '#/definitions/postureCheckMfaProperties'
+    x-class: "MFA"
+
+
+  postureCheckMfaUpdate:
+    allOf:
+      - $ref: '#/definitions/postureCheckUpdate'
+      - $ref: '#/definitions/postureCheckMfaProperties'
+    x-class: "MFA"
+
+  postureCheckMfaPatch:
+    allOf:
+      - $ref: '#/definitions/postureCheckPatch'
+      - $ref: '#/definitions/postureCheckMfaPropertiesPatch'
+    x-class: "MFA"

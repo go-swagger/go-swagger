@@ -1,0 +1,270 @@
+---
+paths:
+  service-edge-router-policies:
+    get:
+      summary: List service edge router policies
+      description: |
+        Retrieves a list of service edge router policy resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: listServiceEdgeRouterPolicies
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listServiceEdgeRouterPolicies'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create a service edge router policy resource
+      description: Create a service edge router policy resource. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: createServiceEdgeRouterPolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service edge router policy to create
+          schema:
+            $ref: '#/definitions/serviceEdgeRouterPolicyCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  service-edge-router-policies-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single service edge policy
+      description: Retrieves a single service edge policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: detailServiceEdgeRouterPolicy
+      responses:
+        '200':
+          $ref: '#/responses/detailServiceEdgePolicy'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a service edge policy
+      description: Update all fields on a service edge policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: updateServiceEdgeRouterPolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service edge router policy update object
+          schema:
+            $ref: '#/definitions/serviceEdgeRouterPolicyUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a service edge policy
+      description: Update the supplied fields on a service edge policy. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: patchServiceEdgeRouterPolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service edge router policy patch object
+          schema:
+            $ref: '#/definitions/serviceEdgeRouterPolicyPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a service edge policy
+      description: Delete a service edge policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: deleteServiceEdgeRouterPolicy
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  service-edge-router-policies-id-edge-routers:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the edge routers that a service edge router policy applies to
+      description: List the edge routers that a service edge router policy applies to
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: listServiceEdgeRouterPolicyEdgeRouters
+      responses:
+        '200':
+          $ref: 'edge-routers.yml#/responses/listEdgeRouters'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  service-edge-router-policies-id-services:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the services that a service edge router policy applies to
+      description: List the services that a service edge router policy applies to
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Edge Router Policy
+      operationId: listServiceEdgeRouterPolicyServices
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/listServices'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listServiceEdgeRouterPolicies:
+    description: A list of service edge router policies
+    schema:
+      $ref: '#/definitions/listServiceEdgeRouterPoliciesEnvelope'
+  detailServiceEdgePolicy:
+    description: A single service edge router policy
+    schema:
+      $ref: '#/definitions/detailServiceEdgePolicyEnvelope'
+
+definitions:
+  listServiceEdgeRouterPoliciesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/serviceEdgeRouterPolicyList'
+  detailServiceEdgePolicyEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/serviceEdgeRouterPolicyDetail'
+  serviceEdgeRouterPolicyList:
+    type: array
+    items:
+      $ref: '#/definitions/serviceEdgeRouterPolicyDetail'
+  serviceEdgeRouterPolicyDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - semantic
+          - edgeRouterRoles
+          - edgeRouterRolesDisplay
+          - serviceRoles
+          - serviceRolesDisplay
+        properties:
+          name:
+            type: string
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          edgeRouterRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          edgeRouterRolesDisplay:
+            $ref: '../shared/base-entity.yml#/definitions/namedRoles'
+          serviceRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          serviceRolesDisplay:
+            $ref: '../shared/base-entity.yml#/definitions/namedRoles'
+  serviceEdgeRouterPolicyCreate:
+    type: object
+    required:
+      - name
+      - semantic
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      edgeRouterRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+  serviceEdgeRouterPolicyUpdate:
+    type: object
+    required:
+      - name
+      - semantic
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      edgeRouterRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+  serviceEdgeRouterPolicyPatch:
+    type: object
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      edgeRouterRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'

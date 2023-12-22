@@ -1,0 +1,327 @@
+---
+paths:
+  service-policies:
+    get:
+      summary: List service policies
+      description: |
+        Retrieves a list of service policy resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: listServicePolicies
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listServicePolicies'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create a service policy resource
+      description: Create a service policy resource. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: createServicePolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service policy to create
+          schema:
+            $ref: '#/definitions/servicePolicyCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  service-policies-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single service policy
+      description: Retrieves a single service policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: detailServicePolicy
+      responses:
+        '200':
+          $ref: '#/responses/detailServicePolicy'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a service policy
+      description: Update all fields on a service policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: updateServicePolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service policy update object
+          schema:
+            $ref: '#/definitions/servicePolicyUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a service policy
+      description: Update the supplied fields on a service policy. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: patchServicePolicy
+      parameters:
+        - name: policy
+          in: body
+          required: true
+          description: A service policy patch object
+          schema:
+            $ref: '#/definitions/servicePolicyPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a service policy
+      description: Delete a service policy by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: deleteServicePolicy
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  service-policies-id-identities:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List identities a service policy affects
+      description: |
+        Retrieves a list of identity resources that are affected by a service policy; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: listServicePolicyIdentities
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'identities.yml#/responses/listIdentities'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+
+  service-policies-id-services:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List services a service policy affects
+      description: |
+        Retrieves a list of service resources that are affected by a service policy; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: listServicePolicyServices
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/listServices'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+  service-policies-id-posture-checks:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List posture check a service policy includes
+      description: |
+        Retrieves a list of posture check resources that are affected by a service policy; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service Policy
+      operationId: listServicePolicyPostureChecks
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'posture-checks.yml#/responses/listPostureChecks'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+
+responses:
+  listServicePolicies:
+    description: A list of service policies
+    schema:
+      $ref: '#/definitions/listServicePoliciesEnvelope'
+  detailServicePolicy:
+    description: A single service policy
+    schema:
+      $ref: '#/definitions/detailServicePolicyEnvelop'
+
+definitions:
+  listServicePoliciesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/servicePolicyList'
+  detailServicePolicyEnvelop:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/servicePolicyDetail'
+  servicePolicyList:
+    type: array
+    items:
+      $ref: '#/definitions/servicePolicyDetail'
+  servicePolicyDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - type
+          - semantic
+          - serviceRoles
+          - serviceRolesDisplay
+          - identityRoles
+          - identityRolesDisplay
+          - postureCheckRoles
+          - postureCheckRolesDisplay
+        properties:
+          name:
+            type: string
+          type:
+            $ref: '../shared/base-entity.yml#/definitions/dialBind'
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          serviceRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          serviceRolesDisplay:
+            $ref: '../shared/base-entity.yml#/definitions/namedRoles'
+          identityRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          identityRolesDisplay:
+            $ref: '../shared/base-entity.yml#/definitions/namedRoles'
+          postureCheckRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          postureCheckRolesDisplay:
+            $ref: '../shared/base-entity.yml#/definitions/namedRoles'
+  servicePolicyCreate:
+    type: object
+    required:
+      - name
+      - type
+      - semantic
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      type:
+        $ref: '../shared/base-entity.yml#/definitions/dialBind'
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      postureCheckRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+  servicePolicyUpdate:
+    type: object
+    required:
+      - name
+      - type
+      - semantic
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      type:
+        $ref: '../shared/base-entity.yml#/definitions/dialBind'
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      postureCheckRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+  servicePolicyPatch:
+    type: object
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+      type:
+        $ref: '../shared/base-entity.yml#/definitions/dialBind'
+      semantic:
+        $ref: '../shared/base-entity.yml#/definitions/semantic'
+      serviceRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      postureCheckRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'

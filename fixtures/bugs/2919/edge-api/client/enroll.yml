@@ -1,0 +1,201 @@
+---
+paths:
+  enroll:
+    parameters:
+      - $ref: '../shared/parameters.yml#/token-optional'
+    post:
+      summary: Legacy enrollment endpoint
+      description: endpoint defers to the logic in the more specific `enroll/*` endpoints
+      operationId: enroll
+      tags:
+        - Enroll
+      consumes:
+        - application/pkcs10
+        - application/json
+        - application/x-pem-file
+        - text/plain
+      produces:
+        #default to PEM for older clients that do not properly set/inspect accept/content-type headers
+        - application/x-pem-file
+        - application/json
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+  enroll-ca:
+    post:
+      summary: Enroll an identity with a pre-exchanged certificate
+      description: |
+        For CA auto enrollment, an identity is not created beforehand.
+        Instead one will be created during enrollment. The client will present a client certificate that is signed by a
+        Certificate Authority that has been added and verified (See POST /cas and POST /cas/{id}/verify).
+
+        During this process no CSRs are requires as the client should already be in possession of a valid certificate.
+      operationId: enrollCa
+      tags:
+        - Enroll
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+  enroll-ott:
+    parameters:
+      - $ref: '../shared/parameters.yml#/token'
+    post:
+      summary: Enroll an identity via one-time-token
+      description: |
+        Enroll an identity via a one-time-token which is supplied via a query string parameter. This enrollment method
+        expects a PEM encoded CSRs to be provided for fulfillment. It is up to the enrolling identity to manage the
+        private key backing the CSR request.
+      operationId: enrollOtt
+      tags:
+        - Enroll
+      consumes:
+        - application/pkcs10
+      produces:
+        - application/x-x509-user-cert
+      responses:
+        '200':
+          $ref: '#/responses/zitiSignedCert'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+  enroll-ottca:
+    parameters:
+      - $ref: '../shared/parameters.yml#/token'
+    post:
+      summary: Enroll an identity via one-time-token with a pre-exchanged client certificate
+      description: |
+        Enroll an identity via a one-time-token that also requires a pre-exchanged client certificate to match a
+        Certificate Authority that has been added and verified (See POST /cas and POST /cas{id}/verify). The client
+        must present a client certificate signed by CA associated with the enrollment. This enrollment is similar to
+        CA auto enrollment except that is required the identity to be pre-created.
+
+        As the client certificate has been pre-exchanged there is no CSR input to this enrollment method.
+      operationId: enrollOttCa
+      tags:
+        - Enroll
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+  enroll-updb:
+    parameters:
+      - $ref: '../shared/parameters.yml#/token'
+    post:
+      summary: Enroll an identity via one-time-token
+      description: |
+        Enrolls an identity via a one-time-token to establish an initial username and password combination
+      operationId: ernollUpdb
+      tags:
+        - Enroll
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+  enroll-erott:
+    parameters:
+      - $ref: '../shared/parameters.yml#/token'
+    post:
+      summary: Enroll an edge-router
+      description: |
+        Enrolls an edge-router via a one-time-token to establish a certificate based identity.
+      operationId: enrollErOtt
+      tags:
+        - Enroll
+      responses:
+        '200':
+          $ref: '#/responses/erottResponse'
+  enroll-extend-router:
+    post:
+      summary: Extend the life of a currently enrolled router's certificates
+      description: |
+        Allows a router to extend its certificates' expiration date by
+        using its current and valid client certificate to submit a CSR. This CSR may
+        be passed in using a new private key, thus allowing private key rotation or swapping.
+
+        After completion any new connections must be made with certificates returned from a 200 OK
+        response. The previous client certificate is rendered invalid for use with the controller even if it
+        has not expired.
+
+        This request must be made using the existing, valid, client certificate.
+      operationId: extendRouterEnrollment
+      parameters:
+        - name: routerExtendEnrollmentRequest
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/routerExtendEnrollmentRequest'
+      tags:
+        - Enroll
+        - Extend Enrollment
+      responses:
+        '200':
+          $ref: '#/responses/routerExtendEnrollmentResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  erottResponse:
+    description: A response containing the edge routers signed certificates (server chain, server cert, CAs).
+    schema:
+      $ref: '#/definitions/enrollmentCertsEnvelope'
+  routerExtendEnrollmentResponse:
+    description: A response containg the edge routers new signed certificates (server chain, server cert, CAs).
+    schema:
+      $ref: '#/definitions/enrollmentCertsEnvelope'
+  zitiSignedCert:
+    description: A PEM encoded certificate signed by the internal Ziti CA
+    schema:
+      type: string
+    examples:
+      application/x-x509-user-cert: |
+        -----BEGIN CERTIFICATE-----
+        MIICzDCCAlGgAwIBAgIRAPkVg1jVKqnNGFpSB3lPbaIwCgYIKoZIzj0EAwIwXjEL
+        MAkGA1UEBhMCVVMxCzAJBgNVBAgMAk5DMRMwEQYDVQQKDApOZXRGb3VuZHJ5MS0w
+        KwYDVQQDDCROZXRGb3VuZHJ5IFppdGkgRXh0ZXJuYWwgQVBJIFJvb3QgQ0EwHhcN
+        MTgxMTE1MTI1NzE3WhcNMTkxMTI1MTI1NzE3WjBrMQswCQYDVQQGEwJVUzELMAkG
+        A1UECAwCTkMxEjAQBgNVBAcMCUNoYXJsb3R0ZTETMBEGA1UECgwKTmV0Rm91bmRy
+        eTEPMA0GA1UECwwGQWR2RGV2MRUwEwYDVQQDDAxaaXRpQ2xpZW50MDEwdjAQBgcq
+        hkjOPQIBBgUrgQQAIgNiAATTl2ft+/K9RvDgki9gSr9udNcV2bxD4LrWEdCdXNzF
+        iVUiEcEte9z/M0JRt8lgo17OjFvS+ecrAmLtIZNmQnH3+9YeafjeNPpvQsMKxlTN
+        MnU7Hka11GHc6swQZSyHvlKjgcUwgcIwCQYDVR0TBAIwADARBglghkgBhvhCAQEE
+        BAMCBaAwMwYJYIZIAYb4QgENBCYWJE9wZW5TU0wgR2VuZXJhdGVkIENsaWVudCBD
+        ZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUtx+Tej6lSYdjb8Jbc2QuvoEsI/swHwYDVR0j
+        BBgwFoAUcdTlRrnP43ZbQ3PGAbZMPE26+H4wDgYDVR0PAQH/BAQDAgXgMB0GA1Ud
+        JQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAKBggqhkjOPQQDAgNpADBmAjEAuXDS
+        H7KKMr+la+Yuh8d8Q9cLtXzdS0j6a8e7iOyPJmdWq2WuzNdbCfAfLgKXuxhSAjEA
+        sadZrXl1OBv11RGAKdYBIyRmfYUotCFAtCNKcfgBUxci0TDaKDA7r3jnjKT1d7Fs
+        -----END CERTIFICATE-----
+
+definitions:
+  enrollmentCertsEnvelope:
+    type: object
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/enrollmentCerts'
+  enrollmentCerts:
+    type: object
+    properties:
+      serverCert:
+        type: string
+        description: A PEM encoded set of certificates to use as the servers chain
+      cert:
+        type: string
+        description: A PEM encoded cert for the server
+      ca:
+        type: string
+        description: A PEM encoded set of CA certificates to trust
+  routerExtendEnrollmentRequest:
+    type: object
+    required:
+      - serverCertCsr
+      - certCsr
+    properties:
+      serverCertCsr:
+        type: string
+      certCsr:
+        type: string

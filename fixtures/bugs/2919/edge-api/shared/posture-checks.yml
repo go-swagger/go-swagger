@@ -1,0 +1,21 @@
+---
+
+definitions:
+  postureCheckType:
+    type: string
+    enum:
+      - OS
+      - PROCESS
+      - DOMAIN
+      - MAC
+      - MFA
+      - PROCESS_MULTI
+  osType:
+    type: string
+    enum:
+      - Windows
+      - WindowsServer
+      - Android
+      - iOS
+      - Linux
+      - macOS

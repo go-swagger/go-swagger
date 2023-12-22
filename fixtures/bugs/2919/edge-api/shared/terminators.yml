@@ -1,0 +1,21 @@
+---
+
+definitions:
+  terminatorCost:
+    type: integer
+    minimum: 0
+    maximum: 65535
+  terminatorPrecedence:
+    type: string
+    enum:
+      - default
+      - required
+      - failed
+  terminatorPrecedenceMap:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/terminatorPrecedence'
+  terminatorCostMap:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/terminatorCost'

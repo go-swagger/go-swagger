@@ -1,0 +1,78 @@
+---
+
+responses:
+  listServices:
+    description: A list of services
+    schema:
+      $ref: '#/definitions/listServicesEnvelope'
+  detailService:
+    description: A single service
+    schema:
+      $ref: '#/definitions/detailServiceEnvelope'
+
+definitions:
+  listServicesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/serviceList'
+  detailServiceEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/serviceDetail'
+  serviceList:
+    type: array
+    items:
+      $ref: '#/definitions/serviceDetail'
+  serviceDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - terminatorStrategy
+          - roleAttributes
+          - permissions
+          - configs
+          - config
+          - encryptionRequired
+          - postureQueries
+        properties:
+          name:
+            type: string
+          terminatorStrategy:
+            type: string
+          roleAttributes:
+            $ref: '../shared/base-entity.yml#/definitions/attributes'
+          permissions:
+            $ref: '../shared/base-entity.yml#/definitions/dialBindArray'
+          configs:
+            type: array
+            items:
+              type: string
+          config:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties:
+                type: object
+            description: map of config data for this service keyed by the config type name. Only configs of the types requested will be returned.
+          encryptionRequired:
+            description: Describes whether connections must support end-to-end encryption on both sides of the connection. Read-only property, set at create.
+            type: boolean
+          postureQueries:
+            type: array
+            items:
+              $ref: '../shared/posture-queries.yml#/definitions/postureQueries'

@@ -1,0 +1,344 @@
+---
+swagger: '2.0'
+info:
+  version: 0.25.9
+  title: Ziti Edge Management
+  description: OpenZiti Edge Management API
+  contact:
+    name: OpenZiti
+    url: https://openziti.discourse.group
+    email: help@openziti.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+host: demo.ziti.dev
+basePath: /edge/management/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  ztSession:
+    type: apiKey
+    in: header
+    name: zt-session
+    description: An API Key that is provided post authentication
+
+paths:
+  '/':
+    $ref: 'shared/version.yml#/paths/root'
+
+  '/api-sessions':
+    $ref: 'management/api-sessions.yml#/paths/api-sessions'
+  '/api-sessions/{id}':
+    $ref: 'management/api-sessions.yml#/paths/api-sessions-id'
+
+  '/authenticate':
+    $ref: 'shared/authenticate.yml#/paths/authenticate'
+  '/authenticate/mfa':
+    $ref: 'shared/authenticate.yml#/paths/authenticate-mfa'
+
+  '/authenticators':
+    $ref: 'management/authenticators.yml#/paths/authenticators'
+  '/authenticators/{id}':
+    $ref: 'management/authenticators.yml#/paths/authenticators-id'
+  '/authenticators/{id}/re-enroll':
+    $ref: 'management/authenticators.yml#/paths/authenticators-id-re-enroll'
+
+  '/auth-policies':
+    $ref: 'management/auth-policies.yml#/paths/auth-policies'
+  '/auth-policies/{id}':
+    $ref: 'management/auth-policies.yml#/paths/auth-policies-id'
+
+  '/cas':
+    $ref: 'management/cas.yml#/paths/cas'
+  '/cas/{id}':
+    $ref: 'management/cas.yml#/paths/cas-id'
+  '/cas/{id}/jwt':
+    $ref: 'management/cas.yml#/paths/cas-id-jwt'
+  '/cas/{id}/verify':
+    $ref: 'management/cas.yml#/paths/cas-id-verify'
+
+  '/config-types':
+    $ref: 'management/config-types.yml#/paths/config-types'
+  '/config-types/{id}':
+    $ref: 'management/config-types.yml#/paths/config-types-id'
+  '/config-types/{id}/configs':
+    $ref: 'management/config-types.yml#/paths/config-types-id-configs'
+
+  '/configs':
+    $ref: 'management/configs.yml#/paths/configs'
+  '/configs/{id}':
+    $ref: 'management/configs.yml#/paths/configs-id'
+
+  '/current-api-session':
+    $ref: 'shared/current-api-session.yml#/paths/current-api-session'
+
+  '/current-identity':
+    $ref: 'shared/current-identity.yml#/paths/current-identity'
+  '/current-identity/authenticators':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators'
+  '/current-identity/authenticators/{id}':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id'
+  '/current-identity/authenticators/{id}/extend':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id-extend'
+  '/current-identity/authenticators/{id}/extend-verify':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id-extend-verify'
+  '/current-identity/mfa':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa'
+  '/current-identity/mfa/qr-code':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-qr-code'
+  '/current-identity/mfa/verify':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-verify'
+  '/current-identity/mfa/recovery-codes':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-recovery-codes'
+
+  '/database/snapshot':
+    $ref: 'management/database.yml#/paths/database-snapshot'
+  /database/check-data-integrity:
+    $ref: 'management/database.yml#/paths/database-check-data-integrity'
+  /database/fix-data-integrity:
+    $ref: 'management/database.yml#/paths/database-fix-data-integrity'
+  /database/data-integrity-results:
+    $ref: 'management/database.yml#/paths/database-data-integrity-results'
+
+  '/edge-router-role-attributes':
+    $ref: 'management/role-attributes.yml#/paths/edge-router-role-attributes'
+
+  '/edge-routers':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers'
+  '/edge-routers/{id}':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id'
+  '/edge-routers/{id}/edge-router-policies':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id-edge-router-policies'
+  '/edge-routers/{id}/identities':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id-identities'
+  '/edge-routers/{id}/service-edge-router-policies':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id-service-edge-router-policies'
+  '/edge-routers/{id}/services':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id-services'
+  '/edge-routers/{id}/re-enroll':
+    $ref: 'management/edge-routers.yml#/paths/edge-routers-id-re-enroll'
+
+  '/edge-router-policies':
+    $ref: 'management/edge-router-policies.yml#/paths/edge-router-policies'
+  '/edge-router-policies/{id}':
+    $ref: 'management/edge-router-policies.yml#/paths/edge-router-policies-id'
+  '/edge-router-policies/{id}/edge-routers':
+    $ref: 'management/edge-router-policies.yml#/paths/edge-router-policies-id-edge-routers'
+  '/edge-router-policies/{id}/identities':
+    $ref: 'management/edge-router-policies.yml#/paths/edge-router-policies-id-identities'
+
+  '/enrollments':
+    $ref: 'management/enrollments.yml#/paths/enrollments'
+  '/enrollments/{id}':
+    $ref: 'management/enrollments.yml#/paths/enrollments-id'
+  '/enrollments/{id}/refresh':
+    $ref: 'management/enrollments.yml#/paths/enrollments-id-refresh'
+
+  '/external-jwt-signers':
+    $ref: 'management/ext-jwt-signers.yml#/paths/external-jwt-signers'
+  '/external-jwt-signers/{id}':
+    $ref: 'management/ext-jwt-signers.yml#/paths/external-jwt-signers-id'
+
+  '/identities':
+    $ref: 'management/identities.yml#/paths/identities'
+  '/identities/{id}':
+    $ref: 'management/identities.yml#/paths/identities-id'
+  '/identities/{id}/authenticators':
+    $ref: "management/identities.yml#/paths/identities-id-authenticators"
+  '/identities/{id}/enrollments':
+    $ref: "management/identities.yml#/paths/identities-id-enrollments"
+  '/identities/{id}/disable':
+    $ref: "management/identities.yml#/paths/identities-id-disable"
+  '/identities/{id}/enable':
+    $ref: "management/identities.yml#/paths/identities-id-enable"
+  '/identities/{id}/edge-router-policies':
+    $ref: 'management/identities.yml#/paths/identities-id-edge-router-policies'
+  '/identities/{id}/service-configs':
+    $ref: 'management/identities.yml#/paths/identities-id-service-configs'
+  '/identities/{id}/service-policies':
+    $ref: 'management/identities.yml#/paths/identities-id-service-policies'
+  '/identities/{id}/edge-routers':
+    $ref: 'management/identities.yml#/paths/identities-id-edge-routers'
+  '/identities/{id}/services':
+    $ref: 'management/identities.yml#/paths/identities-id-services'
+  '/identities/{id}/policy-advice/{serviceId}':
+    $ref: 'management/identities.yml#/paths/identities-id-policy-advice-service-id'
+  '/identities/{id}/posture-data':
+    $ref: 'management/identities.yml#/paths/identities-id-posture-data'
+  '/identities/{id}/failed-service-requests':
+    $ref: 'management/identities.yml#/paths/identities-id-failed-service-requests'
+  '/identities/{id}/mfa':
+    $ref: 'management/identities.yml#/paths/identities-id-mfa'
+  '/identities/{id}/trace':
+    $ref: 'management/identities.yml#/paths/identities-id-trace'
+
+  '/identity-role-attributes':
+    $ref: 'management/role-attributes.yml#/paths/identity-role-attributes'
+
+  '/identity-types':
+    $ref: 'management/identity-types.yml#/paths/identity-types'
+  '/identity-types/{id}':
+    $ref: 'management/identity-types.yml#/paths/identity-types-id'
+
+  '/posture-checks':
+    $ref: 'management/posture-checks.yml#/paths/posture-checks'
+  '/posture-checks/{id}':
+    $ref: 'management/posture-checks.yml#/paths/posture-checks-id'
+
+  '/posture-check-types':
+    $ref: 'management/posture-check-types.yml#/paths/posture-check-types'
+  '/posture-check-types/{id}':
+    $ref: 'management/posture-check-types.yml#/paths/posture-check-types-id'
+
+  '/service-edge-router-policies':
+    $ref: 'management/service-edge-router-policies.yml#/paths/service-edge-router-policies'
+  '/service-edge-router-policies/{id}':
+    $ref: 'management/service-edge-router-policies.yml#/paths/service-edge-router-policies-id'
+  '/service-edge-router-policies/{id}/edge-routers':
+    $ref: 'management/service-edge-router-policies.yml#/paths/service-edge-router-policies-id-edge-routers'
+  '/service-edge-router-policies/{id}/services':
+    $ref: 'management/service-edge-router-policies.yml#/paths/service-edge-router-policies-id-services'
+
+  '/service-role-attributes':
+    $ref: 'management/role-attributes.yml#/paths/service-role-attributes'
+
+  '/service-policies':
+    $ref: 'management/service-policies.yml#/paths/service-policies'
+  '/service-policies/{id}':
+    $ref: 'management/service-policies.yml#/paths/service-policies-id'
+  '/service-policies/{id}/identities':
+    $ref: 'management/service-policies.yml#/paths/service-policies-id-identities'
+  '/service-policies/{id}/services':
+    $ref: 'management/service-policies.yml#/paths/service-policies-id-services'
+  '/service-policies/{id}/posture-checks':
+    $ref: 'management/service-policies.yml#/paths/service-policies-id-posture-checks'
+
+  '/services':
+    $ref: 'management/services.yml#/paths/services'
+  '/services/{id}':
+    $ref: 'management/services.yml#/paths/services-id'
+  '/services/{id}/configs':
+    $ref: 'management/services.yml#/paths/services-id-configs'
+  '/services/{id}/service-edge-router-policies':
+    $ref: 'management/services.yml#/paths/services-id-service-edge-router-policies'
+  '/services/{id}/service-policies':
+    $ref: 'management/services.yml#/paths/services-id-service-policies'
+  '/services/{id}/identities':
+    $ref: 'management/services.yml#/paths/services-id-identities'
+  '/services/{id}/edge-routers':
+    $ref: 'management/services.yml#/paths/services-id-edge-routers'
+  '/services/{id}/terminators':
+    $ref: 'management/services.yml#/paths/services-id-terminators'
+
+  '/sessions':
+    $ref: 'management/sessions.yml#/paths/sessions'
+  '/sessions/{id}':
+    $ref: 'management/sessions.yml#/paths/sessions-id'
+  '/sessions/{id}/route-path':
+    $ref: 'management/sessions.yml#/paths/sessions-id-route-path'
+
+  '/specs':
+    $ref: 'shared/specs.yml#/paths/specs'
+  '/specs/{id}':
+    $ref: 'shared/specs.yml#/paths/specs-id'
+  '/specs/{id}/spec':
+    $ref: 'shared/specs.yml#/paths/specs-id-spec'
+
+  '/summary':
+    $ref: 'management/summary.yml#/paths/summary'
+
+  '/terminators':
+    $ref: 'management/terminators.yml#/paths/terminators'
+  '/terminators/{id}':
+    $ref: 'management/terminators.yml#/paths/terminators-id'
+
+  '/routers':
+    $ref: 'management/routers.yml#/paths/routers'
+  '/transit-routers':
+    $ref: 'management/routers.yml#/paths/transit-routers'
+  '/routers/{id}':
+    $ref: 'management/routers.yml#/paths/routers-id'
+  '/transit-routers/{id}':
+    $ref: 'management/routers.yml#/paths/transit-routers-id'
+
+  '/version':
+    $ref: 'shared/version.yml#/paths/version'
+
+definitions:
+  # Polymorphic types aren't explicitly used anywhere except here. Removal will cause them to be trimmed
+
+  postureCheckFailureMacAddress:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureMacAddress'
+
+  postureCheckFailureDomain:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureDomain'
+
+  postureCheckFailureOperatingSystem:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureOperatingSystem'
+
+  postureCheckFailureProcess:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureProcess'
+
+  postureCheckFailureProcessMulti:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureProcessMulti'
+
+  postureCheckFailureMfa:
+    $ref: 'management/failed-service-request.yml#/definitions/postureCheckFailureMfa'
+
+  postureCheckOperatingSystemDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckOperatingSystemDetail'
+  postureCheckOperatingSystemCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckOperatingSystemCreate'
+  postureCheckOperatingSystemUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckOperatingSystemUpdate'
+  postureCheckOperatingSystemPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckOperatingSystemPatch'
+
+  postureCheckDomainDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckDomainDetail'
+  postureCheckDomainCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckDomainCreate'
+  postureCheckDomainUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckDomainUpdate'
+  postureCheckDomainPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckDomainPatch'
+
+  postureCheckMacAddressDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMacAddressDetail'
+  postureCheckMacAddressCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMacAddressCreate'
+  postureCheckMacAddressUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMacAddressUpdate'
+  postureCheckMacAddressPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMacAddressPatch'
+
+  postureCheckProcessDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessDetail'
+  postureCheckProcessCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessCreate'
+  postureCheckProcessUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessUpdate'
+  postureCheckProcessPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessPatch'
+
+  postureCheckProcessMultiDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessMultiDetail'
+  postureCheckProcessMultiCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessMultiCreate'
+  postureCheckProcessMultiUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessMultiUpdate'
+  postureCheckProcessMultiPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckProcessMultiPatch'
+
+  postureCheckMfaDetail:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMfaDetail'
+  postureCheckMfaCreate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMfaCreate'
+  postureCheckMfaUpdate:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMfaUpdate'
+  postureCheckMfaPatch:
+    $ref: 'management/posture-checks.yml#/definitions/postureCheckMfaPatch'

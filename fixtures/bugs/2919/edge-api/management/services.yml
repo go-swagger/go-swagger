@@ -1,0 +1,338 @@
+---
+paths:
+  services:
+    get:
+      summary: List services
+      description: |
+        Retrieves a list of config resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServices
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+        - $ref: '../shared/parameters.yml#/roleFilter'
+        - $ref: '../shared/parameters.yml#/roleSemantic'
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/listServices'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create a services resource
+      description: Create a services resource. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: createService
+      parameters:
+        - name: service
+          in: body
+          required: true
+          description: A service to create
+          schema:
+            $ref: '#/definitions/serviceCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  services-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single service
+      description: Retrieves a single service by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: detailService
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/detailService'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a service
+      description: Update all fields on a service by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: updateService
+      parameters:
+        - name: service
+          in: body
+          required: true
+          description: A service update object
+          schema:
+            $ref: '#/definitions/serviceUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a service
+      description: Update the supplied fields on a service. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: patchService
+      parameters:
+        - name: service
+          in: body
+          required: true
+          description: A service patch object
+          schema:
+            $ref: '#/definitions/servicePatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a service
+      description: Delete a service by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: deleteService
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  services-id-configs:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List configs associated to a specific service
+      description: |
+        Retrieves a list of config resources associated to a specific service; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceConfig
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'configs.yml#/responses/listConfigs'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  services-id-service-edge-router-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List service edge router policies that affect a specific service
+      description: |
+        Retrieves a list of service edge router policy resources that affect a specific service; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceServiceEdgeRouterPolicies
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'service-edge-router-policies.yml#/responses/listServiceEdgeRouterPolicies'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  services-id-service-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List service policies that affect a specific service
+      description: |
+        Retrieves a list of service policy resources that affect specific service; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceServicePolicies
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'service-policies.yml#/responses/listServicePolicies'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+  services-id-identities:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List identities with access
+      description: |
+        Retrieves a list of identities that have access to this service. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceIdentities
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'identities.yml#/responses/listIdentities'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+  services-id-edge-routers:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List accessible edge-routers
+      description: |
+        Retrieves a list of edge-routers that may be used to access the given service. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceEdgeRouters
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'edge-routers.yml#/responses/listEdgeRouters'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+  services-id-terminators:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List of terminators assigned to a service
+      description: |
+        Retrieves a list of terminator resources that are assigned specific service; supports filtering, sorting, and pagination.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceTerminators
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: 'terminators.yml#/responses/listTerminators'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+definitions:
+  serviceCreate:
+    type: object
+    required:
+      - name
+      - encryptionRequired
+    properties:
+      name:
+        type: string
+      terminatorStrategy:
+        type: string
+      roleAttributes:
+        type: array
+        items:
+          type: string
+      configs:
+        type: array
+        items:
+          type: string
+      encryptionRequired:
+        type: boolean
+        description: Describes whether connections must support end-to-end encryption on both sides of the connection.
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  serviceUpdate:
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      terminatorStrategy:
+        type: string
+      roleAttributes:
+        type: array
+        items:
+          type: string
+      configs:
+        type: array
+        items:
+          type: string
+      encryptionRequired:
+        type: boolean
+        description: Describes whether connections must support end-to-end encryption on both sides of the connection. Read-only property, set at create.
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  servicePatch:
+    type: object
+    properties:
+      name:
+        type: string
+      terminatorStrategy:
+        type: string
+      roleAttributes:
+        type: array
+        items:
+          type: string
+      configs:
+        type: array
+        items:
+          type: string
+      encryptionRequired:
+        type: boolean
+        description: Describes whether connections must support end-to-end encryption on both sides of the connection. Read-only property, set at create.
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'

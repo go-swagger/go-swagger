@@ -1,0 +1,233 @@
+---
+
+definitions:
+  failedServiceRequestEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/failedServiceRequestList'
+  failedServiceRequestList:
+    type: array
+    items:
+      $ref: '#/definitions/failedServiceRequest'
+  failedServiceRequest:
+    type: object
+    properties:
+      apiSessionId:
+        type: string
+      when:
+        type: string
+        format: date-time
+      serviceId:
+        type: string
+      serviceName:
+        type: string
+      sessionType:
+        $ref: '../shared/base-entity.yml#/definitions/dialBind'
+      policyFailures:
+        type: array
+        items:
+          $ref: '#/definitions/policyFailure'
+  policyFailure:
+    type: object
+    properties:
+      policyId:
+        type: string
+      policyName:
+        type: string
+      checks:
+        type: array
+        items:
+          $ref: '#/definitions/postureCheckFailure'
+  postureCheckFailure:
+    type: object
+    discriminator: postureCheckType
+    required:
+      - postureCheckId
+      - postureCheckName
+      - postureCheckType
+    properties:
+      postureCheckId:
+        type: string
+      postureCheckName:
+        type: string
+      postureCheckType:
+        type: string
+
+  postureCheckFailureMacAddress:
+    x-class: MAC
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+        properties:
+          actualValue:
+            type: array
+            items:
+              type: string
+          expectedValue:
+            type: array
+            items:
+              type: string
+
+  postureCheckFailureDomain:
+    x-class: DOMAIN
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+        properties:
+          actualValue:
+            type: string
+          expectedValue:
+            type: array
+            items:
+              type: string
+  postureCheckFailureOperatingSystemActual:
+    type: object
+    required:
+      - type
+      - version
+    properties:
+      type:
+        type: string
+      version:
+        type: string
+
+  postureCheckFailureOperatingSystem:
+    x-class: OS
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+        properties:
+          actualValue:
+            $ref: '#/definitions/postureCheckFailureOperatingSystemActual'
+          expectedValue:
+            type: array
+            minItems: 1
+            items:
+              $ref: 'posture-checks.yml#/definitions/operatingSystem'
+
+  postureCheckFailureProcessActual:
+    type: object
+    required:
+      - isRunning
+      - hash
+      - signerFingerprints
+    properties:
+      path:
+        type: string
+      isRunning:
+        type: boolean
+      hash:
+        type: string
+      signerFingerprints:
+        type: array
+        items:
+          type: string
+      osType:
+        $ref: '../shared/posture-checks.yml#/definitions/osType'
+
+  postureCheckFailureProcess:
+    x-class: PROCESS
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+        properties:
+          actualValue:
+            $ref: '#/definitions/postureCheckFailureProcessActual'
+          expectedValue:
+            $ref: 'posture-checks.yml#/definitions/process'
+
+  postureCheckFailureProcessMulti:
+    x-class: PROCESS_MULTI
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+          - semantic
+        properties:
+          semantic:
+            $ref: '../shared/base-entity.yml#/definitions/semantic'
+          actualValue:
+            type: array
+            items:
+              $ref: '#/definitions/postureCheckFailureProcessActual'
+          expectedValue:
+            type: array
+            items:
+              $ref: 'posture-checks.yml#/definitions/processMulti'
+
+  postureCheckFailureMfa:
+    x-class: MFA
+    allOf:
+      - $ref: '#/definitions/postureCheckFailure'
+      - type: object
+        required:
+          - actualValue
+          - expectedValue
+          - criteria
+        properties:
+          actualValue:
+            $ref: '#/definitions/postureChecksFailureMfaValues'
+          expectedValue:
+            $ref: '#/definitions/postureChecksFailureMfaValues'
+          criteria:
+            $ref: '#/definitions/postureChecksFailureMfaCriteria'
+
+
+  postureChecksFailureMfaValues:
+    type: object
+    properties:
+      passedMfa:
+        type: boolean
+        x-omitempty: false
+      passedOnWake:
+        type: boolean
+        x-omitempty: false
+      passedOnUnlock:
+        type: boolean
+        x-omitempty: false
+      timedOut:
+        type: boolean
+        x-omitempty: false
+
+  postureChecksFailureMfaCriteria:
+    type: object
+    required:
+      - passedMfaAt
+      - wokenAt
+      - unlockedAt
+      - timeoutSeconds
+      - timeoutRemainingSeconds
+    properties:
+        passedMfaAt:
+          type: string
+          format: date-time
+        wokenAt:
+          type: string
+          format: date-time
+        unlockedAt:
+          type: string
+          format: date-time
+        timeoutSeconds:
+          type: integer
+        timeoutRemainingSeconds:
+          type: integer

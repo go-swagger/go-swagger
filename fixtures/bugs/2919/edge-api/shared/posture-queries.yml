@@ -1,0 +1,52 @@
+---
+
+definitions:
+  postureQueries:
+    type: object
+    required:
+      - policyId
+      - isPassing
+      - postureQueries
+    properties:
+      policyId:
+        type: string
+      isPassing:
+        type: boolean
+      policyType:
+        $ref: 'base-entity.yml#/definitions/dialBind'
+      postureQueries:
+        type: array
+        items:
+          $ref: '#/definitions/postureQuery'
+  postureQuery:
+    type: object
+    allOf:
+      - $ref: 'base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - queryType
+          - isPassing
+          - timeout
+          - timeoutRemaining
+        properties:
+          isPassing:
+            type: boolean
+          timeout:
+            type: integer
+          timeoutRemaining:
+            type: integer
+          queryType:
+            $ref: 'posture-checks.yml#/definitions/postureCheckType'
+          process:
+            $ref: '#/definitions/postureQueryProcess'
+          processes:
+            type: array
+            items:
+              $ref: '#/definitions/postureQueryProcess'
+  postureQueryProcess:
+    type: object
+    properties:
+      osType:
+        $ref: 'posture-checks.yml#/definitions/osType'
+      path:
+        type: string

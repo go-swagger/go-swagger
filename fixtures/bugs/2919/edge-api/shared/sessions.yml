@@ -1,0 +1,84 @@
+---
+
+responses:
+  listSessions:
+    description: A list of sessions
+    schema:
+      $ref: '#/definitions/listSessionsEnvelope'
+  detailSession:
+    description: A single session
+    schema:
+      $ref: '#/definitions/detailSessionEnvelope'
+
+definitions:
+  listSessionsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/sessionList'
+  detailSessionEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/sessionDetail'
+
+
+  sessionList:
+    type: array
+    items:
+      $ref: '#/definitions/sessionDetail'
+  sessionDetail:
+    type: object
+    allOf:
+      - $ref: 'base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - type
+          - apiSessionId
+          - apiSession
+          - serviceId
+          - service
+          - token
+          - edgeRouters
+          - identityId
+        properties:
+          type:
+            $ref: 'base-entity.yml#/definitions/dialBind'
+          token:
+            type: string
+          apiSessionId:
+            type: string
+          apiSession:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          serviceId:
+            type: string
+          service:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          edgeRouters:
+            type: array
+            items:
+              $ref: '#/definitions/sessionEdgeRouter'
+          identityId:
+            type: string
+  sessionEdgeRouter:
+    allOf:
+      - $ref: "edge-routers.yml#/definitions/commonEdgeRouterProperties"
+      - type: object
+        required:
+          - urls
+        properties:
+          # deprecated property, see supportedProtocols in commonEdgeRouterProperties
+          urls:
+            type: object
+            additionalProperties:
+              type: string

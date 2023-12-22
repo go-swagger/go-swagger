@@ -1,0 +1,146 @@
+---
+
+definitions:
+  identityList:
+    description: A list of identities
+    type: array
+    items:
+      $ref: '#/definitions/identityDetail'
+  identityDetail:
+    description: Detail of a specific identity
+    type: object
+    allOf:
+      - $ref: 'base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - type
+          - typeId
+          - isDefaultAdmin
+          - isAdmin
+          - authenticators
+          - enrollment
+          - envInfo
+          - sdkInfo
+          - roleAttributes
+          - hasEdgeRouterConnection
+          - hasApiSession
+          - isMfaEnabled
+          - serviceHostingPrecedences
+          - serviceHostingCosts
+          - defaultHostingCost
+          - authPolicyId
+          - externalId
+          - disabled
+        properties:
+          name:
+            type: string
+          type:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          typeId:
+            type: string
+          isDefaultAdmin:
+            type: boolean
+          isAdmin:
+            type: boolean
+          authenticators:
+            $ref: '#/definitions/identityAuthenticators'
+          enrollment:
+            $ref: '#/definitions/identityEnrollments'
+          envInfo:
+            $ref: 'authenticate.yml#/definitions/envInfo'
+          sdkInfo:
+            $ref: 'authenticate.yml#/definitions/sdkInfo'
+          roleAttributes:
+            $ref: 'base-entity.yml#/definitions/attributes'
+          hasEdgeRouterConnection:
+            type: boolean
+          hasApiSession:
+            type: boolean
+          isMfaEnabled:
+            type: boolean
+          authPolicyId:
+            type: string
+          defaultHostingPrecedence:
+            $ref: 'terminators.yml#/definitions/terminatorPrecedence'
+          defaultHostingCost:
+            $ref: 'terminators.yml#/definitions/terminatorCost'
+          serviceHostingPrecedences:
+            $ref: 'terminators.yml#/definitions/terminatorPrecedenceMap'
+          serviceHostingCosts:
+            $ref: 'terminators.yml#/definitions/terminatorCostMap'
+          appData:
+            $ref: 'base-entity.yml#/definitions/tags'
+          externalId:
+            type: string
+            x-nullable: true
+          disabled:
+            type: boolean
+          disabledAt:
+            type: string
+            format: date-time
+            x-nullable: true
+          disabledUntil:
+            type: string
+            format: date-time
+            x-nullable: true
+  identityAuthenticators:
+    type: object
+    properties:
+      updb:
+        properties:
+          id:
+            type: string
+          username:
+            type: string
+        type: object
+      cert:
+        type: object
+        properties:
+          id:
+            type: string
+          fingerprint:
+            type: string
+  identityEnrollments:
+    type: object
+    properties:
+      updb:
+        type: object
+        properties:
+          id:
+            type: string
+          token:
+            type: string
+          jwt:
+            type: string
+          expiresAt:
+            type: string
+            format: date-time
+      ott:
+        type: object
+        properties:
+          id:
+            type: string
+          token:
+            type: string
+          jwt:
+            type: string
+          expiresAt:
+            type: string
+            format: date-time
+      ottca:
+        type: object
+        properties:
+          id:
+            type: string
+          token:
+            type: string
+          jwt:
+            type: string
+          caId:
+            type: string
+          ca:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          expiresAt:
+            type: string
+            format: date-time
