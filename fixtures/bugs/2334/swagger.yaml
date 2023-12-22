@@ -1,0 +1,12 @@
+swagger: '2.0'
+info:
+  title: Object
+  version: 0.1.0
+paths: 
+   /bar:
+     get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "./bar.yaml#/definitions/Bar"
