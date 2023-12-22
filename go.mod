@@ -9,7 +9,7 @@ require (
 	github.com/go-openapi/analysis v0.22.0
 	github.com/go-openapi/errors v0.21.0
 	github.com/go-openapi/inflect v0.19.0
-	github.com/go-openapi/loads v0.21.2
+	github.com/go-openapi/loads v0.21.5
 	github.com/go-openapi/runtime v0.26.0
 	github.com/go-openapi/spec v0.20.13
 	github.com/go-openapi/strfmt v0.21.10

@@ -441,3 +441,40 @@ func TestServer_Issue1816(t *testing.T) {
 	assertInCode(t, `"api_key": []`, res)
 	assertNotInCode(t, `"api_key": null`, res)
 }
+
+func TestServer_Issue2346(t *testing.T) {
+	defer discardOutput()()
+
+	targetdir, err := os.MkdirTemp(".", "swagger_server")
+	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
+	t.Cleanup(func() {
+		_ = os.RemoveAll(targetdir)
+	})
+
+	cwd := testCwd(t)
+	require.NoErrorf(t, os.Chdir(targetdir), "failed to chdir to test target directory: %v", err)
+	defer func() {
+		_ = os.Chdir(cwd)
+	}()
+
+	t.Run("should build server with flatten Expand optio", func(t *testing.T) {
+		opts := testGenOpts()
+		opts.Target = "x"
+		opts.FlattenOpts.Expand = true // this issue pops up spcifically when using this option
+		opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "2346", "swagger.yaml")
+		require.NoError(t, os.Mkdir(opts.Target, 0o755))
+
+		require.NoError(t, GenerateServer("api-2346", nil, nil, opts))
+	})
+
+	t.Run("should build server with flatten Minimal (no expand)", func(t *testing.T) {
+		opts := testGenOpts()
+		opts.Target = "y"
+		opts.FlattenOpts.Minimal = true
+		opts.FlattenOpts.Expand = false
+		opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "2346", "swagger.yaml")
+		require.NoError(t, os.Mkdir(opts.Target, 0o755))
+
+		require.NoError(t, GenerateServer("api-2346", nil, nil, opts))
+	})
+}

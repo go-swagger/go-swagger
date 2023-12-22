@@ -1,0 +1,53 @@
+swagger: "2.0"
+info:
+  description: "Business Sub API"
+  version: "1.0.0"
+  title: "Business Sub-API"
+
+host: "127.0.0.1:8080"
+basePath: "/rest/ms"
+
+tags:
+  - name: "business"
+    description: "business info"
+    externalDocs:
+      description: "Find out more"
+      url: "http://swagger.io"
+
+paths:
+  /business:
+    post:
+      summary: Create a business
+      operationId: createBusiness
+      tags:
+        - "business"
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Business'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+definitions:
+  Business:
+    type: object
+    properties:
+      children:
+        type: array
+        x-go-custom-tag: bson:"-"
+        items:
+          $ref: '#/definitions/Business'
+      users:
+        type: array
+        x-go-custom-tag: bson:"users"
+        items:
+          type: object
+          properties:
+            role:
+              type: string
+              x-go-custom-tag: bson:"role"
+

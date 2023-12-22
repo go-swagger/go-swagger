@@ -87,6 +87,16 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 		return nil, err
 	}
 
+	if g.FlattenOpts.Expand {
+		// for a similar reason as the one mentioned above for validate,
+		// schema expansion alters the internal doc cache in the spec.
+		// This nasty bug (in spec expander) affects circular references.
+		// So we need to reload the spec from a clone.
+		// Notice that since the spec inside the document has been modified, we should
+		// ensure that Pristine refreshes its row root document.
+		specDoc = specDoc.Pristine()
+	}
+
 	// yields the preprocessed spec document
 	return specDoc, nil
 }
