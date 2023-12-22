@@ -1,0 +1,8 @@
+paths: {}
+
+definitions:
+   Bar:
+      type: object
+      properties:
+         Baz:
+            type: string
