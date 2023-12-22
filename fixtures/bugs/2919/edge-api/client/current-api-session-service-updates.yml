@@ -1,0 +1,45 @@
+---
+paths:
+  current-api-session-service-updates:
+    get:
+      summary: Returns data indicating whether a client should updates it service list
+      description: |
+        Retrieves data indicating the last time data relevant to this API Session was altered that would necessitate
+        service refreshes.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+        - Services
+      operationId: listServiceUpdates
+      responses:
+        '200':
+          $ref: '#/responses/listCurrentApiSessionServiceUpdates'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listCurrentApiSessionServiceUpdates:
+    description: Data indicating necessary service updates
+    schema:
+      $ref: '#/definitions/listCurrentApiSessionServiceUpdatesEnvelope'
+
+definitions:
+  listCurrentApiSessionServiceUpdatesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/CurrentApiSessionServiceUpdateList'
+  CurrentApiSessionServiceUpdateList:
+    type: object
+    required:
+      - lastChangeAt
+    properties:
+      lastChangeAt:
+        type: string
+        format: 'date-time'

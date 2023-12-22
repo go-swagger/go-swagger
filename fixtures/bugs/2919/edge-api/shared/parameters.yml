@@ -1,0 +1,55 @@
+---
+id:
+  name: id
+  required: true
+  type: string
+  in: path
+  description: The id of the requested resource
+serviceId:
+  name: serviceId
+  required: true
+  type: string
+  in: path
+  description: The id of a service
+limit:
+  name: limit
+  type: integer
+  in: query
+offset:
+  name: offset
+  type: integer
+  in: query
+filter:
+  name: filter
+  type: string
+  in: query
+token:
+  name: token
+  type: string
+  format: uuid
+  in: query
+  required: true
+token-optional:
+  name: token
+  type: string
+  format: uuid
+  in: query
+authMethod:
+  name: method
+  in: query
+  required: true
+  type: string
+  enum:
+    - password
+    - cert
+roleFilter:
+  name: roleFilter
+  type: array
+  in: query
+  collectionFormat: multi
+  items:
+    type: string
+roleSemantic:
+  name: roleSemantic
+  type: string
+  in: query

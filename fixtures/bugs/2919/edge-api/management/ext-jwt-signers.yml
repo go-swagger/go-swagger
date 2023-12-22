@@ -1,0 +1,337 @@
+---
+paths:
+  external-jwt-signers:
+    get:
+      summary: List External JWT Signers
+      description: Retrieves a list of external JWT signers for authentication
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: listExternalJwtSigners
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listExternalJwtSigners'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Creates an External JWT Signer
+      description: Creates an External JWT Signer. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: createExternalJwtSigner
+      parameters:
+        - name: externalJwtSigner
+          in: body
+          required: true
+          description: An External JWT Signer to create
+          schema:
+            $ref: '#/definitions/externalJwtSignerCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  external-jwt-signers-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single External JWT Signer
+      description: Retrieves a single External JWT Signer by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: detailExternalJwtSigner
+      responses:
+        '200':
+          $ref: '#/responses/detailExternalJwtSigner'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on an External JWT Signer
+      description: Update all fields on an External JWT Signer by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: updateExternalJwtSigner
+      parameters:
+        - name: externalJwtSigner
+          in: body
+          required: true
+          description: An External JWT Signer update object
+          schema:
+            $ref: '#/definitions/externalJwtSignerUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on an External JWT Signer
+      description: Update only the supplied fields on an External JWT Signer by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: patchExternalJwtSigner
+      parameters:
+        - name: externalJwtSigner
+          in: body
+          required: true
+          description: An External JWT Signer patch object
+          schema:
+            $ref: '#/definitions/externalJwtSignerPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an External JWT Signer
+      description: |
+        Delete an External JWT Signer by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: deleteExternalJwtSigner
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  listExternalJwtSigners:
+    description: A list of External JWT Signers
+    schema:
+      $ref: '#/definitions/listExternalJwtSignersEnvelope'
+  detailExternalJwtSigner:
+    description: A singular External JWT Signer resource
+    schema:
+      $ref: '#/definitions/detailExternalJwtSignerEnvelope'
+definitions:
+  listExternalJwtSignersEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/externalJwtSignerList'
+  detailExternalJwtSignerEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/externalJwtSignerDetail'
+  externalJwtSignerList:
+    description: An array of External JWT Signers resources
+    type: array
+    items:
+      $ref: '#/definitions/externalJwtSignerDetail'
+  externalJwtSignerDetail:
+    description: A External JWT Signer resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - certPem
+          - jwksEndpoint
+          - enabled
+          - fingerprint
+          - commonName
+          - notAfter
+          - notBefore
+          - externalAuthUrl
+          - claimsProperty
+          - useExternalId
+          - kid
+          - issuer
+          - audience
+        properties:
+          name:
+            type: string
+            example: 'MyApps Signer'
+          certPem:
+            type: string
+            x-nullable: true
+          jwksEndpoint:
+            type: string
+            format: uri
+            x-nullable: true
+          enabled:
+            type: boolean
+          fingerprint:
+            type: string
+          commonName:
+            type: string
+          notAfter:
+            type: string
+            format: date-time
+          notBefore:
+            type: string
+            format: date-time
+          externalAuthUrl:
+            type: string
+            format: url
+          claimsProperty:
+            type: string
+          useExternalId:
+            type: boolean
+          kid:
+            type: string
+          issuer:
+            type: string
+          audience:
+            type: string
+  externalJwtSignerCreate:
+    description: A create Certificate Authority (CA) object
+    type: object
+    required:
+      - name
+      - enabled
+      - issuer
+      - audience
+    properties:
+      name:
+        type: string
+        example: 'MyApps Signer'
+      certPem:
+        type: string
+        x-nullable: true
+      jwksEndpoint:
+        type: string
+        format: uri
+        x-nullable: true
+      enabled:
+        type: boolean
+      externalAuthUrl:
+        type: string
+        format: url
+        x-nullable: true
+      kid:
+        type: string
+        x-nullable: true
+      claimsProperty:
+        type: string
+        x-nullable: true
+      useExternalId:
+        type: boolean
+        x-nullable: true
+      issuer:
+        type: string
+      audience:
+        type: string
+        x-nullable: true
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  externalJwtSignerUpdate:
+    type: object
+    required:
+      - name
+      - enabled
+      - issuer
+      - audience
+    properties:
+      name:
+        type: string
+        example: 'MyApps Signer'
+      certPem:
+        type: string
+        x-nullable: true
+      jwksEndpoint:
+        type: string
+        format: uri
+        x-nullable: true
+      enabled:
+        type: boolean
+      externalAuthUrl:
+        type: string
+        format: url
+        x-nullable: true
+      kid:
+        type: string
+        x-nullable: true
+      claimsProperty:
+        type: string
+        x-nullable: true
+      useExternalId:
+        type: boolean
+        x-nullable: true
+      issuer:
+        type: string
+      audience:
+        type: string
+        x-nullable: true
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  externalJwtSignerPatch:
+    type: object
+    properties:
+      name:
+        type: string
+        example: 'MyApps Signer'
+        x-nullable: true
+      certPem:
+        type: string
+        x-nullable: true
+      jwksEndpoint:
+        type: string
+        format: uri
+        x-nullable: true
+      enabled:
+        type: boolean
+        x-nullable: true
+      kid:
+        type: string
+        x-nullable: true
+      externalAuthUrl:
+        type: string
+        format: url
+        x-nullable: true
+      claimsProperty:
+        type: string
+        x-nullable: true
+      useExternalId:
+        type: boolean
+        x-nullable: true
+      issuer:
+        type: string
+        x-nullable: true
+      audience:
+        type: string
+        x-nullable: true
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'

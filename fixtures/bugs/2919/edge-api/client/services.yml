@@ -1,0 +1,108 @@
+---
+paths:
+  services:
+    get:
+      summary: List services
+      description: |
+        Retrieves a list of config resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServices
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+        - $ref: '../shared/parameters.yml#/roleFilter'
+        - $ref: '../shared/parameters.yml#/roleSemantic'
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/listServices'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  services-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single service
+      description: Retrieves a single service by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: detailService
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/detailService'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+  services-id-terminators:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List of terminators assigned to a service
+      description: |
+        Retrieves a list of terminator resources that are assigned specific service; supports filtering, sorting, and pagination.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Service
+      operationId: listServiceTerminators
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listClientTerminators'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+responses:
+  listClientTerminators:
+    description: A list of terminators
+    schema:
+      $ref: '#/definitions/listClientTerminatorsEnvelope'
+
+definitions:
+  listClientTerminatorsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/terminatorClientList'
+  terminatorClientList:
+    type: array
+    items:
+      $ref: '#/definitions/terminatorClientDetail'
+  terminatorClientDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - serviceId
+          - service
+          - routerId
+          - identity
+        properties:
+          serviceId:
+            type: string
+          service:
+            $ref: '../shared/base-entity.yml#/definitions/entityRef'
+          routerId:
+            type: string
+          identity:
+            type: string

@@ -1,0 +1,132 @@
+---
+swagger: '2.0'
+info:
+  version: 0.25.9
+  title: Ziti Edge Client
+  description: OpenZiti Edge Client API
+  contact:
+    name: OpenZiti
+    url: https://openziti.discourse.group
+    email: help@openziti.org
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+host: demo.ziti.dev
+basePath: /edge/client/v1
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  ztSession:
+    type: apiKey
+    in: header
+    name: zt-session
+    description: An API Key that is provided post authentication
+
+paths:
+  '/':
+    $ref: 'shared/version.yml#/paths/root'
+
+  '/.well-known/est/cacerts':
+    $ref: 'client/well-known.yml#/paths/well-known-est-cacerts'
+
+  '/authenticate':
+    $ref: 'shared/authenticate.yml#/paths/authenticate'
+  '/authenticate/mfa':
+    $ref: 'shared/authenticate.yml#/paths/authenticate-mfa'
+
+  '/current-api-session':
+    $ref: 'shared/current-api-session.yml#/paths/current-api-session'
+  '/current-api-session/certificates':
+    $ref: 'client/current-api-session-certificates.yml#/paths/current-api-session-certificates'
+  '/current-api-session/certificates/{id}':
+    $ref: 'client/current-api-session-certificates.yml#/paths/current-api-session-certificates-id'
+  '/current-api-session/service-updates':
+    $ref: 'client/current-api-session-service-updates.yml#/paths/current-api-session-service-updates'
+
+  '/current-identity':
+    $ref: 'shared/current-identity.yml#/paths/current-identity'
+  '/current-identity/authenticators':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators'
+  '/current-identity/authenticators/{id}':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id'
+  '/current-identity/authenticators/{id}/extend':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id-extend'
+  '/current-identity/authenticators/{id}/extend-verify':
+    $ref: 'shared/current-identity-authenticators.yml#/paths/current-identity-authenticators-id-extend-verify'
+
+  '/current-identity/edge-routers':
+    $ref: 'client/current-identity-edge-routers.yml#/paths/current-identity-edge-routers'
+  '/current-identity/mfa':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa'
+  '/current-identity/mfa/qr-code':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-qr-code'
+  '/current-identity/mfa/verify':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-verify'
+  '/current-identity/mfa/recovery-codes':
+    $ref: 'shared/current-identity-mfa.yml#/paths/current-identity-mfa-recovery-codes'
+
+  '/enroll':
+    $ref: 'client/enroll.yml#/paths/enroll'
+  '/enroll/ca':
+    $ref: 'client/enroll.yml#/paths/enroll-ca'
+  '/enroll/ott':
+    $ref: 'client/enroll.yml#/paths/enroll-ott'
+  '/enroll/ottca':
+    $ref: 'client/enroll.yml#/paths/enroll-ottca'
+  '/enroll/updb':
+    $ref: 'client/enroll.yml#/paths/enroll-updb'
+  '/enroll/erott':
+    $ref: 'client/enroll.yml#/paths/enroll-erott'
+  '/enroll/extend/router':
+    $ref: 'client/enroll.yml#/paths/enroll-extend-router'
+
+  '/external-jwt-signers':
+    $ref: 'client/ext-jwt-signers.yml#/paths/external-jwt-signers'
+
+  '/posture-response':
+    $ref: 'client/posture-response.yml#/paths/posture-response'
+  '/posture-response-bulk':
+    $ref: 'client/posture-response.yml#/paths/posture-response-bulk'
+
+  '/protocols':
+    $ref: 'client/protocols.yml#/paths/protocols'
+
+  '/services':
+    $ref: 'client/services.yml#/paths/services'
+  '/services/{id}':
+    $ref: 'management/services.yml#/paths/services-id'
+  '/services/{id}/terminators':
+    $ref: 'client/services.yml#/paths/services-id-terminators'
+
+  '/sessions':
+    $ref: 'client/sessions.yml#/paths/sessions'
+  '/sessions/{id}':
+    $ref: 'client/sessions.yml#/paths/sessions-id'
+
+  '/specs':
+    $ref: 'shared/specs.yml#/paths/specs'
+  '/specs/{id}':
+    $ref: 'shared/specs.yml#/paths/specs-id'
+  '/specs/{id}/spec':
+    $ref: 'shared/specs.yml#/paths/specs-id-spec'
+
+  '/version':
+    $ref: 'shared/version.yml#/paths/version'
+
+definitions:
+  # Polymorphic types aren't explicitly used anywhere except here. Removal will cause them to be trimmed
+
+  postureResponseOperatingSystemCreate:
+    $ref: 'client/posture-response.yml#/definitions/postureResponseOperatingSystemCreate'
+  postureResponseDomainCreate:
+    $ref: 'client/posture-response.yml#/definitions/postureResponseDomainCreate'
+  postureResponseMacAddressCreate:
+    $ref: 'client/posture-response.yml#/definitions/postureResponseMacAddressCreate'
+  postureResponseProcessCreate:
+    $ref: 'client/posture-response.yml#/definitions/postureResponseProcessCreate'
+  postureResponseEndpointStateCreate:
+    $ref: 'client/posture-response.yml#/definitions/postureResponseEndpointStateCreate'

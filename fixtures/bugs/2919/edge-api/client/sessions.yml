@@ -1,0 +1,107 @@
+---
+paths:
+  sessions:
+    get:
+      summary: List sessions
+      description: |
+        Retrieves a list of active sessions resources; supports filtering, sorting, and pagination.
+
+        Sessions are tied to an API session and are moved when an API session times out or logs out. Active sessions
+        (i.e. Ziti SDK connected to an edge router) will keep the session and API session marked as active.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Session
+      operationId: listSessions
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '../shared/sessions.yml#/responses/listSessions'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create a session resource
+      description: Create a session resource.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Session
+      operationId: createSession
+      parameters:
+        - name: session
+          in: body
+          required: true
+          description: A session to create
+          schema:
+            $ref: '#/definitions/sessionCreate'
+      responses:
+        '201':
+          $ref: '#/responses/sessionCreateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  sessions-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single session
+      description: Retrieves a single session by id.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Session
+      operationId: detailSession
+      responses:
+        '200':
+          $ref: '../shared/sessions.yml#/responses/detailSession'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a session
+      description: Delete a session by id.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Session
+      operationId: deleteSession
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+
+responses:
+  sessionCreateResponse:
+    description: The create request was successful and the resource has been added at the following location
+    schema:
+      $ref: '#/definitions/sessionCreateEnvelope'
+
+definitions:
+  sessionCreateEnvelope:
+    type: object
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '../shared/sessions.yml#/definitions/sessionDetail'
+  sessionCreate:
+    type: object
+    properties:
+      serviceId:
+        type: string
+      type:
+        $ref: '../shared/base-entity.yml#/definitions/dialBind'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'

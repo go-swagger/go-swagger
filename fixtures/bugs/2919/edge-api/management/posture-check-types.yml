@@ -1,0 +1,96 @@
+---
+paths:
+  posture-check-types:
+    get:
+      summary: List a subset of posture check types
+      description: |
+        Retrieves a list of posture check types
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: listPostureCheckTypes
+      produces:
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listPostureCheckTypes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  posture-check-types-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single posture check type
+      description: Retrieves a single posture check type by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: detailPostureCheckType
+      responses:
+        '200':
+          $ref: '#/responses/detailPostureCheckType'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listPostureCheckTypes:
+    description: A list of posture check types
+    schema:
+      $ref: '#/definitions/listPostureCheckTypesEnvelope'
+  detailPostureCheckType:
+    description: Retrieves a singular posture check type by id
+    schema:
+      $ref: '#/definitions/detailPostureCheckTypeEnvelope'
+
+definitions:
+  listPostureCheckTypesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/postureCheckTypeList'
+  detailPostureCheckTypeEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/postureCheckTypeDetail'
+  postureCheckTypeList:
+    type: array
+    items:
+      $ref: '#/definitions/postureCheckTypeDetail'
+  postureCheckTypeDetail:
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - operatingSystems
+          - version
+        properties:
+          name:
+            type: string
+          operatingSystems:
+            type: array
+            items:
+              $ref: 'posture-checks.yml#/definitions/operatingSystem'
+          version:
+            type: string

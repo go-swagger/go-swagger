@@ -1,0 +1,149 @@
+---
+
+definitions:
+  postureDataEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/postureData'
+  postureData:
+    type: object
+    required:
+      - mac
+      - domain
+      - os
+      - processes
+      - apiSessionPostureData
+    properties:
+      mac:
+        $ref: '#/definitions/postureDataMac'
+      domain:
+        $ref: '#/definitions/postureDataDomain'
+      os:
+        $ref: '#/definitions/postureDataOs'
+      processes:
+        type: array
+        items:
+          $ref: '#/definitions/postureDataProcess'
+      apiSessionPostureData:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/apiSessionPostureData'
+  postureDataBase:
+    type: object
+    required:
+      - postureCheckId
+      - timedOut
+      - lastUpdatedAt
+    properties:
+      postureCheckId:
+        type: string
+      timedOut:
+        type: boolean
+      lastUpdatedAt:
+        type: string
+        format: date-time
+  postureDataMac:
+    type: object
+    allOf:
+      - $ref: '#/definitions/postureDataBase'
+      - type: object
+        required:
+          - addresses
+        properties:
+          addresses:
+            type: array
+            items:
+              type: string
+  postureDataDomain:
+    type: object
+    allOf:
+      - $ref: '#/definitions/postureDataBase'
+      - type: object
+        required:
+          - domain
+        properties:
+          domain:
+            type: string
+  postureDataOs:
+    type: object
+    allOf:
+      - $ref: '#/definitions/postureDataBase'
+      - type: object
+        required:
+          - type
+          - version
+          - build
+        properties:
+          type:
+            type: string
+          version:
+            type: string
+          build:
+            type: string
+  postureDataProcess:
+    type: object
+    allOf:
+      - $ref: '#/definitions/postureDataBase'
+      - type: object
+        properties:
+          isRunning:
+            type: boolean
+          binaryHash:
+            type: string
+          signerFingerprints:
+            type: array
+            items:
+              type: string
+  postureDataMfa:
+    type: object
+    required:
+      - apiSessionId
+      - passedMfa
+      - passedOnWake
+      - passedOnUnlock
+      - passedAt
+    properties:
+      apiSessionId:
+        type: string
+      passedAt:
+        type: string
+        format: date-time
+        x-omitempty: false
+      passedMfa:
+        type: boolean
+        x-omitempty: false
+      passedOnWake:
+        type: boolean
+        x-omitempty: false
+      passedOnUnlock:
+        type: boolean
+        x-omitempty: false
+  postureDataEndpointState:
+    type: object
+    required:
+      - wokenAt
+      - unlockedAt
+    properties:
+      wokenAt:
+        type: string
+        format: date-time
+      unlockedAt:
+        type: string
+        format: date-time
+  apiSessionPostureData:
+    type: object
+    required:
+      - mfa
+    properties:
+      mfa:
+        $ref: '#/definitions/postureDataMfa'
+      endpointState:
+        $ref: '#/definitions/postureDataEndpointState'
+      sdkInfo:
+        $ref: '../shared/authenticate.yml#/definitions/sdkInfo'

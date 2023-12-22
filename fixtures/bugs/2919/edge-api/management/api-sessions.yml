@@ -1,0 +1,70 @@
+---
+
+paths:
+  api-sessions:
+    get:
+      summary: List active API sessions
+      description: |
+        Returns a list of active API sessions. The resources can be sorted, filtered, and paginated. This endpoint
+        requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - API Session
+      operationId: listAPISessions
+      produces:
+        - application/json; charset=utf-8
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listAPISessions'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  api-sessions-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single API Session
+      description: Retrieves a single API Session by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - API Session
+      operationId: detailAPISessions
+      responses:
+        '200':
+          $ref: '#/responses/detailAPISession'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Deletes an API Sessions
+      description: Deletes and API sesion by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - API Session
+      operationId: deleteAPISessions
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '403':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listAPISessions:
+    description: A list of active API Sessions
+    schema:
+      $ref: '../shared/api-sessions.yml#/definitions/listAPISessionsEnvelope'
+  detailAPISession:
+    description: Retrieves a singular API Session by id
+    schema:
+      $ref: '../shared/api-sessions.yml#/definitions/detailApiSessionEnvelope'

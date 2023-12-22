@@ -1,0 +1,38 @@
+---
+paths:
+  summary:
+    get:
+      summary: Returns a list of accessible resource counts
+      description: This endpoint is usefull for UIs that wish to display UI elements with counts.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Informational
+      operationId: listSummary
+      responses:
+        '200':
+          $ref: '#/responses/listSummaryCounts'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listSummaryCounts:
+    description: Entity counts scopped to the current identitie's access
+    schema:
+      $ref: '#/definitions/listSummaryCountsEnvelope'
+
+definitions:
+  listSummaryCountsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/listSummaryCounts'
+  listSummaryCounts:
+    type: object
+    additionalProperties:
+      type: integer

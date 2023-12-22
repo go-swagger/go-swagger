@@ -1,0 +1,60 @@
+---
+paths:
+  external-jwt-signers:
+    get:
+      summary: List Client Authentication External JWT
+      description: Retrieves a list of external JWT signers for authentication
+      security:
+        - ztSession: [ ]
+      tags:
+        - External JWT Signer
+      operationId: listExternalJwtSigners
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listClientExternalJwtSigners'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+responses:
+  listClientExternalJwtSigners:
+    description: A list of External JWT Signers
+    schema:
+      $ref: '#/definitions/listClientExternalJwtSignersEnvelope'
+
+definitions:
+  listClientExternalJwtSignersEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/clientExternalJwtSignerList'
+  clientExternalJwtSignerList:
+    description: An array of External JWT Signers resources
+    type: array
+    items:
+      $ref: '#/definitions/clientExternalJwtSignerDetail'
+  clientExternalJwtSignerDetail:
+    description: A External JWT Signer resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - externalAuthUrl
+        properties:
+          name:
+            type: string
+            example: 'MyApps Signer'
+          externalAuthUrl:
+            type: string
+            format: url

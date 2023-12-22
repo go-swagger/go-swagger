@@ -1,0 +1,94 @@
+---
+paths:
+  current-api-session:
+    get:
+      summary: Return the current API session
+      description: Retrieves the API session that was used to issue the current request
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      operationId: getCurrentAPISession
+      responses:
+        200:
+          $ref: '#/responses/detailCurrentAPISession'
+        401:
+          $ref: 'standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Logout
+      description: Terminates the current API session
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      responses:
+        200:
+          $ref: 'standard-responses.yml#/responses/emptyResponse'
+        401:
+          $ref: 'standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  detailCurrentAPISession:
+    description: The API session associated with the session used to issue the request
+    schema:
+      $ref: '#/definitions/currentApiSessionDetailEnvelope'
+    examples:
+      default:
+        meta: { }
+        data:
+          id: 27343114-b44f-406e-9981-f3c4f2f28d54
+          createdAt: '2020-03-09T19:03:49.1883693Z'
+          updatedAt: '2020-03-09T19:04:21.5600897Z'
+          _links:
+            self:
+              href: './current-api-session'
+          tags:
+            - userField1: 123
+            - userField2: asdf
+          token: 28bb0ed2-0577-4632-ae70-d17106b92871
+          identity:
+            urlName: identities
+            id: 66352d7b-a6b2-4ce9-85bb-9f18e318704d
+            name: Default Admin
+            _links:
+              self:
+                href: './identities/66352d7b-a6b2-4ce9-85bb-9f18e318704d'
+          expiresAt: '2020-03-09T19:34:21.5600897Z'
+          configTypes: [ ]
+
+definitions:
+  detailApiSessionEnvelope:
+    required:
+      - meta
+      - data
+    type: object
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: 'api-sessions.yml#/definitions/apiSessionDetail'
+  currentApiSessionDetailEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/currentApiSessionDetail'
+  currentApiSessionDetail:
+    description: An API Session object for the current API session
+    type: object
+    allOf:
+      - $ref: 'api-sessions.yml#/definitions/apiSessionDetail'
+      - type: object
+        required:
+          - expiresAt
+          - expirationSeconds
+        properties:
+          expiresAt:
+            type: string
+            format: date-time
+          expirationSeconds:
+            type: integer

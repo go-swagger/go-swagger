@@ -1,0 +1,238 @@
+---
+paths:
+  config-types:
+    get:
+      summary: List config-types
+      description: |
+        Retrieves a list of config-type resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: listConfigTypes
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listConfigTypes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create a config-type. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: createConfigType
+      parameters:
+        - name: configType
+          in: body
+          required: true
+          description: A config-type to create
+          schema:
+            $ref: '#/definitions/configTypeCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  config-types-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single config-type
+      description: Retrieves a single config-type by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: detailConfigType
+      responses:
+        '200':
+          $ref: '#/responses/detailConfigType'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a config-type
+      description: Update all fields on a config-type by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: updateConfigType
+      parameters:
+        - name: configType
+          in: body
+          required: true
+          description: A config-type update object
+          schema:
+            $ref: '#/definitions/configTypeUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a config-type
+      description: Update the supplied fields on a config-type. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: patchConfigType
+      parameters:
+        - name: configType
+          in: body
+          required: true
+          description: A config-type patch object
+          schema:
+            $ref: '#/definitions/configTypePatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a config-type
+      description: Delete a config-type by id. Removing a configuration type that are in use will result in a 409 conflict HTTP status code and error. All configurations of a type must be removed first.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: deleteConfigType
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  config-types-id-configs:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Lists the configs of a specific config-type
+      description: Lists the configs associated to a config-type. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Config
+      operationId: listConfigsForConfigType
+      responses:
+        '200':
+          $ref: 'configs.yml#/responses/listConfigs'
+
+responses:
+  listConfigTypes:
+    description: A list of config-types
+    schema:
+      $ref: '#/definitions/listConfigTypesEnvelope'
+  detailConfigType:
+    description: A singular config-type resource
+    schema:
+      $ref: '#/definitions/detailConfigTypeEnvelope'
+
+definitions:
+  listConfigTypesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/configTypeList'
+  detailConfigTypeEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/configTypeDetail'
+  configTypeList:
+    description: An array of config-type resources
+    type: array
+    items:
+      $ref: '#/definitions/configTypeDetail'
+  configTypeDetail:
+    description: A config-type resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - schema
+        properties:
+          name:
+            type: string
+            example: ziti-tunneler-server.v1
+          schema:
+            description: A JSON schema to enforce configuration against
+            type: object
+            additionalProperties: true
+  configTypeCreate:
+    type: object
+    description: A config-type create object
+    required:
+      - name
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+        example: ziti-tunneler-server.v1
+      schema:
+        description: A JSON schema to enforce configuration against
+        type: object
+        additionalProperties: true
+  configTypeUpdate:
+    description: A config-type update object
+    type: object
+    required:
+      - name
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+        example: ziti-tunneler-server.v1
+      schema:
+        description: A JSON schema to enforce configuration against
+        type: object
+        additionalProperties: true
+  configTypePatch:
+    description: A config-type patch object
+    type: object
+    properties:
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      name:
+        type: string
+        example: ziti-tunneler-server.v1
+      schema:
+        description: A JSON schema to enforce configuration against
+        type: object
+        additionalProperties: true

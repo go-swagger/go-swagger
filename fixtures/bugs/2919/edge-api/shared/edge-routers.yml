@@ -1,0 +1,38 @@
+---
+definitions:
+  commonEdgeRouterProperties:
+    type: object
+    required:
+      - hostname
+      - name
+      - supportedProtocols
+      - syncStatus
+      - isOnline
+      - cost
+      - noTraversal
+      - disabled
+    properties:
+      hostname:
+        type: string
+      name:
+        type: string
+      supportedProtocols:
+        additionalProperties:
+          type: string
+        type: object
+      syncStatus:
+        type: string
+      isOnline:
+        type: boolean
+      cost:
+        type: integer
+        minimum: 0
+        maximum: 65535
+        x-nullable: true
+      noTraversal:
+        type: boolean
+        x-nullable: true
+      disabled:
+        type: boolean
+      appData:
+        $ref: 'base-entity.yml#/definitions/tags'

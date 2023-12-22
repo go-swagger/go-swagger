@@ -1,0 +1,61 @@
+---
+definitions:
+  listServiceConfigsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/serviceConfigList'
+  serviceConfigList:
+    type: array
+    items:
+      $ref: '#/definitions/serviceConfigDetail'
+  serviceConfigDetail:
+    type: object
+    required:
+      - serviceId
+      - service
+      - configId
+      - config
+    properties:
+      serviceId:
+        type: string
+      service:
+        $ref: '../shared/base-entity.yml#/definitions/entityRef'
+      configId:
+        type: string
+      config:
+        $ref: '../shared/base-entity.yml#/definitions/entityRef'
+    example:
+      service:
+        urlName: services
+        id: 913a8c63-17a6-44d7-82b3-9f6eb997cf8e
+        name: netcat4545-egress-r2
+        _links:
+          self:
+            href: "./services/913a8c63-17a6-44d7-82b3-9f6eb997cf8e"
+      config:
+        urlName: configs
+        id: 13347602-ba34-4ff7-8082-e533ba945744
+        name: test-config-02fade09-fcc3-426c-854e-18539726bdc6
+        _links:
+          self:
+            href: "./identities/13347602-ba34-4ff7-8082-e533ba945744"
+  serviceConfigAssign:
+    type: object
+    required:
+      - serviceId
+      - configId
+    properties:
+      serviceId:
+        type: string
+      configId:
+        type: string
+  serviceConfigsAssignList:
+    type: array
+    items:
+      $ref: '#/definitions/serviceConfigAssign'

@@ -1,0 +1,131 @@
+---
+
+parameters:
+  authMethod:
+    name: method
+    in: query
+    required: true
+    type: string
+    enum:
+      - password
+      - cert
+      - ext-jwt
+paths:
+  authenticate:
+    parameters:
+      - $ref: '#/parameters/authMethod'
+    post:
+      summary: Authenticate via a method supplied via a query string parameter
+      description: |
+        Allowed authentication methods include "password", "cert", and "ext-jwt"
+      security: [ ]
+      tags:
+        - Authentication
+      operationId: authenticate
+      parameters:
+        - name: auth
+          in: body
+          required: false
+          schema:
+            $ref: '#/definitions/authenticate'
+      responses:
+        '200':
+          $ref: './current-api-session.yml/#/responses/detailCurrentAPISession'
+        '400':
+          $ref: './standard-responses.yml#/responses/badRequestResponse'
+        '403':
+          $ref: './standard-responses.yml#/responses/invalidAuthResponse'
+
+  authenticate-mfa:
+    post:
+      summary: Complete MFA authentication
+      description: Completes MFA authentication by submitting a MFA time based one time token or backup code.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authentication
+        - MFA
+      operationId: authenticateMfa
+      parameters:
+        - name: mfaAuth
+          in: body
+          required: true
+          description: 'An MFA validation request'
+          schema:
+            $ref: '#/definitions/mfaCode'
+      responses:
+        '200':
+          $ref: './standard-responses.yml#/responses/emptyResponse'
+        '401':
+          $ref: './standard-responses.yml#/responses/emptyResponse'
+responses:
+  $ref: 'standard-responses.yml#/responses'
+
+definitions:
+  mfaCode:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: string
+  password:
+    type: string
+    minLength: 5
+    maxLength: 100
+  password-nullable:
+    type: string
+    minLength: 5
+    maxLength: 100
+    x-nullable: true
+  username:
+    type: string
+    minLength: 4
+    maxLength: 100
+  username-nullable:
+    type: string
+    minLength: 4
+    maxLength: 100
+    x-nullable: true
+  envInfo:
+    description: Environment information an authenticating client may provide
+    properties:
+      os:
+        type: string
+      arch:
+        type: string
+      osRelease:
+        type: string
+      osVersion:
+        type: string
+    type: object
+  sdkInfo:
+    description: SDK information an authenticating client may provide
+    properties:
+      type:
+        type: string
+      branch:
+        type: string
+      version:
+        type: string
+      revision:
+        type: string
+      appId:
+        type: string
+      appVersion:
+        type: string
+    type: object
+  authenticate:
+    type: object
+    description: A generic authenticate object meant for use with the /authenticate path. Required fields depend on authentication method.
+    properties:
+      username:
+        $ref: '#/definitions/username'
+      password:
+        $ref: '#/definitions/password'
+      envInfo:
+        $ref: '#/definitions/envInfo'
+      sdkInfo:
+        $ref: '#/definitions/sdkInfo'
+      configTypes:
+        $ref: 'config-types.yml#/definitions/configTypes'

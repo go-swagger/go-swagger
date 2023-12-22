@@ -1,0 +1,49 @@
+---
+paths:
+  current-identity-edge-routers:
+    get:
+      summary: Return this list of Edge Routers the identity has access to
+      description: |
+        Lists the Edge Routers that the current identity has access to via policies. The data returned
+        includes their address and online status
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current Identity
+        - Edge Router
+      operationId: getCurrentIdentityEdgeRouters
+      responses:
+        '200':
+          $ref: '#/responses/listCurrentIdentityEdgeRouters'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listCurrentIdentityEdgeRouters:
+    description: A list of edge routers
+    schema:
+      $ref: '#/definitions/listCurrentIdentityEdgeRoutersEnvelope'
+
+definitions:
+  listCurrentIdentityEdgeRoutersEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/currentIdentityEdgeRouterList'
+
+  currentIdentityEdgeRouterList:
+    description: A list of edge router resources
+    type: array
+    items:
+      $ref: '#/definitions/currentIdentityEdgeRouterDetail'
+  currentIdentityEdgeRouterDetail:
+    description: A detail edge router resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - $ref: '../shared/edge-routers.yml#/definitions/commonEdgeRouterProperties'

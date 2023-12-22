@@ -1,0 +1,41 @@
+---
+paths:
+  protocols:
+    get:
+      summary: Return a list of the listening Edge protocols
+      security: [ ]
+      tags:
+        - Informational
+      operationId: listProtocols
+      responses:
+        '200':
+          $ref: '#/responses/listProtocols'
+
+responses:
+  listProtocols:
+    description: A list of supported Edge protocols
+    schema:
+      $ref: '#/definitions/listProtocolsEnvelope'
+
+definitions:
+  listProtocolsEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/listProtocols'
+  listProtocols:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/protocol'
+  protocol:
+    type: object
+    required:
+      - address
+    properties:
+      address:
+        type: string

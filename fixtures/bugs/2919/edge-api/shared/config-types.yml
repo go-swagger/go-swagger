@@ -1,0 +1,7 @@
+---
+definitions:
+  configTypes:
+    description: Specific configuration types that should be returned
+    type: array
+    items:
+      type: string
