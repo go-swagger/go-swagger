@@ -215,3 +215,5 @@
   dir: fixtures/bugs/2137
   skipped:
     skipModel: true
+- spec: swagger.json
+  dir: fixtures/bugs/1898
