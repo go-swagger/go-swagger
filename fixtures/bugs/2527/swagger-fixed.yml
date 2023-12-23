@@ -1,0 +1,285 @@
+swagger: '2.0'
+info:
+  title: Exchange Automator 2
+  version: '1.0'
+  description: Exchange trading automator. Internal only service.
+host: localhost
+basePath: /api/v1
+securityDefinitions:
+  ApiKeyAuth:
+    name: X-API-Key
+    description: 'API keys are all predefined for all internal services'
+    type: apiKey
+    in: header
+security:
+  - ApiKeyAuth: []
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+responses:
+  401:
+    description: Not authorized
+    schema:
+      $ref: '#/definitions/Error'
+  422:
+    description: Unprocessable entity
+    schema:
+      $ref: '#/definitions/Error'
+  503:
+    description: Service temporarily unavailable
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+  - name: Currency exchange rate
+    description: Get exchange currency rate info
+  - name: Deposit
+  - name: Trading
+parameters:
+  Exchange:
+    name: exchange
+    in: query
+    type: string
+    enum: [kraken, globitex, binance, cex]
+    description: Exchange Id
+definitions:
+  Exchange:
+    type: string
+    enum: [kraken, globitex, binance, cex]
+    description: Exchange Id
+  CurrencyRate:
+    type: object
+    properties:
+      exchange:
+        type: string
+      timestamp:
+        description: Most likely near to current moment
+        type: integer
+        format: int64
+      source:
+        type: string
+        description: Source currency ticker
+      target:
+        type: string
+        description: Target currency ticker
+      rate:
+        type: number
+        format: double
+      sourceAmount:
+        type: number
+        format: double
+      targetAmount:
+        type: number
+        format: double
+  Deposit:
+    type: object
+    description: Field list is not final, will be added during development
+    properties:
+      exchange:
+        $ref: '#/definitions/Exchange'
+      accountId:
+        type: string
+        format: uuid
+      txId:
+        description: Transaction Id
+        type: string
+      clientId:
+        description: Client Id, identified via external system, after receiving
+      ticker:
+        type: string
+      amount:
+        type: number
+        format: double
+  ExchangeOrder:
+    type: object
+    required:
+      - exchange
+      - incomingTxId
+      - source
+      - target
+      - sourceAmount
+    properties:
+      id:
+        type: string
+        description: Created order Id
+      type:
+        type: string
+        description: defaults to 'market'
+        enum: [market, limit]
+      exchange:
+        $ref: '#/definitions/Exchange'
+      incomingTxId:
+        type: string
+        description: Incoming deposit transaction id
+      source:
+        type: string
+      target:
+        type: string
+      sourceAmount:
+        type: number
+        format: double
+      targetAmount:
+        description: Target currency amount after or during exchange processing. Total of transactions amounts
+        type: number
+        format: double
+      status:
+        type: string
+        enum: [pending, processing, executed]
+      transactions:
+        type: array
+        items:
+          type: string
+
+  Error:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: Error description
+paths:
+  /swagger.yml:
+    get:
+      description: Returns swagger api specs
+      tags:
+        - Swagger
+      responses:
+        200:
+          description: Swagger specs contents
+  /exchange_rate:
+    get:
+      description: Returns currency exchange rate. If both sourceAmount and targetAmount is provided, targetAmount will be ignored.
+      tags:
+        - Currency exchange rate
+      parameters:
+        - name: exchange
+          description: Exchange to query
+          in: query
+          type: string
+          required: true
+        - name: source
+          description: Source currency to be converted from
+          in: query
+          type: string
+          required: true
+        - name: target
+          description: Target currency to be converted to
+          in: query
+          type: string
+          required: true
+        - name: sourceAmount
+          description: If set, returns target currency amount, selling this amount of source currency, default 1
+          in: query
+          type: number
+          format: double
+        - name: targetAmount
+          description: If set, returns source currency amount, buying this amount of target currency
+          in: query
+          type: number
+          format: double
+      responses:
+        200:
+          description: Currency rate object
+          schema:
+            $ref: '#/definitions/CurrencyRate'
+        401:
+          $ref: '#/responses/401'
+        422:
+          $ref: '#/responses/422'
+        503:
+          $ref: '#/responses/503'
+  /deposits:
+    get:
+      description: Returns deposits list across all exchanges
+      tags:
+        - Deposit
+      parameters:
+        - name: accountId
+          description: Filter by account ID
+          in: query
+          type: string
+          format: uuid
+        - $ref: '#/parameters/Exchange'
+        - name: status
+          description: Filter by deposit transaction status
+          type: string
+          in: query
+          enum: [pending, mempool, something, else]
+      responses:
+        200:
+          description: Deposit list
+          schema:
+            type: object
+            properties:
+              deposits:
+                type: array
+                items:
+                  $ref: '#/definitions/Deposit'
+        401:
+          $ref: '#/responses/401'
+  /exchange_order/{exchangeOrderId}:
+    get:
+      description: Returns exchange order
+      tags:
+        - Trading
+      parameters:
+        - name: exchangeOrderId
+          in: path
+          type: string
+          required: true
+      responses:
+        200:
+          description: Exchange order
+          schema:
+            $ref: '#/definitions/ExchangeOrder'
+        401:
+          $ref: '#/responses/401'
+  /exchange_order:
+    post:
+      description: Creates a currency exchange order, depending on order type, might be async
+      tags:
+        - Trading
+      parameters:
+        - name: X-Idempotency-Token
+          description: Client generated idempotency token for operation deduplication
+          in: header
+          type: string
+          required: true
+        - name: exchangeOrder
+          in: body
+          required: true
+          schema:
+            type: object
+            required:
+              - exchange
+              - incomingTxId
+              - source
+              - target
+              - sourceAmount
+            properties:
+              type:
+                type: string
+                description: defaults to 'market'
+                enum: [market, limit]
+              exchange:
+                $ref: '#/definitions/Exchange'
+              incomingTxId:
+                type: string
+                description: Incoming deposit transaction id
+              source:
+                type: string
+              target:
+                type: string
+              sourceAmount:
+                type: number
+                format: double
+      responses:
+        200:
+          description: Exchange order
+          schema:
+            $ref: '#/definitions/ExchangeOrder'
+        401:
+          $ref: '#/responses/401'

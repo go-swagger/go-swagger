@@ -14,7 +14,7 @@ require (
 	github.com/go-openapi/spec v0.20.13
 	github.com/go-openapi/strfmt v0.21.10
 	github.com/go-openapi/swag v0.22.6
-	github.com/go-openapi/validate v0.22.1
+	github.com/go-openapi/validate v0.22.6
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/handlers v1.5.1

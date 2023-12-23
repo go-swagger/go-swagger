@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -244,11 +245,23 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		"header":   make(map[string]string, len(params)),
 		"body":     make(map[string]string, len(params)),
 	}
+	debugLog("paramMappings: map=%v", params)
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
 	seenIds := make(map[string]interface{}, len(params))
 	for id, p := range params {
+		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
+		// guard against possible validation failures and/or skipped issues
+		if _, found := idMapping[p.In]; !found {
+			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In)
+			continue
+		}
+		if p.Name == "" {
+			log.Printf(`warning: unnamed parameter (%+v). Skipped`, p)
+			continue
+		}
+
 		if val, ok := seenIds[p.Name]; ok {
 			previous := val.(struct{ id, in string })
 			idMapping[p.In][p.Name] = swag.ToGoName(id)
@@ -716,7 +729,12 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 				b.Method, b.Path, param.Name, goName)
 		}
 	} else if len(idMapping) > 0 {
-		id = idMapping[param.In][param.Name]
+		id, ok = idMapping[param.In][param.Name]
+		if !ok {
+			// skipped parameter
+			return GenParameter{}, fmt.Errorf(`%s %s, %q has an invalid parameter definition`,
+				b.Method, b.Path, param.Name)
+		}
 	}
 
 	res := GenParameter{
