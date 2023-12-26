@@ -23,7 +23,7 @@
 
 {{ define "flagdefaultvar" }}
     {{ $defaultVar := printf "%vFlagDefault" (camelize .Name) }}
-    var {{ $defaultVar}} {{ .GoType }} {{ if .Default }}= {{ printf "%#v" .Default }}{{ end }} 
+    var {{ $defaultVar}} {{ .GoType }} {{ if .Default }}= {{ printf "%#v" .Default }}{{ end }}
 {{ end }}
 
 {{/* Not used. CLI does not mark flag as required, and required will be checked by validation in future */}}
@@ -35,7 +35,7 @@
 
 {{ define "enumcompletion" }} {{/*only used for primitive types. completion type is always string.*/}}
 {{ if .Enum }}
-if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName, 
+if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName,
     func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
         var res []string
         if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
@@ -56,7 +56,7 @@ if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName,
         {{ template "flagdefaultvar" . }}
         _ = cmd.PersistentFlags().{{ pascalize .GoType }}({{ camelize .Name }}FlagName, {{ camelize .Name }}FlagDefault, {{ (camelize .Name) }}Description)
         {{ template "enumcompletion" . }}
-    {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.UUID") (eq .GoType "strfmt.ObjectId") }} {{/* read as string */}}
+    {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.UUID") (eq .GoType "strfmt.ObjectId") (eq .GoType "strfmt.ULID") }} {{/* read as string */}}
         {{ template "flagdescriptionvar" . }}
         {{ template "flagnamevar" . }}
         _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", {{ (camelize .Name) }}Description)
@@ -73,7 +73,7 @@ if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName,
         {{ template "flagdefaultvar" . }}
         _ = cmd.PersistentFlags().{{ pascalize .GoType }}Slice({{ camelize .Name }}FlagName, {{ camelize .Name }}FlagDefault, {{ (camelize .Name) }}Description)
         {{ template "enumcompletion" . }}
-    {{- else if or (eq .GoType "[]strfmt.DateTime") (eq .GoType "[]strfmt.UUID") (eq .GoType "[]strfmt.ObjectId") }} {{/* read as string */}}
+    {{- else if or (eq .GoType "[]strfmt.DateTime") (eq .GoType "[]strfmt.UUID") (eq .GoType "[]strfmt.ObjectId") (eq .GoType "[]strfmt.ULID") }} {{/* read as string */}}
         {{ template "flagdescriptionvar" . }}
         {{ template "flagnamevar" . }}
         _ = cmd.PersistentFlags().StringSlice({{ camelize .Name }}FlagName, []string{}, {{ (camelize .Name) }}Description)
