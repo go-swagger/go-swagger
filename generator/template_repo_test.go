@@ -672,3 +672,25 @@ func TestGt0(t *testing.T) {
 	require.False(t, gt0(swag.Int64(0)))
 	require.False(t, gt0(nil))
 }
+
+func TestIssue2821(t *testing.T) {
+	tpl := `
+Pascalize={{ pascalize . }}
+Camelize={{ camelize . }}
+`
+
+	require.NoError(t,
+		templates.AddFile("functpl", tpl),
+	)
+
+	compiled, err := templates.Get("functpl")
+	require.NoError(t, err)
+
+	rendered := bytes.NewBuffer(nil)
+	require.NoError(t,
+		compiled.Execute(rendered, "get$ref"),
+	)
+
+	assert.Contains(t, rendered.String(), "Pascalize=GetDollarRef\n")
+	assert.Contains(t, rendered.String(), "Camelize=getDollarRef\n")
+}

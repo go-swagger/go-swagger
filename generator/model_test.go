@@ -2664,6 +2664,17 @@ func TestGenerateModels(t *testing.T) {
 					assert.False(t, fileExists(target, "restapi"))
 				},
 			},
+			"mangleNames": {
+				spec:   "../fixtures/bugs/2821/ServiceManagementBody.json",
+				target: "../fixtures/bugs/2821",
+				verify: func(t testing.TB, target string) {
+					target = filepath.Join(target, defaultModelsTarget)
+					require.True(t, fileExists(target, "schema.go"))
+					content, err := os.ReadFile(filepath.Join(target, "schema.go"))
+					require.NoError(t, err)
+					assert.Contains(t, string(content), "getDollarRefField string")
+				},
+			},
 		}
 		for k, cas := range cases {
 			name := k
