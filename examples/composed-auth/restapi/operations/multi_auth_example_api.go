@@ -450,6 +450,6 @@ func (o *MultiAuthExampleAPI) AddMiddlewareFor(method, path string, builder midd
 	}
 	o.Init()
 	if h, ok := o.handlers[um][path]; ok {
-		o.handlers[method][path] = builder(h)
+		o.handlers[um][path] = builder(h)
 	}
 }

@@ -218,6 +218,7 @@ func (m *MyTuple) ContextValidate(ctx context.Context, formats strfmt.Registry) 
 func (m *MyTuple) contextValidateP0(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.P0 != nil {
+
 		if err := m.P0.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("0")

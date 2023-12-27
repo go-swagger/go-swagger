@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	go_ext "github.com/go-swagger/go-swagger/examples/external-types/go-ext"
 )
 
@@ -47,6 +48,10 @@ func (m MyExtCollection) ContextValidate(ctx context.Context, formats strfmt.Reg
 	var res []error
 
 	for i := 0; i < len(m); i++ {
+
+		if swag.IsZero(m[i]) { // not required
+			return nil
+		}
 
 		if err := m[i].ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {

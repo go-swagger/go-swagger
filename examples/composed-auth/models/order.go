@@ -100,6 +100,11 @@ func (m *Order) contextValidateOrderLines(ctx context.Context, formats strfmt.Re
 	for i := 0; i < len(m.OrderLines); i++ {
 
 		if m.OrderLines[i] != nil {
+
+			if swag.IsZero(m.OrderLines[i]) { // not required
+				return nil
+			}
+
 			if err := m.OrderLines[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("orderLines" + "." + strconv.Itoa(i))
@@ -220,6 +225,7 @@ func (m *OrderLine) ContextValidate(ctx context.Context, formats strfmt.Registry
 func (m *OrderLine) contextValidatePurchasedItem(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.PurchasedItem != nil {
+
 		if err := m.PurchasedItem.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("purchasedItem")

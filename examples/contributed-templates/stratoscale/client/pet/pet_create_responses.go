@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -36,7 +37,7 @@ func (o *PetCreateReader) ReadResponse(response runtime.ClientResponse, consumer
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /pet] PetCreate", response, response.Code())
 	}
 }
 
@@ -85,11 +86,13 @@ func (o *PetCreateCreated) Code() int {
 }
 
 func (o *PetCreateCreated) Error() string {
-	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /pet][%d] petCreateCreated %s", 201, payload)
 }
 
 func (o *PetCreateCreated) String() string {
-	return fmt.Sprintf("[POST /pet][%d] petCreateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /pet][%d] petCreateCreated %s", 201, payload)
 }
 
 func (o *PetCreateCreated) GetPayload() *models.Pet {
@@ -152,11 +155,11 @@ func (o *PetCreateMethodNotAllowed) Code() int {
 }
 
 func (o *PetCreateMethodNotAllowed) Error() string {
-	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed ", 405)
+	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed", 405)
 }
 
 func (o *PetCreateMethodNotAllowed) String() string {
-	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed ", 405)
+	return fmt.Sprintf("[POST /pet][%d] petCreateMethodNotAllowed", 405)
 }
 
 func (o *PetCreateMethodNotAllowed) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

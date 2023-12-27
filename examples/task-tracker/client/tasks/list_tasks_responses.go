@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -101,11 +102,13 @@ func (o *ListTasksOK) Code() int {
 }
 
 func (o *ListTasksOK) Error() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasksOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasksOK %s", 200, payload)
 }
 
 func (o *ListTasksOK) String() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasksOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasksOK %s", 200, payload)
 }
 
 func (o *ListTasksOK) GetPayload() []*models.TaskCard {
@@ -178,11 +181,13 @@ func (o *ListTasksUnprocessableEntity) Code() int {
 }
 
 func (o *ListTasksUnprocessableEntity) Error() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity %s", 422, payload)
 }
 
 func (o *ListTasksUnprocessableEntity) String() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasksUnprocessableEntity %s", 422, payload)
 }
 
 func (o *ListTasksUnprocessableEntity) GetPayload() *models.ValidationError {
@@ -251,11 +256,13 @@ func (o *ListTasksDefault) Code() int {
 }
 
 func (o *ListTasksDefault) Error() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasks default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasks default %s", o._statusCode, payload)
 }
 
 func (o *ListTasksDefault) String() string {
-	return fmt.Sprintf("[GET /tasks][%d] listTasks default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks][%d] listTasks default %s", o._statusCode, payload)
 }
 
 func (o *ListTasksDefault) GetPayload() *models.Error {

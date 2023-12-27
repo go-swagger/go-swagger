@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,11 +86,11 @@ func (o *DeleteTaskNoContent) Code() int {
 }
 
 func (o *DeleteTaskNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent ", 204)
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent", 204)
 }
 
 func (o *DeleteTaskNoContent) String() string {
-	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent ", 204)
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTaskNoContent", 204)
 }
 
 func (o *DeleteTaskNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *DeleteTaskDefault) Code() int {
 }
 
 func (o *DeleteTaskDefault) Error() string {
-	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default %s", o._statusCode, payload)
 }
 
 func (o *DeleteTaskDefault) String() string {
-	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /tasks/{id}][%d] deleteTask default %s", o._statusCode, payload)
 }
 
 func (o *DeleteTaskDefault) GetPayload() *models.Error {

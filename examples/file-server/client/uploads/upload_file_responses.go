@@ -27,7 +27,7 @@ func (o *UploadFileReader) ReadResponse(response runtime.ClientResponse, consume
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /upload] uploadFile", response, response.Code())
 	}
 }
 
@@ -75,11 +75,11 @@ func (o *UploadFileOK) Code() int {
 }
 
 func (o *UploadFileOK) Error() string {
-	return fmt.Sprintf("[POST /upload][%d] uploadFileOK ", 200)
+	return fmt.Sprintf("[POST /upload][%d] uploadFileOK", 200)
 }
 
 func (o *UploadFileOK) String() string {
-	return fmt.Sprintf("[POST /upload][%d] uploadFileOK ", 200)
+	return fmt.Sprintf("[POST /upload][%d] uploadFileOK", 200)
 }
 
 func (o *UploadFileOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

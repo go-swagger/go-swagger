@@ -29,7 +29,7 @@ func (o *ChunkedReader) ReadResponse(response runtime.ClientResponse, consumer r
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /HTTP/ChunkedScript] chunked", response, response.Code())
 	}
 }
 
@@ -81,11 +81,11 @@ func (o *ChunkedOK) Code() int {
 }
 
 func (o *ChunkedOK) Error() string {
-	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK", 200)
 }
 
 func (o *ChunkedOK) String() string {
-	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /HTTP/ChunkedScript][%d] chunkedOK", 200)
 }
 
 func (o *ChunkedOK) GetPayload() io.Writer {

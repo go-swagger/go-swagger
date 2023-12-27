@@ -39,7 +39,7 @@ func (o *PetDeleteReader) ReadResponse(response runtime.ClientResponse, consumer
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[DELETE /pet/{petId}] PetDelete", response, response.Code())
 	}
 }
 
@@ -87,11 +87,11 @@ func (o *PetDeleteNoContent) Code() int {
 }
 
 func (o *PetDeleteNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent ", 204)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent", 204)
 }
 
 func (o *PetDeleteNoContent) String() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent ", 204)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNoContent", 204)
 }
 
 func (o *PetDeleteNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -143,11 +143,11 @@ func (o *PetDeleteBadRequest) Code() int {
 }
 
 func (o *PetDeleteBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest ", 400)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest", 400)
 }
 
 func (o *PetDeleteBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest ", 400)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteBadRequest", 400)
 }
 
 func (o *PetDeleteBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -199,11 +199,11 @@ func (o *PetDeleteNotFound) Code() int {
 }
 
 func (o *PetDeleteNotFound) Error() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound ", 404)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound", 404)
 }
 
 func (o *PetDeleteNotFound) String() string {
-	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound ", 404)
+	return fmt.Sprintf("[DELETE /pet/{petId}][%d] petDeleteNotFound", 404)
 }
 
 func (o *PetDeleteNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
