@@ -19,6 +19,10 @@ const (
 	basePath       = "../../../../fixtures/goparsing/spec"
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
+
+	customStructTagBasePath       = "../../../../fixtures/goparsing/spec_custom_tag"
+	customStructTagJsonResultFile = customStructTagBasePath + "/api_spec_go111.json"
+	customStructTagYamlResultFile = customStructTagBasePath + "/api_spec_go111.yml"
 )
 
 func TestSpecFileExecute(t *testing.T) {
@@ -27,6 +31,23 @@ func TestSpecFileExecute(t *testing.T) {
 		spec := &SpecFile{
 			WorkDir: basePath,
 			Output:  flags.Filename(outputFile),
+		}
+
+		err := spec.Execute(nil)
+		assert.NoError(t, err)
+		if outputFile != "" {
+			_ = os.Remove(outputFile)
+		}
+	}
+}
+
+func TestSpecFileExecuteWithCustomStructTag(t *testing.T) {
+	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
+	for _, outputFile := range files {
+		spec := &SpecFile{
+			StructTag: "swagger",
+			WorkDir:   customStructTagBasePath,
+			Output:    flags.Filename(outputFile),
 		}
 
 		err := spec.Execute(nil)
@@ -55,6 +76,25 @@ func TestGenerateJSONSpec(t *testing.T) {
 	verifyJSONData(t, data, expected)
 }
 
+func TestGenerateJSONSpecWithCustomTag(t *testing.T) {
+	opts := codescan.Options{
+		WorkDir:   customStructTagBasePath,
+		Packages:  []string{"./..."},
+		StructTag: "swagger",
+	}
+
+	swspec, err := codescan.Run(&opts)
+	assert.NoError(t, err)
+
+	data, err := marshalToJSONFormat(swspec, true)
+	assert.NoError(t, err)
+
+	expected, err := ioutil.ReadFile(customStructTagJsonResultFile)
+	assert.NoError(t, err)
+
+	verifyJSONData(t, data, expected)
+}
+
 func TestGenerateYAMLSpec(t *testing.T) {
 	opts := codescan.Options{
 		WorkDir:  basePath,
@@ -68,6 +108,25 @@ func TestGenerateYAMLSpec(t *testing.T) {
 	assert.NoError(t, err)
 
 	expected, err := os.ReadFile(yamlResultFile)
+	assert.NoError(t, err)
+
+	verifyYAMLData(t, data, expected)
+}
+
+func TestGenerateYAMLSpecWithCustomStructTag(t *testing.T) {
+	opts := codescan.Options{
+		StructTag: "swagger",
+		WorkDir:   customStructTagBasePath,
+		Packages:  []string{"./..."},
+	}
+
+	swspec, err := codescan.Run(&opts)
+	assert.NoError(t, err)
+
+	data, err := marshalToYAMLFormat(swspec)
+	assert.NoError(t, err)
+
+	expected, err := ioutil.ReadFile(customStructTagYamlResultFile)
 	assert.NoError(t, err)
 
 	verifyYAMLData(t, data, expected)

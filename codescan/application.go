@@ -52,11 +52,13 @@ type Options struct {
 	Exclude     []string
 	IncludeTags []string
 	ExcludeTags []string
+	StructTag   string
 }
 
 type scanCtx struct {
-	pkgs []*packages.Package
-	app  *typeIndex
+	pkgs      []*packages.Package
+	app       *typeIndex
+	structTag string
 }
 
 func sliceToSet(names []string) map[string]bool {
@@ -87,6 +89,10 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 		cfg.BuildFlags = []string{"-tags", opts.BuildTags}
 	}
 
+	if opts.StructTag == "" {
+		opts.StructTag = jsonTag
+	}
+
 	pkgs, err := packages.Load(cfg, opts.Packages...)
 	if err != nil {
 		return nil, err
@@ -100,8 +106,9 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 	}
 
 	return &scanCtx{
-		pkgs: pkgs,
-		app:  app,
+		pkgs:      pkgs,
+		app:       app,
+		structTag: opts.StructTag,
 	}, nil
 }
 

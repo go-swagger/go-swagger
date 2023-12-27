@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	petstoreCtx       *scanCtx
-	classificationCtx *scanCtx
+	petstoreCtx          *scanCtx
+	petstroeCustomTagCtx *scanCtx
+	classificationCtx    *scanCtx
 )
 
 func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
@@ -26,6 +27,19 @@ func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
 	require.NoError(t, err)
 	petstoreCtx = sctx
 	return petstoreCtx
+}
+
+func loadPetstoreCustomTagPkgsCtx(t testing.TB) *scanCtx {
+	if petstroeCustomTagCtx != nil {
+		return petstroeCustomTagCtx
+	}
+	sctx, err := newScanCtx(&Options{
+		Packages:  []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore_custom_tag/..."},
+		StructTag: "swagger",
+	})
+	require.NoError(t, err)
+	petstroeCustomTagCtx = sctx
+	return petstroeCustomTagCtx
 }
 
 func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
@@ -58,6 +72,19 @@ func TestApplication_LoadCode(t *testing.T) {
 func TestAppScanner_NewSpec(t *testing.T) {
 	doc, err := Run(&Options{
 		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/..."},
+	})
+	require.NoError(t, err)
+	if assert.NotNil(t, doc) {
+		// b, _ := json.MarshalIndent(doc.Responses, "", "  ")
+		// log.Println(string(b))
+		verifyParsedPetStore(t, doc)
+	}
+}
+
+func TestAppScanner_NewSpecWithCustomTag(t *testing.T) {
+	doc, err := Run(&Options{
+		Packages:  []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore_custom_tag/..."},
+		StructTag: "swagger",
 	})
 	require.NoError(t, err)
 	if assert.NotNil(t, doc) {
