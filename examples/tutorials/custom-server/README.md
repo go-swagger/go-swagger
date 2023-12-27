@@ -3,10 +3,10 @@
 An example project, showcasing how one can create a custom OpenAPI-based Go server,
 using go-swagger to generate its core.
 
-You can regenerate the `./gen` directory using the [swagger][] cli:
+You may regenerate the `./gen` directory using the [swagger][] cli:
 
 ```bash
-$ rm -rf gen && swagger generate server --exclude-main -A greeter -t gen -f ./swagger/swagger.yml
+$ rm -rf gen && mkdir gen && swagger generate server --exclude-main -A greeter -t gen -f ./swagger/swagger.yml
 ```
 
 Running the _greeter_ server on port `3000` is as simple as:
