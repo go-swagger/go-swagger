@@ -1131,8 +1131,8 @@ func TestGenClient_2590(t *testing.T) {
 		"client/abc/create_responses.go": { // generated file
 			// expected code lines
 			`payload, _ := json.Marshal(o.Payload)`,
-			`return fmt.Sprintf("[POST /abc][%d] createAccepted  %s", 202, payload)`,
-			`return fmt.Sprintf("[POST /abc][%d] createInternalServerError  %s", 500, payload)`,
+			`return fmt.Sprintf("[POST /abc][%d] createAccepted %s", 202, payload)`,
+			`return fmt.Sprintf("[POST /abc][%d] createInternalServerError %s", 500, payload)`,
 		},
 	}
 

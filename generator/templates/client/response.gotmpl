@@ -122,14 +122,14 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) Error() string {
   {{- if .Schema }}{{ if (not .Schema.IsStream) }}
   payload, _ := json.Marshal(o.Payload)
   {{- end }}{{- end }}
-	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown error {{ end }}{{ if .Schema }} %s{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }}, payload{{ end }}{{ end }})
+	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d]{{ if .Name }} {{ .Name }}{{ else }} unknown error{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }} %s{{ end }}{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }}, payload{{ end }}{{ end }})
 }
 
 func ({{ .ReceiverName }} *{{ pascalize .Name }}) String() string {
   {{- if .Schema }}{{ if (not .Schema.IsStream) }}
   payload, _ := json.Marshal(o.Payload)
   {{- end }}{{- end }}
-	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d] {{ if .Name }}{{ .Name }} {{ else }}unknown response {{ end }}{{ if .Schema }} %s{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }}, payload{{ end }}{{ end }})
+	return fmt.Sprintf("[{{ upper .Method }} {{ .Path }}][%d]{{ if .Name }} {{ .Name }}{{ else }} unknown response{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }} %s{{ end }}{{ end }}", {{ if eq .Code -1 }}{{ .ReceiverName }}._statusCode{{ else }}{{ .Code }}{{ end }}{{ if .Schema }}{{ if not .Schema.IsStream }}, payload{{ end }}{{ end }})
 }
 
 {{ if .Schema }}
