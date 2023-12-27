@@ -133,6 +133,7 @@ func (m *Comment) contextValidateCreatedAt(ctx context.Context, formats strfmt.R
 func (m *Comment) contextValidateUser(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.User != nil {
+
 		if err := m.User.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("user")

@@ -6,6 +6,7 @@ package customers
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,11 +87,13 @@ func (o *CreateCreated) Code() int {
 }
 
 func (o *CreateCreated) Error() string {
-	return fmt.Sprintf("[POST /customers][%d] createCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /customers][%d] createCreated %s", 201, payload)
 }
 
 func (o *CreateCreated) String() string {
-	return fmt.Sprintf("[POST /customers][%d] createCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /customers][%d] createCreated %s", 201, payload)
 }
 
 func (o *CreateCreated) GetPayload() *models.Customer {
@@ -158,11 +161,13 @@ func (o *CreateDefault) Code() int {
 }
 
 func (o *CreateDefault) Error() string {
-	return fmt.Sprintf("[POST /customers][%d] create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /customers][%d] create default %s", o._statusCode, payload)
 }
 
 func (o *CreateDefault) String() string {
-	return fmt.Sprintf("[POST /customers][%d] create default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /customers][%d] create default %s", o._statusCode, payload)
 }
 
 func (o *CreateDefault) GetPayload() *models.Error {

@@ -6,6 +6,7 @@ package customers
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -98,11 +99,13 @@ func (o *GetIDOK) Code() int {
 }
 
 func (o *GetIDOK) Error() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdOK %s", 200, payload)
 }
 
 func (o *GetIDOK) String() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdOK %s", 200, payload)
 }
 
 func (o *GetIDOK) GetPayload() *models.Customer {
@@ -166,11 +169,13 @@ func (o *GetIDUnauthorized) Code() int {
 }
 
 func (o *GetIDUnauthorized) Error() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized %s", 401, payload)
 }
 
 func (o *GetIDUnauthorized) String() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized  %+v", 401, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdUnauthorized %s", 401, payload)
 }
 
 func (o *GetIDUnauthorized) GetPayload() *models.Error {
@@ -234,11 +239,13 @@ func (o *GetIDNotFound) Code() int {
 }
 
 func (o *GetIDNotFound) Error() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdNotFound %s", 404, payload)
 }
 
 func (o *GetIDNotFound) String() string {
-	return fmt.Sprintf("[GET /customers][%d] getIdNotFound  %+v", 404, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getIdNotFound %s", 404, payload)
 }
 
 func (o *GetIDNotFound) GetPayload() *models.Error {
@@ -306,11 +313,13 @@ func (o *GetIDDefault) Code() int {
 }
 
 func (o *GetIDDefault) Error() string {
-	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getId default %s", o._statusCode, payload)
 }
 
 func (o *GetIDDefault) String() string {
-	return fmt.Sprintf("[GET /customers][%d] getId default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /customers][%d] getId default %s", o._statusCode, payload)
 }
 
 func (o *GetIDDefault) GetPayload() *models.Error {

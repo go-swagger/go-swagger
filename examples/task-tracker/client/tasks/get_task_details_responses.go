@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -92,11 +93,13 @@ func (o *GetTaskDetailsOK) Code() int {
 }
 
 func (o *GetTaskDetailsOK) Error() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK %s", 200, payload)
 }
 
 func (o *GetTaskDetailsOK) String() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsOK %s", 200, payload)
 }
 
 func (o *GetTaskDetailsOK) GetPayload() *models.Task {
@@ -160,11 +163,13 @@ func (o *GetTaskDetailsUnprocessableEntity) Code() int {
 }
 
 func (o *GetTaskDetailsUnprocessableEntity) Error() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity %s", 422, payload)
 }
 
 func (o *GetTaskDetailsUnprocessableEntity) String() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetailsUnprocessableEntity %s", 422, payload)
 }
 
 func (o *GetTaskDetailsUnprocessableEntity) GetPayload() *models.ValidationError {
@@ -233,11 +238,13 @@ func (o *GetTaskDetailsDefault) Code() int {
 }
 
 func (o *GetTaskDetailsDefault) Error() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default %s", o._statusCode, payload)
 }
 
 func (o *GetTaskDetailsDefault) String() string {
-	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /tasks/{id}][%d] getTaskDetails default %s", o._statusCode, payload)
 }
 
 func (o *GetTaskDetailsDefault) GetPayload() *models.Error {

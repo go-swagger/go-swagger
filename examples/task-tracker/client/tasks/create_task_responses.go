@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -92,11 +93,11 @@ func (o *CreateTaskCreated) Code() int {
 }
 
 func (o *CreateTaskCreated) Error() string {
-	return fmt.Sprintf("[POST /tasks][%d] createTaskCreated ", 201)
+	return fmt.Sprintf("[POST /tasks][%d] createTaskCreated", 201)
 }
 
 func (o *CreateTaskCreated) String() string {
-	return fmt.Sprintf("[POST /tasks][%d] createTaskCreated ", 201)
+	return fmt.Sprintf("[POST /tasks][%d] createTaskCreated", 201)
 }
 
 func (o *CreateTaskCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -165,11 +166,13 @@ func (o *CreateTaskDefault) Code() int {
 }
 
 func (o *CreateTaskDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks][%d] createTask default %s", o._statusCode, payload)
 }
 
 func (o *CreateTaskDefault) String() string {
-	return fmt.Sprintf("[POST /tasks][%d] createTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks][%d] createTask default %s", o._statusCode, payload)
 }
 
 func (o *CreateTaskDefault) GetPayload() *models.Error {

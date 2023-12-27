@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,11 +87,13 @@ func (o *AddOneCreated) Code() int {
 }
 
 func (o *AddOneCreated) Error() string {
-	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOneCreated %s", 201, payload)
 }
 
 func (o *AddOneCreated) String() string {
-	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOneCreated %s", 201, payload)
 }
 
 func (o *AddOneCreated) GetPayload() *models.Item {
@@ -158,11 +161,13 @@ func (o *AddOneDefault) Code() int {
 }
 
 func (o *AddOneDefault) Error() string {
-	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOne default %s", o._statusCode, payload)
 }
 
 func (o *AddOneDefault) String() string {
-	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOne default %s", o._statusCode, payload)
 }
 
 func (o *AddOneDefault) GetPayload() *models.Error {

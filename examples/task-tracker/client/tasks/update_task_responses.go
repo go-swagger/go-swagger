@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -92,11 +93,13 @@ func (o *UpdateTaskOK) Code() int {
 }
 
 func (o *UpdateTaskOK) Error() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK %s", 200, payload)
 }
 
 func (o *UpdateTaskOK) String() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskOK %s", 200, payload)
 }
 
 func (o *UpdateTaskOK) GetPayload() *models.Task {
@@ -160,11 +163,13 @@ func (o *UpdateTaskUnprocessableEntity) Code() int {
 }
 
 func (o *UpdateTaskUnprocessableEntity) Error() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity %s", 422, payload)
 }
 
 func (o *UpdateTaskUnprocessableEntity) String() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity  %+v", 422, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTaskUnprocessableEntity %s", 422, payload)
 }
 
 func (o *UpdateTaskUnprocessableEntity) GetPayload() *models.ValidationError {
@@ -233,11 +238,13 @@ func (o *UpdateTaskDefault) Code() int {
 }
 
 func (o *UpdateTaskDefault) Error() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default %s", o._statusCode, payload)
 }
 
 func (o *UpdateTaskDefault) String() string {
-	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /tasks/{id}][%d] updateTask default %s", o._statusCode, payload)
 }
 
 func (o *UpdateTaskDefault) GetPayload() *models.Error {

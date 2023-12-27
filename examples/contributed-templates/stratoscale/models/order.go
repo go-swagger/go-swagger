@@ -37,7 +37,7 @@ type Order struct {
 	ShipDate strfmt.DateTime `json:"shipDate,omitempty"`
 
 	// Order Status
-	// Enum: [placed approved delivered]
+	// Enum: ["placed","approved","delivered"]
 	Status string `json:"status,omitempty"`
 }
 

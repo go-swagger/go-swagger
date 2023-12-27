@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,11 +86,11 @@ func (o *DestroyOneNoContent) Code() int {
 }
 
 func (o *DestroyOneNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
 }
 
 func (o *DestroyOneNoContent) String() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
 }
 
 func (o *DestroyOneNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -146,11 +147,13 @@ func (o *DestroyOneDefault) Code() int {
 }
 
 func (o *DestroyOneDefault) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
 }
 
 func (o *DestroyOneDefault) String() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
 }
 
 func (o *DestroyOneDefault) GetPayload() *models.Error {
