@@ -20,9 +20,9 @@ func TestGenerateAndTest(t *testing.T) {
 
 	cwd := testCwd(t)
 	const root = "generated"
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.RemoveAll(filepath.Join(cwd, root))
-	}()
+	})
 
 	t.Run("server build", func(t *testing.T) {
 		for name, cas := range generateFixtures(t) {
@@ -53,6 +53,50 @@ func TestGenerateAndTest(t *testing.T) {
 					require.Errorf(t, err, "expected an error for server build fixture: %s", opts.Spec)
 				} else {
 					require.NoError(t, err, "unexpected error for server build fixture: %s", opts.Spec)
+				}
+
+				// verify
+				if thisCas.verify != nil {
+					thisCas.verify(t, opts.Target)
+				}
+
+				// fixture-specific clean
+				if thisCas.clean != nil {
+					thisCas.clean()
+				}
+			})
+		}
+	})
+
+	t.Run("client build", func(t *testing.T) {
+		for name, cas := range generateClientFixtures(t) {
+			thisCas := cas
+			thisName := name
+
+			t.Run(thisName, func(t *testing.T) {
+				t.Parallel()
+
+				log.SetOutput(io.Discard)
+				defer thisCas.warnFailed(t)
+
+				// default opts
+				opts := testClientGenOpts()
+
+				// create directory layout, defer clean
+				defer thisCas.prepareTarget(t, thisName, "server_test", root, opts)()
+
+				// preparation before generation
+				if thisCas.prepare != nil {
+					thisCas.prepare(t, opts)
+				}
+
+				t.Logf("generating test client at: %s, from %s", opts.Target, opts.Spec)
+
+				err := GenerateClient(thisName, nil, nil, opts)
+				if thisCas.wantError {
+					require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
+				} else {
+					require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
 				}
 
 				// verify
@@ -128,7 +172,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		"issue 1943": {
 			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
 			target: "../fixtures/bugs/1943",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(t testing.TB, opts *GenOpts) {
 				input, err := os.ReadFile("../fixtures/bugs/1943/datarace_test.go")
 				require.NoError(t, err)
 
@@ -485,6 +529,57 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 
 				t.Log("building generated models")
 				goExecInDir(t, location, "build")
+			},
+		},
+	}
+}
+
+func generateClientFixtures(_ testing.TB) map[string]generateFixture {
+	return map[string]generateFixture{
+		"issue1083": {
+			spec:   "../fixtures/bugs/1083/petstore.yaml",
+			target: "../fixtures/bugs/1083/codegen",
+			prepare: func(t testing.TB, opts *GenOpts) {
+				input, err := os.ReadFile("../fixtures/bugs/1083/pathparam_test.go")
+				require.NoError(t, err)
+
+				// rewrite imports for the relocated test program
+				cwd := testCwd(t)
+				rebased := bytes.ReplaceAll(
+					input,
+					[]byte("/fixtures/bugs/1083/codegen"),
+					[]byte(filepath.ToSlash(strings.TrimPrefix(opts.Target, filepath.Dir(cwd)))),
+				)
+
+				require.NoError(t, os.WriteFile(filepath.Join(filepath.Dir(opts.Target), "pathparam_test.go"), rebased, 0o600))
+				opts.ExcludeSpec = false
+
+				// copy spec to run untyped server
+				f, err := os.Open(filepath.Join("..", "fixtures", "bugs", "1083", "petstore.yaml"))
+				require.NoError(t, err)
+				defer func() {
+					_ = f.Close()
+				}()
+				w, err := os.OpenFile(filepath.Join(filepath.Dir(opts.Target), "petstore.yaml"), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o700)
+				require.NoError(t, err)
+				defer func() {
+					_ = w.Close()
+				}()
+				_, err = io.Copy(w, f)
+				require.NoError(t, err)
+			},
+			verify: func(t testing.TB, target string) {
+				const packages = "./..."
+				testPrg := "pathparam_test.go"
+				testDir := filepath.Dir(target)
+
+				goExecInDir(t, testDir, "get", packages)
+
+				t.Log("running runtime request test on generated client")
+				// This test runs a generated client against a untyped API server.
+				// It verifies that path parameters are properly escaped and unescaped.
+				// It exercises the full stack of runtime client and server.
+				goExecInDir(t, testDir, "test", "-v", testPrg)
 			},
 		},
 	}
