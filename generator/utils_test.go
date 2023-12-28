@@ -34,6 +34,10 @@ func assertNotInCode(t testing.TB, expr, code string) bool {
 	return assert.NotRegexp(t, reqm(expr), code)
 }
 
+func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
+	return assert.NotRegexp(t, reqOri(expr), code)
+}
+
 // Unused
 // func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
 // 	return assert.NotRegexp(t, reqOri(expr), code)

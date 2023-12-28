@@ -1,0 +1,81 @@
+swagger: "2.0"
+info:
+  description: 'repro issue #2597'
+  title: minitems
+  version: "0.0.0"
+paths:
+  /v1/blah:
+    patch:
+      produces:
+        - application/json
+      parameters:
+        - name: newArray
+          in: body
+          schema:
+            $ref: '#/definitions/BlahArray'
+      responses:
+        200:
+          description: ok
+          schema:
+    post:
+      produces:
+        - application/json
+      parameters:
+        - name: newArray
+          in: body
+          schema:
+            $ref: '#/definitions/BlahStruct'
+      responses:
+        200:
+          description: ok
+          schema:
+
+definitions:
+  BlahArray:
+    description: The array of blah numbers
+    type: array
+    items:
+      type: integer
+    minItems: 1
+    uniqueItems: true
+  BlahComplexArray:
+    description: The array of blah numbers
+    type: array
+    items:
+      type: object
+      properties:
+        a:
+          type: string
+    minItems: 1
+  BlahStruct:
+    description: The struct containing an array of blah numbers
+    type: object
+    required: [b]
+    properties:
+      list:
+        type: array
+        items:
+          type: integer
+        minItems: 1
+      unique:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+      b:
+        type: string
+        maxLength: 10
+  BlahMap:
+    description: this is a map[string]string
+    type: object
+    additionalProperties:
+      type: string
+    maxProperties: 10
+  BlahComplexMap:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        x:
+          type: string
+    maxProperties: 12

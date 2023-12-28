@@ -136,6 +136,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
+		"path":                errorPath,
 	}
 
 	for k, v := range extra {
@@ -843,4 +844,90 @@ func gt0(in *int64) bool {
 	// NOTE: plain {{ gt .MinProperties 0 }} just refuses to work normally
 	// with a pointer
 	return in != nil && *in > 0
+}
+
+func errorPath(in interface{}) (string, error) {
+	// For schemas:
+	// errorPath returns an empty string litteral when the schema path is empty.
+	// It provides a shorthand for template statements such as:
+	// {{ if .Path }}{{ .Path }}{{ else }}" "{{ end }},
+	// which becomes {{ path . }}
+	//
+	// When called for a GenParameter, GenResponse or GenOperation object, it just
+	// returns Path.
+	//
+	// Extra behavior for schemas, when the generation option RootedErroPath is enabled:
+	// In the case of arrays with an empty path, it adds the type name as the path "root",
+	// so consumers of reported errors get an idea of the originator.
+
+	var pth string
+	rooted := func(schema GenSchema) string {
+		if schema.WantsRootedErrorPath && schema.Path == "" && (schema.IsArray || schema.IsMap) {
+			return `"[` + schema.Name + `]"`
+		}
+
+		return schema.Path
+	}
+
+	switch schema := in.(type) {
+	case GenSchema:
+		pth = rooted(schema)
+	case *GenSchema:
+		if schema == nil {
+			break
+		}
+		pth = rooted(*schema)
+	case GenDefinition:
+		pth = rooted(schema.GenSchema)
+	case *GenDefinition:
+		if schema == nil {
+			break
+		}
+		pth = rooted(schema.GenSchema)
+	case GenParameter:
+		pth = schema.Path
+
+	// unchanged Path if called with other types
+	case *GenParameter:
+		if schema == nil {
+			break
+		}
+		pth = schema.Path
+	case GenResponse:
+		pth = schema.Path
+	case *GenResponse:
+		if schema == nil {
+			break
+		}
+		pth = schema.Path
+	case GenOperation:
+		pth = schema.Path
+	case *GenOperation:
+		if schema == nil {
+			break
+		}
+		pth = schema.Path
+	case GenItems:
+		pth = schema.Path
+	case *GenItems:
+		if schema == nil {
+			break
+		}
+		pth = schema.Path
+	case GenHeader:
+		pth = schema.Path
+	case *GenHeader:
+		if schema == nil {
+			break
+		}
+		pth = schema.Path
+	default:
+		return "", fmt.Errorf("errorPath should be called with GenSchema or GenDefinition, but got %T", schema)
+	}
+
+	if pth == "" {
+		return `""`, nil
+	}
+
+	return pth, nil
 }

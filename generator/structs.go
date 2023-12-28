@@ -20,6 +20,7 @@ import (
 type GenCommon struct {
 	Copyright        string
 	TargetImportPath string
+	RootedErrorPath  bool // wants array and map types to have a path corresponding to their type in reported errors
 }
 
 // GenDefinition contains all the properties to generate a
@@ -96,6 +97,7 @@ type GenSchema struct {
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 	ExternalDocs               *spec.ExternalDocumentation
+	WantsRootedErrorPath       bool
 }
 
 func (g GenSchema) renderMarshalTag() string {

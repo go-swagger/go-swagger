@@ -2745,3 +2745,102 @@ func Test_PointerConversions(t *testing.T) {
 		assert.Contains(t, res, joined)
 	}
 }
+
+func TestIssue2597(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/2597/2597.yaml")
+	require.NoError(t, err)
+
+	const antipattern = `(validate\.\w+\("",\s+"body",.+?\))|(errors\.\w+\("",\s+"body",.+?\))`
+	definitions := specDoc.Spec().Definitions
+
+	t.Run("with RootedErrorPath option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsRootedErrorPath = true
+
+		t.Run("should generate the extra path for arrays and maps", func(t *testing.T) {
+			for _, model := range []string{
+				"BlahArray",
+				"BlahComplexArray",
+				"BlahMap",
+				"BlahComplexMap",
+			} {
+				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				require.NoError(t, err)
+
+				buf := bytes.NewBuffer(nil)
+				require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+				ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+				require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+				res := string(ct)
+				assertRegexpInCode(t, pattern, res)
+				assertRegexpNotInCode(t, antipattern, res)
+			}
+		})
+
+		t.Run("should NOT generate the extra path for structs", func(t *testing.T) {
+			const model = "BlahStruct"
+			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+			require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+			res := string(ct)
+			assertRegexpNotInCode(t, pattern, res)
+			assertRegexpNotInCode(t, antipattern, res) // we have a path, that is the property name
+		})
+	})
+
+	t.Run("without RootedErrorPath option", func(t *testing.T) {
+		opts := opts()
+
+		t.Run("should NOT generate the extra path for arrays and maps", func(t *testing.T) {
+			for _, model := range []string{
+				"BlahArray",
+				"BlahComplexArray",
+				"BlahMap",
+				"BlahComplexMap",
+			} {
+				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				require.NoError(t, err)
+
+				buf := bytes.NewBuffer(nil)
+				require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+				ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+				require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+				res := string(ct)
+				assertRegexpNotInCode(t, pattern, res)
+				assertRegexpInCode(t, antipattern, res)
+			}
+		})
+
+		t.Run("should NOT generate the extra path for structs", func(t *testing.T) {
+			const model = "BlahStruct"
+			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+			require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+			res := string(ct)
+			assertRegexpNotInCode(t, pattern, res)
+			assertRegexpNotInCode(t, antipattern, res) // we have a path, that is the property name
+		})
+	})
+}

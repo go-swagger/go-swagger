@@ -342,6 +342,7 @@ type GenOptsCommon struct {
 	AllowEnumCI            bool
 	StrictResponders       bool
 	AcceptDefinitionsOnly  bool
+	WantsRootedErrorPath   bool
 
 	templates *Repository // a shallow clone of the global template repository
 }
