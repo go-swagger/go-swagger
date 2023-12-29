@@ -286,6 +286,9 @@ func initModelFixtures() {
 
 	// map of nullable array
 	initFixture2494()
+
+	// additional cases for embedded struct
+	initFixture2604()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
