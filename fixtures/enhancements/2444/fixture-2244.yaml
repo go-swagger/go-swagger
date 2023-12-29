@@ -96,6 +96,30 @@ definitions:
     additionalProperties:
       type: integer
 
+  nestedMap:
+    type: object
+    minProperties: 3
+    maxProperties: 5
+    additionalProperties: # <- TODO: doesn't work
+      type: object
+      additionalProperties: true
+      minProperties: 4
+      maxProperties: 6
+
+  deeperNestedMap:
+    type: object
+    minProperties: 3
+    maxProperties: 5
+    additionalProperties: # <- TODO: doesn't work
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties: true
+        minProperties: 5
+        maxProperties: 7
+      minProperties: 4
+      maxProperties: 6
+
   arrayItemsWithMinMaxProperties:
     type: array
     items:
@@ -152,4 +176,17 @@ definitions:
         c:
           type: string
           format: date
-
+  # The following definitions don't work properly (generate interface{})
+  #allOfWithValidationOnly:
+  #  allOf:
+  #  - type: object
+  #    additionalProperties: true
+  #  - minProperties: 1
+  #allOfObjectWithValidationOnly:
+  #  allOf:
+  #  - type: object
+  #    properties:
+  #      a:
+  #        type: string
+  #    additionalProperties: true
+  #  - minProperties: 1

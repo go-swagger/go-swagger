@@ -38,10 +38,15 @@
           minProperties: 12
         e:
           type: object
-          maximum: 15
-          minProperties: 12
-          uniqueItems: true
+          maximum: 15        # <- skipped
+          minProperties: 12  # <- implies additional properties
+          uniqueItems: true  # <- incompatible: skipped
           enum: [ {"x": 1} ]
+        ebis:
+          type: object
+          additionalProperties: false
+          minProperties: 1  # <- not skipped (even though not consistent with additionalProperties: false above)
+          enum: [ {} ] # <- skipped?
         f:
           type: array
           uniqueItems: true
@@ -57,7 +62,36 @@
           pattern: "[-]?\\d+(.\\d{1,2})?"
           maxLength: 13
           minLength: 1
-          maxProperties: 12
+          maxProperties: 12 # <- warn: not compatible, skipped
+
+        h:
+          type: array
+          items:
+            type: string
+          minItems: 4
+          uniqueItems: true
+
+        i:
+          type: array
+          items:
+            type: object
+            maxProperties: 5
+          minItems: 4
+          uniqueItems: true
+
+        j:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: object
+                minProperties: 1
+              maxItems: 12
+            maxProperties: 5
+          minItems: 4
+          uniqueItems: true
 
         #h:
         #  type: file

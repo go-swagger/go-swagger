@@ -295,7 +295,7 @@
           {{- if .IsInterface }}
       if {{ $validatedValues }}[{{ $keyVar }}] == nil { // not required
           {{- else }}
-      if swag.IsZero({{ $validatedValues }}[{{ $keyVar }}]) { // not required
+      if swag.IsZero({{ .ValueExpression }}) { // not required
           {{- end }}
         continue
       }
@@ -352,6 +352,7 @@
         {{- else if .IsArray }}
           {{ template "slicevalidator" . }}
         {{- else if and .IsMap (not .IsInterface) }}
+          {{ template "minmaxProperties" .}}
           {{ template "mapvalidator" . }}
           {{ if .Enum }}
       if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
@@ -430,6 +431,11 @@
         {{- end }}
       {{- end }}
     {{- end }}
+  {{- else if .Enum }}
+    // from map without additionalProperties
+    if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+      return err
+    }
   {{- end }}
 {{ end }}
 
@@ -490,7 +496,7 @@
 {{ define "minmaxProperties" }}
   {{- if and (or .IsMap (and .IsAdditionalProperties .HasAdditionalProperties)) (or .MinProperties .MaxProperties) }}
     {{- if and (not .IsAdditionalProperties) (not .IsInterface) (eq (len .Properties) 0) }}{{/* map only */}}
-    nprops := len({{ if and (not .IsAliased) .HasAdditionalProperties }}{{ .ReceiverName }}{{ else }}{{ .ValueExpression }}{{ end }})
+    nprops := len({{ if and .IsMap (not .IsAliased) .HasAdditionalProperties (not .IsElem) (not .IsProperty) }}{{ .ReceiverName }}{{ else }}{{ .ValueExpression }}{{ end }})
     {{- else }}{{/* object with properties */}}
       {{- if and .IsNullable .MinProperties }}
         {{- if gt0 .MinProperties }}

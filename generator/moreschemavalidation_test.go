@@ -289,6 +289,12 @@ func initModelFixtures() {
 
 	// additional cases for embedded struct
 	initFixture2604()
+
+	// ambiguous validations
+	initFixture2163()
+
+	// min / maxProperties, more cases
+	initFixture2587()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
