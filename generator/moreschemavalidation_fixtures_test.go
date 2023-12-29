@@ -173,6 +173,45 @@ func initFixture2444() {
 		`	if nprops > 5 {`,
 		`		return errors.TooManyProperties("", "body", 5)`,
 	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("nested_map.go", []string{
+		`type NestedMap map[string]map[string]interface{}`,
+		`nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`for k := range m {`,
+		`nprops := len(m[k])`,
+		`if nprops < 4 {`,
+		`	return errors.TooFewProperties(k, "body", 4)`,
+		`if nprops > 6 {`,
+		`	return errors.TooManyProperties(k, "body", 6)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("deeper_nested_map.go", []string{
+		`type DeeperNestedMap map[string]map[string]map[string]interface{}`,
+		`nprops := len(m)`,
+		`if nprops < 3 {`,
+		`return errors.TooFewProperties("", "body", 3)`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("", "body", 5)`,
+		`for k := range m {`,
+		`nprops := len(m[k])`,
+		`if nprops < 4 {`,
+		`return errors.TooFewProperties(k, "body", 4)`,
+		`if nprops > 6 {`,
+		`return errors.TooManyProperties(k, "body", 6)`,
+		`for kk := range m[k] {`,
+		`if nprops < 5 {`,
+		`return errors.TooFewProperties(k+"."+kk, "body", 5)`,
+		`if nprops > 7 {`,
+		`return errors.TooManyProperties(k+"."+kk, "body", 7)`,
+		``,
+		``,
+		``,
+		``,
+	}, todo, noLines, noLines)
 }
 
 func initFixtureGuardFormats() {
@@ -11584,4 +11623,127 @@ func initFixture2364() {
 		// output in log
 		noLines,
 		noLines)
+}
+
+func initFixture2163() {
+	f := newModelFixture("../fixtures/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("obj.go", []string{
+		`E map[string]interface{}`,
+		`Ebis map[string]interface{}`,
+		`I []map[string]interface{}`,
+		`J []map[string][]map[string]interface{}`,
+		//
+		`func (m *Obj) validateEEnum(path, location string, value map[string]interface{}) error {`,
+		`if swag.IsZero(m.E) {`,
+		`nprops := len(m.E)`,
+		`if nprops < 12 {`,
+		`return errors.TooFewProperties("e", "body", 12)`,
+		`if err := m.validateEEnum("e", "body", m.E); err != nil {`,
+		//
+		`func (m *Obj) validateEbisEnum(path, location string, value map[string]interface{}) error {`,
+		`if swag.IsZero(m.Ebis) {`,
+		`nprops := len(m.Ebis)`,
+		`if nprops < 1 {`,
+		`return errors.TooFewProperties("ebis", "body", 1)`,
+		`if err := m.validateEbisEnum("ebis", "body", m.Ebis); err != nil {`,
+		//
+		`func (m *Obj) validateF(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.F) {`,
+		`if err := validate.UniqueItems("f", "body", m.F); err != nil {`,
+		`for i := 0; i < len(m.F); i++ {`,
+		`nprops := len(m.F[i])`,
+		`if nprops < 13 {`,
+		`return errors.TooFewProperties("f"+"."+strconv.Itoa(i), "body", 13)`,
+		//
+		`func (m *Obj) validateI(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.I) {`,
+		`if err := validate.MinItems("i", "body", iISize, 4); err != nil {`,
+		`if err := validate.UniqueItems("i", "body", m.I); err != nil {`,
+		`for i := 0; i < len(m.I); i++ {`,
+		`nprops := len(m.I[i])`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("i"+"."+strconv.Itoa(i), "body", 5`,
+		//
+		`func (m *Obj) validateJ(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.J) {`,
+		`iJSize := int64(len(m.J))`,
+		`if err := validate.MinItems("j", "body", iJSize, 4); err != nil {`,
+		`if err := validate.UniqueItems("j", "body", m.J); err != nil {`,
+		`for i := 0; i < len(m.J); i++ {`,
+		`nprops := len(m.J[i])`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("j"+"."+strconv.Itoa(i), "body", 5)`,
+		`for k := range m.J[i] {`,
+		`iiJSize := int64(len(m.J[i][k]))`,
+		`if err := validate.MaxItems("j"+"."+strconv.Itoa(i)+"."+k, "body", iiJSize, 12); err != nil {`,
+		`for ii := 0; ii < len(m.J[i][k]); ii++ {`,
+		`nprops := len(m.J[i][k][ii])`,
+		`if nprops < 1 {`,
+		`return errors.TooFewProperties("j"+"."+strconv.Itoa(i)+"."+k+"."+strconv.Itoa(ii), "body", 1)`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2587() {
+	f := newModelFixture("../fixtures/bugs/2587/2587.yaml", "min/max properties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("basic_thing.go", []string{
+		`type BasicThing struct {`,
+		`Data interface{} `,
+		`func (m *BasicThing) Validate(formats strfmt.Registry) error {`,
+		`props := make(map[string]json.RawMessage, 1+10)`,
+		`j, err := swag.WriteJSON(m)`,
+		`nprops := len(props)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("nested_thing.go", []string{
+		`type NestedThing struct {`,
+		`Data map[string]interface{} `,
+		`NestedThingAdditionalProperties map[string]interface{}`,
+		`func (m *NestedThing) Validate(formats strfmt.Registry) error {`,
+		`// short circuits minProperties > 0`,
+		`if m == nil {`,
+		`props := make(map[string]json.RawMessage, 1+10)`,
+		`nprops := len(props)`,
+		`if nprops < 5 {`,
+		`return errors.TooFewProperties("", "body", 5)`,
+		`if nprops > 10`,
+		`return errors.TooManyProperties("", "body", 10)`,
+		`if err := m.validateData(formats); err != nil {`,
+		`func (m *NestedThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops < 15 {`,
+		`return errors.TooFewProperties("data", "body", 15)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("some_thing.go", []string{
+		`type SomeThing struct {`,
+		`Data map[string]interface{}`,
+		`func (m *SomeThing) Validate(formats strfmt.Registry) error {`,
+		`if err := m.validateData(formats); err != nil {`,
+		`func (m *SomeThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("some_typed_thing.go", []string{
+		`type SomeTypedThing struct {`,
+		`Data map[string]string`,
+		`func (m *SomeTypedThing) Validate(formats strfmt.Registry) error {`,
+		`func (m *SomeTypedThing) Validate(formats strfmt.Registry) error {`,
+		`func (m *SomeTypedThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
 }

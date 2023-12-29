@@ -86,6 +86,8 @@ type GenSchema struct {
 	HasBaseType                bool
 	IsSubType                  bool
 	IsExported                 bool
+	IsElem                     bool // IsElem gives some context when the schema is part of an array or a map
+	IsProperty                 bool // IsProperty gives some context when the schema is a property of an object
 	DiscriminatorField         string
 	DiscriminatorValue         string
 	Discriminates              map[string]string
