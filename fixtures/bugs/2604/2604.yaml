@@ -1,0 +1,49 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: API
+
+paths:
+  /test:
+    post:
+      operationId: testPost
+      parameters:
+      - in: body
+        required: true
+        name: postRequest
+        schema:
+          $ref: '#/definitions/PostRequest'
+      responses:
+        201:
+          description: Test
+          schema:
+            type: object
+            properties:
+              msg:
+                type: string
+                x-isnullable: false
+definitions:
+  PostRequest:
+    $ref: '#/definitions/PostFields'
+  PostFields:
+    type: object
+    required:
+    - a
+    - b
+    properties:
+      a:
+        type: string
+        x-isnullable: false
+      b:
+        type: string
+  Composed:
+    $ref: '#/definitions/NoValidations'
+  NoValidations:
+    type: object
+    properties:
+      c:
+        type: string
+  ComposedIface:
+    $ref: '#/definitions/Interface'
+  Interface:
+    type: object

@@ -11116,11 +11116,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("hs2.go", []string{
 		`type Hs2 struct {`,
 		`	Hs0`,
-		// empty validation
-		"func (m *Hs2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *Hs2) Validate(formats strfmt.Registry) error {",
+		"if err := m.Hs0.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *Hs2) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11184,11 +11185,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g2.go", []string{
 		`type G2 struct {`,
 		`	G0`,
-		// empty validation
-		"func (m *G2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G2) Validate(formats strfmt.Registry) error {",
+		"if err := m.G0.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G2) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11227,11 +11229,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g0.go", []string{
 		`type G0 struct {`,
 		`	G1`,
-		// empty validation
-		"func (m *G0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G0) Validate(formats strfmt.Registry) error {",
+		"if err := m.G1.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G0) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11344,11 +11347,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g2v.go", []string{
 		`type G2v struct {`,
 		`	G0v`,
-		// empty validation
-		"func (m *G2v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G2v) Validate(formats strfmt.Registry) error {",
+		"if err := m.G0v.Validate(formats); err != nil",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G2v) Validate(formats strfmt.Registry) error {\n      return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11439,11 +11443,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g0v.go", []string{
 		`type G0v struct {`,
 		`	G1v`,
-		// empty validation
-		"func (m *G0v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G0v) Validate(formats strfmt.Registry) error {",
+		"if err := m.G1v.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G0v) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11452,11 +11457,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("hs0.go", []string{
 		`type Hs0 struct {`,
 		`	Hsubtype1`,
-		// empty validation
-		"func (m *Hs0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *Hs0) Validate(formats strfmt.Registry) error {",
+		"if err := m.Hsubtype1.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *Hs0) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11483,6 +11489,76 @@ func initFixture1993() {
 	// load expectations for model: empty_house.go
 	thisRun.AddExpectations("empty_house.go", []string{
 		`if swag.IsZero(m.Pet())`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+}
+
+func initFixture2604() {
+	f := newModelFixture("../fixtures/bugs/2604/2604.yaml", "additional cases for embedded structs")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	thisRun.AddExpectations("composed.go", []string{
+		`type Composed struct {`,
+		`	NoValidations`,
+		`func (m *Composed) Validate(formats strfmt.Registry) error {`,
+		`if err := m.NoValidations.Validate(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("composed_iface.go", []string{
+		`type ComposedIface = Interface`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("interface.go", []string{
+		`type Interface interface{}`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("no_validations.go", []string{
+		`type NoValidations struct {`,
+		// empty validation
+		"func (m *NoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("post_fields.go", []string{
+		`type PostFields struct {`,
+		`func (m *PostFields) Validate(formats strfmt.Registry) error {`,
+		`if err := m.validateA(formats); err != nil {`,
+		`if err := m.validateB(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("post_request.go", []string{
+		`type PostRequest struct {`,
+		`PostFields`,
+		`func (m *PostRequest) Validate(formats strfmt.Registry) error {`,
+		`if err := m.PostFields.Validate(formats); err != nil {`,
 	},
 		// not expected
 		todo,

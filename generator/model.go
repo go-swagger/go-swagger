@@ -441,7 +441,6 @@ type schemaGenContext struct {
 	AdditionalProperty         bool
 	Untyped                    bool
 	Named                      bool
-	RefHandled                 bool
 	IsVirtual                  bool
 	IsTuple                    bool
 	IncludeValidator           bool
@@ -1670,8 +1669,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// NOTE: this assumes that all $ref point to a definition,
 	// i.e. the spec is canonical, as guaranteed by minimal flattening.
 	//
-	// TODO: RefHandled is actually set nowhere
-	if sg.RefHandled || !sg.Named || sg.Schema.Ref.String() == "" {
+	if !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
 	debugLogAsJSON("short circuit named ref: %q", sg.Schema.Ref.String(), sg.Schema)
@@ -1682,6 +1680,8 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	// check if the $ref points to a simple type or polymorphic (base) type.
 	//
 	// If this is the case, just realias this simple type, without creating a struct.
+	//
+	// In templates this case is identified by .IsSuperAlias = true
 	asch, era := analysis.Schema(analysis.SchemaOpts{
 		Root:     sg.TypeResolver.Doc.Spec(),
 		BasePath: sg.TypeResolver.Doc.SpecFilePath(),
@@ -1732,10 +1732,16 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	}
 
 	// Aliased object: use golang struct composition.
+	// Covers case of a type redefinition like:
+	// thistype:
+	//   $ref: #/definitions/othertype
+	//
 	// This is rendered as a struct with type field, i.e. :
 	// Alias struct {
 	//		AliasedType
 	// }
+	//
+	// In templates, the schema is composed like AllOf.
 	nullableOverride := sg.GenSchema.IsNullable
 
 	tpe := resolvedType{}
@@ -1748,17 +1754,26 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	tpe.IsAnonymous = false
 	tpe.IsNullable = sg.TypeResolver.isNullable(&sg.Schema)
 
-	item := sg.NewCompositionBranch(sg.Schema, 0)
-	if err := item.makeGenSchema(); err != nil {
+	branch := sg.NewCompositionBranch(sg.Schema, 0)
+	if err := branch.makeGenSchema(); err != nil {
 		return true, err
 	}
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsNullable = sg.GenSchema.IsNullable || nullableOverride
 	// prevent format from bubbling up in composed type
-	item.GenSchema.IsCustomFormatter = false
+	branch.GenSchema.IsCustomFormatter = false
 
-	sg.MergeResult(item, true)
-	sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, item.GenSchema)
+	sg.MergeResult(branch, true)
+
+	tpx, ers := sg.TypeResolver.ResolveSchema(&sg.Schema, false, true)
+	if ers != nil {
+		return false, ers
+	}
+	// we don't know the actual validation status yet. So assume true,
+	// unless we can infer that no Validate() method will be present
+	branch.GenSchema.HasValidations = !tpx.IsInterface && !tpx.IsStream
+	sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, branch.GenSchema)
+
 	return true, nil
 }
 
@@ -1972,6 +1987,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 	if returns {
+		// short circuited on a resolved $ref
 		return nil
 	}
 	debugLogAsJSON("after short circuit named ref", sg.Schema)
@@ -2033,6 +2049,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 			log.Printf("INFO: type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
 			sg.GenSchema.GoType = extType
 			sg.GenSchema.AliasedType = extType
+
+			// short circuit schema building for external types
 			return nil
 		}
 		// TODO: case for embedded types as anonymous definitions
@@ -2112,5 +2130,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties || (gs.IsPrimitive && gs.IsAliased && gs.IsCustomFormatter && !strings.Contains(gs.Zero(), `("`)))
 
 	debugLog("finished gen schema for %q", sg.Name)
+
 	return nil
 }
