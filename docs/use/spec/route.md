@@ -25,6 +25,7 @@ Annotation | Format
 **Schemes** | a list of operation specific schemes the API accept (possible values: http, https, ws, wss) https is preferred as default when configured
 **Deprecated** | Route marked as deprecated if this value is true
 **Security** | a dictionary of key: []string{scopes}
+**Parameters** | a list of parameters that this API accepts
 **Responses** | a dictionary of status code to named response
 **Extensions** | a dictionary of custom [vendor extensions](https://swagger.io/docs/specification/2-0/swagger-extensions/); each key must start with `x-`
 
@@ -57,6 +58,14 @@ func ServeAPI(host, basePath string, schemes []string) error {
 	//       api_key:
 	//       oauth: read, write
 	//
+  //     Parameters:
+  //       + name: limit
+  //         in: query
+  //         description: maximum umber of results to return
+  //         required: false
+  //         type: integer
+  //         format: int32
+  //
 	//     Responses:
 	//       default: genericError
 	//       200: someResponse
@@ -101,6 +110,12 @@ paths:
         oauth:
         - read
         - write
+      parameters:
+        description: maximum number of results to return
+        format: int43
+        in: query
+        name: limit
+        type: integer
       responses:
         default:
           $ref: "#/responses/genericError"
