@@ -1,6 +1,3 @@
-//go:build !go1.11
-// +build !go1.11
-
 package generate
 
 import (
@@ -8,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/scan"
+	"github.com/go-swagger/go-swagger/codescan"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
@@ -16,32 +14,33 @@ import (
 
 const (
 	basePath       = "../../../../fixtures/goparsing/spec"
-	jsonResultFile = basePath + "/api_spec.json"
-	yamlResultFile = basePath + "/api_spec.yml"
+	jsonResultFile = basePath + "/api_spec_go111.json"
+	yamlResultFile = basePath + "/api_spec_go111.yml"
 )
 
 func TestSpecFileExecute(t *testing.T) {
 	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
 	for _, outputFile := range files {
 		spec := &SpecFile{
-			BasePath: basePath,
-			Output:   flags.Filename(outputFile),
+			WorkDir: basePath,
+			Output:  flags.Filename(outputFile),
 		}
 
 		err := spec.Execute(nil)
 		assert.NoError(t, err)
 		if outputFile != "" {
-			os.Remove(outputFile)
+			_ = os.Remove(outputFile)
 		}
 	}
 }
 
 func TestGenerateJSONSpec(t *testing.T) {
-	opts := scan.Opts{
-		BasePath: basePath,
+	opts := codescan.Options{
+		WorkDir:  basePath,
+		Packages: []string{"./..."},
 	}
 
-	swspec, err := scan.Application(opts)
+	swspec, err := codescan.Run(&opts)
 	assert.NoError(t, err)
 
 	data, err := marshalToJSONFormat(swspec, true)
@@ -54,11 +53,12 @@ func TestGenerateJSONSpec(t *testing.T) {
 }
 
 func TestGenerateYAMLSpec(t *testing.T) {
-	opts := scan.Opts{
-		BasePath: basePath,
+	opts := codescan.Options{
+		WorkDir:  basePath,
+		Packages: []string{"./..."},
 	}
 
-	swspec, err := scan.Application(opts)
+	swspec, err := codescan.Run(&opts)
 	assert.NoError(t, err)
 
 	data, err := marshalToYAMLFormat(swspec)
@@ -79,10 +79,7 @@ func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
 
 	err = json.Unmarshal(expectedJSON, &expected)
 	assert.NoError(t, err)
-
-	if !assert.ObjectsAreEqual(got, expected) {
-		assert.Fail(t, "marshaled JSON data doesn't equal expected JSON data")
-	}
+	assert.Equal(t, expected, got)
 }
 
 func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
@@ -94,8 +91,5 @@ func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
 
 	err = yaml.Unmarshal(expectedYAML, &expected)
 	assert.NoError(t, err)
-
-	if !assert.ObjectsAreEqual(got, expected) {
-		assert.Fail(t, "marshaled YAML data doesn't equal expected YAML data")
-	}
+	assert.Equal(t, expected, got)
 }
