@@ -1,0 +1,17 @@
+paths: {}
+responses:
+    validationError:
+        description: A ValidationError is an error that is used when the required input fails validation.
+        schema:
+            properties:
+                FieldName:
+                    description: An optional field name to which this validation applies
+                    type: string
+                Message:
+                    description: The validation message
+                    example: Expected type int
+                    type: string
+            required:
+                - Message
+            type: object
+swagger: "2.0"
