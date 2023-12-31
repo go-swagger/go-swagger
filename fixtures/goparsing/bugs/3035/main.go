@@ -1,4 +1,4 @@
-//go:build +goparsing
+//go:build goparsing
 
 package main
 

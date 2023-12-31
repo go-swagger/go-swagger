@@ -288,13 +288,15 @@ func TestParseResponsesIssues(t *testing.T) {
 		fixturesDir := filepath.Join("..", "fixtures", "goparsing")
 
 		opts := &Options{
-			Packages: []string{"."},
-			WorkDir:  filepath.Join(fixturesDir, "bugs", "3035"),
+			BuildTags: "goparsing",
+			Packages:  []string{"."},
+			WorkDir:   filepath.Join(fixturesDir, "bugs", "3035"),
 		}
 		spec, err := Run(opts)
 		require.NoError(t, err)
 
 		output, err := json.Marshal(spec)
+		require.NoError(t, err)
 
 		expected, err := os.ReadFile(filepath.Join(opts.WorkDir, "expected.json"))
 		require.NoError(t, err)
