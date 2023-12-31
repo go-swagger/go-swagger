@@ -2642,7 +2642,7 @@ func TestGenerateModels(t *testing.T) {
 			"allDefinitions": {
 				spec:   "../fixtures/bugs/1042/fixture-1042.yaml",
 				target: "../fixtures/bugs/1042",
-				verify: func(t testing.TB, target string) {
+				verify: func(t *testing.T, target string) {
 					target = filepath.Join(target, defaultModelsTarget)
 					require.True(t, fileExists(target, ""))
 					assert.True(t, fileExists(target, "a.go"))
@@ -2652,10 +2652,10 @@ func TestGenerateModels(t *testing.T) {
 			"acceptDefinitions": {
 				spec:   "../fixtures/enhancements/2333/fixture-definitions.yaml",
 				target: "../fixtures/enhancements/2333",
-				prepare: func(_ testing.TB, opts *GenOpts) {
+				prepare: func(_ *testing.T, opts *GenOpts) {
 					opts.AcceptDefinitionsOnly = true
 				},
-				verify: func(t testing.TB, target string) {
+				verify: func(t *testing.T, target string) {
 					target = filepath.Join(target, defaultModelsTarget)
 					require.True(t, fileExists(target, ""))
 					assert.True(t, fileExists(target, "model_interface.go"))
@@ -2667,7 +2667,7 @@ func TestGenerateModels(t *testing.T) {
 			"mangleNames": {
 				spec:   "../fixtures/bugs/2821/ServiceManagementBody.json",
 				target: "../fixtures/bugs/2821",
-				verify: func(t testing.TB, target string) {
+				verify: func(t *testing.T, target string) {
 					target = filepath.Join(target, defaultModelsTarget)
 					require.True(t, fileExists(target, "schema.go"))
 					content, err := os.ReadFile(filepath.Join(target, "schema.go"))
@@ -2692,18 +2692,18 @@ func TestGenerateModels(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Logf("generating test models at: %s", opts.Target)
+				t.Run(fmt.Sprintf("generating test models from: %s", opts.Spec), func(t *testing.T) {
+					err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
+					if thisCas.wantError {
+						require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
+					} else {
+						require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
+					}
 
-				err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
-				if thisCas.wantError {
-					require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
-				} else {
-					require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
-				}
-
-				if thisCas.verify != nil {
-					thisCas.verify(t, opts.Target)
-				}
+					if thisCas.verify != nil {
+						thisCas.verify(t, opts.Target)
+					}
+				})
 			})
 		}
 	})

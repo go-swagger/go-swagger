@@ -22,10 +22,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// mutex for -race because this test alters a global
 var logMutex = &sync.Mutex{}
 
-func TestDebug(t *testing.T) {
-	// test debugLog()
+func TestDebugLog(t *testing.T) {
 	tmpFile, _ := os.CreateTemp("", "debug-test")
 	tmpName := tmpFile.Name()
 	logMutex.Lock()
@@ -80,7 +80,7 @@ func TestDebug(t *testing.T) {
 	assert.Contains(t, string(buf2), `"content"`)
 }
 
-func TestDebugAsJSON(t *testing.T) {
+func TestDebugLogAsJSON(t *testing.T) {
 	t.SkipNow()
 
 	var body struct {

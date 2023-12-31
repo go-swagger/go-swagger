@@ -2,8 +2,8 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -32,11 +32,8 @@ func TestGenerateAndTest(t *testing.T) {
 			t.Run(thisName, func(t *testing.T) {
 				t.Parallel()
 
-				log.SetOutput(io.Discard)
 				defer thisCas.warnFailed(t)
-
-				// default opts
-				opts := testGenOpts()
+				opts := testGenOpts() // default opts
 
 				// create directory layout, defer clean
 				defer thisCas.prepareTarget(t, thisName, "server_test", root, opts)()
@@ -46,19 +43,19 @@ func TestGenerateAndTest(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Logf("generating test server at: %s, from %s", opts.Target, opts.Spec)
+				t.Run(fmt.Sprintf("generating test server from %s", opts.Spec), func(t *testing.T) {
+					err := GenerateServer("", nil, nil, opts)
+					if thisCas.wantError {
+						require.Errorf(t, err, "expected an error for server build fixture: %s", opts.Spec)
+					} else {
+						require.NoError(t, err, "unexpected error for server build fixture: %s", opts.Spec)
+					}
 
-				err := GenerateServer("", nil, nil, opts)
-				if thisCas.wantError {
-					require.Errorf(t, err, "expected an error for server build fixture: %s", opts.Spec)
-				} else {
-					require.NoError(t, err, "unexpected error for server build fixture: %s", opts.Spec)
-				}
-
-				// verify
-				if thisCas.verify != nil {
-					thisCas.verify(t, opts.Target)
-				}
+					// verify
+					if thisCas.verify != nil {
+						thisCas.verify(t, opts.Target)
+					}
+				})
 
 				// fixture-specific clean
 				if thisCas.clean != nil {
@@ -76,11 +73,8 @@ func TestGenerateAndTest(t *testing.T) {
 			t.Run(thisName, func(t *testing.T) {
 				t.Parallel()
 
-				log.SetOutput(io.Discard)
 				defer thisCas.warnFailed(t)
-
-				// default opts
-				opts := testClientGenOpts()
+				opts := testClientGenOpts() // default opts for client codegen
 
 				// create directory layout, defer clean
 				defer thisCas.prepareTarget(t, thisName, "server_test", root, opts)()
@@ -90,19 +84,19 @@ func TestGenerateAndTest(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Logf("generating test client at: %s, from %s", opts.Target, opts.Spec)
+				t.Run(fmt.Sprintf("generating test client from %s", opts.Spec), func(t *testing.T) {
+					err := GenerateClient(thisName, nil, nil, opts)
+					if thisCas.wantError {
+						require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
+					} else {
+						require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
+					}
 
-				err := GenerateClient(thisName, nil, nil, opts)
-				if thisCas.wantError {
-					require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
-				} else {
-					require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
-				}
-
-				// verify
-				if thisCas.verify != nil {
-					thisCas.verify(t, opts.Target)
-				}
+					// verify
+					if thisCas.verify != nil {
+						thisCas.verify(t, opts.Target)
+					}
+				})
 
 				// fixture-specific clean
 				if thisCas.clean != nil {
@@ -118,8 +112,8 @@ type generateFixture struct {
 	spec      string
 	target    string
 	wantError bool
-	prepare   func(testing.TB, *GenOpts)
-	verify    func(testing.TB, string)
+	prepare   func(*testing.T, *GenOpts)
+	verify    func(*testing.T, string)
 	clean     func()
 }
 
@@ -172,7 +166,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		"issue 1943": {
 			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
 			target: "../fixtures/bugs/1943",
-			prepare: func(t testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				input, err := os.ReadFile("../fixtures/bugs/1943/datarace_test.go")
 				require.NoError(t, err)
 
@@ -187,7 +181,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0o600))
 				opts.ExcludeSpec = false
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				if runtime.GOOS == "windows" {
 					// don't run race tests on Appveyor CI
 					t.Logf("warn: race test skipped on windows")
@@ -197,18 +191,18 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				const packages = "./..."
 				testPrg := "datarace_test.go"
 
-				goExecInDir(t, target, "get", packages)
-
-				t.Log("running data race test on generated server")
-				goExecInDir(t, target, "test", "-v", "-race", testPrg)
+				t.Run("go get", goExecInDir(target, "get", packages))
+				t.Run("running data race test on generated server",
+					goExecInDir(target, "test", "-v", "-race", testPrg),
+				)
 			},
 		},
 		"packages_mangling": {
 			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				require.True(t, fileExists(target, defaultServerTarget))
 				assert.True(t, fileExists(filepath.Join(target, "cmd", "unsafe-tag-names-server"), "main.go"))
 
@@ -280,10 +274,10 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		},
 		"packages_flattening": {
 			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.SkipTagPackages = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				require.True(t, fileExists(target, defaultServerTarget))
 
 				srvTarget := filepath.Join(target, defaultServerTarget)
@@ -351,18 +345,18 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		},
 		"main_package": {
 			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.IncludeMain = true
 				opts.MainPackage = "custom-api"
 				opts.SkipTagPackages = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				assert.True(t, fileExists(filepath.Join(target, "cmd", "custom-api"), "main.go"))
 			},
 		},
 		"external_model": {
 			spec: "../fixtures/bugs/1897/fixture-1897.yaml",
-			prepare: func(t testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				modelOpts := *opts
 				modelOpts.AcceptDefinitionsOnly = true
 				modelOpts.Spec = "../fixtures/bugs/1897/model.yaml"
@@ -371,18 +365,20 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 
 				require.NoError(t, GenerateModels(nil, &modelOpts))
 
-				t.Logf("generated external model")
-				require.True(t, fileExists(modelOpts.Target, "external"))
-				require.True(t, fileExists(modelOpts.Target, filepath.Join("external", "error.go")))
+				t.Run("external model should be available", func(t *testing.T) {
+					require.True(t, fileExists(modelOpts.Target, "external"))
+					require.True(t, fileExists(modelOpts.Target, filepath.Join("external", "error.go")))
+				})
 
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "repro1897-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 			},
 			clean: func() {
 				// remove generated external models
@@ -392,7 +388,7 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		"external_models_hints": {
 			spec:   "../fixtures/enhancements/2224/fixture-2224.yaml",
 			target: "2224-hints",
-			prepare: func(t testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				modelOpts := *opts
 				modelOpts.AcceptDefinitionsOnly = true
 				modelOpts.Spec = "../fixtures/enhancements/2224/fixture-2224-models.yaml"
@@ -401,24 +397,25 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 
 				require.NoError(t, GenerateModels(nil, &modelOpts))
 
-				t.Logf("generated external model")
-				require.True(t, fileExists(modelOpts.Target, "external"))
+				t.Run("external models should be available", func(t *testing.T) {
+					require.True(t, fileExists(modelOpts.Target, "external"))
 
-				for _, model := range []string{
-					"access_point.go", "base.go",
-					"hotspot.go", "hotspot_type.go",
-					"incorrect.go", "json_message.go",
-					"json_object.go", "json_object_with_alias.go",
-					"object_with_embedded.go", "object_with_externals.go",
-					"raw.go", "request.go",
-					"request_pointer.go", "time_as_object.go", "time.go",
-				} {
-					require.True(t, fileExists(modelOpts.Target, filepath.Join("external", model)))
-				}
+					for _, model := range []string{
+						"access_point.go", "base.go",
+						"hotspot.go", "hotspot_type.go",
+						"incorrect.go", "json_message.go",
+						"json_object.go", "json_object_with_alias.go",
+						"object_with_embedded.go", "object_with_externals.go",
+						"raw.go", "request.go",
+						"request_pointer.go", "time_as_object.go", "time.go",
+					} {
+						require.True(t, fileExists(modelOpts.Target, filepath.Join("external", model)))
+					}
+				})
 
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				// generated models (not external)
 				require.True(t, fileExists(target, "models"))
 				for _, model := range []string{"error.go", "external_with_embed.go"} {
@@ -428,8 +425,9 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				location := filepath.Join(target, "cmd", "external-types-with-hints-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 			},
 			clean: func() {
 				// remove generated external models
@@ -439,53 +437,56 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 		"conflict_name_api_issue_2405_1": {
 			spec:   "../examples/todo-list/swagger.yml",
 			target: "2405-1",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.ServerPackage = "api"
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 			},
 		},
 		"conflict_name_api_issue_2405_2": {
 			spec:   "../examples/todo-list/swagger.yml",
 			target: "2405-2",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.ServerPackage = "loads"
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 			},
 		},
 		"conflict_name_api_issue_2405_3": {
 			spec:   "../fixtures/bugs/2405/fixture-2405.yaml",
 			target: "2405-3",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(_ *testing.T, opts *GenOpts) {
 				opts.ServerPackage = "server"
 				opts.APIPackage = "api"
 				opts.IncludeMain = true
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 			},
 		},
 		"ext_types_issue_2385": {
 			spec:   "../fixtures/bugs/2385/fixture-2385.yaml",
 			target: "2385",
-			prepare: func(t testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				opts.MainPackage = "nrcodegen-server"
 				opts.IncludeMain = true
 				location := filepath.Join(opts.Target, "models")
@@ -493,23 +494,25 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				// add some custom model to the generated models
 				addModelsToLocation(t, location, "my_type.go")
 			},
-			verify: func(_ testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "nrcodegen-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 
 				location = filepath.Join(target, "models")
 
-				t.Log("building generated models")
-				goExecInDir(t, location, "build")
+				t.Run("building generated models",
+					goExecInDir(location, "build"),
+				)
 			},
 		},
 		"ext_types_full_example": {
 			spec:   "../examples/external-types/example-external-types.yaml",
 			target: "external-full",
-			prepare: func(_ testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				opts.MainPackage = "nrcodegen-server"
 				opts.IncludeMain = true
 				opts.ValidateSpec = false // the spec contains AdditionalItems
@@ -518,17 +521,19 @@ func generateFixtures(t testing.TB) map[string]generateFixture {
 				// add some custom model to the generated models
 				addModelsToLocation(t, location, "my_type.go")
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "cmd", "nrcodegen-server")
 				require.True(t, fileExists("", location))
 
-				t.Log("building generated server")
-				goExecInDir(t, location, "build")
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
 
 				location = filepath.Join(target, "models")
 
-				t.Log("building generated models")
-				goExecInDir(t, location, "build")
+				t.Run("building generated models",
+					goExecInDir(location, "build"),
+				)
 			},
 		},
 	}
@@ -539,7 +544,7 @@ func generateClientFixtures(_ testing.TB) map[string]generateFixture {
 		"issue1083": {
 			spec:   "../fixtures/bugs/1083/petstore.yaml",
 			target: "../fixtures/bugs/1083/codegen",
-			prepare: func(t testing.TB, opts *GenOpts) {
+			prepare: func(t *testing.T, opts *GenOpts) {
 				input, err := os.ReadFile("../fixtures/bugs/1083/pathparam_test.go")
 				require.NoError(t, err)
 
@@ -568,18 +573,21 @@ func generateClientFixtures(_ testing.TB) map[string]generateFixture {
 				_, err = io.Copy(w, f)
 				require.NoError(t, err)
 			},
-			verify: func(t testing.TB, target string) {
+			verify: func(t *testing.T, target string) {
 				const packages = "./..."
 				testPrg := "pathparam_test.go"
 				testDir := filepath.Dir(target)
 
-				goExecInDir(t, testDir, "get", packages)
+				t.Run("go get",
+					goExecInDir(testDir, "get", packages),
+				)
 
-				t.Log("running runtime request test on generated client")
-				// This test runs a generated client against a untyped API server.
-				// It verifies that path parameters are properly escaped and unescaped.
-				// It exercises the full stack of runtime client and server.
-				goExecInDir(t, testDir, "test", "-v", testPrg)
+				t.Run("running runtime request test on generated client",
+					// This test runs a generated client against a untyped API server.
+					// It verifies that path parameters are properly escaped and unescaped.
+					// It exercises the full stack of runtime client and server.
+					goExecInDir(testDir, "test", "-v", testPrg),
+				)
 			},
 		},
 	}

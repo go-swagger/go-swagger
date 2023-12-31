@@ -2,9 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"io"
-	"log"
-	"os"
 	"testing"
 
 	"github.com/go-openapi/loads"
@@ -248,8 +245,9 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 
 // Test copyright definition
 func TestTemplates_DefinitionCopyright(t *testing.T) {
+	defer discardOutput()()
+
 	const copyright = `{{ .Copyright }}`
-	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -290,7 +288,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 // Test TargetImportPath definition
 func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	const targetImportPath = `{{ .TargetImportPath }}`
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	repo := NewRepository(nil)
 
@@ -332,9 +330,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 
 // Simulates a definition environment for model templates
 func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
-	// Don't want stderr output to pollute CI
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if err != nil {
@@ -355,9 +351,7 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 
 // Simulates a definition environment for operation templates
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
-	// Don't want stderr output to pollute CI
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	b, err := methodPathOpBuilder(operation, path, spec)
 	if err != nil {
@@ -375,7 +369,8 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 // Just running basic tests to make sure the function map works and all functions are available as expected.
 // More complete unit tests are provided by go-openapi/swag.
 func TestTemplates_FuncMap(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
+
 	funcTpl := testFuncTpl()
 
 	err := templates.AddFile("functpl", funcTpl)
@@ -431,7 +426,8 @@ func TestTemplates_FuncMap(t *testing.T) {
 // Mostly unused in tests, since the Repository.AddFile()
 // is generally preferred.
 func TestTemplates_AddFile(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
+
 	funcTpl := testFuncTpl()
 
 	// unprotected
@@ -449,7 +445,7 @@ func TestTemplates_AddFile(t *testing.T) {
 
 // Test LoadDir
 func TestTemplates_LoadDir(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// Fails
 	err := templates.LoadDir("")
@@ -479,7 +475,7 @@ func TestTemplates_LoadDir(t *testing.T) {
 
 // Test LoadDir
 func TestTemplates_SetAllowOverride(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// adding protected file with allowOverride set to false fails
 	templates.SetAllowOverride(false)
@@ -527,11 +523,8 @@ func TestTemplates_LoadContrib(t *testing.T) {
 // TODO: test error case in LoadDefaults()
 // test DumpTemplates()
 func TestTemplates_DumpTemplates(t *testing.T) {
-	buf := bytes.NewBuffer(nil)
-	log.SetOutput(buf)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	var buf bytes.Buffer
+	defer captureOutput(&buf)()
 
 	templates.DumpTemplates()
 	assert.NotEmpty(t, buf)

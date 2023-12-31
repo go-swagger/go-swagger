@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
@@ -29,10 +30,7 @@ func TestGenerateAndBuild(t *testing.T) {
 	//
 	// NOTE: test cases are randomized (map)
 	t.Parallel()
-
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	cases := map[string]struct {
 		spec string
@@ -65,8 +63,6 @@ func TestGenerateAndBuild(t *testing.T) {
 			cas := cas
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
-				log.SetOutput(io.Discard)
-
 				spec := filepath.FromSlash(cas.spec)
 
 				generated, err := os.MkdirTemp(filepath.Dir(spec), "generated")
@@ -102,4 +98,28 @@ func goExecInDir(t testing.TB, target string, args ...string) {
 	cmd.Dir = target
 	p, err := cmd.CombinedOutput()
 	require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
+}
+
+var lockLogger sync.Mutex
+
+func discardOutput(w ...io.Writer) func() {
+	var out io.Writer
+	if len(w) == 0 {
+		out = io.Discard
+	} else {
+		out = w[0]
+	}
+
+	lockLogger.Lock()
+	defer lockLogger.Unlock()
+
+	original := log.Writer()
+	// discards log output then sends a function to set it back to its original value
+	log.SetOutput(out)
+
+	return func() {
+		lockLogger.Lock()
+		log.SetOutput(original)
+		lockLogger.Unlock()
+	}
 }

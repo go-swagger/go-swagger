@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -76,11 +77,13 @@ func funcBody(code string, signature string) string {
 
 // testing utilities for codegen build
 
-func goExecInDir(t testing.TB, target string, args ...string) {
-	cmd := exec.Command("go", args...)
-	cmd.Dir = target
-	p, err := cmd.CombinedOutput()
-	require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
+func goExecInDir(target string, args ...string) func(*testing.T) {
+	return func(t *testing.T) {
+		cmd := exec.Command("go", args...)
+		cmd.Dir = target
+		p, err := cmd.CombinedOutput()
+		require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
+	}
 }
 
 func testCwd(t testing.TB) string {
@@ -89,11 +92,27 @@ func testCwd(t testing.TB) string {
 	return cwd
 }
 
+var lockLogger sync.Mutex
+
 func discardOutput() func() {
-	// discards log output then sends a function to set it back to stdout
-	log.SetOutput(io.Discard)
+	return setOutput(io.Discard)
+}
+
+func captureOutput(w io.Writer) func() {
+	return setOutput(w)
+}
+
+func setOutput(w io.Writer) func() {
+	lockLogger.Lock()
+	defer lockLogger.Unlock()
+
+	original := log.Writer()
+	// discards log output then sends a function to set it back to its original value
+	log.SetOutput(w)
 
 	return func() {
-		log.SetOutput(os.Stdout)
+		lockLogger.Lock()
+		log.SetOutput(original)
+		lockLogger.Unlock()
 	}
 }

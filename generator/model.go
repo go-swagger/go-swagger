@@ -687,7 +687,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		// when readOnly or default is specified, this disables Required validation (Swagger-specific)
 		isRequired = false
 		if sg.Required {
-			log.Printf("warn: properties with a default value or readOnly should not be required [%s]", sg.Name)
+			log.Printf("warning: properties with a default value or readOnly should not be required [%s]", sg.Name)
 		}
 	}
 
