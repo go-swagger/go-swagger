@@ -1,6 +1,3 @@
-//go:build go1.18
-// +build go1.18
-
 package go118
 
 // An Interfaced struct contains objects with interface definitions
