@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/swag"
 
 	"golang.org/x/tools/go/packages"
@@ -509,6 +510,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue
 				}
 				a.Routes = append(a.Routes, pp)
+				debugLog("found route: %s in %s", spew.Sdump(pp), spew.Sdump(n))
 			}
 		}
 
