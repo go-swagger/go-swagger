@@ -536,6 +536,23 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				)
 			},
 		},
+		"conflict_name_server_issue_2730": {
+			spec:   "../fixtures/bugs/2730/2730.yaml",
+			target: "server-2730",
+			prepare: func(_ *testing.T, opts *GenOpts) {
+				opts.MainPackage = "nrcodegen-server"
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			},
+			verify: func(t *testing.T, target string) {
+				location := filepath.Join(target, "cmd", "nrcodegen-server")
+				require.True(t, fileExists("", location))
+
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
+			},
+		},
 	}
 }
 
@@ -587,6 +604,19 @@ func generateClientFixtures(_ testing.TB) map[string]generateFixture {
 					// It verifies that path parameters are properly escaped and unescaped.
 					// It exercises the full stack of runtime client and server.
 					goExecInDir(testDir, "test", "-v", testPrg),
+				)
+			},
+		},
+		"conflict_name_client_issue_2730": {
+			spec:    "../fixtures/bugs/2730/2730.yaml",
+			target:  "server-2730",
+			prepare: func(_ *testing.T, opts *GenOpts) {},
+			verify: func(t *testing.T, target string) {
+				location := filepath.Join(target, "client")
+				require.True(t, fileExists("", location))
+
+				t.Run("building generated client",
+					goExecInDir(location, "build"),
 				)
 			},
 		},
