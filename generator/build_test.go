@@ -1,18 +1,15 @@
 package generator_test
 
 import (
-	"io"
-	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"sync"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
 const (
@@ -30,7 +27,7 @@ func TestGenerateAndBuild(t *testing.T) {
 	//
 	// NOTE: test cases are randomized (map)
 	t.Parallel()
-	defer discardOutput()()
+	defer gentest.DiscardOutput()()
 
 	cases := map[string]struct {
 		spec string
@@ -59,23 +56,23 @@ func TestGenerateAndBuild(t *testing.T) {
 	}
 
 	t.Run("build client", func(t *testing.T) {
-		for name, cas := range cases {
-			cas := cas
+		for name, toPin := range cases {
+			cas := toPin
+
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
 				spec := filepath.FromSlash(cas.spec)
 
 				generated, err := os.MkdirTemp(filepath.Dir(spec), "generated")
 				require.NoErrorf(t, err, "TempDir()=%s", generated)
-				defer func() { _ = os.RemoveAll(generated) }()
+				t.Cleanup(func() { _ = os.RemoveAll(generated) })
 
 				require.NoErrorf(t, newTestClient(spec, generated).Execute(nil), "Execute()=%s", err)
 
 				packages := filepath.Join(generated, "...")
 
-				goExecInDir(t, "", "get")
-
-				goExecInDir(t, "", "build", packages)
+				t.Run("should go get imports", gentest.GoExecInDir("", "get"))
+				t.Run("should build client", gentest.GoExecInDir("", "build", packages))
 			})
 		}
 	})
@@ -91,35 +88,4 @@ func newTestClient(input, output string) *generate.Client {
 	c.Models.ModelPackage = defaultModelPackage
 	c.ClientPackage = defaultClientPackage
 	return c
-}
-
-func goExecInDir(t testing.TB, target string, args ...string) {
-	cmd := exec.Command("go", args...)
-	cmd.Dir = target
-	p, err := cmd.CombinedOutput()
-	require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
-}
-
-var lockLogger sync.Mutex
-
-func discardOutput(w ...io.Writer) func() {
-	var out io.Writer
-	if len(w) == 0 {
-		out = io.Discard
-	} else {
-		out = w[0]
-	}
-
-	lockLogger.Lock()
-	defer lockLogger.Unlock()
-
-	original := log.Writer()
-	// discards log output then sends a function to set it back to its original value
-	log.SetOutput(out)
-
-	return func() {
-		lockLogger.Lock()
-		log.SetOutput(original)
-		lockLogger.Unlock()
-	}
 }

@@ -1,16 +1,20 @@
 package generator
 
 import (
-	"io"
-	"log"
 	"os"
-	"os/exec"
 	"regexp"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
+)
+
+var (
+	discardOutput = gentest.DiscardOutput
+	captureOutput = gentest.CaptureOutput
+	goExecInDir   = gentest.GoExecInDir
 )
 
 // testing utilities for codegen assertions
@@ -77,42 +81,8 @@ func funcBody(code string, signature string) string {
 
 // testing utilities for codegen build
 
-func goExecInDir(target string, args ...string) func(*testing.T) {
-	return func(t *testing.T) {
-		cmd := exec.Command("go", args...)
-		cmd.Dir = target
-		p, err := cmd.CombinedOutput()
-		require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
-	}
-}
-
 func testCwd(t testing.TB) string {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	return cwd
-}
-
-var lockLogger sync.Mutex
-
-func discardOutput() func() {
-	return setOutput(io.Discard)
-}
-
-func captureOutput(w io.Writer) func() {
-	return setOutput(w)
-}
-
-func setOutput(w io.Writer) func() {
-	lockLogger.Lock()
-	defer lockLogger.Unlock()
-
-	original := log.Writer()
-	// discards log output then sends a function to set it back to its original value
-	log.SetOutput(w)
-
-	return func() {
-		lockLogger.Lock()
-		log.SetOutput(original)
-		lockLogger.Unlock()
-	}
 }

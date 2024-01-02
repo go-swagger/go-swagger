@@ -161,7 +161,7 @@ func (f generateFixture) warnFailed(t testing.TB) func() {
 	}
 }
 
-func generateFixtures(t testing.TB) map[string]generateFixture {
+func generateFixtures(_ testing.TB) map[string]generateFixture {
 	return map[string]generateFixture{
 		"issue 1943": {
 			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
