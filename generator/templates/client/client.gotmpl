@@ -68,7 +68,7 @@ type Client struct {
 // ClientOption may be used to customize the behavior of Client methods.
 type ClientOption func(*runtime.ClientOperation)
 
-{{- with .ClientOptions }}
+{{- with .ClientOptions }}{{/* use ad'hoc function mediaGoName rather than pascalize because of patterns with * */}}
 
 // This client is generated with a few options you might find useful for your swagger spec.
 //
@@ -85,11 +85,13 @@ func WithContentType(mime string) ClientOption {
 	}
 }
     {{ range .ConsumesMediaTypes  }}
+      {{- if not ( eq (mediaGoName .) ""  ) }}{{/* guard: in case garbled input produces a (conflicting) empty name */}}
 
-// WithContentType{{ pascalize . }} sets the Content-Type header to {{ printf "%q" . }}.
-func WithContentType{{ pascalize . }}(r *runtime.ClientOperation) {
+// WithContentType{{ mediaGoName . }} sets the Content-Type header to {{ printf "%q" . }}.
+func WithContentType{{ mediaGoName . }}(r *runtime.ClientOperation) {
 	r.ConsumesMediaTypes = []string{ {{ printf "%q" . }} }
 }
+      {{- end }}
     {{- end }}
   {{- end }}
   {{- if gt (len .ProducesMediaTypes) 1 }}
@@ -104,11 +106,13 @@ func WithAccept(mime string) ClientOption {
 	}
 }
     {{ range .ProducesMediaTypes  }}
+      {{- if not ( eq (mediaGoName .) ""  ) }}{{/* guard: in case garbled input produces a (conflicting) empty name */}}
 
-// WithAccept{{ pascalize . }} sets the Accept header to {{ printf "%q" . }}.
-func WithAccept{{ pascalize . }}(r *runtime.ClientOperation) {
+// WithAccept{{ mediaGoName . }} sets the Accept header to {{ printf "%q" . }}.
+func WithAccept{{ mediaGoName . }}(r *runtime.ClientOperation) {
 	r.ProducesMediaTypes = []string{ {{ printf "%q" . }} }
 }
+      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}

@@ -93,6 +93,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"inspect":          pretty.Sprint,
 		"cleanPath":        path.Clean,
 		"mediaTypeName":    mediaMime,
+		"mediaGoName":      mediaGoName,
 		"arrayInitializer": lang.arrayInitializer,
 		"hasPrefix":        strings.HasPrefix,
 		"stringContains":   strings.Contains,
