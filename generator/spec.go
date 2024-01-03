@@ -16,23 +16,22 @@ import (
 )
 
 func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
+	// spec preprocessing option
+	if g.PropertiesSpecOrder {
+		loader := orderedLoader{specPath: g.Spec}
+
+		rewritten, err := loader.withAutoXOrder()
+		if err != nil {
+			return nil, err
+		}
+
+		g.Spec = rewritten
+	}
+
 	// Load spec document
 	specDoc, err := loads.Spec(g.Spec)
 	if err != nil {
 		return nil, err
-	}
-
-	// spec preprocessing option
-	if g.PropertiesSpecOrder {
-		g.Spec, err = withAutoXOrder(g.Spec)
-		if err != nil {
-			return nil, err
-		}
-
-		specDoc, err = loads.Spec(g.Spec)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// If accepts definitions only, add dummy swagger header to pass validation
