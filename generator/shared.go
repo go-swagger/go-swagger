@@ -1068,7 +1068,7 @@ func dumpData(data interface{}) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(os.Stdout, string(bb))
+	fmt.Fprintln(os.Stdout, string(bb)) // TODO(fred): not testable
 	return nil
 }
 

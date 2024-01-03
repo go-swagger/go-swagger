@@ -2,9 +2,6 @@ package generator
 
 import (
 	"encoding/json"
-	"io"
-	"log"
-	"os"
 	"strconv"
 	"testing"
 
@@ -468,10 +465,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 }
 
 func TestGuardValidations(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	for _, toPin := range makeGuardValidationFixtures() {
 		testCase := toPin

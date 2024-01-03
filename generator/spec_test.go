@@ -1,9 +1,6 @@
 package generator
 
 import (
-	"io"
-	"log"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -14,8 +11,7 @@ import (
 )
 
 func TestSpec_Issue1429(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// acknowledge fix in go-openapi/spec
 	specPath := filepath.Join("..", "fixtures", "bugs", "1429", "swagger-1429.yaml")
@@ -47,8 +43,7 @@ func TestSpec_Issue1429(t *testing.T) {
 }
 
 func TestSpec_Issue2527(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	t.Run("spec should be detected as invalid", func(t *testing.T) {
 		specPath := filepath.Join("..", "fixtures", "bugs", "2527", "swagger.yml")
@@ -84,8 +79,7 @@ func TestSpec_FindSwaggerSpec(t *testing.T) {
 }
 
 func TestSpec_Issue1621(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// acknowledge fix in go-openapi/spec
 	specPath := filepath.Join("..", "fixtures", "bugs", "1621", "fixture-1621.yaml")
@@ -100,8 +94,7 @@ func TestSpec_Issue1621(t *testing.T) {
 }
 
 func TestShared_Issue1614(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// acknowledge fix in go-openapi/spec
 	specPath := filepath.Join("..", "fixtures", "bugs", "1614", "gitea.json")
@@ -115,9 +108,8 @@ func TestShared_Issue1614(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_analyzeSpec_Issue2216(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+func Test_AnalyzeSpec_Issue2216(t *testing.T) {
+	defer discardOutput()()
 
 	t.Run("single-swagger-file", func(t *testing.T) {
 		specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger-single.yml")

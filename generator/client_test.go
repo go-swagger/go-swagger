@@ -15,7 +15,6 @@
 package generator
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -236,10 +235,9 @@ func TestClient(t *testing.T) {
 	targetdir, err := os.MkdirTemp(base, "swagger_nogo")
 	require.NoError(t, err, "Failed to create a test target directory: %v", err)
 
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.RemoveAll(targetdir)
-		log.SetOutput(os.Stdout)
-	}()
+	})
 
 	tests := []struct {
 		name      string

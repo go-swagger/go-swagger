@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -79,10 +78,8 @@ func testGenOpts() *GenOpts {
 // Windows style path is difficult to test on unix
 // since the filepath pkg is platform dependent
 func TestShared_CheckOpts(t *testing.T) {
+	defer discardOutput()()
 	testPath := filepath.Join("a", "b", "b")
-
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
 
 	opts := new(GenOpts)
 	_ = opts.EnsureDefaults()
@@ -143,8 +140,7 @@ func TestShared_EnsureDefaults(t *testing.T) {
 // {{ .SpecPath }}, to construct the go generate
 // directive.
 func TestShared_TargetPath(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	cwd, _ := os.Getwd()
 
@@ -187,8 +183,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 // NOTE: file://url is not supported
 func TestShared_SpecPath(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	cwd, _ := os.Getwd()
 
@@ -273,8 +268,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 // Low level testing: templates not found (higher level calls raise panic(), see above)
 func TestShared_NotFoundTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	opts := testGenOpts()
 	tplOpts := TemplateOpts{
@@ -294,8 +288,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 // Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
 // TODO: better error discrimination between absent definition and non-parsing template
 func TestShared_GarbledTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	garbled := "func x {{;;; garbled"
 
@@ -324,8 +317,7 @@ func (*myTemplateData) MyFaultyMethod() (string, error) {
 }
 
 func TestShared_ExecTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// Not a failure: no value data
 	execfailure1 := "func x {{ .NotInData }}"
@@ -368,14 +360,14 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 // Test correctly parsed templates, with bad formatting
 func TestShared_BadFormatTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
+	// TODO: fred refact
+	defer discardOutput()()
 
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.Remove("test_badformat.gol")
 		_ = os.Remove("test_badformat2.gol")
-		log.SetOutput(os.Stdout)
 		Debug = false
-	}()
+	})
 
 	// Not skipping format
 	badFormat := "func x {;;; garbled"
@@ -438,12 +430,11 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 
 // Test dir creation
 func TestShared_DirectoryTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
+	defer discardOutput()()
 
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.RemoveAll("TestGenDir")
-		log.SetOutput(os.Stdout)
-	}()
+	})
 
 	// Not skipping format
 	content := "func x {}"
@@ -480,8 +471,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 // Test templates which are not assets (open in file)
 // Low level testing: templates loaded from file
 func TestShared_LoadTemplate(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	opts := testGenOpts()
 	tplOpts := TemplateOpts{
@@ -565,29 +555,35 @@ func TestShared_GatherModel(t *testing.T) {
 }
 
 func TestShared_DumpWrongData(t *testing.T) {
-	assert.Error(t, dumpData(struct {
-		A func() string
-		B string
-	}{
-		A: func() string { return "" },
-		B: "xyz",
-	}))
+	defer discardOutput()()
 
-	assert.NoError(t, dumpData(struct {
-		A func() string `json:"-"`
-		B string
-	}{
-		A: func() string { return "" },
-		B: "xyz",
-	}))
+	t.Run("should not be able to dump things that don't marshal as JSON", func(t *testing.T) {
+		require.Error(t, dumpData(struct {
+			A func() string
+			B string
+		}{
+			A: func() string { return "" },
+			B: "xyz",
+		}))
+	})
 
-	assert.NoError(t, dumpData(struct {
-		a func() string
-		B string
-	}{
-		a: func() string { return "" },
-		B: "xyz",
-	}))
+	t.Run("should dump any data, with unmarshallable fields exlicitly excluded", func(t *testing.T) {
+		require.NoError(t, dumpData(struct {
+			A func() string `json:"-"`
+			B string
+		}{
+			A: func() string { return "" },
+			B: "xyz",
+		}))
+
+		require.NoError(t, dumpData(struct {
+			a func() string
+			B string
+		}{
+			a: func() string { return "" },
+			B: "xyz",
+		}))
+	})
 }
 
 func TestResolvePrincipal(t *testing.T) {
@@ -780,8 +776,7 @@ func TestDefaultImports(t *testing.T) {
 }
 
 func TestShared_Issue2113(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// acknowledge fix in go-openapi/spec
 	specPath := filepath.Join("..", "fixtures", "bugs", "2113", "base.yaml")
