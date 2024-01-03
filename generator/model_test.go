@@ -2483,15 +2483,18 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	specDoc, err := loads.Spec(ymlFile)
 	require.NoError(t, err)
 
-	orderedSpecDoc, err := loads.Spec(WithAutoXOrder(ymlFile))
+	orderedSpecDoc, err := WithAutoXOrder(ymlFile)
+	require.NoError(t, err)
+
+	doc, err := loads.Spec(orderedSpecDoc)
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	orderedDefinitions := orderedSpecDoc.Spec().Definitions
+	orderedDefinitions := doc.Spec().Definitions
 
 	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts)
 	assert.NoError(t, err)
-	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts)
+	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], doc, opts)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)

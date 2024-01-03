@@ -9,9 +9,8 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	flags "github.com/jessevdk/go-flags"
-
 	"github.com/go-swagger/go-swagger/generator"
+	flags "github.com/jessevdk/go-flags"
 )
 
 const (
@@ -101,7 +100,10 @@ func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, w io.Wri
 	var mixins []*spec.Swagger
 	for _, mixinFile := range mixinFiles {
 		if c.KeepSpecOrder {
-			mixinFile = generator.WithAutoXOrder(mixinFile)
+			mixinFile, err = generator.WithAutoXOrder(mixinFile)
+			if err != nil {
+				return nil, err
+			}
 		}
 		mixin, lerr := loads.Spec(mixinFile)
 		if lerr != nil {

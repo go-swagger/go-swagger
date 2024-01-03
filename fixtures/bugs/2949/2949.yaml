@@ -1,0 +1,42 @@
+swagger: '2.0'
+info:
+  title: Users API
+  version: 0.0.1
+
+paths:
+  /api/v1/users/:
+    get:
+      responses:
+        200:
+          $ref: '#/responses/Users'
+
+responses:
+  Users:
+    description: List of users
+    schema:
+      allOf:
+        - $ref: '#/definitions/APIResponse'
+        - properties:
+            data:
+              $ref: '#/definitions/Users'
+
+definitions:
+  APIResponse:
+    type: object
+    properties:
+      timestamp:
+        type: string
+  Users:
+    type: array
+    items:
+      $ref: '#/definitions/User'
+    x-omitempty: false
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+      admin:
+        type: boolean
+      name:
+        type: string

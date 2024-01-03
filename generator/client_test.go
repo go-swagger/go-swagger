@@ -1301,3 +1301,48 @@ func TestGenClient_2773(t *testing.T) {
 		}
 	})
 }
+
+func TestGenClient_2949(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	opts := testClientGenOpts()
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2949", "2949.yaml")
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+	tft, err := os.MkdirTemp(cwd, "generated")
+	require.NoError(t, err)
+	opts.Target = tft
+
+	t.Cleanup(func() {
+		_ = os.RemoveAll(tft)
+	})
+
+	require.NoError(t,
+		GenerateClient("client", []string{}, []string{}, opts),
+	)
+
+	fixtureConfig := map[string][]string{
+		"client/operations/get_api_v1_users_responses.go": { // generated file
+			// expected code lines
+			`type\s+GetAPIV1UsersOK\s+struct\s+{
+\s+Payload\s+\*GetAPIV1UsersOKBody
+\s*}`,
+			`type GetAPIV1UsersOKBody struct { `,
+			`models.APIResponse`,
+			"Data models.Users `json:\"data\"`",
+		},
+	}
+
+	for fileToInspect, expectedCode := range fixtureConfig {
+		code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+		require.NoError(t, err)
+
+		for line, codeLine := range expectedCode {
+			if !assertRegexpInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+			}
+		}
+	}
+}
