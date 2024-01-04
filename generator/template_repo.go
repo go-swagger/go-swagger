@@ -134,6 +134,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		},
 		"docCollectionFormat": resolvedDocCollectionFormat,
 		"trimSpace":           strings.TrimSpace,
+		"mdBlock":             markdownBlock, // markdown block
 		"httpStatus":          httpStatus,
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
@@ -931,4 +932,14 @@ func errorPath(in interface{}) (string, error) {
 	}
 
 	return pth, nil
+}
+
+const mdNewLine = "</br>"
+
+var mdNewLineReplacer = strings.NewReplacer("\r\n", mdNewLine, "\n", mdNewLine, "\r", mdNewLine)
+
+func markdownBlock(in string) string {
+	in = strings.TrimSpace(in)
+
+	return mdNewLineReplacer.Replace(in)
 }
