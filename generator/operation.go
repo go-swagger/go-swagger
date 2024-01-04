@@ -428,10 +428,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	originalExtraSchemes := getExtraSchemes(operation.Extensions)
 
 	produces := producesOrDefault(operation.Produces, swsp.Produces, b.DefaultProduces)
-	sort.Strings(produces)
-
 	consumes := producesOrDefault(operation.Consumes, swsp.Consumes, b.DefaultConsumes)
-	sort.Strings(consumes)
 
 	var successResponse *GenResponse
 	for _, resp := range successResponses {

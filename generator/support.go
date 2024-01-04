@@ -311,6 +311,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Printf("planning operations (found: %d)", len(a.Operations))
 
 	genOps := make(GenOperations, 0, len(a.Operations))
+	consumesIndex := make(map[string][]string)
+	producesIndex := make(map[string][]string)
+
 	for operationName, opp := range a.Operations {
 		o := opp.Op
 		o.ID = operationName
@@ -363,6 +366,18 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		op.ReceiverName = receiver
 		op.Tags = tags // ordered tags for this operation, possibly filtered by CLI params
 
+		allConsumes := pruneEmpty(op.ConsumesMediaTypes)
+		if bldr.DefaultConsumes != "" {
+			allConsumes = append(allConsumes, bldr.DefaultConsumes)
+		}
+		consumesIndex[bldr.Name] = allConsumes
+
+		allProduces := pruneEmpty(op.ProducesMediaTypes)
+		if bldr.DefaultProduces != "" {
+			allProduces = append(allProduces, bldr.DefaultProduces)
+		}
+		producesIndex[bldr.Name] = allProduces
+
 		if !a.GenOpts.SkipTagPackages && tag != "" {
 			importPath := filepath.ToSlash(
 				path.Join(
@@ -397,6 +412,10 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	for k, v := range opsGroupedByPackage {
 		log.Printf("operations for package %q (found: %d)", k, len(v))
 		sort.Sort(v)
+
+		consumesInGroup := make([]string, 0, 2)
+		producesInGroup := make([]string, 0, 2)
+
 		// trim duplicate extra schemas within the same package
 		vv := make(GenOperations, 0, len(v))
 		seenExtraSchema := make(map[string]bool)
@@ -410,6 +429,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			}
 			op.ExtraSchemas = uniqueExtraSchemas
 			vv = append(vv, op)
+
+			consumesInGroup = concatUnique(consumesInGroup, consumesIndex[op.Name])
+			producesInGroup = concatUnique(producesInGroup, producesIndex[op.Name])
 		}
 		var pkg string
 		if len(vv) > 0 {
@@ -430,6 +452,19 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Imports:        imports,
 			RootPackage:    a.APIPackage,
 			GenOpts:        a.GenOpts,
+		}
+
+		if a.GenOpts.IsClient {
+			// generating extra options to switch media type in client
+			if len(consumesInGroup) > 1 || len(producesInGroup) > 1 {
+				sort.Strings(producesInGroup)
+				sort.Strings(consumesInGroup)
+				options := &GenClientOptions{
+					ProducesMediaTypes: producesInGroup,
+					ConsumesMediaTypes: consumesInGroup,
+				}
+				opGroup.ClientOptions = options
+			}
 		}
 		opGroups = append(opGroups, opGroup)
 	}

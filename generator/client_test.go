@@ -1220,3 +1220,84 @@ func TestGenClient_2590(t *testing.T) {
 		}
 	}
 }
+
+func TestGenClient_2773(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	opts := testClientGenOpts()
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2773", "2773.yaml")
+
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+	tft, err := os.MkdirTemp(cwd, "generated")
+	require.NoError(t, err)
+	opts.Target = tft
+
+	t.Cleanup(func() {
+		_ = os.RemoveAll(tft)
+	})
+
+	require.NoError(t,
+		GenerateClient("client", []string{}, []string{}, opts),
+	)
+
+	t.Run("generated operation should keep content type in the specified order", func(t *testing.T) {
+		fixtureConfig := map[string][]string{
+			"client/uploads/uploads_client.go": { // generated file
+				// expected code lines
+				`ProducesMediaTypes: []string{"application/octet-stream", "application/json"},`,
+				`ConsumesMediaTypes: []string{"multipart/form-data", "application/x-www-form-urlencoded"},`,
+			},
+		}
+
+		for fileToInspect, expectedCode := range fixtureConfig {
+			code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+			require.NoError(t, err)
+
+			for line, codeLine := range expectedCode {
+				if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+					t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+				}
+			}
+		}
+	})
+
+	t.Run("generated operation should have options to set media type", func(t *testing.T) {
+		fixtureConfig := map[string][]string{
+			"client/uploads/uploads_client.go": { // generated file
+				// free mime consumes option
+				`func WithContentType(mime string) ClientOption {`,
+				`	return func(r *runtime.ClientOperation) {`,
+				`	r.ConsumesMediaTypes = []string{mime}`,
+				// shorthand options
+				`func WithContentTypeApplicationJSON(r *runtime.ClientOperation) {`,
+				`	r.ConsumesMediaTypes = []string{"application/json"}`,
+				`func WithContentTypeApplicationxWwwFormUrlencoded(r *runtime.ClientOperation) {`,
+				`	r.ConsumesMediaTypes = []string{"application/x-www-form-urlencoded"}`,
+				`func WithContentTypeMultipartFormData(r *runtime.ClientOperation) {`,
+				`	r.ConsumesMediaTypes = []string{"multipart/form-data"}`,
+				// free mime produces option
+				`func WithAccept(mime string) ClientOption {`,
+				`	return func(r *runtime.ClientOperation) {`,
+				`		r.ProducesMediaTypes = []string{mime}`,
+				// shorthand options
+				`func WithAcceptApplicationJSON(r *runtime.ClientOperation) {`,
+				`	r.ProducesMediaTypes = []string{"application/json"}`,
+				`func WithAcceptApplicationOctetStream(r *runtime.ClientOperation) {`,
+				`	r.ProducesMediaTypes = []string{"application/octet-stream"}`,
+			},
+		}
+
+		for fileToInspect, expectedCode := range fixtureConfig {
+			code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+			require.NoError(t, err)
+
+			for line, codeLine := range expectedCode {
+				if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+					t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+				}
+			}
+		}
+	})
+}

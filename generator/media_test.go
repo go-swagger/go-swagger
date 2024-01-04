@@ -37,6 +37,10 @@ func TestMediaMime(t *testing.T) {
 	assert.Equal(t, "", mediaParameters(runtime.JSONMime))
 }
 
+func TestMediaGoName(t *testing.T) {
+	assert.Equal(t, "StarStar", mediaGoName("*/*"))
+}
+
 func TestMediaMakeSerializers(t *testing.T) {
 	app := appGenerator{
 		Name:     "myapp",
