@@ -553,6 +553,23 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				)
 			},
 		},
+		"tag_package_name_issue_2866": {
+			spec:   "../fixtures/bugs/2866/2866.yaml",
+			target: "server-2866",
+			prepare: func(_ *testing.T, opts *GenOpts) {
+				opts.MainPackage = "nrcodegen-server"
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			},
+			verify: func(t *testing.T, target string) {
+				location := filepath.Join(target, "cmd", "nrcodegen-server")
+				require.True(t, fileExists("", location))
+
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
+			},
+		},
 	}
 }
 
