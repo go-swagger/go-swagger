@@ -140,21 +140,43 @@ func TestBaseImport(t *testing.T) {
 func TestGenerateMarkdown(t *testing.T) {
 	defer discardOutput()()
 
-	opts := testGenOpts()
-	opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
-	output := filepath.Join(t.TempDir(), "markdown.md")
+	t.Run("should generate doc for demo fixture", func(t *testing.T) {
+		opts := testGenOpts()
+		opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
+		output := filepath.Join(t.TempDir(), "markdown.md")
 
-	require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
-	expectedCode := []string{
-		"# Markdown generator demo",
-	}
-
-	code, err := os.ReadFile(output)
-	require.NoError(t, err)
-
-	for line, codeLine := range expectedCode {
-		if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
-			t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", output, line, expectedCode[line])
+		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
+		expectedCode := []string{
+			"# Markdown generator demo",
 		}
-	}
+
+		code, err := os.ReadFile(output)
+		require.NoError(t, err)
+
+		for line, codeLine := range expectedCode {
+			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", output, line, expectedCode[line])
+			}
+		}
+	})
+
+	t.Run("should handle new lines in descriptions", func(t *testing.T) {
+		opts := testGenOpts()
+		opts.Spec = "../fixtures/bugs/2700/2700.yaml"
+		output := filepath.Join(t.TempDir(), "markdown.md")
+
+		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
+		expectedCode := []string{
+			`| Filesystem type of the volume that you want to mount.</br>Tip: Ensure that the filesystem type is supported by the host operating system.</br>Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.</br>More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore</br></br>TODO: how do we prevent errors in the filesystem from compromising the machine |`,
+		}
+
+		code, err := os.ReadFile(output)
+		require.NoError(t, err)
+
+		for line, codeLine := range expectedCode {
+			if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+				t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", output, line, expectedCode[line])
+			}
+		}
+	})
 }
