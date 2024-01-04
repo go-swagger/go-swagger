@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -1248,10 +1249,18 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 		// conflict with "operations" package is handled separately
 		tag = renameOperationPackage(intersected, tag)
 	}
+
+	if matches := versionedPkgRex.FindStringSubmatch(tag); len(matches) > 2 {
+		// rename packages like "v1", "v2" ... as they hold a special meaning for go
+		tag = "version" + matches[2]
+	}
+
 	b.APIPackage = b.GenOpts.LanguageOpts.ManglePackageName(tag, b.APIPackage) // actual package name
 	b.APIPackageAlias = deconflictTag(intersected, b.APIPackage)               // deconflicted import alias
 	return tag, intersected, len(filter) == 0 || len(filter) > 0 && len(intersected) > 0
 }
+
+var versionedPkgRex = regexp.MustCompile(`(?i)(v)([0-9]+)`)
 
 func maxInt(a, b int) int {
 	if a > b {
@@ -1290,6 +1299,7 @@ func deconflictPkg(pkg string, renamer func(string) string) string {
 	case "tls", "http", "fmt", "strings", "log", "flags", "pflag", "json", "time":
 		return renamer(pkg)
 	}
+
 	return pkg
 }
 
