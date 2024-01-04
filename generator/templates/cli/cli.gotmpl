@@ -89,7 +89,7 @@ func makeClient(cmd *cobra.Command, args []string) (*client.{{ pascalize .Name }
 // MakeRootCmd returns the root cmd
 func MakeRootCmd() (*cobra.Command, error) {
 	cobra.OnInitialize(initViperConfigs)
-	
+
 	// Use executable name as the command name
 	rootCmd := &cobra.Command{
 		Use: exeName,
@@ -117,13 +117,12 @@ func MakeRootCmd() (*cobra.Command, error) {
 	}
 	{{- end }}
 	// add all operation groups
-{{- range .OperationGroups -}}
-	{{- $operationGroupCmdVarName := printf "operationGroup%vCmd" (pascalize .Name) }}
-	{{ $operationGroupCmdVarName }}, err := makeOperationGroup{{ pascalize .Name }}Cmd()
+{{- range $index,$element := .OperationGroups }}
+	c{{ $index }}, err := make{{ cmdGroupName $element }}()
 	if err != nil {
 		return nil, err
 	}
-	rootCmd.AddCommand({{ $operationGroupCmdVarName }})
+	rootCmd.AddCommand(c{{ $index}})
 {{ end }}
 
 	// add cobra completion
@@ -157,7 +156,7 @@ func initViperConfigs() {
 }
 
 {{- if .SecurityDefinitions }}
-{{- /*youyuan: rework this since spec may define multiple auth schemes. 
+{{- /*youyuan: rework this since spec may define multiple auth schemes.
 	cli needs to detect which one user passed rather than add all of them.*/}}
 // registerAuthInoWriterFlags registers all flags needed to perform authentication
 func registerAuthInoWriterFlags(cmd *cobra.Command) error {
@@ -205,7 +204,7 @@ func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error
 	{{- end }}
 	{{- if .IsOAuth2 }}
 	if viper.IsSet("oauth2-token") {
-		// oauth2 workflow for generated CLI is not ideal. 
+		// oauth2 workflow for generated CLI is not ideal.
 		// If you have suggestions on how to support it, raise an issue here: https://github.com/go-swagger/go-swagger/issues
 		// This will be added to header: "Authorization: Bearer {oauth2-token value}"
 		token := viper.GetString("oauth2-token")
@@ -223,20 +222,19 @@ func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error
 {{- end }}
 
 {{ range .OperationGroups -}}
-func makeOperationGroup{{ pascalize .Name }}Cmd() (*cobra.Command, error) {
-	{{- $operationGroupCmdVarName := printf "operationGroup%vCmd" (pascalize .Name) }}
-	{{ $operationGroupCmdVarName }} := &cobra.Command{
+// make{{ cmdGroupName . }} returns a parent command to handle all operations with tag {{ printf "%q" .Name }}
+func make{{ cmdGroupName . }}() (*cobra.Command, error) {
+	parent := &cobra.Command{
 		Use:   "{{ .Name }}",
 		Long:  `{{ .Description }}`,
 	}
-{{ range .Operations }}
-	{{- $operationCmdVarName := printf "operation%vCmd" (pascalize .Name) }}
-	{{ $operationCmdVarName }}, err := makeOperation{{pascalize .Package}}{{ pascalize .Name }}Cmd()
+{{ range $index,$element := .Operations }}
+	sub{{ $index }}, err := make{{ cmdName $element }}()
 	if err != nil {
 		return nil, err
 	}
-	{{ $operationGroupCmdVarName }}.AddCommand({{ $operationCmdVarName }})
+	parent.AddCommand(sub{{ $index }})
 {{ end }}
-	return {{ $operationGroupCmdVarName }}, nil
+	return parent, nil
 }
 {{ end }} {{/*operation group*/}}
