@@ -139,6 +139,30 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
 		"path":                errorPath,
+		"cmdName": func(in interface{}) (string, error) {
+			// builds the name of a CLI command for a single operation
+			op, isOperation := in.(GenOperation)
+			if !isOperation {
+				ptr, ok := in.(*GenOperation)
+				if !ok {
+					return "", fmt.Errorf("cmdName should be called on a GenOperation, but got: %T", in)
+				}
+				op = *ptr
+			}
+			name := "Operation" + pascalize(op.Package) + pascalize(op.Name) + "Cmd"
+
+			return name, nil // TODO
+		},
+		"cmdGroupName": func(in interface{}) (string, error) {
+			// builds the name of a group of CLI commands
+			opGroup, ok := in.(GenOperationGroup)
+			if !ok {
+				return "", fmt.Errorf("cmdGroupName should be called on a GenOperationGroup, but got: %T", in)
+			}
+			name := "GroupOfOperations" + pascalize(opGroup.Name) + "Cmd"
+
+			return name, nil // TODO
+		},
 	}
 
 	for k, v := range extra {

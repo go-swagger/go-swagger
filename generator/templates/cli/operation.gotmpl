@@ -19,8 +19,8 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 )
 
-// makeOperation{{pascalize .Package}}{{ pascalize .Name }}Cmd returns a cmd to handle operation {{ camelize .Name }}
-func makeOperation{{pascalize .Package}}{{ pascalize .Name }}Cmd() (*cobra.Command, error) {
+// make{{ cmdName . }} returns a command to handle operation {{ camelize .Name }}
+func make{{ cmdName . }}() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "{{ .Name }}",
 		Short: `{{ escapeBackticks .Description}}`,
