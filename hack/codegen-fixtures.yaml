@@ -217,3 +217,23 @@
     skipModel: true
 - spec: swagger.json
   dir: fixtures/bugs/1898
+- spec: 2969.json
+  dir: fixtures/bugs/2969
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
+- spec: 2650.yaml
+  dir: fixtures/bugs/2650
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
+- spec: https://raw.githubusercontent.com/docker/engine/master/api/swagger.yaml
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
