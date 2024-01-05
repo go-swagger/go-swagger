@@ -11,11 +11,12 @@ package cli
 
 
 import (
+  "encoding/json"
   "fmt"
 
+  "github.com/spf13/cobra"
   {{ imports .DefaultImports }}
   {{ imports .Imports }}
-  "github.com/spf13/cobra"
 )
 
 // Schema cli for {{.GoType}}

@@ -14,7 +14,7 @@
         {{- if .IsPrimitive }}
             {{ template "primitiveregistrator" . }}
         {{- else if .IsArray }}
-    // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet 
+    // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet
         {{- else if .IsMap }}
     // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
         {{- else if .IsComplexObject }} {{/* struct case */}}
