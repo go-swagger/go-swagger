@@ -10,15 +10,14 @@ package {{ .GenOpts.CliPackage }}
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-    {{ imports .DefaultImports }}
-    {{ imports .Imports }}
+  {{ imports .DefaultImports }}
+  {{ imports .Imports }}
 
-    "github.com/spf13/cobra"
-	"github.com/spf13/viper"
+  "github.com/spf13/cobra"
+  "github.com/spf13/viper"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 	httptransport "github.com/go-openapi/runtime/client"
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 // debug flag indicating that cli should output debug logs
@@ -44,7 +43,7 @@ func logDebugf(format string, v ...interface{}) {
 var maxDepth int = 5
 
 // makeClient constructs a client object
-func makeClient(cmd *cobra.Command, args []string) (*client.{{ pascalize .Name }}, error) {
+func makeClient(cmd *cobra.Command, _ []string) (*client.{{ pascalize .Name }}, error) {
 	hostname := viper.GetString("hostname")
 	viper.SetDefault("base_path", client.DefaultBasePath)
 	basePath := viper.GetString("base_path")
@@ -97,11 +96,18 @@ func MakeRootCmd() (*cobra.Command, error) {
 	{{/*note: viper binded flag value must be retrieved from viper rather than cmd*/}}
 	// register basic flags
 	rootCmd.PersistentFlags().String("hostname", client.DefaultHost, "hostname of the service")
-	viper.BindPFlag("hostname", rootCmd.PersistentFlags().Lookup("hostname"))
+	if err := viper.BindPFlag("hostname", rootCmd.PersistentFlags().Lookup("hostname")) ; err != nil {
+    return nil, err
+  }
 	rootCmd.PersistentFlags().String("scheme", client.DefaultSchemes[0], fmt.Sprintf("Choose from: %v", client.DefaultSchemes))
-	viper.BindPFlag("scheme", rootCmd.PersistentFlags().Lookup("scheme"))
+	if err := viper.BindPFlag("scheme", rootCmd.PersistentFlags().Lookup("scheme")) ; err != nil {
+    return nil, err
+  }
+	rootCmd.PersistentFlags().String("scheme", client.DefaultSchemes[0], fmt.Sprintf("Choose from: %v", client.DefaultSchemes))
 	rootCmd.PersistentFlags().String("base-path", client.DefaultBasePath, fmt.Sprintf("For example: %v", client.DefaultBasePath))
-	viper.BindPFlag("base_path", rootCmd.PersistentFlags().Lookup("base-path"))
+	if err := viper.BindPFlag("base_path", rootCmd.PersistentFlags().Lookup("base-path")) ; err != nil {
+    return nil, err
+  }
 
 	// configure debug flag
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "output debug logs")
@@ -123,7 +129,7 @@ func MakeRootCmd() (*cobra.Command, error) {
 		return nil, err
 	}
 	rootCmd.AddCommand(c{{ $index}})
-{{ end }}
+{{- end }}
 
 	// add cobra completion
 	rootCmd.AddCommand(makeGenCompletionCmd())
@@ -137,10 +143,10 @@ func initViperConfigs() {
 	if configFile != "" {
 		// use user specified config file location
 		viper.SetConfigFile(configFile)
-	}else{
+	} else{
 		// look for default config
 		// Find home directory.
-		home, err := homedir.Dir()
+		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
 		// Search config in home directory with name ".cobra" (without extension).
@@ -164,18 +170,26 @@ func registerAuthInoWriterFlags(cmd *cobra.Command) error {
 		/*{{.Name}} {{.Description}}*/
 		{{- if .IsBasicAuth }}
 	cmd.PersistentFlags().String("username", "", "username for basic auth")
-	viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username"))
+	if err := viper.BindPFlag("username", cmd.PersistentFlags().Lookup("username")) ; err != nil {
+    return err
+  }
 	cmd.PersistentFlags().String("password", "", "password for basic auth")
-	viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password"))
+	if err := viper.BindPFlag("password", cmd.PersistentFlags().Lookup("password")) ; err != nil {
+    return err
+  }
 		{{- end }}
     	{{- if .IsAPIKeyAuth }}
 	cmd.PersistentFlags().String("{{.Name}}", "", `{{.Description}}`)
-	viper.BindPFlag("{{.Name}}", cmd.PersistentFlags().Lookup("{{.Name}}"))
+	if err := viper.BindPFlag("{{.Name}}", cmd.PersistentFlags().Lookup("{{.Name}}")) ; err != nil {
+    return err
+  }
     	{{- end }}
 		{{- if .IsOAuth2 }}
 	// oauth2: let user provide the token in a flag, rather than implement the logic to fetch the token.
 	cmd.PersistentFlags().String("oauth2-token", "", `{{.Description}}`)
-	viper.BindPFlag("oauth2-token", cmd.PersistentFlags().Lookup("oauth2-token"))
+	if err := viper.BindPFlag("oauth2-token", cmd.PersistentFlags().Lookup("oauth2-token")) ; err != nil {
+    return err
+  }
     	{{- end }}
 {{- end }}
 	return nil

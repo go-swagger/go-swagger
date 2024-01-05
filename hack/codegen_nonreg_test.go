@@ -52,6 +52,9 @@ type skipT struct {
 	SkipServer      bool `yaml:"skipServer,omitempty"`
 	SkipFullFlatten bool `yaml:"skipFullFlatten,omitempty"`
 	SkipValidation  bool `yaml:"skipValidation,omitempty"`
+
+	// specific include settings
+	IncludeCLI bool `yaml:"includeCLI,omitempty"`
 }
 
 // fixtureT describe a spec and what _not_ to do with it
@@ -200,8 +203,26 @@ func generateClient(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...str
 	_ = measure(t, started, "generate client", spec)
 }
 
+func generateCLI(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...string) {
+	started := measure(t, nil)
+	cmd := icmd.Command("swagger", append([]string{"generate", "cli", "--spec", spec, "--name", serverName, "--quiet"}, opts...)...)
+	res := icmd.RunCmd(cmd, runOpts...)
+	if !assert.Equal(t, 0, res.ExitCode) {
+		failure(t, "CLI client generation failed for %s", spec)
+		t.Log(res.Stderr())
+		t.FailNow()
+		return
+	}
+	good(t, "CLI generation OK")
+	_ = measure(t, started, "generate CLI", spec)
+}
+
 func buildClient(t *testing.T, target string) {
 	gobuild(t, icmd.Dir(filepath.Join(target, "client")))
+}
+
+func buildCLI(t *testing.T, target string) {
+	gobuild(t, icmd.Dir(filepath.Join(target, "cli")))
 }
 
 func warn(t *testing.T, msg string, args ...interface{}) {
@@ -241,6 +262,12 @@ func buildFixtures(t *testing.T, fixtures []fixtureT) fixturesT {
 			specMap.Update(filepath.Join(fixture.Dir, fixture.Spec), fixture.Skipped)
 
 		case fixture.Dir == "" && fixture.Spec != "": // enrich a specific spec with some skip descriptor
+			if strings.HasPrefix(fixture.Spec, "http") {
+				// fixture is retrieved from http/https
+				specMap.Update(fixture.Spec, fixture.Skipped)
+
+				break
+			}
 			for _, pattern := range []string{"*", "*/*"} {
 				specs, err := filepath.Glob(filepath.Join("fixtures", pattern, fixture.Spec))
 				require.NoErrorf(t, err, "could not match spec %s in fixtures", fixture.Spec)
@@ -475,8 +502,15 @@ func TestCodegen(t *testing.T) {
 						buildServer(t, run.Target)
 					}
 					if run.GenClient {
-						generateClient(t, spec, cmdOpts, run.Opts()...)
-						buildClient(t, run.Target)
+						if run.IncludeCLI {
+							// generate CLI + client library
+							generateCLI(t, spec, cmdOpts, run.Opts()...)
+							buildCLI(t, run.Target)
+						} else {
+							// generate client library
+							generateClient(t, spec, cmdOpts, run.Opts()...)
+							buildClient(t, run.Target)
+						}
 					}
 				})
 			}
