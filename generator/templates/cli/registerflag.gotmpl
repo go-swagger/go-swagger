@@ -86,7 +86,7 @@ if err := cmd.RegisterFlagCompletionFunc({{ camelize .Name }}FlagName,
 {{/* each body parameter gets a string flag to input json raw string */}}
 {{ define "modelparamstringregistrator" }}
     {{ template "flagnamevar" . }}
-    _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", "Optional json string for [{{ .Name }}]. {{ .Description }}")
+    _ = cmd.PersistentFlags().String({{ camelize .Name }}FlagName, "", `Optional json string for [{{ .Name }}]. {{ escapeBackticks .Description }}`)
 {{ end }}
 
 {{ define "modelparamregistrator" }} {{/* register a param that has a schema */}}
