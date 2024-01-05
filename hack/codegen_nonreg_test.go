@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	//color "github.com/logrusorgru/aurora"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -94,6 +95,9 @@ func (f fixturesT) Update(key string, in skipT) {
 	}
 	if in.SkipExpand {
 		out.SkipExpand = true
+	}
+	if in.IncludeCLI {
+		out.IncludeCLI = true
 	}
 	f[key] = out
 }
@@ -483,6 +487,7 @@ func TestCodegen(t *testing.T) {
 					warn(t, "%s: not tested against full build because of known codegen issues", spec)
 					continue
 				}
+
 				t.Run(run.Name, func(t *testing.T) {
 					t.Parallel()
 					if !run.GenClient && !skip.SkipClient || !run.GenModel && !skip.SkipModel || !run.GenServer && !skip.SkipServer {
@@ -492,24 +497,30 @@ func TestCodegen(t *testing.T) {
 					info(t, "run %s for %s", run.Name, spec)
 
 					if run.GenModel {
-						generateModel(t, spec, cmdOpts, run.Opts()...)
-						buildModel(t, run.Target)
+						t.Run("swagger generate model", func(t *testing.T) {
+							generateModel(t, spec, cmdOpts, run.Opts()...)
+							buildModel(t, run.Target)
+						})
 					}
 
 					if run.GenServer {
-						generateServer(t, spec, cmdOpts, run.Opts()...)
-						buildServer(t, run.Target)
+						t.Run("swagger generate server", func(t *testing.T) {
+							generateServer(t, spec, cmdOpts, run.Opts()...)
+							buildServer(t, run.Target)
+						})
 					}
 
 					if run.GenClient {
 						if skip.IncludeCLI {
-							// generate CLI + client library
-							generateCLI(t, spec, cmdOpts, run.Opts()...)
-							buildCLI(t, run.Target)
+							t.Run("swagger generate cli", func(t *testing.T) {
+								generateCLI(t, spec, cmdOpts, run.Opts()...)
+								buildCLI(t, run.Target)
+							})
 						} else {
-							// generate client library
-							generateClient(t, spec, cmdOpts, run.Opts()...)
-							buildClient(t, run.Target)
+							t.Run("swagger generate client", func(t *testing.T) {
+								generateClient(t, spec, cmdOpts, run.Opts()...)
+								buildClient(t, run.Target)
+							})
 						}
 					}
 				})
