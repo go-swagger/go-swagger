@@ -37,7 +37,9 @@ jobs:
 
   build:
     # description: make sure we build and run elementary operations.
-    # And that it still runs with go 1.19.
+    # And that, at this moment, it still runs with go 1.19.
+    #
+    # The full test suite warrants support for the 2 latest go minor releases.
     needs: [lint]
     strategy:
       matrix:
@@ -122,6 +124,8 @@ jobs:
           - fixture: canary-fixtures   # <- popular real-life API specs
             args: "-skip-models -skip-full-flatten -skip-expand"
     runs-on: ${{ matrix.os }}
+    env:
+      GOCOVERDIR: /tmp/cov
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -137,19 +141,25 @@ jobs:
         run: |
           go install gotest.tools/gotestsum@latest
           go get gotest.tools/icmd@latest
+          mkdir /tmp/cov
 
-      - name: Build binary
-        run: ./hack/build-docker.sh --github-action
+      - name: Build binary with test coverage instrumentation
+        run: ./hack/build-docker.sh --github-action \
+          -cover \
+          -covermode=atomic \
+          -coverpkg=$(go list)/...
 
       - name: Run codegen tests
         run: gotestsum -v -- \
           -timeout 30m \
           -parallel 3 \
-          -coverprofile="codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt" \
-          -covermode=atomic \
-          -coverpkg=$(go list)/... \
           hack/codegen_nonreg_test.go \
           -args -fixture-file "${{ matrix.fixture }}.yaml" $${{ matrix.args }}
+
+      - name: Construct coverage reports
+        run: |
+          go tool covdata textfmt -i "${GOCOVERDIR}" \
+          -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
 
       - name: Publish To Codecov
         uses: codecov/codecov-action@v3
@@ -212,7 +222,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
   publish_release:
-    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    needs: [lint, build, test, codegen_test]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
@@ -300,7 +310,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
-    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    needs: [lint, build, test, codegen_test]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
