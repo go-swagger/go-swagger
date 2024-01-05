@@ -1,5 +1,4 @@
 //go:build ignore
-// +build ignore
 
 package main
 
@@ -14,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	//color "github.com/logrusorgru/aurora"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -497,12 +495,14 @@ func TestCodegen(t *testing.T) {
 						generateModel(t, spec, cmdOpts, run.Opts()...)
 						buildModel(t, run.Target)
 					}
+
 					if run.GenServer {
 						generateServer(t, spec, cmdOpts, run.Opts()...)
 						buildServer(t, run.Target)
 					}
+
 					if run.GenClient {
-						if run.IncludeCLI {
+						if skip.IncludeCLI {
 							// generate CLI + client library
 							generateCLI(t, spec, cmdOpts, run.Opts()...)
 							buildCLI(t, run.Target)
