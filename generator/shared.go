@@ -68,15 +68,21 @@ func DefaultSectionOpts(gen *GenOpts) {
 				FileName: "{{ (snakize (pascalize .Name)) }}.go",
 			},
 		}
-		if gen.IncludeCLi {
-			opts = append(opts, TemplateOpts{
+		sec.Models = opts
+	}
+
+	if len(sec.PostModels) == 0 && gen.IncludeCLi {
+		// For CLI, we need to postpone the generation of model-supporting source,
+		// in order for go imports to run properly in all cases.
+		opts := []TemplateOpts{
+			{
 				Name:     "clidefinitionhook",
 				Source:   "asset:cliModelcli",
 				Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
 				FileName: "{{ (snakize (pascalize .Name)) }}_model.go",
-			})
+			},
 		}
-		sec.Models = opts
+		sec.PostModels = opts
 	}
 
 	if len(sec.Operations) == 0 {
@@ -253,6 +259,7 @@ func MarkdownOpts() *LanguageOpts {
 // MarkdownSectionOpts for a given opts and output file.
 func MarkdownSectionOpts(gen *GenOpts, output string) {
 	gen.Sections.Models = nil
+	gen.Sections.PostModels = nil
 	gen.Sections.OperationGroups = nil
 	gen.Sections.Operations = nil
 	gen.LanguageOpts = MarkdownOpts()
@@ -282,6 +289,7 @@ type SectionOpts struct {
 	Operations      []TemplateOpts `mapstructure:"operations"`
 	OperationGroups []TemplateOpts `mapstructure:"operation_groups"`
 	Models          []TemplateOpts `mapstructure:"models"`
+	PostModels      []TemplateOpts `mapstructure:"post_models"`
 }
 
 // GenOptsCommon the options for the generator
@@ -712,6 +720,20 @@ func (g *GenOpts) renderApplication(app *GenApp) error {
 			return err
 		}
 	}
+
+	if len(g.Sections.PostModels) > 0 {
+		log.Printf("post-rendering from %d models", len(app.Models))
+		for _, templateToPin := range g.Sections.PostModels {
+			templateConfig := templateToPin
+			for _, modelToPin := range app.Models {
+				modelData := modelToPin
+				if err := g.write(&templateConfig, modelData); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
