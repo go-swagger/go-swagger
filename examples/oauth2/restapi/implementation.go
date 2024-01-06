@@ -10,7 +10,7 @@ import (
 
 	"context"
 
-	oidc "github.com/coreos/go-oidc"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"golang.org/x/oauth2"
