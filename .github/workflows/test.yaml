@@ -91,15 +91,15 @@ jobs:
           go install gotest.tools/gotestsum@latest
 
       - name: Run unit tests with code coverage
-        # NOTE: we don't strictly need the junitfile format any longer: codecov slurps native
+        # NOTE: we don't strictly need the junit format any longer: codecov slurps native
         # coverage reports happily.
         run: gotestsum --junitfile "./go-test-report-${{ matrix.os }}-${{ matrix.go }}.xml" -- \
-             -p 1 \
-             -timeout=20m \
-             -coverprofile="coverage-${{ matrix.os }}-${{ matrix.go }}.txt" \
-             -covermode=atomic \
-             -coverpkg=$(go list)/... \
-             ./...
+          -p 1 \
+          -timeout=20m \
+          -coverprofile="coverage-${{ matrix.os }}-${{ matrix.go }}.txt" \
+          -covermode=atomic \
+          -coverpkg=$(go list)/... \
+          ./...
 
       - name: Publish To Codecov
         uses: codecov/codecov-action@v3
@@ -150,7 +150,7 @@ jobs:
           -coverpkg=$(go list)/...
 
       - name: Run codegen tests
-        run: gotestsum -v -- \
+        run: gotestsum -- \
           -timeout 30m \
           -parallel 3 \
           hack/codegen_nonreg_test.go \
@@ -158,7 +158,8 @@ jobs:
 
       - name: Construct coverage reports
         run: |
-          go tool covdata textfmt -i "${GOCOVERDIR}" \
+          go tool covdata textfmt \
+          -i "${GOCOVERDIR}" \
           -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
 
       - name: Publish To Codecov
