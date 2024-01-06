@@ -184,7 +184,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175 # v4.6.0
+        uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c # v5.5.0
         with:
           images: |
             quay.io/goswagger/swagger
@@ -323,7 +323,7 @@ jobs:
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175 # v4.6.0
+        uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c # v5.5.0
         with:
           # list of Docker images to use as base name for tags
           images: |
