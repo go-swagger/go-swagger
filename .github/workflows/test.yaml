@@ -21,14 +21,14 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: stable
           check-latest: true
           cache: true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@3a919529898de77ec3da873e3063ca4b10e7f5cc # v3.7.0
+        uses: golangci/golangci-lint-action@v3
         with:
           args: --verbose
           only-new-issues: true
@@ -47,11 +47,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -78,11 +75,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -103,7 +97,7 @@ jobs:
           ./...
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        uses: codecov/codecov-action@v3
         with:
           files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
           flags: 'unit-${{ matrix.go }}'
@@ -132,11 +126,8 @@ jobs:
     env:
       GOCOVERDIR: /tmp/cov
     steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -166,7 +157,7 @@ jobs:
           -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        uses: codecov/codecov-action@v3
         with:
           files: 'codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt'
           flags: 'codegen-${{ matrix.go }}-${{ matrix.fixture }}'
@@ -180,11 +171,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@v4
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c # v5.5.0
+        uses: docker/metadata-action@v5
         with:
           images: |
             quay.io/goswagger/swagger
@@ -194,13 +185,13 @@ jobs:
             type=sha
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2.2.0
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Quay Registry
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        uses: docker/login-action@v2
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
@@ -208,14 +199,14 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
       - name: Build and push
-        uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # v3.3.1
+        uses: docker/build-push-action@v3
         with:
           context: .
           build-args: |
@@ -230,11 +221,8 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
           check-latest: true
@@ -283,7 +271,7 @@ jobs:
 
       - name: Push RPM
         id: push_rpm
-        uses: cloudsmith-io/action@fc70bf3268051bdf07305c56fd2ace32c3fc8348 # master
+        uses: cloudsmith-io/action@master
         with:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
           command: "push"
@@ -296,7 +284,7 @@ jobs:
 
       - name: Push Deb
         id: push
-        uses: cloudsmith-io/action@fc70bf3268051bdf07305c56fd2ace32c3fc8348 # master
+        uses: cloudsmith-io/action@master
         with:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
           command: "push"
@@ -308,7 +296,7 @@ jobs:
           file: "dist/build/swagger_*_amd64.deb"
 
       - name: Publish Binaries
-        uses: fnkr/github-action-ghr@2fcb5ab637a49c14f4b3e7d81d0389d059171d35 # v1
+        uses: fnkr/github-action-ghr@v1
         env:
           GHR_PATH: dist/bin/
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -319,11 +307,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@v4
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c # v5.5.0
+        uses: docker/metadata-action@v4
         with:
           # list of Docker images to use as base name for tags
           images: |
@@ -338,13 +326,13 @@ jobs:
             type=sha
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7 # v2.2.0
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@885d1462b80bc1c1c7f0b00334ad271f09369c55 # v2.10.0
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to Quay Registry
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        uses: docker/login-action@v2
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
@@ -352,14 +340,14 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2.2.0
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
 
       - name: Build and push
-        uses: docker/build-push-action@1104d471370f9806843c095c1db02b5a90c5f8b6 # v3.3.1
+        uses: docker/build-push-action@v3
         with:
           context: .
           build-args: |
