@@ -35,12 +35,16 @@ jobs:
           skip-cache: true
           version: latest
 
-  test:
+  build:
+    # description: |
+    #   Make sure we build and run elementary operations.
+    #   And that, at this moment, it still runs with go 1.19.
+    #   The full test suite warrants support for the 2 latest go minor releases.
     needs: [lint]
     strategy:
       matrix:
         go: ['1.19','oldstable','stable']
-        os: [ubuntu-latest] # TODO: add macos-latest and windows-latest
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -52,47 +56,9 @@ jobs:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
-
-      - name: Install Tools
-        run: |
-          go install gotest.tools/gotestsum@latest
 
       - name: Build binary
-        run: ./hack/build-docker.sh --github-action
-
-      - name: Run unit tests with code coverage
-        run: gotestsum --junitfile "./go-test-report-${{ matrix.os }}-${{ matrix.go }}.xml" -- -p 1 -timeout=20m -coverprofile="coverage-${{ matrix.os }}-${{ matrix.go }}.txt" -covermode=atomic ./...
-
-      - name: Publish To Codecov
-        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
-        with:
-          files: './go-test-report-${{ matrix.os }}-${{ matrix.go }}.xml'
-          flags: '${{ matrix.go }}'
-          os: '${{ matrix.os }}'
-          fail_ci_if_error: true
-          verbose: true
-
-  sanity_check:
-    needs: [lint]
-    strategy:
-      matrix:
-        go: ['1.19','oldstable','stable']
-        os: [macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-        with:
-          go-version: ${{ matrix.go }}
-          check-latest: true
-          cache: true
-
-      - name: Install Tools
         run: |
-          go install gotest.tools/gotestsum@latest
           go install ./cmd/swagger
 
       - name: Run validation tests
@@ -102,16 +68,69 @@ jobs:
           swagger validate fixtures/bugs/2493/fixture-2492.yaml
           swagger validate fixtures/bugs/2493/fixture-2493.yaml
 
-      - name: Run unit tests
-        run: go test -v -timeout 20m ./...
+  test:
+    # description: |
+    #   Run unit tests on the 2 most recent go releases and 3 popular platforms.
+    needs: [lint]
+    strategy:
+      matrix:
+        go: ['oldstable','stable']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: Install Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install gotest.tools/gotestsum@latest
+
+      - name: Run unit tests with code coverage
+        run: >
+          gotestsum --
+          -p 1
+          -timeout=20m
+          -coverprofile='coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
+          -covermode=atomic
+          -coverpkg=$(go list)/...
+          ./...
+
+      - name: Publish To Codecov
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
+        with:
+          files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
+          flags: 'unit-${{ matrix.go }}'
+          os: '${{ matrix.os }}'
+          fail_ci_if_error: true
+          verbose: true
 
   codegen_test:
+    # description: |
+    #   Exercise go-swagger from the command line, with a bunch of specs
+    #   and several options (flatten/expand spec).
+    #
+    #   The test matrix applies to linux only. OS-specific quirks should
+    #   be covered by unit tests.
     needs: [lint]
     strategy:
       matrix:
-        go: ['1.19','stable']
+        go: ['oldstable','stable']
         os: [ubuntu-latest]
+        include:
+          - fixture: codegen-fixtures  # <- complex API specs to torture the code generator
+            args: "-skip-models -skip-full-flatten"
+          - fixture: canary-fixtures   # <- popular real-life API specs
+            args: "-skip-models -skip-full-flatten -skip-expand"
     runs-on: ${{ matrix.os }}
+    env:
+      GOCOVERDIR: /tmp/cov
     steps:
       - name: Checkout
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
@@ -125,46 +144,38 @@ jobs:
 
       - name: Install Tools
         run: |
-          go install gotest.tools/gotestsum@latest
           go get gotest.tools/icmd@latest
+          mkdir /tmp/cov
 
-      - name: Build binary
-        run: ./hack/build-docker.sh --github-action
+      - name: Build binary with test coverage instrumentation
+        run: >
+          ./hack/build-docker.sh --github-action
+          -cover
+          -covermode=atomic
+          -coverpkg=$(go list)/...
 
       - name: Run codegen tests
-        run: go test -v -timeout 30m -parallel 3 hack/codegen_nonreg_test.go -args -fixture-file codegen-fixtures.yaml -skip-models -skip-full-flatten
+        run: >
+          go test -v -timeout 30m -parallel 3
+          hack/codegen_nonreg_test.go
+          -args -fixture-file "${{ matrix.fixture }}.yaml" $${{ matrix.args }}
+      - name: Construct coverage reports from integration tests
+        run: >
+          go tool covdata textfmt
+          -i "${GOCOVERDIR}"
+          -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
 
-  canary_test:
-    needs: [lint]
-    strategy:
-      matrix:
-        go: ['1.19','stable']
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
-
-      - name: Install Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      - name: Publish To Codecov
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
         with:
-          go-version: ${{ matrix.go }}
-          check-latest: true
-          cache: true
-
-      - name: Install Tools
-        run: |
-          go install gotest.tools/gotestsum@latest
-          go get gotest.tools/icmd@latest
-
-      - name: Build binary
-        run: ./hack/build-docker.sh --github-action
-
-      - name: Run canary tests
-        run: go test -v -timeout 30m hack/codegen_nonreg_test.go -args -fixture-file canary-fixtures.yaml -skip-models -skip-full-flatten -skip-expand
+          files: 'codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt'
+          flags: 'codegen-${{ matrix.go }}-${{ matrix.fixture }}'
+          os: '${{ matrix.os }}'
+          fail_ci_if_error: true
+          verbose: true
 
   docker_dev:
-    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    needs: [lint, build, test, codegen_test]
     if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
@@ -215,7 +226,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
   publish_release:
-    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    needs: [lint, build, test, codegen_test]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
@@ -303,7 +314,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
-    needs: [lint, test, sanity_check, codegen_test, canary_test]
+    needs: [lint, build, test, codegen_test]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
