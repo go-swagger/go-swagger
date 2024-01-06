@@ -7,6 +7,7 @@
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgo-swagger%2Fgo-swagger.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgo-swagger%2Fgo-swagger?ref=badge_shield)
 [![GolangCI](https://golangci.com/badges/github.com/go-swagger/go-swagger.svg)](https://golangci.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-swagger/go-swagger)](https://goreportcard.com/report/github.com/go-swagger/go-swagger)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/go-swagger/go-swagger/badge)](https://securityscorecards.dev/viewer/?uri=github.com/go-swagger/go-swagger)
 
 This package contains a golang implementation of Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)):
 it knows how to serialize and deserialize swagger specifications.
