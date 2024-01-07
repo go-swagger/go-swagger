@@ -6,7 +6,7 @@ import (
 
 	errors "github.com/go-openapi/errors"
 	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
-	jwt "github.com/golang-jwt/jwt"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -26,7 +26,7 @@ var (
 // roleClaims describes the format of our JWT token's claims
 type roleClaims struct {
 	Roles []string `json:"roles"`
-	jwt.StandardClaims
+	jwt.MapClaims
 }
 
 func init() {
@@ -52,37 +52,52 @@ func init() {
 // IsRegistered determines if the user is properly registered,
 // i.e if a valid username:password pair has been provided
 func IsRegistered(user, pass string) (*models.Principal, error) {
-	if password, ok := userDb[user]; ok {
-		if pass == password {
-			return &models.Principal{
-				Name: user,
-			}, nil
-		}
+	password, ok := userDb[user]
+	if !ok || pass != password {
+		return nil, errors.New(401, "Unauthorized: not a registered user")
 	}
-	return nil, errors.New(401, "Unauthorized: not a registered user")
+
+	return &models.Principal{
+		Name: user,
+	}, nil
 }
 
 // IsReseller tells if the API key is a JWT signed by us with a claim to be a reseller
 func IsReseller(token string) (*models.Principal, error) {
 	claims, err := parseAndCheckToken(token)
-	if err == nil {
-		if claims.Issuer == issuerName && claims.Id != "" {
-			isReseller := false
-			for _, role := range claims.Roles {
-				if role == "reseller" {
-					isReseller = true
-					break
-				}
-			}
-			if isReseller {
-				return &models.Principal{
-					Name: claims.Id,
-				}, nil
-			}
-			return nil, errors.New(403, "Forbidden: insufficient API key privileges")
+	if err != nil {
+		return nil, errors.New(401, "Unauthorized: invalid API key token: %v", err)
+	}
+
+	issuer, err := claims.GetIssuer()
+	if issuer != issuerName {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: invalid issuer %v", err)
+	}
+
+	id, err := claims.GetSubject()
+	if err != nil {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: missing subject: %v", err)
+	}
+
+	if issuer != issuerName || id == "" {
+		return nil, errors.New(403, "Forbidden: insufficient API key privileges")
+	}
+
+	isReseller := false
+	for _, role := range claims.Roles {
+		if role == "reseller" {
+			isReseller = true
+			break
 		}
 	}
-	return nil, errors.New(401, "Unauthorized: invalid API key token: %v", err)
+
+	if !isReseller {
+		return nil, errors.New(403, "Forbidden: insufficient API key privileges")
+	}
+
+	return &models.Principal{
+		Name: id,
+	}, nil
 }
 
 // HasRole tells if the Bearer token is a JWT signed by us with a claim to be
@@ -90,29 +105,43 @@ func IsReseller(token string) (*models.Principal, error) {
 // We verify that the claimed role is one of the passed scopes
 func HasRole(token string, scopes []string) (*models.Principal, error) {
 	claims, err := parseAndCheckToken(token)
-	if err == nil {
-		if claims.Issuer == issuerName {
-			isInScopes := false
-			claimedRoles := []string{}
-			for _, scope := range scopes {
-				for _, role := range claims.Roles {
-					if role == scope {
-						isInScopes = true
-						// we enrich the principal with all claimed roles within scope (hence: not breaking here)
-						claimedRoles = append(claimedRoles, role)
-					}
-				}
+	if err != nil {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: %v", err)
+	}
+	issuer, err := claims.GetIssuer()
+	if err != nil {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: invalid issuer %v", err)
+	}
+
+	if issuer != issuerName {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: invalid issuer %s", issuer)
+	}
+
+	id, err := claims.GetSubject()
+	if err != nil {
+		return nil, errors.New(401, "Unauthorized: invalid Bearer token: missing subject: %v", err)
+	}
+
+	isInScopes := false
+	claimedRoles := []string{}
+	for _, scope := range scopes {
+		for _, role := range claims.Roles {
+			if role == scope {
+				isInScopes = true
+				// we enrich the principal with all claimed roles within scope (hence: not breaking here)
+				claimedRoles = append(claimedRoles, role)
 			}
-			if isInScopes {
-				return &models.Principal{
-					Name:  claims.Id,
-					Roles: claimedRoles,
-				}, nil
-			}
-			return nil, errors.New(403, "Forbidden: insufficient privileges")
 		}
 	}
-	return nil, errors.New(401, "Unauthorized: invalid Bearer token: %v", err)
+
+	if !isInScopes {
+		return nil, errors.New(403, "Forbidden: insufficient privileges")
+	}
+
+	return &models.Principal{
+		Name:  id,
+		Roles: claimedRoles,
+	}, nil
 }
 
 func parseAndCheckToken(token string) (*roleClaims, error) {
@@ -122,11 +151,14 @@ func parseAndCheckToken(token string) (*roleClaims, error) {
 		return verifyKey, nil
 	})
 
-	if err == nil {
-		if claims, ok := parsedToken.Claims.(*roleClaims); ok && parsedToken.Valid {
-			return claims, nil
-		}
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
 
+	claims, ok := parsedToken.Claims.(*roleClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, errors.New(401, "invalid token missing expected claims")
+	}
+
+	return claims, nil
 }
