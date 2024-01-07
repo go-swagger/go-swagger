@@ -58,6 +58,12 @@ jobs:
         run: |
           go install ./cmd/swagger
 
+      - name: Verify that examples build
+        run: |
+          cd examples
+          go build ./...
+          go test ./...
+
       - name: Run validation tests
         run: |
           swagger validate fixtures/bugs/2493/fixture-2492.json
