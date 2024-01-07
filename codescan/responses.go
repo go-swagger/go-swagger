@@ -248,6 +248,7 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 }
 
 func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, seen map[string]bool) error {
+	debugLog("response buildFromType: %v", otpe)
 	switch tpe := otpe.(type) {
 	case *types.Pointer:
 		return r.buildFromType(tpe.Elem(), resp, seen)
@@ -255,12 +256,13 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 		o := tpe.Obj()
 		switch stpe := o.Type().Underlying().(type) {
 		case *types.Struct:
-			debugLog("build from type %s: %T", tpe.Obj().Name(), otpe)
+			debugLog("build response from named type %s: %T", tpe.Obj().Name(), otpe)
 			if decl, found := r.ctx.DeclForType(o.Type()); found {
 				return r.buildFromStruct(decl, stpe, resp, seen)
 			}
 			return r.buildFromStruct(r.decl, stpe, resp, seen)
 		default:
+			debugLog("build response from named type %s: %T (default)", tpe.Obj().Name(), otpe)
 			if decl, found := r.ctx.DeclForType(o.Type()); found {
 				var schema spec.Schema
 				typable := schemaTypable{schema: &schema, level: 0}
@@ -462,7 +464,7 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 			return err
 		}
 
-		if in != "body" {
+		if in != "body" { // TODO: should be the other way around, and default to body
 			seen[name] = true
 			if resp.Headers == nil {
 				resp.Headers = make(map[string]spec.Header)

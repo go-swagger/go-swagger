@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/go-openapi/swag"
 
 	"golang.org/x/tools/go/packages"
@@ -510,7 +509,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue
 				}
 				a.Routes = append(a.Routes, pp)
-				debugLog("found route: %s in %s", spew.Sdump(pp), spew.Sdump(n))
+				// debugLog("found route: %s in %s", spew.Sdump(pp), spew.Sdump(n))
 			}
 		}
 
@@ -580,6 +579,7 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 			}
 			if n&responseNode != 0 && decl.HasResponseAnnotation() {
 				a.Responses = append(a.Responses, decl)
+				// debugLog("found response: %s", spew.Sdump(decl))
 			}
 		}
 	}

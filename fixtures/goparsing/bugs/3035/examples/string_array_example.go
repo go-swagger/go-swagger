@@ -6,21 +6,36 @@ package examples
 //
 // swagger:response getNtpServersResponse
 //
+// In: body
 // Example: ["10.10.10.10","20.20.20.20"]
 type A []string
 
+// B yields a list of ntp servers.
+//
 // swagger:response getNtpServerList
 //
 // Example: ["x","y"]
 type B struct {
+	// In: body
+	//
+	// Example: ["a","b"]
 	List []string `json:"list"`
 }
 
 // Error from the API.
-//
-// swagger:response
 type Error struct {
-	Code int `json:"code"`
+	// swagger:response
+	// In: body
+	Code uint64 `json:"code"`
+}
+
+type response struct {
+	// swagger:response
+	// In: body
+	Body A
+	// swagger:response
+	// In: headers
+	Headers B
 }
 
 // swagger:route GET /ntp-server opID
@@ -35,5 +50,6 @@ type Error struct {
 //
 //	200: getNtpServersResponse
 //	201: getNtpServerList
+//	203: response
 //	500: Error
 func GetNtpServerHandler() {}
