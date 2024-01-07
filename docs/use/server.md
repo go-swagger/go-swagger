@@ -31,6 +31,12 @@ swagger generate server -P models.User
 swagger generate client -P models.User
 ```
 
+The type name can be specified by package path.
+
+```
+swagger generate server -P github.com/foobar/models.User
+```
+
 See the full list of available options [for server](../generate/server.md) and [for client](../generate/client.md).
 
 When you would execute the generate step with that parameter for the security principal then the
