@@ -6,12 +6,12 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/davecgh/go-spew v1.1.1
-	github.com/go-openapi/analysis v0.22.1
+	github.com/go-openapi/analysis v0.22.2
 	github.com/go-openapi/errors v0.21.0
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.21.5
 	github.com/go-openapi/runtime v0.26.0
-	github.com/go-openapi/spec v0.20.13
+	github.com/go-openapi/spec v0.20.14
 	github.com/go-openapi/strfmt v0.22.0
 	github.com/go-openapi/swag v0.22.7
 	github.com/go-openapi/validate v0.22.6
