@@ -1,0 +1,2 @@
+User:
+  $ref: './model.yml'

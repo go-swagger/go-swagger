@@ -785,8 +785,36 @@ func TestShared_Issue2113(t *testing.T) {
 
 	opts := testGenOpts()
 	opts.Spec = specPath
-	opts.Spec = specPath
 	opts.ValidateSpec = true
 	_, err = opts.validateAndFlattenSpec()
 	assert.NoError(t, err)
+}
+
+func TestShared_Issue2743(t *testing.T) {
+	defer discardOutput()()
+
+	// acknowledge fix in go-openapi/spec
+	t.Run("should NOT flatten invalid spec that used to work", func(t *testing.T) {
+		specPath := filepath.Join("..", "fixtures", "bugs", "2743", "working", "spec.yaml")
+		_, err := loads.Spec(specPath)
+		require.NoError(t, err)
+
+		opts := testGenOpts()
+		opts.Spec = specPath
+		opts.ValidateSpec = true
+		_, err = opts.validateAndFlattenSpec()
+		assert.Error(t, err)
+	})
+
+	t.Run("should flatten valid spec that used NOT to work", func(t *testing.T) {
+		specPath := filepath.Join("..", "fixtures", "bugs", "2743", "not-working", "spec.yaml")
+		_, err := loads.Spec(specPath)
+		require.NoError(t, err)
+
+		opts := testGenOpts()
+		opts.Spec = specPath
+		opts.ValidateSpec = true
+		_, err = opts.validateAndFlattenSpec()
+		assert.NoError(t, err)
+	})
 }
