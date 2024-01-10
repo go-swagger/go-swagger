@@ -190,6 +190,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 		Principal:     "",
 		Target:        ".",
 		Doc:           specDoc,
+		PristineDefs:  specDoc.Pristine(),
 		Analyzed:      analysis.New(specDoc.Spec()),
 		Operation:     *op,
 		Authed:        false,
