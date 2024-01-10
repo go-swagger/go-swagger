@@ -313,6 +313,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	genOps := make(GenOperations, 0, len(a.Operations))
 	consumesIndex := make(map[string][]string)
 	producesIndex := make(map[string][]string)
+	pristineDoc := a.SpecDoc.Pristine()
 
 	for operationName, opp := range a.Operations {
 		o := opp.Op
@@ -326,6 +327,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			Imports:          imports,
 			DefaultScheme:    a.DefaultScheme,
 			Doc:              a.SpecDoc,
+			PristineDefs:     pristineDoc,
 			Analyzed:         a.Analyzed,
 			BasePath:         a.SpecDoc.BasePath(),
 			GenOpts:          a.GenOpts,
