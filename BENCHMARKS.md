@@ -1,3 +1,42 @@
+# Generating kubernetest models
+
+with minimal patch:
+rm -rf temp && mkdir temp && /usr/bin/time swagger generate server -t temp -f fixtures/canary/kubernetes/swagger.json --quiet
+2024/01/15 09:55:47 profile: memory profiling enabled (rate 4096), /home/fred/src/github.com/go-swagger/go-swagger/prof/prof-3694800708/mem.pprof
+45.54user 2.29system 0:33.80elapsed 141%CPU (0avgtext+0avgdata 916192maxresident)k
+3736inputs+31440outputs (0major+432247minor)pagefaults 0swaps
+
+max RAM: 916,192 kB
+alloc objects: 330,519,558 (ToGoName: 57%) (from templates Value.call: 211,711,764)
+
+same run, with swag patch
+32.51user 2.20system 0:23.98elapsed 144%CPU (0avgtext+0avgdata 1037848maxresident)k
+
+max RAM: 1,037,848
+alloc objects: 95,751,001 (ToGoName disappears from sample)
+  * imports.Process: 35%
+  * Validate: 19% (18M allocs)
+  * analysis.New / initialize ~ 6M allocs
+
+
+* real: 34.2 s, user CPU: 48s, total CPU: 51.21s
+  * validateAndFlatten: 5.86
+    * validate: 5.56
+  * appGenerator.Generate: 19.50s 
+    * ast.Parse: 2.20s
+    * makeCodeGenApp: 18.46s
+      * template render: 0.41s
+      * imports.Process: 2.92s
+        * fixImportDefault: 2.85s
+  * runtime mallocgc: 2.09s (3.99%)
+  * runtime.gcBMarkWorker: 15.39s (30%)
+    * gcDrain: 0.45s
+    * scanobject: 5.09s
+
+* with new swag ~ same (~ -1%)
+* with new spec: 27.7s, user CPU: 41s  (~ -5%)
+* with both: 26.8s (40+3 CPU)
+     
 # Running the codegen CI suite
 
 Running a patch swagger CLI that collects mem profiles.

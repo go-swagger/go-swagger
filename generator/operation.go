@@ -165,6 +165,7 @@ func (o *operationGenerator) Generate() error {
 		Imports:             imports,
 		DefaultScheme:       o.DefaultScheme,
 		Doc:                 o.Doc,
+		PristineDefs:        o.Doc.Pristine(),
 		Analyzed:            o.Analyzed,
 		BasePath:            o.BasePath,
 		GenOpts:             o.GenOpts,
@@ -224,7 +225,7 @@ type codeGenOpBuilder struct {
 	Target              string
 	Operation           spec.Operation
 	Doc                 *loads.Document
-	PristineDoc         *loads.Document
+	PristineDefs        *loads.Document
 	Analyzed            *analysis.Spec
 	DefaultImports      map[string]string
 	Imports             map[string]string
@@ -1035,10 +1036,7 @@ func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
 // This uses a deep clone the spec document to construct a type resolver which knows about definitions when the making of this operation started,
 // and only these definitions. We are not interested in the "original spec", but in the already transformed spec.
 func (b *codeGenOpBuilder) saveResolveContext(resolver *typeResolver, schema *spec.Schema) (*typeResolver, *spec.Schema) {
-	if b.PristineDoc == nil {
-		b.PristineDoc = b.Doc.Pristine()
-	}
-	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget), b.DefaultImports[b.ModelsPackage], b.PristineDoc)
+	rslv := newTypeResolver(b.GenOpts.LanguageOpts.ManglePackageName(resolver.ModelsPackage, defaultModelsTarget), b.DefaultImports[b.ModelsPackage], b.PristineDefs)
 
 	return rslv, b.cloneSchema(schema)
 }

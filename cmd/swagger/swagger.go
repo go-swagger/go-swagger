@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/pkg/profile"
 )
 
 var opts struct {
@@ -32,12 +31,15 @@ var opts struct {
 }
 
 func main() {
-	const ici = "/home/fred/src/github.com/go-swagger/go-swagger/prof"
-	tmp, _ := os.MkdirTemp(ici, "prof-")
-	defer profile.Start(
-		profile.MemProfile,
-		profile.ProfilePath(tmp),
-	).Stop()
+	/*
+		ici, _ := os.Getwd()
+		tmp, _ := os.MkdirTemp(filepath.Join(ici, "prof"), "prof-")
+			defer profile.Start(
+				profile.MemProfile,
+				// profile.CPUProfile,
+				profile.ProfilePath(tmp),
+			).Stop()
+	*/
 	// TODO: reactivate 'defer catch all' once product is stable
 	// Recovering from internal panics
 	// Stack may be printed in Debug mode
