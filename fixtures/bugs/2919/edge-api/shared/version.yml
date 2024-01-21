@@ -1,0 +1,92 @@
+---
+paths:
+  root:
+    get:
+      summary: Returns version information
+      security: [ ]
+      tags:
+        - Informational
+      operationId: listRoot
+      responses:
+        '200':
+          $ref: '#/responses/listVersion'
+  version:
+    get:
+      summary: Returns version information
+      security: [ ]
+      tags:
+        - Informational
+      operationId: listVersion
+      responses:
+        '200':
+          $ref: '#/responses/listVersion'
+responses:
+  listVersion:
+    description: Version information for the controller
+    schema:
+      $ref: '#/definitions/listVersionEnvelope'
+
+definitions:
+  listVersionEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/version'
+  version:
+    type: object
+    properties:
+      buildDate:
+        type: string
+        example: '2020-02-11 16:09:08'
+      revision:
+        type: string
+        example: 'ea556fc18740'
+      runtimeVersion:
+        type: string
+        example: 'go1.13.5'
+      version:
+        type: string
+        example: 'v0.9.0'
+      apiVersions:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            $ref: '#/definitions/apiVersion'
+  apiVersion:
+    type: object
+    required:
+      - path
+    properties:
+      version:
+        type: string
+      path:
+        type: string
+      apiBaseUrls:
+        type: array
+        items:
+          type: string
+  versionInfo:
+    type: object
+    required:
+      - os
+      - version
+      - arch
+      - buildDate
+      - revision
+    properties:
+      os:
+        type: string
+      version:
+        type: string
+      arch:
+        type: string
+      buildDate:
+        type: string
+      revision:
+        type: string

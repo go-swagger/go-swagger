@@ -1,0 +1,76 @@
+schemes:
+    - http
+swagger: "2.0"
+info:
+    contact:
+        name: wordnik api team
+        url: http://developer.wordnik.com
+    license:
+        name: Creative Commons 4.0 International
+        url: http://creativecommons.org/licenses/by/4.0/
+    title: Swagger Petstore
+    version: 1.0.0
+host: petstore.swagger.wordnik.com
+basePath: /api
+paths:
+    /pets:
+        get:
+            responses:
+                "200":
+                    description: pet response
+                    headers:
+                        x-expires:
+                            type: string
+                    schema:
+                        items:
+                            $ref: '#/definitions/Pet'
+                        type: array
+                default:
+                    description: unexpected error
+                    schema:
+                        $ref: '#/definitions/Error'
+            summary: finds pets in the system
+            tags:
+                - Pet Operations
+    /pets/{id}:
+        get:
+            parameters:
+            - name: id
+              in: path
+              required: true
+              type: string
+            responses:
+                "200":
+                    description: pet response
+                    schema:
+                        $ref: '#/definitions/Pet'
+                default:
+                    description: unexpected error
+                    schema:
+                        $ref: '#/definitions/Error'
+            tags:
+                - Pet Operations
+
+definitions:
+    Error:
+        properties:
+            code:
+                format: int32
+                type: integer
+            message:
+                type: string
+        required:
+            - code
+            - message
+    Pet:
+        properties:
+            id:
+                format: int64
+                type: integer
+            name:
+                type: string
+            tag:
+                type: string
+        required:
+            - id
+            - name

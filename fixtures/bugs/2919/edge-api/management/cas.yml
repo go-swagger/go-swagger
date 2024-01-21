@@ -1,0 +1,452 @@
+---
+paths:
+  cas:
+    get:
+      summary: List CAs
+      description: Retrieves a list of CA resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: listCas
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listCas'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Creates a CA
+      description: Creates a CA in an unverified state. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: createCa
+
+      parameters:
+        - name: ca
+          in: body
+          required: true
+          description: A CA to create
+          schema:
+            $ref: '#/definitions/caCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  cas-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single CA
+      description: Retrieves a single CA by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: detailCa
+      responses:
+        '200':
+          $ref: '#/responses/detailCa'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on a CA
+      description: Update all fields on a CA by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: updateCa
+      parameters:
+        - name: ca
+          in: body
+          required: true
+          description: A CA update object
+          schema:
+            $ref: '#/definitions/caUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on a CA
+      description: Update only the supplied fields on a CA by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: patchCa
+      parameters:
+        - name: ca
+          in: body
+          required: true
+          description: A CA patch object
+          schema:
+            $ref: '#/definitions/caPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete a CA
+      description: |
+        Delete a CA by id. Deleting a CA will delete its associated certificate authenticators. This can make it
+        impossible for identities to authenticate if they no longer have any valid authenticators. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: deleteCa
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  cas-id-jwt:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieve the enrollment JWT for a CA
+      description: |
+        For CA auto enrollment, the enrollment JWT is static and provided on each CA resource. This endpoint provides
+        the jwt as a text response.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: getCaJwt
+      produces:
+        - 'application/jwt'
+      responses:
+        '200':
+          description: The result is the JWT text to validate the CA
+          schema:
+            type: string
+          examples:
+            'application/jwt': 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbSI6ImNhIiwiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6MTI
+              4MC8ifQ.Ot6lhNBSOw8ygHytdI5l7WDf9EWadOj44UPvJ0c-8mJ54fClWM3uMZrAHSSfV6KmOSZOeBBJe4VlNyoD-_MOECP0BzYSnSQP3E
+              zJb0VlM-fFmGcKNGW157icyZNISfO43JL_Lw2QPBzTgikqSIj9eZnocC3BeAmZCHsVznnLfHWqDldcmuxnu-5MNOSrWV1x9iVcgLFlLHXK
+              2PLA4qIiZmlQTrQjpHJmUaoJ07mnj8hMKzxB3wBG8kpazjEo7HDRCO06aBH4eqFgf_l0iT8Dzcb31jquWMGUoSXPhf4lVJh_FiNcR1wVx-
+              UiHLbG5h23Aqf1UJF-F38rc1FElKz0Zg'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  cas-id-verify:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Verify a CA
+      description: |
+        Allows a CA to become verified by submitting a certificate in PEM format that has been signed by the target CA.
+        The common name on the certificate must match the verificationToken property of the CA. Unverfieid CAs can not
+        be used for enrollment/authentication. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Certificate Authority
+      operationId: verifyCa
+      consumes:
+        - 'text/plain'
+      parameters:
+        - name: certificate
+          required: true
+          in: body
+          description: A PEM formatted certificate signed by the target CA with the common name matching the CA's validationToken
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  listCas:
+    description: A list of Certificate Authorities (CAs)
+    schema:
+      $ref: '#/definitions/listCasEnvelope'
+  detailCa:
+    description: A singular Certificate Authority (CA) resource
+    schema:
+      $ref: '#/definitions/detailCaEnvelope'
+
+definitions:
+  externalIdClaim:
+    type: object
+    required:
+      - location
+      - matcher
+      - matcherCriteria
+      - parser
+      - parserCriteria
+      - index
+    properties:
+        location:
+          type: string
+          x-nullable: true
+          enum:
+            - COMMON_NAME
+            - SAN_URI
+            - SAN_EMAIL
+        matcher:
+          type: string
+          x-nullable: true
+          enum:
+            - ALL
+            - PREFIX
+            - SUFFIX
+            - SCHEME
+        matcherCriteria:
+          type: string
+          x-nullable: true
+        parser:
+          type: string
+          x-nullable: true
+          enum:
+            - NONE
+            - SPLIT
+        parserCriteria:
+          type: string
+          x-nullable: true
+        index:
+          type: integer
+          x-nullable: true
+  externalIdClaimPatch:
+    type: object
+    properties:
+      location:
+        type: string
+        x-nullable: true
+        enum:
+          - COMMON_NAME
+          - SAN_URI
+          - SAN_EMAIL
+      matcher:
+        type: string
+        x-nullable: true
+        enum:
+          - ALL
+          - PREFIX
+          - SUFFIX
+          - SCHEME
+      matcherCriteria:
+        type: string
+        x-nullable: true
+      parser:
+        type: string
+        x-nullable: true
+        enum:
+          - NONE
+          - SPLIT
+      parserCriteria:
+        type: string
+        x-nullable: true
+      index:
+        type: integer
+        x-nullable: true
+  listCasEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/caList'
+  detailCaEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/caDetail'
+  caList:
+    description: An array of Certificate Authority (CA) resources
+    type: array
+    items:
+      $ref: '#/definitions/caDetail'
+  caDetail:
+    description: A Certificate Authority (CA) resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - name
+          - fingerprint
+          - certPem
+          - isVerified
+          - isAutoCaEnrollmentEnabled
+          - isOttCaEnrollmentEnabled
+          - isAuthEnabled
+          - identityRoles
+          - identityNameFormat
+        properties:
+          name:
+            type: string
+          fingerprint:
+            type: string
+          certPem:
+            type: string
+          isVerified:
+            type: boolean
+            example: false
+          verificationToken:
+            type: string
+            format: uuid
+          isAutoCaEnrollmentEnabled:
+            type: boolean
+            example: true
+          isOttCaEnrollmentEnabled:
+            type: boolean
+            example: true
+          isAuthEnabled:
+            type: boolean
+            example: true
+          identityRoles:
+            $ref: '../shared/base-entity.yml#/definitions/roles'
+          identityNameFormat:
+            type: string
+          externalIdClaim:
+            $ref: '#/definitions/externalIdClaim'
+  caCreate:
+    description: A create Certificate Authority (CA) object
+    type: object
+    required:
+      - name
+      - certPem
+      - isAutoCaEnrollmentEnabled
+      - isOttCaEnrollmentEnabled
+      - isAuthEnabled
+      - identityRoles
+    properties:
+      name:
+        type: string
+        example: 'Test 3rd Party External CA'
+      isAutoCaEnrollmentEnabled:
+        type: boolean
+        example: true
+      isAuthEnabled:
+        type: boolean
+        example: true
+      isOttCaEnrollmentEnabled:
+        type: boolean
+        example: true
+      certPem:
+        type: string
+        example: |
+          -----BEGIN CERTIFICATE-----
+          MIICUjCCAdmgAwIBAgIJANooo7NB+dZZMAoGCCqGSM49BAMCMF4xCzAJBgNVBAYT
+          AlVTMQswCQYDVQQIDAJOQzETMBEGA1UECgwKTmV0Rm91bmRyeTEtMCsGA1UEAwwk
+          TmV0Rm91bmRyeSBaaXRpIEV4dGVybmFsIEFQSSBSb290IENBMB4XDTE4MTExNTEy
+          NTcwOVoXDTM4MTExMDEyNTcwOVowXjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAk5D
+          MRMwEQYDVQQKDApOZXRGb3VuZHJ5MS0wKwYDVQQDDCROZXRGb3VuZHJ5IFppdGkg
+          RXh0ZXJuYWwgQVBJIFJvb3QgQ0EwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAARwq61Z
+          Iaqbaw0PDt3frJZaHjkxfZhwYrykI1GlbRNd/jix03lVG9qvpN5Og9fQfFFcFmD/
+          3vCE9S6O0npm0mADQxcBcxbMRAH5dtBuCuiJW6qAAbPgiM32vqSxBiFt0KejYzBh
+          MB0GA1UdDgQWBBRx1OVGuc/jdltDc8YBtkw8Tbr4fjAfBgNVHSMEGDAWgBRx1OVG
+          uc/jdltDc8YBtkw8Tbr4fjAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIB
+          hjAKBggqhkjOPQQDAgNnADBkAjBDRxNZUaIVpkQKnAgJukl3ysd3/i7Z6hDyIEms
+          kllz/+ZvmdBp9iedV5o5BvJUggACMCv+UBFlJH7pmsOCo/F45Kk178YsCC7gaMxE
+          1ZG1zveyMvsYsH04C9FndE6w2MLvlA==
+          -----END CERTIFICATE-----
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityNameFormat:
+        type: string
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      externalIdClaim:
+        $ref: '#/definitions/externalIdClaim'
+        x-nullable: true
+  caUpdate:
+    type: object
+    required:
+      - name
+      - isAutoCaEnrollmentEnabled
+      - isOttCaEnrollmentEnabled
+      - isAuthEnabled
+      - identityRoles
+      - identityNameFormat
+    properties:
+      name:
+        type: string
+        example: My CA
+      isAutoCaEnrollmentEnabled:
+        type: boolean
+        example: true
+      isOttCaEnrollmentEnabled:
+        type: boolean
+        example: true
+      isAuthEnabled:
+        type: boolean
+        example: true
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityNameFormat:
+        type: string
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      externalIdClaim:
+        $ref: '#/definitions/externalIdClaim'
+        x-nullable: true
+  caPatch:
+    type: object
+    properties:
+      name:
+        type: string
+        example: My CA
+        x-nullable: true
+      isAutoCaEnrollmentEnabled:
+        type: boolean
+        example: true
+        x-nullable: true
+      isOttCaEnrollmentEnabled:
+        type: boolean
+        example: true
+        x-nullable: true
+      isAuthEnabled:
+        type: boolean
+        example: true
+        x-nullable: true
+      identityRoles:
+        $ref: '../shared/base-entity.yml#/definitions/roles'
+      identityNameFormat:
+        type: string
+        x-nullable: true
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      externalIdClaim:
+        $ref: '#/definitions/externalIdClaimPatch'

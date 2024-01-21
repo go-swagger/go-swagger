@@ -1,0 +1,177 @@
+---
+paths:
+  posture-response:
+    post:
+      summary: Submit a posture response to a posture query
+      description: Submits posture responses
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: createPostureResponse
+      parameters:
+        - name: postureResponse
+          in: body
+          required: true
+          description: A Posture Response
+          schema:
+            $ref: '#/definitions/postureResponseCreate'
+      responses:
+        '201':
+          $ref: '#/responses/postureResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  posture-response-bulk:
+    post:
+      summary: Submit multiple posture responses
+      description: Submits posture responses
+      security:
+        - ztSession: [ ]
+      tags:
+        - Posture Checks
+      operationId: createPostureResponseBulk
+      parameters:
+        - name: postureResponse
+          in: body
+          required: true
+          description: A Posture Response
+          schema:
+            # using a named array definition causes issues w/ code gen
+            type: array
+            items:
+              $ref: "#/definitions/postureResponseCreate"
+      responses:
+        '200':
+          $ref: '#/responses/postureResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  postureResponse:
+    description: Contains a list of services that have had their timers altered
+    schema:
+      $ref: '#/definitions/postureResponseEnvelope'
+
+definitions:
+  postureResponseEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/postureResponse'
+  postureResponseService:
+    type: object
+    required:
+      - id
+      - name
+      - postureQueryType
+      - timeout
+      - timeoutRemaining
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      postureQueryType:
+        type: string
+      timeout:
+        type: integer
+      timeoutRemaining:
+        type: integer
+  postureResponse:
+    type: object
+    required:
+      - services
+    properties:
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/postureResponseService'
+  postureResponseCreate:
+    type: object
+    discriminator: typeId
+    required:
+      - id
+      - typeId
+    properties:
+      id:
+        type: string
+      typeId:
+        $ref: '../shared/posture-checks.yml#/definitions/postureCheckType'
+
+  postureResponseOperatingSystemCreate:
+    allOf:
+      - $ref: '#/definitions/postureResponseCreate'
+      - type: object
+        required:
+          - type
+          - version
+        properties:
+          type:
+            type: string
+          version:
+            type: string
+          build:
+            type: string
+    x-class: "OS"
+
+  postureResponseDomainCreate:
+    allOf:
+      - $ref: '#/definitions/postureResponseCreate'
+      - type: object
+        required:
+          - domain
+        properties:
+          domain:
+            type: string
+    x-class: "DOMAIN"
+
+  postureResponseMacAddressCreate:
+    allOf:
+      - $ref: '#/definitions/postureResponseCreate'
+      - type: object
+        required:
+          - macAddresses
+        properties:
+          macAddresses:
+            type: array
+            items:
+              type: string
+    x-class: "MAC"
+
+  postureResponseProcessCreate:
+    allOf:
+      - $ref: '#/definitions/postureResponseCreate'
+      - type: object
+        required:
+          - process
+        properties:
+          path:
+            type: string
+          isRunning:
+            type: boolean
+          hash:
+            type: string
+          signerFingerprints:
+            type: array
+            items:
+              type: string
+    x-class: "PROCESS"
+
+  postureResponseEndpointStateCreate:
+    allOf:
+      - $ref: '#/definitions/postureResponseCreate'
+      - type: object
+        properties:
+          unlocked:
+            type: boolean
+          woken:
+            type: boolean
+    x-class: "ENDPOINT_STATE"

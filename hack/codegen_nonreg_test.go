@@ -1,5 +1,4 @@
 //go:build ignore
-// +build ignore
 
 package main
 
@@ -52,6 +51,9 @@ type skipT struct {
 	SkipServer      bool `yaml:"skipServer,omitempty"`
 	SkipFullFlatten bool `yaml:"skipFullFlatten,omitempty"`
 	SkipValidation  bool `yaml:"skipValidation,omitempty"`
+
+	// specific include settings
+	IncludeCLI bool `yaml:"includeCLI,omitempty"`
 }
 
 // fixtureT describe a spec and what _not_ to do with it
@@ -93,6 +95,9 @@ func (f fixturesT) Update(key string, in skipT) {
 	}
 	if in.SkipExpand {
 		out.SkipExpand = true
+	}
+	if in.IncludeCLI {
+		out.IncludeCLI = true
 	}
 	f[key] = out
 }
@@ -200,8 +205,26 @@ func generateClient(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...str
 	_ = measure(t, started, "generate client", spec)
 }
 
+func generateCLI(t *testing.T, spec string, runOpts []icmd.CmdOp, opts ...string) {
+	started := measure(t, nil)
+	cmd := icmd.Command("swagger", append([]string{"generate", "cli", "--spec", spec, "--name", serverName, "--quiet"}, opts...)...)
+	res := icmd.RunCmd(cmd, runOpts...)
+	if !assert.Equal(t, 0, res.ExitCode) {
+		failure(t, "CLI client generation failed for %s", spec)
+		t.Log(res.Stderr())
+		t.FailNow()
+		return
+	}
+	good(t, "CLI generation OK")
+	_ = measure(t, started, "generate CLI", spec)
+}
+
 func buildClient(t *testing.T, target string) {
 	gobuild(t, icmd.Dir(filepath.Join(target, "client")))
+}
+
+func buildCLI(t *testing.T, target string) {
+	gobuild(t, icmd.Dir(filepath.Join(target, "cli")))
 }
 
 func warn(t *testing.T, msg string, args ...interface{}) {
@@ -241,6 +264,12 @@ func buildFixtures(t *testing.T, fixtures []fixtureT) fixturesT {
 			specMap.Update(filepath.Join(fixture.Dir, fixture.Spec), fixture.Skipped)
 
 		case fixture.Dir == "" && fixture.Spec != "": // enrich a specific spec with some skip descriptor
+			if strings.HasPrefix(fixture.Spec, "http") {
+				// fixture is retrieved from http/https
+				specMap.Update(fixture.Spec, fixture.Skipped)
+
+				break
+			}
 			for _, pattern := range []string{"*", "*/*"} {
 				specs, err := filepath.Glob(filepath.Join("fixtures", pattern, fixture.Spec))
 				require.NoErrorf(t, err, "could not match spec %s in fixtures", fixture.Spec)
@@ -458,6 +487,7 @@ func TestCodegen(t *testing.T) {
 					warn(t, "%s: not tested against full build because of known codegen issues", spec)
 					continue
 				}
+
 				t.Run(run.Name, func(t *testing.T) {
 					t.Parallel()
 					if !run.GenClient && !skip.SkipClient || !run.GenModel && !skip.SkipModel || !run.GenServer && !skip.SkipServer {
@@ -467,16 +497,31 @@ func TestCodegen(t *testing.T) {
 					info(t, "run %s for %s", run.Name, spec)
 
 					if run.GenModel {
-						generateModel(t, spec, cmdOpts, run.Opts()...)
-						buildModel(t, run.Target)
+						t.Run("swagger generate model", func(t *testing.T) {
+							generateModel(t, spec, cmdOpts, run.Opts()...)
+							buildModel(t, run.Target)
+						})
 					}
+
 					if run.GenServer {
-						generateServer(t, spec, cmdOpts, run.Opts()...)
-						buildServer(t, run.Target)
+						t.Run("swagger generate server", func(t *testing.T) {
+							generateServer(t, spec, cmdOpts, run.Opts()...)
+							buildServer(t, run.Target)
+						})
 					}
+
 					if run.GenClient {
-						generateClient(t, spec, cmdOpts, run.Opts()...)
-						buildClient(t, run.Target)
+						if skip.IncludeCLI {
+							t.Run("swagger generate cli", func(t *testing.T) {
+								generateCLI(t, spec, cmdOpts, run.Opts()...)
+								buildCLI(t, run.Target)
+							})
+						} else {
+							t.Run("swagger generate client", func(t *testing.T) {
+								generateClient(t, spec, cmdOpts, run.Opts()...)
+								buildClient(t, run.Target)
+							})
+						}
 					}
 				})
 			}

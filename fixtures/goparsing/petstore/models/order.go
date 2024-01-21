@@ -35,7 +35,7 @@ type Order struct {
 	OrderedAt strfmt.DateTime `json:"orderedAt"`
 
 	// the items for this order
-	// mininum items: 1
+	// minimum items: 1
 	Items []struct {
 
 		// the id of the pet to order

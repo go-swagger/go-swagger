@@ -117,3 +117,13 @@ func linesInFile(t testing.TB, fileName string) io.ReadCloser {
 	require.NoError(t, err)
 	return file
 }
+
+func TestIssue2962(t *testing.T) {
+	oldSpec := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "2962", "old.json")
+	newSpec := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "2962", "new.json")
+	diffs, err := getDiffs(oldSpec, newSpec)
+	require.NoError(t, err)
+
+	require.Len(t, diffs, 3)
+	require.Equal(t, 1, diffs.BreakingChangeCount())
+}

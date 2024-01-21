@@ -1,0 +1,228 @@
+---
+responses:
+  emptyResponse:
+    description: Base empty response
+    schema:
+      $ref: '#/definitions/empty'
+  deleteResponse:
+    description: The delete request was successful and the resource has been removed
+    schema:
+      $ref: '#/definitions/empty'
+  updateResponse:
+    description: The update request was successful and the resource has been altered
+    schema:
+      $ref: '#/definitions/empty'
+  patchResponse:
+    description: The patch request was successful and the resource has been altered
+    schema:
+      $ref: '#/definitions/empty'
+  createResponse:
+    description: The create request was successful and the resource has been added at the following location
+    schema:
+      $ref: '#/definitions/createEnvelope'
+  badRequestResponse:
+    description: The supplied request contains invalid fields or could not be parsed (json and non-json bodies). The error's code, message, and cause fields can be inspected for further information
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars: { }
+          cause:
+            field: '(root)'
+            type: required
+            value:
+              fooField: abc
+              fooField2: def
+            message: '(root): fooField3 is required'
+            details:
+              context: '(root)'
+              field: '(root)'
+              property: fooField3
+          causeMessage: schema validation failed
+          code: COULD_NOT_VALIDATE
+          message: The supplied request contains an invalid document
+          requestId: ac6766d6-3a09-44b3-8d8a-1b541d97fdd9
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+  conflictResponse:
+    description: The request could not be completed due to a conflict of configuration or state
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+  unauthorizedResponse:
+    description: The currently supplied session does not have the correct access rights to request this resource
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars: { }
+          cause: ''
+          causeMessage: ''
+          code: UNAUTHORIZED
+          message: The request could not be completed. The session is not authorized or the
+            credentials are invalid
+          requestId: 0bfe7a04-9229-4b7a-812c-9eb3cc0eac0f
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+  invalidAuthResponse:
+    description: The authentication request could not be processed as the credentials are invalid
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars: { }
+          cause: ''
+          causeMessage: ''
+          code: INVALID_AUTH
+          message: The authentication request failed
+          requestId: 5952ed10-3091-474f-a691-47ebab6990dc
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+  notFoundResponse:
+    description: The requested resource does not exist
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars:
+              id: 71a3000f-7dda-491a-9b90-a19f4ee6c406
+          cause:
+          causeMessage: ''
+          code: NOT_FOUND
+          message: The resource requested was not found or is no longer available
+          requestId: 270908d6-f2ef-4577-b973-67bec18ae376
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+  cannotDeleteReferencedResourceResponse:
+    description: The resource requested to be removed/altered cannot be as it is referenced by another object.
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars:
+              id: 71a3000f-7dda-491a-9b90-a19f4ee6c406
+          causeMessage: 'referenced by /some-resource/05f4f710-c155-4a74-86d5-77558eb9cb42'
+          code: CONFLICT_CANNOT_MODIFY_REFERENCED
+          message: The resource cannot be deleted/modified. Remove all referencing resources first.
+          requestId: 270908d6-f2ef-4577-b973-67bec18ae376
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+  rateLimitedResponse:
+    description: The resource requested is rate limited and the rate limit has been exceeded
+    schema:
+      $ref: '#/definitions/apiErrorEnvelope'
+    examples:
+      'application/json':
+        error:
+          args:
+            urlVars: { }
+          causeMessage: 'you have hit a rate limit in the requested operation'
+          code: RATE_LIMITED
+          message: The resource is rate limited and the rate limit has been exceeded. Please try again later
+          requestId: 270908d6-f2ef-4577-b973-67bec18ae376
+        meta:
+          apiEnrollmentVersion: 0.0.1
+          apiVersion: 0.0.1
+definitions:
+  empty:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '#/definitions/meta'
+      data:
+        type: object
+        example: { }
+  meta:
+    type: object
+    properties:
+      filterableFields:
+        type: array
+        items:
+          type: string
+        x-omitempty: true
+      pagination:
+        $ref: 'standard-request.yml#/definitions/pagination'
+      apiEnrollmentVersion:
+        type: string
+      apiVersion:
+        type: string
+  createEnvelope:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/meta'
+      data:
+        $ref: '#/definitions/createLocation'
+  createLocation:
+    type: object
+    properties:
+      _links:
+        $ref: 'base-entity.yml#/definitions/links'
+      id:
+        type: string
+  apiErrorEnvelope:
+    type: object
+    required:
+      - meta
+      - error
+    properties:
+      meta:
+        $ref: '#/definitions/meta'
+      error:
+        $ref: '#/definitions/apiError'
+  apiError:
+    type: object
+    properties:
+      args:
+        $ref: '#/definitions/apiErrorArgs'
+      data:
+        type: object
+        additionalProperties: true
+      causeMessage:
+        type: string
+      code:
+        type: string
+      message:
+        type: string
+      requestId:
+        type: string
+      cause:
+        $ref: '#/definitions/apiErrorCause'
+  apiFieldError:
+    type: object
+    properties:
+      reason:
+        type: string
+      field:
+        type: string
+      value:
+        description: can be any value - string, number, boolean, array or object
+  apiErrorCause:
+    allOf:
+      - $ref: '#/definitions/apiFieldError'
+      - $ref: '#/definitions/apiError'
+  apiErrorArgs:
+    type: object
+    properties:
+      urlVars:
+        properties: { }
+        additionalProperties:
+          type: string
+        type: object

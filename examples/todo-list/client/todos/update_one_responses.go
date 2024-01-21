@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,11 +87,13 @@ func (o *UpdateOneOK) Code() int {
 }
 
 func (o *UpdateOneOK) Error() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK %s", 200, payload)
 }
 
 func (o *UpdateOneOK) String() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK %s", 200, payload)
 }
 
 func (o *UpdateOneOK) GetPayload() *models.Item {
@@ -158,11 +161,13 @@ func (o *UpdateOneDefault) Code() int {
 }
 
 func (o *UpdateOneDefault) Error() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default %s", o._statusCode, payload)
 }
 
 func (o *UpdateOneDefault) String() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default %s", o._statusCode, payload)
 }
 
 func (o *UpdateOneDefault) GetPayload() *models.Error {

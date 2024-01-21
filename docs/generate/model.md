@@ -40,6 +40,7 @@ Help Options:
           --strict-additional-properties                                          disallow extra properties when additionalProperties is set to false
           --keep-spec-order                                                       keep schema properties order identical to spec file
           --struct-tags=                                                          the struct tags to generate, repeat for multiple (defaults to json)
+          --rooted-error-path                                                     extends validation errors with the type name instead of an empty path, in the case of arrays and maps
 ```
 
 Schema generation rules are detailed [here](../use/model.md).

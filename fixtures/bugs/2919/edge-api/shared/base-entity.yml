@@ -1,0 +1,102 @@
+---
+definitions:
+  baseEntity:
+    description: Fields shared by all Edge API entities
+    type: object
+    required:
+      - id
+      - createdAt
+      - updatedAt
+      - _links
+    properties:
+      id:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      _links:
+        $ref: '#/definitions/links'
+      tags:
+        $ref: '#/definitions/tags'
+  link:
+    description: A link to another resource
+    type: object
+    required:
+      - href
+    properties:
+      href:
+        type: string
+        format: uri
+      method:
+        type: string
+      comment:
+        type: string
+  links:
+    description: A map of named links
+    type: object
+    x-omitempty: false
+    additionalProperties:
+      $ref: '#/definitions/link'
+  entityRef:
+    description: A reference to another resource and links to interact with it
+    type: object
+    properties:
+      entity:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      _links:
+        $ref: '#/definitions/links'
+  tags:
+    description: 'A map of user defined fields and values. The values are limited to the following types/values: null, string, boolean'
+    allOf:
+      - $ref: '#/definitions/subTags'
+    x-nullable: true
+  subTags:
+    type: object
+    additionalProperties: {
+      type: object
+    }
+  attributes:
+    description: A set of strings used to loosly couple this resource to policies
+    type: array
+    x-omitempty: true
+    x-nullable: true
+    items:
+      type: string
+  roles:
+    type: array
+    x-omitempty: false
+    items:
+      type: string
+  namedRole:
+    type: object
+    properties:
+      role:
+        type: string
+      name:
+        type: string
+  namedRoles:
+    type: array
+    x-omitempty: false
+    items:
+      $ref: '#/definitions/namedRole'
+  semantic:
+    type: string
+    enum:
+      - AllOf
+      - AnyOf
+  dialBind:
+    type: string
+    enum:
+      - Dial
+      - Bind
+  dialBindArray:
+    type: array
+    items:
+      $ref: '#/definitions/dialBind'

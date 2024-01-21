@@ -544,6 +544,10 @@ func (m *Zzz) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 
 func (m *Zzz) contextValidateMeta(ctx context.Context, formats strfmt.Registry) error {
 
+	if swag.IsZero(m.Meta) { // not required
+		return nil
+	}
+
 	if err := m.Meta.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("meta")
@@ -557,6 +561,10 @@ func (m *Zzz) contextValidateMeta(ctx context.Context, formats strfmt.Registry) 
 }
 
 func (m *Zzz) contextValidateNullableMeta(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.NullableMeta) { // not required
+		return nil
+	}
 
 	if err := m.NullableMeta.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
@@ -573,6 +581,7 @@ func (m *Zzz) contextValidateNullableMeta(ctx context.Context, formats strfmt.Re
 func (m *Zzz) contextValidateReqMeta(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.ReqMeta != nil {
+
 		if err := m.ReqMeta.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("reqMeta")

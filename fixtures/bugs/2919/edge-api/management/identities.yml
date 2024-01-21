@@ -1,0 +1,703 @@
+---
+paths:
+  identities:
+    get:
+      summary: List identities
+      description: |
+        Retrieves a list of identity resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentities
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+        - $ref: '../shared/parameters.yml#/roleFilter'
+        - $ref: '../shared/parameters.yml#/roleSemantic'
+      responses:
+        '200':
+          $ref: '#/responses/listIdentities'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create an identity resource
+      description: Create an identity resource. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: createIdentity
+      parameters:
+        - name: identity
+          in: body
+          required: true
+          description: An identity to create
+          schema:
+            $ref: '#/definitions/identityCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single identity
+      description: Retrieves a single identity by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: detailIdentity
+      responses:
+        '200':
+          $ref: '#/responses/detailIdentity'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on an identity
+      description: Update all fields on an identity by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: updateIdentity
+      parameters:
+        - name: identity
+          in: body
+          required: true
+          description: An identity update object
+          schema:
+            $ref: '#/definitions/identityUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on an identity
+      description: Update the supplied fields on an identity. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: patchIdentity
+      parameters:
+        - name: identity
+          in: body
+          required: true
+          description: An identity patch object
+          schema:
+            $ref: '#/definitions/identityPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an identity
+      description: Delete an identity by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: deleteIdentity
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  identities-id-edge-router-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the edge router policies that affect an identity
+      description: Retrieves a list of edge router policies that apply to the specified identity.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentitysEdgeRouterPolicies
+      responses:
+        '200':
+          $ref: 'edge-router-policies.yml#/responses/listEdgeRouterPolicies'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-service-configs:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the service configs associated a specific identity
+      description: Retrieves a list of service configs associated to a specific identity
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentitysServiceConfigs
+      responses:
+        '200':
+          $ref: '#/responses/listServiceConfigs'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    post:
+      summary: Associate service configs for a specific identity
+      description: Associate service configs to a specific identity
+      parameters:
+        - name: serviceConfigs
+          in: body
+          required: true
+          description: A service config patch object
+          schema:
+            $ref: 'service-configs.yml#/definitions/serviceConfigsAssignList'
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: associateIdentitysServiceConfigs
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Remove associated service configs from a specific identity
+      description: Remove service configs from a specific identity
+      parameters:
+        - name: serviceConfigIdPairs
+          in: body
+          required: false
+          description: An array of service and config id pairs to remove
+          schema:
+            $ref: 'service-configs.yml#/definitions/serviceConfigsAssignList'
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: disassociateIdentitysServiceConfigs
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-service-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the service policies that affect an identity
+      description: Retrieves a list of service policies that apply to the specified identity.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentityServicePolicies
+      responses:
+        '200':
+          $ref: 'service-policies.yml#/responses/listServicePolicies'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+  identities-id-edge-routers:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List accessible edge-routers
+      description: |
+        Retrieves a list of edge-routers that the given identity may use to access services. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentityEdgeRouters
+      responses:
+        '200':
+          $ref: 'edge-routers.yml#/responses/listEdgeRouters'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+  identities-id-services:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List accessible services
+      description: |
+        Retrieves a list of services that the given identity has access to. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentityServices
+      responses:
+        '200':
+          $ref: 'edge-routers.yml#/responses/listEdgeRouters'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+  identities-id-policy-advice-service-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+      - $ref: '../shared/parameters.yml#/serviceId'
+    get:
+      summary: Analyze policies relating the given identity and service
+      description: |
+        Analyzes policies to see if the given identity should be able to dial or bind the given service. |
+        Will check services policies to see if the identity can access the service. Will check edge router policies |
+        to check if the identity and service have access to common edge routers so that a connnection can be made. |
+        Will also check if at least one edge router is on-line. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: getIdentityPolicyAdvice
+      responses:
+        '200':
+          $ref: '#/responses/getIdentityPolicyAdvice'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-posture-data:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieve the curent posture data for a specific identity.
+      description: |
+        Returns a nested map data represeting the posture data of the identity.
+        This data should be considered volatile.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: getIdentityPostureData
+      responses:
+        '200':
+          $ref: '#/responses/getIdentityPostureData'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-authenticators:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieve the current authenticators of a specific identity
+      description: |
+        Returns a list of authenticators associated to the identity specified
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: getIdentityAuthenticators
+      responses:
+        '200':
+          $ref: '../shared/authenticators.yml#/responses/listAuthenticators'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-enrollments:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieve the current enrollments of a specific identity
+      description: |
+        Returns a list of enrollments associated to the identity specified
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: getIdentityEnrollments
+      responses:
+        '200':
+          $ref: '../management/enrollments.yml#/responses/listEnrollments'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-failed-service-requests:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieve a list of the most recent service failure requests due to posture checks
+      description: |
+        Returns a list of service session requests that failed due to posture checks. The entries will contain
+        every policy that was verified against and every failed check in each policy. Each check will include
+        the historical posture data and posture check configuration.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: getIdentityFailedServiceRequests
+      responses:
+        '200':
+          $ref: '#/responses/getIdentityFailedServiceRequest'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-mfa:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    delete:
+      summary: Remove MFA from an identitity
+      description: |
+        Allows an admin to remove MFA enrollment from a specific identity. Requires admin.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+        - MFA
+      operationId: removeIdentityMfa
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-trace:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    put:
+      summary: Enable/disable data flow tracing for an identity
+      description: |
+        Allows an admin to enable/disable data flow tracing for an identity
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+        - Tracing
+      operationId: updateIdentityTracing
+      parameters:
+        - name: traceSpec
+          in: body
+          required: true
+          description: A traceSpec object
+          schema:
+            $ref: '#/definitions/traceSpec'
+      responses:
+        '200':
+          $ref: '#/responses/traceDetail'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-enable:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Clears all disabled state from an identity
+      description: |
+        Allows an admin to remove disabled statuses from an identity.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: enableIdentity
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  identities-id-disable:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Set an identity as disabled
+      description: |
+        Allows an admin disable an identity for a set amount of time or indefinitely.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: disableIdentity
+      parameters:
+        - name: disable
+          in: body
+          required: true
+          description: Disable parameters
+          schema:
+            $ref: '#/definitions/disableParams'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  listIdentities:
+    description: A list of identities
+    schema:
+      $ref: '#/definitions/listIdentitiesEnvelope'
+  detailIdentity:
+    description: A single identity
+    schema:
+      $ref: '#/definitions/detailIdentityEnvelope'
+  getIdentityPolicyAdvice:
+    description: Returns the document that represents the policy advice
+    schema:
+      $ref: '#/definitions/getIdentityPolicyAdviceEnvelope'
+  getIdentityPostureData:
+    description: Returns the document that represents posture data
+    schema:
+      $ref: 'posture-data.yml#/definitions/postureDataEnvelope'
+  getIdentityFailedServiceRequest:
+    description: Returns a list of service request failures
+    schema:
+      $ref: 'failed-service-request.yml#/definitions/failedServiceRequestEnvelope'
+  listServiceConfigs:
+    description: A list of service configs
+    schema:
+      $ref: 'service-configs.yml#/definitions/listServiceConfigsEnvelope'
+  traceDetail:
+    description: Returns the document that represents the trace state
+    schema:
+      $ref: '#/definitions/traceDetailEnvelope'
+
+definitions:
+  disableParams:
+    type: object
+    required:
+      - durationMinutes
+    properties:
+      durationMinutes:
+        type: integer
+  listIdentitiesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '../shared/identities.yml#/definitions/identityList'
+  detailIdentityEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '../shared/identities.yml#/definitions/identityDetail'
+  traceDetailEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/traceDetail'
+  identityCreate:
+    description: An identity to create
+    type: object
+    required:
+      - name
+      - type
+      - isAdmin
+    properties:
+      name:
+        type: string
+      type:
+        $ref: 'identity-types.yml#/definitions/identityType'
+      isAdmin:
+        type: boolean
+      enrollment:
+        type: object
+        properties:
+          ott:
+            type: boolean
+          updb:
+            type: string
+          ottca:
+            type: string
+      authPolicyId:
+        type: string
+        x-nullable: true
+      externalId:
+        type: string
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      defaultHostingPrecedence:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedence'
+      defaultHostingCost:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCost'
+      serviceHostingPrecedences:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedenceMap'
+      serviceHostingCosts:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCostMap'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  identityUpdate:
+    type: object
+    required:
+      - type
+      - name
+      - isAdmin
+    properties:
+      name:
+        type: string
+      type:
+        $ref: 'identity-types.yml#/definitions/identityType'
+      isAdmin:
+        type: boolean
+      authPolicyId:
+        type: string
+        x-nullable: true
+      externalId:
+        type: string
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      defaultHostingPrecedence:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedence'
+      defaultHostingCost:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCost'
+      serviceHostingPrecedences:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedenceMap'
+      serviceHostingCosts:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCostMap'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  identityPatch:
+    type: object
+    properties:
+      name:
+        type: string
+        x-nullable: true
+      type:
+        $ref: 'identity-types.yml#/definitions/identityType'
+        x-nullable: true
+      isAdmin:
+        type: boolean
+        x-nullable: true
+      authPolicyId:
+        type: string
+        x-nullable: true
+      externalId:
+        type: string
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      defaultHostingPrecedence:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedence'
+      defaultHostingCost:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCost'
+      serviceHostingPrecedences:
+        $ref: '../shared/terminators.yml#/definitions/terminatorPrecedenceMap'
+      serviceHostingCosts:
+        $ref: '../shared/terminators.yml#/definitions/terminatorCostMap'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  getIdentityPolicyAdviceEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/policyAdvice'
+  policyAdvice:
+    type: "object"
+    properties:
+      identityId:
+        type: "string"
+      identity:
+        $ref: '../shared/base-entity.yml#/definitions/entityRef'
+      serviceId:
+        type: "string"
+      service:
+        $ref: '../shared/base-entity.yml#/definitions/entityRef'
+      isBindAllowed:
+        type: "boolean"
+      isDialAllowed:
+        type: "boolean"
+      identityRouterCount:
+        type: "number"
+        format: int32
+      serviceRouterCount:
+        type: "number"
+        format: int32
+      commonRouters:
+        type: "array"
+        items:
+          $ref: 'edge-routers.yml#/definitions/routerEntityRef'
+  traceSpec:
+    type: "object"
+    properties:
+      enabled:
+        type: "boolean"
+      duration:
+        type: "string"
+      traceId:
+        type: "string"
+      channels:
+        type: array
+        items:
+          type: string
+  traceDetail:
+    type: "object"
+    properties:
+      enabled:
+        type: "boolean"
+      until:
+        type: "string"
+        format: date-time
+      traceId:
+        type: "string"

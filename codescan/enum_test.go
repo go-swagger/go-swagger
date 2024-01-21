@@ -9,7 +9,6 @@ import (
 )
 
 func Test_getEnumBasicLitValue(t *testing.T) {
-
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.INT, Value: "0"}, int64(0))
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.INT, Value: "-1"}, int64(-1))
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.INT, Value: "42"}, int64(42))
@@ -28,7 +27,6 @@ func Test_getEnumBasicLitValue(t *testing.T) {
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.STRING, Value: ""}, "")
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.STRING, Value: "0"}, "0")
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.STRING, Value: "1.1"}, "1.1")
-
 }
 
 func verifyGetEnumBasicLitValue(t *testing.T, basicLit ast.BasicLit, expected interface{}) {

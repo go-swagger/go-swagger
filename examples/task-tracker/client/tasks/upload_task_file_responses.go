@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -85,11 +86,11 @@ func (o *UploadTaskFileCreated) Code() int {
 }
 
 func (o *UploadTaskFileCreated) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFileCreated ", 201)
+	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFileCreated", 201)
 }
 
 func (o *UploadTaskFileCreated) String() string {
-	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFileCreated ", 201)
+	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFileCreated", 201)
 }
 
 func (o *UploadTaskFileCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -147,11 +148,13 @@ func (o *UploadTaskFileDefault) Code() int {
 }
 
 func (o *UploadTaskFileDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default %s", o._statusCode, payload)
 }
 
 func (o *UploadTaskFileDefault) String() string {
-	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks/{id}/files][%d] uploadTaskFile default %s", o._statusCode, payload)
 }
 
 func (o *UploadTaskFileDefault) GetPayload() *models.Error {

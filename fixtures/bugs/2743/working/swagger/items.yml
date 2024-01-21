@@ -1,0 +1,15 @@
+ErrorDetailsItem:
+  title: Error details item
+  description: Represents an item of the list of details of an error.
+  required:
+    - message
+    - code
+  properties:
+    message:
+      type: string
+    code:
+      type: string
+    details:
+      type: array
+      items:
+        type: string

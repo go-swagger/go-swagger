@@ -2,9 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"io"
-	"log"
-	"os"
 	"testing"
 
 	"github.com/go-openapi/loads"
@@ -63,7 +60,6 @@ Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture"
 }
 
 func TestTemplates_CustomTemplates(t *testing.T) {
-
 	var buf bytes.Buffer
 	headerTempl, err := templates.Get("bindprimitiveparam")
 	assert.NoError(t, err)
@@ -84,7 +80,6 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 	err = headerTempl.Execute(&buf, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "custom header", buf.String())
-
 }
 
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
@@ -121,7 +116,6 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoLoadingTemplates(t *testing.T) {
-
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("simple", singleTemplate)
@@ -138,7 +132,6 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -170,7 +163,6 @@ type testData struct {
 }
 
 func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -191,7 +183,6 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
-
 	var b bytes.Buffer
 	repo := NewRepository(nil)
 
@@ -254,8 +245,9 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 
 // Test copyright definition
 func TestTemplates_DefinitionCopyright(t *testing.T) {
+	defer discardOutput()()
+
 	const copyright = `{{ .Copyright }}`
-	log.SetOutput(os.Stdout)
 
 	repo := NewRepository(nil)
 
@@ -291,13 +283,12 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
-
 }
 
 // Test TargetImportPath definition
 func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	const targetImportPath = `{{ .TargetImportPath }}`
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	repo := NewRepository(nil)
 
@@ -311,7 +302,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	opts := opts()
 	// Non existing target would panic: to be tested too, but in another module
 	opts.Target = "../fixtures"
-	var expected = "github.com/go-swagger/go-swagger/fixtures"
+	expected := "github.com/go-swagger/go-swagger/fixtures"
 
 	// executes template against model definitions
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
@@ -335,14 +326,11 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
-
 }
 
 // Simulates a definition environment for model templates
 func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
-	// Don't want stderr output to pollute CI
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	if err != nil {
@@ -363,9 +351,7 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 
 // Simulates a definition environment for operation templates
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
-	// Don't want stderr output to pollute CI
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	b, err := methodPathOpBuilder(operation, path, spec)
 	if err != nil {
@@ -383,7 +369,8 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 // Just running basic tests to make sure the function map works and all functions are available as expected.
 // More complete unit tests are provided by go-openapi/swag.
 func TestTemplates_FuncMap(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
+
 	funcTpl := testFuncTpl()
 
 	err := templates.AddFile("functpl", funcTpl)
@@ -416,7 +403,7 @@ func TestTemplates_FuncMap(t *testing.T) {
 	assert.Contains(t, rendered.String(), "DoesNotContainString=false\n")
 	assert.Contains(t, rendered.String(), "PadSurround1=-,-,-,padme,-,-,-,-,-,-,-,-\n")
 	assert.Contains(t, rendered.String(), "PadSurround2=padme,-,-,-,-,-,-,-,-,-,-,-\n")
-	assert.Contains(t, rendered.String(), `Json={"errors":"github.com/go-openapi/errors","runtime":"github.com/go-openapi/runtime","swag":"github.com/go-openapi/swag","validate":"github.com/go-openapi/validate"}`)
+	assert.Contains(t, rendered.String(), `Json={"errors":"github.com/go-openapi/errors","runtime":"github.com/go-openapi/runtime","strfmt":"github.com/go-openapi/strfmt","swag":"github.com/go-openapi/swag","validate":"github.com/go-openapi/validate"}`)
 	assert.Contains(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
 	assert.Contains(t, rendered.String(), "Snakize1=ending_in_os_name_linux_swagger\n")
 	assert.Contains(t, rendered.String(), "Snakize2=ending_in_arch_name_linux_amd64_swagger\n")
@@ -439,7 +426,8 @@ func TestTemplates_FuncMap(t *testing.T) {
 // Mostly unused in tests, since the Repository.AddFile()
 // is generally preferred.
 func TestTemplates_AddFile(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
+
 	funcTpl := testFuncTpl()
 
 	// unprotected
@@ -457,7 +445,7 @@ func TestTemplates_AddFile(t *testing.T) {
 
 // Test LoadDir
 func TestTemplates_LoadDir(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// Fails
 	err := templates.LoadDir("")
@@ -487,7 +475,7 @@ func TestTemplates_LoadDir(t *testing.T) {
 
 // Test LoadDir
 func TestTemplates_SetAllowOverride(t *testing.T) {
-	log.SetOutput(os.Stdout)
+	defer discardOutput()()
 
 	// adding protected file with allowOverride set to false fails
 	templates.SetAllowOverride(false)
@@ -535,11 +523,8 @@ func TestTemplates_LoadContrib(t *testing.T) {
 // TODO: test error case in LoadDefaults()
 // test DumpTemplates()
 func TestTemplates_DumpTemplates(t *testing.T) {
-	buf := bytes.NewBuffer(nil)
-	log.SetOutput(buf)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	var buf bytes.Buffer
+	defer captureOutput(&buf)()
 
 	templates.DumpTemplates()
 	assert.NotEmpty(t, buf)
@@ -679,4 +664,26 @@ func TestGt0(t *testing.T) {
 	require.True(t, gt0(swag.Int64(1)))
 	require.False(t, gt0(swag.Int64(0)))
 	require.False(t, gt0(nil))
+}
+
+func TestIssue2821(t *testing.T) {
+	tpl := `
+Pascalize={{ pascalize . }}
+Camelize={{ camelize . }}
+`
+
+	require.NoError(t,
+		templates.AddFile("functpl", tpl),
+	)
+
+	compiled, err := templates.Get("functpl")
+	require.NoError(t, err)
+
+	rendered := bytes.NewBuffer(nil)
+	require.NoError(t,
+		compiled.Execute(rendered, "get$ref"),
+	)
+
+	assert.Contains(t, rendered.String(), "Pascalize=GetDollarRef\n")
+	assert.Contains(t, rendered.String(), "Camelize=getDollarRef\n")
 }

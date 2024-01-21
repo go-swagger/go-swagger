@@ -1,0 +1,171 @@
+---
+
+paths:
+  authenticators:
+    get:
+      summary: List authenticators
+      description: |
+        Returns a list of authenticators associated to identities. The resources can be sorted, filtered, and paginated.
+        This endpoint requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: listAuthenticators
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '../shared/authenticators.yml#/responses/listAuthenticators'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Creates an authenticator
+      description: |
+        Creates an authenticator for a specific identity. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: createAuthenticator
+      parameters:
+        - name: authenticator
+          in: body
+          required: true
+          description: A Authenticator create object
+          schema:
+            $ref: '../shared/authenticators.yml#/definitions/authenticatorCreate'
+      responses:
+        '201':
+          description: The create was successful
+          schema:
+            $ref: '../shared/authenticators.yml#/definitions/authenticatorCreate'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  authenticators-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single authenticator
+      description: Retrieves a single authenticator by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: detailAuthenticator
+      responses:
+        '200':
+          $ref: '../shared/authenticators.yml#/responses/detailAuthenticator'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on an authenticator
+      description: Update all fields on an authenticator by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: updateAuthenticator
+      parameters:
+        - name: authenticator
+          in: body
+          required: true
+          description: 'An authenticator put object'
+          schema:
+            $ref: '../shared/authenticators.yml#/definitions/authenticatorUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on an authenticator
+      description: Update the supplied fields on an authenticator by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: patchAuthenticator
+      parameters:
+        - name: authenticator
+          in: body
+          required: true
+          description: An authenticator patch object
+          schema:
+            $ref: '../shared/authenticators.yml#/definitions/authenticatorPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an Authenticator
+      description: |
+        Delete an authenticator by id. Deleting all authenticators for an identity will make it impossible to log in.
+        Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: deleteAuthenticator
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  authenticators-id-re-enroll:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Reverts an authenticator to an enrollment
+      description: |
+        Allows an authenticator to be reverted to an enrollment and allows re-enrollment to occur. On success the 
+        created enrollment record response is provided and the source authenticator record will be deleted. The 
+        enrollment created depends on the authenticator. UPDB authenticators result in UPDB enrollments, CERT
+        authenticators result in OTT enrollments, CERT + CA authenticators result in OTTCA enrollments.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Authenticator
+      operationId: reEnrollAuthenticator
+      parameters:
+        - name: reEnroll
+          in: body
+          required: true
+          description: A reEnrollment request
+          schema:
+            $ref: '#/definitions/reEnroll'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+definitions:
+  reEnroll:
+    type: object
+    required:
+      - expiresAt
+    properties:
+      expiresAt:
+        type: string
+        format: date-time

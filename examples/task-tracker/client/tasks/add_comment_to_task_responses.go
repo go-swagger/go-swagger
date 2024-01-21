@@ -7,6 +7,7 @@ package tasks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -89,11 +90,11 @@ func (o *AddCommentToTaskCreated) Code() int {
 }
 
 func (o *AddCommentToTaskCreated) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated ", 201)
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated", 201)
 }
 
 func (o *AddCommentToTaskCreated) String() string {
-	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated ", 201)
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTaskCreated", 201)
 }
 
 func (o *AddCommentToTaskCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -151,11 +152,13 @@ func (o *AddCommentToTaskDefault) Code() int {
 }
 
 func (o *AddCommentToTaskDefault) Error() string {
-	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default %s", o._statusCode, payload)
 }
 
 func (o *AddCommentToTaskDefault) String() string {
-	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /tasks/{id}/comments][%d] addCommentToTask default %s", o._statusCode, payload)
 }
 
 func (o *AddCommentToTaskDefault) GetPayload() *models.Error {

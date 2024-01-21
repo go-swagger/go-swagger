@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -48,7 +49,7 @@ func (o *PetUpdateReader) ReadResponse(response runtime.ClientResponse, consumer
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[PUT /pet] PetUpdate", response, response.Code())
 	}
 }
 
@@ -97,11 +98,13 @@ func (o *PetUpdateCreated) Code() int {
 }
 
 func (o *PetUpdateCreated) Error() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated %s", 201, payload)
 }
 
 func (o *PetUpdateCreated) String() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateCreated %s", 201, payload)
 }
 
 func (o *PetUpdateCreated) GetPayload() *models.Pet {
@@ -164,11 +167,11 @@ func (o *PetUpdateBadRequest) Code() int {
 }
 
 func (o *PetUpdateBadRequest) Error() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest ", 400)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest", 400)
 }
 
 func (o *PetUpdateBadRequest) String() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest ", 400)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateBadRequest", 400)
 }
 
 func (o *PetUpdateBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -220,11 +223,11 @@ func (o *PetUpdateNotFound) Code() int {
 }
 
 func (o *PetUpdateNotFound) Error() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound ", 404)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound", 404)
 }
 
 func (o *PetUpdateNotFound) String() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound ", 404)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateNotFound", 404)
 }
 
 func (o *PetUpdateNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -276,11 +279,11 @@ func (o *PetUpdateMethodNotAllowed) Code() int {
 }
 
 func (o *PetUpdateMethodNotAllowed) Error() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed ", 405)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed", 405)
 }
 
 func (o *PetUpdateMethodNotAllowed) String() string {
-	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed ", 405)
+	return fmt.Sprintf("[PUT /pet][%d] petUpdateMethodNotAllowed", 405)
 }
 
 func (o *PetUpdateMethodNotAllowed) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

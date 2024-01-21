@@ -75,7 +75,7 @@ type TaskCard struct {
 	// Ignored means as much as accepted but not now, perhaps later.
 	//
 	// Required: true
-	// Enum: [open closed ignored rejected]
+	// Enum: ["open","closed","ignored","rejected"]
 	Status *string `json:"status"`
 
 	// task tags.
@@ -365,6 +365,11 @@ func (m *TaskCard) ContextValidate(ctx context.Context, formats strfmt.Registry)
 func (m *TaskCard) contextValidateAssignedTo(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.AssignedTo != nil {
+
+		if swag.IsZero(m.AssignedTo) { // not required
+			return nil
+		}
+
 		if err := m.AssignedTo.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("assignedTo")
@@ -390,6 +395,11 @@ func (m *TaskCard) contextValidateID(ctx context.Context, formats strfmt.Registr
 func (m *TaskCard) contextValidateMilestone(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Milestone != nil {
+
+		if swag.IsZero(m.Milestone) { // not required
+			return nil
+		}
+
 		if err := m.Milestone.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("milestone")

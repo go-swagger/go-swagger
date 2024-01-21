@@ -173,6 +173,45 @@ func initFixture2444() {
 		`	if nprops > 5 {`,
 		`		return errors.TooManyProperties("", "body", 5)`,
 	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("nested_map.go", []string{
+		`type NestedMap map[string]map[string]interface{}`,
+		`nprops := len(m)`,
+		`	if nprops < 3 {`,
+		`		return errors.TooFewProperties("", "body", 3)`,
+		`	if nprops > 5 {`,
+		`		return errors.TooManyProperties("", "body", 5)`,
+		`for k := range m {`,
+		`nprops := len(m[k])`,
+		`if nprops < 4 {`,
+		`	return errors.TooFewProperties(k, "body", 4)`,
+		`if nprops > 6 {`,
+		`	return errors.TooManyProperties(k, "body", 6)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("deeper_nested_map.go", []string{
+		`type DeeperNestedMap map[string]map[string]map[string]interface{}`,
+		`nprops := len(m)`,
+		`if nprops < 3 {`,
+		`return errors.TooFewProperties("", "body", 3)`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("", "body", 5)`,
+		`for k := range m {`,
+		`nprops := len(m[k])`,
+		`if nprops < 4 {`,
+		`return errors.TooFewProperties(k, "body", 4)`,
+		`if nprops > 6 {`,
+		`return errors.TooManyProperties(k, "body", 6)`,
+		`for kk := range m[k] {`,
+		`if nprops < 5 {`,
+		`return errors.TooFewProperties(k+"."+kk, "body", 5)`,
+		`if nprops > 7 {`,
+		`return errors.TooManyProperties(k+"."+kk, "body", 7)`,
+		``,
+		``,
+		``,
+		``,
+	}, todo, noLines, noLines)
 }
 
 func initFixtureGuardFormats() {
@@ -351,6 +390,7 @@ func initFixture2448() {
 		`if err := validate.MultipleOf("f2", "body", m.F2, 10); err != nil {`,
 	}, todo, noLines, noLines)
 }
+
 func initFixture2400() {
 	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -596,7 +636,7 @@ func initFixture2116() {
 		"Body ObjectWithNullableFalse `json:\"Body,omitempty\"`",
 	}, todo, noLines, noLines)
 
-	flattenRun.AddExpectations("case4_pass_object_nullable_false_overriden_by_ref_sibling.go", []string{
+	flattenRun.AddExpectations("case4_pass_object_nullable_false_overridden_by_ref_sibling.go", []string{
 		"Body *ObjectWithNullableTrue `json:\"Body,omitempty\"`",
 	}, todo, noLines, noLines)
 
@@ -1496,6 +1536,7 @@ func initFixture1479Part() {
 	// load expectations for model: networking_config_endpoints_config.go
 	// NOTE(fredbi): maps are now simple types - this definition disappears
 }
+
 func initFixtureSimpleAllOf() {
 	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
 
@@ -2314,7 +2355,6 @@ func initFixtureSimpleAllOf() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureComplexAllOf() {
@@ -2799,7 +2839,6 @@ func initFixtureComplexAllOf() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureIsNullable() {
@@ -2834,7 +2873,6 @@ func initFixtureIsNullable() {
 		noLines)
 
 	expandRun.AddExpectations("thing_with_nullable_dates.go", flattenRun.ExpectedFor("ThingWithNullableDates").ExpectedLines, todo, noLines, noLines)
-
 }
 
 func initFixtureItching() {
@@ -4720,7 +4758,6 @@ func initFixtureAdditionalProps() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureTuple() {
@@ -5264,7 +5301,6 @@ func initFixtureTuple() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1198() {
@@ -5287,7 +5323,6 @@ func initFixture1198() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1042() {
@@ -5370,7 +5405,6 @@ func initFixture1042() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1042V2() {
@@ -5457,7 +5491,6 @@ func initFixture1042V2() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture979() {
@@ -5530,7 +5563,6 @@ func initFixture979() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture842() {
@@ -5639,7 +5671,6 @@ func initFixture842() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture607() {
@@ -5905,7 +5936,6 @@ func initFixture607() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1336() {
@@ -6154,7 +6184,6 @@ func initFixture1336() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureErrors() {
@@ -8908,7 +8937,6 @@ func initFixture844Variations() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixtureMoreAddProps() {
@@ -9331,7 +9359,6 @@ func initFixtureMoreAddProps() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1537() {
@@ -9442,7 +9469,6 @@ func initFixture1537() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture1537v2() {
@@ -9545,7 +9571,6 @@ func initFixture1537v2() {
 		// output in log
 		noLines,
 		noLines)
-
 }
 
 func initFixture15365() {
@@ -9814,7 +9839,8 @@ func initFixture1548() {
 		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
 	},
 		// not expected
-		[]string{"TODO",
+		[]string{
+			"TODO",
 			"validate.FormatOf(",
 			`return errors.CompositeValidationError(res...`,
 		},
@@ -11129,11 +11155,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("hs2.go", []string{
 		`type Hs2 struct {`,
 		`	Hs0`,
-		// empty validation
-		"func (m *Hs2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *Hs2) Validate(formats strfmt.Registry) error {",
+		"if err := m.Hs0.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *Hs2) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11197,11 +11224,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g2.go", []string{
 		`type G2 struct {`,
 		`	G0`,
-		// empty validation
-		"func (m *G2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G2) Validate(formats strfmt.Registry) error {",
+		"if err := m.G0.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G2) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11240,11 +11268,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g0.go", []string{
 		`type G0 struct {`,
 		`	G1`,
-		// empty validation
-		"func (m *G0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G0) Validate(formats strfmt.Registry) error {",
+		"if err := m.G1.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G0) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11357,11 +11386,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g2v.go", []string{
 		`type G2v struct {`,
 		`	G0v`,
-		// empty validation
-		"func (m *G2v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G2v) Validate(formats strfmt.Registry) error {",
+		"if err := m.G0v.Validate(formats); err != nil",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G2v) Validate(formats strfmt.Registry) error {\n      return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11452,11 +11482,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("g0v.go", []string{
 		`type G0v struct {`,
 		`	G1v`,
-		// empty validation
-		"func (m *G0v) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *G0v) Validate(formats strfmt.Registry) error {",
+		"if err := m.G1v.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *G0v) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11465,11 +11496,12 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("hs0.go", []string{
 		`type Hs0 struct {`,
 		`	Hsubtype1`,
-		// empty validation
-		"func (m *Hs0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		// NOT empty validation
+		"func (m *Hs0) Validate(formats strfmt.Registry) error {",
+		"if err := m.Hsubtype1.Validate(formats); err != nil {",
 	},
 		// not expected
-		todo,
+		[]string{"TODO", "func (m *Hs0) Validate(formats strfmt.Registry) error {\n	return nil\n}"},
 		// output in log
 		noLines,
 		noLines)
@@ -11504,6 +11536,76 @@ func initFixture1993() {
 		noLines)
 }
 
+func initFixture2604() {
+	f := newModelFixture("../fixtures/bugs/2604/2604.yaml", "additional cases for embedded structs")
+	thisRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	thisRun.AddExpectations("composed.go", []string{
+		`type Composed struct {`,
+		`	NoValidations`,
+		`func (m *Composed) Validate(formats strfmt.Registry) error {`,
+		`if err := m.NoValidations.Validate(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("composed_iface.go", []string{
+		`type ComposedIface = Interface`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("interface.go", []string{
+		`type Interface interface{}`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("no_validations.go", []string{
+		`type NoValidations struct {`,
+		// empty validation
+		"func (m *NoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("post_fields.go", []string{
+		`type PostFields struct {`,
+		`func (m *PostFields) Validate(formats strfmt.Registry) error {`,
+		`if err := m.validateA(formats); err != nil {`,
+		`if err := m.validateB(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+
+	thisRun.AddExpectations("post_request.go", []string{
+		`type PostRequest struct {`,
+		`PostFields`,
+		`func (m *PostRequest) Validate(formats strfmt.Registry) error {`,
+		`if err := m.PostFields.Validate(formats); err != nil {`,
+	},
+		// not expected
+		todo,
+		// output in log
+		noLines,
+		noLines)
+}
+
 func initFixture2364() {
 	f := newModelFixture("../fixtures/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
@@ -11521,4 +11623,127 @@ func initFixture2364() {
 		// output in log
 		noLines,
 		noLines)
+}
+
+func initFixture2163() {
+	f := newModelFixture("../fixtures/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("obj.go", []string{
+		`E map[string]interface{}`,
+		`Ebis map[string]interface{}`,
+		`I []map[string]interface{}`,
+		`J []map[string][]map[string]interface{}`,
+		//
+		`func (m *Obj) validateEEnum(path, location string, value map[string]interface{}) error {`,
+		`if swag.IsZero(m.E) {`,
+		`nprops := len(m.E)`,
+		`if nprops < 12 {`,
+		`return errors.TooFewProperties("e", "body", 12)`,
+		`if err := m.validateEEnum("e", "body", m.E); err != nil {`,
+		//
+		`func (m *Obj) validateEbisEnum(path, location string, value map[string]interface{}) error {`,
+		`if swag.IsZero(m.Ebis) {`,
+		`nprops := len(m.Ebis)`,
+		`if nprops < 1 {`,
+		`return errors.TooFewProperties("ebis", "body", 1)`,
+		`if err := m.validateEbisEnum("ebis", "body", m.Ebis); err != nil {`,
+		//
+		`func (m *Obj) validateF(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.F) {`,
+		`if err := validate.UniqueItems("f", "body", m.F); err != nil {`,
+		`for i := 0; i < len(m.F); i++ {`,
+		`nprops := len(m.F[i])`,
+		`if nprops < 13 {`,
+		`return errors.TooFewProperties("f"+"."+strconv.Itoa(i), "body", 13)`,
+		//
+		`func (m *Obj) validateI(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.I) {`,
+		`if err := validate.MinItems("i", "body", iISize, 4); err != nil {`,
+		`if err := validate.UniqueItems("i", "body", m.I); err != nil {`,
+		`for i := 0; i < len(m.I); i++ {`,
+		`nprops := len(m.I[i])`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("i"+"."+strconv.Itoa(i), "body", 5`,
+		//
+		`func (m *Obj) validateJ(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.J) {`,
+		`iJSize := int64(len(m.J))`,
+		`if err := validate.MinItems("j", "body", iJSize, 4); err != nil {`,
+		`if err := validate.UniqueItems("j", "body", m.J); err != nil {`,
+		`for i := 0; i < len(m.J); i++ {`,
+		`nprops := len(m.J[i])`,
+		`if nprops > 5 {`,
+		`return errors.TooManyProperties("j"+"."+strconv.Itoa(i), "body", 5)`,
+		`for k := range m.J[i] {`,
+		`iiJSize := int64(len(m.J[i][k]))`,
+		`if err := validate.MaxItems("j"+"."+strconv.Itoa(i)+"."+k, "body", iiJSize, 12); err != nil {`,
+		`for ii := 0; ii < len(m.J[i][k]); ii++ {`,
+		`nprops := len(m.J[i][k][ii])`,
+		`if nprops < 1 {`,
+		`return errors.TooFewProperties("j"+"."+strconv.Itoa(i)+"."+k+"."+strconv.Itoa(ii), "body", 1)`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture2587() {
+	f := newModelFixture("../fixtures/bugs/2587/2587.yaml", "min/max properties")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("basic_thing.go", []string{
+		`type BasicThing struct {`,
+		`Data interface{} `,
+		`func (m *BasicThing) Validate(formats strfmt.Registry) error {`,
+		`props := make(map[string]json.RawMessage, 1+10)`,
+		`j, err := swag.WriteJSON(m)`,
+		`nprops := len(props)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("nested_thing.go", []string{
+		`type NestedThing struct {`,
+		`Data map[string]interface{} `,
+		`NestedThingAdditionalProperties map[string]interface{}`,
+		`func (m *NestedThing) Validate(formats strfmt.Registry) error {`,
+		`// short circuits minProperties > 0`,
+		`if m == nil {`,
+		`props := make(map[string]json.RawMessage, 1+10)`,
+		`nprops := len(props)`,
+		`if nprops < 5 {`,
+		`return errors.TooFewProperties("", "body", 5)`,
+		`if nprops > 10`,
+		`return errors.TooManyProperties("", "body", 10)`,
+		`if err := m.validateData(formats); err != nil {`,
+		`func (m *NestedThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops < 15 {`,
+		`return errors.TooFewProperties("data", "body", 15)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("some_thing.go", []string{
+		`type SomeThing struct {`,
+		`Data map[string]interface{}`,
+		`func (m *SomeThing) Validate(formats strfmt.Registry) error {`,
+		`if err := m.validateData(formats); err != nil {`,
+		`func (m *SomeThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
+
+	flattenRun.AddExpectations("some_typed_thing.go", []string{
+		`type SomeTypedThing struct {`,
+		`Data map[string]string`,
+		`func (m *SomeTypedThing) Validate(formats strfmt.Registry) error {`,
+		`func (m *SomeTypedThing) Validate(formats strfmt.Registry) error {`,
+		`func (m *SomeTypedThing) validateData(formats strfmt.Registry) error {`,
+		`if swag.IsZero(m.Data) {`,
+		`nprops := len(m.Data)`,
+		`if nprops > 20 {`,
+		`return errors.TooManyProperties("data", "body", 20)`,
+	}, todo, noLines, noLines)
 }

@@ -1,0 +1,93 @@
+---
+
+paths:
+  identity-types:
+    get:
+      summary: List available identity types
+      description: |
+        Retrieves a list of identity types; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: listIdentityTypes
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listIdentityTypes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+  identity-types-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a identity type
+      description: Retrieves a single identity type by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Identity
+      operationId: detailIdentityType
+      responses:
+        '200':
+          $ref: '#/responses/detailIdentityType'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listIdentityTypes:
+    description: A list of identity types
+    schema:
+      $ref: '#/definitions/listIdentityTypesEnvelope'
+  detailIdentityType:
+    description: A single identity type
+    schema:
+      $ref: '#/definitions/detailIdentityTypeEnvelope'
+
+definitions:
+  identityType:
+    type: string
+    enum:
+      - User
+      - Device
+      - Service
+      - Router
+  listIdentityTypesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/identityTypeList'
+  detailIdentityTypeEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/identityTypeDetail'
+  identityTypeList:
+    type: array
+    items:
+      $ref: '#/definitions/identityTypeDetail'
+  identityTypeDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        properties:
+          name:
+            type: string

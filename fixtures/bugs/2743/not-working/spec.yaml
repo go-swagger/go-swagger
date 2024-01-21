@@ -1,0 +1,11 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Simple API
+paths:
+  /foo:
+    $ref: 'swagger/paths/foo.yml'
+  /bar:
+    $ref: 'swagger/paths/bar.yml'
+  /nested:
+    $ref: 'swagger/paths/nested.yml#/response'

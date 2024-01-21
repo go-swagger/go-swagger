@@ -1,0 +1,18 @@
+---
+definitions:
+  pagination:
+    type: object
+    required:
+      - limit
+      - offset
+      - totalCount
+    properties:
+      limit:
+        type: number
+        format: int64
+      offset:
+        type: number
+        format: int64
+      totalCount:
+        type: number
+        format: int64

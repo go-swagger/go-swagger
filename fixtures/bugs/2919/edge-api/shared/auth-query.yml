@@ -1,0 +1,25 @@
+---
+definitions:
+  authQueryList:
+    type: array
+    items:
+      $ref: '#/definitions/authQueryDetail'
+  authQueryDetail:
+    type: object
+    required:
+      - provider
+    properties:
+      typeId:
+        type: string
+      provider:
+        $ref: 'current-identity-mfa.yml#/definitions/mfaProviders'
+      httpMethod:
+        type: string
+      httpUrl:
+        type: string
+      minLength:
+        type: integer
+      maxLength:
+        type: integer
+      format:
+        $ref: 'current-identity-mfa.yml#/definitions/mfaFormats'

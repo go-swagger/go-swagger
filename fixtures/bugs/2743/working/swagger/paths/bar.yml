@@ -1,0 +1,8 @@
+get:
+  responses:
+    200:
+      description: OK
+      schema:
+        type: array
+        items:
+          $ref: './swagger/user/index.yml#/User' ## this works

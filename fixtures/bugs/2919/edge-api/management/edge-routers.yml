@@ -1,0 +1,442 @@
+---
+
+paths:
+  edge-routers:
+    get:
+      summary: List edge routers
+      description: |
+        Retrieves a list of edge router resources; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: listEdgeRouters
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+        - $ref: '../shared/parameters.yml#/roleFilter'
+        - $ref: '../shared/parameters.yml#/roleSemantic'
+      responses:
+        '200':
+          $ref: '#/responses/listEdgeRouters'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Create an edge router
+      description: Create a edge router resource. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: createEdgeRouter
+      parameters:
+        - name: edgeRouter
+          in: body
+          required: true
+          description: A edge router to create
+          schema:
+            $ref: '#/definitions/edgeRouterCreate'
+      responses:
+        '201':
+          $ref: '../shared/standard-responses.yml#/responses/createResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  edge-routers-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves a single edge router
+      description: Retrieves a single edge router by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: detailEdgeRouter
+      responses:
+        '200':
+          $ref: '#/responses/detailEdgeRouter'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    put:
+      summary: Update all fields on an edge router
+      description: Update all fields on an edge router by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: updateEdgeRouter
+      parameters:
+        - name: edgeRouter
+          in: body
+          required: true
+          description: An edge router update object
+          schema:
+            $ref: '#/definitions/edgeRouterUpdate'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/updateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    patch:
+      summary: Update the supplied fields on an edge router
+      description: Update the supplied fields on an edge router. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: patchEdgeRouter
+      parameters:
+        - name: edgeRouter
+          in: body
+          required: true
+          description: An edge router patch object
+          schema:
+            $ref: '#/definitions/edgeRouterPatch'
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/patchResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an edge router
+      description: Delete an edge router by id. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: deleteEdgeRouter
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '409':
+          $ref: '../shared/standard-responses.yml#/responses/cannotDeleteReferencedResourceResponse'
+  edge-routers-id-edge-router-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the edge router policies that affect an edge router
+      description: Retrieves a list of edge router policies that apply to the specified edge router.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: listEdgeRouterEdgeRouterPolicies
+      responses:
+        '200':
+          $ref: 'edge-router-policies.yml#/responses/listEdgeRouterPolicies'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  edge-routers-id-identities:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List associated identities
+      description: |
+        Retrieves a list of identities that may access services via the given edge router. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: listEdgeRouterIdentities
+      responses:
+        '200':
+          $ref: 'identities.yml#/responses/listIdentities'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  edge-routers-id-service-edge-router-policies:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List the service policies that affect an edge router
+      description: Retrieves a list of service policies policies that apply to the specified edge router.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: listEdgeRouterServiceEdgeRouterPolicies
+      responses:
+        '200':
+          $ref: 'service-policies.yml#/responses/listServicePolicies'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  edge-routers-id-services:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: List associated services
+      description: |
+        Retrieves a list of services that may be accessed via the given edge router. Supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: listEdgeRouterServices
+      responses:
+        '200':
+          $ref: '../shared/services.yml#/responses/listServices'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  edge-routers-id-re-enroll:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    post:
+      summary: Re-enroll an edge router
+      description: |
+        Removes current certificate based authentication mechanisms and reverts the edge router into a state where enrollment must be performed.
+        The router retains all other properties and associations. If the router is currently connected, it will be disconnected and any
+        attemps to reconnect will fail until the enrollment process is completed with the newly generated JWT.
+
+        If the edge router has an existing outstanding enrollment JWT it will be replaced. The previous JWT will no longer be usable to
+        complete the enrollment process.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Edge Router
+      operationId: reEnrollEdgeRouter
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/emptyResponse'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  listEdgeRouters:
+    description: A list of edge routers
+    schema:
+      $ref: '#/definitions/listEdgeRoutersEnvelope'
+  detailEdgeRouter:
+    description: A singular edge router resource
+    schema:
+      $ref: '#/definitions/detailedEdgeRouterEnvelope'
+
+definitions:
+  listEdgeRoutersEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/edgeRouterList'
+  detailedEdgeRouterEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/edgeRouterDetail'
+  edgeRouterCreate:
+    description: An edge router create object
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      isTunnelerEnabled:
+        type: boolean
+      cost:
+        type: integer
+        x-nullable: true
+        minimum: 0
+        maximum: 65535
+      noTraversal:
+        type: boolean
+        x-nullable: true
+      disabled:
+        type: boolean
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+
+  edgeRouterUpdate:
+    description: An edge router update object
+    type: object
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      isTunnelerEnabled:
+        type: boolean
+      cost:
+        type: integer
+        x-nullable: true
+        minimum: 0
+        maximum: 65535
+      noTraversal:
+        type: boolean
+        x-nullable: true
+      disabled:
+        type: boolean
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+
+  edgeRouterPatch:
+    description: An edge router patch object
+    type: object
+    properties:
+      name:
+        type: string
+        x-nullable: true
+      isTunnelerEnabled:
+        type: boolean
+      cost:
+        type: integer
+        x-nullable: true
+        minimum: 0
+        maximum: 65535
+      noTraversal:
+        type: boolean
+        x-nullable: true
+      disabled:
+        type: boolean
+        x-nullable: true
+      roleAttributes:
+        $ref: '../shared/base-entity.yml#/definitions/attributes'
+      tags:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+      appData:
+        $ref: '../shared/base-entity.yml#/definitions/tags'
+  edgeRouterList:
+    description: A list of edge router resources
+    type: array
+    items:
+      $ref: '#/definitions/edgeRouterDetail'
+  edgeRouterDetail:
+    description: A detail edge router resource
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - $ref: '../shared/edge-routers.yml#/definitions/commonEdgeRouterProperties'
+      - type: object
+        required:
+          - isVerified
+          - roleAttributes
+          - os
+          - version
+          - arch
+          - buildDate
+          - revision
+          - isTunnelerEnabled
+        properties:
+          isVerified:
+            type: boolean
+          enrollmentToken:
+            type: string
+            x-nullable: true
+          enrollmentJwt:
+            type: string
+            x-nullable: true
+          enrollmentCreatedAt:
+            type: string
+            format: date-time
+            x-nullable: true
+          enrollmentExpiresAt:
+            type: string
+            format: date-time
+            x-nullable: true
+          roleAttributes:
+            $ref: '../shared/base-entity.yml#/definitions/attributes'
+          fingerprint:
+            type: string
+          certPem:
+            type: string
+            x-nullable: true
+            x-omitempty: false
+          unverifiedFingerprint:
+            type: string
+            x-nullable: true
+            x-omitempty: false
+          unverifiedCertPem:
+            type: string
+            x-nullable: true
+            x-omitempty: false
+          versionInfo:
+            $ref: '../shared/version.yml#/definitions/versionInfo'
+          isTunnelerEnabled:
+            type: boolean
+    example:
+      id: b0766b8d-bd1a-4d28-8415-639b29d3c83d
+      createdAt: '2020-03-16T17:13:31.5807454Z'
+      updatedAt: '2020-03-16T17:13:31.5807454Z'
+      _links:
+        edge-router-policies:
+          href: "./edge-routers/b0766b8d-bd1a-4d28-8415-639b29d3c83d/edge-routers"
+        self:
+          href: "./edge-routers/b0766b8d-bd1a-4d28-8415-639b29d3c83d"
+      tags: { }
+      name: TestRouter-e33c837f-3222-4b40-bcd6-b3458fd5156e
+      fingerprint:
+      roleAttributes:
+        - eastCoast
+        - sales
+        - test
+      isVerified: false
+      isOnline: false
+      isTunnelerEnabled: false
+      cost: 0
+      noTraversal: false
+      enrollmentToken: 30a1f0ea-d39b-4aae-b852-304cf1c30d1f
+      enrollmentJwt: 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbSI6ImVyb3R0IiwiZXhwIjoxNTg0Mzc5MTExLCJpc3MiOiJodHRwczovL
+      2xvY2FsaG9zdDoxMjgwIiwianRpIjoiMzBhMWYwZWEtZDM5Yi00YWFlLWI4NTItMzA0Y2YxYzMwZDFmIiwic3ViIjoiYjA3NjZiOGQtYmQxYS00ZDI
+      4LTg0MTUtNjM5YjI5ZDNjODNkIn0.UsyQhCPORQ5tQnYWY7S88LNvV9iFS5Hy-P4aJaClZzEICobKgnQoyQblJcdMvk3cGKwyFqAnQtt0tDZkb8tHz
+      Vqyv6bilHcAFuMRrdwXRqdXquabSN5geu2qBUnyzL7Mf2X85if8sbMida6snB4oLZsVRF3CRn4ODBJdeiVJ_Z4rgD-zW2IwtXPApT7ALyiiw2cN4EH
+      8pqQ7tpZKqztE0PGEbBQFPGKUFnm7oXyvSUo17EsFJUv5gUlBzfKKGolh5io4ptp22HZrqsqSnqDSOnYEZHonr5Yljuwiktrlh-JKiK6GGns5OAJMP
+      dO9lgM4yHSpF2ILbqhWMV93Y3zMOg'
+      enrollmentCreatedAt: '2020-03-16T17:13:31.5777637Z'
+      enrollmentExpiresAt: '2020-03-16T17:18:31.5777637Z'
+      hostname: ''
+      supportedProtocols: { }
+  routerEntityRef:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/entityRef'
+      - type: object
+        required:
+          - isOnline
+        properties:
+          isOnline:
+            type: boolean

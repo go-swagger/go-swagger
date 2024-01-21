@@ -1,0 +1,169 @@
+---
+paths:
+  current-api-session-certificates:
+    get:
+      summary: List the ephemeral certificates available for the current API Session
+      description: Retrieves a list of certificate resources for the current API session; supports filtering, sorting, and pagination
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      operationId: listCurrentApiSessionCertificates
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listCurrentApiSessionCertificates'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+    post:
+      summary: Creates an ephemeral certificate for the current API Session
+      description: Creates an ephemeral certificate for the current API Session. This endpoint
+        expects a PEM encoded CSRs to be provided for fulfillment as a property of a JSON payload.
+        It is up to the client to manage the private key backing the CSR request.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      operationId: createCurrentApiSessionCertificate
+      parameters:
+        - name: sessionCertificate
+          in: body
+          required: true
+          description: The payload describing the CSR used to create a session certificate
+          schema:
+            $ref: '#/definitions/currentApiSessionCertificateCreate'
+      responses:
+        '201':
+          $ref: '#/responses/createCurrentApiSessionCertificateResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+  current-api-session-certificates-id:
+    parameters:
+      - $ref: '../shared/parameters.yml#/id'
+    get:
+      summary: Retrieves an ephemeral certificate
+      description: Retrieves a single ephemeral certificate by id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      operationId: detailCurrentApiSessionCertificate
+      responses:
+        '200':
+          $ref: '#/responses/detailCurrentApiSessionCertificate'
+        '404':
+          $ref: '../shared/standard-responses.yml#/responses/notFoundResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+    delete:
+      summary: Delete an ephemeral certificate
+      description: |
+        Delete an ephemeral certificateby id
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current API Session
+      operationId: deleteCurrentApiSessionCertificate
+      responses:
+        '200':
+          $ref: '../shared/standard-responses.yml#/responses/deleteResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+
+responses:
+  listCurrentApiSessionCertificates:
+    description: A list of the current API Session's certificate
+    schema:
+      $ref: '#/definitions/listCurrentAPISessionCertificatesEnvelope'
+  createCurrentApiSessionCertificateResponse:
+    description: A response of a create API Session certificate
+    schema:
+      $ref: '#/definitions/createCurrentApiSessionCertificateEnvelope'
+  detailCurrentApiSessionCertificate:
+    description: A response containing a single API Session certificate
+    schema:
+      $ref: '#/definitions/detailCurrentApiSessionCertificateEnvelope'
+
+definitions:
+  listCurrentAPISessionCertificatesEnvelope:
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/currentApiSessionCertificateList'
+  createCurrentApiSessionCertificateEnvelope:
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/currentApiSessionCertificateCreateResponse'
+  detailCurrentApiSessionCertificateEnvelope:
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/currentApiSessionCertificateDetail'
+  currentApiSessionCertificateList:
+    type: array
+    items:
+      $ref: '#/definitions/currentApiSessionCertificateDetail'
+  currentApiSessionCertificateDetail:
+    type: object
+    allOf:
+      - $ref: '../shared/base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - subject
+          - fingerprint
+          - validFrom
+          - validTo
+          - certificate
+        properties:
+          subject:
+            type: string
+          fingerprint:
+            type: string
+          validFrom:
+            type: string
+            format: date-time
+          validTo:
+            type: string
+            format: date-time
+          certificate:
+            type: string
+  currentApiSessionCertificateCreate:
+    type: object
+    required:
+      - csr
+    properties:
+      csr:
+        type: string
+  currentApiSessionCertificateCreateResponse:
+    allOf:
+      - $ref: '../shared/standard-responses.yml#/definitions/createLocation'
+      - type: object
+        required:
+          - certificate
+        properties:
+          certificate:
+            type: string
+          cas:
+            type: string

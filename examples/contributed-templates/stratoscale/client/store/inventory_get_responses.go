@@ -6,6 +6,7 @@ package store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -28,7 +29,7 @@ func (o *InventoryGetReader) ReadResponse(response runtime.ClientResponse, consu
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /store/inventory] InventoryGet", response, response.Code())
 	}
 }
 
@@ -77,11 +78,13 @@ func (o *InventoryGetOK) Code() int {
 }
 
 func (o *InventoryGetOK) Error() string {
-	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK %s", 200, payload)
 }
 
 func (o *InventoryGetOK) String() string {
-	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /store/inventory][%d] inventoryGetOK %s", 200, payload)
 }
 
 func (o *InventoryGetOK) GetPayload() map[string]int32 {

@@ -27,7 +27,6 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -286,6 +285,15 @@ func initModelFixtures() {
 
 	// map of nullable array
 	initFixture2494()
+
+	// additional cases for embedded struct
+	initFixture2604()
+
+	// ambiguous validations
+	initFixture2163()
+
+	// min / maxProperties, more cases
+	initFixture2587()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -317,17 +325,14 @@ func initTxxx() {
 
 func TestModelGenerateDefinition(t *testing.T) {
 	// exercise the top level model generation func
-	log.SetOutput(io.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
+
 	fixtureSpec := "../fixtures/bugs/1487/fixture-is-nullable.yaml"
-	assert := assert.New(t)
-	gendir, erd := os.MkdirTemp(".", "model-test")
+	gendir, err := os.MkdirTemp(".", "model-test")
+	require.NoError(t, err)
 	defer func() {
 		_ = os.RemoveAll(gendir)
 	}()
-	require.NoError(t, erd)
 
 	opts := &GenOpts{}
 	opts.IncludeValidator = true
@@ -336,43 +341,65 @@ func TestModelGenerateDefinition(t *testing.T) {
 	opts.Spec = fixtureSpec
 	opts.ModelPackage = "models"
 	opts.Target = gendir
-	if err := opts.EnsureDefaults(); err != nil {
-		panic(err)
-	}
-	// sets gen options (e.g. flatten vs expand) - flatten is the default setting
+	require.NoError(t, opts.EnsureDefaults())
+
+	// sets gen options (e.g. flatten vs expand) - minimal flatten is the default setting
 	opts.FlattenOpts.Minimal = false
 
-	err := GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+	t.Run("should generate definitions", func(t *testing.T) {
+		require.NoErrorf(t,
+			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
+			"expected GenerateDefinition() to run without error",
+		)
 
-	err = GenerateDefinition(nil, opts)
-	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+		require.NoErrorf(t,
+			GenerateDefinition(nil, opts),
+			"expected GenerateDefinition() to run without error",
+		)
+	})
 
-	opts.TemplateDir = gendir
-	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-	assert.NoErrorf(err, "Expected GenerateDefinition() to run without error")
+	t.Run("should generate definitions with templates dir", func(t *testing.T) {
+		opts.TemplateDir = gendir
+		require.NoErrorf(t,
+			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
+			"expected GenerateDefinition() to run without error",
+		)
+	})
 
-	err = GenerateDefinition([]string{"thingWithNullableDates"}, nil)
-	assert.Errorf(err, "Expected GenerateDefinition() return an error when no option is passed")
+	t.Run("should NOT generate definition when options is nil", func(t *testing.T) {
+		require.Errorf(t,
+			GenerateDefinition([]string{"thingWithNullableDates"}, nil),
+			"expected GenerateDefinition() return an error when no option is passed",
+		)
+	})
 
-	opts.TemplateDir = "templates"
-	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-	assert.Errorf(err, "Expected GenerateDefinition() to croak about protected templates")
+	t.Run("should NOT generate definition when overwriting protected templates", func(t *testing.T) {
+		opts.TemplateDir = "templates"
+		require.Errorf(t,
+			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
+			"expected GenerateDefinition() to croak about protected templates",
+		)
+	})
 
-	opts.TemplateDir = ""
-	err = GenerateDefinition([]string{"myAbsentDefinition"}, opts)
-	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the model is not in spec")
+	t.Run("should NOT generate definition when not in spec", func(t *testing.T) {
+		opts.TemplateDir = ""
+		require.Errorf(t,
+			GenerateDefinition([]string{"myAbsentDefinition"}, opts),
+			"expected GenerateDefinition() to return an error when the model is not in spec",
+		)
+	})
 
-	opts.Spec = "pathToNowhere"
-	err = GenerateDefinition([]string{"thingWithNullableDates"}, opts)
-	assert.Errorf(err, "Expected GenerateDefinition() to return an error when the spec is not reachable")
+	t.Run("should NOT generate definition when the spec is available", func(t *testing.T) {
+		opts.Spec = "pathToNowhere"
+		require.Errorf(t,
+			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
+			"expected GenerateDefinition() to return an error when the spec is not reachable",
+		)
+	})
 }
 
 func TestMoreModelValidations(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
+	defer discardOutput()()
 
 	initModelFixtures()
 
@@ -387,7 +414,6 @@ func TestMoreModelValidations(t *testing.T) {
 
 		t.Run(runTitle, func(t *testing.T) {
 			t.Parallel()
-			log.SetOutput(io.Discard)
 
 			for _, fixtureRun := range fixture.Runs {
 				opts := fixtureRun.FixtureOpts

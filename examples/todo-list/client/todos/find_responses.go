@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -86,11 +87,13 @@ func (o *FindOK) Code() int {
 }
 
 func (o *FindOK) Error() string {
-	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findOK %s", 200, payload)
 }
 
 func (o *FindOK) String() string {
-	return fmt.Sprintf("[GET /][%d] findOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findOK %s", 200, payload)
 }
 
 func (o *FindOK) GetPayload() []*models.Item {
@@ -156,11 +159,13 @@ func (o *FindDefault) Code() int {
 }
 
 func (o *FindDefault) Error() string {
-	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] find default %s", o._statusCode, payload)
 }
 
 func (o *FindDefault) String() string {
-	return fmt.Sprintf("[GET /][%d] find default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] find default %s", o._statusCode, payload)
 }
 
 func (o *FindDefault) GetPayload() *models.Error {

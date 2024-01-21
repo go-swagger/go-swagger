@@ -1,6 +1,3 @@
-//go:build go1.18
-// +build go1.18
-
 package codescan
 
 import (
@@ -11,9 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	go118ClassificationCtx *scanCtx
-)
+var go118ClassificationCtx *scanCtx
 
 func loadGo118ClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
 	if go118ClassificationCtx != nil {

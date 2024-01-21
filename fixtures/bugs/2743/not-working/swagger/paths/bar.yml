@@ -1,0 +1,8 @@
+get:
+  responses:
+    200:
+      description: OK
+      schema:
+        type: array
+        items:
+          $ref: '../user/index.yml#/User' ## this doesn't work

@@ -18,7 +18,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -149,7 +151,6 @@ type operationGenerator struct {
 
 // Generate a single operation
 func (o *operationGenerator) Generate() error {
-
 	defaultImports := o.GenOpts.defaultImports()
 
 	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
@@ -245,11 +246,23 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		"header":   make(map[string]string, len(params)),
 		"body":     make(map[string]string, len(params)),
 	}
+	debugLog("paramMappings: map=%v", params)
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
 	seenIds := make(map[string]interface{}, len(params))
 	for id, p := range params {
+		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
+		// guard against possible validation failures and/or skipped issues
+		if _, found := idMapping[p.In]; !found {
+			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In)
+			continue
+		}
+		if p.Name == "" {
+			log.Printf(`warning: unnamed parameter (%+v). Skipped`, p)
+			continue
+		}
+
 		if val, ok := seenIds[p.Name]; ok {
 			previous := val.(struct{ id, in string })
 			idMapping[p.In][p.Name] = swag.ToGoName(id)
@@ -325,7 +338,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
-
 		if err != nil {
 			return GenOperation{}, err
 		}
@@ -417,10 +429,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	originalExtraSchemes := getExtraSchemes(operation.Extensions)
 
 	produces := producesOrDefault(operation.Produces, swsp.Produces, b.DefaultProduces)
-	sort.Strings(produces)
-
 	consumes := producesOrDefault(operation.Consumes, swsp.Consumes, b.DefaultConsumes)
-	sort.Strings(consumes)
 
 	var successResponse *GenResponse
 	for _, resp := range successResponses {
@@ -718,7 +727,12 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 				b.Method, b.Path, param.Name, goName)
 		}
 	} else if len(idMapping) > 0 {
-		id = idMapping[param.In][param.Name]
+		id, ok = idMapping[param.In][param.Name]
+		if !ok {
+			// skipped parameter
+			return GenParameter{}, fmt.Errorf(`%s %s, %q has an invalid parameter definition`,
+				b.Method, b.Path, param.Name)
+		}
 	}
 
 	res := GenParameter{
@@ -737,6 +751,16 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 		Location:         param.In,
 		AllowEmptyValue:  (param.In == "query" || param.In == "formData") && param.AllowEmptyValue,
 		Extensions:       param.Extensions,
+	}
+
+	if goCustomTag, ok := param.Extensions["x-go-custom-tag"]; ok {
+		customTag, ok := goCustomTag.(string)
+		if !ok {
+			return GenParameter{}, fmt.Errorf(`%s %s, parameter %q: "x-go-custom-tag" field must be a string, not a %T`,
+				b.Method, b.Path, param.Name, goCustomTag)
+		}
+
+		res.CustomTag = customTag
 	}
 
 	if param.In == "body" {
@@ -964,7 +988,6 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 		p.HasModelBodyMap = hasModelBodyMap
 		p.HasSimpleBodyMap = hasSimpleBodyMap
 	}
-
 }
 
 // makeSecuritySchemes produces a sorted list of security schemes for this operation
@@ -1226,10 +1249,18 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 		// conflict with "operations" package is handled separately
 		tag = renameOperationPackage(intersected, tag)
 	}
+
+	if matches := versionedPkgRex.FindStringSubmatch(tag); len(matches) > 2 {
+		// rename packages like "v1", "v2" ... as they hold a special meaning for go
+		tag = "version" + matches[2]
+	}
+
 	b.APIPackage = b.GenOpts.LanguageOpts.ManglePackageName(tag, b.APIPackage) // actual package name
 	b.APIPackageAlias = deconflictTag(intersected, b.APIPackage)               // deconflicted import alias
 	return tag, intersected, len(filter) == 0 || len(filter) > 0 && len(intersected) > 0
 }
+
+var versionedPkgRex = regexp.MustCompile(`(?i)(v)([0-9]+)`)
 
 func maxInt(a, b int) int {
 	if a > b {
@@ -1268,6 +1299,7 @@ func deconflictPkg(pkg string, renamer func(string) string) string {
 	case "tls", "http", "fmt", "strings", "log", "flags", "pflag", "json", "time":
 		return renamer(pkg)
 	}
+
 	return pkg
 }
 

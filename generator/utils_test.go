@@ -1,15 +1,20 @@
 package generator
 
 import (
-	"io"
-	"log"
 	"os"
-	"os/exec"
 	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
+)
+
+var (
+	discardOutput = gentest.DiscardOutput
+	captureOutput = gentest.CaptureOutput
+	goExecInDir   = gentest.GoExecInDir
 )
 
 // testing utilities for codegen assertions
@@ -32,6 +37,10 @@ func assertRegexpInCode(t testing.TB, expr, code string) bool {
 
 func assertNotInCode(t testing.TB, expr, code string) bool {
 	return assert.NotRegexp(t, reqm(expr), code)
+}
+
+func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
+	return assert.NotRegexp(t, reqOri(expr), code)
 }
 
 // Unused
@@ -72,24 +81,8 @@ func funcBody(code string, signature string) string {
 
 // testing utilities for codegen build
 
-func goExecInDir(t testing.TB, target string, args ...string) {
-	cmd := exec.Command("go", args...)
-	cmd.Dir = target
-	p, err := cmd.CombinedOutput()
-	require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
-}
-
 func testCwd(t testing.TB) string {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	return cwd
-}
-
-func discardOutput() func() {
-	// discards log output then sends a function to set it back to stdout
-	log.SetOutput(io.Discard)
-
-	return func() {
-		log.SetOutput(os.Stdout)
-	}
 }

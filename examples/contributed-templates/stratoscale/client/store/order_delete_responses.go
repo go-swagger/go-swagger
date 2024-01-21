@@ -39,7 +39,7 @@ func (o *OrderDeleteReader) ReadResponse(response runtime.ClientResponse, consum
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[DELETE /store/order/{orderId}] OrderDelete", response, response.Code())
 	}
 }
 
@@ -87,11 +87,11 @@ func (o *OrderDeleteNoContent) Code() int {
 }
 
 func (o *OrderDeleteNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent ", 204)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent", 204)
 }
 
 func (o *OrderDeleteNoContent) String() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent ", 204)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNoContent", 204)
 }
 
 func (o *OrderDeleteNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -143,11 +143,11 @@ func (o *OrderDeleteBadRequest) Code() int {
 }
 
 func (o *OrderDeleteBadRequest) Error() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest ", 400)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest", 400)
 }
 
 func (o *OrderDeleteBadRequest) String() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest ", 400)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteBadRequest", 400)
 }
 
 func (o *OrderDeleteBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -199,11 +199,11 @@ func (o *OrderDeleteNotFound) Code() int {
 }
 
 func (o *OrderDeleteNotFound) Error() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound ", 404)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound", 404)
 }
 
 func (o *OrderDeleteNotFound) String() string {
-	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound ", 404)
+	return fmt.Sprintf("[DELETE /store/order/{orderId}][%d] orderDeleteNotFound", 404)
 }
 
 func (o *OrderDeleteNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

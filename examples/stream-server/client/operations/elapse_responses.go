@@ -35,7 +35,7 @@ func (o *ElapseReader) ReadResponse(response runtime.ClientResponse, consumer ru
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /elapse/{length}] elapse", response, response.Code())
 	}
 }
 
@@ -87,11 +87,11 @@ func (o *ElapseOK) Code() int {
 }
 
 func (o *ElapseOK) Error() string {
-	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK", 200)
 }
 
 func (o *ElapseOK) String() string {
-	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseOK", 200)
 }
 
 func (o *ElapseOK) GetPayload() io.Writer {
@@ -152,11 +152,11 @@ func (o *ElapseForbidden) Code() int {
 }
 
 func (o *ElapseForbidden) Error() string {
-	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden ", 403)
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden", 403)
 }
 
 func (o *ElapseForbidden) String() string {
-	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden ", 403)
+	return fmt.Sprintf("[GET /elapse/{length}][%d] elapseForbidden", 403)
 }
 
 func (o *ElapseForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

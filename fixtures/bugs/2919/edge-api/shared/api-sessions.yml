@@ -1,0 +1,70 @@
+---
+
+definitions:
+  listAPISessionsEnvelope:
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/apiSessionList'
+  detailApiSessionEnvelope:
+    required:
+      - meta
+      - data
+    type: object
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/apiSessionDetail'
+  apiSessionList:
+    type: array
+    items:
+      $ref: '#/definitions/apiSessionDetail'
+  apiSessionDetail:
+    description: An API Session object
+    type: object
+    allOf:
+      - $ref: 'base-entity.yml#/definitions/baseEntity'
+      - type: object
+        required:
+          - token
+          - identity
+          - identityId
+          - configTypes
+          - ipAddress
+          - authQueries
+          - cachedUpdatedAt
+          - isMfaRequired
+          - isMfaComplete
+          - authenticatorId
+        properties:
+          token:
+            type: string
+          identity:
+            $ref: 'base-entity.yml#/definitions/entityRef'
+          identityId:
+            type: string
+          ipAddress:
+            type: string
+          configTypes:
+            type: array
+            items:
+              type: string
+          authQueries:
+            $ref: 'auth-query.yml#/definitions/authQueryList'
+          isMfaRequired:
+            type: boolean
+          isMfaComplete:
+            type: boolean
+          lastActivityAt:
+            type: string
+            format: date-time
+          cachedLastActivityAt:
+            type: string
+            format: date-time
+          authenticatorId:
+            type: string

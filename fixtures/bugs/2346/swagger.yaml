@@ -1,0 +1,24 @@
+swagger: "2.0"
+info:
+  description: "ms api"
+  version: "1.0.0"
+  title: "ms api"
+
+host: "127.0.0.1:8613"
+basePath: "/rest/ms"
+
+tags:
+  - name: "business"
+    description: "business info"
+    externalDocs:
+      description: "Find out more"
+      url: "http://swagger.io"
+schemes:
+  - "http"
+
+security:
+  - api_key: []
+
+paths:
+  /business:
+    $ref: "business.yaml#/paths/~1business"

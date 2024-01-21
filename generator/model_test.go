@@ -85,7 +85,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 	var gmp GenSchema
 	gmp.Title = "The title of the property"
 	gmp.Description = "The description of the property"
-	var expected = `The title of the property
+	expected := `The title of the property
 //
 // The description of the property`
 	tt.assertRender(gmp, expected)
@@ -146,7 +146,6 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true`)
-
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
@@ -261,6 +260,7 @@ func TestGenSchemaType(t *testing.T) {
 		tt.assertRender(v.Value, v.Expected)
 	}
 }
+
 func TestGenerateModel_Primitives(t *testing.T) {
 	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
 	for _, v := range schTypeGenDataSimple {
@@ -344,6 +344,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 		}
 	}
 }
+
 func TestGenerateModel_Nota(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -2403,7 +2404,6 @@ func TestGenModel_Issue1623(t *testing.T) {
 	assertInCode(t, "RefNoOmitEmpty Bar `json:\"refNoOmitEmpty,omitempty\"`", res)
 	assertInCode(t, "IntHasJSONString int64 `json:\"intHasJsonString,omitempty,string\"`", res)
 	assertInCode(t, "BoolHasJSONString bool `json:\"boolHasJsonString,omitempty,string\"`", res)
-
 }
 
 func TestGenerateModel_Issue2457(t *testing.T) {
@@ -2642,7 +2642,7 @@ func TestGenerateModels(t *testing.T) {
 			"allDefinitions": {
 				spec:   "../fixtures/bugs/1042/fixture-1042.yaml",
 				target: "../fixtures/bugs/1042",
-				verify: func(t testing.TB, target string) {
+				verify: func(t *testing.T, target string) {
 					target = filepath.Join(target, defaultModelsTarget)
 					require.True(t, fileExists(target, ""))
 					assert.True(t, fileExists(target, "a.go"))
@@ -2652,16 +2652,27 @@ func TestGenerateModels(t *testing.T) {
 			"acceptDefinitions": {
 				spec:   "../fixtures/enhancements/2333/fixture-definitions.yaml",
 				target: "../fixtures/enhancements/2333",
-				prepare: func(_ testing.TB, opts *GenOpts) {
+				prepare: func(_ *testing.T, opts *GenOpts) {
 					opts.AcceptDefinitionsOnly = true
 				},
-				verify: func(t testing.TB, target string) {
+				verify: func(t *testing.T, target string) {
 					target = filepath.Join(target, defaultModelsTarget)
 					require.True(t, fileExists(target, ""))
 					assert.True(t, fileExists(target, "model_interface.go"))
 					assert.True(t, fileExists(target, "records_model.go"))
 					assert.True(t, fileExists(target, "records_model_with_max.go"))
 					assert.False(t, fileExists(target, "restapi"))
+				},
+			},
+			"mangleNames": {
+				spec:   "../fixtures/bugs/2821/ServiceManagementBody.json",
+				target: "../fixtures/bugs/2821",
+				verify: func(t *testing.T, target string) {
+					target = filepath.Join(target, defaultModelsTarget)
+					require.True(t, fileExists(target, "schema.go"))
+					content, err := os.ReadFile(filepath.Join(target, "schema.go"))
+					require.NoError(t, err)
+					assert.Contains(t, string(content), "getDollarRefField string")
 				},
 			},
 		}
@@ -2681,18 +2692,18 @@ func TestGenerateModels(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Logf("generating test models at: %s", opts.Target)
+				t.Run(fmt.Sprintf("generating test models from: %s", opts.Spec), func(t *testing.T) {
+					err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
+					if thisCas.wantError {
+						require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
+					} else {
+						require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
+					}
 
-				err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
-				if thisCas.wantError {
-					require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
-				} else {
-					require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
-				}
-
-				if thisCas.verify != nil {
-					thisCas.verify(t, opts.Target)
-				}
+					if thisCas.verify != nil {
+						thisCas.verify(t, opts.Target)
+					}
+				})
 			})
 		}
 	})
@@ -2733,4 +2744,103 @@ func Test_PointerConversions(t *testing.T) {
 		joined := strings.Join(f, "\n")
 		assert.Contains(t, res, joined)
 	}
+}
+
+func TestIssue2597(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/2597/2597.yaml")
+	require.NoError(t, err)
+
+	const antipattern = `(validate\.\w+\("",\s+"body",.+?\))|(errors\.\w+\("",\s+"body",.+?\))`
+	definitions := specDoc.Spec().Definitions
+
+	t.Run("with RootedErrorPath option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsRootedErrorPath = true
+
+		t.Run("should generate the extra path for arrays and maps", func(t *testing.T) {
+			for _, model := range []string{
+				"BlahArray",
+				"BlahComplexArray",
+				"BlahMap",
+				"BlahComplexMap",
+			} {
+				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				require.NoError(t, err)
+
+				buf := bytes.NewBuffer(nil)
+				require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+				ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+				require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+				res := string(ct)
+				assertRegexpInCode(t, pattern, res)
+				assertRegexpNotInCode(t, antipattern, res)
+			}
+		})
+
+		t.Run("should NOT generate the extra path for structs", func(t *testing.T) {
+			const model = "BlahStruct"
+			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+			require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+			res := string(ct)
+			assertRegexpNotInCode(t, pattern, res)
+			assertRegexpNotInCode(t, antipattern, res) // we have a path, that is the property name
+		})
+	})
+
+	t.Run("without RootedErrorPath option", func(t *testing.T) {
+		opts := opts()
+
+		t.Run("should NOT generate the extra path for arrays and maps", func(t *testing.T) {
+			for _, model := range []string{
+				"BlahArray",
+				"BlahComplexArray",
+				"BlahMap",
+				"BlahComplexMap",
+			} {
+				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				require.NoError(t, err)
+
+				buf := bytes.NewBuffer(nil)
+				require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+				ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+				require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+				res := string(ct)
+				assertRegexpNotInCode(t, pattern, res)
+				assertRegexpInCode(t, antipattern, res)
+			}
+		})
+
+		t.Run("should NOT generate the extra path for structs", func(t *testing.T) {
+			const model = "BlahStruct"
+			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
+
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+			require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+			res := string(ct)
+			assertRegexpNotInCode(t, pattern, res)
+			assertRegexpNotInCode(t, antipattern, res) // we have a path, that is the property name
+		})
+	})
 }

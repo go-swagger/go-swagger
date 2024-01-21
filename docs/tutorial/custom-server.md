@@ -144,6 +144,8 @@ Putting that all together, we have the following main function:
 
 ```go
 func main() {
+  var portFlag = flag.Int("port", 3000, "Port to run this service on")
+
 	// load embedded swagger file
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {

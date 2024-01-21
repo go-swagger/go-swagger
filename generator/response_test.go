@@ -505,6 +505,8 @@ func TestGenResponse_15362_WithExpand(t *testing.T) {
 func TestGenResponse_1572(t *testing.T) {
 	defer discardOutput()()
 
+	const genNullResponseDocComment = `/*
+GetNullRequestProcessed OK`
 	// testing fixture-1572.yaml with minimal flatten
 	// edge cases for operations schemas
 
@@ -519,7 +521,6 @@ func TestGenResponse_1572(t *testing.T) {
 	*/
 
 	fixtureConfig := map[string]map[string][]string{
-
 		// load expectations for responses in operation get_interface_responses.go
 		"getInterface": { // fixture index
 			"serverResponses": { // executed template

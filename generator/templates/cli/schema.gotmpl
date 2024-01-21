@@ -14,7 +14,7 @@
         {{- if .IsPrimitive }}
             {{ template "primitiveregistrator" . }}
         {{- else if .IsArray }}
-    // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet 
+    // warning: {{.Name}} {{ .GoType }} array type is not supported by go-swagger cli yet
         {{- else if .IsMap }}
     // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
         {{- else if .IsComplexObject }} {{/* struct case */}}
@@ -85,14 +85,14 @@ func registerModel{{pascalize .Name}}Flags(depth int, cmdPrefix string, cmd *cob
     // register anonymous fields for {{.Name}}
             {{ $anonName := .Name }}
             {{ range .Properties }}
-    if err := register{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize .Name }}(depth, cmdPrefix, cmd); err != nil{
+    if err := register{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}(depth, cmdPrefix, cmd); err != nil{
         return err
     }
             {{ end }}
         {{ end }}
     {{ end }}
     {{ range .Properties }}
-    if err := register{{ pascalize $modelName }}{{ pascalize .Name }}(depth, cmdPrefix, cmd); err != nil{
+    if err := register{{ pascalize $modelName }}Prop{{ pascalize .Name }}(depth, cmdPrefix, cmd); err != nil{
         return err
     }
     {{ end }}
@@ -104,7 +104,7 @@ func registerModel{{pascalize .Name}}Flags(depth int, cmdPrefix string, cmd *cob
 // inline definition name {{ .Name }}, type {{.GoType}}
         {{ $anonName := .Name }}
         {{ range .Properties }}
-func register{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize .Name }}(depth int, cmdPrefix string, cmd *cobra.Command) error {
+func register{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}(depth int, cmdPrefix string, cmd *cobra.Command) error {
     if depth > maxDepth {
         return nil
     }
@@ -117,7 +117,7 @@ func register{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize 
 
 {{/*register functions for each fields in this model */}}
 {{ range .Properties }}
-func register{{ pascalize $modelName }}{{ pascalize .Name }}(depth int, cmdPrefix string, cmd *cobra.Command) error{
+func register{{ pascalize $modelName }}Prop{{ pascalize .Name }}(depth int, cmdPrefix string, cmd *cobra.Command) error{
     if depth > maxDepth {
         return nil
     }
@@ -145,7 +145,7 @@ func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if containsPkgS
     // retrieve allOf {{.Name}} fields
             {{ $anonName := .Name }}
             {{ range .Properties }}
-    err, {{camelize .Name}}Added := retrieve{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
+    err, {{camelize .Name}}Added := retrieve{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
     if err != nil{
         return err, false
     }
@@ -154,7 +154,7 @@ func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if containsPkgS
         {{- end }}
     {{ end }}
     {{ range .Properties }}
-        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
+        err, {{ camelize .Name }}Added := retrieve{{pascalize $modelName }}Prop{{pascalize .Name }}Flags(depth, m, cmdPrefix, cmd)
         if err != nil{
             return err, false
         }
@@ -168,7 +168,7 @@ func retrieveModel{{pascalize $modelName }}Flags(depth int, m *{{if containsPkgS
 // define retrieve functions for fields for inline definition name {{ .Name }}
         {{ $anonName := .Name }}
         {{ range .Properties }} {{/*anonymous fields will be registered directly on parent model*/}}
-func retrieve{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth int, m *{{if containsPkgStr $modelType}}{{ $modelType }}{{else}}{{ $modelPkg }}.{{$modelType}}{{ end }},cmdPrefix string, cmd *cobra.Command) (error,bool) {
+func retrieve{{ pascalize $modelName }}PropAnon{{pascalize $anonName }}{{ pascalize .Name }}Flags(depth int, m *{{if containsPkgStr $modelType}}{{ $modelType }}{{else}}{{ $modelPkg }}.{{$modelType}}{{ end }},cmdPrefix string, cmd *cobra.Command) (error,bool) {
     if depth > maxDepth {
         return nil, false
     }
@@ -181,7 +181,7 @@ func retrieve{{ pascalize $modelName }}Anon{{pascalize $anonName }}{{ pascalize 
 {{ end }}
 
 {{ range .Properties }}
-func retrieve{{pascalize $modelName }}{{pascalize .Name }}Flags(depth int, m *{{if $modelPkg}}{{$modelPkg}}.{{ dropPackage $modelType }}{{else}}{{ $modelType }}{{end}}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieve{{pascalize $modelName }}Prop{{pascalize .Name }}Flags(depth int, m *{{if $modelPkg}}{{$modelPkg}}.{{ dropPackage $modelType }}{{else}}{{ $modelType }}{{end}}, cmdPrefix string, cmd *cobra.Command) (error, bool) {
     if depth > maxDepth {
         return nil, false
     }

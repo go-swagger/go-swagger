@@ -6,6 +6,7 @@ package store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -36,7 +37,7 @@ func (o *OrderCreateReader) ReadResponse(response runtime.ClientResponse, consum
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /store/order] OrderCreate", response, response.Code())
 	}
 }
 
@@ -85,11 +86,13 @@ func (o *OrderCreateOK) Code() int {
 }
 
 func (o *OrderCreateOK) Error() string {
-	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK %s", 200, payload)
 }
 
 func (o *OrderCreateOK) String() string {
-	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateOK %s", 200, payload)
 }
 
 func (o *OrderCreateOK) GetPayload() *models.Order {
@@ -152,11 +155,11 @@ func (o *OrderCreateBadRequest) Code() int {
 }
 
 func (o *OrderCreateBadRequest) Error() string {
-	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest ", 400)
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest", 400)
 }
 
 func (o *OrderCreateBadRequest) String() string {
-	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest ", 400)
+	return fmt.Sprintf("[POST /store/order][%d] orderCreateBadRequest", 400)
 }
 
 func (o *OrderCreateBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

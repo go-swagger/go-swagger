@@ -6,6 +6,7 @@ package store
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -42,7 +43,7 @@ func (o *OrderGetReader) ReadResponse(response runtime.ClientResponse, consumer 
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /store/order/{orderId}] OrderGet", response, response.Code())
 	}
 }
 
@@ -91,11 +92,13 @@ func (o *OrderGetOK) Code() int {
 }
 
 func (o *OrderGetOK) Error() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK %s", 200, payload)
 }
 
 func (o *OrderGetOK) String() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetOK %s", 200, payload)
 }
 
 func (o *OrderGetOK) GetPayload() *models.Order {
@@ -158,11 +161,11 @@ func (o *OrderGetBadRequest) Code() int {
 }
 
 func (o *OrderGetBadRequest) Error() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest ", 400)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest", 400)
 }
 
 func (o *OrderGetBadRequest) String() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest ", 400)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetBadRequest", 400)
 }
 
 func (o *OrderGetBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -214,11 +217,11 @@ func (o *OrderGetNotFound) Code() int {
 }
 
 func (o *OrderGetNotFound) Error() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound ", 404)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound", 404)
 }
 
 func (o *OrderGetNotFound) String() string {
-	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound ", 404)
+	return fmt.Sprintf("[GET /store/order/{orderId}][%d] orderGetNotFound", 404)
 }
 
 func (o *OrderGetNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

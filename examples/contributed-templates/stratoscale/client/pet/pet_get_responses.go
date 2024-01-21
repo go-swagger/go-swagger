@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -42,7 +43,7 @@ func (o *PetGetReader) ReadResponse(response runtime.ClientResponse, consumer ru
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /pet/{petId}] PetGet", response, response.Code())
 	}
 }
 
@@ -91,11 +92,13 @@ func (o *PetGetOK) Code() int {
 }
 
 func (o *PetGetOK) Error() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK %s", 200, payload)
 }
 
 func (o *PetGetOK) String() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetOK %s", 200, payload)
 }
 
 func (o *PetGetOK) GetPayload() *models.Pet {
@@ -158,11 +161,11 @@ func (o *PetGetBadRequest) Code() int {
 }
 
 func (o *PetGetBadRequest) Error() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest ", 400)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest", 400)
 }
 
 func (o *PetGetBadRequest) String() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest ", 400)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetBadRequest", 400)
 }
 
 func (o *PetGetBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -214,11 +217,11 @@ func (o *PetGetNotFound) Code() int {
 }
 
 func (o *PetGetNotFound) Error() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound ", 404)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound", 404)
 }
 
 func (o *PetGetNotFound) String() string {
-	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound ", 404)
+	return fmt.Sprintf("[GET /pet/{petId}][%d] petGetNotFound", 404)
 }
 
 func (o *PetGetNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {

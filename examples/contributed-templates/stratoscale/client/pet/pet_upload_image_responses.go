@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -30,7 +31,7 @@ func (o *PetUploadImageReader) ReadResponse(response runtime.ClientResponse, con
 		}
 		return result, nil
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[POST /pet/{petId}/image] PetUploadImage", response, response.Code())
 	}
 }
 
@@ -79,11 +80,13 @@ func (o *PetUploadImageOK) Code() int {
 }
 
 func (o *PetUploadImageOK) Error() string {
-	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK %s", 200, payload)
 }
 
 func (o *PetUploadImageOK) String() string {
-	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /pet/{petId}/image][%d] petUploadImageOK %s", 200, payload)
 }
 
 func (o *PetUploadImageOK) GetPayload() *models.APIResponse {

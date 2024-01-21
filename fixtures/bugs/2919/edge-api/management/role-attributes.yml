@@ -1,0 +1,90 @@
+---
+paths:
+  edge-router-role-attributes:
+    get:
+      summary: List role attributes in use by edge routers
+      description: |
+        Retrieves a list of role attributes in use by edge routers; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Role Attributes
+      operationId: listEdgeRouterRoleAttributes
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listRoleAttributes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+  identity-role-attributes:
+    get:
+      summary: List role attributes in use by identities
+      description: |
+        Retrieves a list of role attributes in use by identities; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Role Attributes
+      operationId: listIdentityRoleAttributes
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listRoleAttributes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+  service-role-attributes:
+    get:
+      summary: List role attributes in use by services
+      description: |
+        Retrieves a list of role attributes in use by services; supports filtering, sorting, and pagination. Requires admin access.
+      security:
+        - ztSession: [ ]
+      tags:
+        - Role Attributes
+      operationId: listServiceRoleAttributes
+      parameters:
+        - $ref: '../shared/parameters.yml#/limit'
+        - $ref: '../shared/parameters.yml#/offset'
+        - $ref: '../shared/parameters.yml#/filter'
+      responses:
+        '200':
+          $ref: '#/responses/listRoleAttributes'
+        '401':
+          $ref: '../shared/standard-responses.yml#/responses/unauthorizedResponse'
+        '400':
+          $ref: '../shared/standard-responses.yml#/responses/badRequestResponse'
+
+responses:
+  listRoleAttributes:
+    description: A list of role attributes
+    schema:
+      $ref: '#/definitions/listRoleAttributesEnvelope'
+
+definitions:
+  listRoleAttributesEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: '../shared/standard-responses.yml#/definitions/meta'
+      data:
+        $ref: '#/definitions/roleAttributesList'
+  roleAttributesList:
+    description: An array of role attributes
+    type: array
+    items:
+      type: string

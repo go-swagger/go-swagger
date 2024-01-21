@@ -1,0 +1,65 @@
+---
+swagger: "2.0"
+info:
+  description: 'repro issue #2587'
+  title: maxProperties
+  version: "0.0.0"
+schemes:
+  - http
+definitions:
+  SomeThing:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          type: object
+        maxProperties: 20
+        x-nullable: true
+  # x-nullable has no effect
+  NestedThing:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties: # <- is remapped as map[string]interface{}: ok
+          type: object
+        minProperties: 15
+        maxProperties: 20
+    minProperties: 5  # <- should apply validations here: ok now (implied)
+    maxProperties: 10
+
+  SomeTypedThing:
+    type: object
+    properties:
+      data:
+        type: object
+        additionalProperties:
+          type: string
+        maxProperties: 20
+  BasicThing: # <- ok
+    type: object
+    properties:
+      data: # <- interface{}: ok
+        type: object
+    additionalProperties: true
+    maxProperties: 20
+
+  #AliasedThing: # <- don't know how to get is aliased on map
+  #  type: object
+  #  additionalProperties:
+
+  #EmbeddedThing:
+  #  $ref: '#/definitions/SomeThing'
+  #EmbeddedMap:
+  #  $ref: '#/definitions/NestedThing'
+paths:
+paths:
+  /test:
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/SomeThing'
+

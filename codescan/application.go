@@ -281,7 +281,6 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 						}
 						return decl, true
 					}
-
 				}
 			}
 		}
@@ -399,7 +398,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 										}
 										for i, doc := range vs.Doc.List {
 											if doc.Text != "" {
-												var text = strings.TrimPrefix(doc.Text, "//")
+												text := strings.TrimPrefix(doc.Text, "//")
 												desc.WriteString(text)
 												if i < docListLen-1 {
 													desc.WriteString(" ")
@@ -419,10 +418,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 	return list, descList, true
 }
 
-func newTypeIndex(pkgs []*packages.Package,
-	excludeDeps bool, includeTags, excludeTags map[string]bool,
-	includePkgs, excludePkgs []string) (*typeIndex, error) {
-
+func newTypeIndex(pkgs []*packages.Package, excludeDeps bool, includeTags, excludeTags map[string]bool, includePkgs, excludePkgs []string) (*typeIndex, error) {
 	ac := &typeIndex{
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*entityDecl),

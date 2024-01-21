@@ -1,0 +1,63 @@
+---
+paths:
+  current-identity:
+    get:
+      summary: Return the current identity
+      description: Returns the identity associated with the API sessions used to issue the current request
+      security:
+        - ztSession: [ ]
+      tags:
+        - Current Identity
+      operationId: getCurrentIdentity
+      responses:
+        '200':
+          $ref: '#/responses/detailCurrentIdentity'
+        '401':
+          $ref: 'standard-responses.yml#/responses/unauthorizedResponse'
+responses:
+  detailCurrentIdentity:
+    description: The identity associated with the API Session used to issue the request
+    schema:
+      $ref: '#/definitions/currentIdentityDetailEnvelope'
+    examples:
+      default:
+        meta: { }
+        data:
+          id: 66352d7b-a6b2-4ce9-85bb-9f18e318704d
+          createdAt: '2020-01-13T16:38:13.6854788Z'
+          updatedAt: '2020-01-13T16:38:13.6854788Z'
+          _links:
+            edge-router-policies:
+              href: './identities/66352d7b-a6b2-4ce9-85bb-9f18e318704d/edge-routers'
+            self:
+              href: './identities/66352d7b-a6b2-4ce9-85bb-9f18e318704d'
+            service-policies:
+              href: './identities/66352d7b-a6b2-4ce9-85bb-9f18e318704d/identities'
+          tags: { }
+          name: Default Admin
+          type:
+            urlName: identity-types
+            id: User
+            name: User
+            _links:
+              self:
+                href: './identity-types/User'
+          isDefaultAdmin: true
+          isAdmin: true
+          authenticators:
+            updb:
+              username: admin
+          enrollment: { }
+          roleAttributes: []
+
+definitions:
+  currentIdentityDetailEnvelope:
+    type: object
+    required:
+      - meta
+      - data
+    properties:
+      meta:
+        $ref: 'standard-responses.yml#/definitions/meta'
+      data:
+        $ref: 'identities.yml#/definitions/identityDetail'

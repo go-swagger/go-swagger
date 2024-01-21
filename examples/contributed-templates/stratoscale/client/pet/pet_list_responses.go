@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -36,7 +37,7 @@ func (o *PetListReader) ReadResponse(response runtime.ClientResponse, consumer r
 		}
 		return nil, result
 	default:
-		return nil, runtime.NewAPIError("response status code does not match any response statuses defined for this endpoint in the swagger spec", response, response.Code())
+		return nil, runtime.NewAPIError("[GET /pet] PetList", response, response.Code())
 	}
 }
 
@@ -85,11 +86,13 @@ func (o *PetListOK) Code() int {
 }
 
 func (o *PetListOK) Error() string {
-	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /pet][%d] petListOK %s", 200, payload)
 }
 
 func (o *PetListOK) String() string {
-	return fmt.Sprintf("[GET /pet][%d] petListOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /pet][%d] petListOK %s", 200, payload)
 }
 
 func (o *PetListOK) GetPayload() []*models.Pet {
@@ -150,11 +153,11 @@ func (o *PetListBadRequest) Code() int {
 }
 
 func (o *PetListBadRequest) Error() string {
-	return fmt.Sprintf("[GET /pet][%d] petListBadRequest ", 400)
+	return fmt.Sprintf("[GET /pet][%d] petListBadRequest", 400)
 }
 
 func (o *PetListBadRequest) String() string {
-	return fmt.Sprintf("[GET /pet][%d] petListBadRequest ", 400)
+	return fmt.Sprintf("[GET /pet][%d] petListBadRequest", 400)
 }
 
 func (o *PetListBadRequest) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
