@@ -10,11 +10,11 @@ require (
 	github.com/go-openapi/errors v0.21.0
 	github.com/go-openapi/inflect v0.19.0
 	github.com/go-openapi/loads v0.21.5
-	github.com/go-openapi/runtime v0.26.2
+	github.com/go-openapi/runtime v0.27.1
 	github.com/go-openapi/spec v0.20.14
 	github.com/go-openapi/strfmt v0.22.0
-	github.com/go-openapi/swag v0.22.8
-	github.com/go-openapi/validate v0.22.6
+	github.com/go-openapi/swag v0.22.9
+	github.com/go-openapi/validate v0.23.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/gorilla/handlers v1.5.1
@@ -79,6 +79,7 @@ require (
 	golang.org/x/crypto v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
 	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
