@@ -1,4 +1,0 @@
-fail_on_violations: true
-
-go:
-  enabled: true
