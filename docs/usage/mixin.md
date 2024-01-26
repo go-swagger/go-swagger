@@ -1,3 +1,9 @@
+---
+title: swagger mixin
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 50
+---
 # Mixin several swagger specs
 
 The toolkit has a command to mixin swagger specification.

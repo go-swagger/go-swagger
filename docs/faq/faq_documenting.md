@@ -1,3 +1,8 @@
+---
+title: About documentating your API
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about the serve UI use-case -->
 ### Serving swagger-ui with the API Server
 Update: You can visit $API_BASE/docs and it should show the UI, as mentioned in [#comment](https://github.com/go-swagger/go-swagger/issues/2401#issuecomment-688962519) 
@@ -63,7 +68,7 @@ Originally from issues [#1029](https://github.com/go-swagger/go-swagger/issues/1
 
 Like: https://github.com/rs/cors
 
-[Documentation on how to customize middleware](use/middleware.md)
+[Documentation on how to customize middleware](reference/middleware.md)
 
 Working example (in `configure_name.go`):
 
@@ -116,6 +121,3 @@ Besides, every swagger generated server comes with the redoc UI baked in at `/{b
 
 Originally from issue [#1375](https://github.com/go-swagger/go-swagger/issues/1375).
 
--------------------
-
-Back to [all contributions](README.md#all-contributed-questions)

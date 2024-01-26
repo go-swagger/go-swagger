@@ -1,3 +1,9 @@
+---
+title: swagger serve
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 60
+---
 # Serve a documentation site
 
 The toolkit has a command to serve a swaggr specificaion as a JSON document and optionally a UI to render this spec.

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<!-- saved from url=(0041)http://c43129cc.ngrok.io/golangsf.slide#1 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Swagger</title>
+    <meta charset="utf-8">
+    <script src="./swagger-golangsf_files/slides.js"></script>
+    <script>
+
+      if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+        var _gaq = _gaq || [];
+        _gaq.push(["_setAccount", "UA-11222381-6"]);
+        _gaq.push(["b._setAccount", "UA-49880327-6"]);
+        window.trackPageview = function() {
+          _gaq.push(["_trackPageview", location.pathname+location.hash]);
+          _gaq.push(["b._trackPageview", location.pathname+location.hash]);
+        };
+        window.trackPageview();
+        window.trackEvent = function(category, action, opt_label, opt_value, opt_noninteraction) {
+          _gaq.push(["_trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+          _gaq.push(["b._trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+        };
+      }
+    </script>
+  <meta name="viewport" content="width=1100,height=750"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="chromesniffer" id="chromesniffer_meta" content="{&quot;jQuery&quot;:&quot;1.8.2&quot;,&quot;jQuery UI&quot;:&quot;1.10.2&quot;}"><script type="text/javascript" src="chrome-extension://homgcnaoacgigpkkljjjekpignblkeae/detector.js"></script></head>
+
+  <body style="display: none" class="loaded" data-feedly-mini="yes">
+
+    <section class="slides layout-widescreen">
+
+      <article class="current">
+        <h1>Swagger</h1>
+        <h3>GolangSF, January 20, 2016</h3>
+
+
+          <div class="presenter">
+
+
+  <p>
+    Ivan Porto Carrero
+  </p>
+
+
+
+  <p>
+    VMware
+  </p>
+
+
+          </div>
+
+          <div class="presenter">
+
+
+  <p>
+
+  </p>
+
+
+          </div>
+
+      </article>
+
+
+
+      <article class="next">
+
+        <h3>About me</h3>
+
+
+  <p>
+    Did a bunch of work on/with swagger:
+  </p>
+
+
+  <ul>
+
+    <li>Wrote scalatra</li>
+
+    <li>Worked at Reverb</li>
+
+    <li>Contributed async scala client to codegen</li>
+
+    <li>Wrote go-swagger</li>
+
+  </ul>
+
+
+      </article>
+
+
+
+      <article class="far-next">
+
+        <h2>So you think you wanna microservice huh</h2>
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Read the source!</h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/no-docs.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Stale documentation</h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/stale-docs.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Lots of communication required</h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/comm-failure.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Bottlenecks</h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/staggered.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Customers don't want to write your SDK</h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/burden.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>All too often...</h3>
+
+  <ul>
+
+    <li>conflicts</li>
+
+    <li>blame game</li>
+
+    <li>Cover Your Ass</li>
+
+  </ul>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/conflict.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Some requirements</h3>
+
+
+  <p>
+    Humans want <i>up to date</i> documentation to read
+  </p>
+
+
+
+  <p>
+    Consumers need an exhaustive contract
+<br>
+
+    Different teams, different programming languages
+  </p>
+
+
+
+  <p>
+    Introspection would be a plus
+<br>
+
+    DRY at application level would be nice
+  </p>
+
+
+<div class="image">
+  <img src="./swagger-golangsf_files/contract.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>More sadness</h3>
+
+  <ul>
+
+    <li>many deploys, all the time</li>
+
+    <li>distributed system complexity</li>
+
+    <li>tooling relatively primitive</li>
+
+  </ul>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/stoneage.jpg" height="400">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Enter swagger</h3>
+
+
+  <p>
+    Open standard on Linux Foundation
+  </p>
+
+
+
+  <p>
+    An interface to your service, described in <b>JSON</b>
+  </p>
+
+
+
+  <p>
+    A language/platform/deployment agnostic <b>contract</b> to your service
+  </p>
+
+
+
+  <p>
+    Enables "bigotry-free" restful design with emphasis on Getting Things Done.
+  </p>
+
+
+
+  <p>
+    Machine readable exhaustive contract of server abilities
+  </p>
+
+
+
+  <p>
+    Server controlled documentation
+  </p>
+
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h2>You had me at tooling</h2>
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Orthogonal toolkit</h3>
+
+  <ul>
+
+    <li>spec validator with extra semantic validations</li>
+
+    <li>client generation</li>
+
+    <li>server generation</li>
+
+    <li>spec generation for <i>any</i> application</li>
+
+    <li>documentation lives with the code</li>
+
+    <li>go:generate integration</li>
+
+  </ul>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Client SDKs </h3>
+
+  <ul>
+
+    <li>statically typed </li>
+
+    <li>regenerated imported on contract change</li>
+
+    <li>frontend and mobile client teams </li>
+
+    <li>other service clients</li>
+
+    <li><b>30+</b> languages through swagger-codegen</li>
+
+  </ul>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Go Swagger server</h3>
+
+  <ul>
+
+    <li>Spec remains source of thruth</li>
+
+    <li>can be used as focal point of discussion/meetings</li>
+
+    <li>swagger meta data</li>
+
+    <li>routing</li>
+
+    <li>security</li>
+
+    <li>request validation</li>
+
+    <li>reuse <code>net/http</code> style middleware: `func(http.Handler) http.Handler`</li>
+
+  </ul>
+
+
+  <p>
+    <b>You</b> fill in the blanks, aka business logic.
+  </p>
+
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Spec generation </h3>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/annotation.png">
+</div>
+
+<div class="image">
+  <img src="./swagger-golangsf_files/param-annotation.png">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Interaction with a Swagger API</h3>
+        <p class="link"><a href="http://www.getpostman.com/" target="_blank">Postman</a></p><p class="link"><a href="https://www.soapui.org/" target="_blank">SoapUI</a></p><p class="link"><a href="https://github.com/tikalk/commandcar#invoking-apis-using-commandcar" target="_blank">commandcar for instant CLI access</a></p>
+<div class="image">
+  <img src="./swagger-golangsf_files/postman.jpg">
+</div>
+
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>Some resources</h3>
+        <p class="link"><a href="https://goswagger.io/" target="_blank">go-swagger documentation</a></p><p class="link"><a href="http://editor.swagger.io/" target="_blank">Swagger Editor</a></p><p class="link"><a href="http://petstore.swagger.io/" target="_blank">Swagger UI</a></p><p class="link"><a href="https://swaggerhub.com/" target="_blank">Swagger Hub (collaboration space)</a></p><p class="link"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md" target="_blank">Specification</a></p><p class="link"><a href="https://openapis.org/" target="_blank">Open API Initiative</a></p><p class="link"><a href="https://any-api.com/" target="_blank">Documentation and testconsoles for 175 APIs</a></p>
+
+      </article>
+
+
+
+      <article class="">
+
+        <h3>What's next?</h3>
+
+
+  <p>
+    go-swagger going forward:
+  </p>
+
+
+  <ul>
+
+    <li>embrace http/2 entirely</li>
+
+    <li>integrate with swagger-codegen</li>
+
+    <li>stub generation</li>
+
+    <li>test generation</li>
+
+    <li>integration testing</li>
+
+    <li>httpie like CLI generation with optional syntax highlighting</li>
+
+    <li>more transports</li>
+
+    <li>scriptable handlers</li>
+
+    <li>more wireformats like protobuf, msgpack, ...</li>
+
+  </ul>
+
+
+      </article>
+
+
+
+      <article class="">
+        <h3>Thank you</h3>
+
+          <div class="presenter">
+
+
+  <p>
+    Ivan Porto Carrero
+  </p>
+
+
+
+  <p>
+    VMware
+  </p>
+
+<p class="link"><a href="https://github.com/casualjim" target="_blank">https://github.com/casualjim</a></p><p class="link"><a href="http://twitter.com/casualjim" target="_blank">@casualjim</a></p>
+          </div>
+
+          <div class="presenter">
+
+
+  <p>
+
+  </p>
+
+
+          </div>
+
+      </article>
+
+    <div class="slide-area" id="prev-slide-area"></div><div class="slide-area" id="next-slide-area"></div></section>
+
+    <div id="help" style="display: none;">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+    </div>
+
+
+    <script src="./swagger-golangsf_files/play.js"></script>
+
+
+    <script>
+      (function() {
+
+        if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+          var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+          ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+          var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+        }
+      })();
+    </script>
+
+
+<link rel="stylesheet" type="text/css" href="./swagger-golangsf_files/css"><link rel="stylesheet" type="text/css" href="./swagger-golangsf_files/styles.css"><div id="feedly-mini" title="feedly Mini tookit"></div></body></html>

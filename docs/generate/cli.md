@@ -1,3 +1,9 @@
+---
+title: Generate a CLI client
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 25
+---
 # Generate a CLI (command line tool) from swagger spec
 This toolkit can generate a CLI to interact with your server
 

@@ -1,3 +1,8 @@
+---
+title: About generating a server
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about server generation -->
 ## Server generation and customization
 
@@ -16,7 +21,7 @@ Basically, here are the required packages:
 And depending on your generation options, a command line flags handling package:
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
 - [`github.com/spf13/pflag`](https://www.github.com/spf13/pflag)
-- [`flag`](flag)
+- `flag`
 
 This dependency used to be necessary up to release 0.14:
 - [`github.com/tylerb/graceful`](https://www.github.com/tylerb/graceful)
@@ -305,97 +310,6 @@ _Use-Case_: oauth2 accessCode flow does not redirect to the authorization server
 
 Like in:
 ```yaml
----
-swagger: '2.0'
-info:
-  title: oauth2 debug
-  version: 0.3.0
-produces:
-- application/json
-schemes:
-  - http
-basePath: /api
-securityDefinitions:
-  OauthSecurity:
-    type: oauth2
-    flow: accessCode
-    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
-    tokenUrl: 'hhttps://www.googleapis.com/oauth2/v4/token'
-    scopes:
-      admin: Admin scope
-      user: User scope
-security:
-  - OauthSecurity:
-    - user
-paths:
-  /customers:
-  ....
 ```
 
-
-> The generated server does not redirect the browser to the google login page.
-
-**Answer**: Redirection flow is for UI. The spec has them so your UI can do the redirection.
-
-Swagger 2.0 only defines those properties as hints for a UI to work,
-this doesn't have to be server side. At the same time the redirection flow is not supported in an API
-but you can use an OAuth 2.0 middleware from any library to get you that functionality
-
-Originally from issue [#1217](https://github.com/go-swagger/go-swagger/issues/1217).
-
-### HTTPS TLS Cipher Suites not supported by AWS Elastic LoadBalancer
-
-_Use-case_: AWS Elastic LoadBalancer forwards https requests to instances, and their security policy is 'ELBSecurityPolicy-2016-08'.
-However, while running the server on https, the server keeps on logging
-
-`http: TLS handshake error from 192.168.X.X:XXXXX: tls: no cipher suite supported by both client and server.`
-
-If we remove the cipher suites on the generated code, it resolves the issue -
-
-```golang
-CipherSuites: []uint16{
-  tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-  tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-  tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-  tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-},
-```
-
-The ELB security policy 'ELBSecurityPolicy-2016-08' does include these cipher suites, however all requests sent by the ELB are rejected by the server.
-
-**Answer**: you can generate the server with a different compatibility mode for the older generation of ciphers
-
-```
-swagger generate server --compatibility-mode=intermediate
-```
-
-Originally from issue [#1383](https://github.com/go-swagger/go-swagger/issues/1383).
-
-### Which mime types are supported?
-
-_Use-Case_: I seem to be unable to find supported mime-types that the API's can consume and produce. Any references?
-
-**Answer**: see the current list of supported media MIMEs [here](https://github.com/go-swagger/go-swagger/blob/3099f611ada66d42974160ac4e0ec475d24b7041/generator/support.go#L279)
-You can add more through the consumer producer mechanism.
-
-Originally from issue [#1022](https://github.com/go-swagger/go-swagger/issues/1022).
-
-### Is it possible to return error to main function of server?
-
-_Use-Case_: Is it possible to return error to main function of server?
-
-> For example, my server saves some configs in file, and I want that if config file is missing,
-> then server must be stopped with some error code. It is possible to do it with panic(err),
-> but I think it is not good way. So can I return error main function of server ?
-
-**Answer**: you can make your own main function.
-
-There is an example here: https://github.com/go-openapi/kvstore/blob/master/cmd/kvstored/main.go
-
-There is a command line argument to avoid overwriting the main when generating: `--exclude-main`.
-
-Originally from issue [#1060](https://github.com/go-swagger/go-swagger/issues/1060).
-
--------------
-
-Back to [all contributions](README.md#all-contributed-questions)
+Back to [all contributions](/faq)
