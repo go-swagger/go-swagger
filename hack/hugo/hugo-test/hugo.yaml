@@ -1,0 +1,142 @@
+title: go-swagger
+theme: hugo-book
+
+module:
+  imports:
+    - path: "go-swagger-assets"
+    - path: "go-swagger-static"
+  mounts:
+    - source: layouts
+      target: layouts
+    - source: '../../../docs'
+      target: 'content'
+    - source: 'themes/go-swagger-assets'
+      target: 'assets'
+    - source: 'themes/go-swagger-static'
+      target: 'static'
+
+sitemap:
+  changeFreq: ""
+  filename: sitemap.xml
+  priority: -1
+
+enableRobotsTXT: true
+enableGitInfo: true
+
+menu:
+  before:
+    - name: "Find go-swagger on github"
+      url: "https://github.com/go-swagger/go-swagger"
+      weight: 1
+    - name: ""
+      pre: "<hr>"
+      weight: 10
+
+  after:
+    - name: ""
+      pre: "<hr>"
+      post: '<div style="color:aqua; font-weight:bold">The go-openapi toolkit</div>'
+      url: "https://github.com/go-openapi"
+      weight: 1
+    - name: "go-openapi/analysis"
+      url: "https://github.com/go-openapi/analysis"
+      weight: 10
+    - name: "go-openapi/errors"
+      url: "https://github.com/go-openapi/errors"
+      weight: 20
+    - name: "go-openapi/jsonpointer"
+      url: "https://github.com/go-openapi/jsonpointer"
+      weight: 30
+    - name: "go-openapi/jsonpointer"
+      url: "https://github.com/go-openapi/jsonreference"
+      weight: 40
+    - name: "go-openapi/loads"
+      url: "https://github.com/go-openapi/loads"
+      weight: 50
+    - name: "go-openapi/runtime"
+      url: "https://github.com/go-openapi/runtime"
+      weight: 60
+    - name: "go-openapi/spec"
+      url: "https://github.com/go-openapi/spec"
+      weight: 70
+    - name: "go-openapi/strfmt"
+      url: "https://github.com/go-openapi/strfmt"
+      weight: 80
+    - name: "go-openapi/swag"
+      url: "https://github.com/go-openapi/swag"
+      weight: 90
+    - name: "go-openapi/validate"
+      url: "https://github.com/go-openapi/validate"
+      weight: 100
+
+params:
+  # (Optional, default light) Sets color theme: light, dark or auto.
+  # Theme 'auto' switches between dark and light modes based on browser/os preferences
+  BookTheme: "dark"
+
+  # (Optional, default true) Controls table of contents visibility on right side of pages.
+  # Start and end levels can be controlled with markup.tableOfContents setting.
+  # You can also specify this parameter per page in front matter.
+  BookToC: true
+
+  # (Optional, default favicon.png) Set the path to a favicon file.
+  # If the favicon is /static/favicon.png then the path would be favicon.png
+  BookFavicon: "favicon.png"
+  # If the logo is /static/logo.png then the path would be logo.png
+  BookLogo: "logo.png"
+
+  # (Optional, default none) Set leaf bundle to render as side menu
+  # When not specified file structure and weights will be used
+  #BookMenuBundle: /menu
+
+  # (Optional, default docs) Specify root page to render child pages as menu.
+  # Page is resolved by .GetPage function: https://gohugo.io/functions/getpage/
+  # For backward compatibility you can set '*' to render all sections to menu. Acts same as '/'
+  BookSection: '*'
+
+  # Set source repository location.
+  # Used for 'Last Modified' and 'Edit this page' links.
+  BookRepo: 'https://github.com/fredbi/go-swagger'
+
+  # (Optional, default 'commit') Specifies commit portion of the link to the page's last modified
+  # commit hash for 'doc' page type.
+  # Requires 'BookRepo' param.
+  # Value used to construct a URL consisting of BookRepo/BookCommitPath/<commit-hash>
+  # Github uses 'commit', Bitbucket uses 'commits'
+  BookCommitPath: commit
+
+  # Enable "Edit this page" links for 'doc' page type.
+  # Disabled by default. Uncomment to enable. Requires 'BookRepo' param.
+  # Edit path must point to root directory of repo.
+  BookEditPath: edit/master
+  contentDir: docs
+
+  # Configure the date format used on the pages
+  # - In git information
+  # - In blog posts
+  BookDateFormat: "January 2, 2006"
+
+  # (Optional, default true) Enables search function with flexsearch,
+  # Index is built on fly, therefore it might slowdown your website.
+  # Configuration for indexing can be adjusted in i18n folder per language.
+  BookSearch: true
+
+  # (Optional, default true) Enables comments template on pages
+  # By default partals/docs/comments.html includes Disqus template
+  # See https://gohugo.io/content-management/comments/#configure-disqus
+  # Can be overwritten by same param in page frontmatter
+  BookComments: true
+
+  # /!\ This is an experimental feature, might be removed or changed at any time
+  # (Optional, experimental, default false) Enables portable links and link checks in markdown pages.
+  # Portable links meant to work with text editors and let you write markdown without {{< relref >}} shortcode
+  # Theme will print warning if page referenced in markdown does not exists.
+  BookPortableLinks: true
+
+  # /!\ This is an experimental feature, might be removed or changed at any time
+  # (Optional, experimental, default false) Enables service worker that caches visited pages and resources for offline use.
+  #BookServiceWorker: true
+
+  # /!\ This is an experimental feature, might be removed or changed at any time
+  # (Optional, experimental, default false) Enables a drop-down menu for translations only if a translation is present.
+  BookTranslatedOnly: false

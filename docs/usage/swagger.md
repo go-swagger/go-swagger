@@ -1,3 +1,9 @@
+---
+title: All swagger CLI commands
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 10
+---
 ```
 Usage:
   swagger [OPTIONS] <command>

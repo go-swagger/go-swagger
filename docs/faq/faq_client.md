@@ -1,3 +1,9 @@
+---
+title: About generating a client
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 20
+---
 <!-- Questions about client generation -->
 ## Client generation
 
@@ -62,6 +68,3 @@ See also issue [#935](https://github.com/go-swagger/go-swagger/issues/935).
 
 Originally from issue [#911](https://github.com/go-swagger/go-swagger/issues/911).
 
--------------
-
-Back to [all contributions](README.md#all-contributed-questions)

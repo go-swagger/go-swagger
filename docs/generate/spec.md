@@ -1,3 +1,9 @@
+---
+title: Generating a spec from source
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 50
+---
 # Generate a spec from source code
 
 ```
@@ -27,4 +33,4 @@ Help Options:
           --exclude-deps       exclude all dependencies of project
 ```
 
-See code annotation rules [here](../use/spec.md)
+See code annotation rules [here](../generate-spec/_index.md)

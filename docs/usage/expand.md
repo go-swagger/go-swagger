@@ -1,3 +1,8 @@
+---
+title: swagger expand
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 # Expand a swagger spec
 
 The toolkit has a command to expand a swagger specification.

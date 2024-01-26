@@ -1,0 +1,91 @@
+name: "Update documentation"
+
+on:
+  push:
+    tags:
+      - v*
+    branches: [ "master" ]
+    paths:
+    - docs/*
+    - hack/hugo/*
+    - .github/workflows/update-doc.yaml
+
+  pull_request_target:
+    paths:
+    - docs/*
+    - hack/hugo/*
+    - .github/workflows/update-doc.yaml
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-doc:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          sparse-checkout: |
+            hack/
+            docs/
+
+      -
+        name: Build site with Hugo
+        uses: crazy-max/ghaction-hugo@v3
+        with:
+          version: latest
+          extended: true
+          args: >
+            --config hugo.yaml
+            --buildDrafts
+            --cleanDestinationDir
+            --minify
+            --printPathWarnings
+            --ignoreCache
+            --cleanDestinationDir
+            --noBuildLock
+            --verbose
+            --source ${{ github.workspace }}/hack/hugo/hugo-test"
+      -
+        name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+        #if: github.event_name != 'pull_request' # <- TODO
+        #uses: crazy-max/ghaction-github-pages@v4
+        #with:
+        #  target_branch: gh-pages
+        #  build_dir: ${{ github.workspace }}/hack/hugo/hugo-test/public # <- TODO
+        #  absolute_build_dir: true
+        #  repo: fredbi/go-swagger.github.io  # <- TODO
+        # allow_empty_commit: false
+        #  jekyll: false
+        #  verbose: false
+        #  # commit_message: # <- TODO
+        #  # committer # <- TODO
+        #  # author: # <- TODO
+        #env:
+        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy-doc:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

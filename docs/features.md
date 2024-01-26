@@ -1,17 +1,27 @@
+---
+menu:
+  - main
+title: Features
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 30
+---
 ## Full features list
 
-- [x] An object model that serializes to swagger yaml or json (see: [spec package](https://github.com/go-openapi/spec))
+- [x] An object model that serializes to swagger yaml or json (see the [spec package](https://github.com/go-openapi/spec))
+
 - [x] A tool to work with swagger
   - [x] Serve swagger UI for any swagger spec file
-  - [x] Flexible code generation, with customizable templates (package generator)
-  - [x] Generate API based on swagger spec
-  - [x] Generate go client from a swagger spec
-  - [x] Generate CLI (command line tool) client from a swagger spec
-  - [x] Support swagger polymorphism (discriminator with allOf composition)
   - [x] Validate a swagger spec document, with extra rules outlined [here](usage/validate.md)
-  - [x] Validate JSON data against jsonschema (Draft 4), with full $ref support (see: [validate package](https://github.com/go-openapi/validate))
-    - passes current json schema test suite
-  - [x] Generate spec document based on annotated code (package scan)
+
+  - [x] Generate API components based on swagger spec
+    - [x] Flexible code generation, with customizable templates (package generator)
+    - [x] Generate go client from a swagger spec
+    - [x] Generate CLI (command line tool) client from a swagger spec
+    - [x] Support swagger polymorphism (discriminator with allOf composition)
+
+
+  - [x] Generate spec document based on annotated code (package `scanner`)
     - generate meta data (top level swagger properties) from package docs
     - generate definition entries for models
     - support composed structs out of several embeds
@@ -21,6 +31,7 @@
     - support composed structs out of several embeds
     - generate parameters from structs
     - support composed structs out of several embeds
+
 - [x] Middlewares (see: [runtime package](https://github.com/go-openapi/runtime))
   - [x] serve spec
   - [x] routing
@@ -31,10 +42,14 @@
     - api key auth
     - oauth2 bearer auth
   - [x] swagger docs UI (docUI and redoc flavors)
+
 - [x] Typed JSON Schema implementation
   - [x] JSON Pointer that knows about structs
   - [x] JSON Reference that knows about structs
   - [x] Supports most JSON schema features<sup>[1](#footnote1)</sup>
+  - [x] Validate JSON data against jsonschema (Draft 4), with full $ref support (see the [validate package](https://github.com/go-openapi/validate))
+    - passes current json schema test suite
+
 - [x] extended string and numeric formats (see: [strfmt package](https://github.com/go-openapi/strfmt))
   - [x] JSON-schema draft 4 formats
     - date-time
@@ -58,6 +73,7 @@
     - rgbcolor (e.g. "rgb(100,100,100)")
     - ssn
     - uuid, uuid3, uuid4, uuid5
+
 - [x] Plays nice with golint, go vet etc.
 
 <a name="footnote1">1</a>: currently adds extra support for `additionalItems`(not part of swagger), but not `anyOf`, `oneOf` and `not`.

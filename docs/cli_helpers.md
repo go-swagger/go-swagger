@@ -1,3 +1,9 @@
+---
+title: Shell completion
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 40
+---
 ## CLI helpers
 
 #### Bash Completion

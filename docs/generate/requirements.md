@@ -1,3 +1,9 @@
+---
+title: Build requirements
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 10
+---
 # Requirements to build generated code
 
 ### First time with golang?

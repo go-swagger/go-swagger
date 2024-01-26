@@ -1,4 +1,9 @@
-# Generate markdown
+---
+title: swagger generate markdown
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
+# Generate markdown documentation
 
 This is a command to generate a markdown document from a swagger spec.
 

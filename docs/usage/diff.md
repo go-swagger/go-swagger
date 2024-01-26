@@ -1,3 +1,8 @@
+---
+title: swagger diff
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 # Inspecting differences between swagger specs
 
 The toolkit has a command to display differences between two swagger specifications.

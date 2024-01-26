@@ -1,3 +1,8 @@
+---
+title: About go-swagger setup
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about install, setup and dependencies -->
 
 ## Installation and environment
@@ -20,6 +25,3 @@ Originally from issue [#554](https://github.com/go-swagger/go-swagger/issues/554
 Originally from issue [#730](https://github.com/go-swagger/go-swagger/issues/730).
 -->
 
--------------
-
-Back to [all contributions](README.md#all-contributed-questions)
