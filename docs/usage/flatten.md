@@ -1,3 +1,9 @@
+---
+title: swagger flatten
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 30
+---
 # Flatten a swagger spec
 
 The toolkit has a command to flatten a swagger specification.

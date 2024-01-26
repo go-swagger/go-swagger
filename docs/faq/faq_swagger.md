@@ -1,3 +1,8 @@
+---
+title: About using swagger as your API contract
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about swagger specs -->
 ## Swagger specification
 
@@ -223,6 +228,3 @@ https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operati
 
 Originally from issue [#1143](https://github.com/go-swagger/go-swagger/issues/1143).
 
--------------------
-
-Back to [all contributions](README.md#all-contributed-questions)

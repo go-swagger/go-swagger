@@ -1,0 +1,13 @@
+{
+  "flowchart": {
+     "useMaxWidth":true
+  },
+  "theme": "base",
+  "themeVariables": {
+     "fontSize": "32px"
+    ,"primaryColor": "#FCF5E5"
+    ,"primaryBorderColor": "#89CFF0"
+    ,"primaryTextColor": "#28282B"
+    ,"lineColor": "#F3E5AB"
+  }
+}

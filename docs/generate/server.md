@@ -1,3 +1,9 @@
+---
+title: Generating a server
+date: 2023-01-01T01:01:01-08:00
+draft: true
+weight: 30
+---
 # Generate a server from a swagger spec
 
 The toolkit has a command that will let you generate a docker friendly server with support for TLS.

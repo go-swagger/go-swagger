@@ -1,3 +1,8 @@
+---
+title: About generating a spec document
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about spec generation -->
 ## Spec generation from source
 
@@ -511,6 +516,3 @@ I uninstalled go-swagger from brew, installed it from source and it worked. So s
 Originally from issue [#400](https://github.com/go-swagger/go-swagger/issues/400).
 -->
 
--------------------
-
-Back to [all contributions](README.md#all-contributed-questions)

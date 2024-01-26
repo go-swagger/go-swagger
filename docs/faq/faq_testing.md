@@ -1,3 +1,8 @@
+---
+title: About testing
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 <!-- Questions about testing -->
 ## API testing
 
@@ -107,6 +112,3 @@ To test this second function we don't need to use the httptest package, you can 
 
 Originally from issue [#719](https://github.com/go-swagger/go-swagger/issues/719).
 
--------------------
-
-Back to [all contributions](README.md#all-contributed-questions)
