@@ -11,13 +11,38 @@ basePath: /path
 produces:
 - application/json
 
+parameters:
+ myschema:
+   name: myschema
+   in: body
+   schema:
+     $ref: './defs.yml#/definitions/MyError'
+
+responses:
+  invalid:
+    description: invalid
+    schema:
+      $ref: './defs.yml#/definitions/MyError'
+      # TODO: headers
+
 paths:
   /obj:
     get:
       summary: Get an object
       operationId: getObject
+      parameters:
+        - name: mybody
+          in: body
+          schema:
+            $ref: './defs.yml#/definitions/MyObject'
+      # TODO: remote params
       responses:
         200:
           description: The object
           schema:
             $ref: './defs.yml#/definitions/MyObject'
+      # TODO: remote responses
+
+definitions:
+  alias:
+    $ref: './defs.yml#/definitions/MyObject'

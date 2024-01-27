@@ -109,27 +109,29 @@ func TestShared_Issue1614(t *testing.T) {
 }
 
 func Test_AnalyzeSpec_Issue2216(t *testing.T) {
-	defer discardOutput()()
+	// defer discardOutput()()
 
-	t.Run("single-swagger-file", func(t *testing.T) {
-		specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger-single.yml")
+	t.Run("should run with keep-spec-order", func(t *testing.T) {
+		t.Run("single-swagger-file", func(t *testing.T) {
+			specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger-single.yml")
 
-		opts := testGenOpts()
-		opts.Spec = specPath
-		opts.ValidateSpec = true
-		opts.PropertiesSpecOrder = true
-		_, _, err := opts.analyzeSpec()
-		assert.NoError(t, err)
-	})
+			opts := testGenOpts()
+			opts.Spec = specPath
+			opts.ValidateSpec = true
+			opts.PropertiesSpecOrder = true
+			_, _, err := opts.analyzeSpec()
+			assert.NoError(t, err)
+		})
 
-	t.Run("splitted-swagger-file", func(t *testing.T) {
-		specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger.yml")
+		t.Run("splitted-swagger-file", func(t *testing.T) {
+			specPath := filepath.Join("..", "fixtures", "bugs", "2216", "swagger.yml")
 
-		opts := testGenOpts()
-		opts.Spec = specPath
-		opts.ValidateSpec = true
-		opts.PropertiesSpecOrder = true
-		_, _, err := opts.analyzeSpec()
-		assert.NoError(t, err)
+			opts := testGenOpts()
+			opts.Spec = specPath
+			opts.ValidateSpec = true
+			opts.PropertiesSpecOrder = true
+			_, _, err := opts.analyzeSpec()
+			assert.NoError(t, err)
+		})
 	})
 }

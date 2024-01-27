@@ -12,3 +12,6 @@ definitions:
     default:
       string1: "first"
       bool1:   false
+
+  MyError:
+    type: string
