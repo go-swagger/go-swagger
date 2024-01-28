@@ -89,41 +89,41 @@ func TestShared_CheckOpts(t *testing.T) {
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = filepath.Join(cwd, "a", "b", "c")
 	err := opts.CheckOpts()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join(cwd, "nowhere", "swagger.yaml")
 	err = opts.CheckOpts()
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = "https://ab/c"
 	err = opts.CheckOpts()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = "http://ab/c"
 	err = opts.CheckOpts()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join(cwd, "..", "fixtures", "codegen", "swagger-codegen-tests.json")
 	err = opts.CheckOpts()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join("..", "fixtures", "codegen", "swagger-codegen-tests.json")
 	err = opts.CheckOpts()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	opts = nil
 	err = opts.CheckOpts()
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestShared_EnsureDefaults(t *testing.T) {
@@ -335,8 +335,8 @@ func TestShared_ExecTemplate(t *testing.T) {
 	}
 
 	buf1, err := opts.render(&tplOpts, nil)
-	assert.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
-	assert.Equal(t, string(buf1), "func x <no value>")
+	require.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
+	assert.Equal(t, "func x <no value>", string(buf1))
 
 	execfailure2 := "func {{ .MyFaultyMethod }}"
 
@@ -353,7 +353,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 	data := new(myTemplateData)
 	buf2, err := opts.render(&tplOpts2, data)
-	assert.Error(t, err, "Error should be handled here: missing func in template yields an error")
+	require.Error(t, err, "Error should be handled here: missing func in template yields an error")
 	assert.Contains(t, err.Error(), "template execution failed")
 	assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
 }
@@ -399,7 +399,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(tplOpts.FileName)
-	assert.True(t, !os.IsNotExist(exists), "The template file has not been generated as expected")
+	assert.False(t, os.IsNotExist(exists), "The template file has not been generated as expected")
 
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "source formatting on generated source")
@@ -420,10 +420,10 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 
 	// The unformatted file has been dumped without format checks
 	_, exists2 := os.Stat(tplOpts2.FileName)
-	assert.True(t, !os.IsNotExist(exists2), "The template file has not been generated as expected")
+	assert.False(t, os.IsNotExist(exists2), "The template file has not been generated as expected")
 	_ = os.Remove(tplOpts2.FileName)
 
-	assert.Nil(t, err2)
+	require.NoError(t, err2)
 
 	// os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
 }
@@ -462,10 +462,10 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(filepath.Join(tplOpts.Target, tplOpts.FileName))
-	assert.True(t, !os.IsNotExist(exists), "The template file has not been generated as expected")
+	assert.False(t, os.IsNotExist(exists), "The template file has not been generated as expected")
 	_ = os.RemoveAll(tplOpts.Target)
 
-	assert.Nil(t, err)
+	require.NoError(t, err)
 }
 
 // Test templates which are not assets (open in file)
@@ -484,14 +484,14 @@ func TestShared_LoadTemplate(t *testing.T) {
 	}
 
 	buf, err := opts.render(&tplOpts, nil)
-	assert.Error(t, err, "Error should be handled here")
+	require.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open File")
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
 	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
 	buf, err = opts.render(&tplOpts, nil)
-	assert.Error(t, err, "Error should be handled here")
+	require.Error(t, err, "Error should be handled here")
 	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
 	assert.Contains(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
@@ -523,13 +523,13 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
 	opts.FlattenOpts.Minimal = true
 	err = analysis.Flatten(*opts.FlattenOpts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	specDoc, _ = loads.Spec(specPath) // needs reload
 	opts.FlattenOpts.Spec = analysis.New(specDoc.Spec())
 	opts.FlattenOpts.Minimal = false
 	err = analysis.Flatten(*opts.FlattenOpts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestShared_GatherModel(t *testing.T) {
@@ -539,7 +539,7 @@ func TestShared_GatherModel(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = gatherModels(specDoc, []string{"unknown"})
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	res, err := gatherModels(specDoc, []string{"Image", "Application"})
 	require.NoError(t, err)
@@ -787,7 +787,7 @@ func TestShared_Issue2113(t *testing.T) {
 	opts.Spec = specPath
 	opts.ValidateSpec = true
 	_, err = opts.validateAndFlattenSpec()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestShared_Issue2743(t *testing.T) {
@@ -803,7 +803,7 @@ func TestShared_Issue2743(t *testing.T) {
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		_, err = opts.validateAndFlattenSpec()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("should flatten valid spec that used NOT to work", func(t *testing.T) {
@@ -815,6 +815,6 @@ func TestShared_Issue2743(t *testing.T) {
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		_, err = opts.validateAndFlattenSpec()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }

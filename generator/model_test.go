@@ -2367,11 +2367,11 @@ func TestGenerateModel_Xorder(t *testing.T) {
 	foundAaa := strings.Index(res, "Aaa")
 	foundBbb := strings.Index(res, "Bbb")
 	foundZzz := strings.Index(res, "Zzz")
-	assert.True(t, foundSessionID < foundDeviceID)
-	assert.True(t, foundSessionID < foundUMain)
-	assert.True(t, foundUMain < foundAaa)
-	assert.True(t, foundAaa < foundBbb)
-	assert.True(t, foundBbb < foundZzz)
+	assert.Less(t, foundSessionID, foundDeviceID)
+	assert.Less(t, foundSessionID, foundUMain)
+	assert.Less(t, foundUMain, foundAaa)
+	assert.Less(t, foundAaa, foundBbb)
+	assert.Less(t, foundBbb, foundZzz)
 }
 
 func TestGenModel_Issue1623(t *testing.T) {
@@ -2490,7 +2490,7 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	orderedDefinitions := orderedSpecDoc.Spec().Definitions
 
 	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts)
 	require.NoError(t, err)
 
@@ -2513,28 +2513,28 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	foundA := strings.Index(modelCode, "Aaa")
 	foundB := strings.Index(modelCode, "Bbb")
 	foundC := strings.Index(modelCode, "Ccc")
-	assert.True(t, foundA < foundB)
-	assert.True(t, foundB < foundC)
+	assert.Less(t, foundA, foundB)
+	assert.Less(t, foundB, foundC)
 
 	foundOrderA := strings.Index(orderModelCode, "Aaa")
 	foundOrderB := strings.Index(orderModelCode, "Bbb")
 	foundOrderC := strings.Index(orderModelCode, "Ccc")
 
-	assert.True(t, foundOrderC < foundOrderB)
-	assert.True(t, foundOrderB < foundOrderA)
+	assert.Less(t, foundOrderC, foundOrderB)
+	assert.Less(t, foundOrderB, foundOrderA)
 
 	foundInnerA := strings.Index(modelCode, "InnerAaa")
 	foundInnerB := strings.Index(modelCode, "InnerBbb")
 	foundInnerC := strings.Index(modelCode, "InnerCcc")
-	assert.True(t, foundInnerA < foundInnerB)
-	assert.True(t, foundInnerB < foundInnerC)
+	assert.Less(t, foundInnerA, foundInnerB)
+	assert.Less(t, foundInnerB, foundInnerC)
 
 	foundOrderInnerA := strings.Index(orderModelCode, "InnerAaa")
 	foundOrderInnerB := strings.Index(orderModelCode, "InnerBbb")
 	foundOrderInnerC := strings.Index(orderModelCode, "InnerCcc")
 
-	assert.True(t, foundOrderInnerC < foundOrderInnerB)
-	assert.True(t, foundOrderInnerB < foundOrderInnerA)
+	assert.Less(t, foundOrderInnerC, foundOrderInnerB)
+	assert.Less(t, foundOrderInnerB, foundOrderInnerA)
 }
 
 func TestGenModel_StrictAdditionalProperties(t *testing.T) {

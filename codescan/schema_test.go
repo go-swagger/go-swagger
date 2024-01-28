@@ -880,7 +880,7 @@ func TestStructDiscriminators(t *testing.T) {
 	schema := models["animal"]
 
 	assert.Equal(t, "BaseStruct", schema.Extensions["x-go-name"])
-	assert.Equal(t, schema.Discriminator, "jsonClass")
+	assert.Equal(t, "jsonClass", schema.Discriminator)
 
 	sch := models["gazelle"]
 	assert.Len(t, sch.AllOf, 2)

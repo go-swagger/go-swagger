@@ -21,15 +21,11 @@ const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
 
 func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error) {
 	specDoc, err := loads.Spec(specPath)
-	if !assert.NoError(t, err) {
-		return nil, err
-	}
+	require.NoError(t, err)
 	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, nil)
-	if !assert.NoError(t, err) {
-		return nil, err
-	}
+	require.NoError(t, err)
 
 	operations := gatherOperations(analyzed, nil)
 	if len(operations) == 0 {
@@ -122,7 +118,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 	opts.Spec = invalidSpecExample
 	opts.ValidateSpec = true
 
-	assert.Error(t, GenerateServer("foo", nil, nil, opts))
+	require.Error(t, GenerateServer("foo", nil, nil, opts))
 }
 
 func TestServer_TrailingSlash(t *testing.T) {

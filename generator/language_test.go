@@ -56,17 +56,17 @@ func TestGolang_SliceInitializer(t *testing.T) {
 
 	a0 := []interface{}{"a", "b"}
 	res, err := goSliceInitializer(a0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, `{"a","b",}`, res)
 
 	a1 := []interface{}{[]interface{}{"a", "b"}, []interface{}{"c", "d"}}
 	res, err = goSliceInitializer(a1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, `{{"a","b",},{"c","d",},}`, res)
 
 	a2 := map[string]interface{}{"a": "y", "b": "z"}
 	res, err = goSliceInitializer(a2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, `{"a":"y","b":"z",}`, res)
 
 	_, err = goSliceInitializer(struct {
@@ -77,7 +77,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 
 	a3 := []interface{}{}
 	res, err = goSliceInitializer(a3)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, `{}`, res)
 }
 

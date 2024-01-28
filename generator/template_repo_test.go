@@ -62,7 +62,7 @@ Dict={{ template "dictTemplate" dict "Animal" "Pony" "Shape" "round" "Furniture"
 func TestTemplates_CustomTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	headerTempl, err := templates.Get("bindprimitiveparam")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
@@ -71,14 +71,14 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 
 	buf.Reset()
 	err = templates.AddFile("bindprimitiveparam", customHeader)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	headerTempl, err = templates.Get("bindprimitiveparam")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, headerTempl)
 
 	err = headerTempl.Execute(&buf, nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "custom header", buf.String())
 }
 
@@ -86,10 +86,10 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("differentFileName", customMultiple)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	headerTempl, err := templates.Get("bindprimitiveparam")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
@@ -101,13 +101,13 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 
 	err := templates.AddFile("newtemplate", customNewTemplate)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = templates.AddFile("existingUsesNew", customExistingUsesNew)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	headerTempl, err := templates.Get("bindprimitiveparam")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
@@ -119,7 +119,7 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("simple", singleTemplate)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("simple")
 	require.NoError(t, err)
@@ -136,10 +136,10 @@ func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("multiple", multipleDefinitions)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("multiple")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
@@ -167,10 +167,10 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("multiple", multipleDefinitions)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = repo.AddFile("dependant", dependantTemplate)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("dependant")
 	require.NoError(t, err)
@@ -187,10 +187,10 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("c1", cirularDeps1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = repo.AddFile("c2", cirularDeps2)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("c1")
 	require.NoError(t, err)
@@ -252,7 +252,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("copyright", copyright)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("copyright")
 	require.NoError(t, err)
@@ -269,7 +269,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, expected, rendered.String())
 
 	// executes template against operations definitions
@@ -293,7 +293,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	repo := NewRepository(nil)
 
 	err := repo.AddFile("targetimportpath", targetImportPath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	templ, err := repo.Get("targetimportpath")
 	require.NoError(t, err)
@@ -311,7 +311,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected, rendered.String())
 
@@ -470,7 +470,7 @@ func TestTemplates_LoadDir(t *testing.T) {
 	protectedTemplates = make(map[string]bool)
 	repo := NewRepository(FuncMapFunc(DefaultLanguageFunc()))
 	err = repo.LoadDir("templates")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // Test LoadDir
@@ -486,7 +486,7 @@ func TestTemplates_SetAllowOverride(t *testing.T) {
 	// adding protected file with allowOverride set to true should not fail
 	templates.SetAllowOverride(true)
 	err = templates.AddFile("schemabody", "some data")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // Test LoadContrib
@@ -512,9 +512,9 @@ func TestTemplates_LoadContrib(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := templates.LoadContrib(tt.template)
 			if tt.wantError {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}

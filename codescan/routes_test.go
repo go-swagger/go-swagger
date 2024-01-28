@@ -227,7 +227,7 @@ func TestRoutesParserBody(t *testing.T) {
 
 func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	po := ops.Paths["/pets"]
-	assert.Equal(t, 2, len(po.Post.Parameters))
+	assert.Len(t, po.Post.Parameters, 2)
 
 	// Testing standard param properties
 	p := po.Post.Parameters[0]
@@ -240,19 +240,19 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "id", p.Name)
 	assert.Equal(t, "The pet id", p.Description)
 	assert.Equal(t, "path", p.In)
-	assert.Equal(t, true, p.Required)
-	assert.Equal(t, false, p.AllowEmptyValue)
+	assert.True(t, p.Required)
+	assert.False(t, p.AllowEmptyValue)
 
 	po = ops.Paths["/orders"]
-	assert.Equal(t, 2, len(po.Post.Parameters))
+	assert.Len(t, po.Post.Parameters, 2)
 
 	// Testing invalid value for "in"
 	p = po.Post.Parameters[0]
 	assert.Equal(t, "id", p.Name)
 	assert.Equal(t, "The order id", p.Description)
 	assert.Equal(t, "", p.In) // Invalid value should not be set
-	assert.Equal(t, false, p.Required)
-	assert.Equal(t, true, p.AllowEmptyValue)
+	assert.False(t, p.Required)
+	assert.True(t, p.AllowEmptyValue)
 
 	p = po.Post.Parameters[1]
 	assert.Equal(t, "request", p.Name)
@@ -260,14 +260,14 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "The request model.", p.Description)
 
 	po = ops.Paths["/param-test"]
-	assert.Equal(t, 6, len(po.Post.Parameters))
+	assert.Len(t, po.Post.Parameters, 6)
 
 	// Testing number param with "max" and "min" constraints
 	p = po.Post.Parameters[0]
 	assert.Equal(t, "someNumber", p.Name)
 	assert.Equal(t, "some number", p.Description)
 	assert.Equal(t, "path", p.In)
-	assert.Equal(t, true, p.Required)
+	assert.True(t, p.Required)
 	assert.Equal(t, "number", p.Type)
 	min, max, def := float64(10), float64(20), float64(15)
 	assert.Equal(t, &max, p.Maximum)
@@ -280,7 +280,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "someQuery", p.Name)
 	assert.Equal(t, "some query values", p.Description)
 	assert.Equal(t, "query", p.In)
-	assert.Equal(t, false, p.Required)
+	assert.False(t, p.Required)
 	assert.Equal(t, "array", p.Type)
 	minLen, maxLen := int64(5), int64(20)
 	assert.Equal(t, &maxLen, p.MaxLength)
@@ -292,9 +292,11 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "someBoolean", p.Name)
 	assert.Equal(t, "some boolean", p.Description)
 	assert.Equal(t, "path", p.In)
-	assert.Equal(t, false, p.Required)
+	assert.False(t, p.Required)
 	assert.Equal(t, "boolean", p.Type)
-	assert.Equal(t, true, p.Default)
+	someBoolean, ok := p.Default.(bool)
+	assert.True(t, ok)
+	assert.True(t, someBoolean)
 	assert.Nil(t, p.Schema)
 
 	// Testing that "min", "max", "minLength" and "maxLength" constraints will only be considered if the right type is provided
@@ -308,7 +310,9 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Nil(t, p.MaxLength)
 	assert.Nil(t, p.MinLength)
 	assert.Equal(t, "abcde", p.Format)
-	assert.Equal(t, false, p.Default)
+	constraintsOnInvalidType, ok2 := p.Default.(bool)
+	assert.True(t, ok2)
+	assert.False(t, constraintsOnInvalidType)
 	assert.Nil(t, p.Schema)
 
 	// Testing that when "type" is not provided, a schema will not be created

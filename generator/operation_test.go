@@ -824,7 +824,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	opts.FlattenOpts.Minimal = false
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
-	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
+	require.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
@@ -857,7 +857,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	opts.FlattenOpts.Minimal = true
 	_, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// if flatten is not set, expand takes over so this would resume normally
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
@@ -876,7 +876,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// New: Now if flatten is false, expand takes over so server generation should resume normally
-	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
+	require.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
@@ -910,7 +910,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 
 	_, err := newAppGenerator("JsonRefOperation", nil, nil, opts)
 	// now if flatten is false, expand takes over so server generation should resume normally
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestGenServerWithTemplate(t *testing.T) {
@@ -1005,7 +1005,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
 	// same here: now if flatten doesn't resume, expand takes over
-	assert.NoError(t, GenerateClient("foo", nil, nil, opts))
+	require.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
 // This tests that securityDefinitions generate stable code
@@ -1172,7 +1172,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements := b.makeSecurityRequirements("o")
 	assert.NotNil(t, genRequirements)
-	assert.Len(t, genRequirements, 0)
+	assert.Empty(t, genRequirements)
 
 	operation = "nosecOp"
 	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
@@ -1224,11 +1224,11 @@ func TestGenerateServerOperation(t *testing.T) {
 
 	// check expected files are generated and that's it
 	_, err := os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_parameters.go"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_responses.go"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	origStdout := os.Stdout
 	defer func() {
@@ -1238,9 +1238,9 @@ func TestGenerateServerOperation(t *testing.T) {
 	o.DumpData = true
 	// just checks this does not fail
 	err = GenerateServerOperation([]string{"createTask"}, o)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, err = os.Stat(filepath.Join(tgt, "stdout"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // This tests that mimetypes generate stable code

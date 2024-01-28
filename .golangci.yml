@@ -21,6 +21,21 @@ linters-settings:
     check-shadowing: true
   maligned:
     suggest-new: true
+  testifylint:
+    disable:
+      - float-compare
+      - go-require
+    enable:
+      - bool-compare
+      - compares
+      - empty
+      - error-is-as
+      - error-nil
+      - expected-actual
+      - len
+      - require-error
+      - suite-dont-use-pkg
+      - suite-extra-assert-call
 
 run:
   skip-dirs:
@@ -40,6 +55,7 @@ linters:
     - misspell
     - revive
     - stylecheck
+    - testifylint
     - unconvert
   disable:
     - dupl

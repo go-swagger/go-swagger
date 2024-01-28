@@ -187,7 +187,7 @@ func Test_GenerateClient(t *testing.T) {
 			require.NoError(t, err)
 
 			opts.DumpData = true
-			assert.NoError(t,
+			require.NoError(t,
 				GenerateClient(clientName, []string{}, []string{}, opts),
 			)
 			t.Run("make sure this did not fail and we have some output", func(t *testing.T) {

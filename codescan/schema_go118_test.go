@@ -123,7 +123,7 @@ func TestGo118ParseResponses_Issue2011(t *testing.T) {
 	require.NoError(t, prs.Build(responses))
 
 	resp := responses["NumPlatesResp"]
-	require.Len(t, resp.Headers, 0)
+	require.Empty(t, resp.Headers)
 	require.NotNil(t, resp.Schema)
 }
 
