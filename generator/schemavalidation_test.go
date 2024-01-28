@@ -776,7 +776,7 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 	assert.Nil(t, fsm.Next)
 	assert.Equal(t, "#/definitions/NamedMapComplexAnon", fsm.Type.AdditionalProperties.Schema.Ref.GetURL().String())
 
-	assert.NoError(t, lsm.Build())
+	require.NoError(t, lsm.Build())
 }
 
 func TestAdditionalProperties_Nested(t *testing.T) {
@@ -828,7 +828,7 @@ func TestAdditionalProperties_Nested(t *testing.T) {
 	assert.NotNil(t, fsm.Next.Next.ValueRef)
 	assert.Nil(t, fsm.Next.Next.Next)
 	assert.Equal(t, fsm.Next.Next, lsm)
-	assert.NoError(t, lsm.Build())
+	require.NoError(t, lsm.Build())
 }
 
 func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {

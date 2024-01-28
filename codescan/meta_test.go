@@ -27,14 +27,14 @@ import (
 func TestSetInfoVersion(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoVersion(info, []string{"0.0.1"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "0.0.1", info.Info.Version)
 }
 
 func TestSetInfoLicense(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoLicense(info, []string{"MIT http://license.org/MIT"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "MIT", info.Info.License.Name)
 	assert.Equal(t, "http://license.org/MIT", info.Info.License.URL)
 }
@@ -42,7 +42,7 @@ func TestSetInfoLicense(t *testing.T) {
 func TestSetInfoContact(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoContact(info, []string{"Homer J. Simpson <homer@simpsons.com> http://simpsons.com"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Homer J. Simpson", info.Info.Contact.Name)
 	assert.Equal(t, "homer@simpsons.com", info.Info.Contact.Email)
 	assert.Equal(t, "http://simpsons.com", info.Info.Contact.URL)
@@ -60,7 +60,7 @@ func TestParseInfo(t *testing.T) {
 
 	err = parser.Parse(fileTree.Doc)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	verifyInfo(t, swspec.Info)
 }
 
@@ -77,7 +77,7 @@ func TestParseSwagger(t *testing.T) {
 	err = parser.Parse(fileTree.Doc)
 	verifyMeta(t, swspec)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func verifyMeta(t testing.TB, doc *spec.Swagger) {
@@ -181,7 +181,7 @@ func TestMoreParseMeta(t *testing.T) {
 		}
 
 		err = parser.Parse(fileTree.Doc)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
 		/*
 			jazon, err := json.MarshalIndent(swspec.Info, "", " ")

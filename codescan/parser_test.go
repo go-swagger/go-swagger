@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // only used within this group of tests but never used within actual code base.
@@ -81,7 +82,7 @@ Sample code block:
 	st := &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	err = st.Parse(ascg(text))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title, separated by a whitespace line"}, st.Title())
 	assert.EqualValues(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
@@ -89,7 +90,7 @@ Sample code block:
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	err = st.Parse(ascg(text2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
@@ -97,7 +98,7 @@ Sample code block:
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	err = st.Parse(ascg(text3))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
@@ -105,7 +106,7 @@ Sample code block:
 	st = &sectionedParser{}
 	st.setTitle = func(lines []string) {}
 	err = st.Parse(ascg(text4))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.EqualValues(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
 	assert.EqualValues(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
@@ -139,7 +140,7 @@ maximum: 20
 	}
 
 	err = st.Parse(ascg(block))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -157,7 +158,7 @@ maximum: 20
 	}
 
 	err = st.Parse(ascg(block2))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -179,7 +180,7 @@ func TestSectionedParser_Empty(t *testing.T) {
 	st.annotation = ap
 
 	err = st.Parse(ascg(block))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, st.Title())
 	assert.Empty(t, st.Description())
 	assert.Empty(t, st.taggers)
@@ -209,7 +210,7 @@ maximum: 20
 	}
 
 	err = st.Parse(ascg(block))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
@@ -244,7 +245,7 @@ maximum: 20
 	}
 
 	err = st.Parse(ascg(block))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 1)

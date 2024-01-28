@@ -130,7 +130,9 @@ func TestParseResponses(t *testing.T) {
 		case "active":
 			assert.Equal(t, "Active state of the record", header.Description)
 			assert.Equal(t, "boolean", header.Type)
-			assert.Equal(t, true, header.Default)
+			active, ok2 := header.Default.(bool)
+			assert.True(t, ok2)
+			assert.True(t, active)
 
 		case "created":
 			assert.Equal(t, "Created holds the time when this entry was created", header.Description)
@@ -237,7 +239,7 @@ func TestParseResponses_Issue2007(t *testing.T) {
 	require.NoError(t, prs.Build(responses))
 
 	resp := responses["GetConfiguration"]
-	require.Len(t, resp.Headers, 0)
+	require.Empty(t, resp.Headers)
 	require.NotNil(t, resp.Schema)
 
 	require.True(t, resp.Schema.Type.Contains("object"))
@@ -257,7 +259,7 @@ func TestParseResponses_Issue2011(t *testing.T) {
 	require.NoError(t, prs.Build(responses))
 
 	resp := responses["NumPlatesResp"]
-	require.Len(t, resp.Headers, 0)
+	require.Empty(t, resp.Headers)
 	require.NotNil(t, resp.Schema)
 }
 
@@ -274,8 +276,8 @@ func TestParseResponses_Issue2145(t *testing.T) {
 	}
 	require.NoError(t, prs.Build(responses))
 	resp := responses["GetProductsResponse"]
-	require.Len(t, resp.Headers, 0)
+	require.Empty(t, resp.Headers)
 	require.NotNil(t, resp.Schema)
 
-	assert.NotEqual(t, 0, len(prs.postDecls)) // should have Product
+	assert.NotEmpty(t, prs.postDecls) // should have Product
 }
