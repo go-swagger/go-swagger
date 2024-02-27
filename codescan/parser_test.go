@@ -80,7 +80,7 @@ Sample code block:
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text))
 	require.NoError(t, err)
 
@@ -88,7 +88,7 @@ Sample code block:
 	assert.EqualValues(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
 
 	st = &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text2))
 	require.NoError(t, err)
 
@@ -96,7 +96,7 @@ Sample code block:
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 
 	st = &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text3))
 	require.NoError(t, err)
 
@@ -104,7 +104,7 @@ Sample code block:
 	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
 
 	st = &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text4))
 	require.NoError(t, err)
 
@@ -132,7 +132,7 @@ maximum: 20
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	st.taggers = []tagParser{
 		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
 		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
@@ -150,7 +150,7 @@ maximum: 20
 	assert.True(t, ok)
 
 	st = &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	st.taggers = []tagParser{
 		{"Maximum", false, false, nil, &setMaximum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMaximumFmt, ""))}},
 		{"Minimum", false, false, nil, &setMinimum{dummyBuilder(), regexp.MustCompile(fmt.Sprintf(rxMinimumFmt, ""))}},
@@ -174,7 +174,7 @@ func TestSectionedParser_Empty(t *testing.T) {
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	ap := newSchemaAnnotationParser("SomeResponse")
 	ap.rx = rxResponseOverride
 	st.annotation = ap
@@ -200,7 +200,7 @@ maximum: 20
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	ap := newSchemaAnnotationParser("SomeModel")
 	st.annotation = ap
 	st.taggers = []tagParser{
@@ -235,7 +235,7 @@ maximum: 20
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	ap := newSchemaAnnotationParser("SomeModel")
 	st.annotation = ap
 	st.taggers = []tagParser{

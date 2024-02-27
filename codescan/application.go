@@ -163,7 +163,7 @@ DECLS:
 	return
 }
 
-func (d *entityDecl) OperationIDS() (result []string) {
+func (d *entityDecl) OperationIDs() (result []string) {
 	if d == nil || d.Comments == nil {
 		return nil
 	}

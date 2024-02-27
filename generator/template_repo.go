@@ -362,7 +362,7 @@ func (t *Repository) LoadDefaults() {
 
 // LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
 func (t *Repository) LoadDir(templatePath string) error {
-	err := filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(templatePath, func(path string, _ os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".gotmpl") {
 			if assetName, e := filepath.Rel(templatePath, path); e == nil {
 				if data, e := os.ReadFile(path); e == nil {
@@ -373,9 +373,11 @@ func (t *Repository) LoadDir(templatePath string) error {
 				// Non-readable files are skipped
 			}
 		}
+
 		if err != nil {
 			return err
 		}
+
 		// Non-template files are skipped
 		return nil
 	})
@@ -564,7 +566,6 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 
 			// Add it to the parse tree
 			templ, err = templ.AddParseTree(dep, tt.Tree)
-
 			if err != nil {
 				return templ, fmt.Errorf("dependency error: %w", err)
 			}
