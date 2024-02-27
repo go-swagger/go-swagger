@@ -627,7 +627,7 @@ func generateClientFixtures(_ testing.TB) map[string]generateFixture {
 		"conflict_name_client_issue_2730": {
 			spec:    "../fixtures/bugs/2730/2730.yaml",
 			target:  "server-2730",
-			prepare: func(_ *testing.T, _ *GenOpts) {},
+			prepare: func(_ *testing.T, opts *GenOpts) {},
 			verify: func(t *testing.T, target string) {
 				location := filepath.Join(target, "client")
 				require.True(t, fileExists("", location))
