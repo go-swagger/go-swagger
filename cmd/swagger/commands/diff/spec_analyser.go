@@ -281,11 +281,22 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 					sd.compareDescripton(responseLocation, op1Response.Description, op2Response.Description)
 
 					if op1Response.Schema != nil {
-						sd.compareSchema(
-							DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code2, Node: getSchemaDiffNode("Body", op1Response.Schema)},
-							op1Response.Schema,
-							op2Response.Schema)
+						if op2Response.Schema == nil {
+							sd.Diffs = sd.Diffs.addDiff(SpecDifference{
+								DifferenceLocation: DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code2, Node: getSchemaDiffNode("Body", op1Response.Schema)},
+								Code:               DeletedProperty})
+						} else {
+							sd.compareSchema(
+								DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code2, Node: getSchemaDiffNode("Body", op1Response.Schema)},
+								op1Response.Schema,
+								op2Response.Schema)
+						}
+					} else if op2Response.Schema != nil {
+						sd.Diffs = sd.Diffs.addDiff(SpecDifference{
+							DifferenceLocation: DifferenceLocation{URL: eachURLMethodFrom2.Path, Method: eachURLMethodFrom2.Method, Response: code2, Node: getSchemaDiffNode("Body", op2Response.Schema)},
+							Code:               AddedProperty})
 					}
+
 				} else {
 					// op2Response
 					sd.Diffs = sd.Diffs.addDiff(SpecDifference{
