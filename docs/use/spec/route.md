@@ -61,7 +61,7 @@ func ServeAPI(host, basePath string, schemes []string) error {
   //     Parameters:
   //       + name: limit
   //         in: query
-  //         description: maximum umber of results to return
+  //         description: maximum number of results to return
   //         required: false
   //         type: integer
   //         format: int32
@@ -112,7 +112,7 @@ paths:
         - write
       parameters:
         description: maximum number of results to return
-        format: int43
+        format: int32
         in: query
         name: limit
         type: integer
