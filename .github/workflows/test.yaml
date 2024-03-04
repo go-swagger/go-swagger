@@ -10,7 +10,7 @@ on:
     branches:
       - master
 
-  pull_request:
+  pull_request_target:
 
 permissions:
   contents: write
@@ -107,13 +107,17 @@ jobs:
           ./...
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
           flags: 'unit-${{ matrix.go }}'
           os: '${{ matrix.os }}'
           fail_ci_if_error: true
           verbose: true
+          # This secret is not passed on when triggered by PR from a fork: in this case,
+          # tokenless upload is used by the codecov CLI.
+          # It is used when running the workflow from pushed commits or tags on master.
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   codegen_test:
     # description: |
@@ -167,13 +171,14 @@ jobs:
           -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: 'codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt'
           flags: 'codegen-${{ matrix.go }}-${{ matrix.fixture }}'
           os: '${{ matrix.os }}'
           fail_ci_if_error: true
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }} # <- this secret is not passed on when triggered by PR from a fork
 
   docker_dev:
     needs: [lint, build, test, codegen_test]
