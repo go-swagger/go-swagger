@@ -6,3 +6,6 @@ coverage:
     patch:
       default:
         target: 80%
+ignore:
+ - "examples"
+ - "fixtures"
