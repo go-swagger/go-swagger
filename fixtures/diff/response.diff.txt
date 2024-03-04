@@ -5,9 +5,12 @@ NON-BREAKING CHANGES:
 /a/:put -> 200 - Response - Body<A3>.description<string> - Narrowed type - string -> integer.int32
 /a/{id}:get -> 200 - Response - Body<A3>.colour<string> - Added property
 /a/{id}:get -> 200 - Response - Body<A3>.description<string> - Narrowed type - string -> integer.int32
+/c/:post -> 204 - Response - Body<C6> - Added property
+Spec Definitions.C6 - Added a schema definition
 
 BREAKING CHANGES:
 =================
 /a/:get -> 200 - Response - Body<array[A1]> - Deleted response
+/c/:post -> 200 - Response - Body<array[C1]> - Deleted property
 Spec Definitions.C5.a<array[string]> - Changed type - <array[string]> -> <object>
-compatibility test FAILED: 2 breaking changes detected
+compatibility test FAILED: 3 breaking changes detected

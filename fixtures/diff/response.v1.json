@@ -125,6 +125,13 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "200 response",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/C1" }
+            }
+          },
           "204": {
             "description": "204 response"
           }
