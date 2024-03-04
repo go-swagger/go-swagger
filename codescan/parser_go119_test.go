@@ -24,7 +24,7 @@ The punctuation here does indeed matter. But it won't for go.
 	var err error
 
 	st := &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text))
 	require.NoError(t, err)
 
@@ -32,7 +32,7 @@ The punctuation here does indeed matter. But it won't for go.
 	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 
 	st = &sectionedParser{}
-	st.setTitle = func(lines []string) {}
+	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text2))
 	require.NoError(t, err)
 

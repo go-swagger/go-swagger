@@ -172,7 +172,7 @@ func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
 	// these words are the ids of the operations this parameter struct applies to
 	// once type name is found convert it to a schema, by looking up the schema in the
 	// parameters dictionary that got passed into this parse method
-	for _, opid := range p.decl.OperationIDS() {
+	for _, opid := range p.decl.OperationIDs() {
 		operation, ok := operations[opid]
 		if !ok {
 			operation = new(spec.Operation)

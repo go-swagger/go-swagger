@@ -990,7 +990,7 @@ func TestAddExtension(t *testing.T) {
 	value3 := "Spec"
 	_ = os.Setenv("SWAGGER_GENERATE_EXTENSION", "false")
 	addExtension(ve, key3, value3)
-	assert.Equal(t, nil, ve.Extensions[key3])
+	assert.Nil(t, ve.Extensions[key3])
 }
 
 func getClassificationModel(sctx *scanCtx, nm string) *entityDecl {
@@ -1026,7 +1026,7 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 		assert.Equal(t, typeName, schema.Properties[jsonName].Type[0])
 	}
 	if goName == "" {
-		assert.Equal(t, nil, schema.Properties[jsonName].Extensions["x-go-name"])
+		assert.Nil(t, schema.Properties[jsonName].Extensions["x-go-name"])
 	} else {
 		assert.Equal(t, goName, schema.Properties[jsonName].Extensions["x-go-name"])
 	}

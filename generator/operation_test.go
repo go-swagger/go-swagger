@@ -1342,29 +1342,29 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 }
 
 func makeClientTimeoutNameTest() []struct {
-	seenIds  map[string]interface{}
+	seenIDs  map[string]interface{}
 	name     string
 	expected string
 } {
 	return []struct {
-		seenIds  map[string]interface{}
+		seenIDs  map[string]interface{}
 		name     string
 		expected string
 	}{
 		{
-			seenIds:  nil,
+			seenIDs:  nil,
 			name:     "witness",
 			expected: "witness",
 		},
 		{
-			seenIds: map[string]interface{}{
+			seenIDs: map[string]interface{}{
 				"id": true,
 			},
 			name:     "timeout",
 			expected: "timeout",
 		},
 		{
-			seenIds: map[string]interface{}{
+			seenIDs: map[string]interface{}{
 				"timeout":        true,
 				"requesttimeout": true,
 			},
@@ -1372,7 +1372,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "httpRequestTimeout",
 		},
 		{
-			seenIds: map[string]interface{}{
+			seenIDs: map[string]interface{}{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1384,7 +1384,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "operTimeout",
 		},
 		{
-			seenIds: map[string]interface{}{
+			seenIDs: map[string]interface{}{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1406,7 +1406,7 @@ func TestRenameTimeout(t *testing.T) {
 		testCase := toPin
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equalf(t, testCase.expected, renameTimeout(testCase.seenIds, testCase.name), "unexpected deconflicting value [%d]", i)
+			assert.Equalf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name), "unexpected deconflicting value [%d]", i)
 		})
 	}
 }

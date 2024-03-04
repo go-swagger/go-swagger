@@ -251,7 +251,7 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
-	seenIds := make(map[string]interface{}, len(params))
+	seenIDs := make(map[string]interface{}, len(params))
 	for id, p := range params {
 		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
@@ -264,7 +264,7 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 			continue
 		}
 
-		if val, ok := seenIds[p.Name]; ok {
+		if val, ok := seenIDs[p.Name]; ok {
 			previous := val.(struct{ id, in string })
 			idMapping[p.In][p.Name] = swag.ToGoName(id)
 			// rewrite the previously found one
@@ -272,11 +272,11 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		} else {
 			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
 		}
-		seenIds[strings.ToLower(idMapping[p.In][p.Name])] = struct{ id, in string }{id: id, in: p.In}
+		seenIDs[strings.ToLower(idMapping[p.In][p.Name])] = struct{ id, in string }{id: id, in: p.In}
 	}
 
 	// pick a deconflicted private name for timeout for this operation
-	timeoutName := renameTimeout(seenIds, "timeout")
+	timeoutName := renameTimeout(seenIDs, "timeout")
 
 	return idMapping, timeoutName
 }
@@ -286,12 +286,12 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 //
 // NOTE: this merely protects the timeout field in the client parameter struct,
 // fields "Context" and "HTTPClient" remain exposed to name conflicts.
-func renameTimeout(seenIds map[string]interface{}, timeoutName string) string {
-	if seenIds == nil {
+func renameTimeout(seenIDs map[string]interface{}, timeoutName string) string {
+	if seenIDs == nil {
 		return timeoutName
 	}
 	current := strings.ToLower(timeoutName)
-	if _, ok := seenIds[current]; !ok {
+	if _, ok := seenIDs[current]; !ok {
 		return timeoutName
 	}
 	var next string
@@ -311,7 +311,7 @@ func renameTimeout(seenIds map[string]interface{}, timeoutName string) string {
 	default:
 		next = timeoutName + "1"
 	}
-	return renameTimeout(seenIds, next)
+	return renameTimeout(seenIDs, next)
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {

@@ -350,7 +350,11 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			require.NotNil(t, extType)
 
 			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
-			require.EqualValuesf(t, fixture.knownDefs, struct{ tpe, pkg, alias string }{tpe, pkg, alias}, "fixture %d", i)
+			require.EqualValuesf(t,
+				struct{ tpe, pkg, alias string }{tpe, pkg, alias},
+				fixture.knownDefs,
+				"fixture %d", i,
+			)
 
 			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema, false)
 

@@ -70,6 +70,7 @@ jobs:
           swagger validate fixtures/bugs/2493/fixture-2493.json
           swagger validate fixtures/bugs/2493/fixture-2492.yaml
           swagger validate fixtures/bugs/2493/fixture-2493.yaml
+          swagger validate fixtures/bugs/2866/2866.yaml
 
   test:
     # description: |
@@ -79,6 +80,9 @@ jobs:
       matrix:
         go: ['oldstable','stable']
         os: [ubuntu-latest, macos-latest, windows-latest]
+        exclude:  # <- temporarily exclude go1.22.0 on windows. We hit this bug:https://github.com/golang/go/issues/65653
+          - go: stable
+            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
