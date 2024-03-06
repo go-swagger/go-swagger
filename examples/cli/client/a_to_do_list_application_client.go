@@ -10,6 +10,7 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
+	"github.com/go-swagger/go-swagger/examples/cli/client/operations"
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 )
 
@@ -55,6 +56,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *AToDoListA
 
 	cli := new(AToDoListApplication)
 	cli.Transport = transport
+	cli.Operations = operations.New(transport, formats)
 	cli.Todos = todos.New(transport, formats)
 	return cli
 }
@@ -100,6 +102,8 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 
 // AToDoListApplication is a client for a to do list application
 type AToDoListApplication struct {
+	Operations operations.ClientService
+
 	Todos todos.ClientService
 
 	Transport runtime.ClientTransport
@@ -108,5 +112,6 @@ type AToDoListApplication struct {
 // SetTransport changes the transport on the client and all its subresources
 func (c *AToDoListApplication) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
+	c.Operations.SetTransport(transport)
 	c.Todos.SetTransport(transport)
 }

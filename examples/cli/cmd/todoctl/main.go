@@ -15,11 +15,12 @@ import (
 func main() {
 	rootCmd, err := cli.MakeRootCmd()
 	if err != nil {
-		fmt.Println("Cmd construction error: ", err)
+		fmt.Println("cmd construction error: ", err)
 		os.Exit(1)
 	}
 
-	if err := rootCmd.Execute(); err != nil {
+	if err = rootCmd.Execute(); err != nil {
+		fmt.Println("cmd execute error: ", err)
 		os.Exit(1)
 	}
 }

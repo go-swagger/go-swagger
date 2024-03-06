@@ -163,6 +163,26 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 
 			return name, nil // TODO
 		},
+		"flagNameVar": func(in string) string {
+			// builds a flag name variable in CLI commands
+			return fmt.Sprintf("flag%sName", pascalize(in))
+		},
+		"flagValueVar": func(in string) string {
+			// builds a flag value variable in CLI commands
+			return fmt.Sprintf("flag%sValue", pascalize(in))
+		},
+		"flagDefaultVar": func(in string) string {
+			// builds a flag default value variable in CLI commands
+			return fmt.Sprintf("flag%sDefault", pascalize(in))
+		},
+		"flagModelVar": func(in string) string {
+			// builds a flag model variable in CLI commands
+			return fmt.Sprintf("flag%sModel", pascalize(in))
+		},
+		"flagDescriptionVar": func(in string) string {
+			// builds a flag description variable in CLI commands
+			return fmt.Sprintf("flag%sDescription", pascalize(in))
+		},
 	}
 
 	for k, v := range extra {

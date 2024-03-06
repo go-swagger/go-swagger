@@ -97,6 +97,25 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/error"
+  /test2766:
+    put:
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/github.Reactions"
+        - name: '+1'
+          in: query
+          type: integer
+        - name: '-1'
+          in: query
+          type: integer
+      responses:
+        200:
+          description: "test issue #2766"
+          schema:
+            $ref: "#/definitions/github.Reactions"
+
 definitions:
   item:
     type: object
@@ -122,3 +141,11 @@ definitions:
         format: int64
       message:
         type: string
+  github.Reactions:
+    properties:
+      "+1":
+        type: integer
+      "-1":
+        type: integer
+      confused:
+        type: integer

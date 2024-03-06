@@ -19,7 +19,7 @@
     // warning: {{.Name}} {{ .GoType }} map type is not supported by go-swagger cli yet
         {{- else if .IsComplexObject }} {{/* struct case */}}
     {{ template "flagnamevar" . }}
-    if err := registerModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{ pascalize .Name }}FlagName, cmd); err != nil{
+    if err := registerModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{ flagNameVar .Name }}, cmd); err != nil{
         return err
     }
         {{- else }}
@@ -28,10 +28,8 @@
 {{ end }}
 
 {{ define "propertyretriever" }}
-    {{- $flagNameVar := printf "%vFlagName" (pascalize .Name) }}
-    {{- $flagValueVar := printf "%vFlagValue" (pascalize .Name) }}
-    {{ $flagNameVar }} := fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
-    if cmd.Flags().Changed({{ $flagNameVar }}) {
+    {{ flagNameVar .Name }} := fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
+    if cmd.Flags().Changed({{ flagNameVar .Name }}) {
         {{- if .IsPrimitive }}
             {{ template "primitiveretriever" . }}
             retAdded = true
@@ -46,18 +44,18 @@
         {{- end }}
 	}
     {{- if and  .IsComplexObject (not .IsArray) (not .IsMap) (not .IsStream) }}
-    {{ $flagValueVar }} := m.{{pascalize .Name}}
-    if swag.IsZero({{ $flagValueVar }}){
-        {{ $flagValueVar }} = {{if .IsNullable }}&{{end}}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
+    {{ flagValueVar .Name }} := m.{{pascalize .Name}}
+    if swag.IsZero({{ flagValueVar .Name }}){
+        {{ flagValueVar .Name }} = {{if .IsNullable }}&{{end}}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
     }
     {{/* always lift the payload to pointer and pass to model retrieve function. If .GoType has pkg str, use it, else use .Pkg+.GoType */}}
-    err, {{pascalize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{if not .IsNullable }}&{{end}}{{ $flagValueVar }}, {{ $flagNameVar }}, cmd)
+    err, {{pascalize .Name }}Added := retrieveModel{{pascalize (dropPackage .GoType) }}Flags(depth + 1, {{if not .IsNullable }}&{{end}}{{ flagValueVar .Name }}, {{ flagNameVar .Name }}, cmd)
     if err != nil{
         return err, false
     }
     retAdded = retAdded || {{pascalize .Name }}Added
     if {{pascalize .Name }}Added {
-        m.{{pascalize .Name}} = {{ $flagValueVar }}
+        m.{{pascalize .Name}} = {{ flagValueVar .Name }}
     }
 	{{- end }}
 {{ end }}

@@ -17,55 +17,55 @@ import (
 // register flags to command
 func registerModelErrorFlags(depth int, cmdPrefix string, cmd *cobra.Command) error {
 
-	if err := registerErrorCode(depth, cmdPrefix, cmd); err != nil {
+	if err := registerErrorPropCode(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
-	if err := registerErrorMessage(depth, cmdPrefix, cmd); err != nil {
+	if err := registerErrorPropMessage(depth, cmdPrefix, cmd); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func registerErrorCode(depth int, cmdPrefix string, cmd *cobra.Command) error {
+func registerErrorPropCode(depth int, cmdPrefix string, cmd *cobra.Command) error {
 	if depth > maxDepth {
 		return nil
 	}
 
-	CodeDescription := ``
+	flagCodeDescription := ``
 
-	var CodeFlagName string
+	var flagCodeName string
 	if cmdPrefix == "" {
-		CodeFlagName = "code"
+		flagCodeName = "code"
 	} else {
-		CodeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
+		flagCodeName = fmt.Sprintf("%v.code", cmdPrefix)
 	}
 
-	var CodeFlagDefault int64
+	var flagCodeDefault int64
 
-	_ = cmd.PersistentFlags().Int64(CodeFlagName, CodeFlagDefault, CodeDescription)
+	_ = cmd.PersistentFlags().Int64(flagCodeName, flagCodeDefault, flagCodeDescription)
 
 	return nil
 }
 
-func registerErrorMessage(depth int, cmdPrefix string, cmd *cobra.Command) error {
+func registerErrorPropMessage(depth int, cmdPrefix string, cmd *cobra.Command) error {
 	if depth > maxDepth {
 		return nil
 	}
 
-	MessageDescription := `Required. `
+	flagMessageDescription := `Required. `
 
-	var MessageFlagName string
+	var flagMessageName string
 	if cmdPrefix == "" {
-		MessageFlagName = "message"
+		flagMessageName = "message"
 	} else {
-		MessageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
+		flagMessageName = fmt.Sprintf("%v.message", cmdPrefix)
 	}
 
-	var MessageFlagDefault string
+	var flagMessageDefault string
 
-	_ = cmd.PersistentFlags().String(MessageFlagName, MessageFlagDefault, MessageDescription)
+	_ = cmd.PersistentFlags().String(flagMessageName, flagMessageDefault, flagMessageDescription)
 
 	return nil
 }
@@ -74,13 +74,13 @@ func registerErrorMessage(depth int, cmdPrefix string, cmd *cobra.Command) error
 func retrieveModelErrorFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 
-	err, CodeAdded := retrieveErrorCodeFlags(depth, m, cmdPrefix, cmd)
+	err, CodeAdded := retrieveErrorPropCodeFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
 	retAdded = retAdded || CodeAdded
 
-	err, MessageAdded := retrieveErrorMessageFlags(depth, m, cmdPrefix, cmd)
+	err, MessageAdded := retrieveErrorPropMessageFlags(depth, m, cmdPrefix, cmd)
 	if err != nil {
 		return err, false
 	}
@@ -89,27 +89,27 @@ func retrieveModelErrorFlags(depth int, m *models.Error, cmdPrefix string, cmd *
 	return nil, retAdded
 }
 
-func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveErrorPropCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	if depth > maxDepth {
 		return nil, false
 	}
 	retAdded := false
 
-	CodeFlagName := fmt.Sprintf("%v.code", cmdPrefix)
-	if cmd.Flags().Changed(CodeFlagName) {
+	flagCodeName := fmt.Sprintf("%v.code", cmdPrefix)
+	if cmd.Flags().Changed(flagCodeName) {
 
-		var CodeFlagName string
+		var flagCodeName string
 		if cmdPrefix == "" {
-			CodeFlagName = "code"
+			flagCodeName = "code"
 		} else {
-			CodeFlagName = fmt.Sprintf("%v.code", cmdPrefix)
+			flagCodeName = fmt.Sprintf("%v.code", cmdPrefix)
 		}
 
-		CodeFlagValue, err := cmd.Flags().GetInt64(CodeFlagName)
+		flagCodeValue, err := cmd.Flags().GetInt64(flagCodeName)
 		if err != nil {
 			return err, false
 		}
-		m.Code = CodeFlagValue
+		m.Code = flagCodeValue
 
 		retAdded = true
 	}
@@ -117,27 +117,27 @@ func retrieveErrorCodeFlags(depth int, m *models.Error, cmdPrefix string, cmd *c
 	return nil, retAdded
 }
 
-func retrieveErrorMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
+func retrieveErrorPropMessageFlags(depth int, m *models.Error, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	if depth > maxDepth {
 		return nil, false
 	}
 	retAdded := false
 
-	MessageFlagName := fmt.Sprintf("%v.message", cmdPrefix)
-	if cmd.Flags().Changed(MessageFlagName) {
+	flagMessageName := fmt.Sprintf("%v.message", cmdPrefix)
+	if cmd.Flags().Changed(flagMessageName) {
 
-		var MessageFlagName string
+		var flagMessageName string
 		if cmdPrefix == "" {
-			MessageFlagName = "message"
+			flagMessageName = "message"
 		} else {
-			MessageFlagName = fmt.Sprintf("%v.message", cmdPrefix)
+			flagMessageName = fmt.Sprintf("%v.message", cmdPrefix)
 		}
 
-		MessageFlagValue, err := cmd.Flags().GetString(MessageFlagName)
+		flagMessageValue, err := cmd.Flags().GetString(flagMessageName)
 		if err != nil {
 			return err, false
 		}
-		m.Message = &MessageFlagValue
+		m.Message = &flagMessageValue
 
 		retAdded = true
 	}

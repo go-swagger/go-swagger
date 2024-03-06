@@ -12,27 +12,27 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/go-swagger/go-swagger/examples/cli/client"
-
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/go-swagger/go-swagger/examples/cli/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// debug flag indicating that cli should output debug logs
-var debug bool
+var (
+	// debug flag indicating that cli should output debug logs
+	debug bool
 
-// config file location
-var configFile string
+	// config file location
+	configFile string
 
-// dry run flag
-var dryRun bool
+	// dry run flag
+	dryRun bool
 
-// name of the executable
-var exeName string = filepath.Base(os.Args[0])
+	// name of the executable
+	exeName = filepath.Base(os.Args[0])
+)
 
 // logDebugf writes debug log to stdout
 func logDebugf(format string, v ...interface{}) {
@@ -46,7 +46,7 @@ func logDebugf(format string, v ...interface{}) {
 var maxDepth int = 5
 
 // makeClient constructs a client object
-func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication, error) {
+func makeClient(cmd *cobra.Command, _ []string) (*client.AToDoListApplication, error) {
 	hostname := viper.GetString("hostname")
 	viper.SetDefault("base_path", client.DefaultBasePath)
 	basePath := viper.GetString("base_path")
@@ -68,6 +68,7 @@ func makeClient(cmd *cobra.Command, args []string) (*client.AToDoListApplication
 
 	appCli := client.New(r, strfmt.Default)
 	logDebugf("Server url: %v://%v", scheme, hostname)
+
 	return appCli, nil
 }
 
@@ -82,11 +83,17 @@ func MakeRootCmd() (*cobra.Command, error) {
 
 	// register basic flags
 	rootCmd.PersistentFlags().String("hostname", client.DefaultHost, "hostname of the service")
-	viper.BindPFlag("hostname", rootCmd.PersistentFlags().Lookup("hostname"))
+	if err := viper.BindPFlag("hostname", rootCmd.PersistentFlags().Lookup("hostname")); err != nil {
+		return nil, err
+	}
 	rootCmd.PersistentFlags().String("scheme", client.DefaultSchemes[0], fmt.Sprintf("Choose from: %v", client.DefaultSchemes))
-	viper.BindPFlag("scheme", rootCmd.PersistentFlags().Lookup("scheme"))
+	if err := viper.BindPFlag("scheme", rootCmd.PersistentFlags().Lookup("scheme")); err != nil {
+		return nil, err
+	}
 	rootCmd.PersistentFlags().String("base-path", client.DefaultBasePath, fmt.Sprintf("For example: %v", client.DefaultBasePath))
-	viper.BindPFlag("base_path", rootCmd.PersistentFlags().Lookup("base-path"))
+	if err := viper.BindPFlag("base_path", rootCmd.PersistentFlags().Lookup("base-path")); err != nil {
+		return nil, err
+	}
 
 	// configure debug flag
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "output debug logs")
@@ -99,12 +106,18 @@ func MakeRootCmd() (*cobra.Command, error) {
 	if err := registerAuthInoWriterFlags(rootCmd); err != nil {
 		return nil, err
 	}
+
 	// add all operation groups
-	operationGroupTodosCmd, err := makeOperationGroupTodosCmd()
+	c0, err := makeGroupOfOperationsOperationsCmd()
 	if err != nil {
 		return nil, err
 	}
-	rootCmd.AddCommand(operationGroupTodosCmd)
+	rootCmd.AddCommand(c0)
+	c1, err := makeGroupOfOperationsTodosCmd()
+	if err != nil {
+		return nil, err
+	}
+	rootCmd.AddCommand(c1)
 
 	// add cobra completion
 	rootCmd.AddCommand(makeGenCompletionCmd())
@@ -119,13 +132,23 @@ func initViperConfigs() {
 		// use user specified config file location
 		viper.SetConfigFile(configFile)
 	} else {
-		// look for default config
-		// Find home directory.
-		home, err := homedir.Dir()
-		cobra.CheckErr(err)
+		var (
+			configDir string
+			err       error
+		)
 
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(path.Join(home, ".config", exeName))
+		// look for default config (OS-specific, e.g. ".config" on linux)
+		configDir, err = os.UserConfigDir()
+		if err != nil {
+			// fallback and try finding the home directory.
+			home, err := os.UserHomeDir()
+			cobra.CheckErr(err)
+			configDir = path.Join(home, ".config")
+		}
+
+		// Search config in the config directory with name of the CLI binary (without extension).
+		configDir = path.Join(configDir, exeName)
+		viper.AddConfigPath(configDir)
 		viper.SetConfigName("config")
 	}
 
@@ -138,57 +161,76 @@ func initViperConfigs() {
 
 // registerAuthInoWriterFlags registers all flags needed to perform authentication
 func registerAuthInoWriterFlags(cmd *cobra.Command) error {
-	/*x-todolist-token */
+	// x-todolist-token
 	cmd.PersistentFlags().String("x-todolist-token", "", ``)
-	viper.BindPFlag("x-todolist-token", cmd.PersistentFlags().Lookup("x-todolist-token"))
+	if err := viper.BindPFlag("x-todolist-token", cmd.PersistentFlags().Lookup("x-todolist-token")); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // makeAuthInfoWriter retrieves cmd flags and construct an auth info writer
 func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error) {
 	auths := []runtime.ClientAuthInfoWriter{}
-	/*x-todolist-token */
+
+	// x-todolist-token
 	if viper.IsSet("x-todolist-token") {
 		XTodolistTokenKey := viper.GetString("x-todolist-token")
 		auths = append(auths, httptransport.APIKeyAuth("x-todolist-token", "header", XTodolistTokenKey))
 	}
+
 	if len(auths) == 0 {
 		logDebugf("Warning: No auth params detected.")
 		return nil, nil
 	}
+
 	// compose all auths together
 	return httptransport.Compose(auths...), nil
-}
+} // makeGroupOfOperationsOperationsCmd returns a parent command to handle all operations with tag "operations"
+func makeGroupOfOperationsOperationsCmd() (*cobra.Command, error) {
+	parent := &cobra.Command{
+		Use:  "operations",
+		Long: ``,
+	}
 
-func makeOperationGroupTodosCmd() (*cobra.Command, error) {
-	operationGroupTodosCmd := &cobra.Command{
+	sub0, err := makeOperationOperationsPutTest2766Cmd()
+	if err != nil {
+		return nil, err
+	}
+	parent.AddCommand(sub0)
+
+	return parent, nil
+} // makeGroupOfOperationsTodosCmd returns a parent command to handle all operations with tag "todos"
+func makeGroupOfOperationsTodosCmd() (*cobra.Command, error) {
+	parent := &cobra.Command{
 		Use:  "todos",
 		Long: ``,
 	}
 
-	operationAddOneCmd, err := makeOperationTodosAddOneCmd()
+	sub0, err := makeOperationTodosAddOneCmd()
 	if err != nil {
 		return nil, err
 	}
-	operationGroupTodosCmd.AddCommand(operationAddOneCmd)
+	parent.AddCommand(sub0)
 
-	operationDestroyOneCmd, err := makeOperationTodosDestroyOneCmd()
+	sub1, err := makeOperationTodosDestroyOneCmd()
 	if err != nil {
 		return nil, err
 	}
-	operationGroupTodosCmd.AddCommand(operationDestroyOneCmd)
+	parent.AddCommand(sub1)
 
-	operationFindTodosCmd, err := makeOperationTodosFindTodosCmd()
+	sub2, err := makeOperationTodosFindTodosCmd()
 	if err != nil {
 		return nil, err
 	}
-	operationGroupTodosCmd.AddCommand(operationFindTodosCmd)
+	parent.AddCommand(sub2)
 
-	operationUpdateOneCmd, err := makeOperationTodosUpdateOneCmd()
+	sub3, err := makeOperationTodosUpdateOneCmd()
 	if err != nil {
 		return nil, err
 	}
-	operationGroupTodosCmd.AddCommand(operationUpdateOneCmd)
+	parent.AddCommand(sub3)
 
-	return operationGroupTodosCmd, nil
+	return parent, nil
 }

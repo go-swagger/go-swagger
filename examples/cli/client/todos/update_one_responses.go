@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -47,7 +48,7 @@ func NewUpdateOneOK() *UpdateOneOK {
 }
 
 /*
-	UpdateOneOK describes a response with status code 200, with default header values.
+UpdateOneOK describes a response with status code 200, with default header values.
 
 OK
 */
@@ -80,12 +81,19 @@ func (o *UpdateOneOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the update one o k response
+func (o *UpdateOneOK) Code() int {
+	return 200
+}
+
 func (o *UpdateOneOK) Error() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK %s", 200, payload)
 }
 
 func (o *UpdateOneOK) String() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOneOK %s", 200, payload)
 }
 
 func (o *UpdateOneOK) GetPayload() *models.Item {
@@ -112,7 +120,7 @@ func NewUpdateOneDefault(code int) *UpdateOneDefault {
 }
 
 /*
-	UpdateOneDefault describes a response with status code -1, with default header values.
+UpdateOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -120,11 +128,6 @@ type UpdateOneDefault struct {
 	_statusCode int
 
 	Payload *models.Error
-}
-
-// Code gets the status code for the update one default response
-func (o *UpdateOneDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this update one default response has a 2xx status code
@@ -152,12 +155,19 @@ func (o *UpdateOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the update one default response
+func (o *UpdateOneDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *UpdateOneDefault) Error() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default %s", o._statusCode, payload)
 }
 
 func (o *UpdateOneDefault) String() string {
-	return fmt.Sprintf("[PUT /{id}][%d] updateOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[PUT /{id}][%d] updateOne default %s", o._statusCode, payload)
 }
 
 func (o *UpdateOneDefault) GetPayload() *models.Error {
