@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// makeOperationTodosAddOneCmd returns a cmd to handle operation addOne
+// makeOperationTodosAddOneCmd returns a command to handle operation addOne
 func makeOperationTodosAddOneCmd() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "addOne",
@@ -39,11 +39,10 @@ func runOperationTodosAddOne(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewAddOneParams()
-	if err, _ := retrieveOperationTodosAddOneBodyFlag(params, "", cmd); err != nil {
+	if err, _ = retrieveOperationTodosAddOneBodyFlag(params, "", cmd); err != nil {
 		return err
 	}
 	if dryRun {
-
 		logDebugf("dry-run flag specified. Skip sending request.")
 		return nil
 	}
@@ -52,10 +51,11 @@ func runOperationTodosAddOne(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if !debug {
 
+	if !debug {
 		fmt.Println(msgStr)
 	}
+
 	return nil
 }
 
@@ -69,14 +69,14 @@ func registerOperationTodosAddOneParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosAddOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	var BodyFlagName string
+	var flagBodyName string
 	if cmdPrefix == "" {
-		BodyFlagName = "body"
+		flagBodyName = "body"
 	} else {
-		BodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+		flagBodyName = fmt.Sprintf("%v.body", cmdPrefix)
 	}
 
-	_ = cmd.PersistentFlags().String(BodyFlagName, "", "Optional json string for [body]. ")
+	_ = cmd.PersistentFlags().String(flagBodyName, "", `Optional json string for [body]. `)
 
 	// add flags for body
 	if err := registerModelItemFlags(0, "item", cmd); err != nil {
@@ -90,36 +90,37 @@ func retrieveOperationTodosAddOneBodyFlag(m *todos.AddOneParams, cmdPrefix strin
 	retAdded := false
 	if cmd.Flags().Changed("body") {
 		// Read body string from cmd and unmarshal
-		bodyValueStr, err := cmd.Flags().GetString("body")
+		flagBodyValueStr, err := cmd.Flags().GetString("body")
 		if err != nil {
 			return err, false
 		}
 
-		bodyValue := models.Item{}
-		if err := json.Unmarshal([]byte(bodyValueStr), &bodyValue); err != nil {
+		flagBodyValue := models.Item{}
+		if err := json.Unmarshal([]byte(flagBodyValueStr), &flagBodyValue); err != nil {
 			return fmt.Errorf("cannot unmarshal body string in models.Item: %v", err), false
 		}
-		m.Body = &bodyValue
+		m.Body = &flagBodyValue
 	}
-	bodyValueModel := m.Body
-	if swag.IsZero(bodyValueModel) {
-		bodyValueModel = &models.Item{}
+	flagBodyModel := m.Body
+	if swag.IsZero(flagBodyModel) {
+		flagBodyModel = &models.Item{}
 	}
-	err, added := retrieveModelItemFlags(0, bodyValueModel, "item", cmd)
+	err, added := retrieveModelItemFlags(0, flagBodyModel, "item", cmd)
 	if err != nil {
 		return err, false
 	}
 	if added {
-		m.Body = bodyValueModel
+		m.Body = flagBodyModel
 	}
-	if dryRun && debug {
 
-		bodyValueDebugBytes, err := json.Marshal(m.Body)
+	if dryRun && debug {
+		flagBodyValueDebugBytes, err := json.Marshal(m.Body)
 		if err != nil {
 			return err, false
 		}
-		logDebugf("Body dry-run payload: %v", string(bodyValueDebugBytes))
+		logDebugf("Body dry-run payload: %v", string(flagBodyValueDebugBytes))
 	}
+
 	retAdded = retAdded || added
 
 	return nil, retAdded

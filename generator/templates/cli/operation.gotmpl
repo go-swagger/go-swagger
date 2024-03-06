@@ -102,7 +102,6 @@ func registerOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{ pascalize .Name }}Flag(m *{{ $operationPkgAlias }}.{{ pascalize $operation }}Params, cmdPrefix string, cmd *cobra.Command) (error,bool){
 	retAdded := false
 	{{- $flagStr := .Name }}
-	{{- $flagValueVar := printf "%vValue" (camelize .Name) }}
 		{{- /*only set the param if user set the flag*/}}
 	if cmd.Flags().Changed("{{ $flagStr }}") {
 	{{- if .IsPrimitive }}
@@ -114,16 +113,16 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 	{{- else if and .IsBodyParam .Schema .IsComplexObject (not .IsStream) }}
 		{{- /*schema payload can be passed in cmd as a string and here is unmarshalled to model struct and attached in params*/}}
 		// Read {{ $flagStr }} string from cmd and unmarshal
-		{{ $flagValueVar }}Str, err := cmd.Flags().GetString("{{ $flagStr }}")
+		{{ flagValueVar .Name }}Str, err := cmd.Flags().GetString("{{ $flagStr }}")
 		if err != nil {
 			return err, false
 		}
 		{{/*Note anonymous body schema is not pointer*/}}
-		{{ $flagValueVar }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
-		if err := json.Unmarshal([]byte({{ $flagValueVar }}Str), &{{ $flagValueVar }}); err!= nil{
+		{{ flagValueVar .Name }} := {{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
+		if err := json.Unmarshal([]byte({{ flagValueVar .Name }}Str), &{{ flagValueVar .Name }}); err!= nil{
 			return fmt.Errorf("cannot unmarshal {{ $flagStr }} string in {{.GoType}}: %v", err), false
 		}
-		m.{{ .ID }} = {{- if .IsNullable }}&{{- end }}{{ $flagValueVar }}
+		m.{{ .ID }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
 	{{- else }}
 		// warning: {{.GoType}} is not supported by go-swagger cli yet
 	{{- end }} {{/*end go type case*/}}
@@ -132,23 +131,22 @@ func retrieveOperation{{pascalize $operationGroup }}{{ pascalize $operation }}{{
 		{{- /* Add flags to capture fields in Body. If previously Body struct was constructed in unmarshalling body string,
 			then reuse the struct, otherwise construct an empty value struct to fill. Here body field flags overwrites
 			unmarshalled body string values. */}}
-		{{- $flagModelVar := printf "%vModel" (camelize $flagValueVar) }}
-	{{ $flagModelVar }} := m.{{ .ID }}
-	if swag.IsZero({{ $flagModelVar }}){
-		{{ $flagModelVar }} = {{- if .IsNullable }}&{{- end }}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
+	{{ flagModelVar .Name }} := m.{{ .ID }}
+	if swag.IsZero({{ flagModelVar .Name }}){
+		{{ flagModelVar .Name }} = {{- if .IsNullable }}&{{- end }}{{if containsPkgStr .GoType}}{{ .GoType }}{{else}}{{ .Pkg }}.{{.GoType}}{{ end }}{}
 	}
 		{{- /*Only attach the body struct in params if user passed some flag filling some body fields.*/}}
-		{{- /* add "&" to $flagModelVar when it is not nullable because the retrieve method always expects a pointer */}}
-	err, added := retrieveModel{{ pascalize (dropPackage .GoType) }}Flags(0, {{if not .IsNullable}}&{{end}}{{ $flagModelVar }}, "{{ camelize (dropPackage .GoType) }}", cmd)
+		{{- /* add "&" to flagModelVar .Name when it is not nullable because the retrieve method always expects a pointer */}}
+	err, added := retrieveModel{{ pascalize (dropPackage .GoType) }}Flags(0, {{if not .IsNullable}}&{{end}}{{ flagModelVar .Name }}, "{{ camelize (dropPackage .GoType) }}", cmd)
 	if err != nil{
 		return err, false
 	}
 	if added {
-		m.{{.ID}} = {{ $flagModelVar }}
+		m.{{.ID}} = {{ flagModelVar .Name }}
 	}
 
 	if dryRun && debug { {{/* dry run we don't get trasnport debug strings, so print it here*/}}
-		{{- $bodyDebugVar := printf "%vDebugBytes" (camelize $flagValueVar) }}
+		{{- $bodyDebugVar := printf "%vDebugBytes" (flagValueVar .Name) }}
 		{{ $bodyDebugVar }}, err := json.Marshal(m.{{.ID}})
 		if err != nil{
 			return err, false

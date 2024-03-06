@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -47,7 +48,7 @@ func NewAddOneCreated() *AddOneCreated {
 }
 
 /*
-	AddOneCreated describes a response with status code 201, with default header values.
+AddOneCreated describes a response with status code 201, with default header values.
 
 Created
 */
@@ -80,12 +81,19 @@ func (o *AddOneCreated) IsCode(code int) bool {
 	return code == 201
 }
 
+// Code gets the status code for the add one created response
+func (o *AddOneCreated) Code() int {
+	return 201
+}
+
 func (o *AddOneCreated) Error() string {
-	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOneCreated %s", 201, payload)
 }
 
 func (o *AddOneCreated) String() string {
-	return fmt.Sprintf("[POST /][%d] addOneCreated  %+v", 201, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOneCreated %s", 201, payload)
 }
 
 func (o *AddOneCreated) GetPayload() *models.Item {
@@ -112,7 +120,7 @@ func NewAddOneDefault(code int) *AddOneDefault {
 }
 
 /*
-	AddOneDefault describes a response with status code -1, with default header values.
+AddOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -120,11 +128,6 @@ type AddOneDefault struct {
 	_statusCode int
 
 	Payload *models.Error
-}
-
-// Code gets the status code for the add one default response
-func (o *AddOneDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this add one default response has a 2xx status code
@@ -152,12 +155,19 @@ func (o *AddOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the add one default response
+func (o *AddOneDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *AddOneDefault) Error() string {
-	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOne default %s", o._statusCode, payload)
 }
 
 func (o *AddOneDefault) String() string {
-	return fmt.Sprintf("[POST /][%d] addOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /][%d] addOne default %s", o._statusCode, payload)
 }
 
 func (o *AddOneDefault) GetPayload() *models.Error {

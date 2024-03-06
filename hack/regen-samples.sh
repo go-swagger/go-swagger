@@ -83,5 +83,9 @@ swagger generate server
 swagger generate client
 mv configure_file_upload.go restapi/
 
+cd "${examples}/cli" || exit 1
+rm -rf cli client cmd models
+swagger generate cli --spec=swagger.yml --cli-app-name todoctl
+
 cd "${examples}" || exit 1
 go test -v ./...

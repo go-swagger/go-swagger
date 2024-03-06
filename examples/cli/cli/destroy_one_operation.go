@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// makeOperationTodosDestroyOneCmd returns a cmd to handle operation destroyOne
+// makeOperationTodosDestroyOneCmd returns a command to handle operation destroyOne
 func makeOperationTodosDestroyOneCmd() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "destroyOne",
@@ -38,11 +38,10 @@ func runOperationTodosDestroyOne(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewDestroyOneParams()
-	if err, _ := retrieveOperationTodosDestroyOneIDFlag(params, "", cmd); err != nil {
+	if err, _ = retrieveOperationTodosDestroyOneIDFlag(params, "", cmd); err != nil {
 		return err
 	}
 	if dryRun {
-
 		logDebugf("dry-run flag specified. Skip sending request.")
 		return nil
 	}
@@ -51,10 +50,11 @@ func runOperationTodosDestroyOne(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if !debug {
 
+	if !debug {
 		fmt.Println(msgStr)
 	}
+
 	return nil
 }
 
@@ -68,18 +68,18 @@ func registerOperationTodosDestroyOneParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosDestroyOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	IDDescription := `Required. `
+	flagIDDescription := `Required. `
 
-	var IDFlagName string
+	var flagIDName string
 	if cmdPrefix == "" {
-		IDFlagName = "id"
+		flagIDName = "id"
 	} else {
-		IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		flagIDName = fmt.Sprintf("%v.id", cmdPrefix)
 	}
 
-	var IDFlagDefault int64
+	var flagIDDefault int64
 
-	_ = cmd.PersistentFlags().Int64(IDFlagName, IDFlagDefault, IDDescription)
+	_ = cmd.PersistentFlags().Int64(flagIDName, flagIDDefault, flagIDDescription)
 
 	return nil
 }
@@ -88,20 +88,21 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 	retAdded := false
 	if cmd.Flags().Changed("id") {
 
-		var IDFlagName string
+		var flagIDName string
 		if cmdPrefix == "" {
-			IDFlagName = "id"
+			flagIDName = "id"
 		} else {
-			IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+			flagIDName = fmt.Sprintf("%v.id", cmdPrefix)
 		}
 
-		IDFlagValue, err := cmd.Flags().GetInt64(IDFlagName)
+		flagIDValue, err := cmd.Flags().GetInt64(flagIDName)
 		if err != nil {
 			return err, false
 		}
-		m.ID = IDFlagValue
+		m.ID = flagIDValue
 
 	}
+
 	return nil, retAdded
 }
 

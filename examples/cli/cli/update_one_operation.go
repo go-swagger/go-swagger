@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// makeOperationTodosUpdateOneCmd returns a cmd to handle operation updateOne
+// makeOperationTodosUpdateOneCmd returns a command to handle operation updateOne
 func makeOperationTodosUpdateOneCmd() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "updateOne",
@@ -39,14 +39,13 @@ func runOperationTodosUpdateOne(cmd *cobra.Command, args []string) error {
 	}
 	// retrieve flag values from cmd and fill params
 	params := todos.NewUpdateOneParams()
-	if err, _ := retrieveOperationTodosUpdateOneBodyFlag(params, "", cmd); err != nil {
+	if err, _ = retrieveOperationTodosUpdateOneBodyFlag(params, "", cmd); err != nil {
 		return err
 	}
-	if err, _ := retrieveOperationTodosUpdateOneIDFlag(params, "", cmd); err != nil {
+	if err, _ = retrieveOperationTodosUpdateOneIDFlag(params, "", cmd); err != nil {
 		return err
 	}
 	if dryRun {
-
 		logDebugf("dry-run flag specified. Skip sending request.")
 		return nil
 	}
@@ -55,10 +54,11 @@ func runOperationTodosUpdateOne(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if !debug {
 
+	if !debug {
 		fmt.Println(msgStr)
 	}
+
 	return nil
 }
 
@@ -75,14 +75,14 @@ func registerOperationTodosUpdateOneParamFlags(cmd *cobra.Command) error {
 
 func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	var BodyFlagName string
+	var flagBodyName string
 	if cmdPrefix == "" {
-		BodyFlagName = "body"
+		flagBodyName = "body"
 	} else {
-		BodyFlagName = fmt.Sprintf("%v.body", cmdPrefix)
+		flagBodyName = fmt.Sprintf("%v.body", cmdPrefix)
 	}
 
-	_ = cmd.PersistentFlags().String(BodyFlagName, "", "Optional json string for [body]. ")
+	_ = cmd.PersistentFlags().String(flagBodyName, "", `Optional json string for [body]. `)
 
 	// add flags for body
 	if err := registerModelItemFlags(0, "item", cmd); err != nil {
@@ -91,20 +91,21 @@ func registerOperationTodosUpdateOneBodyParamFlags(cmdPrefix string, cmd *cobra.
 
 	return nil
 }
+
 func registerOperationTodosUpdateOneIDParamFlags(cmdPrefix string, cmd *cobra.Command) error {
 
-	IDDescription := `Required. `
+	flagIDDescription := `Required. `
 
-	var IDFlagName string
+	var flagIDName string
 	if cmdPrefix == "" {
-		IDFlagName = "id"
+		flagIDName = "id"
 	} else {
-		IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+		flagIDName = fmt.Sprintf("%v.id", cmdPrefix)
 	}
 
-	var IDFlagDefault int64
+	var flagIDDefault int64
 
-	_ = cmd.PersistentFlags().Int64(IDFlagName, IDFlagDefault, IDDescription)
+	_ = cmd.PersistentFlags().Int64(flagIDName, flagIDDefault, flagIDDescription)
 
 	return nil
 }
@@ -113,58 +114,61 @@ func retrieveOperationTodosUpdateOneBodyFlag(m *todos.UpdateOneParams, cmdPrefix
 	retAdded := false
 	if cmd.Flags().Changed("body") {
 		// Read body string from cmd and unmarshal
-		bodyValueStr, err := cmd.Flags().GetString("body")
+		flagBodyValueStr, err := cmd.Flags().GetString("body")
 		if err != nil {
 			return err, false
 		}
 
-		bodyValue := models.Item{}
-		if err := json.Unmarshal([]byte(bodyValueStr), &bodyValue); err != nil {
+		flagBodyValue := models.Item{}
+		if err := json.Unmarshal([]byte(flagBodyValueStr), &flagBodyValue); err != nil {
 			return fmt.Errorf("cannot unmarshal body string in models.Item: %v", err), false
 		}
-		m.Body = &bodyValue
+		m.Body = &flagBodyValue
 	}
-	bodyValueModel := m.Body
-	if swag.IsZero(bodyValueModel) {
-		bodyValueModel = &models.Item{}
+	flagBodyModel := m.Body
+	if swag.IsZero(flagBodyModel) {
+		flagBodyModel = &models.Item{}
 	}
-	err, added := retrieveModelItemFlags(0, bodyValueModel, "item", cmd)
+	err, added := retrieveModelItemFlags(0, flagBodyModel, "item", cmd)
 	if err != nil {
 		return err, false
 	}
 	if added {
-		m.Body = bodyValueModel
+		m.Body = flagBodyModel
 	}
-	if dryRun && debug {
 
-		bodyValueDebugBytes, err := json.Marshal(m.Body)
+	if dryRun && debug {
+		flagBodyValueDebugBytes, err := json.Marshal(m.Body)
 		if err != nil {
 			return err, false
 		}
-		logDebugf("Body dry-run payload: %v", string(bodyValueDebugBytes))
+		logDebugf("Body dry-run payload: %v", string(flagBodyValueDebugBytes))
 	}
+
 	retAdded = retAdded || added
 
 	return nil, retAdded
 }
+
 func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix string, cmd *cobra.Command) (error, bool) {
 	retAdded := false
 	if cmd.Flags().Changed("id") {
 
-		var IDFlagName string
+		var flagIDName string
 		if cmdPrefix == "" {
-			IDFlagName = "id"
+			flagIDName = "id"
 		} else {
-			IDFlagName = fmt.Sprintf("%v.id", cmdPrefix)
+			flagIDName = fmt.Sprintf("%v.id", cmdPrefix)
 		}
 
-		IDFlagValue, err := cmd.Flags().GetInt64(IDFlagName)
+		flagIDValue, err := cmd.Flags().GetInt64(flagIDName)
 		if err != nil {
 			return err, false
 		}
-		m.ID = IDFlagValue
+		m.ID = flagIDValue
 
 	}
+
 	return nil, retAdded
 }
 

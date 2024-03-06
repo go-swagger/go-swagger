@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -47,7 +48,7 @@ func NewFindTodosOK() *FindTodosOK {
 }
 
 /*
-	FindTodosOK describes a response with status code 200, with default header values.
+FindTodosOK describes a response with status code 200, with default header values.
 
 list the todo operations
 */
@@ -80,12 +81,19 @@ func (o *FindTodosOK) IsCode(code int) bool {
 	return code == 200
 }
 
+// Code gets the status code for the find todos o k response
+func (o *FindTodosOK) Code() int {
+	return 200
+}
+
 func (o *FindTodosOK) Error() string {
-	return fmt.Sprintf("[GET /][%d] findTodosOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findTodosOK %s", 200, payload)
 }
 
 func (o *FindTodosOK) String() string {
-	return fmt.Sprintf("[GET /][%d] findTodosOK  %+v", 200, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findTodosOK %s", 200, payload)
 }
 
 func (o *FindTodosOK) GetPayload() []*models.Item {
@@ -110,7 +118,7 @@ func NewFindTodosDefault(code int) *FindTodosDefault {
 }
 
 /*
-	FindTodosDefault describes a response with status code -1, with default header values.
+FindTodosDefault describes a response with status code -1, with default header values.
 
 generic error response
 */
@@ -118,11 +126,6 @@ type FindTodosDefault struct {
 	_statusCode int
 
 	Payload *models.Error
-}
-
-// Code gets the status code for the find todos default response
-func (o *FindTodosDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this find todos default response has a 2xx status code
@@ -150,12 +153,19 @@ func (o *FindTodosDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the find todos default response
+func (o *FindTodosDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *FindTodosDefault) Error() string {
-	return fmt.Sprintf("[GET /][%d] findTodos default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findTodos default %s", o._statusCode, payload)
 }
 
 func (o *FindTodosDefault) String() string {
-	return fmt.Sprintf("[GET /][%d] findTodos default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /][%d] findTodos default %s", o._statusCode, payload)
 }
 
 func (o *FindTodosDefault) GetPayload() *models.Error {

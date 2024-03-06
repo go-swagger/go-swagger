@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -47,7 +48,7 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 }
 
 /*
-	DestroyOneNoContent describes a response with status code 204, with default header values.
+DestroyOneNoContent describes a response with status code 204, with default header values.
 
 Deleted
 */
@@ -79,12 +80,17 @@ func (o *DestroyOneNoContent) IsCode(code int) bool {
 	return code == 204
 }
 
+// Code gets the status code for the destroy one no content response
+func (o *DestroyOneNoContent) Code() int {
+	return 204
+}
+
 func (o *DestroyOneNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
 }
 
 func (o *DestroyOneNoContent) String() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
 }
 
 func (o *DestroyOneNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -100,7 +106,7 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 }
 
 /*
-	DestroyOneDefault describes a response with status code -1, with default header values.
+DestroyOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -108,11 +114,6 @@ type DestroyOneDefault struct {
 	_statusCode int
 
 	Payload *models.Error
-}
-
-// Code gets the status code for the destroy one default response
-func (o *DestroyOneDefault) Code() int {
-	return o._statusCode
 }
 
 // IsSuccess returns true when this destroy one default response has a 2xx status code
@@ -140,12 +141,19 @@ func (o *DestroyOneDefault) IsCode(code int) bool {
 	return o._statusCode == code
 }
 
+// Code gets the status code for the destroy one default response
+func (o *DestroyOneDefault) Code() int {
+	return o._statusCode
+}
+
 func (o *DestroyOneDefault) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
 }
 
 func (o *DestroyOneDefault) String() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
 }
 
 func (o *DestroyOneDefault) GetPayload() *models.Error {
