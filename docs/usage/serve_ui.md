@@ -1,18 +1,17 @@
 # Serve a documentation site
 
-The toolkit has a command to serve a spec json document and optionally a UI for a given spec. 
-It embeds redoc, so you can use that documentation site without an internet connection.
-Or it can load your local spec into the swagger docs viewer at http://petstore.swagger.io
+The toolkit has a command to serve a swaggr specificaion as a JSON document and optionally a UI to render this spec.
 
-<!--more-->
+This server publishes UI widgets `redoc` or `swaggerUI`.
+These assets are downloaded from public js repos, so you need an internet connection to use them.
 
-### Usage 
+### Usage
 
 To serve a documentation site:
 
 ```
 Usage:
-  swagger [OPTIONS] serve [serve-OPTIONS]
+  swagger [OPTIONS] serve [serve-OPTIONS] {specification file}
 
 serve a spec and swagger or redoc documentation ui
 
@@ -33,7 +32,16 @@ Help Options:
           --host=                     the interface to serve this site, defaults to 0.0.0.0 [$HOST]
 ```
 
-This will start a server with cors enabled so that sites on other domains can load your specification document. 
+This will start a server with CORS enabled so that sites on other domains can load your specification document.
+
+> **Attention**: if you use external $ref to a local file, we recommend that you serve a flattened specification document,
+> as the server won't serve external references.
+
+Example:
+```sh
+cd examples/cli
+swagger serve swagger.yml
+```
 
 ### Flavors
 
@@ -44,17 +52,21 @@ At this moment the UI can be served into 2 flavors.
 The swagger source code has a middleware for embedding Redoc.
 So for the redoc flavor we make use of that and use it with the spec you have on disk.
 
+We use the redoc JS bundle hosted at https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js
+
 #### Swagger UI
 
-For the swagger flavor we use the UI hosted at http://petstore.swagger.io.
-The server has CORS enabled and appends the url for the spec JSON to the petstore url as a query string. 
+For the swagger flavor we use the UI bundle hostsed at https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js
 
 #### Your own UI
 
 You can use your own UI by pointing it to the spec served by this command.
-When no ui is being served, the terminal will print the url to the spec document.
-You can also use the `--doc-url` to provide another url as base. 
-The url to your documentation site for example, which would need to recognize the query param url to load the swagger spec from, through the browser.
+
+When no UI is being served, the command will print the URL to the spec document to the terminal.
+
+You can also use the `--doc-url` to provide another url as base, for example
+the url to your documentation site, which would need to recognize the query param URL to load the swagger spec from,
+through the browser.
 
 ### More
 
