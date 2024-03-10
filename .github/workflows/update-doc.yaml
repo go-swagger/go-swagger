@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - v*
-    branches: [ "master" ]
+    branches: [ "master", "doc/*" ]
     paths:
     - docs/*
     - hack/hugo/*
