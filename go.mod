@@ -2,8 +2,6 @@ module github.com/go-swagger/go-swagger
 
 go 1.19
 
-replace github.com/go-openapi/validate => github.com/go-openapi/validate v0.23.2-0.20240304131831-3deae1650d22
-
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/coreos/go-oidc/v3 v3.9.0
@@ -16,13 +14,12 @@ require (
 	github.com/go-openapi/spec v0.20.15
 	github.com/go-openapi/strfmt v0.22.2
 	github.com/go-openapi/swag v0.22.10
-	github.com/go-openapi/validate v0.23.1
+	github.com/go-openapi/validate v0.23.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.1
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
