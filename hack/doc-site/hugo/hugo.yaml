@@ -11,7 +11,8 @@ theme: hugo-book
 
 enableEmoji: true
 
-baseURL: https://goswagger.io/go-swagger
+#baseURL: https://goswagger.io/go-swagger
+baseURL: https:///fredbi.github.io/go-swagger
 
 module:
   imports:

@@ -2,8 +2,6 @@ name: "Update documentation"
 
 on:
   push:
-    tags:
-      - v*
     branches: [ "master" ]
     paths:
     - docs/**
@@ -59,15 +57,20 @@ jobs:
           # Set go-swagger specific parameters that are used in some parameterized documents
           # This is used to keep up-to-date installation instructions.
           cd hack/doc-site/hugo
+
+          URL="https://goswagger.io"
           LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          VERSION_MESSAGE="Documentation set for latest master."
           ROOT=$(git rev-parse --show-toplevel)
           REQUIRED_GO_VERSION=$(grep "^go\s" "${ROOT}"/go.mod|cut -d" " -f2)
           printf \
-          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n" \
-          "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" > goswagger.yaml
+          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n    versionMessage: '%s'\n" \
+          "${URL}/${LATEST_RELEASE}" "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
+
+          sed '' hugo.yaml
 
       -
-        name: Build site with Hugo
+        name: Build site with Hugo for released documentation set
         uses: crazy-max/ghaction-hugo@v3
         with:
           version: v0.123.8  # <- pin the HUGO version, at they often break things

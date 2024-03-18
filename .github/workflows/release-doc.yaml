@@ -1,0 +1,118 @@
+name: "Release documentation set"
+
+on:
+  push:
+    tags:
+    - v*
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-doc:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+          #fetch-tags: 'true'
+          submodules: recursive
+          sparse-checkout: |
+            hack/
+            docs/
+      - name: Get all tags
+        run: git fetch --prune --unshallow --tags
+      -
+        name: Initialize themes
+        run: |
+          (cd hack/doc-site/hugo/ && git clone https://github.com/alex-shpak/hugo-book themes/hugo-book)
+
+      -
+        name: Checkout github pages main site
+        uses: actions/checkout@v4
+        with:
+          repository: fredbi/go-swagger.github.io
+          #repository: go-swagger/go-swagger.github.io
+          path: hack/doc-site/github-pages
+          sparse-checkout: |
+            index.html
+          fetch-depth: '1'
+
+      -
+        name: Prepare config
+        run: |
+          # Builds a commit-dependant extra config to inject parameterization.
+          # HUGO doesn't support config from the command line.
+          #
+          # Set go-swagger specific parameters that are used in some parameterized documents
+          # This is used to keep up-to-date installation instructions.
+          cd hack/doc-site/hugo
+
+          #SITE="https://goswagger.io"
+          SITE="https://fredbi.github.io"
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          VERSION_MESSAGE="Documentation set for release ${LATEST_RELEASE}."
+          ROOT=$(git rev-parse --show-toplevel)
+          REQUIRED_GO_VERSION=$(grep "^go\s" "${ROOT}"/go.mod|cut -d" " -f2)
+          printf \
+          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n    versionMessage: '%s'\n" \
+          "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
+
+          # Tweak HUGO configuration to produce released documentation site at {url}/vx.y.z.
+          sed 's/^baseURL:[[:space:]]*\(.\+\)$/baseURL: '$(echo "${SITE}/${LATEST_RELEASE}"|sed 's/\//\\\//g')'/' hugo.yaml | \
+          sed 's/^[[:space:]]\+BookEditPath:\(.\+\)$/  #BookEditPath:\1/' > release.yaml
+
+          echo "::debug::Configuration file for release" $(cat release.yaml)
+
+      -
+        name: Build release site with Hugo
+        uses: crazy-max/ghaction-hugo@v3
+        with:
+          version: v0.123.8  # <- pin the HUGO version, at they often break things
+          extended: true
+          args: >
+            --config release.yaml,goswagger.yaml
+            --buildDrafts
+            --cleanDestinationDir
+            --minify
+            --printPathWarnings
+            --ignoreCache
+            --noBuildLock
+            --logLevel info
+            --source ${{ github.workspace }}/hack/doc-site/hugo"
+
+      -
+        name: Copy generated site
+        run: |
+          ROOT=$(git rev-parse --show-toplevel)
+          cd hack/doc-site/github-pages
+
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          mkdir "${LATEST_RELEASE)"
+          (cd "${ROOT}"/hack/doc-site/hugo/public ; tar cf -)| (cd "${LATEST_RELEASE}" ; tar xf -)
+
+      -
+        name: Create PR for goswagger.github.io
+        run: |
+          cd $(git rev-parse --show-toplevel)
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          BRANCH="doc/${LATEST_RELEASE}"
+          cd hack/doc-site/github-pages
+
+          git checkout -b "${BRANCH}"
+          git add "${LATEST_RELEASE}"
+          git commit -s -m "doc: release documentation set for release ${LATEST_RELEASE}"
+          git push --set-upstream origin "${BRANCH}"
+          gh pr create -R fredbi/go-swagger.github.io --fill --base master --label release --label "${LATEST_RELEASE}"
