@@ -11,7 +11,7 @@ theme: hugo-book
 
 enableEmoji: true
 
-baseURL: https://goswagger.io/
+baseURL: https://goswagger.io/go-swagger
 
 module:
   imports:
@@ -114,7 +114,7 @@ params:
 
   # Set source repository location.
   # Used for 'Last Modified' and 'Edit this page' links.
-  BookRepo: 'https://github.com/fredbi/go-swagger'
+  BookRepo: 'https://github.com/go-swagger/go-swagger'
 
   # (Optional, default 'commit') Specifies commit portion of the link to the page's last modified
   # commit hash for 'doc' page type.
