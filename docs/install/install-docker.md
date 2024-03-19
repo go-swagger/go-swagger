@@ -18,18 +18,18 @@ Images are built for architectures: linux/amd64, linux/arm/v7, linux/arm64 and l
 
 First grab the image:
 
-1. From quay.io [![quay.io image](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquay.io%2Fapi%2Fv1%2Frepository%2Fgoswagger%2Fswagger%2Ftag%2F%3Flimit%3D1%26onlyActiveTags%3Dtrue%26filter_tag_name%3Dlike%3Av&label=quay.io%20images&query=%24.tags[:1].name)](https://quay.io/repository/goswagger/swagger/tags)
+1. From quay.io [![quay.io image](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquay.io%2Fapi%2Fv1%2Frepository%2Fgoswagger%2Fswagger%2Ftag%2F%3Flimit%3D1%26onlyActiveTags%3Dtrue%26filter_tag_name%3Dlike%3Av&label=quay.io%20images&query=%24.tags[:1].name)](https://quay.io/repository/goswagger/swagger?tab=tags)
 
-[![quay.io latest master](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquay.io%2Fapi%2Fv1%2Frepository%2Fgoswagger%2Fswagger%2Ftag%2F%3Flimit%3D1%26onlyActiveTags%3Dtrue%26filter_tag_name%3Dlike%3Amaster&label=quay.io%20images&query=%24.tags[:1].name)](https://quay.io/repository/goswagger/swagger/tags)
+[![quay.io latest master](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fquay.io%2Fapi%2Fv1%2Frepository%2Fgoswagger%2Fswagger%2Ftag%2F%3Flimit%3D1%26onlyActiveTags%3Dtrue%26filter_tag_name%3Dlike%3Amaster&label=quay.io%20images&query=%24.tags[:1].name)](https://quay.io/repository/goswagger/swagger?tab=tags)
 ```sh
 docker pull quay.io/goswagger/swagger
 ```
 
 or 
 
-2. From Github registry [![ghcr.io image](https://ghcr-badge.egpl.dev/go-swagger/go-swagger/latest_tag?trim=major&ignore=sha-*&label=ghcr.io%20image)](https://github.com/orgs/go-swagger/packages/container/package/go-swagger/versions)
+2. From Github registry [![ghcr.io image](https://ghcr-badge.egpl.dev/go-swagger/go-swagger/latest_tag?trim=major&ignore=sha-*&label=ghcr.io%20image)](https://github.com/orgs/go-swagger/packages/container/go-swagger/versions)
 
-[![ghcr.io latest master](https://ghcr-badge.egpl.dev/go-swagger/go-swagger/tags?trim=major&ignore=sha-%2A,v%2A,%5B0-9%5D%2A,publish%2A,latest&label=ghcr.io%20image)](https://github.com/orgs/go-swagger/packages/container/package/go-swagger/versions)
+[![ghcr.io latest master](https://ghcr-badge.egpl.dev/go-swagger/go-swagger/tags?trim=major&ignore=sha-%2A,v%2A,%5B0-9%5D%2A,publish%2A,latest&label=ghcr.io%20image)](https://github.com/orgs/go-swagger/packages/container/go-swagger/versions)
 
 ```sh
 docker pull ghcr.io/go-swagger/go-swagger
