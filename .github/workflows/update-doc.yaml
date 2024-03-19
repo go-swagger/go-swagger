@@ -43,8 +43,10 @@ jobs:
           sparse-checkout: |
             hack/
             docs/
+
       - name: Get all tags
         run: git fetch --prune --unshallow --tags
+
       -
         name: Initialize themes
         run: |
@@ -60,11 +62,12 @@ jobs:
           # This is used to keep up-to-date installation instructions.
           cd hack/doc-site/hugo
           LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          VERSION_MESSAGE="Documentation set for latest master."
           ROOT=$(git rev-parse --show-toplevel)
           REQUIRED_GO_VERSION=$(grep "^go\s" "${ROOT}"/go.mod|cut -d" " -f2)
           printf \
-          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n" \
-          "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" > goswagger.yaml
+          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n    versionMessage: '%s'\n" \
+          "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
 
       -
         name: Build site with Hugo
@@ -90,6 +93,7 @@ jobs:
           path: hack/doc-site/hugo/public
 
   deploy-doc:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
