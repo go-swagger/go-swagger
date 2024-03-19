@@ -91,12 +91,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: hack/doc-site/hugo/public
+      -
+        name: Debug
+        run: |
+          echo "${{ github.event_name }}"
+          echo "${{ github.event.action }}"
 
   deploy-doc:
-    if: github.event_name != 'pull_request'
+    if: ${{ github.event_name != 'pull_request_target' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+      trigger: $${{ github.event_name }}
     runs-on: ubuntu-latest
     needs: build-doc
     steps:
