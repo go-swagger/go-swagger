@@ -32,7 +32,7 @@ Help Options:
           --base-path=                the base path to serve the spec and UI at
       -F, --flavor=[redoc|swagger]    the flavor of docs, can be swagger or redoc (default: redoc)
           --doc-url=                  override the url which takes a url query param to render the doc ui
-          --no-open                   when present won't open the the browser to show the url
+          --no-open                   when present won't open the browser to show the url
           --no-ui                     when present, only the swagger spec will be served
       -p, --port=                     the port to serve this site [$PORT]
           --host=                     the interface to serve this site, defaults to 0.0.0.0 [$HOST]

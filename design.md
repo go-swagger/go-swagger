@@ -97,7 +97,7 @@ Binding makes use of plain vanilla golang serializers and they are identified by
 
 Binding is not only about request bodies but also about values obtained from headers, query string parameters and potentially the route path pattern. So the binding should make use of the full request object to produce a model.
 
-It determines a serializer to use by looking in the the merged consumes values and the `Content-Type` header to determine which deserializer to use.  
+It determines a serializer to use by looking in the merged consumes values and the `Content-Type` header to determine which deserializer to use.  
 When a result is produced it will do the same thing by making use of the `Accept` http header etc and the merged produces clauses for the operation endpoint.
 
 ```go
