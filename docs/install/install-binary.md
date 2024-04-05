@@ -96,6 +96,7 @@ We currently release binary builds for the following platforms:
 * linux ARM
 * linux ARM64
 * linux PPC64le
+* linux s390x
 * windows AMD64
 * window ARM64
 {{</hint>}}
