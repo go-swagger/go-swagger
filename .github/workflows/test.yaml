@@ -379,6 +379,6 @@ jobs:
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/,linux/s390x
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
