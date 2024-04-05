@@ -303,7 +303,7 @@
       "download_count": 23,
       "created_at": "2023-06-10T18:59:12Z",
       "updated_at": "2023-06-10T18:59:13Z",
-      "browser_download_url": "https://github.com/go-swagger/go-swagger/releases/download/v0.30.5/swagger_linux_s390x"
+      "browser_download_url": "https://github.com/go-swagger/go-swagger/releases/download/v0.30.5/swagger_linux_ppc64le"
     },
     {
       "url": "https://api.github.com/repos/go-swagger/go-swagger/releases/assets/112179147",
