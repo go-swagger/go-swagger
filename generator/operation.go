@@ -788,7 +788,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 				return GenParameter{}, err
 			}
 			res.Child = &pi
-			// Propagates HasValidations from from child array
+			// Propagates HasValidations from child array
 			hasChildValidations = pi.HasValidations
 		}
 		res.IsNullable = !param.Required && !param.AllowEmptyValue
