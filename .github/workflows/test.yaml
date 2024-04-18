@@ -237,7 +237,7 @@ jobs:
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=dev
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
 
@@ -281,6 +281,7 @@ jobs:
           build_binary linux arm64
           build_binary linux arm
           build_binary linux ppc64le
+          build_binary linux s390x
           build_binary darwin amd64
           build_binary darwin arm64
           build_binary windows amd64
@@ -378,6 +379,6 @@ jobs:
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

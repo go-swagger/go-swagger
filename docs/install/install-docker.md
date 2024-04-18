@@ -11,7 +11,7 @@ description: Installation instructions for go-swagger, from a docker image
 {{<hint "info">}}
 We release current master as docker images too.
 
-Images are built for architectures: linux/amd64, linux/arm/v7, linux/arm64 and linux/ppc64le.
+Images are built for architectures: linux/amd64, linux/arm/v7, linux/arm64 and linux/ppc64le,linux/s390x.
 {{</hint>}}
 
 ### Docker image
