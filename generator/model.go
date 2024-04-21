@@ -2074,7 +2074,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 			return nil
 		}
 		// TODO: case for embedded types as anonymous definitions
-		return errors.New("ERROR: inline definitions embedded types are not supported")
+		return fmt.Errorf("ERROR: inline definitions embedded types are not supported")
 	}
 
 	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)
