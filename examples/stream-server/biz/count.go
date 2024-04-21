@@ -2,6 +2,7 @@ package biz
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -15,7 +16,7 @@ type MyCounter struct{}
 // Down is the concrete implementation that spits out the JSON bodies
 func (mc *MyCounter) Down(max int64, w io.Writer) error {
 	if max == 11 {
-		return fmt.Errorf("we don't *do* elevensies")
+		return errors.New("we don't *do* elevensies")
 	}
 	e := json.NewEncoder(w)
 	for ix := int64(0); ix <= max; ix++ {
