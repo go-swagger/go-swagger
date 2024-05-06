@@ -45,7 +45,7 @@ and severely bloated the size of my binary.
 I'm reluctant to do so at this point in time because a git submodule break go-gettability.
 
 >I've had it included at one point but it's so much of a moving target that it would always be outdated.
->On top of it it are a lot of javascript and html files and people haven't been over the moon when go-swagger gets
+>On top of it is a lot of javascript and html files and people haven't been over the moon when go-swagger gets
 >vendored and they see all of that.
 
 Originally from issue [#370](https://github.com/go-swagger/go-swagger/issues/370).

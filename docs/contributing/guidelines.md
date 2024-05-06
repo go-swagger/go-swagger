@@ -17,4 +17,4 @@ We try to remain consistent across repositories regarding linting rules.
 
 # Vendoring
 
-All `go-openapi` and `go-swagger` repositories have adopted go modules and and are no longer using vendoring.
+All `go-openapi` and `go-swagger` repositories have adopted go modules and are no longer using vendoring.

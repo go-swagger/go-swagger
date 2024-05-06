@@ -17,7 +17,7 @@ package mods
 // Pet represents a pet in our store
 //
 // This model is not explicitly mentioned in the import paths,
-// but because it it transitively required by the order
+// but because it is transitively required by the order
 // it should also be collected.
 //
 // swagger:model pet

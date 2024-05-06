@@ -145,7 +145,7 @@ The second part is generating a swagger spec from go code based on annotations a
 
 The goal of this code generation is to just take care of the boilerplate.
 It uses a very small runtime to accommodate the swagger workflow. These are just small helpers for sharing some common
-code.  The server application uses plain go http do do its thing. All other code is generated so you can read what it
+code.  The server application uses plain go http do its thing. All other code is generated so you can read what it
 does and if you think it's worth it.
 
 The go server api generator however won't reuse those templates but define its own set, because currently no proper go support exists in that project. Once I'm happy with what they generate I'll contribute them back to the swagger-codegen project.
