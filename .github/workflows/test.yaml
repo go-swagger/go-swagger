@@ -120,7 +120,7 @@ jobs:
         # retry after 30s whenever codecov servers experience delays.
         # inspired by https://github.com/Kong/kubernetes-testing-framework/blob/230e26621db6af0d8543e784afb208e8c2a6b710/.github/workflows/tests.yaml#L57
         # until retries are eventually natively supported by the codecov CLI: https://github.com/codecov/codecov-action/issues/926
-        uses: Wandalen/wretry.action@v1.0.36
+        uses: Wandalen/wretry.action@v3
         with:
           action: codecov/codecov-action@v4
           attempt_limit: 10
