@@ -117,17 +117,24 @@ jobs:
           ./...
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@v4
+        # retry after 30s whenever codecov servers experience delays.
+        # inspired by https://github.com/Kong/kubernetes-testing-framework/blob/230e26621db6af0d8543e784afb208e8c2a6b710/.github/workflows/tests.yaml#L57
+        # until retries are eventually natively supported by the codecov CLI: https://github.com/codecov/codecov-action/issues/926
+        uses: Wandalen/wretry.action@v1.0.36
         with:
-          files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
-          flags: 'unit-${{ matrix.go }}'
-          os: '${{ matrix.os }}'
-          fail_ci_if_error: true
-          verbose: true
-          # This secret is not passed on when triggered by PR from a fork: in this case,
-          # tokenless upload is used by the codecov CLI.
-          # It is used when running the workflow from pushed commits or tags on master.
-          token: ${{ secrets.CODECOV_TOKEN }}
+          action: codecov/codecov-action@v4
+          attempt_limit: 10
+          attempt_delay: 30000
+          with: |
+            files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
+            flags: 'unit-${{ matrix.go }}'
+            os: '${{ matrix.os }}'
+            fail_ci_if_error: true
+            verbose: true
+            # This secret is not passed on when triggered by PR from a fork: in this case,
+            # tokenless upload is used by the codecov CLI.
+            # It is used when running the workflow from pushed commits or tags on master.
+            token: ${{ secrets.CODECOV_TOKEN }}
 
   codegen_test:
     # description: |
