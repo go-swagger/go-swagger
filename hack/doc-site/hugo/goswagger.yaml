@@ -1,5 +1,5 @@
 params:
   goswagger:
-    goVersion: '1.20'
-    latestRelease: 'v0.30.5'
+    goVersion: "1.22"
+    latestRelease: "v0.30.5"
     versionMessage: "Documentation set for latest master"
