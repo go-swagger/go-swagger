@@ -10,9 +10,9 @@ on:
     branches:
       - master
     paths-ignore:
-    - docs/*
-    - hack/hugo/*
-    - .github/workflows/update-doc.yaml
+      - docs/*
+      - hack/hugo/*
+      - .github/workflows/update-doc.yaml
 
   pull_request_target:
 
@@ -53,7 +53,7 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ['1.20','oldstable','stable']
+        go: ["oldstable", "stable"]
         os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
     runs-on: ${{ matrix.os }}
     steps:
@@ -88,9 +88,9 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ['oldstable','stable']
+        go: ["oldstable", "stable"]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        exclude:  # <- temporarily exclude go1.22.0 on windows. We hit this bug:https://github.com/golang/go/issues/65653
+        exclude: # <- temporarily exclude go1.22.0 on windows. We hit this bug:https://github.com/golang/go/issues/65653
           - go: stable
             os: windows-latest
     runs-on: ${{ matrix.os }}
@@ -146,12 +146,12 @@ jobs:
     needs: [lint]
     strategy:
       matrix:
-        go: ['oldstable','stable']
+        go: ["oldstable", "stable"]
         os: [ubuntu-latest]
         include:
-          - fixture: codegen-fixtures  # <- complex API specs to torture the code generator
+          - fixture: codegen-fixtures # <- complex API specs to torture the code generator
             args: "-skip-models -skip-full-flatten"
-          - fixture: canary-fixtures   # <- popular real-life API specs
+          - fixture: canary-fixtures # <- popular real-life API specs
             args: "-skip-models -skip-full-flatten -skip-expand"
     runs-on: ${{ matrix.os }}
     env:
@@ -190,9 +190,9 @@ jobs:
       - name: Publish To Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: 'codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt'
-          flags: 'codegen-${{ matrix.go }}-${{ matrix.fixture }}'
-          os: '${{ matrix.os }}'
+          files: "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
+          flags: "codegen-${{ matrix.go }}-${{ matrix.fixture }}"
+          os: "${{ matrix.os }}"
           fail_ci_if_error: true
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }} # <- this secret is not passed on when triggered by PR from a fork
@@ -256,7 +256,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version: "stable"
           check-latest: true
           cache: true
 
