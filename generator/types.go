@@ -152,7 +152,8 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 		def = nm
 	}
 	extType, isExternalType := t.resolveExternalType(ext)
-	if !isExternalType || extType.Embedded {
+	// if !isExternalType || extType.Embedded {
+	if !isExternalType {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
 			return def, t.definitionPkg, ""
@@ -815,7 +816,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	extType, isExternalType := t.resolveExternalType(schema.Extensions)
 	if isExternalType {
 		tpe, pkg, alias := t.knownDefGoType(t.ModelName, *schema, t.goTypeName)
-		debugLog("found type %s declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
+		log.Printf("found type %s declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
 			t.ModelName, pkg, tpe, extType.Hints.Kind != "", extType.Embedded)
 
 		if extType.Hints.Kind != "" && !extType.Embedded {
