@@ -2062,7 +2062,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		if tpe.IsEmbedded {
 			sg.GenSchema.IsAnonymous = true
 		}
-		// TODO: case for embedded types as anonymous definitions
+
 		sg.GenSchema.resolvedType = tpe
 		sg.GenSchema.Required = sg.Required
 		// assume we validate everything but interface and io.Reader - validation may be disabled by using the noValidation hint
