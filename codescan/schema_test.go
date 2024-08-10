@@ -833,6 +833,33 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "cat", "", "Cat")
 }
 
+func TestEmbeddedDescriptionAndTags(t *testing.T) {
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/bugs/3125"
+	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}})
+	require.NoError(t, err)
+	decl, _ := sctx.FindDecl(packagePath, "Item")
+	require.NotNil(t, decl)
+	prs := &schemaBuilder{
+		ctx:  sctx,
+		decl: decl,
+	}
+	models := make(map[string]spec.Schema)
+	require.NoError(t, prs.Build(models))
+	schema := models["Item"]
+
+	assert.Equal(t, []string{"value1", "value2"}, schema.Required)
+	require.Len(t, schema.Properties, 2)
+
+	require.Contains(t, schema.Properties, "value1")
+	assert.Equal(t, "Nullable value", schema.Properties["value1"].Description)
+	assert.Equal(t, true, schema.Properties["value1"].Extensions["x-nullable"])
+
+	require.Contains(t, schema.Properties, "value2")
+	assert.Equal(t, "Non-nullable value", schema.Properties["value2"].Description)
+	assert.NotContains(t, schema.Properties["value2"].Extensions, "x-nullable")
+	assert.Equal(t, `{"value": 42}`, schema.Properties["value2"].Example)
+}
+
 func TestSwaggerTypeNamed(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "NamedWithType")
