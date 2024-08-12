@@ -833,6 +833,76 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "cat", "", "Cat")
 }
 
+func TestPointersAreNullableByDefaultWhenSetXNullableForPointersIsSet(t *testing.T) {
+	assertModel := func(sctx *scanCtx, packagePath, modelName string) {
+		decl, _ := sctx.FindDecl(packagePath, modelName)
+		require.NotNil(t, decl)
+		prs := &schemaBuilder{
+			ctx:  sctx,
+			decl: decl,
+		}
+		models := make(map[string]spec.Schema)
+		require.NoError(t, prs.Build(models))
+
+		schema := models[modelName]
+		require.Len(t, schema.Properties, 5)
+
+		require.Contains(t, schema.Properties, "Value1")
+		assert.Equal(t, true, schema.Properties["Value1"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value2")
+		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value3")
+		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value4")
+		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
+		require.Contains(t, schema.Properties, "Value5")
+		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+	}
+
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
+	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}, SetXNullableForPointers: true})
+	require.NoError(t, err)
+
+	assertModel(sctx, packagePath, "Item")
+	assertModel(sctx, packagePath, "ItemInterface")
+}
+
+func TestPointersAreNotNullableByDefaultWhenSetXNullableForPointersIsNotSet(t *testing.T) {
+	assertModel := func(sctx *scanCtx, packagePath, modelName string) {
+		decl, _ := sctx.FindDecl(packagePath, modelName)
+		require.NotNil(t, decl)
+		prs := &schemaBuilder{
+			ctx:  sctx,
+			decl: decl,
+		}
+		models := make(map[string]spec.Schema)
+		require.NoError(t, prs.Build(models))
+
+		schema := models[modelName]
+		require.Len(t, schema.Properties, 5)
+
+		require.Contains(t, schema.Properties, "Value1")
+		assert.NotContains(t, schema.Properties["Value1"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value2")
+		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value3")
+		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value4")
+		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
+		require.Contains(t, schema.Properties, "Value5")
+		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+	}
+
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
+	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}})
+	require.NoError(t, err)
+
+	assertModel(sctx, packagePath, "Item")
+	assertModel(sctx, packagePath, "ItemInterface")
+}
+
 func TestSwaggerTypeNamed(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "NamedWithType")
