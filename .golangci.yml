@@ -16,7 +16,7 @@ linters-settings:
   goimports:
     local-prefixes: github.com/go-swagger/go-swagger
   govet:
-    enable-all: true
+    enable: ["shadow"]
   # golint:
   #   min-confidence: 0
   # govet:

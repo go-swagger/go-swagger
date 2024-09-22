@@ -193,7 +193,7 @@ func Test_GenerateClient(t *testing.T) {
 			t.Run("make sure this did not fail and we have some output", func(t *testing.T) {
 				stat, err := os.Stat(filepath.Join(tgt, "stdout"))
 				require.NoError(t, err)
-				require.Greater(t, stat.Size(), int64(0))
+				require.Positive(t, stat.Size())
 			})
 		})
 	})

@@ -405,7 +405,7 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			}
 
 			if defaultName, ok := defaultName(cmt); ok {
-				debugLog(defaultName)
+				debugLog(defaultName) //nolint:govet
 				return nil
 			}
 
