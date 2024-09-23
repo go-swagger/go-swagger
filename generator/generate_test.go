@@ -685,5 +685,5 @@ func (MyOtherType) ContextValidate(context.Context, strfmt.Registry) error { ret
 // MyStreamer ...
 type MyStreamer io.Reader
 `),
-		os.ModePerm))
+		0o600))
 }
