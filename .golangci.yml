@@ -15,12 +15,14 @@ linters-settings:
     min-complexity: 25
   goimports:
     local-prefixes: github.com/go-swagger/go-swagger
-  golint:
-    min-confidence: 0
   govet:
-    check-shadowing: true
-  maligned:
-    suggest-new: true
+    enable: ["shadow"]
+  # golint:
+  #   min-confidence: 0
+  # govet:
+  #   check-shadowing: true
+  # maligned:
+  #   suggest-new: true
   testifylint:
     disable:
       - float-compare
@@ -37,11 +39,12 @@ linters-settings:
       - suite-dont-use-pkg
       - suite-extra-assert-call
 
-run:
-  skip-dirs:
+issues:
+  exclude-dirs:
     - playground
     - fixtures
     - cmd
+run:
   timeout: 5m
 
 linters:
@@ -57,11 +60,11 @@ linters:
     - stylecheck
     - testifylint
     - unconvert
+    - govet
   disable:
     - dupl
     - gochecknoglobals
     - gochecknoinits
     - lll
-    - maligned
     - nakedret
     - unparam

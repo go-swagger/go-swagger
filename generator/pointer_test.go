@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/go-openapi/loads"
@@ -684,13 +683,13 @@ func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver,
 }
 
 func assertBuiltinResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
-	return assert.Equal(t, tpe, tr.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType)) &&
-		assert.Equal(t, tfmt, tr.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat)) &&
-		assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
+	return assert.Equal(t, tpe, tr.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
+		assert.Equal(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
+		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
 }
 
 func assertBuiltinSliceElemnResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
-	return assert.Equal(t, tpe, tr.ElemType.SwaggerType, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType)) &&
-		assert.Equal(t, tfmt, tr.ElemType.SwaggerFormat, fmt.Sprintf("expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat)) &&
-		assert.Equal(t, exp, tr.GoType, fmt.Sprintf("expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType))
+	return assert.Equal(t, tpe, tr.ElemType.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
+		assert.Equal(t, tfmt, tr.ElemType.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
+		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
 }
