@@ -19,6 +19,8 @@ FROM --platform=$TARGETPLATFORM alpine
 
 LABEL maintainer="Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)"
 
+RUN apk --no-cache add ca-certificates shared-mime-info mailcap
+
 COPY --from=cross /work/bin/swagger /usr/bin/swagger
 COPY --from=cross /work/generator/templates/contrib /templates/
 
