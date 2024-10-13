@@ -303,6 +303,8 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 	}
 
 	switch titpe := tpe.(type) {
+	case *types.Alias:
+		return nil // resolves panic
 	case *types.Basic:
 		return swaggerSchemaForType(titpe.String(), tgt)
 	case *types.Pointer:
