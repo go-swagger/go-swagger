@@ -969,105 +969,98 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 		return nil
 	}
 
-	if ps.Ref.String() == "" {
-		sp.setDescription = func(lines []string) {
-			ps.Description = joinDropLast(lines)
-			enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
-			if enumDesc != "" {
-				ps.Description += "\n" + enumDesc
-			}
+	sp.setDescription = func(lines []string) {
+		ps.Description = joinDropLast(lines)
+		enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
+		if enumDesc != "" {
+			ps.Description += "\n" + enumDesc
 		}
-		sp.taggers = []tagParser{
-			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
-			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
-			newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
-			newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
-			newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
-			newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
-			newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
-			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
-			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
-			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
-			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
-			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
-			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
-			newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, schemaVendorExtensibleSetter(ps)), true),
-		}
+	}
+	sp.taggers = []tagParser{
+		newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
+		newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
+		newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
+		newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
+		newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
+		newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
+		newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
+		newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
+		newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
+		newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
+		newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
+		newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+		newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
+		newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
+		newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, schemaVendorExtensibleSetter(ps)), true),
+	}
 
-		itemsTaggers := func(items *spec.Schema, level int) []tagParser {
-			schemeType, err := items.Type.MarshalJSON()
+	itemsTaggers := func(items *spec.Schema, level int) []tagParser {
+		schemeType, err := items.Type.MarshalJSON()
+		if err != nil {
+			return nil
+		}
+		// the expression is 1-index based not 0-index
+		itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+		return []tagParser{
+			newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+		}
+	}
+
+	var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
+	parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
+		if items == nil || items.Schema == nil {
+			return []tagParser{}, nil
+		}
+		switch iftpe := expr.(type) {
+		case *ast.ArrayType:
+			eleTaggers := itemsTaggers(items.Schema, level)
+			sp.taggers = append(eleTaggers, sp.taggers...)
+			otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
 			if err != nil {
-				return nil
+				return nil, err
 			}
-			// the expression is 1-index based not 0-index
-			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
-			return []tagParser{
-				newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+			return otherTaggers, nil
+		case *ast.Ident:
+			taggers := []tagParser{}
+			if iftpe.Obj == nil {
+				taggers = itemsTaggers(items.Schema, level)
 			}
-		}
-
-		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
-		parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
-			if items == nil || items.Schema == nil {
-				return []tagParser{}, nil
-			}
-			switch iftpe := expr.(type) {
-			case *ast.ArrayType:
-				eleTaggers := itemsTaggers(items.Schema, level)
-				sp.taggers = append(eleTaggers, sp.taggers...)
-				otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			case *ast.Ident:
-				taggers := []tagParser{}
-				if iftpe.Obj == nil {
-					taggers = itemsTaggers(items.Schema, level)
-				}
-				otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return append(taggers, otherTaggers...), nil
-			case *ast.StarExpr:
-				otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			default:
-				return nil, fmt.Errorf("unknown field type ele for %q", nm)
-			}
-		}
-		// check if this is a primitive, if so parse the validations from the
-		// doc comments of the slice declaration.
-		if ftped, ok := fld.Type.(*ast.ArrayType); ok {
-			taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
+			otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
 			if err != nil {
-				return sp
+				return nil, err
 			}
-			sp.taggers = append(taggers, sp.taggers...)
+			return append(taggers, otherTaggers...), nil
+		case *ast.StarExpr:
+			otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
+			if err != nil {
+				return nil, err
+			}
+			return otherTaggers, nil
+		default:
+			return nil, fmt.Errorf("unknown field type ele for %q", nm)
 		}
-
-	} else {
-		sp.taggers = []tagParser{
-			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+	}
+	// check if this is a primitive, if so parse the validations from the
+	// doc comments of the slice declaration.
+	if ftped, ok := fld.Type.(*ast.ArrayType); ok {
+		taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
+		if err != nil {
+			return sp
 		}
+		sp.taggers = append(taggers, sp.taggers...)
 	}
 	return sp
 }
