@@ -816,7 +816,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	extType, isExternalType := t.resolveExternalType(schema.Extensions)
 	if isExternalType {
 		tpe, pkg, alias := t.knownDefGoType(t.ModelName, *schema, t.goTypeName)
-		log.Printf("found type %s declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
+		debugLog("found type %s declared as external, imported from %s as %s. Has type hints? %t, rendered has embedded? %t",
 			t.ModelName, pkg, tpe, extType.Hints.Kind != "", extType.Embedded)
 
 		if extType.Hints.Kind != "" && !extType.Embedded {
