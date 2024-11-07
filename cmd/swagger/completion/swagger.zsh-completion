@@ -113,6 +113,7 @@ __generate_spec() {
     '(-h,--help)'{-h,--help}'[Print help message]' \
     '(-w,--work-dir)'{-w,--work-dir}"[the base path to use (default: .)]:work-dir" \
     '(-m,--scan-models)'{-m,--scan-models}"[includes models that were annotated with 'swagger:model']" \
+    '(-n,--nullable-pointers)'{-n,--nullable-pointers}"[set x-nullable extension to true automatically for fields of pointer types without 'omitempty']" \
     "(--compact)--compact[when present, doesn't prettify the the json]" \
     '(-o,--output)'{-o,--output}"[the file to write to]:output" \
     '(-i,--input)'{-i,--input}"[an input swagger file with which to merge]:input" && return 0
