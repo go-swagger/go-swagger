@@ -82,6 +82,7 @@ type GenSchema struct {
 	StrictAdditionalProperties bool
 	ReadOnly                   bool
 	IsVirtual                  bool
+	IsAnonymous                bool
 	IsBaseType                 bool
 	HasBaseType                bool
 	IsSubType                  bool
@@ -139,6 +140,8 @@ func (g GenSchema) PrintTags() string {
 		orderedTags = append(orderedTags, "xml")
 	}
 
+	customMap := getCustomTagKeyMap(g.CustomTag)
+
 	// Add extra struct tags, only if the tag hasn't already been set, i.e. example.
 	// Extra struct tags have the same value has the `json` tag.
 	for _, tag := range g.StructTags {
@@ -154,10 +157,27 @@ func (g GenSchema) PrintTags() string {
 		case tag == "description" && len(g.Description) > 0:
 			tags["description"] = g.Description
 		default:
+			if customMap[tag] {
+				// dedupe
+				continue
+			}
 			tags[tag] = tags["json"]
 		}
 
 		orderedTags = append(orderedTags, tag)
+	}
+
+	if customMap["json"] {
+		// avoid duplication
+		delete(tags, "json")
+		var newOrderedTags []string
+		for i, tag := range orderedTags {
+			if tag == "json" {
+				continue
+			}
+			newOrderedTags = append(newOrderedTags, orderedTags[i])
+		}
+		orderedTags = newOrderedTags
 	}
 
 	// Assemble the tags in key value pairs with the value properly quoted.
