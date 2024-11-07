@@ -217,7 +217,7 @@ https://github.com/go-swagger/go-swagger/blob/master/generator/templates.go#L61-
 
 Note: customizing templates already brings many options to the table, including generating artifacts in other languages than go.
 
-There is some documentation on the config file format here: https://github.com/go-swagger/go-swagger/blob/gen-layout-configfile/docs/use/template_layout.md
+There is some documentation on the config file format here: https://github.com/go-swagger/go-swagger/blob/master/docs/reference/templates/template_layout.md
 
 Also keep in mind that `go-openapi` and `go-swagger` constitute a _toolkit_
 and provide you the *tools* to adapt to your own use case.
