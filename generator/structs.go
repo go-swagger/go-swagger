@@ -82,7 +82,6 @@ type GenSchema struct {
 	StrictAdditionalProperties bool
 	ReadOnly                   bool
 	IsVirtual                  bool
-	IsAnonymous                bool
 	IsBaseType                 bool
 	HasBaseType                bool
 	IsSubType                  bool
