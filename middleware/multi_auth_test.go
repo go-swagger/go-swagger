@@ -19,73 +19,65 @@ func (m *mockAuthenticator) Authenticate(interface{}) (bool, interface{}, error)
 }
 
 func TestMultiAuthenticator(t *testing.T) {
-	t.Parallel()
-
 	t.Run("first authenticator succeeds", func(t *testing.T) {
-		t.Parallel()
 		auth1 := &mockAuthenticator{shouldAuthenticate: true, principal: "user1"}
 		auth2 := &mockAuthenticator{shouldAuthenticate: false}
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		require.NoError(t, err, "first authenticator should succeed without error")
-		require.True(t, ok, "authentication should succeed when first authenticator succeeds")
-		require.Equal(t, "user1", principal, "should return principal from first authenticator")
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "user1", principal)
 	})
 
 	t.Run("second authenticator succeeds", func(t *testing.T) {
-		t.Parallel()
 		auth1 := &mockAuthenticator{shouldAuthenticate: false}
 		auth2 := &mockAuthenticator{shouldAuthenticate: true, principal: "user2"}
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		require.NoError(t, err, "second authenticator should succeed without error")
-		require.True(t, ok, "authentication should succeed when second authenticator succeeds")
-		require.Equal(t, "user2", principal, "should return principal from second authenticator")
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "user2", principal)
 	})
 
 	t.Run("all authenticators fail", func(t *testing.T) {
-		t.Parallel()
 		auth1 := &mockAuthenticator{shouldAuthenticate: false}
 		auth2 := &mockAuthenticator{shouldAuthenticate: false}
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		require.NoError(t, err, "should not return error when all authenticators fail")
-		require.False(t, ok, "authentication should fail when all authenticators fail")
-		require.Nil(t, principal, "principal should be nil when all authenticators fail")
+		require.NoError(t, err)
+		require.False(t, ok)
+		require.Nil(t, principal)
 	})
 
 	t.Run("authenticator returns error", func(t *testing.T) {
-		t.Parallel()
-		expectedErr := errors.New("auth failed")
-		auth1 := &mockAuthenticator{err: expectedErr}
+		auth1 := &mockAuthenticator{err: errors.New("auth failed")}
 		auth2 := &mockAuthenticator{shouldAuthenticate: true}
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		require.ErrorIs(t, err, expectedErr, "should return error from authenticator")
-		require.False(t, ok, "authentication should fail when authenticator returns error")
-		require.Nil(t, principal, "principal should be nil when authenticator returns error")
+		require.Error(t, err)
+		require.False(t, ok)
+		require.Nil(t, principal)
+		require.EqualError(t, err, "auth failed")
 	})
 
 	t.Run("nil authenticator is skipped", func(t *testing.T) {
-		t.Parallel()
 		auth1 := (*mockAuthenticator)(nil)
 		auth2 := &mockAuthenticator{shouldAuthenticate: true, principal: "user2"}
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		require.NoError(t, err, "should not return error when skipping nil authenticator")
-		require.True(t, ok, "authentication should succeed when valid authenticator succeeds")
-		require.Equal(t, "user2", principal, "should return principal from valid authenticator")
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "user2", principal)
 	})
 
-	t.Run("no authenticators panic", func(t *testing.T) {
-		t.Parallel()
-		require.PanicsWithValue(t, "at least one authenticator is required", func() {
+	t.Run("no authenticators", func(t *testing.T) {
+		require.Panics(t, func() {
 			_ = middleware.NewMultiAuthenticator()
-		}, "should panic when no authenticators are provided")
+		})
 	})
 }

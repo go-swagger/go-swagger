@@ -17,8 +17,7 @@ func NewMultiAuthenticator(authenticators ...runtime.Authenticator) *MultiAuthen
 	return &MultiAuthenticator{authenticators: authenticators}
 }
 
-// Authenticate implements the runtime.Authenticator interface.
-// It tries each authenticator in order until one succeeds.
+// Authenticate implements the runtime.Authenticator interface
 func (m *MultiAuthenticator) Authenticate(params interface{}) (bool, interface{}, error) {
 	for _, auth := range m.authenticators {
 		if auth == nil {
