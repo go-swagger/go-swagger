@@ -10,12 +10,11 @@ import (
 
 func TestRouteExpression(t *testing.T) {
 	t.Parallel()
+	const patternDelete = `swagger:route\s+DELETE\s+/orders/\{id\}\s+deleteOrder`
+	const patternGet = `swagger:route\s+GET\s+/v1\.2/something\s+deleteOrder`
 
-	patternDelete := `swagger:route\s+DELETE\s+/orders/\{id\}\s+deleteOrder`
-	patternGet := `swagger:route\s+GET\s+/v1\.2/something\s+deleteOrder`
-
-	require.Regexp(t, patternDelete, "swagger:route DELETE /orders/{id} deleteOrder", "delete route pattern should match")
-	require.Regexp(t, patternGet, "swagger:route GET /v1.2/something deleteOrder", "get route pattern should match")
+	require.Regexp(t, patternDelete, "swagger:route DELETE /orders/{id} deleteOrder")
+	require.Regexp(t, patternGet, "swagger:route GET /v1.2/something deleteOrder")
 }
 
 func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string, extensions spec.Extensions) {
@@ -23,12 +22,12 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	require.Equal(t, summary, op.Summary)
 	require.Equal(t, description, op.Description)
 	require.Equal(t, id, op.ID)
-
+	require.ElementsMatch(t, tags, op.Tags)
+	
 	expectedConsumes := []string{"application/json", "application/x-protobuf"}
 	expectedProduces := []string{"application/json", "application/x-protobuf"}
 	expectedSchemes := []string{"http", "https", "ws", "wss"}
 
-	require.ElementsMatch(t, tags, op.Tags)
 	require.ElementsMatch(t, expectedConsumes, op.Consumes)
 	require.ElementsMatch(t, expectedProduces, op.Produces)
 	require.ElementsMatch(t, expectedSchemes, op.Schemes)
@@ -56,8 +55,10 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	if extensions != nil {
 		expectedJSON, err := json.Marshal(extensions)
 		require.NoError(t, err)
+
 		actualJSON, err := json.Marshal(op.Extensions)
 		require.NoError(t, err)
+
 		require.JSONEq(t, string(expectedJSON), string(actualJSON))
 	} else {
 		require.Empty(t, op.Extensions)
@@ -69,12 +70,12 @@ func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, descript
 	require.Equal(t, summary, op.Summary)
 	require.Equal(t, description, op.Description)
 	require.Equal(t, id, op.ID)
+	require.ElementsMatch(t, tags, op.Tags)
 
 	expectedConsumes := []string{"application/json", "application/x-protobuf"}
 	expectedProduces := []string{"application/json", "application/x-protobuf"}
 	expectedSchemes := []string{"http", "https", "ws", "wss"}
 
-	require.ElementsMatch(t, tags, op.Tags)
 	require.ElementsMatch(t, expectedConsumes, op.Consumes)
 	require.ElementsMatch(t, expectedProduces, op.Produces)
 	require.ElementsMatch(t, expectedSchemes, op.Schemes)
