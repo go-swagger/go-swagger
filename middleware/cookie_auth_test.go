@@ -5,35 +5,37 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/middleware"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCookieAuthenticator(t *testing.T) {
 	auth := middleware.NewCookieAuthenticator("session")
 
 	t.Run("valid cookie", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", "/", nil)
+		req, err := http.NewRequest("GET", "/", nil)
+		require.NoError(t, err)
 		req.AddCookie(&http.Cookie{Name: "session", Value: "valid-token"})
 
 		ok, principal, err := auth.Authenticate(req)
-		assert.True(t, ok)
-		assert.Equal(t, "valid-token", principal)
-		assert.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "valid-token", principal)
+		require.NoError(t, err)
 	})
 
 	t.Run("missing cookie", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", "/", nil)
+		req, err := http.NewRequest("GET", "/", nil)
+		require.NoError(t, err)
 
 		ok, principal, err := auth.Authenticate(req)
-		assert.False(t, ok)
-		assert.Nil(t, principal)
-		assert.NoError(t, err)
+		require.False(t, ok)
+		require.Nil(t, principal)
+		require.NoError(t, err)
 	})
 
 	t.Run("invalid params", func(t *testing.T) {
 		ok, principal, err := auth.Authenticate("not a request")
-		assert.False(t, ok)
-		assert.Nil(t, principal)
-		assert.NoError(t, err)
+		require.False(t, ok)
+		require.Nil(t, principal)
+		require.NoError(t, err)
 	})
 }

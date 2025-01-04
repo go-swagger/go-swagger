@@ -1,12 +1,11 @@
 package middleware_test
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-swagger/go-swagger/middleware"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type mockAuthenticator struct {
@@ -27,9 +26,9 @@ func TestMultiAuthenticator(t *testing.T) {
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		assert.True(t, ok)
-		assert.Equal(t, "user1", principal)
-		assert.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "user1", principal)
+		require.NoError(t, err)
 	})
 
 	t.Run("second authenticator succeeds", func(t *testing.T) {
@@ -39,9 +38,9 @@ func TestMultiAuthenticator(t *testing.T) {
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		assert.True(t, ok)
-		assert.Equal(t, "user2", principal)
-		assert.NoError(t, err)
+		require.True(t, ok)
+		require.Equal(t, "user2", principal)
+		require.NoError(t, err)
 	})
 
 	t.Run("all authenticators fail", func(t *testing.T) {
@@ -51,8 +50,8 @@ func TestMultiAuthenticator(t *testing.T) {
 		multi := middleware.NewMultiAuthenticator(auth1, auth2)
 
 		ok, principal, err := multi.Authenticate(nil)
-		assert.False(t, ok)
-		assert.Nil(t, principal)
-		assert.NoError(t, err)
+		require.False(t, ok)
+		require.Nil(t, principal)
+		require.NoError(t, err)
 	})
 }
