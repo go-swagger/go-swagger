@@ -11,12 +11,20 @@ type MultiAuthenticator struct {
 
 // NewMultiAuthenticator creates a new multi-authenticator
 func NewMultiAuthenticator(authenticators ...runtime.Authenticator) *MultiAuthenticator {
+	if len(authenticators) == 0 {
+		panic("at least one authenticator is required")
+	}
 	return &MultiAuthenticator{authenticators: authenticators}
 }
 
-// Authenticate implements the runtime.Authenticator interface
+// Authenticate implements the runtime.Authenticator interface.
+// It tries each authenticator in order until one succeeds.
 func (m *MultiAuthenticator) Authenticate(params interface{}) (bool, interface{}, error) {
 	for _, auth := range m.authenticators {
+		if auth == nil {
+			continue
+		}
+
 		ok, principal, err := auth.Authenticate(params)
 		if err != nil {
 			return false, nil, err
