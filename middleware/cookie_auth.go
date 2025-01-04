@@ -18,12 +18,15 @@ func NewCookieAuthenticator(name string) *CookieAuthenticator {
 
 // Authenticate implements the runtime.Authenticator interface
 func (c *CookieAuthenticator) Authenticate(params interface{}) (bool, interface{}, error) {
-	if req, ok := params.(*http.Request); ok {
-		cookie, err := req.Cookie(c.Name)
-		if err != nil {
-			return false, nil, nil
-		}
-		return true, cookie.Value, nil
+	req, ok := params.(*http.Request)
+	if !ok {
+		return false, nil, nil
 	}
-	return false, nil, nil
+
+	cookie, err := req.Cookie(c.Name)
+	if err != nil {
+		return false, nil, nil
+	}
+
+	return true, cookie.Value, nil
 }

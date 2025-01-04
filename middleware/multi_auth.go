@@ -17,9 +17,14 @@ func NewMultiAuthenticator(authenticators ...runtime.Authenticator) *MultiAuthen
 // Authenticate implements the runtime.Authenticator interface
 func (m *MultiAuthenticator) Authenticate(params interface{}) (bool, interface{}, error) {
 	for _, auth := range m.authenticators {
-		if ok, principal, err := auth.Authenticate(params); ok {
-			return true, principal, err
+		ok, principal, err := auth.Authenticate(params)
+		if err != nil {
+			return false, nil, err
+		}
+		if ok {
+			return true, principal, nil
 		}
 	}
+
 	return false, nil, nil
 }
