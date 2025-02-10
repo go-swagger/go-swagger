@@ -330,7 +330,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "string", p.Schema.Type[0])
 	assert.Equal(t, "orange", p.Schema.Default)
 	assert.Equal(t, []interface{}{"apple", "orange", "pineapple", "peach", "plum"}, p.Schema.Enum)
-	assert.Empty(t, "", p.Type)
+	assert.Empty(t, p.Type)
 }
 
 func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string, extensions spec.Extensions) {
