@@ -1164,7 +1164,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	assertInCode(t, k+") UnmarshalJSON", res)
 	assertInCode(t, k+") MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	assert.NotContains(t, res, "lastIndex")
 
 	for i, p := range genModel.Properties {
 		m := "m.P" + strconv.Itoa(i)
@@ -1359,7 +1359,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 	assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	assert.NotContains(t, res, "lastIndex")
 
 	for i, p := range sch.Properties {
 		m := "m.P" + strconv.Itoa(i)
