@@ -152,8 +152,7 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 		def = nm
 	}
 	extType, isExternalType := t.resolveExternalType(ext)
-	// if !isExternalType || extType.Embedded {
-	if !isExternalType {
+	if !isExternalType || extType.Embedded {
 		if clear == nil {
 			debugLog("known def type no clear: %q", def)
 			return def, t.definitionPkg, ""
