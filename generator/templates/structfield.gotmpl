@@ -3,13 +3,13 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
   {{- end}}
-{{ if not $.IsAnonymous }}
+{{- if or (not $.IsAnonymous) (.IsInterface) }}
 {{ pascalize .Name}} {{ template "schemaType" . }} {{ .PrintTags }}
-{{ else }}
+{{- else }}{{ printf "\n" }}
   {{- if and (not .IsMap) .IsNullable (not .IsSuperAlias) }}*{{ end }}
   {{- if .IsSuperAlias }} = {{ end }}
   {{- .GoType }} {{ .PrintTags }}
-{{ end }}
+{{- end }}
 {{ end }}
 
 {{- define "tuplefield" }}
