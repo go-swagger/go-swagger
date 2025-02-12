@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-go@v5
         with:
           go-version: stable
@@ -58,6 +60,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -96,6 +100,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -158,6 +164,8 @@ jobs:
       GOCOVERDIR: /tmp/cov
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
