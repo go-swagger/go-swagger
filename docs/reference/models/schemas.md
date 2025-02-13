@@ -1331,7 +1331,7 @@ type ObjectWithDescription struct {
 ```
 
 
-[swagger]: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema-object
+[swagger]: https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md#schema-object
 [strfmt]: https://github.com/go-openapi/strfmt
 [runtime]: https://github.com/go-openapi/runtime
 [File]: https://github.com/go-openapi/runtime/blob/master/file.go#L20
@@ -1339,7 +1339,7 @@ type ObjectWithDescription struct {
 [validate]: https://github.com/go-openapi/validate
 [validate-json]: https://godoc.org/github.com/go-openapi/validate#ex-AgainstSchema
 [go-doc-model]: https://godoc.org/github.com/go-swagger/go-swagger/examples/generated/models
-[read-only]: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#fixed-fields-13
+[read-only]: https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md#fixed-fields-13
 [all-formats]:  https://github.com/go-openapi/strfmt/blob/master/README.md
 [easy-json]: https://github.com/mailru/easyjson
 [json-schema]: https://tools.ietf.org/html/draft-fge-json-schema-validation-00

@@ -23,7 +23,7 @@ weight: 1
 
 ---
 
-This project contains a golang implementation of Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md)).
+This project contains a golang implementation of Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md)).
 It provide tools to work with swagger specifications.
 
 [Swagger](https://swagger.io/) is a simple yet powerful representation of your RESTful API.<br>

@@ -98,7 +98,7 @@ func Test_GenerateClient(t *testing.T) {
 
 		t.Run("should fail on bad content in spec (HTML, not json)", func(t *testing.T) {
 			opts := testClientGenOpts()
-			opts.Spec = "https://github.com/OAI/OpenAPI-Specification/blob/master/examples/v2.0/json/petstore.json"
+			opts.Spec = "https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.json"
 			require.Error(t,
 				GenerateClient(clientName, []string{}, []string{}, opts),
 			)
@@ -106,7 +106,7 @@ func Test_GenerateClient(t *testing.T) {
 
 		t.Run("should fail when no valid operation is selected", func(t *testing.T) {
 			opts := testClientGenOpts()
-			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
+			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
 			require.Error(t,
 				GenerateClient(clientName, []string{}, []string{"wrongOperationID"}, opts),
 			)
@@ -128,7 +128,7 @@ func Test_GenerateClient(t *testing.T) {
 
 		t.Run("from remote spec", func(t *testing.T) {
 			opts := testClientGenOpts()
-			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
+			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
 
 			tft, err := os.MkdirTemp(cwd, "generated")
 			require.NoError(t, err)
@@ -172,7 +172,7 @@ func Test_GenerateClient(t *testing.T) {
 
 		t.Run("should dump template data", func(t *testing.T) {
 			opts := testClientGenOpts()
-			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/yaml/petstore.yaml"
+			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
 
 			origStdout := os.Stdout
 			defer func() {
