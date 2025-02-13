@@ -50,7 +50,7 @@ jobs:
       -
         name: Initialize themes
         run: |
-          (cd hack/doc-site/hugo/ && git clone https://github.com/alex-shpak/hugo-book themes/hugo-book)
+          (cd hack/doc-site/hugo/ && git clone --branch v9 https://github.com/alex-shpak/hugo-book themes/hugo-book)
 
       -
         name: Prepare config
