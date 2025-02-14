@@ -848,6 +848,53 @@ func TestSwaggerTypeNamed(t *testing.T) {
 	assertProperty(t, &schema, "object", "some_map", "", "SomeMap")
 }
 
+func TestSwaggerTypeNamedWithGenerics(t *testing.T) {
+	tests := map[string]func(t *testing.T, models map[string]spec.Schema){
+		"NamedStringResults": func(t *testing.T, models map[string]spec.Schema) {
+			schema := models["namedStringResults"]
+			assertArrayProperty(t, &schema, "string", "matches", "", "Matches")
+		},
+		"NamedStoreOrderResults": func(t *testing.T, models map[string]spec.Schema) {
+			schema := models["namedStoreOrderResults"]
+			assertArrayRef(t, &schema, "matches", "Matches", "#/definitions/order")
+		},
+		"NamedStringSlice": func(t *testing.T, models map[string]spec.Schema) {
+			assertArrayDefinition(t, models, "namedStringSlice", "string", "", "NamedStringSlice")
+		},
+		"NamedStoreOrderSlice": func(t *testing.T, models map[string]spec.Schema) {
+			assertArrayWithRefDefinition(t, models, "namedStoreOrderSlice", "#/definitions/order", "NamedStoreOrderSlice")
+		},
+		"NamedStringMap": func(t *testing.T, models map[string]spec.Schema) {
+			assertMapDefinition(t, models, "namedStringMap", "string", "", "NamedStringMap")
+		},
+		"NamedStoreOrderMap": func(t *testing.T, models map[string]spec.Schema) {
+			assertMapWithRefDefinition(t, models, "namedStoreOrderMap", "#/definitions/order", "NamedStoreOrderMap")
+		},
+		"NamedMapOfStoreOrderSlices": func(t *testing.T, models map[string]spec.Schema) {
+			assertMapDefinition(t, models, "namedMapOfStoreOrderSlices", "array", "", "NamedMapOfStoreOrderSlices")
+			arraySchema := models["namedMapOfStoreOrderSlices"].AdditionalProperties.Schema
+			assertArrayWithRefDefinition(t, map[string]spec.Schema{
+				"array": *arraySchema,
+			}, "array", "#/definitions/order", "")
+		},
+	}
+
+	for testName, testFunc := range tests {
+		t.Run(testName, func(t *testing.T) {
+			sctx := loadClassificationPkgsCtx(t)
+			decl := getClassificationModel(sctx, testName)
+			require.NotNil(t, decl)
+			prs := &schemaBuilder{
+				ctx:  sctx,
+				decl: decl,
+			}
+			models := make(map[string]spec.Schema)
+			require.NoError(t, prs.Build(models))
+			testFunc(t, models)
+		})
+	}
+}
+
 func TestSwaggerTypeStruct(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "NullString")
