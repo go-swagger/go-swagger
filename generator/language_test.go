@@ -67,7 +67,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	a2 := map[string]interface{}{"a": "y", "b": "z"}
 	res, err = goSliceInitializer(a2)
 	require.NoError(t, err)
-	assert.Equal(t, `{"a":"y","b":"z",}`, res) //nolint:testifylint // We're testing the ArrayInitializer behavior, no need to run JSONEq
+	assert.Equal(t, `{"a":"y","b":"z",}`, res)
 
 	_, err = goSliceInitializer(struct {
 		A string `json:"a"`
