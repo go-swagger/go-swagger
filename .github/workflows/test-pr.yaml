@@ -4,16 +4,9 @@ env:
   GOCOVMODE: atomic
 
 on:
-  pull_request_target:
-
-#  pull_request:
-#    paths-ignore:
-#    - docs/*
-#    - hack/hugo/*
-#    - .github/workflows/update-doc.yaml
+  pull_request:
 
 permissions:
-  contents: write
   pull-requests: read
 
 jobs:
@@ -130,10 +123,6 @@ jobs:
             os: '${{ matrix.os }}'
             fail_ci_if_error: true
             verbose: true
-            # This secret is not passed on when triggered by PR from a fork: in this case,
-            # tokenless upload is used by the codecov CLI.
-            # It is used when running the workflow from pushed commits or tags on master.
-            token: ${{ secrets.CODECOV_TOKEN }}
 
   codegen_test:
     # description: |
@@ -197,4 +186,3 @@ jobs:
           os: "${{ matrix.os }}"
           fail_ci_if_error: true
           verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }} # <- this secret is not passed on when triggered by PR from a fork
