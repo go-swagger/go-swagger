@@ -220,7 +220,7 @@ Is it possible to bypass this validation error IF the operation ids will go into
 
 **Answer:** operationId is always globally unique per swagger 2.0 specification. The id MUST be unique among all operations described in the API.
 
-https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md#operationObject
 
 > Unique string used to identify the operation. The id MUST be unique among all operations described in the API.
 > Tools and libraries MAY use the operationId to uniquely identify an operation,

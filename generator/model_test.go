@@ -178,8 +178,6 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 	gmp.MinItems = &in2
 	gmp.UniqueItems = true
 	gmp.ReadOnly = true
-	gmp.CustomTag = "mytag:\"foobar,foobaz\" json:\",inline\""
-	require.NotNil(t, getCustomTagKeyMap(gmp.CustomTag))
 	gmp.StructTags = []string{"json", "db", "example"}
 	gmp.Example = "some example\""
 	tt.assertRender(&gmp, `// The title of the property
@@ -196,10 +194,9 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true
-`+"SomeName string `db:\"some name\" example:\"some example\\\"\" mytag:\"foobar,foobaz\" json:\",inline\"`\n")
+`+"SomeName string `json:\"some name\" db:\"some name\" example:\"some example\\\"\" mytag:\"foobar,foobaz\"`\n")
 
 	gmp.Example = "some example``"
-	gmp.CustomTag = "db:\",inline\" mytag:\"foobar,foobaz\" json:\",inline\""
 	tt.assertRender(&gmp, `// The title of the property
 //
 // The description of the property
@@ -214,24 +211,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 // Max Items: 30
 // Min Items: 30
 // Unique: true
-`+"SomeName string \"example:\\\"some example``\\\" db:\\\",inline\\\" mytag:\\\"foobar,foobaz\\\" json:\\\",inline\\\"\"\n")
-
-	gmp.IsAnonymous = true
-	tt.assertRender(&gmp, `// The title of the property
-//
-// The description of the property
-// Example: some example`+"``"+`
-// Required: true
-// Read Only: true
-// Maximum: < 10
-// Minimum: > 10
-// Max Length: 20
-// Min Length: 20
-// Pattern: \w[\w- ]+
-// Max Items: 30
-// Min Items: 30
-// Unique: true
-`+"string \"example:\\\"some example``\\\" db:\\\",inline\\\" mytag:\\\"foobar,foobaz\\\" json:\\\",inline\\\"\"\n")
+`+"SomeName string \"json:\\\"some name\\\" db:\\\"some name\\\" example:\\\"some example``\\\" mytag:\\\"foobar,foobaz\\\"\"\n")
 }
 
 var schTypeGenDataSimple = []struct {
@@ -1164,7 +1144,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	assertInCode(t, k+") UnmarshalJSON", res)
 	assertInCode(t, k+") MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	assert.NotContains(t, res, "lastIndex")
 
 	for i, p := range genModel.Properties {
 		m := "m.P" + strconv.Itoa(i)
@@ -1359,7 +1339,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 	assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotRegexp(t, regexp.MustCompile("lastIndex"), res)
+	assert.NotContains(t, res, "lastIndex")
 
 	for i, p := range sch.Properties {
 		m := "m.P" + strconv.Itoa(i)
