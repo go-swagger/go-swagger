@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-swagger/go-swagger/codescan"
 
 	"github.com/jessevdk/go-flags"
@@ -32,6 +34,36 @@ func TestSpecFileExecute(t *testing.T) {
 			_ = os.Remove(outputFile)
 		}
 	}
+}
+
+func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
+	outputFileName := "spec.json"
+	spec := &SpecFile{
+		WorkDir:                 "../../../../fixtures/enhancements/pointers-nullable-by-default",
+		Output:                  flags.Filename(outputFileName),
+		ScanModels:              true,
+		SetXNullableForPointers: true,
+	}
+
+	defer func() { _ = os.Remove(outputFileName) }()
+
+	err := spec.Execute(nil)
+	require.NoError(t, err)
+
+	data, err := os.ReadFile(outputFileName)
+	require.NoError(t, err)
+
+	var got map[string]interface{}
+	err = json.Unmarshal(data, &got)
+	require.NoError(t, err)
+
+	require.Len(t, got["definitions"], 2)
+	require.Contains(t, got["definitions"], "Item")
+	itemDefinition := got["definitions"].(map[string]interface{})["Item"].(map[string]interface{})
+	require.Contains(t, itemDefinition["properties"], "Value1")
+	value1Property := itemDefinition["properties"].(map[string]interface{})["Value1"].(map[string]interface{})
+	require.Contains(t, value1Property, "x-nullable")
+	assert.Equal(t, true, value1Property["x-nullable"])
 }
 
 func TestGenerateJSONSpec(t *testing.T) {
