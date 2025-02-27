@@ -363,6 +363,10 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 			return s.buildFromType(titpe.Underlying(), tgt)
 		}
 
+		if titpe.TypeArgs() != nil && titpe.TypeArgs().Len() > 0 {
+			return s.buildFromType(titpe.Underlying(), tgt)
+		}
+
 		switch utitpe := tpe.Underlying().(type) {
 		case *types.Struct:
 			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {

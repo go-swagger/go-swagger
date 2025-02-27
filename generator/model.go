@@ -2059,23 +2059,22 @@ func (sg *schemaGenContext) makeGenSchema() error {
 			sg.GenSchema.ExtraImports[alias] = pkg
 		}
 
-		if tpe.IsEmbedded {
-			sg.GenSchema.IsAnonymous = true
+		if !tpe.IsEmbedded {
+			sg.GenSchema.resolvedType = tpe
+			sg.GenSchema.Required = sg.Required
+			// assume we validate everything but interface and io.Reader - validation may be disabled by using the noValidation hint
+			sg.GenSchema.HasValidations = !(tpe.IsInterface || tpe.IsStream || tpe.SkipExternalValidation)
+			sg.GenSchema.IsAliased = sg.GenSchema.HasValidations
+
+			log.Printf("INFO: type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
+			sg.GenSchema.GoType = extType
+			sg.GenSchema.AliasedType = extType
+
+			// short circuit schema building for external types
+			return nil
 		}
-
-		sg.GenSchema.resolvedType = tpe
-		sg.GenSchema.Required = sg.Required
-		// assume we validate everything but interface and io.Reader - validation may be disabled by using the noValidation hint
-		sg.GenSchema.HasValidations = !(tpe.IsInterface || tpe.IsStream || tpe.SkipExternalValidation)
-		sg.GenSchema.IsAliased = sg.GenSchema.HasValidations
-
-		log.Printf("INFO: type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
-		log.Printf("INFO: pkg: %s, alias: %s", pkg, alias)
-		sg.GenSchema.GoType = extType
-		sg.GenSchema.AliasedType = extType
-
-		// short circuit schema building for external types
-		return nil
+		// TODO: case for embedded types as anonymous definitions
+		return fmt.Errorf("ERROR: inline definitions embedded types are not supported")
 	}
 
 	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)

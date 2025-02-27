@@ -143,7 +143,7 @@ Server controlled documentation
 .link http://editor.swagger.io/ Swagger Editor
 .link http://petstore.swagger.io/ Swagger UI
 .link https://swaggerhub.com/ Swagger Hub (collaboration space)
-.link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md Specification
+.link https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md Specification
 .link https://openapis.org/ Open API Initiative
 .link https://any-api.com/ Documentation and testconsoles for 175 APIs
 

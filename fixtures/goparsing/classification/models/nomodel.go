@@ -761,3 +761,41 @@ type SomeObjectMap interface{}
 type NamedWithType struct {
 	SomeMap SomeObjectMap `json:"some_map"`
 }
+
+//
+// Next models are related to named types with type arguments
+//
+
+type GenericResults[T any] struct {
+	RecordsMatched uint32 `json:"records_matched"`
+	Matches        []T    `json:"matches"`
+}
+
+// swagger:model namedStringResults
+type NamedStringResults GenericResults[string]
+
+// swagger:model namedStoreOrderResults
+type NamedStoreOrderResults GenericResults[StoreOrder]
+
+type GenericSlice[T any] []T
+
+// swagger:model namedStringSlice
+type NamedStringSlice GenericSlice[string]
+
+// swagger:model namedStoreOrderSlice
+type NamedStoreOrderSlice GenericSlice[StoreOrder]
+
+type GenericMap[K comparable, V any] map[K]V
+
+// swagger:model namedStringMap
+type NamedStringMap GenericMap[string, string]
+
+// swagger:model namedStoreOrderMap
+type NamedStoreOrderMap GenericMap[string, StoreOrder]
+
+// swagger:model namedMapOfStoreOrderSlices
+type NamedMapOfStoreOrderSlices GenericMap[string, GenericSlice[StoreOrder]]
+
+//
+// End of models related to named types with type arguments
+//

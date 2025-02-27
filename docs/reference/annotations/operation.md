@@ -27,7 +27,7 @@ Any valid Swagger 2.0 YAML _Operation_ property is valid.
 Make sure your indentation is consistent and correct,
 as it won't parse correctly otherwise.
 
-You can find all the properties at https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+You can find all the properties at https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md#operationObject
 
 Note that if you specify the _tags_, _summary_, _description_ or _operationId_ as part of the
 YAML spec, you will override the _summary_, _descriptions_, _tags_ or _operationId_, specified as part of the regular swagger syntax above.
