@@ -26,6 +26,8 @@ swagger:meta
 ##### Properties
 
 Annotation | Format
+
+```yaml
 swagger: '2.0'
 consumes:
   - application/json
