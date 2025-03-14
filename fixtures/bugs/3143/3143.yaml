@@ -1,0 +1,45 @@
+swagger: '2.0'
+info:
+  version: '0.0.1'
+  title: Planting Service
+  description: Testing regression issue#3143
+  contact: {}
+host: www.example.com
+basePath: /
+securityDefinitions: {}
+schemes:
+- https
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  /healthz:
+    get:
+      description: Service health check
+      summary: Service health check
+      tags:
+      - av2on
+      operationId: Servicehealthcheck
+      deprecated: false
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: ''
+          headers: {}
+  /wizz:
+    get:
+      description: fake
+      summary: dummy
+      tags:
+      - trailingv2
+      deprecated: false
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        default:
+          description: ''
+          headers: {}

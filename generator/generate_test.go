@@ -565,6 +565,33 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				location := filepath.Join(target, "cmd", "nrcodegen-server")
 				require.True(t, fileExists("", location))
 
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "version1")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "version3")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v2_validations")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_validations")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_actual")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_planned")))
+
+				t.Run("building generated server",
+					goExecInDir(location, "build"),
+				)
+			},
+		},
+		"tag_package_name_regression_3143": {
+			spec:   "../fixtures/bugs/3143/3143.yaml",
+			target: "server-3143",
+			prepare: func(_ *testing.T, opts *GenOpts) {
+				opts.MainPackage = "nrcodegen-server"
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			},
+			verify: func(t *testing.T, target string) {
+				location := filepath.Join(target, "cmd", "nrcodegen-server")
+				require.True(t, fileExists("", location))
+
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "av2on")))
+				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "trailingv2")))
+
 				t.Run("building generated server",
 					goExecInDir(location, "build"),
 				)
