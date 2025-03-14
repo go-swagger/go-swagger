@@ -1258,7 +1258,7 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 	return tag, intersected, len(filter) == 0 || len(filter) > 0 && len(intersected) > 0
 }
 
-var versionedPkgRex = regexp.MustCompile(`(?i)(v)([0-9]+)`)
+var versionedPkgRex = regexp.MustCompile(`(?i)^(v)([0-9]+)$`)
 
 func maxInt(a, b int) int {
 	if a > b {
