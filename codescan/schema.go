@@ -155,12 +155,28 @@ DECLS:
 func (s *schemaBuilder) Build(definitions map[string]spec.Schema) error {
 	s.inferNames()
 
-	schema := definitions[s.Name]
+	schema := spec.Schema{}
+	definitionName := ""
+	for name, definition := range definitions {
+		xGoPackage, ok := definition.VendorExtensible.Extensions.GetString("x-go-package")
+		if (!ok || xGoPackage == s.decl.Pkg.PkgPath) && s.Name == name {
+			schema = definition
+			definitionName = name
+		}
+	}
 	err := s.buildFromDecl(s.decl, &schema)
 	if err != nil {
 		return err
 	}
-	definitions[s.Name] = schema
+	if definitionName == "" {
+		definitionName = s.findUnusedName(
+			strings.Split(s.decl.Pkg.PkgPath+"/"+s.Name, "/"), func(name string) bool {
+				_, ok := definitions[name]
+				return ok
+			},
+		)
+	}
+	definitions[definitionName] = schema
 	return nil
 }
 
@@ -954,8 +970,36 @@ func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen 
 	return nil
 }
 
+func (s *schemaBuilder) findUnusedName(parts []string, used func(name string) bool) string {
+	name := ""
+	for i := len(parts); i > 0; i-- {
+		n := parts[i-1]
+		if n == "types" || n == "api" {
+			continue
+		}
+		name = strings.ToUpper(string(n[0])) + n[1:] + name
+		if !used(name) {
+			return name
+		}
+	}
+	// This should never happen as each element has a unique name thanks to the package path.
+	n := strings.Join(parts, "/")
+	panic(fmt.Errorf("failed to find unique name for %s", n))
+}
+
 func (s *schemaBuilder) makeRef(decl *entityDecl, prop swaggerTypable) error {
-	nm, _ := decl.Names()
+	n, _ := decl.Names()
+	nm := s.findUnusedName(
+		strings.Split(decl.Pkg.PkgPath+"/"+n, "/"), func(name string) bool {
+			for _, postDecl := range s.postDecls {
+				postDeclName, _ := postDecl.Names()
+				if postDeclName == name {
+					return true
+				}
+			}
+			return false
+		},
+	)
 	ref, err := spec.NewRef("#/definitions/" + nm)
 	if err != nil {
 		return err
