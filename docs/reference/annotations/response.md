@@ -19,6 +19,7 @@ swagger:response [?response name]
 ##### Properties
 
 Annotation | Description
+---|---
 **Items.*n*.Maximum** |  specifies the maximum a number or integer value can have at the level *n*
 **Items.*n*.Minimum** |  specifies the minimum a number or integer value can have at the level *n*
 **Items.*n*.Multiple of** | specifies a value a number or integer value must be a multiple of
