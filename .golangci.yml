@@ -1,82 +1,15 @@
-linters-settings:
-  depguard:
-    rules:
-      main:
-        list-mode: lax
-        deny:
-          - pkg: github.com/pkg/errors
-            desc: "Use errors or fmt instead of github.com/pkg/errors"
-  dupl:
-    threshold: 200
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocyclo:
-    min-complexity: 25
-  goimports:
-    local-prefixes: github.com/go-swagger/go-swagger
-  govet:
-    enable: ["shadow"]
-  # golint:
-  #   min-confidence: 0
-  # govet:
-  #   check-shadowing: true
-  # maligned:
-  #   suggest-new: true
-  testifylint:
-    disable:
-      - float-compare
-      - go-require
-    enable:
-      - bool-compare
-      - compares
-      - empty
-      - error-is-as
-      - error-nil
-      - expected-actual
-      - len
-      - require-error
-      - suite-dont-use-pkg
-      - suite-extra-assert-call
-
-issues:
-  # Show only new issues: if there are unstaged changes or untracked files,
-  # only those changes are analyzed, else only changes in HEAD~ are analyzed.
-  # It's a super-useful option for integration of golangci-lint into existing large codebase.
-  # It's not practical to fix all existing issues at the moment of integration:
-  # much better don't allow issues in new code.
-  #
-  # Default: false.
-  new: true
-  # Maximum issues count per one linter.
-  # Set to 0 to disable.
-  # Default: 50
-  max-issues-per-linter: 0
-  # Maximum count of issues with the same text.
-  # Set to 0 to disable.
-  # Default: 3
-  max-same-issues: 0
-  exclude-dirs:
-    - playground
-    - fixtures
-    - cmd
-run:
-  timeout: 5m
-
+version: "2"
 linters:
   enable:
     - depguard
     - errorlint
     - gocritic
-    - gofumpt
-    - goimports
     - gosec
     - misspell
     - revive
-    - stylecheck
+    - staticcheck
     - testifylint
     - unconvert
-    - govet
   disable:
     - dupl
     - gochecknoglobals
@@ -84,3 +17,71 @@ linters:
     - lll
     - nakedret
     - unparam
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          deny:
+            - pkg: github.com/pkg/errors
+              desc: Use errors or fmt instead of github.com/pkg/errors
+    dupl:
+      threshold: 200
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocyclo:
+      min-complexity: 25
+    govet:
+      enable:
+        - shadow
+    testifylint:
+      enable:
+        - bool-compare
+        - compares
+        - empty
+        - error-is-as
+        - error-nil
+        - expected-actual
+        - len
+        - require-error
+        - suite-dont-use-pkg
+        - suite-extra-assert-call
+      disable:
+        - float-compare
+        - go-require
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - playground
+      - fixtures
+      - cmd
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: true
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/go-swagger/go-swagger
+  exclusions:
+    generated: lax
+    paths:
+      - playground
+      - fixtures
+      - cmd
+      - third_party$
+      - builtin$
+      - examples$
