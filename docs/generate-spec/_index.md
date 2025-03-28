@@ -32,6 +32,7 @@ Help Options:
           --include-tag=       include routes having specified tags (can be specified many times)
           --exclude-tag=       exclude routes having specified tags (can be specified many times)
           --exclude-deps       exclude all dependencies of project
+      -n, --nullable-pointers  set x-nullable extension to true automatically for fields of pointer types without 'omitempty'
 ```
 
 See code annotation rules [here](../reference/annotations)
