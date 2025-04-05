@@ -2,8 +2,6 @@ module github.com/go-swagger/go-swagger
 
 go 1.21
 
-toolchain go1.22.3
-
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/coreos/go-oidc/v3 v3.10.0
@@ -18,7 +16,7 @@ require (
 	github.com/go-openapi/swag v0.23.0
 	github.com/go-openapi/validate v0.24.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.1
