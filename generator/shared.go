@@ -280,7 +280,7 @@ type TemplateOpts struct {
 	Target     string `mapstructure:"target"`
 	FileName   string `mapstructure:"file_name"`
 	SkipExists bool   `mapstructure:"skip_exists"`
-	SkipFormat bool   `mapstructure:"skip_format"`
+	SkipFormat bool   `mapstructure:"skip_format"` // not a feature, but for debugging. generated code before formatting might not work because of unused imports.
 }
 
 // SectionOpts allows for specifying options to customize the templates used for generation
