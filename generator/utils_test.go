@@ -28,18 +28,22 @@ func reqOri(str string) *regexp.Regexp {
 }
 
 func assertInCode(t testing.TB, expr, code string) bool {
+	t.Helper()
 	return assert.Regexp(t, reqm(expr), code)
 }
 
 func assertRegexpInCode(t testing.TB, expr, code string) bool {
+	t.Helper()
 	return assert.Regexp(t, reqOri(expr), code)
 }
 
 func assertNotInCode(t testing.TB, expr, code string) bool {
+	t.Helper()
 	return assert.NotRegexp(t, reqm(expr), code)
 }
 
 func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
+	t.Helper()
 	return assert.NotRegexp(t, reqOri(expr), code)
 }
 
@@ -55,6 +59,7 @@ func requireValidation(t testing.TB, pth, expr string, gm GenSchema) {
 }
 
 func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
+	t.Helper()
 	if !assert.True(t, gm.HasValidations, "expected the schema to have validations") {
 		return false
 	}
@@ -82,6 +87,7 @@ func funcBody(code string, signature string) string {
 // testing utilities for codegen build
 
 func testCwd(t testing.TB) string {
+	t.Helper()
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 	return cwd
