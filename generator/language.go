@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/go-openapi/swag"
-	"golang.org/x/tools/imports"
 )
 
 var (
@@ -204,14 +203,7 @@ func GoLangOpts() *LanguageOpts {
 		"continue", "for", "import", "return", "var",
 	}
 
-	opts.formatFunc = func(ffn string, content []byte) ([]byte, error) {
-		opts := new(imports.Options)
-		opts.TabIndent = true
-		opts.TabWidth = 2
-		opts.Fragment = true
-		opts.Comments = true
-		return imports.Process(ffn, content, opts)
-	}
+	opts.formatFunc = formatGo
 
 	opts.fileNameFunc = func(name string) string {
 		// whenever a generated file name ends with a suffix
