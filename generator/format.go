@@ -6,11 +6,7 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
-	"path"
 	"strconv"
-	"strings"
-	"unicode"
-	"unicode/utf8"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -21,9 +17,7 @@ func formatGo(filename string, content []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// WIP: findSelectedX is not perfect to detect used imports. Detected symbols might not be package, but shadowed local variables.
-	used := findSelectedX(file)
-	tweakImports(fset, file, used)
+	tweakImports(fset, file)
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
@@ -47,25 +41,10 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 	return fset, file, nil
 }
 
-func findSelectedX(file *ast.File) map[string]bool {
-	used := make(map[string]bool)
-	ast.Inspect(file, func(n ast.Node) bool {
-		switch n := n.(type) {
-		case *ast.SelectorExpr:
-			if id, ok := n.X.(*ast.Ident); ok {
-				used[id.Name] = true
-			}
-		}
-		return true
-	})
-	return used
-}
-
-func tweakImports(fset *token.FileSet, file *ast.File, used map[string]bool) {
-	// imported := map[string]bool{}
+func tweakImports(fset *token.FileSet, file *ast.File) {
 	shouldRemove := []*ast.ImportSpec{}
 	for _, impt := range file.Imports {
-		name := importSpecToAssumedName(impt)
+		path, _ := strconv.Unquote(impt.Path.Value)
 
 		// WIP: duplicated imports are not deduped
 		// if name != "_" && imported[name] {
@@ -74,7 +53,7 @@ func tweakImports(fset *token.FileSet, file *ast.File, used map[string]bool) {
 		// }
 		// imported[name] = true
 
-		if ok := used[name]; ok {
+		if astutil.UsesImport(file, path) {
 			continue
 		}
 		shouldRemove = append(shouldRemove, impt)
@@ -91,33 +70,4 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 	} else {
 		astutil.DeleteImport(fset, file, importPath)
 	}
-}
-
-func importSpecToAssumedName(importSpec *ast.ImportSpec) string {
-	if importSpec.Name != nil {
-		return importSpec.Name.Name
-	}
-	importPath, _ := strconv.Unquote(importSpec.Path.Value)
-	base := path.Base(importPath)
-	if strings.HasPrefix(base, "v") {
-		if _, err := strconv.Atoi(base[1:]); err == nil {
-			dir := path.Dir(importPath)
-			if dir != "." {
-				base = path.Base(dir)
-			}
-		}
-	}
-	base = strings.TrimPrefix(base, "go-")
-	if i := strings.IndexFunc(base, notIdentifier); i >= 0 {
-		base = base[:i]
-	}
-	return base
-}
-
-// notIdentifier reports whether ch is an invalid identifier character.
-func notIdentifier(ch rune) bool {
-	return !('a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
-		'0' <= ch && ch <= '9' ||
-		ch == '_' ||
-		ch >= utf8.RuneSelf && (unicode.IsLetter(ch) || unicode.IsDigit(ch)))
 }
