@@ -232,7 +232,9 @@ package {{ .Package }}
 
 
 import (
+  "fmt"
   "io"
+  "encoding/json"
   "net/http"
 
   "github.com/go-openapi/errors"
