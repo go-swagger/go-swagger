@@ -21,6 +21,7 @@ func formatGo(filename string, content []byte) ([]byte, error) {
 
 	mergeImports(file)
 	removeUnusedImports(fset, file)
+	removeUnecessaryImportParens(fset, file)
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
@@ -65,6 +66,22 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 		astutil.DeleteNamedImport(fset, file, spec.Name.Name, importPath)
 	} else {
 		astutil.DeleteImport(fset, file, importPath)
+	}
+}
+
+func removeUnecessaryImportParens(fset *token.FileSet, file *ast.File) {
+	if len(file.Imports) == 1 {
+		for _, decl := range file.Decls {
+			gen, ok := decl.(*ast.GenDecl)
+			if !ok {
+				break
+			}
+			if gen.Tok != token.IMPORT {
+				break
+			}
+			gen.Lparen = token.NoPos
+			gen.Rparen = token.NoPos
+		}
 	}
 }
 
