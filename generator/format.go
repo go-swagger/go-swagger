@@ -15,7 +15,8 @@ import (
 func formatGo(filename string, content []byte) ([]byte, error) {
 	fset, file, err := parseGo(filename, content)
 	if err != nil {
-		return nil, err
+		// If we can't parse file, we give up formatting
+		return content, nil
 	}
 
 	mergeImports(file)
