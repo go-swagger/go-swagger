@@ -6,8 +6,12 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
+	"path"
 	"slices"
 	"strconv"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/tools/go/ast/astutil"
 )
@@ -20,7 +24,7 @@ func formatGo(filename string, content []byte) ([]byte, error) {
 	}
 
 	mergeImports(file)
-	removeUnusedImports(fset, file)
+	cleanImports(fset, file)
 	removeUnecessaryImportParens(fset, file)
 
 	printConfig := &printer.Config{
@@ -45,12 +49,20 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 	return fset, file, nil
 }
 
-func removeUnusedImports(fset *token.FileSet, file *ast.File) {
+func cleanImports(fset *token.FileSet, file *ast.File) {
 	shouldRemove := []*ast.ImportSpec{}
+	usedNames := collectTopNames(file)
 	for _, impt := range file.Imports {
-		path, _ := strconv.Unquote(impt.Path.Value)
+		name := importPathToAssumedName(importPath(impt))
+		if impt.Name != nil {
+			name = impt.Name.String()
+		}
 
-		if astutil.UsesImport(file, path) {
+		// astutil.UsesImport is not precise enough for our needs: https://github.com/golang/go/issues/30331#issuecomment-466174437
+		if usedNames[name] {
+			continue
+		}
+		if name == "_" || name == "." {
 			continue
 		}
 		shouldRemove = append(shouldRemove, impt)
@@ -137,4 +149,58 @@ func importPath(s *ast.ImportSpec) string {
 		return ""
 	}
 	return t
+}
+
+func collectTopNames(n ast.Node) map[string]bool {
+	names := make(map[string]bool)
+	ast.Walk(visitFn(func(n ast.Node) {
+		s, ok := n.(*ast.SelectorExpr)
+		if !ok {
+			return
+		}
+		id, ok := s.X.(*ast.Ident)
+		if !ok {
+			return
+		}
+		if id.Obj != nil {
+			return
+		}
+		names[id.Name] = true
+	}), n)
+	return names
+}
+
+type visitFn func(node ast.Node)
+
+func (fn visitFn) Visit(node ast.Node) ast.Visitor {
+	fn(node)
+	return fn
+}
+
+// importPathToAssumedName returns the assumed package name of an import path.
+// it is taken from [tools/internal/imports/fix.go](https://github.com/golang/tools/blob/v0.33.0/internal/imports/fix.go#L1233)
+func importPathToAssumedName(importPath string) string {
+	base := path.Base(importPath)
+	if strings.HasPrefix(base, "v") {
+		if _, err := strconv.Atoi(base[1:]); err == nil {
+			dir := path.Dir(importPath)
+			if dir != "." {
+				base = path.Base(dir)
+			}
+		}
+	}
+	base = strings.TrimPrefix(base, "go-")
+	if i := strings.IndexFunc(base, notIdentifier); i >= 0 {
+		base = base[:i]
+	}
+	return base
+}
+
+// notIdentifier reports whether ch is an invalid identifier character.
+// it is taken from [tools/internal/imports/fix.go](https://github.com/golang/tools/blob/v0.33.0/internal/imports/fix.go#L1233)
+func notIdentifier(ch rune) bool {
+	return !('a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
+		'0' <= ch && ch <= '9' ||
+		ch == '_' ||
+		ch >= utf8.RuneSelf && (unicode.IsLetter(ch) || unicode.IsDigit(ch)))
 }
