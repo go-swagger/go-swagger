@@ -78,6 +78,15 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 }
 
 func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec) {
+	// remove from file.Imports
+	i := slices.IndexFunc(file.Imports, func(i *ast.ImportSpec) bool {
+		return i == spec
+	})
+	if i >= 0 {
+		file.Imports = slices.Delete(file.Imports, i, i+1)
+	}
+
+	// remove from file.Decls
 	if len(file.Decls) == 0 {
 		return
 	}
@@ -85,7 +94,7 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 	if !ok {
 		return
 	}
-	i := slices.IndexFunc(gen.Specs, func(i ast.Spec) bool {
+	i = slices.IndexFunc(gen.Specs, func(i ast.Spec) bool {
 		return i == spec
 	})
 	if i < 0 {
