@@ -12,8 +12,6 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"golang.org/x/tools/go/ast/astutil"
 )
 
 func formatGo(filename string, content []byte) ([]byte, error) {
@@ -50,6 +48,7 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 }
 
 func cleanImports(fset *token.FileSet, file *ast.File) {
+	seen := make(map[string]bool)
 	shouldRemove := []*ast.ImportSpec{}
 	usedNames := collectTopNames(file)
 	for _, impt := range file.Imports {
@@ -57,6 +56,12 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 		if impt.Name != nil {
 			name = impt.Name.String()
 		}
+
+		if seen[name] {
+			shouldRemove = append(shouldRemove, impt)
+			continue
+		}
+		seen[name] = true
 
 		// astutil.UsesImport is not precise enough for our needs: https://github.com/golang/go/issues/30331#issuecomment-466174437
 		if usedNames[name] {
@@ -73,12 +78,20 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 }
 
 func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec) {
-	importPath, _ := strconv.Unquote(spec.Path.Value)
-	if spec.Name != nil {
-		astutil.DeleteNamedImport(fset, file, spec.Name.Name, importPath)
-	} else {
-		astutil.DeleteImport(fset, file, importPath)
+	if len(file.Decls) == 0 {
+		return
 	}
+	gen, ok := file.Decls[0].(*ast.GenDecl)
+	if !ok {
+		return
+	}
+	i := slices.IndexFunc(gen.Specs, func(i ast.Spec) bool {
+		return i == spec
+	})
+	if i < 0 {
+		return
+	}
+	gen.Specs = slices.Delete(gen.Specs, i, i+1)
 }
 
 func removeUnecessaryImportParens(fset *token.FileSet, file *ast.File) {
