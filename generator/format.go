@@ -15,10 +15,9 @@ import (
 )
 
 func formatGo(filename string, content []byte) ([]byte, error) {
-	fset, file, err := parseGo(filename, content)
+	fset, file, clean, err := parseGoOrFragment(filename, content)
 	if err != nil {
-		// If we can't parse file, we give up formatting
-		return content, nil
+		return nil, err
 	}
 
 	mergeImports(file)
@@ -34,7 +33,36 @@ func formatGo(filename string, content []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	out := buf.Bytes()
+	if clean != nil {
+		out = clean(out)
+	}
+	return out, nil
+}
+
+func parseGoOrFragment(filename string, content []byte) (*token.FileSet, *ast.File, func([]byte) []byte, error) {
+	fset, file, err := parseGo(filename, content)
+	if err == nil {
+		return fset, file, nil, nil
+	}
+
+	// In case content doesn't have a package statement, we consider it may be a fragment and try to parse with package statement.
+	// For other cases, we give up and return the error.
+	if !strings.Contains(err.Error(), "expected 'package'") {
+		return nil, nil, nil, err
+	}
+
+	content = append([]byte("package main;\n"), content...)
+	fset, file, err = parseGo(filename, content)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	cleanup := func(out []byte) []byte {
+		out = bytes.TrimPrefix(out, []byte("package main;\n"))
+		return out
+	}
+	return fset, file, cleanup, nil
 }
 
 func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
