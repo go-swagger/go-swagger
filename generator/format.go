@@ -48,7 +48,7 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 }
 
 func cleanImports(fset *token.FileSet, file *ast.File) {
-	seen := make(map[string]bool)
+	seen := make(map[string]*ast.ImportSpec)
 	shouldRemove := []*ast.ImportSpec{}
 	usedNames := collectTopNames(file)
 	for _, impt := range file.Imports {
@@ -56,21 +56,21 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 		if impt.Name != nil {
 			name = impt.Name.String()
 		}
-
-		if seen[name] {
-			shouldRemove = append(shouldRemove, impt)
-			continue
-		}
-		seen[name] = true
-
-		// astutil.UsesImport is not precise enough for our needs: https://github.com/golang/go/issues/30331#issuecomment-466174437
-		if usedNames[name] {
-			continue
-		}
 		if name == "_" || name == "." {
 			continue
 		}
-		shouldRemove = append(shouldRemove, impt)
+
+		// astutil.UsesImport is not precise enough for our needs: https://github.com/golang/go/issues/30331#issuecomment-466174437
+		if !usedNames[name] {
+			shouldRemove = append(shouldRemove, impt)
+			continue
+		}
+
+		// latter import wins for same name. this is heuristic and might be incorrect for some cases.
+		if prev := seen[name]; prev != nil {
+			shouldRemove = append(shouldRemove, prev)
+		}
+		seen[name] = impt
 	}
 	for _, impt := range shouldRemove {
 		deleteImportSpec(fset, file, impt)
