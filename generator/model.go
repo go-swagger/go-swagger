@@ -364,7 +364,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		"runtime":  "github.com/go-openapi/runtime",
 		"swag":     "github.com/go-openapi/swag",
 		"validate": "github.com/go-openapi/validate",
-		// "strfmt":   "github.com/go-openapi/strfmt",
 	}
 
 	return &GenDefinition{
