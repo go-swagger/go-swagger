@@ -132,18 +132,19 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 }
 
 func removeUnecessaryImportParens(fset *token.FileSet, file *ast.File) {
-	if len(file.Imports) == 1 {
-		for _, decl := range file.Decls {
-			gen, ok := decl.(*ast.GenDecl)
-			if !ok {
-				break
-			}
-			if gen.Tok != token.IMPORT {
-				break
-			}
-			gen.Lparen = token.NoPos
-			gen.Rparen = token.NoPos
+	for _, decl := range file.Decls {
+		gen, ok := decl.(*ast.GenDecl)
+		if !ok {
+			break
 		}
+		if gen.Tok != token.IMPORT {
+			break
+		}
+		if len(gen.Specs) != 1 {
+			continue
+		}
+		gen.Lparen = token.NoPos
+		gen.Rparen = token.NoPos
 	}
 }
 
