@@ -237,10 +237,11 @@ func TestServer_OperationGroups(t *testing.T) {
 	gen.GenOpts.IncludeHandler = true
 	gen.GenOpts.Sections.OperationGroups = []TemplateOpts{
 		{
-			Name:     "opGroupTest",
-			Source:   "asset:opGroupTest",
-			Target:   "{{ joinFilePath .Target .Name }}",
-			FileName: "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
+			Name:       "opGroupTest",
+			Source:     "asset:opGroupTest",
+			Target:     "{{ joinFilePath .Target .Name }}",
+			FileName:   "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
+			SkipFormat: true,
 		},
 	}
 
