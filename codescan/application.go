@@ -654,7 +654,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 				} else {
 					return 0, fmt.Errorf("classifier: already annotated as %s, can't also be %q - %s", seenStruct, matches[1], cline.Text)
 				}
-			case "strfmt", "name", "discriminated", "file", "enum", "default", "alias", "type":
+			case "strfmt", "name", "discriminated", "file", "enum", "default", "alias", "type", "extendee", "type_name":
 				// TODO: perhaps collect these and pass along to avoid lookups later on
 			case "allOf":
 			case "ignore":
