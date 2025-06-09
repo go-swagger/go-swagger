@@ -20,6 +20,8 @@ permissions:
 
 jobs:
   lint:
+    # do not lint on pushed tags. The diff evaluated by golangci-lint action is wrong (https://github.com/golangci/golangci-lint-action/issues/1246).
+    if: ${{ ! startsWith(github.ref,'refs/tags/') }}
     name: lint
     runs-on: ubuntu-latest
     steps:
