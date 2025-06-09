@@ -93,16 +93,16 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "int64", param.Format)
 		case "name":
 			assert.Equal(t, "string", param.Type)
-			assert.Equal(t, "", param.Format)
+			assert.Empty(t, param.Format)
 		case "age":
 			assert.Equal(t, "integer", param.Type)
 			assert.Equal(t, "int32", param.Format)
 		case "notes":
 			assert.Equal(t, "string", param.Type)
-			assert.Equal(t, "", param.Format)
+			assert.Empty(t, param.Format)
 		case "extra":
 			assert.Equal(t, "string", param.Type)
-			assert.Equal(t, "", param.Format)
+			assert.Empty(t, param.Format)
 		case "createdAt":
 			assert.Equal(t, "string", param.Type)
 			assert.Equal(t, "date-time", param.Format)
@@ -111,7 +111,7 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "formData", param.In)
 		case "NoTagName":
 			assert.Equal(t, "string", param.Type)
-			assert.Equal(t, "", param.Format)
+			assert.Empty(t, param.Format)
 		default:
 			assert.Fail(t, "unknown property: "+param.Name)
 		}
@@ -128,7 +128,7 @@ func TestParamsParser(t *testing.T) {
 
 	mop, okParam := operations["getOrders"]
 	assert.True(t, okParam)
-	assert.Len(t, mop.Parameters, 2)
+	require.Len(t, mop.Parameters, 2)
 	ordersParam := mop.Parameters[0]
 	assert.Equal(t, "The orders", ordersParam.Description)
 	assert.True(t, ordersParam.Required)
@@ -149,9 +149,11 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "int64", param.Format)
 			assert.True(t, param.Required)
 			assert.Equal(t, "ID", param.Extensions["x-go-name"])
-			assert.EqualValues(t, 1000, *param.Maximum)
+			require.NotNil(t, param.Maximum)
+			assert.InDelta(t, 1000.00, *param.Maximum, epsilon)
 			assert.True(t, param.ExclusiveMaximum)
-			assert.EqualValues(t, 10, *param.Minimum)
+			require.NotNil(t, param.Minimum)
+			assert.InDelta(t, 10.00, *param.Minimum, epsilon)
 			assert.True(t, param.ExclusiveMinimum)
 			assert.Equal(t, 1, param.Default, "%s default value is incorrect", param.Name)
 
@@ -162,12 +164,14 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "int32", param.Format)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Score", param.Extensions["x-go-name"])
-			assert.EqualValues(t, 45, *param.Maximum)
+			require.NotNil(t, param.Maximum)
+			assert.InDelta(t, 45.00, *param.Maximum, epsilon)
 			assert.False(t, param.ExclusiveMaximum)
-			assert.EqualValues(t, 3, *param.Minimum)
+			require.NotNil(t, param.Minimum)
+			assert.InDelta(t, 3.00, *param.Minimum, epsilon)
 			assert.False(t, param.ExclusiveMinimum)
-			assert.Equal(t, 2, param.Default, "%s default value is incorrect", param.Name)
-			assert.Equal(t, 27, param.Example)
+			assert.EqualValues(t, 2, param.Default, "%s default value is incorrect", param.Name)
+			assert.EqualValues(t, 27, param.Example)
 
 		case "x-hdr-name":
 			assert.Equal(t, "Name of this no model instance", param.Description)
@@ -175,8 +179,10 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Name", param.Extensions["x-go-name"])
-			assert.EqualValues(t, 4, *param.MinLength)
-			assert.EqualValues(t, 50, *param.MaxLength)
+			require.NotNil(t, param.MinLength)
+			assert.Equal(t, int64(4), *param.MinLength)
+			require.NotNil(t, param.MaxLength)
+			assert.Equal(t, int64(50), *param.MaxLength)
 			assert.Equal(t, "[A-Za-z0-9-.]*", param.Pattern)
 
 		case "created":
@@ -193,7 +199,7 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "CategoryOld", param.Extensions["x-go-name"])
-			assert.EqualValues(t, []interface{}{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, []any{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
 			assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
 		case "category":
 			assert.Equal(t, "The Category of this model", param.Description)
@@ -201,22 +207,22 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "string", param.Type)
 			assert.True(t, param.Required)
 			assert.Equal(t, "Category", param.Extensions["x-go-name"])
-			assert.EqualValues(t, []interface{}{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, []any{"foo", "bar", "none"}, param.Enum, "%s enum values are incorrect", param.Name)
 			assert.Equal(t, "bar", param.Default, "%s default value is incorrect", param.Name)
 		case "type_old":
 			assert.Equal(t, "Type of this model (old enum format)", param.Description)
 			assert.Equal(t, "query", param.In)
 			assert.Equal(t, "integer", param.Type)
-			assert.EqualValues(t, []interface{}{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, []any{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
 		case "type":
 			assert.Equal(t, "Type of this model", param.Description)
 			assert.Equal(t, "query", param.In)
 			assert.Equal(t, "integer", param.Type)
-			assert.EqualValues(t, []interface{}{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, []any{1, 3, 5}, param.Enum, "%s enum values are incorrect", param.Name)
 		case gcBadEnum:
 			assert.Equal(t, "query", param.In)
 			assert.Equal(t, "integer", param.Type)
-			assert.EqualValues(t, []interface{}{1, "rsq", "qaz"}, param.Enum, "%s enum values are incorrect", param.Name)
+			assert.Equal(t, []any{1, "rsq", "qaz"}, param.Enum, "%s enum values are incorrect", param.Name)
 		case "foo_slice":
 			assert.Equal(t, "a FooSlice has foos which are strings", param.Description)
 			assert.Equal(t, "FooSlice", param.Extensions["x-go-name"])
@@ -225,12 +231,17 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.Required)
 			assert.True(t, param.UniqueItems)
 			assert.Equal(t, "pipe", param.CollectionFormat)
-			assert.EqualValues(t, 3, *param.MinItems, "'foo_slice' should have had 3 min items")
-			assert.EqualValues(t, 10, *param.MaxItems, "'foo_slice' should have had 10 max items")
+			require.NotNil(t, param.MinItems)
+			assert.Equal(t, int64(3), *param.MinItems, "'foo_slice' should have had 3 min items")
+			require.NotNil(t, param.MaxItems)
+			assert.Equal(t, int64(10), *param.MaxItems, "'foo_slice' should have had 10 max items")
+
 			itprop := param.Items
-			assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
-			assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
-			assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+			require.NotNil(t, itprop.MinLength)
+			assert.Equal(t, int64(3), *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
+			require.NotNil(t, itprop.MaxLength)
+			assert.Equal(t, int64(10), *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
+			assert.Equal(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 			assert.EqualValues(t, "bar", itprop.Default, "'foo_slice.items.default' should have bar default value")
 
 		case "items":
@@ -239,8 +250,9 @@ func TestParamsParser(t *testing.T) {
 			assert.NotNil(t, param.Schema)
 			aprop := param.Schema
 			assert.Equal(t, "array", aprop.Type[0])
-			assert.NotNil(t, aprop.Items)
-			assert.NotNil(t, aprop.Items.Schema)
+			require.NotNil(t, aprop.Items)
+			require.NotNil(t, aprop.Items.Schema)
+
 			itprop := aprop.Items.Schema
 			assert.Len(t, itprop.Properties, 4)
 			assert.Len(t, itprop.Required, 3)
@@ -248,10 +260,11 @@ func TestParamsParser(t *testing.T) {
 			iprop, ok := itprop.Properties["id"]
 			assert.True(t, ok)
 			assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
-			assert.EqualValues(t, 1000, *iprop.Maximum)
+			require.NotNil(t, iprop.Maximum)
+			assert.InDelta(t, 1000.00, *iprop.Maximum, epsilon)
 			assert.True(t, iprop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
-			assert.NotNil(t, iprop.Minimum)
-			assert.EqualValues(t, 10, *iprop.Minimum)
+			require.NotNil(t, iprop.Minimum)
+			assert.InDelta(t, 10.00, *iprop.Minimum, epsilon)
 			assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 			assert.Equal(t, 3, iprop.Default, "Items.ID default value is incorrect")
 
@@ -266,8 +279,10 @@ func TestParamsParser(t *testing.T) {
 			iprop, ok = itprop.Properties["quantity"]
 			assert.True(t, ok)
 			assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
-			assert.EqualValues(t, 1, *iprop.Minimum)
-			assert.EqualValues(t, 10, *iprop.Maximum)
+			require.NotNil(t, iprop.Minimum)
+			assert.InDelta(t, 1.00, *iprop.Minimum, epsilon)
+			require.NotNil(t, iprop.Maximum)
+			assert.InDelta(t, 10.00, *iprop.Maximum, epsilon)
 
 			assertProperty(t, itprop, "string", "notes", "", "Notes")
 			iprop, ok = itprop.Properties["notes"]
@@ -282,25 +297,33 @@ func TestParamsParser(t *testing.T) {
 			assert.False(t, param.Required)
 			assert.True(t, param.UniqueItems)
 			assert.Equal(t, "pipe", param.CollectionFormat)
-			assert.NotNil(t, param.Items, "bar_slice should have had an items property")
-			assert.EqualValues(t, 3, *param.MinItems, "'bar_slice' should have had 3 min items")
-			assert.EqualValues(t, 10, *param.MaxItems, "'bar_slice' should have had 10 max items")
+			require.NotNil(t, param.Items, "bar_slice should have had an items property")
+			require.NotNil(t, param.MinItems)
+			assert.Equal(t, int64(3), *param.MinItems, "'bar_slice' should have had 3 min items")
+			require.NotNil(t, param.MaxItems)
+			assert.Equal(t, int64(10), *param.MaxItems, "'bar_slice' should have had 10 max items")
+
 			itprop := param.Items
-			if assert.NotNil(t, itprop) {
-				assert.EqualValues(t, 4, *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
-				assert.EqualValues(t, 9, *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
-				itprop2 := itprop.Items
-				if assert.NotNil(t, itprop2) {
-					assert.EqualValues(t, 5, *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
-					assert.EqualValues(t, 8, *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
-					itprop3 := itprop2.Items
-					if assert.NotNil(t, itprop3) {
-						assert.EqualValues(t, 3, *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
-						assert.EqualValues(t, 10, *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
-						assert.EqualValues(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
-					}
-				}
-			}
+			require.NotNil(t, itprop)
+			require.NotNil(t, itprop.MinItems)
+			assert.Equal(t, int64(4), *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
+			require.NotNil(t, itprop.MaxItems)
+			assert.Equal(t, int64(9), *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
+
+			itprop2 := itprop.Items
+			require.NotNil(t, itprop2)
+			require.NotNil(t, itprop2.MinItems)
+			assert.Equal(t, int64(5), *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
+			require.NotNil(t, itprop2.MaxItems)
+			assert.Equal(t, int64(8), *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
+
+			itprop3 := itprop2.Items
+			require.NotNil(t, itprop3)
+			require.NotNil(t, itprop3.MinLength)
+			assert.Equal(t, int64(3), *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
+			require.NotNil(t, itprop3.MaxLength)
+			assert.Equal(t, int64(10), *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
+			assert.Equal(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
 
 		default:
 			assert.Fail(t, "unknown property: "+param.Name)
@@ -354,8 +377,10 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, "integer", param.Type)
 			assert.Equal(t, "int64", param.Format)
 			assert.True(t, param.Required)
-			assert.EqualValues(t, 10, *param.Maximum)
-			assert.EqualValues(t, 1, *param.Minimum)
+			require.NotNil(t, param.Maximum)
+			assert.InDelta(t, 10.00, *param.Maximum, epsilon)
+			require.NotNil(t, param.Minimum)
+			assert.InDelta(t, 1.00, *param.Minimum, epsilon)
 		case "stringAlias":
 			assert.Equal(t, "query", param.In)
 			assert.Equal(t, "string", param.Type)

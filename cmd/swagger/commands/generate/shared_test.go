@@ -11,19 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func resetDefaultOpts() *analysis.FlattenOpts {
-	return &analysis.FlattenOpts{
-		Verbose:      true,
-		Minimal:      true,
-		Expand:       false,
-		RemoveUnused: false,
-	}
+func TestMain(m *testing.M) {
+	// initializations to run tests in this package
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
 }
 
 func Test_Shared_SetFlattenOptions(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
-
 	// testing multiple options settings for flatten:
 	// - verbose | noverbose
 	// - remove-unused
@@ -38,10 +32,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 	defaultOpts := resetDefaultOpts()
 
 	res = fixt.SetFlattenOptions(defaultOpts)
-	if !assert.NotNil(t, res) {
-		t.FailNow()
-		return
-	}
+	require.NotNil(t, res)
 	assert.Equal(t, *defaultOpts, *res)
 
 	fixt = &FlattenCmdOptions{
@@ -120,21 +111,21 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 func Test_Shared_ReadConfig(t *testing.T) {
 	tmpFile, errio := os.CreateTemp("", "tmp-config*.yaml")
 	require.NoError(t, errio)
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.Remove(tmpFile.Name())
-	}()
+	})
 	tmpConfig := tmpFile.Name()
-	errio = os.WriteFile(tmpConfig, []byte(`param: 123
+	require.NoError(t,
+		os.WriteFile(tmpConfig, []byte(`param: 123
 other: abc
-`), 0600)
-	require.NoError(t, errio)
+`), 0o600))
 	_ = tmpFile.Close()
 
 	for _, toPin := range []struct {
 		Name        string
 		Filename    string
 		ExpectError bool
-		Expected    map[string]interface{}
+		Expected    map[string]any
 	}{
 		{
 			Name:     "empty",
@@ -148,7 +139,7 @@ other: abc
 		{
 			Name:     "happy path",
 			Filename: tmpConfig,
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				"param": 123,
 				"other": "abc",
 			},
@@ -158,7 +149,7 @@ other: abc
 		t.Run(testCase.Name, func(t *testing.T) {
 			v, err := readConfig(testCase.Filename)
 			if testCase.ExpectError {
-				assert.Error(t, err)
+				require.Error(t, err)
 				return
 			}
 			require.NoError(t, err)
@@ -170,8 +161,17 @@ other: abc
 			m := v.AllSettings()
 			for k, expectedValue := range testCase.Expected {
 				require.Contains(t, m, k)
-				assert.EqualValues(t, expectedValue, m[k])
+				assert.Equal(t, expectedValue, m[k])
 			}
 		})
+	}
+}
+
+func resetDefaultOpts() *analysis.FlattenOpts {
+	return &analysis.FlattenOpts{
+		Verbose:      true,
+		Minimal:      true,
+		Expand:       false,
+		RemoveUnused: false,
 	}
 }

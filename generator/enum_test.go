@@ -442,7 +442,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 	require.NoError(t, e)
 
 	opts := opts()
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	tpl := templates.MustGet("model").Lookup("schema")
 	definitions := specDoc.Spec().Definitions
 	for name, schema := range definitions {
 		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
@@ -460,7 +460,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 		assert.True(t, xGoEnumCI)
 
 		buf := bytes.NewBuffer(nil)
-		require.NoError(t, tt.template.Execute(buf, genModel))
+		require.NoError(t, tpl.Execute(buf, genModel))
 
 		ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_definition.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())

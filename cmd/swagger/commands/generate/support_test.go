@@ -1,14 +1,13 @@
 package generate_test
 
 import (
-	"io"
-	"log"
-	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/stretchr/testify/require"
+
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
 func TestGenerateSupport(t *testing.T) {
@@ -23,32 +22,23 @@ func testGenerateSupport(t *testing.T, strict bool) {
 	specs := []string{
 		"tasklist.basic.yml",
 	}
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
 
-	base := filepath.FromSlash("../../../../")
 	for i, spec := range specs {
-		_ = t.Run(spec, func(t *testing.T) {
-			path := filepath.Join(base, "fixtures/codegen", spec)
-			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
-			if err != nil {
-				t.Fatalf("TempDir()=%s", generated)
-			}
-			defer func() {
-				_ = os.RemoveAll(generated)
-			}()
+		t.Run(spec, func(t *testing.T) {
+			path := filepath.Join(testBase(), "fixtures/codegen", spec)
+			generated, cleanup := testTempDir(t, path)
+			t.Cleanup(cleanup)
+
 			m := &generate.Support{}
 			if i == 0 {
-				m.Shared.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
 			}
 			_, _ = flags.Parse(m)
 			m.Shared.Spec = flags.Filename(path)
 			m.Shared.Target = flags.Filename(generated)
 			m.Shared.StrictResponders = strict
 
-			if err := m.Execute([]string{}); err != nil {
-				t.Error(err)
-			}
+			require.NoError(t, m.Execute([]string{}))
 		})
 	}
 }

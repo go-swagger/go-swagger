@@ -48,7 +48,6 @@ func (s *ServeCmd) Execute(args []string) error {
 			ContinueOnError:     true,
 			AbsoluteCircularRef: true,
 		})
-
 		if err != nil {
 			return err
 		}

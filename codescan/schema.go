@@ -170,7 +170,7 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
 	sp.setDescription = func(lines []string) {
 		schema.Description = joinDropLast(lines)
-		enumDesc := getEnumDesc(schema.VendorExtensible.Extensions)
+		enumDesc := getEnumDesc(schema.Extensions)
 		if enumDesc != "" {
 			schema.Description += "\n" + enumDesc
 		}
@@ -989,7 +989,7 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 	if ps.Ref.String() == "" {
 		sp.setDescription = func(lines []string) {
 			ps.Description = joinDropLast(lines)
-			enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
+			enumDesc := getEnumDesc(ps.Extensions)
 			if enumDesc != "" {
 				ps.Description += "\n" + enumDesc
 			}

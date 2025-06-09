@@ -20,11 +20,11 @@ func TestMediaWellKnownMime(t *testing.T) {
 
 	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1") //nolint:testifylint // This is not a json value, this is a mime type
 	assert.True(t, ok)
-	assert.Equal(t, jsonSerializer, w)
+	assert.Equal(t, jsonSerializer, w) //nolint:testifylint
 
 	w, ok = wellKnownMime("unknown")
 	assert.False(t, ok)
-	assert.Equal(t, "", w)
+	assert.Empty(t, w)
 }
 
 func TestMediaMime(t *testing.T) {
@@ -34,7 +34,7 @@ func TestMediaMime(t *testing.T) {
 	assert.Equal(t, runtime.JSONMime, mediaMime(withParams))
 
 	assert.Equal(t, params, mediaParameters(withParams))
-	assert.Equal(t, "", mediaParameters(runtime.JSONMime))
+	assert.Empty(t, mediaParameters(runtime.JSONMime))
 }
 
 func TestMediaGoName(t *testing.T) {
@@ -165,5 +165,5 @@ func TestMediaMakeSerializers(t *testing.T) {
 	assert.True(t, supportsJSON)
 	assert.True(t, sort.IsSorted(res))
 	require.Len(t, res, 1)
-	assert.Equal(t, jsonSerializer, res[0].Name)
+	assert.Equal(t, jsonSerializer, res[0].Name) //nolint:testifylint
 }

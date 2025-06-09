@@ -2,6 +2,8 @@ package generate
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -22,17 +24,31 @@ const (
 
 func TestSpecFileExecute(t *testing.T) {
 	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
+
 	for _, outputFile := range files {
-		spec := &SpecFile{
-			WorkDir: basePath,
-			Output:  flags.Filename(outputFile),
+		name := outputFile
+		if outputFile == "" {
+			name = "to stdout"
 		}
 
-		err := spec.Execute(nil)
-		assert.NoError(t, err)
-		if outputFile != "" {
-			_ = os.Remove(outputFile)
-		}
+		t.Run(fmt.Sprintf("should produce spec file %s", name), func(t *testing.T) {
+			spec := &SpecFile{
+				WorkDir: basePath,
+				Output:  flags.Filename(outputFile),
+			}
+			if outputFile == "" {
+				defaultWriter = io.Discard
+			}
+			t.Cleanup(func() {
+				if outputFile != "" {
+					_ = os.Remove(outputFile)
+				} else {
+					defaultWriter = os.Stdout
+				}
+			})
+
+			require.NoError(t, spec.Execute(nil))
+		})
 	}
 }
 
@@ -53,15 +69,15 @@ func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 	data, err := os.ReadFile(outputFileName)
 	require.NoError(t, err)
 
-	var got map[string]interface{}
+	var got map[string]any
 	err = json.Unmarshal(data, &got)
 	require.NoError(t, err)
 
 	require.Len(t, got["definitions"], 2)
 	require.Contains(t, got["definitions"], "Item")
-	itemDefinition := got["definitions"].(map[string]interface{})["Item"].(map[string]interface{})
+	itemDefinition := got["definitions"].(map[string]any)["Item"].(map[string]any)
 	require.Contains(t, itemDefinition["properties"], "Value1")
-	value1Property := itemDefinition["properties"].(map[string]interface{})["Value1"].(map[string]interface{})
+	value1Property := itemDefinition["properties"].(map[string]any)["Value1"].(map[string]any)
 	require.Contains(t, value1Property, "x-nullable")
 	assert.Equal(t, true, value1Property["x-nullable"])
 }
@@ -73,13 +89,13 @@ func TestGenerateJSONSpec(t *testing.T) {
 	}
 
 	swspec, err := codescan.Run(&opts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	data, err := marshalToJSONFormat(swspec, true)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expected, err := os.ReadFile(jsonResultFile)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	verifyJSONData(t, data, expected)
 }
@@ -91,37 +107,29 @@ func TestGenerateYAMLSpec(t *testing.T) {
 	}
 
 	swspec, err := codescan.Run(&opts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	data, err := marshalToYAMLFormat(swspec)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expected, err := os.ReadFile(yamlResultFile)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	verifyYAMLData(t, data, expected)
 }
 
 func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
-	var got interface{}
-	var expected interface{}
+	var got, expected any
 
-	err := json.Unmarshal(data, &got)
-	assert.NoError(t, err)
-
-	err = json.Unmarshal(expectedJSON, &expected)
-	assert.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, &got))
+	require.NoError(t, json.Unmarshal(expectedJSON, &expected))
 	assert.Equal(t, expected, got)
 }
 
 func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
-	var got interface{}
-	var expected interface{}
+	var got, expected any
 
-	err := yaml.Unmarshal(data, &got)
-	assert.NoError(t, err)
-
-	err = yaml.Unmarshal(expectedYAML, &expected)
-	assert.NoError(t, err)
+	require.NoError(t, yaml.Unmarshal(data, &got))
+	require.NoError(t, yaml.Unmarshal(expectedYAML, &expected))
 	assert.Equal(t, expected, got)
 }

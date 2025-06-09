@@ -253,7 +253,7 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr G
 	if !assert.Equal(t, header.MultipleOf, hdr.MultipleOf) {
 		return false
 	}
-	if !assert.EqualValues(t, header.Enum, hdr.Enum) {
+	if !assert.Equal(t, header.Enum, hdr.Enum) {
 		return false
 	}
 	if !assert.Equal(t, header.Type, hdr.SwaggerType) {

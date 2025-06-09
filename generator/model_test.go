@@ -36,7 +36,7 @@ type templateTest struct {
 	template *template.Template
 }
 
-func (tt *templateTest) assertRender(data interface{}, expected string) (success bool) {
+func (tt *templateTest) assertRender(data any, expected string) (success bool) {
 	buf := bytes.NewBuffer(nil)
 	defer func() {
 		success = !tt.t.Failed()
@@ -756,7 +756,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_JustRef(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	tpl := templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -771,7 +771,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 	assert.Equal(t, "JustRef", genModel.Name)
 	assert.Equal(t, "JustRef", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "type JustRef struct {", res)
@@ -779,7 +779,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithRef(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	tpl := templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -793,7 +793,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 	assert.Equal(t, "WithRef", genModel.Name)
 	assert.Equal(t, "WithRef", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "type WithRef struct {", res)
@@ -801,7 +801,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	tpl := templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -818,7 +818,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 	assert.True(t, prop.IsNullable)
 	assert.True(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "type WithNullableRef struct {", res)
@@ -962,7 +962,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithItems"]
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schema")}
+	tpl := opts.templates.MustGet("model").Lookup("schema")
 
 	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
 	require.NoError(t, err)
@@ -976,7 +976,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	assert.False(t, prop.IsComplexObject)
 
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "type WithItems struct {", res)
@@ -1037,7 +1037,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	res := string(b)
 	assertInCode(t, "type "+k+" struct {", res)
 	assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
-	// this would fail if it accepts additionalItems because it would come out as []interface{}
+	// this would fail if it accepts additionalItems because it would come out as []any
 	assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 	assertInCode(t, "P0 *string `json:\"-\"`", res)
 	assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
@@ -1067,7 +1067,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 	res := string(b)
 	assertInCode(t, "type "+k+" struct {", res)
 	assertInCode(t, "type "+k+"TagsTuple0 struct {", res)
-	// this would fail if it accepts additionalItems because it would come out as []interface{}
+	// this would fail if it accepts additionalItems because it would come out as []any
 	assertInCode(t, "P0 *string `json:\"-\"`", res)
 	assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 	assertInCode(t, k+"TagsTuple0Items []int32 `json:\"-\"`", res)
@@ -1111,7 +1111,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	schema := definitions[k]
 	opts := opts()
 
-	tt := templateTest{t, opts.templates.MustGet("model")}
+	tpl := opts.templates.MustGet("model")
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.Len(t, genModel.ExtraSchemas, 1)
@@ -1127,7 +1127,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	assert.Equal(t, k, genModel.GoType)
 	assert.Len(t, genModel.Properties, 5)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "swagger:model "+k, res)
@@ -1366,7 +1366,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	k := "WithTupleWithExtra"
 	schema := definitions[k]
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("model")}
+	tpl := opts.templates.MustGet("model")
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
@@ -1394,7 +1394,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	assert.Equal(t, k+"FlagsTuple0", prop.GoType)
 	assert.Equal(t, "flags", prop.Name)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, tt.template.Execute(buf, genModel))
+	require.NoError(t, tpl.Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("with_tuple.go", buf.Bytes())
 	require.NoError(t, err)
@@ -2327,7 +2327,7 @@ func TestGenModel_Issue910(t *testing.T) {
 		assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
 		assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
 		assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
-		assertInCode(t, `if m.Foo == nil {`, res) // interface{} now checked against nil (validate.Required fails on any zero value)
+		assertInCode(t, `if m.Foo == nil {`, res) // any now checked against nil (validate.Required fails on any zero value)
 		assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
 		assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
 		// NOTE(fredbi); fixed Required in slices. This property has actually no validation

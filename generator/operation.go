@@ -778,7 +778,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 			SchemaValidations: param.Validations(),
 		}
 
-		res.ZeroValue = res.resolvedType.Zero()
+		res.ZeroValue = res.Zero()
 
 		hasChildValidations := false
 		if param.Items != nil {
@@ -964,7 +964,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 			// composition of primitive fields must be properly identified: hack this through
 			_, isPrimitive := primitives[s.GoType]
 			_, isFormatter := customFormatters[s.GoType]
-			isComposedPrimitive := s.IsPrimitive && !(isPrimitive || isFormatter)
+			isComposedPrimitive := s.IsPrimitive && !isPrimitive && !isFormatter
 
 			hasSimpleBodyParams = !s.IsComplexObject && !s.IsAliased && !isComposedPrimitive && !doNot
 			hasModelBodyParams = (s.IsComplexObject || s.IsAliased || isComposedPrimitive) && !doNot
@@ -972,12 +972,12 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 			if s.IsArray && s.Items != nil {
 				it := s.Items
 				doNot = it.IsInterface || it.IsStream || it.IsBase64
-				hasSimpleBodyItems = !it.IsComplexObject && !(it.IsAliased || doNot)
+				hasSimpleBodyItems = !it.IsComplexObject && !it.IsAliased && !doNot
 				hasModelBodyItems = (it.IsComplexObject || it.IsAliased) && !doNot
 			}
 			if s.IsMap && s.AdditionalProperties != nil {
 				it := s.AdditionalProperties
-				hasSimpleBodyMap = !it.IsComplexObject && !(it.IsAliased || doNot)
+				hasSimpleBodyMap = !it.IsComplexObject && !it.IsAliased && !doNot
 				hasModelBodyMap = !hasSimpleBodyMap && !doNot
 			}
 		}

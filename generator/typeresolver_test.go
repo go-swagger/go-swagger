@@ -647,6 +647,6 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 	assert.False(t, rest.IsComplexObject)
 	assert.False(t, rest.IsCustomFormatter)
 	assert.Equal(t, "[]*jwk.Key", rest.GoType)
-	assert.Equal(t, "", rest.Pkg)
-	assert.Equal(t, "", rest.PkgAlias)
+	assert.Empty(t, rest.Pkg)
+	assert.Empty(t, rest.PkgAlias)
 }
