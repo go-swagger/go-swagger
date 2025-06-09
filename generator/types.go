@@ -142,7 +142,7 @@ func newTypeResolver(pkg, _ string, doc *loads.Document) *typeResolver {
 }
 
 // knownDefGoType returns go type, package and package alias for definition
-func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(string) string) (string, string, string) {
+func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clearFunc func(string) string) (string, string, string) {
 	debugLog("known def type: %q", def)
 	ext := schema.Extensions
 	nm, hasGoName := ext.GetString(xGoName)
@@ -153,12 +153,12 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clear func(
 	}
 	extType, isExternalType := t.resolveExternalType(ext)
 	if !isExternalType || extType.Embedded {
-		if clear == nil {
+		if clearFunc == nil {
 			debugLog("known def type no clear: %q", def)
 			return def, t.definitionPkg, ""
 		}
-		debugLog("known def type clear: %q -> %q", def, clear(def))
-		return clear(def), t.definitionPkg, ""
+		debugLog("known def type clear: %q -> %q", def, clearFunc(def))
+		return clearFunc(def), t.definitionPkg, ""
 	}
 
 	// external type definition trumps regular type resolution
@@ -697,7 +697,7 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < *schema.Maximum)
 	bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
 
-	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !(isMin || isMax || isMinMax)) || bcMin || bcMax || bcMinMax)
+	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !isMin && !isMax && !isMinMax) || bcMin || bcMax || bcMinMax)
 	return nullable
 }
 

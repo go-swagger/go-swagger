@@ -110,7 +110,7 @@ func assertAnnotationOperation(t *testing.T, op *spec.Operation, id, summary, de
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
 	assert.Equal(t, id, op.ID)
-	assert.EqualValues(t, tags, op.Tags)
+	assert.Equal(t, tags, op.Tags)
 	assert.Contains(t, op.Consumes, "application/json")
 	assert.Contains(t, op.Consumes, "application/xml")
 	assert.Contains(t, op.Produces, "application/json")

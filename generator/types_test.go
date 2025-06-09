@@ -350,7 +350,7 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			require.NotNil(t, extType)
 
 			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
-			require.EqualValuesf(t,
+			require.Equal(t,
 				struct{ tpe, pkg, alias string }{tpe, pkg, alias},
 				fixture.knownDefs,
 				"fixture %d", i,
@@ -358,10 +358,10 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 
 			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema, false)
 
-			require.EqualValues(t, fixture.expected, extType)
+			require.Equal(t, fixture.expected, extType)
 
 			resolved.Extensions = nil // don't assert this
-			require.EqualValuesf(t, fixture.resolved, resolved, "fixture %d", i)
+			require.Equal(t, fixture.resolved, resolved, "fixture %d", i)
 		})
 	}
 }

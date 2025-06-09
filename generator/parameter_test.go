@@ -327,7 +327,7 @@ func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, 
 	if !assert.Equal(t, param.MultipleOf, gp.MultipleOf) {
 		return false
 	}
-	if !assert.EqualValues(t, param.Enum, gp.Enum) {
+	if !assert.Equal(t, param.Enum, gp.Enum) {
 		return false
 	}
 	if !assert.Equal(t, param.Type, gp.SwaggerType) {
@@ -408,7 +408,7 @@ func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpIte
 	if !assert.Equal(t, pItems.MultipleOf, gpItems.MultipleOf) {
 		return false
 	}
-	if !assert.EqualValues(t, pItems.Enum, gpItems.Enum) {
+	if !assert.Equal(t, pItems.Enum, gpItems.Enum) {
 		return false
 	}
 	if !assert.Equal(t, pItems.Type, gpItems.SwaggerType) {

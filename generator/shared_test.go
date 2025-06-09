@@ -770,7 +770,7 @@ func TestDefaultImports(t *testing.T) {
 			err := fixture.Opts.EnsureDefaults()
 			require.NoError(t, err)
 			imports := fixture.Opts.defaultImports()
-			require.EqualValuesf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
+			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}
 }

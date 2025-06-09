@@ -84,32 +84,32 @@ Sample code block:
 	err = st.Parse(ascg(text))
 	require.NoError(t, err)
 
-	assert.EqualValues(t, []string{"This has a title, separated by a whitespace line"}, st.Title())
-	assert.EqualValues(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
+	assert.Equal(t, []string{"This has a title, separated by a whitespace line"}, st.Title())
+	assert.Equal(t, []string{"In this example the punctuation for the title should not matter for swagger.", "For go it will still make a difference though."}, st.Description())
 
 	st = &sectionedParser{}
 	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text2))
 	require.NoError(t, err)
 
-	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
-	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Equal(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 
 	st = &sectionedParser{}
 	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text3))
 	require.NoError(t, err)
 
-	assert.EqualValues(t, []string{"This has a title, and markdown in the description"}, st.Title())
-	assert.EqualValues(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
+	assert.Equal(t, []string{"This has a title, and markdown in the description"}, st.Title())
+	assert.Equal(t, []string{"See how markdown works now, we can have lists:", "", "+ first item", "+ second item", "+ third item", "", "[Links works too](http://localhost)"}, st.Description())
 
 	st = &sectionedParser{}
 	st.setTitle = func(_ []string) {}
 	err = st.Parse(ascg(text4))
 	require.NoError(t, err)
 
-	assert.EqualValues(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
-	assert.EqualValues(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
+	assert.Equal(t, []string{"This has whitespace sensitive markdown in the description"}, st.Title())
+	assert.Equal(t, []string{"+ first item", "    + nested item", "    + also nested item", "", "Sample code block:", "", "    fmt.Println(\"Hello World!\")"}, st.Description())
 }
 
 func dummyBuilder() schemaValidations {
@@ -141,8 +141,8 @@ maximum: 20
 
 	err = st.Parse(ascg(block))
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
-	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Equal(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok := st.matched["Maximum"]
 	assert.True(t, ok)
@@ -159,8 +159,8 @@ maximum: 20
 
 	err = st.Parse(ascg(block2))
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
-	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Equal(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok = st.matched["Maximum"]
 	assert.True(t, ok)
@@ -211,8 +211,8 @@ maximum: 20
 
 	err = st.Parse(ascg(block))
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
-	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Equal(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok := st.matched["Maximum"]
 	assert.True(t, ok)
@@ -246,8 +246,8 @@ maximum: 20
 
 	err = st.Parse(ascg(block))
 	require.NoError(t, err)
-	assert.EqualValues(t, []string{"This has a title without whitespace."}, st.Title())
-	assert.EqualValues(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
+	assert.Equal(t, []string{"This has a title without whitespace."}, st.Title())
+	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 1)
 	_, ok := st.matched["Maximum"]
 	assert.False(t, ok)

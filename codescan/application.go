@@ -385,7 +385,7 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 										desc     = &strings.Builder{}
 										namesLen = len(vs.Names)
 									)
-									desc.WriteString(fmt.Sprintf("%v ", blValue))
+									fmt.Fprintf(desc, "%v ", blValue)
 									for i, name := range vs.Names {
 										desc.WriteString(name.Name)
 										if i < namesLen-1 {

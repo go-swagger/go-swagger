@@ -5,11 +5,13 @@ linters:
     - errorlint
     - gocritic
     - gosec
+    - ineffassign
     - misspell
     - revive
     - staticcheck
     - testifylint
     - unconvert
+    - unused
   disable:
     - dupl
     - gochecknoglobals
@@ -33,8 +35,9 @@ linters:
     gocyclo:
       min-complexity: 25
     govet:
-      enable:
-        - shadow
+      enable-all: true
+      disable:
+        - fieldalignment
     testifylint:
       enable:
         - bool-compare
@@ -47,7 +50,6 @@ linters:
         - require-error
         - suite-dont-use-pkg
         - suite-extra-assert-call
-      disable:
         - float-compare
         - go-require
   exclusions:
@@ -58,12 +60,8 @@ linters:
       - legacy
       - std-error-handling
     paths:
-      - playground
-      - fixtures
-      - cmd
-      - third_party$
-      - builtin$
-      - examples$
+      - fixtures/
+      - examples/
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
@@ -79,9 +77,5 @@ formatters:
   exclusions:
     generated: lax
     paths:
-      - playground
-      - fixtures
-      - cmd
-      - third_party$
-      - builtin$
-      - examples$
+      - fixtures/
+      - examples/

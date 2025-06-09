@@ -503,26 +503,26 @@ func findDependencies(n parse.Node) []string {
 			}
 		}
 	case *parse.IfNode:
-		for _, dep := range findDependencies(node.BranchNode.List) {
+		for _, dep := range findDependencies(node.List) {
 			depMap[dep] = true
 		}
-		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+		for _, dep := range findDependencies(node.ElseList) {
 			depMap[dep] = true
 		}
 
 	case *parse.RangeNode:
-		for _, dep := range findDependencies(node.BranchNode.List) {
+		for _, dep := range findDependencies(node.List) {
 			depMap[dep] = true
 		}
-		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+		for _, dep := range findDependencies(node.ElseList) {
 			depMap[dep] = true
 		}
 
 	case *parse.WithNode:
-		for _, dep := range findDependencies(node.BranchNode.List) {
+		for _, dep := range findDependencies(node.List) {
 			depMap[dep] = true
 		}
-		for _, dep := range findDependencies(node.BranchNode.ElseList) {
+		for _, dep := range findDependencies(node.ElseList) {
 			depMap[dep] = true
 		}
 
@@ -542,7 +542,7 @@ func (t *Repository) flattenDependencies(templ *template.Template, dependencies 
 		dependencies = make(map[string]bool)
 	}
 
-	deps := findDependencies(templ.Tree.Root)
+	deps := findDependencies(templ.Root)
 
 	for _, d := range deps {
 		if _, found := dependencies[d]; !found {
@@ -615,7 +615,7 @@ func (t *Repository) DumpTemplates() {
 		fmt.Fprintf(buf, "## %s\n", name)
 		fmt.Fprintf(buf, "Defined in `%s`\n", t.files[name])
 
-		if deps := findDependencies(templ.Tree.Root); len(deps) > 0 {
+		if deps := findDependencies(templ.Root); len(deps) > 0 {
 			fmt.Fprintf(buf, "####requires \n - %v\n\n\n", strings.Join(deps, "\n - "))
 		}
 		fmt.Fprintln(buf, "\n---")
@@ -625,7 +625,7 @@ func (t *Repository) DumpTemplates() {
 
 // FuncMap functions
 
-func asJSON(data interface{}) (string, error) {
+func asJSON(data any) (string, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
@@ -633,7 +633,7 @@ func asJSON(data interface{}) (string, error) {
 	return string(b), nil
 }
 
-func asPrettyJSON(data interface{}) (string, error) {
+func asPrettyJSON(data any) (string, error) {
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return "", err
@@ -658,7 +658,7 @@ func dropPackage(str string) string {
 // return true if the GoType str contains pkg. For example "model.MyType" -> true, "MyType" -> false
 func containsPkgStr(str string) bool {
 	dropped := dropPackage(str)
-	return !(dropped == str)
+	return dropped != str
 }
 
 func padSurround(entry, padWith string, i, ln int) string {

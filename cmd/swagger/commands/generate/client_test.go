@@ -1,24 +1,17 @@
 package generate_test
 
 import (
-	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	flags "github.com/jessevdk/go-flags"
+	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
-	flags "github.com/jessevdk/go-flags"
 )
 
 func TestGenerateClient(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	base := filepath.FromSlash("../../../../")
-
 	tests := []struct {
 		name      string
 		spec      string
@@ -36,7 +29,7 @@ func TestGenerateClient(t *testing.T) {
 			spec:      "todolist.simplequery.yml",
 			wantError: false,
 			prepare: func(c *generate.Client) {
-				c.Shared.CopyrightFile = flags.Filename(filepath.Join(base, "LICENSE"))
+				c.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
 			},
 		},
 		{
@@ -55,15 +48,9 @@ func TestGenerateClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			path := filepath.Join(base, "fixtures/codegen", tt.spec)
-			generated, err := os.MkdirTemp(filepath.Dir(path), "generated")
-			if err != nil {
-				t.Fatalf("TempDir()=%s", generated)
-			}
-			defer func() {
-				_ = os.RemoveAll(generated)
-			}()
+			path := filepath.Join(testBase(), "fixtures/codegen", tt.spec)
+			generated, cleanup := testTempDir(t, path)
+			t.Cleanup(cleanup)
 			m := &generate.Client{}
 			_, _ = flags.Parse(m)
 			m.Shared.Spec = flags.Filename(path)
@@ -74,23 +61,37 @@ func TestGenerateClient(t *testing.T) {
 				tt.prepare(m)
 			}
 
-			err = m.Execute([]string{})
+			err := m.Execute([]string{})
 			if tt.wantError {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
+				require.Error(t, err)
+
+				return
 			}
+
+			require.NoError(t, err)
 		})
 	}
 }
 
 func TestGenerateClient_Check(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
-
 	m := &generate.Client{}
 	_, _ = flags.Parse(m)
 	m.Shared.CopyrightFile = "nullePart"
-	err := m.Execute([]string{})
-	assert.Error(t, err)
+	require.Error(t, m.Execute([]string{}))
+}
+
+func testBase() string {
+	return filepath.FromSlash("../../../../")
+}
+
+func testTempDir(t testing.TB, path string) (generated string, cleanup func()) {
+	t.Helper()
+	var err error
+
+	generated, err = os.MkdirTemp(filepath.Dir(path), "generated")
+	require.NoErrorf(t, err, "TempDir()=%s", generated)
+
+	return generated, func() {
+		_ = os.RemoveAll(generated)
+	}
 }

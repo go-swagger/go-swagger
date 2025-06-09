@@ -83,10 +83,10 @@ func TestParseSwagger(t *testing.T) {
 func verifyMeta(t testing.TB, doc *spec.Swagger) {
 	assert.NotNil(t, doc)
 	verifyInfo(t, doc.Info)
-	assert.EqualValues(t, []string{"application/json", "application/xml"}, doc.Consumes)
-	assert.EqualValues(t, []string{"application/json", "application/xml"}, doc.Produces)
-	assert.EqualValues(t, []string{"http", "https"}, doc.Schemes)
-	assert.EqualValues(t, []map[string][]string{{"api_key": {}}}, doc.Security)
+	assert.Equal(t, []string{"application/json", "application/xml"}, doc.Consumes)
+	assert.Equal(t, []string{"application/json", "application/xml"}, doc.Produces)
+	assert.Equal(t, []string{"http", "https"}, doc.Schemes)
+	assert.Equal(t, []map[string][]string{{"api_key": {}}}, doc.Security)
 	expectedSecuritySchemaKey := spec.SecurityScheme{
 		SecuritySchemeProps: spec.SecuritySchemeProps{
 			Type: "apiKey",
@@ -108,12 +108,12 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 		},
 	}
 	expectedExtensions := spec.Extensions{
-		"x-meta-array": []interface{}{
+		"x-meta-array": []any{
 			"value1",
 			"value2",
 		},
-		"x-meta-array-obj": []interface{}{
-			map[string]interface{}{
+		"x-meta-array-obj": []any{
+			map[string]any{
 				"name":  "obj",
 				"value": "field",
 			},
@@ -121,12 +121,12 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 		"x-meta-value": "value",
 	}
 	expectedInfoExtensions := spec.Extensions{
-		"x-info-array": []interface{}{
+		"x-info-array": []any{
 			"value1",
 			"value2",
 		},
-		"x-info-array-obj": []interface{}{
-			map[string]interface{}{
+		"x-info-array-obj": []any{
+			map[string]any{
 				"name":  "obj",
 				"value": "field",
 			},
@@ -135,9 +135,9 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 	}
 	assert.NotNil(t, doc.SecurityDefinitions["api_key"])
 	assert.NotNil(t, doc.SecurityDefinitions["oauth2"])
-	assert.EqualValues(t, spec.SecurityDefinitions{"api_key": &expectedSecuritySchemaKey, "oauth2": &expectedSecuritySchemaOAuth}, doc.SecurityDefinitions)
-	assert.EqualValues(t, expectedExtensions, doc.Extensions)
-	assert.EqualValues(t, expectedInfoExtensions, doc.Info.Extensions)
+	assert.Equal(t, spec.SecurityDefinitions{"api_key": &expectedSecuritySchemaKey, "oauth2": &expectedSecuritySchemaOAuth}, doc.SecurityDefinitions)
+	assert.Equal(t, expectedExtensions, doc.Extensions)
+	assert.Equal(t, expectedInfoExtensions, doc.Info.Extensions)
 	assert.Equal(t, "localhost", doc.Host)
 	assert.Equal(t, "/v2", doc.BasePath)
 }

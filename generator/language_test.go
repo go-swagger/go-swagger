@@ -54,17 +54,17 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	o := GoLangOpts()
 	goSliceInitializer := o.ArrayInitializerFunc
 
-	a0 := []interface{}{"a", "b"}
+	a0 := []any{"a", "b"}
 	res, err := goSliceInitializer(a0)
 	require.NoError(t, err)
 	assert.Equal(t, `{"a","b",}`, res)
 
-	a1 := []interface{}{[]interface{}{"a", "b"}, []interface{}{"c", "d"}}
+	a1 := []any{[]any{"a", "b"}, []any{"c", "d"}}
 	res, err = goSliceInitializer(a1)
 	require.NoError(t, err)
 	assert.Equal(t, `{{"a","b",},{"c","d",},}`, res)
 
-	a2 := map[string]interface{}{"a": "y", "b": "z"}
+	a2 := map[string]any{"a": "y", "b": "z"}
 	res, err = goSliceInitializer(a2)
 	require.NoError(t, err)
 	assert.Equal(t, `{"a":"y","b":"z",}`, res) //nolint:testifylint // We're testing the ArrayInitializer behavior, no need to run JSONEq
@@ -75,7 +75,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	}{A: "good", B: func() string { return "" }})
 	require.Error(t, err)
 
-	a3 := []interface{}{}
+	a3 := []any{}
 	res, err = goSliceInitializer(a3)
 	require.NoError(t, err)
 	assert.Equal(t, `{}`, res)
@@ -83,7 +83,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 
 func TestGolangInit(t *testing.T) {
 	opts := &LanguageOpts{}
-	assert.Equal(t, "", opts.baseImport("x"))
+	assert.Empty(t, opts.baseImport("x"))
 	res, err := opts.FormatContent("x", []byte("y"))
 	require.NoError(t, err)
 	assert.Equal(t, []byte("y"), res)

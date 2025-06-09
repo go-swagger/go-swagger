@@ -144,7 +144,7 @@ func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "", b.String())
+	assert.Empty(t, b.String())
 
 	templ, err = repo.Get("T1")
 	require.NoError(t, err)

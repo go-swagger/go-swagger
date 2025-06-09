@@ -17,6 +17,7 @@ package generate
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -89,6 +90,8 @@ func loadSpec(input string) (*spec.Swagger, error) {
 	return nil, nil
 }
 
+var defaultWriter io.Writer = os.Stdout
+
 func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 	var b []byte
 	var err error
@@ -103,11 +106,15 @@ func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 		return err
 	}
 
-	if output == "" {
-		fmt.Println(string(b))
-		return nil
+	switch output {
+	case "", "-":
+		_, e := fmt.Fprintf(defaultWriter, "%s\n", b)
+		return e
+	default:
+		return os.WriteFile(output, b, 0o644) //#nosec
 	}
-	return os.WriteFile(output, b, 0644) // #nosec
+
+	// #nosec
 }
 
 func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {
@@ -123,7 +130,7 @@ func marshalToYAMLFormat(swspec *spec.Swagger) ([]byte, error) {
 		return nil, err
 	}
 
-	var jsonObj interface{}
+	var jsonObj any
 	if err := yaml.Unmarshal(b, &jsonObj); err != nil {
 		return nil, err
 	}

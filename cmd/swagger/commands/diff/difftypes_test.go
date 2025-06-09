@@ -33,12 +33,12 @@ func TestSpecChangeCode(t *testing.T) {
 
 	in = []byte(`"dummy"`) // invalid enum
 	err = json.Unmarshal(in, &d)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown enum value")
 
 	in = []byte(`{"dummy"`) // invalid json
 	err = json.Unmarshal(in, &d)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "JSON")
 }
 
@@ -63,11 +63,11 @@ func TestCompatibiliyCode(t *testing.T) {
 
 	in = []byte(`"dummy"`) // invalid enum
 	err = json.Unmarshal(in, &d)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown enum value")
 
 	in = []byte(`{"dummy"`) // invalid json
 	err = json.Unmarshal(in, &d)
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Contains(t, err.Error(), "JSON")
 }
