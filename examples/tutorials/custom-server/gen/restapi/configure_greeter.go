@@ -13,10 +13,11 @@ import (
 	"github.com/go-swagger/go-swagger/examples/tutorials/custom-server/gen/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../gen --name Greeter --spec ../../swagger/swagger.yml --principal interface{} --exclude-main
+//go:generate swagger generate server --target ../../gen --name Greeter --spec ../../swagger/swagger.yml --principal any --exclude-main
 
 func configureFlags(api *operations.GreeterAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.GreeterAPI) http.Handler {
@@ -24,7 +25,7 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -39,6 +40,8 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 
 	if api.GetGreetingHandler == nil {
 		api.GetGreetingHandler = operations.GetGreetingHandlerFunc(func(params operations.GetGreetingParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation operations.GetGreeting has not yet been implemented")
 		})
 	}
@@ -53,13 +56,17 @@ func configureAPI(api *operations.GreeterAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

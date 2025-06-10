@@ -49,8 +49,52 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption is the option for Client methods
+// ClientOption may be used to customize the behavior of Client methods.
 type ClientOption func(*runtime.ClientOperation)
+
+// This client is generated with a few options you might find useful for your swagger spec.
+//
+// Feel free to add you own set of options.
+
+// WithContentType allows the client to force the Content-Type header
+// to negotiate a specific Consumer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithContentType(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ConsumesMediaTypes = []string{mime}
+	}
+}
+
+// WithContentTypeApplicationJSON sets the Content-Type header to "application/json".
+func WithContentTypeApplicationJSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/json"}
+}
+
+// WithContentTypeApplicationKeyauthAPIV1JSON sets the Content-Type header to "application/keyauth.api.v1+json".
+func WithContentTypeApplicationKeyauthAPIV1JSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/keyauth.api.v1+json"}
+}
+
+// WithAccept allows the client to force the Accept header
+// to negotiate a specific Producer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithAccept(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ProducesMediaTypes = []string{mime}
+	}
+}
+
+// WithAcceptApplicationJSON sets the Accept header to "application/json".
+func WithAcceptApplicationJSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/json"}
+}
+
+// WithAcceptApplicationKeyauthAPIV1JSON sets the Accept header to "application/keyauth.api.v1+json".
+func WithAcceptApplicationKeyauthAPIV1JSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/keyauth.api.v1+json"}
+}
 
 // ClientService is the interface for Client methods
 type ClientService interface {
@@ -65,7 +109,7 @@ type ClientService interface {
 Create creates a new customer to track
 */
 func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateCreated, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateParams()
 	}
@@ -85,17 +129,22 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateCreated)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*CreateDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -103,7 +152,7 @@ func (a *Client) Create(params *CreateParams, authInfo runtime.ClientAuthInfoWri
 GetID gets a customer Id given an s s n
 */
 func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetIDOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetIDParams()
 	}
@@ -123,17 +172,22 @@ func (a *Client) GetID(params *GetIDParams, authInfo runtime.ClientAuthInfoWrite
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetIDOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*GetIDDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

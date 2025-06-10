@@ -6,6 +6,7 @@ package tasks
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	stderrors "errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -37,7 +38,6 @@ func NewUploadTaskFileParams() UploadTaskFileParams {
 //
 // swagger:parameters uploadTaskFile
 type UploadTaskFileParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -45,10 +45,12 @@ type UploadTaskFileParams struct {
 	  In: formData
 	*/
 	Description *string
+
 	/*The file to upload
 	  In: formData
 	*/
 	File io.ReadCloser
+
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -66,10 +68,10 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(UploadTaskFileMaxParseMemory); err != nil {
-		if err != http.ErrNotMultipart {
+		if !stderrors.Is(err, http.ErrNotMultipart) {
 			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
+		} else if errParse := r.ParseForm(); errParse != nil {
+			return errors.New(400, "%v", errParse)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -80,14 +82,17 @@ func (o *UploadTaskFileParams) BindRequest(r *http.Request, route *middleware.Ma
 	}
 
 	file, fileHeader, err := r.FormFile("file")
-	if err != nil && err != http.ErrMissingFile {
-		res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
-	} else if err == http.ErrMissingFile {
+	if err != nil {
+		if !stderrors.Is(err, http.ErrMissingFile) {
+			res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
+		}
 		// no-op for missing but optional file parameter
-	} else if err := o.bindFile(file, fileHeader); err != nil {
-		res = append(res, err)
 	} else {
-		o.File = &runtime.File{Data: file, Header: fileHeader}
+		if errBind := o.bindFile(file, fileHeader); errBind != nil {
+			res = append(res, errBind)
+		} else {
+			o.File = &runtime.File{Data: file, Header: fileHeader}
+		}
 	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")

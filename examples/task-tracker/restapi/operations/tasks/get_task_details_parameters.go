@@ -27,7 +27,6 @@ func NewGetTaskDetailsParams() GetTaskDetailsParams {
 //
 // swagger:parameters getTaskDetails
 type GetTaskDetailsParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

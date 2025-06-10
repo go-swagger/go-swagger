@@ -26,7 +26,6 @@ func NewGetUserByNameParams() GetUserByNameParams {
 //
 // swagger:parameters getUserByName
 type GetUserByNameParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

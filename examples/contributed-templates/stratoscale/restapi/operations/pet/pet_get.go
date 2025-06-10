@@ -12,16 +12,16 @@ import (
 )
 
 // PetGetHandlerFunc turns a function with the right signature into a pet get handler
-type PetGetHandlerFunc func(PetGetParams, interface{}) middleware.Responder
+type PetGetHandlerFunc func(PetGetParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn PetGetHandlerFunc) Handle(params PetGetParams, principal interface{}) middleware.Responder {
+func (fn PetGetHandlerFunc) Handle(params PetGetParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // PetGetHandler interface for that can handle valid pet get params
 type PetGetHandler interface {
-	Handle(PetGetParams, interface{}) middleware.Responder
+	Handle(PetGetParams, any) middleware.Responder
 }
 
 // NewPetGet creates a new http.Handler for the pet get operation
@@ -53,9 +53,9 @@ func (o *PetGet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

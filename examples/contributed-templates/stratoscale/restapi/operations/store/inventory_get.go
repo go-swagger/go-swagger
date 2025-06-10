@@ -12,16 +12,16 @@ import (
 )
 
 // InventoryGetHandlerFunc turns a function with the right signature into a inventory get handler
-type InventoryGetHandlerFunc func(InventoryGetParams, interface{}) middleware.Responder
+type InventoryGetHandlerFunc func(InventoryGetParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn InventoryGetHandlerFunc) Handle(params InventoryGetParams, principal interface{}) middleware.Responder {
+func (fn InventoryGetHandlerFunc) Handle(params InventoryGetParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // InventoryGetHandler interface for that can handle valid inventory get params
 type InventoryGetHandler interface {
-	Handle(InventoryGetParams, interface{}) middleware.Responder
+	Handle(InventoryGetParams, any) middleware.Responder
 }
 
 // NewInventoryGet creates a new http.Handler for the inventory get operation
@@ -53,9 +53,9 @@ func (o *InventoryGet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

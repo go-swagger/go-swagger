@@ -12,16 +12,16 @@ import (
 )
 
 // AddOneHandlerFunc turns a function with the right signature into a add one handler
-type AddOneHandlerFunc func(AddOneParams, interface{}) AddOneResponder
+type AddOneHandlerFunc func(AddOneParams, any) AddOneResponder
 
 // Handle executing the request and returning a response
-func (fn AddOneHandlerFunc) Handle(params AddOneParams, principal interface{}) AddOneResponder {
+func (fn AddOneHandlerFunc) Handle(params AddOneParams, principal any) AddOneResponder {
 	return fn(params, principal)
 }
 
 // AddOneHandler interface for that can handle valid add one params
 type AddOneHandler interface {
-	Handle(AddOneParams, interface{}) AddOneResponder
+	Handle(AddOneParams, any) AddOneResponder
 }
 
 // NewAddOne creates a new http.Handler for the add one operation
@@ -30,7 +30,7 @@ func NewAddOne(ctx *middleware.Context, handler AddOneHandler) *AddOne {
 }
 
 /*
-AddOne swagger:route POST / todos addOne
+	AddOne swagger:route POST / todos addOne
 
 AddOne add one API
 */
@@ -42,19 +42,18 @@ type AddOne struct {
 func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewAddOneParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
 		principal = uprinc
 	}
@@ -65,7 +64,6 @@ func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

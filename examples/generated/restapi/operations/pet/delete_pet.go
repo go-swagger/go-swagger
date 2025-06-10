@@ -12,16 +12,16 @@ import (
 )
 
 // DeletePetHandlerFunc turns a function with the right signature into a delete pet handler
-type DeletePetHandlerFunc func(DeletePetParams, interface{}) middleware.Responder
+type DeletePetHandlerFunc func(DeletePetParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn DeletePetHandlerFunc) Handle(params DeletePetParams, principal interface{}) middleware.Responder {
+func (fn DeletePetHandlerFunc) Handle(params DeletePetParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // DeletePetHandler interface for that can handle valid delete pet params
 type DeletePetHandler interface {
-	Handle(DeletePetParams, interface{}) middleware.Responder
+	Handle(DeletePetParams, any) middleware.Responder
 }
 
 // NewDeletePet creates a new http.Handler for the delete pet operation
@@ -53,9 +53,9 @@ func (o *DeletePet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

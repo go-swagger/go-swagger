@@ -78,7 +78,7 @@ func NewGetOrderByIDBadRequest() *GetOrderByIDBadRequest {
 // WriteResponse to the client
 func (o *GetOrderByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }
@@ -103,7 +103,7 @@ func NewGetOrderByIDNotFound() *GetOrderByIDNotFound {
 // WriteResponse to the client
 func (o *GetOrderByIDNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }

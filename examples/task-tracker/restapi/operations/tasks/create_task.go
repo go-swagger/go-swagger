@@ -12,16 +12,16 @@ import (
 )
 
 // CreateTaskHandlerFunc turns a function with the right signature into a create task handler
-type CreateTaskHandlerFunc func(CreateTaskParams, interface{}) middleware.Responder
+type CreateTaskHandlerFunc func(CreateTaskParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn CreateTaskHandlerFunc) Handle(params CreateTaskParams, principal interface{}) middleware.Responder {
+func (fn CreateTaskHandlerFunc) Handle(params CreateTaskParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // CreateTaskHandler interface for that can handle valid create task params
 type CreateTaskHandler interface {
-	Handle(CreateTaskParams, interface{}) middleware.Responder
+	Handle(CreateTaskParams, any) middleware.Responder
 }
 
 // NewCreateTask creates a new http.Handler for the create task operation
@@ -57,9 +57,9 @@ func (o *CreateTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

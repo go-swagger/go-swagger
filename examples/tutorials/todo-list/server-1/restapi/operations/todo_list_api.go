@@ -45,6 +45,8 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
 		}),
 	}
@@ -102,7 +104,7 @@ type TodoListAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -189,12 +191,12 @@ func (o *TodoListAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/io.goswagger.examples.todo-list.v1+json":
+		if mt == "application/io.goswagger.examples.todo-list.v1+json" {
 			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONConsumer
 		}
 
@@ -202,16 +204,17 @@ func (o *TodoListAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/io.goswagger.examples.todo-list.v1+json":
+		if mt == "application/io.goswagger.examples.todo-list.v1+json" {
 			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONProducer
 		}
 
@@ -219,6 +222,7 @@ func (o *TodoListAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

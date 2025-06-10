@@ -49,8 +49,52 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption is the option for Client methods
+// ClientOption may be used to customize the behavior of Client methods.
 type ClientOption func(*runtime.ClientOperation)
+
+// This client is generated with a few options you might find useful for your swagger spec.
+//
+// Feel free to add you own set of options.
+
+// WithContentType allows the client to force the Content-Type header
+// to negotiate a specific Consumer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithContentType(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ConsumesMediaTypes = []string{mime}
+	}
+}
+
+// WithContentTypeApplicationIoSwaggerExamplesTodoListV1JSON sets the Content-Type header to "application/io.swagger.examples.todo-list.v1+json".
+func WithContentTypeApplicationIoSwaggerExamplesTodoListV1JSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/io.swagger.examples.todo-list.v1+json"}
+}
+
+// WithContentTypeApplicationJSON sets the Content-Type header to "application/json".
+func WithContentTypeApplicationJSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/json"}
+}
+
+// WithAccept allows the client to force the Accept header
+// to negotiate a specific Producer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithAccept(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ProducesMediaTypes = []string{mime}
+	}
+}
+
+// WithAcceptApplicationIoSwaggerExamplesTodoListV1JSON sets the Accept header to "application/io.swagger.examples.todo-list.v1+json".
+func WithAcceptApplicationIoSwaggerExamplesTodoListV1JSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/io.swagger.examples.todo-list.v1+json"}
+}
+
+// WithAcceptApplicationJSON sets the Accept header to "application/json".
+func WithAcceptApplicationJSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/json"}
+}
 
 // ClientService is the interface for Client methods
 type ClientService interface {
@@ -69,7 +113,7 @@ type ClientService interface {
 AddOne add one API
 */
 func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AddOneCreated, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAddOneParams()
 	}
@@ -89,17 +133,22 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AddOneCreated)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*AddOneDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -107,7 +156,7 @@ func (a *Client) AddOne(params *AddOneParams, authInfo runtime.ClientAuthInfoWri
 DestroyOne destroy one API
 */
 func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DestroyOneNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewDestroyOneParams()
 	}
@@ -127,17 +176,22 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*DestroyOneNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*DestroyOneDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -145,7 +199,7 @@ func (a *Client) DestroyOne(params *DestroyOneParams, authInfo runtime.ClientAut
 Find find API
 */
 func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*FindOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewFindParams()
 	}
@@ -165,17 +219,22 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter,
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*FindOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*FindDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -183,7 +242,7 @@ func (a *Client) Find(params *FindParams, authInfo runtime.ClientAuthInfoWriter,
 UpdateOne update one API
 */
 func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateOneOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewUpdateOneParams()
 	}
@@ -203,17 +262,22 @@ func (a *Client) UpdateOne(params *UpdateOneParams, authInfo runtime.ClientAuthI
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*UpdateOneOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*UpdateOneDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

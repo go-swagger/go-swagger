@@ -12,16 +12,16 @@ import (
 )
 
 // UploadTaskFileHandlerFunc turns a function with the right signature into a upload task file handler
-type UploadTaskFileHandlerFunc func(UploadTaskFileParams, interface{}) middleware.Responder
+type UploadTaskFileHandlerFunc func(UploadTaskFileParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn UploadTaskFileHandlerFunc) Handle(params UploadTaskFileParams, principal interface{}) middleware.Responder {
+func (fn UploadTaskFileHandlerFunc) Handle(params UploadTaskFileParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // UploadTaskFileHandler interface for that can handle valid upload task file params
 type UploadTaskFileHandler interface {
-	Handle(UploadTaskFileParams, interface{}) middleware.Responder
+	Handle(UploadTaskFileParams, any) middleware.Responder
 }
 
 // NewUploadTaskFile creates a new http.Handler for the upload task file operation
@@ -55,9 +55,9 @@ func (o *UploadTaskFile) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

@@ -37,7 +37,6 @@ func NewListTasksParams() ListTasksParams {
 //
 // swagger:parameters listTasks
 type ListTasksParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -46,16 +45,19 @@ type ListTasksParams struct {
 	  Default: 20
 	*/
 	PageSize *int32
+
 	/*The last id that was seen.
 	  In: query
 	*/
 	SinceID *int64
+
 	/*the status to filter by
 	  Unique: true
 	  In: query
 	  Collection Format: pipes
 	*/
 	Status []string
+
 	/*the tags to filter by
 	  Unique: true
 	  In: query
@@ -71,7 +73,6 @@ func (o *ListTasksParams) BindRequest(r *http.Request, route *middleware.Matched
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qPageSize, qhkPageSize, _ := qs.GetOK("pageSize")
@@ -165,7 +166,7 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 	for i, statusIV := range statusIC {
 		statusI := statusIV
 
-		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"open", "closed", "ignored", "rejected"}, true); err != nil {
+		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []any{"open", "closed", "ignored", "rejected"}, true); err != nil {
 			return err
 		}
 
@@ -180,7 +181,7 @@ func (o *ListTasksParams) bindStatus(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
-// validateStatus carries on validations for parameter Status
+// validateStatus carries out validations for parameter Status
 func (o *ListTasksParams) validateStatus(formats strfmt.Registry) error {
 
 	// uniqueItems: true
@@ -220,7 +221,7 @@ func (o *ListTasksParams) bindTags(rawData []string, hasKey bool, formats strfmt
 	return nil
 }
 
-// validateTags carries on validations for parameter Tags
+// validateTags carries out validations for parameter Tags
 func (o *ListTasksParams) validateTags(formats strfmt.Registry) error {
 
 	// uniqueItems: true

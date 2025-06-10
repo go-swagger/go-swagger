@@ -27,7 +27,6 @@ func NewPetGetParams() PetGetParams {
 //
 // swagger:parameters PetGet
 type PetGetParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

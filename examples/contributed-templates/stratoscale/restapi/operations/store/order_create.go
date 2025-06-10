@@ -12,16 +12,16 @@ import (
 )
 
 // OrderCreateHandlerFunc turns a function with the right signature into a order create handler
-type OrderCreateHandlerFunc func(OrderCreateParams, interface{}) middleware.Responder
+type OrderCreateHandlerFunc func(OrderCreateParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn OrderCreateHandlerFunc) Handle(params OrderCreateParams, principal interface{}) middleware.Responder {
+func (fn OrderCreateHandlerFunc) Handle(params OrderCreateParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // OrderCreateHandler interface for that can handle valid order create params
 type OrderCreateHandler interface {
-	Handle(OrderCreateParams, interface{}) middleware.Responder
+	Handle(OrderCreateParams, any) middleware.Responder
 }
 
 // NewOrderCreate creates a new http.Handler for the order create operation
@@ -53,9 +53,9 @@ func (o *OrderCreate) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

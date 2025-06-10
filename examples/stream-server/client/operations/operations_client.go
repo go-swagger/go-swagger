@@ -52,7 +52,7 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption is the option for Client methods
+// ClientOption may be used to customize the behavior of Client methods.
 type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
@@ -68,7 +68,7 @@ Elapse counts down the number of seconds
 Count down the seconds remaining
 */
 func (a *Client) Elapse(params *ElapseParams, writer io.Writer, opts ...ClientOption) (*ElapseOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewElapseParams()
 	}
@@ -87,17 +87,22 @@ func (a *Client) Elapse(params *ElapseParams, writer io.Writer, opts ...ClientOp
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ElapseOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
-	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for elapse: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }

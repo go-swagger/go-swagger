@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -105,7 +106,7 @@ func (m *MyTuple) UnmarshalJSON(raw []byte) error {
 
 // MarshalJSON marshals this tuple type into a JSON array
 func (m MyTuple) MarshalJSON() ([]byte, error) {
-	data := []interface{}{
+	data := []any{
 		m.P0, m.P1,
 	}
 
@@ -145,11 +146,15 @@ func (m *MyTuple) validateP0(formats strfmt.Registry) error {
 
 	if m.P0 != nil {
 		if err := m.P0.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("0")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("0")
 			}
+
 			return err
 		}
 	}
@@ -165,11 +170,15 @@ func (m *MyTuple) validateP1(formats strfmt.Registry) error {
 
 	if m.P1 != nil {
 		if err := m.P1.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("1")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("1")
 			}
+
 			return err
 		}
 	}
@@ -185,11 +194,15 @@ func (m *MyTuple) validateMyTupleItems(formats strfmt.Registry) error {
 
 			if val, ok := m.MyTupleItems[i][k]; ok {
 				if err := val.Validate(formats); err != nil {
-					if ve, ok := err.(*errors.Validation); ok {
+					ve := new(errors.Validation)
+					if stderrors.As(err, &ve) {
 						return ve.ValidateName(strconv.Itoa(i+2) + "." + k)
-					} else if ce, ok := err.(*errors.CompositeError); ok {
+					}
+					ce := new(errors.CompositeError)
+					if stderrors.As(err, &ce) {
 						return ce.ValidateName(strconv.Itoa(i+2) + "." + k)
 					}
+
 					return err
 				}
 			}
@@ -220,11 +233,15 @@ func (m *MyTuple) contextValidateP0(ctx context.Context, formats strfmt.Registry
 	if m.P0 != nil {
 
 		if err := m.P0.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("0")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("0")
 			}
+
 			return err
 		}
 	}

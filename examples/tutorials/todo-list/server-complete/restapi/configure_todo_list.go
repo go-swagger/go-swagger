@@ -36,8 +36,10 @@ func configureFlags(api *operations.TodoListAPI) {
 	}
 }
 
-var items = make(map[int64]*models.Item)
-var lastID int64
+var (
+	items  = make(map[int64]*models.Item)
+	lastID int64
+)
 
 var itemsLock = &sync.Mutex{}
 
@@ -109,7 +111,7 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -158,13 +160,18 @@ func configureAPI(api *operations.TodoListAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
+
 	if exampleFlags.Example1 != "something" {
 		fmt.Print("example1 argument is not something")
 	}

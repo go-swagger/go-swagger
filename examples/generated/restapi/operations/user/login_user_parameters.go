@@ -27,7 +27,6 @@ func NewLoginUserParams() LoginUserParams {
 //
 // swagger:parameters loginUser
 type LoginUserParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -35,6 +34,7 @@ type LoginUserParams struct {
 	  In: query
 	*/
 	Password *string
+
 	/*The user name for login
 	  In: query
 	*/
@@ -49,7 +49,6 @@ func (o *LoginUserParams) BindRequest(r *http.Request, route *middleware.Matched
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qPassword, qhkPassword, _ := qs.GetOK("password")

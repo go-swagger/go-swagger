@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -19,10 +18,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-openapi/runtime/flagext"
-	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
+
+	"github.com/go-openapi/runtime/flagext"
+	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/oauth2/restapi/operations"
 )
@@ -104,7 +104,7 @@ type Server struct {
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
-func (s *Server) Logf(f string, args ...interface{}) {
+func (s *Server) Logf(f string, args ...any) {
 	if s.api != nil && s.api.Logger != nil {
 		s.api.Logger(f, args...)
 	} else {
@@ -114,7 +114,7 @@ func (s *Server) Logf(f string, args ...interface{}) {
 
 // Fatalf logs message either via defined user logger or via system one if no user logger is defined.
 // Exits with non-zero status after printing
-func (s *Server) Fatalf(f string, args ...interface{}) {
+func (s *Server) Fatalf(f string, args ...any) {
 	if s.api != nil && s.api.Logger != nil {
 		s.api.Logger(f, args...)
 		os.Exit(1)
@@ -188,8 +188,8 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving oauth sample at unix://%s", s.SocketPath)
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := domainSocket.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := domainSocket.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
 			s.Logf("Stopped serving oauth sample at unix://%s", s.SocketPath)
 		}(s.domainSocketL)
@@ -218,8 +218,8 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving oauth sample at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := httpServer.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := httpServer.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
 			s.Logf("Stopped serving oauth sample at http://%s", l.Addr())
 		}(s.httpServerL)
@@ -280,7 +280,7 @@ func (s *Server) Serve() (err error) {
 			caCertPool := x509.NewCertPool()
 			ok := caCertPool.AppendCertsFromPEM(caCert)
 			if !ok {
-				return fmt.Errorf("cannot parse CA certificate")
+				return errors.New("cannot parse CA certificate")
 			}
 			httpsServer.TLSConfig.ClientCAs = caCertPool
 			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
@@ -311,8 +311,8 @@ func (s *Server) Serve() (err error) {
 		s.Logf("Serving oauth sample at https://%s", s.httpsServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := httpsServer.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := httpsServer.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
 			s.Logf("Stopped serving oauth sample at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))

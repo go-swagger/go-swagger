@@ -6,13 +6,15 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/models"
+	"github.com/go-swagger/go-swagger/examples/todo-list-strict/models"
 )
 
 // DestroyOneReader is a Reader for the DestroyOne structure.
@@ -21,7 +23,7 @@ type DestroyOneReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *DestroyOneReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *DestroyOneReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 204:
 		result := NewDestroyOneNoContent()
@@ -47,15 +49,49 @@ func NewDestroyOneNoContent() *DestroyOneNoContent {
 }
 
 /*
-DestroyOneNoContent handles this case with default header values.
+DestroyOneNoContent describes a response with status code 204, with default header values.
 
 Deleted
 */
 type DestroyOneNoContent struct {
 }
 
+// IsSuccess returns true when this destroy one no content response has a 2xx status code
+func (o *DestroyOneNoContent) IsSuccess() bool {
+	return true
+}
+
+// IsRedirect returns true when this destroy one no content response has a 3xx status code
+func (o *DestroyOneNoContent) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this destroy one no content response has a 4xx status code
+func (o *DestroyOneNoContent) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this destroy one no content response has a 5xx status code
+func (o *DestroyOneNoContent) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this destroy one no content response a status code equal to that given
+func (o *DestroyOneNoContent) IsCode(code int) bool {
+	return code == 204
+}
+
+// Code gets the status code for the destroy one no content response
+func (o *DestroyOneNoContent) Code() int {
+	return 204
+}
+
 func (o *DestroyOneNoContent) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent ", 204)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
+}
+
+func (o *DestroyOneNoContent) String() string {
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOneNoContent", 204)
 }
 
 func (o *DestroyOneNoContent) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
@@ -71,7 +107,7 @@ func NewDestroyOneDefault(code int) *DestroyOneDefault {
 }
 
 /*
-DestroyOneDefault handles this case with default header values.
+DestroyOneDefault describes a response with status code -1, with default header values.
 
 error
 */
@@ -81,13 +117,44 @@ type DestroyOneDefault struct {
 	Payload *models.Error
 }
 
+// IsSuccess returns true when this destroy one default response has a 2xx status code
+func (o *DestroyOneDefault) IsSuccess() bool {
+	return o._statusCode/100 == 2
+}
+
+// IsRedirect returns true when this destroy one default response has a 3xx status code
+func (o *DestroyOneDefault) IsRedirect() bool {
+	return o._statusCode/100 == 3
+}
+
+// IsClientError returns true when this destroy one default response has a 4xx status code
+func (o *DestroyOneDefault) IsClientError() bool {
+	return o._statusCode/100 == 4
+}
+
+// IsServerError returns true when this destroy one default response has a 5xx status code
+func (o *DestroyOneDefault) IsServerError() bool {
+	return o._statusCode/100 == 5
+}
+
+// IsCode returns true when this destroy one default response a status code equal to that given
+func (o *DestroyOneDefault) IsCode(code int) bool {
+	return o._statusCode == code
+}
+
 // Code gets the status code for the destroy one default response
 func (o *DestroyOneDefault) Code() int {
 	return o._statusCode
 }
 
 func (o *DestroyOneDefault) Error() string {
-	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default  %+v", o._statusCode, o.Payload)
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
+}
+
+func (o *DestroyOneDefault) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /{id}][%d] destroyOne default %s", o._statusCode, payload)
 }
 
 func (o *DestroyOneDefault) GetPayload() *models.Error {
@@ -99,7 +166,7 @@ func (o *DestroyOneDefault) readResponse(response runtime.ClientResponse, consum
 	o.Payload = new(models.Error)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

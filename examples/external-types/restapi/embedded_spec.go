@@ -267,7 +267,7 @@ func init() {
       }
     },
     "MyInterfaceObject": {
-      "description": "This object demonstrates several ways to refer to an external interface.\n\nThe generated code behaves as it is an interface{}: no pointers are generated, and no valication\nis required.\n",
+      "description": "This object demonstrates several ways to refer to an external interface.\n\nThe generated code behaves as it is an interface{}: no pointers are generated, and no validation\nis required.\n",
       "type": "object",
       "required": [
         "iface2",
@@ -841,7 +841,7 @@ func init() {
       }
     },
     "MyInterfaceObject": {
-      "description": "This object demonstrates several ways to refer to an external interface.\n\nThe generated code behaves as it is an interface{}: no pointers are generated, and no valication\nis required.\n",
+      "description": "This object demonstrates several ways to refer to an external interface.\n\nThe generated code behaves as it is an interface{}: no pointers are generated, and no validation\nis required.\n",
       "type": "object",
       "required": [
         "iface2",

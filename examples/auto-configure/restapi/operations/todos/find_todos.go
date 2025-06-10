@@ -12,16 +12,16 @@ import (
 )
 
 // FindTodosHandlerFunc turns a function with the right signature into a find todos handler
-type FindTodosHandlerFunc func(FindTodosParams, interface{}) middleware.Responder
+type FindTodosHandlerFunc func(FindTodosParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn FindTodosHandlerFunc) Handle(params FindTodosParams, principal interface{}) middleware.Responder {
+func (fn FindTodosHandlerFunc) Handle(params FindTodosParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // FindTodosHandler interface for that can handle valid find todos params
 type FindTodosHandler interface {
-	Handle(FindTodosParams, interface{}) middleware.Responder
+	Handle(FindTodosParams, any) middleware.Responder
 }
 
 // NewFindTodos creates a new http.Handler for the find todos operation
@@ -42,7 +42,7 @@ type FindTodos struct {
 func (o *FindTodos) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewFindTodosParams()
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
@@ -51,11 +51,11 @@ func (o *FindTodos) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

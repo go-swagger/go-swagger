@@ -12,16 +12,16 @@ import (
 )
 
 // UpdateTaskHandlerFunc turns a function with the right signature into a update task handler
-type UpdateTaskHandlerFunc func(UpdateTaskParams, interface{}) middleware.Responder
+type UpdateTaskHandlerFunc func(UpdateTaskParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn UpdateTaskHandlerFunc) Handle(params UpdateTaskParams, principal interface{}) middleware.Responder {
+func (fn UpdateTaskHandlerFunc) Handle(params UpdateTaskParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // UpdateTaskHandler interface for that can handle valid update task params
 type UpdateTaskHandler interface {
-	Handle(UpdateTaskParams, interface{}) middleware.Responder
+	Handle(UpdateTaskParams, any) middleware.Responder
 }
 
 // NewUpdateTask creates a new http.Handler for the update task operation
@@ -57,9 +57,9 @@ func (o *UpdateTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

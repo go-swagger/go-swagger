@@ -26,7 +26,6 @@ func NewDestroyOneParams() DestroyOneParams {
 //
 // swagger:parameters destroyOne
 type DestroyOneParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

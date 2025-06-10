@@ -12,16 +12,16 @@ import (
 )
 
 // AddOneHandlerFunc turns a function with the right signature into a add one handler
-type AddOneHandlerFunc func(AddOneParams, interface{}) middleware.Responder
+type AddOneHandlerFunc func(AddOneParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn AddOneHandlerFunc) Handle(params AddOneParams, principal interface{}) middleware.Responder {
+func (fn AddOneHandlerFunc) Handle(params AddOneParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // AddOneHandler interface for that can handle valid add one params
 type AddOneHandler interface {
-	Handle(AddOneParams, interface{}) middleware.Responder
+	Handle(AddOneParams, any) middleware.Responder
 }
 
 // NewAddOne creates a new http.Handler for the add one operation
@@ -53,9 +53,9 @@ func (o *AddOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

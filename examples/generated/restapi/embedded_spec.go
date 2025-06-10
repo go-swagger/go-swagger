@@ -180,7 +180,7 @@ func init() {
             ]
           }
         ],
-        "description": "Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        "description": "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
         "produces": [
           "application/json",
           "application/xml"
@@ -1004,7 +1004,7 @@ func init() {
             ]
           }
         ],
-        "description": "Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
+        "description": "Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.",
         "produces": [
           "application/json",
           "application/xml"

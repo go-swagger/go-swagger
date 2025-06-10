@@ -29,7 +29,6 @@ func NewCreateParams() CreateParams {
 //
 // swagger:parameters create
 type CreateParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -49,7 +48,9 @@ func (o *CreateParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Customer
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("info", "body", "", err))

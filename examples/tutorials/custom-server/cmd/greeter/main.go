@@ -16,10 +16,16 @@ import (
 var portFlag = flag.Int("port", 3000, "Port to run this service on")
 
 func main() {
+	if err := serve(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func serve() error {
 	// load embedded swagger file
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 
 	// create new service API
@@ -48,7 +54,5 @@ func main() {
 		})
 
 	// serve API
-	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
-	}
+	return server.Serve()
 }

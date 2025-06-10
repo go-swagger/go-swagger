@@ -11,8 +11,9 @@ import (
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 
-	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
+
+	"github.com/go-openapi/swag"
 )
 
 // makeOperationTodosFindTodosCmd returns a command to handle operation findTodos
@@ -155,8 +156,8 @@ func retrieveOperationTodosFindTodosSinceFlag(m *todos.FindTodosParams, cmdPrefi
 // parseOperationTodosFindTodosResult parses request result and return the string content
 func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error) (string, error) {
 	if respErr != nil {
-
-		var iRespD interface{} = respErr
+		// default response
+		var iRespD any = respErr
 		respD, ok := iRespD.(*todos.FindTodosDefault)
 		if ok {
 			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
@@ -168,21 +169,23 @@ func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 			}
 		}
 
-		var iResp0 interface{} = respErr
-		resp0, ok := iResp0.(*todos.FindTodosOK)
+		// responses
+		var iResp0 any = respErr
+		eresp0, ok := iResp0.(*todos.FindTodosOK)
 		if ok {
-			if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
-				msgStr, err := json.Marshal(resp0.Payload)
+			// the error response has a payload
+			if !swag.IsZero(eresp0) && !swag.IsZero(eresp0.Payload) {
+				msgStr, err := json.Marshal(eresp0.Payload)
 				if err != nil {
 					return "", err
 				}
 				return string(msgStr), nil
 			}
 		}
-
 		return "", respErr
 	}
 
+	// success responses
 	if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
@@ -190,6 +193,5 @@ func parseOperationTodosFindTodosResult(resp0 *todos.FindTodosOK, respErr error)
 		}
 		return string(msgStr), nil
 	}
-
 	return "", nil
 }

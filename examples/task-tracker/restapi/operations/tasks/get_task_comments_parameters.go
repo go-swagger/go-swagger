@@ -36,7 +36,6 @@ func NewGetTaskCommentsParams() GetTaskCommentsParams {
 //
 // swagger:parameters getTaskComments
 type GetTaskCommentsParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -45,11 +44,13 @@ type GetTaskCommentsParams struct {
 	  In: path
 	*/
 	ID int64
+
 	/*Amount of items to return in a single page
 	  In: query
 	  Default: 20
 	*/
 	PageSize *int32
+
 	/*The created time of the oldest seen comment
 	  In: query
 	*/
@@ -64,7 +65,6 @@ func (o *GetTaskCommentsParams) BindRequest(r *http.Request, route *middleware.M
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	rID, rhkID, _ := route.Params.GetOK("id")
@@ -158,7 +158,7 @@ func (o *GetTaskCommentsParams) bindSince(rawData []string, hasKey bool, formats
 	return nil
 }
 
-// validateSince carries on validations for parameter Since
+// validateSince carries out validations for parameter Since
 func (o *GetTaskCommentsParams) validateSince(formats strfmt.Registry) error {
 
 	if err := validate.FormatOf("since", "query", "date-time", o.Since.String(), formats); err != nil {

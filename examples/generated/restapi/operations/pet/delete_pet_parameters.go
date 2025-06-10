@@ -28,7 +28,6 @@ func NewDeletePetParams() DeletePetParams {
 //
 // swagger:parameters deletePet
 type DeletePetParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -37,6 +36,7 @@ type DeletePetParams struct {
 	  In: header
 	*/
 	APIKey string
+
 	/*Pet id to delete
 	  Required: true
 	  In: path

@@ -31,5 +31,4 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println("serving:", specDoc.Spec().Info.Title)
-
 }
