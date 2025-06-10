@@ -25,7 +25,6 @@ func NewGetTestParams() GetTestParams {
 //
 // swagger:parameters GetTest
 type GetTestParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

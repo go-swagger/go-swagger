@@ -12,16 +12,16 @@ import (
 )
 
 // UpdatePetWithFormHandlerFunc turns a function with the right signature into a update pet with form handler
-type UpdatePetWithFormHandlerFunc func(UpdatePetWithFormParams, interface{}) middleware.Responder
+type UpdatePetWithFormHandlerFunc func(UpdatePetWithFormParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn UpdatePetWithFormHandlerFunc) Handle(params UpdatePetWithFormParams, principal interface{}) middleware.Responder {
+func (fn UpdatePetWithFormHandlerFunc) Handle(params UpdatePetWithFormParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // UpdatePetWithFormHandler interface for that can handle valid update pet with form params
 type UpdatePetWithFormHandler interface {
-	Handle(UpdatePetWithFormParams, interface{}) middleware.Responder
+	Handle(UpdatePetWithFormParams, any) middleware.Responder
 }
 
 // NewUpdatePetWithForm creates a new http.Handler for the update pet with form operation
@@ -53,9 +53,9 @@ func (o *UpdatePetWithForm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

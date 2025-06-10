@@ -59,65 +59,67 @@ func main() {
 	log.Println("serving", specDoc.Spec().Info.Title, "at http://localhost:8000")
 
 	// serve the api with spec and UI
-	if err := http.ListenAndServe(":8000", app.APIHandler(nil)); err != nil {
+	if err := http.ListenAndServe(":8000", app.APIHandler(nil)); err != nil { //nolint:gosec
 		log.Fatalln(err)
 	}
 }
 
-var findTodos = runtime.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+var findTodos = runtime.OperationHandlerFunc(func(params any) (any, error) {
 	log.Println("received 'findTodos'")
 	log.Printf("%#v\n", params)
 
 	return items, nil
 })
 
-var addOne = runtime.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+var addOne = runtime.OperationHandlerFunc(func(params any) (any, error) {
 	log.Println("received 'addOne'")
 	log.Printf("%#v\n", params)
 
-	body := params.(map[string]interface{})["body"].(map[string]interface{})
+	body := params.(map[string]any)["body"].(map[string]any)
 	addItem(body)
 	return body, nil
 })
 
-var updateOne = runtime.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+var updateOne = runtime.OperationHandlerFunc(func(params any) (any, error) {
 	log.Println("received 'updateOne'")
 	log.Printf("%#v\n", params)
 
-	data := params.(map[string]interface{})
+	data := params.(map[string]any)
 	id := data["id"].(int64)
-	body := data["body"].(map[string]interface{})
+	body := data["body"].(map[string]any)
 	return updateItem(id, body)
 })
 
-var destroyOne = runtime.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+var destroyOne = runtime.OperationHandlerFunc(func(params any) (any, error) {
 	log.Println("received 'destroyOne'")
 	log.Printf("%#v\n", params)
 
-	removeItem(params.(map[string]interface{})["id"].(int64))
+	removeItem(params.(map[string]any)["id"].(int64))
 	return nil, nil
 })
 
-var items = []map[string]interface{}{
+var items = []map[string]any{
 	{"id": int64(1), "description": "feed dog", "completed": true},
 	{"id": int64(2), "description": "feed cat"},
 }
 
-var itemsLock = &sync.Mutex{}
-var lastItemID int64 = 2
+var (
+	itemsLock        = &sync.Mutex{}
+	lastItemID int64 = 2
+)
 
 func newItemID() int64 {
 	return atomic.AddInt64(&lastItemID, 1)
 }
 
-func addItem(item map[string]interface{}) {
+func addItem(item map[string]any) {
 	itemsLock.Lock()
 	defer itemsLock.Unlock()
 	item["id"] = newItemID()
 	items = append(items, item)
 }
 
-func updateItem(id int64, body map[string]interface{}) (map[string]interface{}, error) {
+func updateItem(id int64, body map[string]any) (map[string]any, error) {
 	itemsLock.Lock()
 	defer itemsLock.Unlock()
 
@@ -136,7 +138,7 @@ func removeItem(id int64) {
 	itemsLock.Lock()
 	defer itemsLock.Unlock()
 
-	var newItems []map[string]interface{}
+	var newItems []map[string]any
 	for _, item := range items {
 		if item["id"].(int64) != id {
 			newItems = append(newItems, item)
@@ -145,7 +147,7 @@ func removeItem(id int64) {
 	items = newItems
 }
 
-func itemByID(id int64) (map[string]interface{}, error) {
+func itemByID(id int64) (map[string]any, error) {
 	for _, item := range items {
 		if item["id"].(int64) == id {
 			return item, nil

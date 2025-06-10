@@ -17,16 +17,16 @@ import (
 )
 
 // AddCommentToTaskHandlerFunc turns a function with the right signature into a add comment to task handler
-type AddCommentToTaskHandlerFunc func(AddCommentToTaskParams, interface{}) middleware.Responder
+type AddCommentToTaskHandlerFunc func(AddCommentToTaskParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn AddCommentToTaskHandlerFunc) Handle(params AddCommentToTaskParams, principal interface{}) middleware.Responder {
+func (fn AddCommentToTaskHandlerFunc) Handle(params AddCommentToTaskParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // AddCommentToTaskHandler interface for that can handle valid add comment to task params
 type AddCommentToTaskHandler interface {
-	Handle(AddCommentToTaskParams, interface{}) middleware.Responder
+	Handle(AddCommentToTaskParams, any) middleware.Responder
 }
 
 // NewAddCommentToTask creates a new http.Handler for the add comment to task operation
@@ -61,9 +61,9 @@ func (o *AddCommentToTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

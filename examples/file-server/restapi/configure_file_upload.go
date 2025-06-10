@@ -19,10 +19,11 @@ import (
 	"github.com/go-swagger/go-swagger/examples/file-server/restapi/operations/uploads"
 )
 
-//go:generate swagger generate server --target ../../file-server --name FileUpload --spec ../swagger.yml --principal interface{}
+//go:generate swagger generate server --target ../../file-server --name FileUpload --spec ../swagger.yml --principal any
 
 func configureFlags(api *operations.FileUploadAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.FileUploadAPI) http.Handler {
@@ -30,7 +31,7 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -54,7 +55,6 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 	uploadCounter := 0
 
 	api.UploadsUploadFileHandler = uploads.UploadFileHandlerFunc(func(params uploads.UploadFileParams) middleware.Responder {
-
 		if params.File == nil {
 			return middleware.Error(404, fmt.Errorf("no file provided"))
 		}
@@ -70,7 +70,7 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 		// uploads file and save it locally
 		filename := path.Join(uploadFolder, fmt.Sprintf("uploaded_file_%d.dat", uploadCounter))
 		uploadCounter++
-		f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+		f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 		if err != nil {
 			return middleware.Error(500, fmt.Errorf("could not create file on server"))
 		}
@@ -97,13 +97,17 @@ func configureAPI(api *operations.FileUploadAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

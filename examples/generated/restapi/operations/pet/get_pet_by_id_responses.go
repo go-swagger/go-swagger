@@ -78,7 +78,7 @@ func NewGetPetByIDBadRequest() *GetPetByIDBadRequest {
 // WriteResponse to the client
 func (o *GetPetByIDBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }
@@ -103,7 +103,7 @@ func NewGetPetByIDNotFound() *GetPetByIDNotFound {
 // WriteResponse to the client
 func (o *GetPetByIDNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }

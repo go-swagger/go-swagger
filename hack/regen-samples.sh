@@ -91,13 +91,13 @@ rm -rf cli client cmd models
 swagger generate cli --spec=swagger.yml --cli-app-name todoctl
 
 cd "${examples}/auto-configure" || exit 1
-rm -rf cmd models restapi
-swagger generate server --spec=swagger.yml
+rm -rf cmd models restapi # keep implementation
+swagger generate server --spec=swagger.yml --implementation-package=github.com/go-swagger/go-swagger/examples/auto-configure/implementation
 
 cd "${examples}/todo-list-strict" || exit 1
 rm -rf cmd models restapi client
-swagger generate server --spec=swagger.yml
-swagger generate client --spec=swagger.yml
+swagger generate server --spec=swagger.yml --strict-responders
+swagger generate client --spec=swagger.yml --strict-responders
 
 cd "${examples}/flags" || exit 1
 rm -rf pflag flag go-flags xpflag xflag xgo-flags

@@ -12,16 +12,16 @@ import (
 )
 
 // OrderGetHandlerFunc turns a function with the right signature into a order get handler
-type OrderGetHandlerFunc func(OrderGetParams, interface{}) middleware.Responder
+type OrderGetHandlerFunc func(OrderGetParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn OrderGetHandlerFunc) Handle(params OrderGetParams, principal interface{}) middleware.Responder {
+func (fn OrderGetHandlerFunc) Handle(params OrderGetParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // OrderGetHandler interface for that can handle valid order get params
 type OrderGetHandler interface {
-	Handle(OrderGetParams, interface{}) middleware.Responder
+	Handle(OrderGetParams, any) middleware.Responder
 }
 
 // NewOrderGet creates a new http.Handler for the order get operation
@@ -55,9 +55,9 @@ func (o *OrderGet) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

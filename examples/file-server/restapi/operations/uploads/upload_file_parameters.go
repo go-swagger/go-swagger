@@ -6,6 +6,7 @@ package uploads
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	stderrors "errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -35,7 +36,6 @@ func NewUploadFileParams() UploadFileParams {
 //
 // swagger:parameters uploadFile
 type UploadFileParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -56,21 +56,23 @@ func (o *UploadFileParams) BindRequest(r *http.Request, route *middleware.Matche
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(UploadFileMaxParseMemory); err != nil {
-		if err != http.ErrNotMultipart {
+		if !stderrors.Is(err, http.ErrNotMultipart) {
 			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
+		} else if errParse := r.ParseForm(); errParse != nil {
+			return errors.New(400, "%v", errParse)
 		}
 	}
 
 	file, fileHeader, err := r.FormFile("file")
 	if err != nil {
 		res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
-	} else if err := o.bindFile(file, fileHeader); err != nil {
-		// Required: true
-		res = append(res, err)
 	} else {
-		o.File = &runtime.File{Data: file, Header: fileHeader}
+		if errBind := o.bindFile(file, fileHeader); errBind != nil {
+			// Required: true
+			res = append(res, errBind)
+		} else {
+			o.File = &runtime.File{Data: file, Header: fileHeader}
+		}
 	}
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

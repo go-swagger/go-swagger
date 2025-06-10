@@ -28,7 +28,6 @@ func NewPostTestParams() PostTestParams {
 //
 // swagger:parameters PostTest
 type PostTestParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -52,7 +51,9 @@ func (o *PostTestParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body []custom.MyAlternateString
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("customizedStrings", "body", "", err))

@@ -12,16 +12,16 @@ import (
 )
 
 // DestroyOneHandlerFunc turns a function with the right signature into a destroy one handler
-type DestroyOneHandlerFunc func(DestroyOneParams, interface{}) DestroyOneResponder
+type DestroyOneHandlerFunc func(DestroyOneParams, any) DestroyOneResponder
 
 // Handle executing the request and returning a response
-func (fn DestroyOneHandlerFunc) Handle(params DestroyOneParams, principal interface{}) DestroyOneResponder {
+func (fn DestroyOneHandlerFunc) Handle(params DestroyOneParams, principal any) DestroyOneResponder {
 	return fn(params, principal)
 }
 
 // DestroyOneHandler interface for that can handle valid destroy one params
 type DestroyOneHandler interface {
-	Handle(DestroyOneParams, interface{}) DestroyOneResponder
+	Handle(DestroyOneParams, any) DestroyOneResponder
 }
 
 // NewDestroyOne creates a new http.Handler for the destroy one operation
@@ -30,7 +30,7 @@ func NewDestroyOne(ctx *middleware.Context, handler DestroyOneHandler) *DestroyO
 }
 
 /*
-DestroyOne swagger:route DELETE /{id} todos destroyOne
+	DestroyOne swagger:route DELETE /{id} todos destroyOne
 
 DestroyOne destroy one API
 */
@@ -42,19 +42,18 @@ type DestroyOne struct {
 func (o *DestroyOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewDestroyOneParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
 		principal = uprinc
 	}
@@ -65,7 +64,6 @@ func (o *DestroyOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

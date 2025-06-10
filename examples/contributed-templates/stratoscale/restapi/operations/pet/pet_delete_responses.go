@@ -31,7 +31,7 @@ func NewPetDeleteNoContent() *PetDeleteNoContent {
 // WriteResponse to the client
 func (o *PetDeleteNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(204)
 }
@@ -56,7 +56,7 @@ func NewPetDeleteBadRequest() *PetDeleteBadRequest {
 // WriteResponse to the client
 func (o *PetDeleteBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }
@@ -81,7 +81,7 @@ func NewPetDeleteNotFound() *PetDeleteNotFound {
 // WriteResponse to the client
 func (o *PetDeleteNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }

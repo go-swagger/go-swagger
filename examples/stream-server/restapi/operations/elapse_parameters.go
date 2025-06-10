@@ -28,7 +28,6 @@ func NewElapseParams() ElapseParams {
 //
 // swagger:parameters elapse
 type ElapseParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -83,7 +82,7 @@ func (o *ElapseParams) bindLength(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
-// validateLength carries on validations for parameter Length
+// validateLength carries out validations for parameter Length
 func (o *ElapseParams) validateLength(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("length", "path", o.Length, 2, false); err != nil {

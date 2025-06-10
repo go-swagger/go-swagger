@@ -12,16 +12,16 @@ import (
 )
 
 // FindPetsByTagsHandlerFunc turns a function with the right signature into a find pets by tags handler
-type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, interface{}) middleware.Responder
+type FindPetsByTagsHandlerFunc func(FindPetsByTagsParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal interface{}) middleware.Responder {
+func (fn FindPetsByTagsHandlerFunc) Handle(params FindPetsByTagsParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // FindPetsByTagsHandler interface for that can handle valid find pets by tags params
 type FindPetsByTagsHandler interface {
-	Handle(FindPetsByTagsParams, interface{}) middleware.Responder
+	Handle(FindPetsByTagsParams, any) middleware.Responder
 }
 
 // NewFindPetsByTags creates a new http.Handler for the find pets by tags operation
@@ -34,7 +34,7 @@ func NewFindPetsByTags(ctx *middleware.Context, handler FindPetsByTagsHandler) *
 
 # Finds Pets by tags
 
-Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
+Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
 */
 type FindPetsByTags struct {
 	Context *middleware.Context
@@ -55,9 +55,9 @@ func (o *FindPetsByTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

@@ -12,8 +12,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/cli/client/operations"
 	"github.com/go-swagger/go-swagger/examples/cli/models"
 
-	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
+
+	"github.com/go-openapi/swag"
 )
 
 // makeOperationOperationsPutTest2766Cmd returns a command to handle operation putTest2766
@@ -189,7 +190,7 @@ func retrieveOperationOperationsPutTest2766BodyFlag(m *operations.PutTest2766Par
 
 		flagBodyValue := models.GithubReactions{}
 		if err := json.Unmarshal([]byte(flagBodyValueStr), &flagBodyValue); err != nil {
-			return fmt.Errorf("cannot unmarshal body string in models.GithubReactions: %v", err), false
+			return fmt.Errorf("cannot unmarshal body string in models.GithubReactions: %w", err), false
 		}
 		m.Body = &flagBodyValue
 	}
@@ -222,21 +223,23 @@ func retrieveOperationOperationsPutTest2766BodyFlag(m *operations.PutTest2766Par
 func parseOperationOperationsPutTest2766Result(resp0 *operations.PutTest2766OK, respErr error) (string, error) {
 	if respErr != nil {
 
-		var iResp0 interface{} = respErr
-		resp0, ok := iResp0.(*operations.PutTest2766OK)
+		// responses
+		var iResp0 any = respErr
+		eresp0, ok := iResp0.(*operations.PutTest2766OK)
 		if ok {
-			if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
-				msgStr, err := json.Marshal(resp0.Payload)
+			// the error response has a payload
+			if !swag.IsZero(eresp0) && !swag.IsZero(eresp0.Payload) {
+				msgStr, err := json.Marshal(eresp0.Payload)
 				if err != nil {
 					return "", err
 				}
 				return string(msgStr), nil
 			}
 		}
-
 		return "", respErr
 	}
 
+	// success responses
 	if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
@@ -244,6 +247,5 @@ func parseOperationOperationsPutTest2766Result(resp0 *operations.PutTest2766OK, 
 		}
 		return string(msgStr), nil
 	}
-
 	return "", nil
 }

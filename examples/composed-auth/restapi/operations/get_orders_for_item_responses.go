@@ -81,7 +81,7 @@ func NewGetOrdersForItemUnauthorized() *GetOrdersForItemUnauthorized {
 // WriteResponse to the client
 func (o *GetOrdersForItemUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(401)
 }
@@ -106,7 +106,7 @@ func NewGetOrdersForItemForbidden() *GetOrdersForItemForbidden {
 // WriteResponse to the client
 func (o *GetOrdersForItemForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(403)
 }

@@ -45,15 +45,16 @@ func NewPetstore() (http.Handler, error) {
 	return middleware.Serve(spec, api), nil
 }
 
-var getAllPets = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getAllPets = runtime.OperationHandlerFunc(func(data any) (any, error) {
 	fmt.Println("getAllPets")
 	fmt.Printf("%#v\n", data)
 	return pets, nil
 })
-var createPet = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+
+var createPet = runtime.OperationHandlerFunc(func(data any) (any, error) {
 	fmt.Println("createPet")
 	fmt.Printf("%#v\n", data)
-	body := data.(map[string]interface{})["pet"]
+	body := data.(map[string]any)["pet"]
 	var pet Pet
 	if err := swag.FromDynamicJSON(body, &pet); err != nil {
 		return nil, err
@@ -62,18 +63,18 @@ var createPet = runtime.OperationHandlerFunc(func(data interface{}) (interface{}
 	return body, nil
 })
 
-var deletePet = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var deletePet = runtime.OperationHandlerFunc(func(data any) (any, error) {
 	fmt.Println("deletePet")
 	fmt.Printf("%#v\n", data)
-	id := data.(map[string]interface{})["id"].(int64)
+	id := data.(map[string]any)["id"].(int64)
 	removePet(id)
 	return nil, nil
 })
 
-var getPetByID = runtime.OperationHandlerFunc(func(data interface{}) (interface{}, error) {
+var getPetByID = runtime.OperationHandlerFunc(func(data any) (any, error) {
 	fmt.Println("getPetByID")
 	fmt.Printf("%#v\n", data)
-	id := data.(map[string]interface{})["id"].(int64)
+	id := data.(map[string]any)["id"].(int64)
 	return petByID(id)
 })
 
@@ -97,8 +98,10 @@ var pets = []Pet{
 	{ID: 2, Name: "Cat", PhotoURLs: []string{}, Status: "pending", Tags: nil},
 }
 
-var petsLock = &sync.Mutex{}
-var lastPetID int64 = 2
+var (
+	petsLock        = &sync.Mutex{}
+	lastPetID int64 = 2
+)
 
 func newPetID() int64 {
 	return atomic.AddInt64(&lastPetID, 1)

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -111,11 +112,15 @@ func (m *Milestone) validateStats(formats strfmt.Registry) error {
 
 	if m.Stats != nil {
 		if err := m.Stats.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("stats")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("stats")
 			}
+
 			return err
 		}
 	}
@@ -146,11 +151,15 @@ func (m *Milestone) contextValidateStats(ctx context.Context, formats strfmt.Reg
 		}
 
 		if err := m.Stats.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("stats")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("stats")
 			}
+
 			return err
 		}
 	}

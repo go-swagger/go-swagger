@@ -29,7 +29,6 @@ func NewAddPetParams() AddPetParams {
 //
 // swagger:parameters addPet
 type AddPetParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -49,7 +48,9 @@ func (o *AddPetParams) BindRequest(r *http.Request, route *middleware.MatchedRou
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Pet
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

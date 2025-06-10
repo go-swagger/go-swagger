@@ -28,7 +28,6 @@ func NewCreateUsersWithListInputParams() CreateUsersWithListInputParams {
 //
 // swagger:parameters createUsersWithListInput
 type CreateUsersWithListInputParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -48,7 +47,9 @@ func (o *CreateUsersWithListInputParams) BindRequest(r *http.Request, route *mid
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body []*models.User
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

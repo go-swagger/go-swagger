@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -81,11 +82,15 @@ func (m *Pet) validateCategory(formats strfmt.Registry) error {
 
 	if m.Category != nil {
 		if err := m.Category.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("category")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("category")
 			}
+
 			return err
 		}
 	}
@@ -111,7 +116,7 @@ func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {
 	return nil
 }
 
-var petTypeStatusPropEnum []interface{}
+var petTypeStatusPropEnum []any
 
 func init() {
 	var res []string
@@ -168,11 +173,15 @@ func (m *Pet) validateTags(formats strfmt.Registry) error {
 
 		if m.Tags[i] != nil {
 			if err := m.Tags[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("tags" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -209,11 +218,15 @@ func (m *Pet) contextValidateCategory(ctx context.Context, formats strfmt.Regist
 		}
 
 		if err := m.Category.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("category")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("category")
 			}
+
 			return err
 		}
 	}
@@ -232,11 +245,15 @@ func (m *Pet) contextValidateTags(ctx context.Context, formats strfmt.Registry) 
 			}
 
 			if err := m.Tags[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("tags" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("tags" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}

@@ -29,7 +29,6 @@ func NewPetListParams() PetListParams {
 //
 // swagger:parameters PetList
 type PetListParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -49,7 +48,6 @@ func (o *PetListParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qStatus, qhkStatus, _ := qs.GetOK("status")
@@ -79,7 +77,7 @@ func (o *PetListParams) bindStatus(rawData []string, hasKey bool, formats strfmt
 	for i, statusIV := range statusIC {
 		statusI := statusIV
 
-		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []interface{}{"available", "pending", "sold"}, true); err != nil {
+		if err := validate.EnumCase(fmt.Sprintf("%s.%v", "status", i), "query", statusI, []any{"available", "pending", "sold"}, true); err != nil {
 			return err
 		}
 

@@ -39,4 +39,4 @@ func (MyAlternateOtherType) ContextValidate(context.Context, strfmt.Registry) er
 type MyAlternateStreamer io.Reader
 
 // MyAlternateInterface ...
-type MyAlternateInterface interface{}
+type MyAlternateInterface any

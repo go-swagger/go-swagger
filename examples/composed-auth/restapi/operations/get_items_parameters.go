@@ -25,7 +25,6 @@ func NewGetItemsParams() GetItemsParams {
 //
 // swagger:parameters GetItems
 type GetItemsParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

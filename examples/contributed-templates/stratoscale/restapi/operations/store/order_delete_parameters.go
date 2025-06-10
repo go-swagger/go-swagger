@@ -28,7 +28,6 @@ func NewOrderDeleteParams() OrderDeleteParams {
 //
 // swagger:parameters OrderDelete
 type OrderDeleteParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -82,7 +81,7 @@ func (o *OrderDeleteParams) bindOrderID(rawData []string, hasKey bool, formats s
 	return nil
 }
 
-// validateOrderID carries on validations for parameter OrderID
+// validateOrderID carries out validations for parameter OrderID
 func (o *OrderDeleteParams) validateOrderID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("orderId", "path", o.OrderID, 1, false); err != nil {

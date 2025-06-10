@@ -43,15 +43,23 @@ func NewExternalTypesDemoAPI(spec *loads.Document) *ExternalTypesDemoAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		GetStreamHandler: GetStreamHandlerFunc(func(params GetStreamParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetStream has not yet been implemented")
 		}),
 		GetTestHandler: GetTestHandlerFunc(func(params GetTestParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetTest has not yet been implemented")
 		}),
 		PostTestHandler: PostTestHandlerFunc(func(params PostTestParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation PostTest has not yet been implemented")
 		}),
 		PutTestHandler: PutTestHandlerFunc(func(params PutTestParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation PutTest has not yet been implemented")
 		}),
 	}
@@ -123,7 +131,7 @@ type ExternalTypesDemoAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -219,12 +227,12 @@ func (o *ExternalTypesDemoAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *ExternalTypesDemoAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -232,16 +240,17 @@ func (o *ExternalTypesDemoAPI) ConsumersFor(mediaTypes []string) map[string]runt
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *ExternalTypesDemoAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -249,6 +258,7 @@ func (o *ExternalTypesDemoAPI) ProducersFor(mediaTypes []string) map[string]runt
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

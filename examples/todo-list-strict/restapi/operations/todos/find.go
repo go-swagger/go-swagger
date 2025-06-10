@@ -12,16 +12,16 @@ import (
 )
 
 // FindHandlerFunc turns a function with the right signature into a find handler
-type FindHandlerFunc func(FindParams, interface{}) FindResponder
+type FindHandlerFunc func(FindParams, any) FindResponder
 
 // Handle executing the request and returning a response
-func (fn FindHandlerFunc) Handle(params FindParams, principal interface{}) FindResponder {
+func (fn FindHandlerFunc) Handle(params FindParams, principal any) FindResponder {
 	return fn(params, principal)
 }
 
 // FindHandler interface for that can handle valid find params
 type FindHandler interface {
-	Handle(FindParams, interface{}) FindResponder
+	Handle(FindParams, any) FindResponder
 }
 
 // NewFind creates a new http.Handler for the find operation
@@ -30,7 +30,7 @@ func NewFind(ctx *middleware.Context, handler FindHandler) *Find {
 }
 
 /*
-Find swagger:route GET / todos find
+	Find swagger:route GET / todos find
 
 Find find API
 */
@@ -42,19 +42,18 @@ type Find struct {
 func (o *Find) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
-		r = rCtx
+		*r = *rCtx
 	}
 	var Params = NewFindParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 	if aCtx != nil {
-		r = aCtx
+		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
 		principal = uprinc
 	}
@@ -65,7 +64,6 @@ func (o *Find) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

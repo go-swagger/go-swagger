@@ -26,7 +26,6 @@ func NewDeleteOrderParams() DeleteOrderParams {
 //
 // swagger:parameters deleteOrder
 type DeleteOrderParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

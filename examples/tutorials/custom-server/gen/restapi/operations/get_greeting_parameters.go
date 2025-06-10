@@ -27,7 +27,6 @@ func NewGetGreetingParams() GetGreetingParams {
 //
 // swagger:parameters getGreeting
 type GetGreetingParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -45,7 +44,6 @@ func (o *GetGreetingParams) BindRequest(r *http.Request, route *middleware.Match
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qName, qhkName, _ := qs.GetOK("name")

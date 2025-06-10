@@ -25,7 +25,6 @@ func NewGetAuthCallbackParams() GetAuthCallbackParams {
 //
 // swagger:parameters GetAuthCallback
 type GetAuthCallbackParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

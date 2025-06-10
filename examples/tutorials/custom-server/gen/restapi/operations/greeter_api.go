@@ -43,6 +43,8 @@ func NewGreeterAPI(spec *loads.Document) *GreeterAPI {
 		TxtProducer: runtime.TextProducer(),
 
 		GetGreetingHandler: GetGreetingHandlerFunc(func(params GetGreetingParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetGreeting has not yet been implemented")
 		}),
 	}
@@ -100,7 +102,7 @@ type GreeterAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -187,12 +189,12 @@ func (o *GreeterAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -200,16 +202,17 @@ func (o *GreeterAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consum
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *GreeterAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "text/plain":
+		if mt == "text/plain" {
 			result["text/plain"] = o.TxtProducer
 		}
 
@@ -217,6 +220,7 @@ func (o *GreeterAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produc
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

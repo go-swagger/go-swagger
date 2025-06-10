@@ -12,12 +12,14 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list-strict/models"
 )
 
 // NewUpdateOneParams creates a new UpdateOneParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateOneParams() UpdateOneParams {
 
 	return UpdateOneParams{}
@@ -28,7 +30,6 @@ func NewUpdateOneParams() UpdateOneParams {
 //
 // swagger:parameters updateOne
 type UpdateOneParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -36,6 +37,7 @@ type UpdateOneParams struct {
 	  In: body
 	*/
 	Body *models.Item
+
 	/*
 	  Required: true
 	  In: path
@@ -53,7 +55,9 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Item
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
@@ -63,16 +67,21 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(r.Context())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Body = &body
 			}
 		}
 	}
+
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -88,7 +97,6 @@ func (o *UpdateOneParams) bindID(rawData []string, hasKey bool, formats strfmt.R
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.ID = raw
 
 	return nil

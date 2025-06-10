@@ -6,6 +6,7 @@ package pet
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	stderrors "errors"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -35,7 +36,6 @@ func NewUpdatePetWithFormParams() UpdatePetWithFormParams {
 //
 // swagger:parameters updatePetWithForm
 type UpdatePetWithFormParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -44,11 +44,13 @@ type UpdatePetWithFormParams struct {
 	  In: formData
 	*/
 	Name string
+
 	/*ID of pet that needs to be updated
 	  Required: true
 	  In: path
 	*/
 	PetID string
+
 	/*Updated status of the pet
 	  Required: true
 	  In: formData
@@ -66,10 +68,10 @@ func (o *UpdatePetWithFormParams) BindRequest(r *http.Request, route *middleware
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(UpdatePetWithFormMaxParseMemory); err != nil {
-		if err != http.ErrNotMultipart {
+		if !stderrors.Is(err, http.ErrNotMultipart) {
 			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
+		} else if errParse := r.ParseForm(); errParse != nil {
+			return errors.New(400, "%v", errParse)
 		}
 	}
 	fds := runtime.Values(r.Form)

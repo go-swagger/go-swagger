@@ -46,7 +46,7 @@ func (o *ElapseURL) Build() (*url.URL, error) {
 
 	length := swag.FormatInt64(o.Length)
 	if length != "" {
-		_path = strings.Replace(_path, "{length}", length, -1)
+		_path = strings.ReplaceAll(_path, "{length}", length)
 	} else {
 		return nil, errors.New("length is required on ElapseURL")
 	}

@@ -4,9 +4,11 @@ import (
 	"crypto/rsa"
 	"os"
 
-	errors "github.com/go-openapi/errors"
-	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
 	jwt "github.com/golang-jwt/jwt/v5"
+
+	errors "github.com/go-openapi/errors"
+
+	models "github.com/go-swagger/go-swagger/examples/composed-auth/models"
 )
 
 const (
@@ -146,11 +148,10 @@ func HasRole(token string, scopes []string) (*models.Principal, error) {
 
 func parseAndCheckToken(token string) (*roleClaims, error) {
 	// the API key is a JWT signed by us with a claim to be a reseller
-	parsedToken, err := jwt.ParseWithClaims(token, &roleClaims{}, func(parsedToken *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.ParseWithClaims(token, &roleClaims{}, func(_ *jwt.Token) (any, error) {
 		// the key used to validate tokens
 		return verifyKey, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

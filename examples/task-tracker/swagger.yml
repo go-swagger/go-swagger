@@ -619,7 +619,7 @@ definitions:
       availableKarma:
         title: The amount of karma this user has available.
         description: |
-          In this application users get a cerain amount of karma alotted.
+          In this application users get a cerain amount of karma allotted.
           This karma can be donated to other users to show appreciation, or it can be used
           by a user to vote on issues.
           Once an issue is closed or rejected, the user gets his karma back.
@@ -633,6 +633,6 @@ definitions:
         description: |
           Only employees of the owning company can be admins.
           Admins are like project owners but have access to all the projects in the application.
-          There aren't many admins, and it's only used for extremly critical issues with the application.
+          There aren't many admins, and it's only used for extremely critical issues with the application.
         type: boolean
         readOnly: true

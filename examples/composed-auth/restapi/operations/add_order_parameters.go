@@ -6,6 +6,7 @@ package operations
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	stderrors "errors"
 	"io"
 	"net/http"
 
@@ -30,7 +31,6 @@ func NewAddOrderParams() AddOrderParams {
 //
 // swagger:parameters AddOrder
 type AddOrderParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -51,10 +51,12 @@ func (o *AddOrderParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Order
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
-			if err == io.EOF {
+			if stderrors.Is(err, io.EOF) {
 				res = append(res, errors.Required("order", "body", ""))
 			} else {
 				res = append(res, errors.NewParseError("order", "body", "", err))

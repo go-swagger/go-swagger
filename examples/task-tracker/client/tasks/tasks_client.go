@@ -49,8 +49,57 @@ type Client struct {
 	formats   strfmt.Registry
 }
 
-// ClientOption is the option for Client methods
+// ClientOption may be used to customize the behavior of Client methods.
 type ClientOption func(*runtime.ClientOperation)
+
+// This client is generated with a few options you might find useful for your swagger spec.
+//
+// Feel free to add you own set of options.
+
+// WithContentType allows the client to force the Content-Type header
+// to negotiate a specific Consumer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithContentType(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ConsumesMediaTypes = []string{mime}
+	}
+}
+
+// WithContentTypeApplicationJSON sets the Content-Type header to "application/json".
+func WithContentTypeApplicationJSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/json"}
+}
+
+// WithContentTypeApplicationVndGoswaggerExamplesTaskTrackerV1JSON sets the Content-Type header to "application/vnd.goswagger.examples.task-tracker.v1+json".
+func WithContentTypeApplicationVndGoswaggerExamplesTaskTrackerV1JSON(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"application/vnd.goswagger.examples.task-tracker.v1+json"}
+}
+
+// WithContentTypeMultipartFormData sets the Content-Type header to "multipart/form-data".
+func WithContentTypeMultipartFormData(r *runtime.ClientOperation) {
+	r.ConsumesMediaTypes = []string{"multipart/form-data"}
+}
+
+// WithAccept allows the client to force the Accept header
+// to negotiate a specific Producer from the server.
+//
+// You may use this option to set arbitrary extensions to your MIME media type.
+func WithAccept(mime string) ClientOption {
+	return func(r *runtime.ClientOperation) {
+		r.ProducesMediaTypes = []string{mime}
+	}
+}
+
+// WithAcceptApplicationJSON sets the Accept header to "application/json".
+func WithAcceptApplicationJSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/json"}
+}
+
+// WithAcceptApplicationVndGoswaggerExamplesTaskTrackerV1JSON sets the Accept header to "application/vnd.goswagger.examples.task-tracker.v1+json".
+func WithAcceptApplicationVndGoswaggerExamplesTaskTrackerV1JSON(r *runtime.ClientOperation) {
+	r.ProducesMediaTypes = []string{"application/vnd.goswagger.examples.task-tracker.v1+json"}
+}
 
 // ClientService is the interface for Client methods
 type ClientService interface {
@@ -81,7 +130,7 @@ type ClientService interface {
 Fenced codeblocks etc are supported through pygments.
 */
 func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*AddCommentToTaskCreated, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewAddCommentToTaskParams()
 	}
@@ -101,17 +150,22 @@ func (a *Client) AddCommentToTask(params *AddCommentToTaskParams, authInfo runti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*AddCommentToTaskCreated)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*AddCommentToTaskDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -124,7 +178,7 @@ This operation requires authentication so that we know which user
 created the task.
 */
 func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateTaskCreated, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewCreateTaskParams()
 	}
@@ -144,17 +198,22 @@ func (a *Client) CreateTask(params *CreateTaskParams, authInfo runtime.ClientAut
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*CreateTaskCreated)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*CreateTaskDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -164,7 +223,7 @@ DeleteTask deletes a task
 This is a soft delete and changes the task status to ignored.
 */
 func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteTaskNoContent, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewDeleteTaskParams()
 	}
@@ -184,17 +243,22 @@ func (a *Client) DeleteTask(params *DeleteTaskParams, authInfo runtime.ClientAut
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*DeleteTaskNoContent)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*DeleteTaskDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -204,7 +268,7 @@ GetTaskComments gets the comments for a task
 The comments require a size parameter.
 */
 func (a *Client) GetTaskComments(params *GetTaskCommentsParams, opts ...ClientOption) (*GetTaskCommentsOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetTaskCommentsParams()
 	}
@@ -223,17 +287,22 @@ func (a *Client) GetTaskComments(params *GetTaskCommentsParams, opts ...ClientOp
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetTaskCommentsOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*GetTaskCommentsDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -247,7 +316,7 @@ You can see who reported the issue and who last updated it when.
 There are also comments for each issue.
 */
 func (a *Client) GetTaskDetails(params *GetTaskDetailsParams, opts ...ClientOption) (*GetTaskDetailsOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewGetTaskDetailsParams()
 	}
@@ -266,17 +335,22 @@ func (a *Client) GetTaskDetails(params *GetTaskDetailsParams, opts ...ClientOpti
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*GetTaskDetailsOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*GetTaskDetailsDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -290,7 +364,7 @@ Also allows for specifying a **sinceId** and **pageSize** parameter
 to page through large result sets.
 */
 func (a *Client) ListTasks(params *ListTasksParams, opts ...ClientOption) (*ListTasksOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewListTasksParams()
 	}
@@ -309,17 +383,22 @@ func (a *Client) ListTasks(params *ListTasksParams, opts ...ClientOption) (*List
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*ListTasksOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*ListTasksDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -332,7 +411,7 @@ This operation requires authentication so that we know which user
 last updated the task.
 */
 func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateTaskOK, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewUpdateTaskParams()
 	}
@@ -352,17 +431,22 @@ func (a *Client) UpdateTask(params *UpdateTaskParams, authInfo runtime.ClientAut
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*UpdateTaskOK)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*UpdateTaskDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 
@@ -372,7 +456,7 @@ UploadTaskFile adds a file to a task
 The file can't be larger than **5MB**
 */
 func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UploadTaskFileCreated, error) {
-	// TODO: Validate the params before sending
+	// NOTE: parameters are not validated before sending
 	if params == nil {
 		params = NewUploadTaskFileParams()
 	}
@@ -392,17 +476,22 @@ func (a *Client) UploadTaskFile(params *UploadTaskFileParams, authInfo runtime.C
 	for _, opt := range opts {
 		opt(op)
 	}
-
 	result, err := a.transport.Submit(op)
 	if err != nil {
 		return nil, err
 	}
+
+	// only one success response has to be checked
 	success, ok := result.(*UploadTaskFileCreated)
 	if ok {
 		return success, nil
 	}
-	// unexpected success response
+
+	// unexpected success response.
+	//
+	// a default response is provided: fill this and return an error
 	unexpectedSuccess := result.(*UploadTaskFileDefault)
+
 	return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())
 }
 

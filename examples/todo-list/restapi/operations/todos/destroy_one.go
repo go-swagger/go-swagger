@@ -12,16 +12,16 @@ import (
 )
 
 // DestroyOneHandlerFunc turns a function with the right signature into a destroy one handler
-type DestroyOneHandlerFunc func(DestroyOneParams, interface{}) middleware.Responder
+type DestroyOneHandlerFunc func(DestroyOneParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn DestroyOneHandlerFunc) Handle(params DestroyOneParams, principal interface{}) middleware.Responder {
+func (fn DestroyOneHandlerFunc) Handle(params DestroyOneParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // DestroyOneHandler interface for that can handle valid destroy one params
 type DestroyOneHandler interface {
-	Handle(DestroyOneParams, interface{}) middleware.Responder
+	Handle(DestroyOneParams, any) middleware.Responder
 }
 
 // NewDestroyOne creates a new http.Handler for the destroy one operation
@@ -53,9 +53,9 @@ func (o *DestroyOne) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
