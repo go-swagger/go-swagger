@@ -1,0 +1,251 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: conversions
+  description: |
+    An API with models to investigate specifically the impact of:
+    * IsAnonymous
+    * IsAliased
+    * IsNullable
+
+    and their impact on the calls to the Required() and ReadOnly() validations.
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /pets:
+    post:
+      summary: enter pet
+      description: used to see if codegen can render required things with or without type conversion
+      parameters:
+        - name: pet
+          in: body
+          schema:
+            $ref: "#/definitions/Pet"
+      responses:
+        default:
+          description: Generic out
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
+  /dogs:
+    post:
+      summary: enter dog
+      description: used to see if codegen can render required things with or without type conversion
+      parameters:
+        - name: dog
+          in: body
+          schema:
+            $ref: "#/definitions/Dog"
+      responses:
+        default:
+          description: Generic out
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
+
+  /dogs/kennel:
+    get:
+      summary: kennel status
+      description: used to see if codegen can render required things with or without type conversion
+      responses:
+        200:
+          description: kennel
+          schema:
+            $ref: "#/definitions/Kennel"
+
+  /cats:
+    post:
+      summary: enter cat
+      description: used to see if codegen can render required things with or without type conversion
+      parameters:
+        - name: cat
+          in: body
+          schema:
+            $ref: "#/definitions/Cat"
+      responses:
+        default:
+          description: Generic out
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Cat"
+
+definitions:
+  PetKind:
+    description: this string is going to have .IsAliased true
+    type: string
+    enum: [ "bird", "fish", "dog", "cat" ]
+
+  PurchaseDate:
+    type: string
+    format: date-time
+
+  Cat:
+    type: object
+    properties:
+      name:
+        type: string
+        minLength: 1
+      breed:
+        type: string
+        enum:
+        - siamese
+        - burmese
+        - chartreux
+        - european
+        - american
+      siblings:
+        type: array
+        items:
+          description: a sibling is a brother or sister of this cat and the rank among the siblings
+          allOf:
+            - type: object
+              properties:
+                rank:
+                  type: integer
+                  minimum: 0
+              required: [ rank ]
+            - $ref: "#/definitions/Cat"
+      care:
+        type: array
+        items:
+          $ref: "#/definitions/ActionName"
+        minItems: 1
+      index:
+        type: array
+        items:
+          type: integer
+          minimum: 1
+        minItems: 1
+    required: [ name, breed ]
+    additionalProperties:
+      type: object
+      description: this map is anonymous
+      properties:
+        propertyID:
+          type: string
+          format: uuid
+          readOnly: true
+
+  Dog:
+    description: Dog is going to be a subtype of Pet
+    allOf:
+      - $ref: "#/definitions/Pet"
+      - type: object
+        properties:
+          id:
+            type: integer
+            format: int64
+          kind:
+            $ref: "#/definitions/PetKind"
+          birthDate:
+            type: string
+            format: date
+          purchasedOn:
+            $ref: "#/definitions/PurchaseDate"
+          breed:
+            type: string
+            enum:
+            - beagle
+            - boxer
+            - bulldog
+            - german shepherd
+            - golden retriever
+            - spaniel
+            - terrier
+          website:
+            type: string
+            format: hostname
+            enum:
+            - www.doggy.com
+            - www.blog4dogs.com
+            - www.friendly-rotweiler.org
+        required: [ id, name, kind, birthDate, breed ]
+        additionalProperties:
+          description: additional dates
+          type: string
+          format: date
+          readOnly: true
+
+  Kennel:
+    description: kennel hosts dogs
+    type: object
+    properties:
+      capacity:
+        type: integer
+        minimum: 0
+      dogs:
+        type: array
+        items:
+          $ref: "#/definitions/Dog"
+        minItems: 0
+        maxItems: 100
+        uniqueItems: true
+      maintenance:
+        $ref: "#/definitions/ActionName"
+      opening:
+        $ref: "#/definitions/ActionName"  # <- unnecessary type conversion (validate.Required)
+      actions:
+        type: object
+        additionalProperties:
+          $ref: "#/definitions/ActionName"
+      history:
+        type: array
+        items:
+          $ref: "#/definitions/ActionName"
+        maxItems: 512
+        readOnly: true
+      events:
+        type: array
+        items:
+          $ref: "#/definitions/Event"
+      eventsHistory:
+        $ref: "#/definitions/History"
+    required: [ capacity, dogs, opening, actions ]
+    additionalProperties:
+      # extra properties are (oddly) arrays of read only uuid's...
+      #$ref: "#/definitions/History"   # <- crashes model generation
+      type: array
+      items:
+        $ref: "#/definitions/Event"
+      maxItems: 512
+      readOnly: true
+
+  History:
+    type: array
+    items:
+      $ref: "#/definitions/Event"
+    maxItems: 512
+    readOnly: true
+
+  Event:
+    type: string
+    format: uuid
+    readOnly: true
+
+  Pet:
+    description: Pet is going to be defined as an interface type
+    type: object
+    discriminator: petType
+    properties:
+      name:
+        type: string
+      petType:
+        type: string
+    required:
+    - name
+    - petType
+
+  ActionName:
+    description: ActionName is going to be a type with .IsAliased true
+    type: string
+    minLength: 1
+    readOnly: true  # <- this validation causes an unnecessary type conversion (validate.ReadOnly)

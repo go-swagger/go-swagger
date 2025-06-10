@@ -264,7 +264,7 @@ func initModelFixtures() {
 	// ReadOnly ContextValidate
 	initFixture936ReadOnly()
 
-	// required interface{}
+	// required any
 	initFixture2081()
 
 	// required map

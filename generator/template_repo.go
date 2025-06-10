@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -35,6 +36,8 @@ var (
 	templates *Repository
 
 	docFormat map[string]string
+
+	errInternal = errors.New("internal error detected in templates")
 )
 
 func initTemplateRepo() {
@@ -110,7 +113,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"headerDocType": func(header GenHeader) string {
 			return resolvedDocType(header.SwaggerType, header.SwaggerFormat, header.Child)
 		},
-		"schemaDocType": func(in interface{}) string {
+		"schemaDocType": func(in any) string {
 			switch schema := in.(type) {
 			case GenSchema:
 				return resolvedDocSchemaType(schema.SwaggerType, schema.SwaggerFormat, schema.Items)
@@ -140,7 +143,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"cleanupEnumVariant":  cleanupEnumVariant,
 		"gt0":                 gt0,
 		"path":                errorPath,
-		"cmdName": func(in interface{}) (string, error) {
+		"cmdName": func(in any) (string, error) {
 			// builds the name of a CLI command for a single operation
 			op, isOperation := in.(GenOperation)
 			if !isOperation {
@@ -154,7 +157,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 
 			return name, nil // TODO
 		},
-		"cmdGroupName": func(in interface{}) (string, error) {
+		"cmdGroupName": func(in any) (string, error) {
 			// builds the name of a group of CLI commands
 			opGroup, ok := in.(GenOperationGroup)
 			if !ok {
@@ -183,6 +186,19 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		"flagDescriptionVar": func(in string) string {
 			// builds a flag description variable in CLI commands
 			return fmt.Sprintf("flag%sDescription", pascalize(in))
+		},
+		"printGoLiteral": func(in any) string {
+			// printGoLiteral replaces printf "%#v" and replaces "interface {}" by "any"
+			return interfaceReplacer.Replace(fmt.Sprintf("%#v", in))
+		},
+		// assert is used to inject into templates and check for inconsistent/invalid data.
+		// This is for now being used during test & debug of templates.
+		"assert": func(msg string, assertion bool) (string, error) {
+			if !assertion {
+				return "", fmt.Errorf("%v: %w", msg, errInternal)
+			}
+
+			return "", nil
 		},
 	}
 
@@ -750,11 +766,11 @@ func cleanupEnumVariant(in string) string {
 	return replaced
 }
 
-func dict(values ...interface{}) (map[string]interface{}, error) {
+func dict(values ...any) (map[string]any, error) {
 	if len(values)%2 != 0 {
 		return nil, fmt.Errorf("expected even number of arguments, got %d", len(values))
 	}
-	dict := make(map[string]interface{}, len(values)/2)
+	dict := make(map[string]any, len(values)/2)
 	for i := 0; i < len(values); i += 2 {
 		key, ok := values[i].(string)
 		if !ok {
@@ -765,7 +781,7 @@ func dict(values ...interface{}) (map[string]interface{}, error) {
 	return dict, nil
 }
 
-func isInteger(arg interface{}) bool {
+func isInteger(arg any) bool {
 	// is integer determines if a value may be represented by an integer
 	switch val := arg.(type) {
 	case int8, int16, int32, int, int64, uint8, uint16, uint32, uint, uint64:
@@ -894,7 +910,7 @@ func gt0(in *int64) bool {
 	return in != nil && *in > 0
 }
 
-func errorPath(in interface{}) (string, error) {
+func errorPath(in any) (string, error) {
 	// For schemas:
 	// errorPath returns an empty string litteral when the schema path is empty.
 	// It provides a shorthand for template statements such as:
@@ -982,7 +998,10 @@ func errorPath(in interface{}) (string, error) {
 
 const mdNewLine = "</br>"
 
-var mdNewLineReplacer = strings.NewReplacer("\r\n", mdNewLine, "\n", mdNewLine, "\r", mdNewLine)
+var (
+	mdNewLineReplacer = strings.NewReplacer("\r\n", mdNewLine, "\n", mdNewLine, "\r", mdNewLine)
+	interfaceReplacer = strings.NewReplacer("interface {}", "any")
+)
 
 func markdownBlock(in string) string {
 	in = strings.TrimSpace(in)

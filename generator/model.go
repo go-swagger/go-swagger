@@ -153,7 +153,7 @@ func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Docu
 		// this means that the immediate content of the top level definitions has at least one validation.
 		//
 		// If none is found at this level and that no special case where no Validate() method is exposed at all
-		// (e.g. io.ReadCloser and interface{} types and their aliases), then there is an empty Validate() method which
+		// (e.g. io.ReadCloser and any types and their aliases), then there is an empty Validate() method which
 		// just return nil (the object abides by the runtime.Validatable interface, but knows it has nothing to validate).
 		//
 		// We do this at the top level because of the possibility of aliased types which always bubble up validation to types which
@@ -802,7 +802,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			return err
 		}
 
-		// whatever the validations says, if we have an interface{}, do not validate
+		// whatever the validations says, if we have an any, do not validate
 		// NOTE: this may be the case when the type is left empty and we get a Enum validation.
 		if emprop.GenSchema.IsInterface || emprop.GenSchema.IsStream {
 			emprop.GenSchema.HasValidations = false
@@ -962,7 +962,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 		if (tpe.IsAnonymous && len(sch.AllOf) > 0) || (sch.Ref.String() == "" && !tpe.IsComplexObject && (tpe.IsArray || tpe.IsInterface || tpe.IsPrimitive)) {
 			// cases where anonymous structures cause the creation of a new type:
 			// - nested allOf: this one is itself a AllOf: build a new type for it
-			// - anonymous simple types for edge cases: array, primitive, interface{}
+			// - anonymous simple types for edge cases: array, primitive, any
 			// NOTE: when branches are aliased or anonymous, the nullable property in the branch type is lost.
 			name := swag.ToVarName(goName(&sch, sg.makeRefName()+"AllOf"+strconv.Itoa(i)))
 			debugLog("building anonymous nested allOf in %s: %s", sg.Name, name)
@@ -1218,8 +1218,8 @@ func (mt *mapStack) HasMore() bool {
 }
 
 /* currently unused:
-func (mt *mapStack) Dict() map[string]interface{} {
-	res := make(map[string]interface{})
+func (mt *mapStack) Dict() map[string]any {
+	res := make(map[string]any)
 	res["context"] = mt.Context.Schema
 	if mt.Next != nil {
 		res["next"] = mt.Next.Dict()
@@ -1262,7 +1262,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 	if addp.Schema == nil {
 		// this is for AdditionalProperties:true|false
 		if addp.Allows {
-			// additionalProperties: true is rendered as: map[string]interface{}
+			// additionalProperties: true is rendered as: map[string]any
 			addp.Schema = &spec.Schema{}
 
 			addp.Schema.Typed("object", "")
@@ -1281,7 +1281,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			}
 			sg.MergeResult(cp, false)
 			sg.GenSchema.AdditionalProperties = &cp.GenSchema
-			debugLog("added interface{} schema for additionalProperties[allows == true], IsInterface=%t", cp.GenSchema.IsInterface)
+			debugLog("added any schema for additionalProperties[allows == true], IsInterface=%t", cp.GenSchema.IsInterface)
 		}
 		return nil
 	}
@@ -1348,6 +1348,9 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		// rewrite value expression for arrays and arrays of arrays in maps (rendered as map[string][][]...)
 		if sg.GenSchema.AdditionalProperties.IsArray {
 			// maps of slices are where an override may take effect
+			if sg.GenSchema.AdditionalProperties.Items == nil {
+				return fmt.Errorf("items schema not defined for additional property in %q", sg.Name)
+			}
 			sg.GenSchema.AdditionalProperties.Items.IsMapNullOverride = sg.GenSchema.AdditionalProperties.IsMapNullOverride
 			sg.GenSchema.AdditionalProperties.Items.ValueExpression = sg.GenSchema.ValueExpression + "[" + comprop.KeyVar + "]" + "[" + sg.GenSchema.AdditionalProperties.IndexVar + "]"
 			ap := sg.GenSchema.AdditionalProperties.Items
@@ -2145,7 +2148,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	// - aliased primitive of a formatter type which is not a stringer
 	//
 	// but not for:
-	// - interface{}
+	// - any
 	// - io.Reader
 	gs := sg.GenSchema
 	sg.GenSchema.WantsMarshalBinary = !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&

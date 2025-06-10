@@ -425,7 +425,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 					MinItems: swag.Int64(15),
 					Maximum:  swag.Float64(12.00),
 					Pattern:  "xyz",
-					Enum:     []interface{}{"x", 34},
+					Enum:     []any{"x", 34},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -495,7 +495,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 					CommonValidations: spec.CommonValidations{
 						MinLength: swag.Int64(15),
 						Pattern:   "xyz",
-						Enum:      []interface{}{"x", 34},
+						Enum:      []any{"x", 34},
 					},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {
@@ -511,7 +511,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 					CommonValidations: spec.CommonValidations{
 						MinLength: swag.Int64(15),
 						Pattern:   "xyz",
-						Enum:      []interface{}{"x", 34},
+						Enum:      []any{"x", 34},
 					},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {

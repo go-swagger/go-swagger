@@ -13,7 +13,7 @@ func TestPrintTags(t *testing.T) {
 		ExpectedTags string
 	}
 
-	mustJSON := func(in interface{}) string {
+	mustJSON := func(in any) string {
 		b, _ := asJSON(in)
 		return b
 	}
