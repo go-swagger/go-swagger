@@ -11,6 +11,9 @@ package {{ .Package }}
 
 import (
   "net/http"
+  {{- if .ExtraSchemas }}
+  stderrors "errors"
+  {{- end }}
 
   "github.com/go-openapi/errors"
   "github.com/go-openapi/runtime/middleware"
@@ -71,7 +74,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
   }
   var principal {{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}
   if uprinc != nil {
-    principal = {{ if eq .Principal "inferface{}" }}uprinc{{ else }}uprinc.({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}) // this is really a {{ .Principal }}, I promise{{ end }}
+    principal = {{ if or (eq .Principal "inferface{}") (eq .Principal "any") }}uprinc{{ else }}uprinc.({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}) // this is really a {{ .Principal }}, I promise{{ end }}
   }
   {{ end }}
   if err := {{ .ReceiverName }}.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

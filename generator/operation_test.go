@@ -94,9 +94,9 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	require.NoError(t, err)
 
 	testCases := []struct {
-		name         string      // input
-		typeStr      string      // expected type
-		defaultValue interface{} // expected result
+		name         string // input
+		typeStr      string // expected type
+		defaultValue any    // expected result
 	}{
 		{"Access-Control-Allow-Origin", "string", "*"},
 		{"X-Rate-Limit", "int32", nil},
@@ -1050,7 +1050,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 
 		res := string(ff)
 		assertRegexpInCode(t, matchAny+
-			`api\.AAuth = func\(user string, pass string\)`+matchAny+
+			`api\.AAuth = func\(user string, password string\)`+matchAny+
 			`api\.BAuth = func\(token string\)`+matchAny+
 			`api\.CAuth = func\(token string\)`+matchAny+
 			`api\.DAuth = func\(token string\)`+matchAny+
@@ -1064,17 +1064,17 @@ func TestBuilder_Issue1214(t *testing.T) {
 
 		res = string(ff)
 		assertRegexpInCode(t, matchAny+
-			`AAuth: func\(user string, pass string\) \(interface{}, error\) {`+matchAny+
-			`BAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
-			`CAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
-			`DAuth: func\(token string\) \(interface{}, error\) {`+matchAny+
-			`EAuth: func\(token string, scopes \[\]string\) \(interface{}, error\) {`+matchAny+
+			`AAuth: func\(user string, password string\) \(any, error\) {`+matchAny+
+			`BAuth: func\(token string\) \(any, error\) {`+matchAny+
+			`CAuth: func\(token string\) \(any, error\) {`+matchAny+
+			`DAuth: func\(token string\) \(any, error\) {`+matchAny+
+			`EAuth: func\(token string, scopes \[\]string\) \(any, error\) {`+matchAny+
 
-			`AAuth func\(string, string\) \(interface{}, error\)`+matchAny+
-			`BAuth func\(string\) \(interface{}, error\)`+matchAny+
-			`CAuth func\(string\) \(interface{}, error\)`+matchAny+
-			`DAuth func\(string\) \(interface{}, error\)`+matchAny+
-			`EAuth func\(string, \[\]string\) \(interface{}, error\)`+matchAny+
+			`AAuth func\(string, string\) \(any, error\)`+matchAny+
+			`BAuth func\(string\) \(any, error\)`+matchAny+
+			`CAuth func\(string\) \(any, error\)`+matchAny+
+			`DAuth func\(string\) \(any, error\)`+matchAny+
+			`EAuth func\(string, \[\]string\) \(any, error\)`+matchAny+
 
 			`if o\.AAuth == nil {`+matchAny+
 			`unregistered = append\(unregistered, "AAuth"\)`+matchAny+
@@ -1343,12 +1343,12 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 }
 
 func makeClientTimeoutNameTest() []struct {
-	seenIDs  map[string]interface{}
+	seenIDs  map[string]any
 	name     string
 	expected string
 } {
 	return []struct {
-		seenIDs  map[string]interface{}
+		seenIDs  map[string]any
 		name     string
 		expected string
 	}{
@@ -1358,14 +1358,14 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "witness",
 		},
 		{
-			seenIDs: map[string]interface{}{
+			seenIDs: map[string]any{
 				"id": true,
 			},
 			name:     "timeout",
 			expected: "timeout",
 		},
 		{
-			seenIDs: map[string]interface{}{
+			seenIDs: map[string]any{
 				"timeout":        true,
 				"requesttimeout": true,
 			},
@@ -1373,7 +1373,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "httpRequestTimeout",
 		},
 		{
-			seenIDs: map[string]interface{}{
+			seenIDs: map[string]any{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1385,7 +1385,7 @@ func makeClientTimeoutNameTest() []struct {
 			expected: "operTimeout",
 		},
 		{
-			seenIDs: map[string]interface{}{
+			seenIDs: map[string]any{
 				"timeout":            true,
 				"requesttimeout":     true,
 				"httprequesttimeout": true,
@@ -1535,23 +1535,23 @@ func TestGenServer_1659_Principal(t *testing.T) {
 			Expected: map[string][]string{
 				"configure": {
 					`if api.ApikeyAuth == nil {`,
-					`api.ApikeyAuth = func(token string) (interface{}, error) {`,
+					`api.ApikeyAuth = func(token string) (any, error) {`,
 					`if api.BasicAuth == nil {`,
-					`api.BasicAuth = func(user string, pass string) (interface{}, error) {`,
+					`api.BasicAuth = func(user string, password string) (any, error) {`,
 					`if api.PetstoreAuthAuth == nil {`,
-					`api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {`,
-					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal interface{}) middleware.Responder {`,
+					`api.PetstoreAuthAuth = func(token string, scopes []string) (any, error) {`,
+					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal any) middleware.Responder {`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
 				},
 				"get": {
-					`type GetHandlerFunc func(GetParams, interface{})  middleware.Responder`,
-					`func (fn GetHandlerFunc) Handle(params GetParams, principal interface{})  middleware.Responder  {`,
+					`type GetHandlerFunc func(GetParams, any)  middleware.Responder`,
+					`func (fn GetHandlerFunc) Handle(params GetParams, principal any)  middleware.Responder  {`,
 					`return fn(params, principal)`,
 					`type GetHandler interface {`,
-					`Handle(GetParams, interface{})  middleware.Responder`,
+					`Handle(GetParams, any)  middleware.Responder`,
 					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
 					`if uprinc != nil {`,
-					`principal = uprinc.(interface{})`,
+					`principal = uprinc.(any)`,
 					`res := o.Handler.Handle(Params, principal)`,
 				},
 				"post": {
@@ -1565,7 +1565,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 			NotExpected: map[string][]string{
 				"post": {
 					`uprinc, aCtx, err := o.Context.Authorize(r, route)`,
-					`principal = uprinc.(interface{})`,
+					`principal = uprinc.(any)`,
 				},
 			},
 		},
@@ -1593,7 +1593,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`if api.ApikeyAuth == nil {`,
 					`api.ApikeyAuth = func(token string) (*auth.Principal, error) {`,
 					`if api.BasicAuth == nil {`,
-					`api.BasicAuth = func(user string, pass string) (*auth.Principal, error) {`,
+					`api.BasicAuth = func(user string, password string) (*auth.Principal, error) {`,
 					`if api.PetstoreAuthAuth == nil {`,
 					`api.PetstoreAuthAuth = func(token string, scopes []string) (*auth.Principal, error) {`,
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal *auth.Principal) middleware.Responder {`,
@@ -1650,7 +1650,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 					`if api.ApikeyAuth == nil {`,
 					`api.ApikeyAuth = func(token string) (auth.PrincipalIface, error) {`,
 					`if api.BasicAuth == nil {`,
-					`api.BasicAuth = func(user string, pass string) (auth.PrincipalIface, error) {`,
+					`api.BasicAuth = func(user string, password string) (auth.PrincipalIface, error) {`,
 					`if api.PetstoreAuthAuth == nil {`,
 					`api.PetstoreAuthAuth = func(token string, scopes []string) (auth.PrincipalIface, error) {`,
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal auth.PrincipalIface) middleware.Responder {`,
@@ -1705,29 +1705,29 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				"configure": {
 					`auth "github.com/example/security"`,
 					`AuthApikey func(token string) (*auth.Principal, error)`,
-					`AuthBasic func(user string, pass string) (*auth.Principal, error)`,
+					`AuthBasic func(user string, password string) (*auth.Principal, error)`,
 					`AuthPetstoreAuth func(token string, scopes []string) (*auth.Principal, error)`,
 					`api.ApikeyAuth = func(token string) (*auth.Principal, error) {`,
 					`if c.AuthApikey == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
 					`return c.AuthApikey(token)`,
-					`api.BasicAuth = func(user string, pass string) (*auth.Principal, error) {`,
+					`api.BasicAuth = func(user string, password string) (*auth.Principal, error) {`,
 					`if c.AuthBasic == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
-					`return c.AuthBasic(user, pass)`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
+					`return c.AuthBasic(user, password)`,
 					`api.PetstoreAuthAuth = func(token string, scopes []string) (*auth.Principal, error) {`,
 					`if c.AuthPetstoreAuth == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
 					`return c.AuthPetstoreAuth(token, scopes)`,
 					`api.APIAuthorizer = authorizer(c.Authorizer)`,
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal *auth.Principal) middleware.Responder {`,
 					`ctx = storeAuth(ctx, principal)`,
-					`return c.RestapiAPI.Get(ctx, params)`,
+					`return c.Get(ctx, params)`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
-					`return c.RestapiAPI.Post(ctx, params)`,
-					`func (a authorizer) Authorize(req *http.Request, principal interface{}) error {`,
+					`return c.Post(ctx, params)`,
+					`func (a authorizer) Authorize(req *http.Request, principal any) error {`,
 					`ctx := storeAuth(req.Context(), principal)`,
-					`func storeAuth(ctx context.Context, principal interface{})`,
+					`func storeAuth(ctx context.Context, principal any)`,
 				},
 			},
 		},
@@ -1755,29 +1755,29 @@ func TestGenServer_1659_Principal(t *testing.T) {
 				"configure": {
 					`auth "github.com/example/security"`,
 					`AuthApikey func(token string) (auth.PrincipalIface, error)`,
-					`AuthBasic func(user string, pass string) (auth.PrincipalIface, error)`,
+					`AuthBasic func(user string, password string) (auth.PrincipalIface, error)`,
 					`AuthPetstoreAuth func(token string, scopes []string) (auth.PrincipalIface, error)`,
 					`api.ApikeyAuth = func(token string) (auth.PrincipalIface, error) {`,
 					`if c.AuthApikey == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
 					`return c.AuthApikey(token)`,
-					`api.BasicAuth = func(user string, pass string) (auth.PrincipalIface, error) {`,
+					`api.BasicAuth = func(user string, password string) (auth.PrincipalIface, error) {`,
 					`if c.AuthBasic == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
-					`return c.AuthBasic(user, pass)`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
+					`return c.AuthBasic(user, password)`,
 					`api.PetstoreAuthAuth = func(token string, scopes []string) (auth.PrincipalIface, error) {`,
 					`if c.AuthPetstoreAuth == nil {`,
-					`panic("you specified a custom principal type, but did not provide the authenticator to provide this")`,
+					`panic("you specified a custom principal type, but did not provide the authenticator to resolve a principal")`,
 					`return c.AuthPetstoreAuth(token, scopes)`,
 					`api.APIAuthorizer = authorizer(c.Authorizer)`,
 					`api.GetHandler =restapi.GetHandlerFunc(func(params restapi.GetParams, principal auth.PrincipalIface) middleware.Responder {`,
 					`ctx = storeAuth(ctx, principal)`,
-					`return c.RestapiAPI.Get(ctx, params)`,
+					`return c.Get(ctx, params)`,
 					`api.PostHandler =restapi.PostHandlerFunc(func(params restapi.PostParams) middleware.Responder {`,
-					`return c.RestapiAPI.Post(ctx, params)`,
-					`func (a authorizer) Authorize(req *http.Request, principal interface{}) error {`,
+					`return c.Post(ctx, params)`,
+					`func (a authorizer) Authorize(req *http.Request, principal any) error {`,
 					`ctx := storeAuth(req.Context(), principal)`,
-					`func storeAuth(ctx context.Context, principal interface{})`,
+					`func storeAuth(ctx context.Context, principal any)`,
 				},
 			},
 		},

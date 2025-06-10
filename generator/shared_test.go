@@ -595,7 +595,7 @@ func TestResolvePrincipal(t *testing.T) {
 	}{
 		{
 			Title: "defaults", Principal: "",
-			Expected: []string{"", "interface{}", ""},
+			Expected: []string{"", "any", ""},
 		},
 		{
 			Title: "with base import", Principal: "auth.Principal",

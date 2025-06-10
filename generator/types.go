@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	iface   = "interface{}"
+	iface   = "any"
 	array   = "array"
 	file    = "file"
 	number  = "number"
@@ -468,6 +468,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		return
 	}
 
+	// resolve anonymous items
 	rt, er := t.ResolveSchema(schema.Items.Schema, true, false)
 	if er != nil {
 		err = er
@@ -647,16 +648,16 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		return
 	}
 
-	// an object without property and without AdditionalProperties schema is rendered as interface{}
+	// an object without property and without AdditionalProperties schema is rendered as any
 	result.IsMap = true
 	result.SwaggerType = object
 	result.IsNullable = false
-	// an object without properties but with MinProperties or MaxProperties is rendered as map[string]interface{}
+	// an object without properties but with MinProperties or MaxProperties is rendered as map[string]any
 	result.IsInterface = len(schema.Properties) == 0 && !schema.Validations().HasObjectValidations()
 	if result.IsInterface {
 		result.GoType = iface
 	} else {
-		result.GoType = "map[string]interface{}"
+		result.GoType = "map[string]any"
 	}
 	return
 }
@@ -964,7 +965,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	case "null":
 		if schema.Validations().HasObjectValidations() {
 			// no explicit object type, but inferred from object validations:
-			// this makes the type a map[string]interface{} instead of interface{}
+			// this makes the type a map[string]any instead of any
 			result, err = t.resolveObject(schema, isAnonymous)
 			if err != nil {
 				result = resolvedType{}
@@ -986,8 +987,8 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	return
 }
 
-func warnSkipValidation(types interface{}) func(string, interface{}) {
-	return func(validation string, value interface{}) {
+func warnSkipValidation(types any) func(string, any) {
+	return func(validation string, value any) {
 		value = reflect.Indirect(reflect.ValueOf(value)).Interface()
 		log.Printf("warning: validation %s (value: %v) not compatible with type %v. Skipped", validation, value, types)
 	}
@@ -1037,7 +1038,7 @@ func guardValidations(tpe string, schema interface {
 		}
 	}
 
-	// other cases:  mapped as interface{}: no validations allowed but Enum
+	// other cases:  mapped as any: no validations allowed but Enum
 }
 
 // guardFormatConflicts handles all conflicting properties

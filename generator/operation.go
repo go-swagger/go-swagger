@@ -251,7 +251,7 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
-	seenIDs := make(map[string]interface{}, len(params))
+	seenIDs := make(map[string]any, len(params))
 	for id, p := range params {
 		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
@@ -286,7 +286,7 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 //
 // NOTE: this merely protects the timeout field in the client parameter struct,
 // fields "Context" and "HTTPClient" remain exposed to name conflicts.
-func renameTimeout(seenIDs map[string]interface{}, timeoutName string) string {
+func renameTimeout(seenIDs map[string]any, timeoutName string) string {
 	if seenIDs == nil {
 		return timeoutName
 	}

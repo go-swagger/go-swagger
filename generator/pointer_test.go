@@ -47,7 +47,7 @@ type builtinVal struct {
 
 	Nullable, Aliased bool
 
-	Default interface{}
+	Default any
 
 	Extensions spec.Extensions
 
@@ -64,7 +64,7 @@ type builtinVal struct {
 	MinItems         *int64
 	UniqueItems      bool
 	MultipleOf       *float64
-	Enum             []interface{}
+	Enum             []any
 }
 
 func nullableExt() spec.Extensions {

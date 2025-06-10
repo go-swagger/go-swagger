@@ -664,6 +664,19 @@ func generateClientFixtures(_ testing.TB) map[string]generateFixture {
 				)
 			},
 		},
+		"type conversions": {
+			spec:    "../fixtures/codegen/conversions.yaml",
+			target:  "server-conversions",
+			prepare: func(_ *testing.T, _ *GenOpts) {},
+			verify: func(t *testing.T, target string) {
+				location := filepath.Join(target, "client")
+				require.True(t, fileExists("", location))
+
+				t.Run("building generated client",
+					goExecInDir(location, "build"),
+				)
+			},
+		},
 	}
 }
 
@@ -676,9 +689,10 @@ func addModelsToLocation(t testing.TB, location, file string) {
 package models
 
 import (
-  "context"
-  "io"
-  "github.com/go-openapi/strfmt"
+	"context"
+	"io"
+
+	"github.com/go-openapi/strfmt"
 )
 
 // MyType ...
@@ -686,6 +700,8 @@ type MyType string
 
 // Validate MyType
 func (MyType) Validate(strfmt.Registry) error { return nil }
+
+// ContextValidate ...
 func (MyType) ContextValidate(context.Context, strfmt.Registry) error { return nil }
 
 // MyInteger ...
@@ -707,6 +723,8 @@ type MyOtherType struct{}
 
 // Validate MyOtherType
 func (MyOtherType) Validate(strfmt.Registry) error { return nil }
+
+// ContextValidate ...
 func (MyOtherType) ContextValidate(context.Context, strfmt.Registry) error { return nil }
 
 // MyStreamer ...

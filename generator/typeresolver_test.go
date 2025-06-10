@@ -525,7 +525,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 
 		assert.True(t, rt.IsMap)
 		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "interface{}", rt.GoType)
+		assert.Equal(t, "any", rt.GoType)
 		assert.Equal(t, "object", rt.SwaggerType)
 
 		sch.Properties = make(map[string]spec.Schema)
@@ -557,7 +557,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 
 		assert.True(t, rt.IsMap)
 		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "interface{}", rt.GoType)
+		assert.Equal(t, "any", rt.GoType)
 		assert.Equal(t, "object", rt.SwaggerType)
 
 		sch = new(spec.Schema)

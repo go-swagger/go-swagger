@@ -248,7 +248,7 @@ var schTypeGenDataSimple = []struct {
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Duration", IsPrimitive: true}}, "strfmt.Duration"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Password", IsPrimitive: true}}, "strfmt.Password"},
 	{GenSchema{resolvedType: resolvedType{GoType: "io.ReadCloser", IsStream: true}}, "io.ReadCloser"},
-	{GenSchema{resolvedType: resolvedType{GoType: "interface{}", IsInterface: true}}, "interface{}"},
+	{GenSchema{resolvedType: resolvedType{GoType: "any", IsInterface: true}}, "any"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]int32", IsArray: true}}, "[]int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "[]string", IsArray: true}}, "[]string"},
 	{GenSchema{resolvedType: resolvedType{GoType: "map[string]int32", IsMap: true}}, "map[string]int32"},
@@ -320,7 +320,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k.GoType = "myAliasedType"
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
 			assert.True(t, rex.MatchString(k.Zero()))
-		case "interface{}":
+		case "any":
 			assert.Equal(t, `nil`, v.Value.Zero())
 		case "io.ReadCloser":
 			continue
@@ -431,7 +431,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	assertInCode(t, "type "+k+" struct {", res)
 	assertInCode(t, "BranchName string `json:\"branch_name,omitempty\"`", res)
 	assertInCode(t, "CommitSha string `json:\"commit_sha,omitempty\"`", res)
-	assertInCode(t, "Refs interface{} `json:\"refs,omitempty\"`", res)
+	assertInCode(t, "Refs any `json:\"refs,omitempty\"`", res)
 }
 
 func TestGenerateModel_NotaWithName(t *testing.T) {
@@ -570,7 +570,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	assert.True(t, prop.HasAdditionalProperties)
 	assert.True(t, prop.IsMap)
 	assert.False(t, prop.IsComplexObject)
-	assert.Equal(t, "map[string]interface{}", prop.GoType)
+	assert.Equal(t, "map[string]any", prop.GoType)
 	assert.True(t, prop.Required)
 	assert.True(t, prop.HasValidations)
 
@@ -579,7 +579,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 
 	res := buf.String()
 	assertInCode(t, "type WithMapInterface struct {", res)
-	assertInCode(t, "ExtraInfo map[string]interface{} `json:\"extraInfo\"`", res)
+	assertInCode(t, "ExtraInfo map[string]any `json:\"extraInfo\"`", res)
 }
 
 func TestGenerateModel_WithMapRef(t *testing.T) {
@@ -1041,7 +1041,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	// this would fail if it accepts additionalItems because it would come out as []any
 	assertInCode(t, "Tags *"+k+"TagsTuple0 `json:\"tags,omitempty\"`", res)
 	assertInCode(t, "P0 *string `json:\"-\"`", res)
-	assertInCode(t, k+"TagsTuple0Items []interface{} `json:\"-\"`", res)
+	assertInCode(t, k+"TagsTuple0Items []any `json:\"-\"`", res)
 }
 
 func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
@@ -1906,7 +1906,7 @@ func TestGenModel_Issue811_NullType(t *testing.T) {
 	require.NoError(t, err)
 
 	res := string(ct)
-	assertInCode(t, "Language interface{} `json:\"language,omitempty\"`", res)
+	assertInCode(t, "Language any `json:\"language,omitempty\"`", res)
 }
 
 func TestGenModel_Issue811_Emojis(t *testing.T) {
@@ -1947,7 +1947,7 @@ func TestGenModel_Issue752_EOFErr(t *testing.T) {
 	require.NoError(t, err)
 
 	res := string(ct)
-	assertInCode(t, `&& err != io.EOF`, res)
+	assertInCode(t, `&& !stderrors.Is(err, io.EOF)`, res)
 }
 
 func TestImports_ExistingModel(t *testing.T) {
@@ -2018,7 +2018,7 @@ func TestGenModel_Issue822(t *testing.T) {
 	require.NoError(t, err)
 
 	res := string(ct)
-	assertInCode(t, `PetAdditionalProperties map[string]interface{}`, res)
+	assertInCode(t, `PetAdditionalProperties map[string]any`, res)
 	assertInCode(t, `m.PetAdditionalProperties = result`, res)
 	assertInCode(t, `additional, err := json.Marshal(m.PetAdditionalProperties)`, res)
 }
@@ -2324,7 +2324,7 @@ func TestGenModel_Issue910(t *testing.T) {
 
 		res := string(ct)
 		assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
-		assertInCode(t, "// foo\n	// Required: true\n	Foo interface{} `json:\"foo\"`", res)
+		assertInCode(t, "// foo\n	// Required: true\n	Foo any `json:\"foo\"`", res)
 		assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
 		assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
 		assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
