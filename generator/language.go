@@ -13,8 +13,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-openapi/swag"
 	"golang.org/x/tools/imports"
+
+	"github.com/go-openapi/swag"
 )
 
 var (

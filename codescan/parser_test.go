@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/spec"
 )
 
 // only used within this group of tests but never used within actual code base.

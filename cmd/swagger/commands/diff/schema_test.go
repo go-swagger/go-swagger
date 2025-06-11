@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-openapi/spec"
 )
 
 func TestGetTypeFromSimpleSchema(t *testing.T) {

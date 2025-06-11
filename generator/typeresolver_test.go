@@ -17,10 +17,11 @@ package generator
 import (
 	"testing"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 )
 
 func schTypeVals() []struct{ Type, Format, Expected string } {

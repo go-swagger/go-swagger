@@ -19,9 +19,10 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/spec"
 )
 
 func TestSetInfoVersion(t *testing.T) {

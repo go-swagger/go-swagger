@@ -8,10 +8,11 @@ import (
 	"log"
 	"os"
 
+	flags "github.com/jessevdk/go-flags"
+
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	flags "github.com/jessevdk/go-flags"
 )
 
 // ExpandSpec is a command that expands the $refs in a swagger document.
