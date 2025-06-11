@@ -18,10 +18,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 )
 
 func TestSchemaValidation_RequiredProps(t *testing.T) {

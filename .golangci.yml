@@ -53,7 +53,8 @@ linters:
         - float-compare
         - go-require
   exclusions:
-    generated: lax
+    warn-unused: false
+    generated: disable  # enable linting on generated code (in examples, in generated code under test)
     presets:
       - comments
       - common-false-positives
@@ -61,21 +62,34 @@ linters:
       - std-error-handling
     paths:
       - fixtures/
+      # TODO: do not exclude examples from linting
       - examples/
+    rules:
+      - path: examples/
+        linters:
+          - gofumpt # we don't run gofumpt on generated examples, only goimports
+      - path: 'generator/generated/'
+        linters:
+          - gofumpt # we don't run gofumpt on generated fixtures
+      - path: _test.go
+        linters:
+          - unparam
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  new: true
+  new: false
 formatters:
   enable:
     - gofumpt
     - goimports
   settings:
+    # local prefixes regroup imports from these packages
     goimports:
       local-prefixes:
-        - github.com/go-swagger/go-swagger
+        - github.com/go-openapi
+        - github.com/go-swagger/go-swagger # this is for imports in generated examples
   exclusions:
-    generated: lax
+    # TODO: do not exclude examples from linting
     paths:
       - fixtures/
       - examples/

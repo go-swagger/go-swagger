@@ -4,9 +4,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/go-openapi/runtime"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/runtime"
 )
 
 func TestMediaWellKnownMime(t *testing.T) {

@@ -11,9 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
-	"gopkg.in/yaml.v3"
 )
 
 func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {

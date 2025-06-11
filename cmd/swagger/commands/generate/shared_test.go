@@ -6,9 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-openapi/analysis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/analysis"
 )
 
 func TestMain(m *testing.M) {
