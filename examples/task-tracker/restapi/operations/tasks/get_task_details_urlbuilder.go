@@ -46,7 +46,7 @@ func (o *GetTaskDetailsURL) Build() (*url.URL, error) {
 
 	id := swag.FormatInt64(o.ID)
 	if id != "" {
-		_path = strings.Replace(_path, "{id}", id, -1)
+		_path = strings.ReplaceAll(_path, "{id}", id)
 	} else {
 		return nil, errors.New("id is required on GetTaskDetailsURL")
 	}

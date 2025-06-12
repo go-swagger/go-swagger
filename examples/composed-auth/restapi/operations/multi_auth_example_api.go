@@ -45,34 +45,58 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		AddOrderHandler: AddOrderHandlerFunc(func(params AddOrderParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation AddOrder has not yet been implemented")
 		}),
 		GetAccountHandler: GetAccountHandlerFunc(func(params GetAccountParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation GetAccount has not yet been implemented")
 		}),
 		GetItemsHandler: GetItemsHandlerFunc(func(params GetItemsParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetItems has not yet been implemented")
 		}),
 		GetOrderHandler: GetOrderHandlerFunc(func(params GetOrderParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation GetOrder has not yet been implemented")
 		}),
 		GetOrdersForItemHandler: GetOrdersForItemHandlerFunc(func(params GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation GetOrdersForItem has not yet been implemented")
 		}),
 
 		HasRoleAuth: func(token string, scopes []string) (*models.Principal, error) {
+			_ = token
+			_ = scopes
+
 			return nil, errors.NotImplemented("oauth2 bearer auth (hasRole) has not yet been implemented")
 		},
 		// Applies when the Authorization header is set with the Basic scheme
-		IsRegisteredAuth: func(user string, pass string) (*models.Principal, error) {
+		IsRegisteredAuth: func(user string, password string) (*models.Principal, error) {
+			_ = user
+			_ = password
+
 			return nil, errors.NotImplemented("basic auth  (isRegistered) has not yet been implemented")
 		},
 		// Applies when the "X-Custom-Key" header is set
 		IsResellerAuth: func(token string) (*models.Principal, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (isReseller) X-Custom-Key from header param [X-Custom-Key] has not yet been implemented")
 		},
 		// Applies when the "CustomKeyAsQuery" query is set
 		IsResellerQueryAuth: func(token string) (*models.Principal, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (isResellerQuery) CustomKeyAsQuery from query param [CustomKeyAsQuery] has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
@@ -186,7 +210,7 @@ type MultiAuthExampleAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -293,29 +317,30 @@ func (o *MultiAuthExampleAPI) AuthenticatorsFor(schemes map[string]spec.Security
 	for name := range schemes {
 		switch name {
 		case "hasRole":
-			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (any, error) {
 				return o.HasRoleAuth(token, scopes)
 			})
 
 		case "isRegistered":
-			result[name] = o.BasicAuthenticator(func(username, password string) (interface{}, error) {
+			result[name] = o.BasicAuthenticator(func(username, password string) (any, error) {
 				return o.IsRegisteredAuth(username, password)
 			})
 
 		case "isReseller":
 			scheme := schemes[name]
-			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (any, error) {
 				return o.IsResellerAuth(token)
 			})
 
 		case "isResellerQuery":
 			scheme := schemes[name]
-			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (any, error) {
 				return o.IsResellerQueryAuth(token)
 			})
 
 		}
 	}
+
 	return result
 }
 
@@ -325,12 +350,12 @@ func (o *MultiAuthExampleAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *MultiAuthExampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -338,16 +363,17 @@ func (o *MultiAuthExampleAPI) ConsumersFor(mediaTypes []string) map[string]runti
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *MultiAuthExampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -355,6 +381,7 @@ func (o *MultiAuthExampleAPI) ProducersFor(mediaTypes []string) map[string]runti
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

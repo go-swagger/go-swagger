@@ -3,11 +3,12 @@ package generator
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
@@ -46,7 +47,7 @@ type builtinVal struct {
 
 	Nullable, Aliased bool
 
-	Default interface{}
+	Default any
 
 	Extensions spec.Extensions
 
@@ -63,7 +64,7 @@ type builtinVal struct {
 	MinItems         *int64
 	UniqueItems      bool
 	MultipleOf       *float64
-	Enum             []interface{}
+	Enum             []any
 }
 
 func nullableExt() spec.Extensions {

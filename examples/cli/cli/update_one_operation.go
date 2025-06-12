@@ -12,8 +12,9 @@ import (
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 	"github.com/go-swagger/go-swagger/examples/cli/models"
 
-	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
+
+	"github.com/go-openapi/swag"
 )
 
 // makeOperationTodosUpdateOneCmd returns a command to handle operation updateOne
@@ -121,7 +122,7 @@ func retrieveOperationTodosUpdateOneBodyFlag(m *todos.UpdateOneParams, cmdPrefix
 
 		flagBodyValue := models.Item{}
 		if err := json.Unmarshal([]byte(flagBodyValueStr), &flagBodyValue); err != nil {
-			return fmt.Errorf("cannot unmarshal body string in models.Item: %v", err), false
+			return fmt.Errorf("cannot unmarshal body string in models.Item: %w", err), false
 		}
 		m.Body = &flagBodyValue
 	}
@@ -175,8 +176,8 @@ func retrieveOperationTodosUpdateOneIDFlag(m *todos.UpdateOneParams, cmdPrefix s
 // parseOperationTodosUpdateOneResult parses request result and return the string content
 func parseOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error) (string, error) {
 	if respErr != nil {
-
-		var iRespD interface{} = respErr
+		// default response
+		var iRespD any = respErr
 		respD, ok := iRespD.(*todos.UpdateOneDefault)
 		if ok {
 			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
@@ -188,21 +189,23 @@ func parseOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error)
 			}
 		}
 
-		var iResp0 interface{} = respErr
-		resp0, ok := iResp0.(*todos.UpdateOneOK)
+		// responses
+		var iResp0 any = respErr
+		eresp0, ok := iResp0.(*todos.UpdateOneOK)
 		if ok {
-			if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
-				msgStr, err := json.Marshal(resp0.Payload)
+			// the error response has a payload
+			if !swag.IsZero(eresp0) && !swag.IsZero(eresp0.Payload) {
+				msgStr, err := json.Marshal(eresp0.Payload)
 				if err != nil {
 					return "", err
 				}
 				return string(msgStr), nil
 			}
 		}
-
 		return "", respErr
 	}
 
+	// success responses
 	if !swag.IsZero(resp0) && !swag.IsZero(resp0.Payload) {
 		msgStr, err := json.Marshal(resp0.Payload)
 		if err != nil {
@@ -210,6 +213,5 @@ func parseOperationTodosUpdateOneResult(resp0 *todos.UpdateOneOK, respErr error)
 		}
 		return string(msgStr), nil
 	}
-
 	return "", nil
 }

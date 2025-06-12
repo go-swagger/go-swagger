@@ -71,7 +71,7 @@ func (m *Order) validateShipDate(formats strfmt.Registry) error {
 	return nil
 }
 
-var orderTypeStatusPropEnum []interface{}
+var orderTypeStatusPropEnum []any
 
 func init() {
 	var res []string

@@ -46,7 +46,7 @@ func (o *OrderGetURL) Build() (*url.URL, error) {
 
 	orderID := swag.FormatInt64(o.OrderID)
 	if orderID != "" {
-		_path = strings.Replace(_path, "{orderId}", orderID, -1)
+		_path = strings.ReplaceAll(_path, "{orderId}", orderID)
 	} else {
 		return nil, errors.New("orderId is required on OrderGetURL")
 	}

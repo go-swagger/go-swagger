@@ -26,7 +26,7 @@ type GetAccountOK struct {
 	/*
 	  In: Body
 	*/
-	Payload interface{} `json:"body,omitempty"`
+	Payload any `json:"body,omitempty"`
 }
 
 // NewGetAccountOK creates GetAccountOK with default headers values
@@ -36,13 +36,13 @@ func NewGetAccountOK() *GetAccountOK {
 }
 
 // WithPayload adds the payload to the get account o k response
-func (o *GetAccountOK) WithPayload(payload interface{}) *GetAccountOK {
+func (o *GetAccountOK) WithPayload(payload any) *GetAccountOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account o k response
-func (o *GetAccountOK) SetPayload(payload interface{}) {
+func (o *GetAccountOK) SetPayload(payload any) {
 	o.Payload = payload
 }
 
@@ -76,7 +76,7 @@ func NewGetAccountUnauthorized() *GetAccountUnauthorized {
 // WriteResponse to the client
 func (o *GetAccountUnauthorized) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(401)
 }

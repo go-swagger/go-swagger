@@ -46,19 +46,32 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		GetAuthCallbackHandler: GetAuthCallbackHandlerFunc(func(params GetAuthCallbackParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
 		}),
 		GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation GetLogin has not yet been implemented")
 		}),
 		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		}),
 		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
 		}),
 
 		OauthSecurityAuth: func(token string, scopes []string) (*models.Principal, error) {
+			_ = token
+			_ = scopes
+
 			return nil, errors.NotImplemented("oauth2 bearer auth (OauthSecurity) has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
@@ -131,7 +144,7 @@ type OauthSampleAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -224,14 +237,13 @@ func (o *OauthSampleAPI) ServeErrorFor(operationID string) func(http.ResponseWri
 func (o *OauthSampleAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
-		switch name {
-		case "OauthSecurity":
-			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+		if name == "OauthSecurity" {
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (any, error) {
 				return o.OauthSecurityAuth(token, scopes)
 			})
-
 		}
 	}
+
 	return result
 }
 
@@ -241,12 +253,12 @@ func (o *OauthSampleAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -254,16 +266,17 @@ func (o *OauthSampleAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -271,6 +284,7 @@ func (o *OauthSampleAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

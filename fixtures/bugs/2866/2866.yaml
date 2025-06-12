@@ -266,10 +266,10 @@ paths:
   /legacy/nitro/api/data/v1/planting_activities:
     get:
       description: 'GONE: Nitro Planting Activities API V1'
-      summary: 'GONE: Get planting activites'
+      summary: 'GONE: Get planting activities'
       tags:
       - legacy nitro
-      operationId: GONE:Getplantingactivites
+      operationId: GONE:Getplantingactivities
       deprecated: true
       produces:
       - application/json

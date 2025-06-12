@@ -8,6 +8,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -149,11 +150,15 @@ func (m *TaskCard) validateAssignedTo(formats strfmt.Registry) error {
 
 	if m.AssignedTo != nil {
 		if err := m.AssignedTo.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("assignedTo")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("assignedTo")
 			}
+
 			return err
 		}
 	}
@@ -200,11 +205,15 @@ func (m *TaskCard) validateMilestone(formats strfmt.Registry) error {
 
 	if m.Milestone != nil {
 		if err := m.Milestone.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("milestone")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("milestone")
 			}
+
 			return err
 		}
 	}
@@ -240,7 +249,7 @@ func (m *TaskCard) validateSeverity(formats strfmt.Registry) error {
 	return nil
 }
 
-var taskCardTypeStatusPropEnum []interface{}
+var taskCardTypeStatusPropEnum []any
 
 func init() {
 	var res []string
@@ -371,11 +380,15 @@ func (m *TaskCard) contextValidateAssignedTo(ctx context.Context, formats strfmt
 		}
 
 		if err := m.AssignedTo.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("assignedTo")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("assignedTo")
 			}
+
 			return err
 		}
 	}
@@ -385,7 +398,7 @@ func (m *TaskCard) contextValidateAssignedTo(ctx context.Context, formats strfmt
 
 func (m *TaskCard) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -401,11 +414,15 @@ func (m *TaskCard) contextValidateMilestone(ctx context.Context, formats strfmt.
 		}
 
 		if err := m.Milestone.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("milestone")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("milestone")
 			}
+
 			return err
 		}
 	}
@@ -415,7 +432,7 @@ func (m *TaskCard) contextValidateMilestone(ctx context.Context, formats strfmt.
 
 func (m *TaskCard) contextValidateReportedAt(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "reportedAt", "body", strfmt.DateTime(m.ReportedAt)); err != nil {
+	if err := validate.ReadOnly(ctx, "reportedAt", "body", m.ReportedAt); err != nil {
 		return err
 	}
 

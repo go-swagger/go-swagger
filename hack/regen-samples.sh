@@ -47,7 +47,10 @@ rm -rf cmd models restapi
 swagger generate server -A TodoList -f ./swagger.yml
 
 cd "${examples}/tutorials/todo-list/server-complete" || exit 1
+cp restapi/configure_todo_list.go .
+rm -rf cmd models restapi
 swagger generate server -A TodoList -f ./swagger.yml
+mv configure_todo_list.go restapi/
 
 cd "${examples}/tutorials/custom-server" || exit 1
 rm -rf gen
@@ -86,6 +89,32 @@ mv configure_file_upload.go restapi/
 cd "${examples}/cli" || exit 1
 rm -rf cli client cmd models
 swagger generate cli --spec=swagger.yml --cli-app-name todoctl
+
+cd "${examples}/auto-configure" || exit 1
+rm -rf cmd models restapi # keep implementation
+swagger generate server --spec=swagger.yml --implementation-package=github.com/go-swagger/go-swagger/examples/auto-configure/implementation
+
+cd "${examples}/todo-list-strict" || exit 1
+rm -rf cmd models restapi client
+swagger generate server --spec=swagger.yml --strict-responders
+swagger generate client --spec=swagger.yml --strict-responders
+
+cd "${examples}/flags" || exit 1
+rm -rf pflag flag go-flags xpflag xflag xgo-flags
+(mkdir pflag && cd pflag && swagger generate server --spec=../swagger.yml --flag-strategy=pflag)
+(mkdir flag && cd flag && swagger generate server --spec=../swagger.yml --flag-strategy=flag)
+(mkdir go-flags && cd go-flags && swagger generate server --spec=../swagger.yml --flag-strategy=go-flags)
+(mkdir xpflag && cd xpflag && swagger generate server --spec=../swagger.yml --flag-strategy=pflag --exclude-spec)
+(mkdir xflag && cd xflag && swagger generate server --spec=../swagger.yml --flag-strategy=flag --exclude-spec)
+(mkdir xgo-flags && cd xgo-flags && swagger generate server --spec=../swagger.yml --flag-strategy=go-flags --exclude-spec)
+
+cd "${examples}/tutorials/client" || exit 1
+rm -rf client models stratoscale-client
+swagger generate client -A TodoList --spec=swagger.yml --client-package=classic-client
+swagger generate client -A TodoList --spec=swagger.yml --template stratoscale \
+  --existing-models=github.com/go-swagger/go-swagger/examples/tutorials/client/models \
+  --client-package=stratoscale-client
+
 
 cd "${examples}" || exit 1
 go test -v ./...

@@ -26,7 +26,6 @@ func NewGetOrdersForItemParams() GetOrdersForItemParams {
 //
 // swagger:parameters GetOrdersForItem
 type GetOrdersForItemParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

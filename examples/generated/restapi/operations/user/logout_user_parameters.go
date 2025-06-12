@@ -25,7 +25,6 @@ func NewLogoutUserParams() LogoutUserParams {
 //
 // swagger:parameters logoutUser
 type LogoutUserParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

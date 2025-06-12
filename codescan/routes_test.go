@@ -5,8 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-openapi/spec"
 )
 
 func TestRouteExpression(t *testing.T) {
@@ -56,10 +57,10 @@ func TestRoutesParser(t *testing.T) {
 	ext = make(spec.Extensions)
 	ext.Add("x-some-flag", "false")
 	ext.Add("x-some-list", []string{"item1", "item2", "item3"})
-	ext.Add("x-some-object", map[string]interface{}{
+	ext.Add("x-some-object", map[string]any{
 		"key1": "value1",
 		"key2": "value2",
-		"subobject": map[string]interface{}{
+		"subobject": map[string]any{
 			"subkey1": "subvalue1",
 			"subkey2": "subvalue2",
 		},
@@ -123,7 +124,7 @@ func TestRoutesParser(t *testing.T) {
 	rsp, ok := po.Delete.Responses.StatusCodeResponses[202]
 	assert.True(t, ok)
 	assert.Equal(t, "Some description", rsp.Description)
-	assert.Equal(t, "", rsp.Ref.String())
+	assert.Empty(t, rsp.Ref.String())
 }
 
 func TestRoutesParserBody(t *testing.T) {
@@ -250,7 +251,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	p = po.Post.Parameters[0]
 	assert.Equal(t, "id", p.Name)
 	assert.Equal(t, "The order id", p.Description)
-	assert.Equal(t, "", p.In) // Invalid value should not be set
+	assert.Empty(t, p.In) // Invalid value should not be set
 	assert.False(t, p.Required)
 	assert.True(t, p.AllowEmptyValue)
 
@@ -269,10 +270,10 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "path", p.In)
 	assert.True(t, p.Required)
 	assert.Equal(t, "number", p.Type)
-	min, max, def := float64(10), float64(20), float64(15)
-	assert.Equal(t, &max, p.Maximum)
-	assert.Equal(t, &min, p.Minimum)
-	assert.Equal(t, def, p.Default)
+	minimum, maximum, def := float64(10), float64(20), float64(15)
+	assert.Equal(t, &maximum, p.Maximum)
+	assert.Equal(t, &minimum, p.Minimum)
+	assert.InDelta(t, def, p.Default, epsilon)
 	assert.Nil(t, p.Schema)
 
 	// Testing array param provided as query string. Testing "minLength" and "maxLength" constraints for "array" types
@@ -319,7 +320,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	p = po.Post.Parameters[4]
 	assert.Equal(t, "noType", p.Name)
 	assert.Equal(t, "test no type", p.Description)
-	assert.Equal(t, "", p.Type)
+	assert.Empty(t, p.Type)
 	assert.Nil(t, p.Schema)
 
 	// Testing a request body that takes a string value defined by a list of possible values in "enum"
@@ -329,7 +330,7 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 	assert.Equal(t, "body", p.In)
 	assert.Equal(t, "string", p.Schema.Type[0])
 	assert.Equal(t, "orange", p.Schema.Default)
-	assert.Equal(t, []interface{}{"apple", "orange", "pineapple", "peach", "plum"}, p.Schema.Enum)
+	assert.Equal(t, []any{"apple", "orange", "pineapple", "peach", "plum"}, p.Schema.Enum)
 	assert.Empty(t, p.Type)
 }
 
@@ -338,10 +339,10 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
 	assert.Equal(t, id, op.ID)
-	assert.EqualValues(t, tags, op.Tags)
-	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Consumes)
-	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
-	assert.EqualValues(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
+	assert.Equal(t, tags, op.Tags)
+	assert.Equal(t, []string{"application/json", "application/x-protobuf"}, op.Consumes)
+	assert.Equal(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
+	assert.Equal(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
 	assert.Len(t, op.Security, 2)
 	akv, ok := op.Security[0]["api_key"]
 	assert.True(t, ok)
@@ -351,7 +352,7 @@ func assertOperation(t *testing.T, op *spec.Operation, id, summary, description 
 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
-	assert.EqualValues(t, scopes, vv)
+	assert.Equal(t, scopes, vv)
 
 	assert.NotNil(t, op.Responses.Default)
 	assert.Equal(t, "#/responses/genericError", op.Responses.Default.Ref.String())
@@ -372,10 +373,10 @@ func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, descript
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)
 	assert.Equal(t, id, op.ID)
-	assert.EqualValues(t, tags, op.Tags)
-	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Consumes)
-	assert.EqualValues(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
-	assert.EqualValues(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
+	assert.Equal(t, tags, op.Tags)
+	assert.Equal(t, []string{"application/json", "application/x-protobuf"}, op.Consumes)
+	assert.Equal(t, []string{"application/json", "application/x-protobuf"}, op.Produces)
+	assert.Equal(t, []string{"http", "https", "ws", "wss"}, op.Schemes)
 	assert.Len(t, op.Security, 2)
 	akv, ok := op.Security[0]["api_key"]
 	assert.True(t, ok)
@@ -385,18 +386,18 @@ func assertOperationBody(t *testing.T, op *spec.Operation, id, summary, descript
 
 	vv, ok := op.Security[1]["oauth"]
 	assert.True(t, ok)
-	assert.EqualValues(t, scopes, vv)
+	assert.Equal(t, scopes, vv)
 
 	assert.NotNil(t, op.Responses.Default)
-	assert.Equal(t, "", op.Responses.Default.Ref.String())
+	assert.Empty(t, op.Responses.Default.Ref.String())
 	assert.Equal(t, "#/definitions/genericError", op.Responses.Default.Schema.Ref.String())
 
 	rsp, ok := op.Responses.StatusCodeResponses[200]
 	assert.True(t, ok)
-	assert.Equal(t, "", rsp.Ref.String())
+	assert.Empty(t, rsp.Ref.String())
 	assert.Equal(t, "#/definitions/someResponse", rsp.Schema.Ref.String())
 	rsp, ok = op.Responses.StatusCodeResponses[422]
 	assert.True(t, ok)
-	assert.Equal(t, "", rsp.Ref.String())
+	assert.Empty(t, rsp.Ref.String())
 	assert.Equal(t, "#/definitions/validationError", rsp.Schema.Ref.String())
 }

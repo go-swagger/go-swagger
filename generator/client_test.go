@@ -233,7 +233,7 @@ func TestClient(t *testing.T) {
 		require.NoError(t, err)
 	}
 	targetdir, err := os.MkdirTemp(base, "swagger_nogo")
-	require.NoError(t, err, "Failed to create a test target directory: %v", err)
+	require.NoError(t, err, "failed to create a test target directory: %v", err)
 
 	t.Cleanup(func() {
 		_ = os.RemoveAll(targetdir)
@@ -807,7 +807,7 @@ func TestGenClient_909_5(t *testing.T) {
 			`	if hdrXIsAnOptionalHeader3 != "" {`,
 			`		valXIsAnOptionalHeader3, err := o.bindHeaderXIsAnOptionalHeader3(hdrXIsAnOptionalHeader3, formats)`,
 			`		o.XIsAnOptionalHeader3 = valXIsAnOptionalHeader3`,
-			`	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {`,
+			`	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && !stderrors.Is(err, io.EOF) {`,
 			`func (o *GetOptionalOK) bindHeaderXIsAnOptionalHeader0DirtSimpleArray(hdr string, formats strfmt.Registry) ([]int64, error) {`,
 			`	xIsAnOptionalHeader0DirtSimpleArrayIV := hdr`,
 			`	var (`,

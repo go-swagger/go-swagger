@@ -30,6 +30,8 @@ jobs:
           check-latest: true
           cache: true
       - name: golangci-lint
+        # do not actually lint on pushed tags. The diff evaluated by golangci-lint action is wrong (https://github.com/golangci/golangci-lint-action/issues/1246).
+        if: ${{ ! startsWith(github.ref,'refs/tags/') }}
         uses: golangci/golangci-lint-action@v7
         with:
           args: --verbose

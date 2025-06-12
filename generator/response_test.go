@@ -20,9 +20,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/spec"
 )
 
 func TestSimpleResponseRender(t *testing.T) {
@@ -253,7 +254,7 @@ func (ctx *respHeaderTestContext) Assert(t testing.TB, header spec.Header, hdr G
 	if !assert.Equal(t, header.MultipleOf, hdr.MultipleOf) {
 		return false
 	}
-	if !assert.EqualValues(t, header.Enum, hdr.Enum) {
+	if !assert.Equal(t, header.Enum, hdr.Enum) {
 		return false
 	}
 	if !assert.Equal(t, header.Type, hdr.SwaggerType) {
@@ -513,7 +514,7 @@ GetNullRequestProcessed OK`
 	/*
 	        Run the following test caes and exercise the minimal flatten mode:
 	   - [x] nil schema in body param / response
-	   - [x] interface{} in body param /response
+	   - [x] any in body param /response
 	   - [x] additional schema reused from model (body param and response) (with maps or arrays)
 	   - [x] primitive body / response
 	   - [x] $ref'ed response and param (check that minimal flatten expands it)
@@ -527,13 +528,13 @@ GetNullRequestProcessed OK`
 				// expected code lines
 				`const GetInterfaceOKCode int = 200`,
 				`type GetInterfaceOK struct {`,
-				"	Payload interface{} `json:\"body,omitempty\"`",
+				"	Payload any `json:\"body,omitempty\"`",
 				`func NewGetInterfaceOK() *GetInterfaceOK {`,
 				`	return &GetInterfaceOK{`,
-				`func (o *GetInterfaceOK) WithPayload(payload interface{}) *GetInterfaceOK {`,
+				`func (o *GetInterfaceOK) WithPayload(payload any) *GetInterfaceOK {`,
 				`	o.Payload = payload`,
 				`	return o`,
-				`func (o *GetInterfaceOK) SetPayload(payload interface{}) {`,
+				`func (o *GetInterfaceOK) SetPayload(payload any) {`,
 				`	o.Payload = payload`,
 				`func (o *GetInterfaceOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {`,
 				`	rw.WriteHeader(200`,
@@ -569,13 +570,13 @@ GetNullRequestProcessed OK`
 				// expected code lines
 				`const GetNullOKCode int = 200`,
 				`type GetNullOK struct {`,
-				"	Payload interface{} `json:\"body,omitempty\"`",
+				"	Payload any `json:\"body,omitempty\"`",
 				`func NewGetNullOK() *GetNullOK {`,
 				`	return &GetNullOK{`,
-				`func (o *GetNullOK) WithPayload(payload interface{}) *GetNullOK {`,
+				`func (o *GetNullOK) WithPayload(payload any) *GetNullOK {`,
 				`	o.Payload = payload`,
 				`	return o`,
-				`func (o *GetNullOK) SetPayload(payload interface{}) {`,
+				`func (o *GetNullOK) SetPayload(payload any) {`,
 				`	o.Payload = payload`,
 				`func (o *GetNullOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {`,
 				`	rw.WriteHeader(200`,

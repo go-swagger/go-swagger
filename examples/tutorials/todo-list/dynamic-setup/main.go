@@ -55,11 +55,13 @@ func main() {
 
 	log.Println("serving", specDoc.Spec().Info.Title, "at http://localhost:8000")
 	// serve the api
-	if err := http.ListenAndServe(":8000", app.APIHandler(nil)); err != nil {
+	if err := http.ListenAndServe(":8000", app.APIHandler(nil)); err != nil { //nolint:gosec
 		log.Fatalln(err)
 	}
 }
 
-var notImplemented = runtime.OperationHandlerFunc(func(params interface{}) (interface{}, error) {
+var notImplemented = runtime.OperationHandlerFunc(func(params any) (any, error) {
+	_ = params
+
 	return middleware.NotImplemented("not implemented"), nil
 })

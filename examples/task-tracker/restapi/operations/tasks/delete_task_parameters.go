@@ -27,7 +27,6 @@ func NewDeleteTaskParams() DeleteTaskParams {
 //
 // swagger:parameters deleteTask
 type DeleteTaskParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

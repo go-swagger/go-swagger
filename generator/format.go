@@ -14,7 +14,8 @@ import (
 	"unicode/utf8"
 )
 
-func formatGo(filename string, content []byte) ([]byte, error) {
+func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, error) {
+	_ = formatOptionsWithDefault(opts) // TODO: use options
 	fset, file, clean, err := parseGoOrFragment(filename, content)
 	if err != nil {
 		return nil, err
@@ -103,6 +104,7 @@ func cleanImports(file *ast.File) {
 	for _, impt := range shouldRemove {
 		deleteImportSpec(file, impt)
 	}
+	// TODO: group local pacages
 }
 
 func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {

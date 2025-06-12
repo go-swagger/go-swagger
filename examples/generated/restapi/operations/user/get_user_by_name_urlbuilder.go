@@ -44,7 +44,7 @@ func (o *GetUserByNameURL) Build() (*url.URL, error) {
 
 	username := o.Username
 	if username != "" {
-		_path = strings.Replace(_path, "{username}", username, -1)
+		_path = strings.ReplaceAll(_path, "{username}", username)
 	} else {
 		return nil, errors.New("username is required on GetUserByNameURL")
 	}

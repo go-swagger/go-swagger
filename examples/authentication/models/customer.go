@@ -80,7 +80,7 @@ func (m *Customer) Validate(formats strfmt.Registry) error {
 
 func (m *Customer) validateCustomerID(formats strfmt.Registry) error {
 
-	if err := validate.Required("customerId", "body", int64(m.CustomerID)); err != nil {
+	if err := validate.Required("customerId", "body", m.CustomerID); err != nil {
 		return err
 	}
 
@@ -155,7 +155,7 @@ func (m *Customer) ContextValidate(ctx context.Context, formats strfmt.Registry)
 
 func (m *Customer) contextValidateCustomerID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "customerId", "body", int64(m.CustomerID)); err != nil {
+	if err := validate.ReadOnly(ctx, "customerId", "body", m.CustomerID); err != nil {
 		return err
 	}
 

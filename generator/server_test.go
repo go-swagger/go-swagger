@@ -9,12 +9,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
@@ -355,8 +356,8 @@ func TestServer_Issue1557(t *testing.T) {
 	res := string(formatted)
 	assertInCode(t, `ApplicationDummyConsumer runtime.Consumer`, res)
 	assertInCode(t, `ApplicationDummyProducer runtime.Producer`, res)
-	assertInCode(t, `ApplicationDummyConsumer: runtime.ConsumerFunc(func(r io.Reader, target interface{}) error {`, res)
-	assertInCode(t, `ApplicationDummyProducer: runtime.ProducerFunc(func(w io.Writer, data interface{}) error {`, res)
+	assertInCode(t, `ApplicationDummyConsumer: runtime.ConsumerFunc(func(r io.Reader, target any) error {`, res)
+	assertInCode(t, `ApplicationDummyProducer: runtime.ProducerFunc(func(w io.Writer, data any) error {`, res)
 	assertInCode(t, `BinConsumer: runtime.ByteStreamConsumer(),`, res)
 	assertInCode(t, `BinProducer: runtime.ByteStreamProducer(),`, res)
 	assertInCode(t, `result["application/pdf"] = o.BinConsumer`, res)

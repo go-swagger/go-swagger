@@ -7,6 +7,8 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -177,11 +179,15 @@ func (m *Task) validateAttachments(formats strfmt.Registry) error {
 		}
 		if val, ok := m.Attachments[k]; ok {
 			if err := val.Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("attachments" + "." + k)
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("attachments" + "." + k)
 				}
+
 				return err
 			}
 		}
@@ -204,11 +210,15 @@ func (m *Task) validateComments(formats strfmt.Registry) error {
 
 		if m.Comments[i] != nil {
 			if err := m.Comments[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("comments" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -239,11 +249,15 @@ func (m *Task) validateLastUpdatedBy(formats strfmt.Registry) error {
 
 	if m.LastUpdatedBy != nil {
 		if err := m.LastUpdatedBy.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("lastUpdatedBy")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("lastUpdatedBy")
 			}
+
 			return err
 		}
 	}
@@ -259,11 +273,15 @@ func (m *Task) validateReportedBy(formats strfmt.Registry) error {
 
 	if m.ReportedBy != nil {
 		if err := m.ReportedBy.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reportedBy")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reportedBy")
 			}
+
 			return err
 		}
 	}
@@ -323,7 +341,7 @@ func (m *Task) contextValidateAttachments(ctx context.Context, formats strfmt.Re
 
 func (m *Task) contextValidateComments(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "comments", "body", []*Comment(m.Comments)); err != nil {
+	if err := validate.ReadOnly(ctx, "comments", "body", m.Comments); err != nil {
 		return err
 	}
 
@@ -336,11 +354,15 @@ func (m *Task) contextValidateComments(ctx context.Context, formats strfmt.Regis
 			}
 
 			if err := m.Comments[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("comments" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -352,7 +374,7 @@ func (m *Task) contextValidateComments(ctx context.Context, formats strfmt.Regis
 
 func (m *Task) contextValidateLastUpdated(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "lastUpdated", "body", strfmt.DateTime(m.LastUpdated)); err != nil {
+	if err := validate.ReadOnly(ctx, "lastUpdated", "body", m.LastUpdated); err != nil {
 		return err
 	}
 
@@ -368,11 +390,15 @@ func (m *Task) contextValidateLastUpdatedBy(ctx context.Context, formats strfmt.
 		}
 
 		if err := m.LastUpdatedBy.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("lastUpdatedBy")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("lastUpdatedBy")
 			}
+
 			return err
 		}
 	}
@@ -389,11 +415,15 @@ func (m *Task) contextValidateReportedBy(ctx context.Context, formats strfmt.Reg
 		}
 
 		if err := m.ReportedBy.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reportedBy")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reportedBy")
 			}
+
 			return err
 		}
 	}
@@ -420,6 +450,8 @@ func (m *Task) UnmarshalBinary(b []byte) error {
 }
 
 // TaskAttachmentsAnon task attachments anon
+//
+// MaxProperties: 20
 //
 // swagger:model TaskAttachmentsAnon
 type TaskAttachmentsAnon struct {
@@ -458,11 +490,180 @@ type TaskAttachmentsAnon struct {
 	// Read Only: true
 	// Format: uri
 	URL strfmt.URI `json:"url,omitempty"`
+
+	// task attachments anon additional properties
+	TaskAttachmentsAnonAdditionalProperties map[string]any `json:"-"`
+}
+
+// UnmarshalJSON unmarshals this object with additional properties from JSON
+func (m *TaskAttachmentsAnon) UnmarshalJSON(data []byte) error {
+	// stage 1, bind the properties
+	var stage1 struct {
+
+		// The content type of the file.
+		//
+		// The content type of the file is inferred from the upload request.
+		//
+		// Read Only: true
+		ContentType string `json:"contentType,omitempty"`
+
+		// Extra information to attach to the file.
+		//
+		// This is a free form text field with support for github flavored markdown.
+		//
+		// Min Length: 3
+		Description string `json:"description,omitempty"`
+
+		// The name of the file.
+		//
+		// This name is inferred from the upload request.
+		//
+		// Read Only: true
+		Name string `json:"name,omitempty"`
+
+		// The file size in bytes.
+		//
+		// This property was generated during the upload request of the file.
+		// Read Only: true
+		Size float64 `json:"size,omitempty"`
+
+		// The url to download or view the file.
+		//
+		// This URL is generated on the server, based on where it was able to store the file when it was uploaded.
+		//
+		// Read Only: true
+		// Format: uri
+		URL strfmt.URI `json:"url,omitempty"`
+	}
+	if err := json.Unmarshal(data, &stage1); err != nil {
+		return err
+	}
+	var rcv TaskAttachmentsAnon
+
+	rcv.ContentType = stage1.ContentType
+	rcv.Description = stage1.Description
+	rcv.Name = stage1.Name
+	rcv.Size = stage1.Size
+	rcv.URL = stage1.URL
+	*m = rcv
+
+	// stage 2, remove properties and add to map
+	stage2 := make(map[string]json.RawMessage)
+	if err := json.Unmarshal(data, &stage2); err != nil {
+		return err
+	}
+
+	delete(stage2, "contentType")
+	delete(stage2, "description")
+	delete(stage2, "name")
+	delete(stage2, "size")
+	delete(stage2, "url")
+	// stage 3, add additional properties values
+	if len(stage2) > 0 {
+		result := make(map[string]any)
+		for k, v := range stage2 {
+			var toadd any
+			if err := json.Unmarshal(v, &toadd); err != nil {
+				return err
+			}
+			result[k] = toadd
+		}
+		m.TaskAttachmentsAnonAdditionalProperties = result
+	}
+
+	return nil
+}
+
+// MarshalJSON marshals this object with additional properties into a JSON object
+func (m TaskAttachmentsAnon) MarshalJSON() ([]byte, error) {
+	var stage1 struct {
+
+		// The content type of the file.
+		//
+		// The content type of the file is inferred from the upload request.
+		//
+		// Read Only: true
+		ContentType string `json:"contentType,omitempty"`
+
+		// Extra information to attach to the file.
+		//
+		// This is a free form text field with support for github flavored markdown.
+		//
+		// Min Length: 3
+		Description string `json:"description,omitempty"`
+
+		// The name of the file.
+		//
+		// This name is inferred from the upload request.
+		//
+		// Read Only: true
+		Name string `json:"name,omitempty"`
+
+		// The file size in bytes.
+		//
+		// This property was generated during the upload request of the file.
+		// Read Only: true
+		Size float64 `json:"size,omitempty"`
+
+		// The url to download or view the file.
+		//
+		// This URL is generated on the server, based on where it was able to store the file when it was uploaded.
+		//
+		// Read Only: true
+		// Format: uri
+		URL strfmt.URI `json:"url,omitempty"`
+	}
+
+	stage1.ContentType = m.ContentType
+	stage1.Description = m.Description
+	stage1.Name = m.Name
+	stage1.Size = m.Size
+	stage1.URL = m.URL
+
+	// make JSON object for known properties
+	props, err := json.Marshal(stage1)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(m.TaskAttachmentsAnonAdditionalProperties) == 0 { // no additional properties
+		return props, nil
+	}
+
+	// make JSON object for the additional properties
+	additional, err := json.Marshal(m.TaskAttachmentsAnonAdditionalProperties)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(props) < 3 { // "{}": only additional properties
+		return additional, nil
+	}
+
+	// concatenate the 2 objects
+	return swag.ConcatJSON(props, additional), nil
 }
 
 // Validate validates this task attachments anon
 func (m *TaskAttachmentsAnon) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	props := make(map[string]json.RawMessage, 5+10)
+	j, err := swag.WriteJSON(m)
+	if err != nil {
+		return err
+	}
+
+	if err = swag.ReadJSON(j, &props); err != nil {
+		return err
+	}
+
+	nprops := len(props)
+
+	// maxProperties: 20
+	if nprops > 20 {
+		return errors.TooManyProperties("", "body", 20)
+	}
 
 	if err := m.validateDescription(formats); err != nil {
 		res = append(res, err)
@@ -530,7 +731,7 @@ func (m *TaskAttachmentsAnon) ContextValidate(ctx context.Context, formats strfm
 
 func (m *TaskAttachmentsAnon) contextValidateContentType(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "contentType", "body", string(m.ContentType)); err != nil {
+	if err := validate.ReadOnly(ctx, "contentType", "body", m.ContentType); err != nil {
 		return err
 	}
 
@@ -539,7 +740,7 @@ func (m *TaskAttachmentsAnon) contextValidateContentType(ctx context.Context, fo
 
 func (m *TaskAttachmentsAnon) contextValidateName(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "name", "body", string(m.Name)); err != nil {
+	if err := validate.ReadOnly(ctx, "name", "body", m.Name); err != nil {
 		return err
 	}
 
@@ -548,7 +749,7 @@ func (m *TaskAttachmentsAnon) contextValidateName(ctx context.Context, formats s
 
 func (m *TaskAttachmentsAnon) contextValidateSize(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "size", "body", float64(m.Size)); err != nil {
+	if err := validate.ReadOnly(ctx, "size", "body", m.Size); err != nil {
 		return err
 	}
 
@@ -557,7 +758,7 @@ func (m *TaskAttachmentsAnon) contextValidateSize(ctx context.Context, formats s
 
 func (m *TaskAttachmentsAnon) contextValidateURL(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "url", "body", strfmt.URI(m.URL)); err != nil {
+	if err := validate.ReadOnly(ctx, "url", "body", m.URL); err != nil {
 		return err
 	}
 

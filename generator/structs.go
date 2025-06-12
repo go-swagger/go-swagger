@@ -94,7 +94,7 @@ type GenSchema struct {
 	Parents                    []string
 	IncludeValidator           bool
 	IncludeModel               bool
-	Default                    interface{}
+	Default                    any
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
@@ -236,7 +236,7 @@ type sharedValidations struct {
 	HasContextValidations bool
 	Required              bool
 	HasSliceValidations   bool
-	ItemsEnum             []interface{}
+	ItemsEnum             []any
 
 	// NOTE: "patternProperties" and "dependencies" not supported by Swagger 2.0
 }
@@ -261,7 +261,7 @@ type GenResponse struct {
 	Imports        map[string]string
 	DefaultImports map[string]string
 
-	Extensions map[string]interface{}
+	Extensions map[string]any
 
 	StrictResponders bool
 	OperationName    string
@@ -278,7 +278,7 @@ func (g GenResponseExamples) Less(i, j int) bool { return g[i].MediaType < g[j].
 // GenResponseExample captures an example provided for a response for some mime type
 type GenResponseExample struct {
 	MediaType string
-	Example   interface{}
+	Example   any
 }
 
 // GenHeader represents a header on a response for code generation
@@ -297,7 +297,7 @@ type GenHeader struct {
 
 	Title       string
 	Description string
-	Default     interface{}
+	Default     any
 	HasDefault  bool
 
 	CollectionFormat string
@@ -373,7 +373,7 @@ type GenParameter struct {
 	// Unused
 	// BodyParam *GenParameter
 
-	Default         interface{}
+	Default         any
 	HasDefault      bool
 	ZeroValue       string
 	AllowEmptyValue bool
@@ -393,7 +393,7 @@ type GenParameter struct {
 	HasSimpleBodyMap    bool
 	HasModelBodyMap     bool
 
-	Extensions map[string]interface{}
+	Extensions map[string]any
 }
 
 // IsQueryParam returns true when this parameter is a query param
@@ -636,7 +636,7 @@ type GenOperation struct {
 	ConsumesMediaTypes   []string
 	TimeoutName          string
 
-	Extensions map[string]interface{}
+	Extensions map[string]any
 
 	StrictResponders bool
 	ExternalDocs     *spec.ExternalDocumentation
@@ -730,6 +730,16 @@ func (g GenSerGroups) Len() int           { return len(g) }
 func (g GenSerGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 func (g GenSerGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
 
+// NumSerializers yields the total number of serializer entries in this group.
+func (g GenSerGroups) NumSerializers() int {
+	n := 0
+	for _, group := range g {
+		n += len(group.AllSerializers)
+	}
+
+	return n
+}
+
 // GenSerGroup represents a group of serializers: this links a serializer to a list of
 // prioritized media types (mime).
 type GenSerGroup struct {
@@ -777,7 +787,7 @@ type GenSecurityScheme struct {
 	Flow             string
 	AuthorizationURL string
 	TokenURL         string
-	Extensions       map[string]interface{}
+	Extensions       map[string]any
 	ScopesDesc       []GenSecurityScope
 }
 

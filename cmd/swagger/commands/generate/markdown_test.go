@@ -1,34 +1,23 @@
 package generate_test
 
 import (
-	"io"
-	"log"
-	"os"
 	"path/filepath"
 	"testing"
 
+	flags "github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
-	flags "github.com/jessevdk/go-flags"
 )
 
 func TestMarkdown(t *testing.T) {
-	log.SetOutput(io.Discard)
-	defer log.SetOutput(os.Stdout)
-
-	base := filepath.FromSlash("../../../../")
-
-	generated, err := os.MkdirTemp(".", "test-markdown")
-	require.NoError(t, err)
-
-	defer func() {
-		_ = os.RemoveAll(generated)
-	}()
+	path := filepath.Join(".", "test-markdown")
+	generated, cleanup := testTempDir(t, path)
+	t.Cleanup(cleanup)
 
 	m := &generate.Markdown{}
 	_, _ = flags.ParseArgs(m, []string{"--skip-validation"})
-	m.Shared.Spec = flags.Filename(filepath.Join(base, "fixtures", "enhancements", "184", "fixture-184.yaml"))
+	m.Shared.Spec = flags.Filename(filepath.Join(testBase(), "fixtures", "enhancements", "184", "fixture-184.yaml"))
 	m.Output = flags.Filename(filepath.Join(generated, "markdown.md"))
 	require.NoError(t, m.Execute([]string{}))
 }

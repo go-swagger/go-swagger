@@ -6,7 +6,6 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -32,7 +31,6 @@ func NewUpdateOneParams() UpdateOneParams {
 //
 // swagger:parameters updateOne
 type UpdateOneParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -40,6 +38,7 @@ type UpdateOneParams struct {
 	  In: body
 	*/
 	Body *models.Item
+
 	/*
 	  Required: true
 	  In: path
@@ -57,7 +56,9 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Item
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))
@@ -67,7 +68,7 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 				res = append(res, err)
 			}
 
-			ctx := validate.WithOperationRequest(context.Background())
+			ctx := validate.WithOperationRequest(r.Context())
 			if err := body.ContextValidate(ctx, route.Formats); err != nil {
 				res = append(res, err)
 			}

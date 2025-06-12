@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 )
 
 const (
@@ -144,7 +145,7 @@ func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "", b.String())
+	assert.Empty(t, b.String())
 
 	templ, err = repo.Get("T1")
 	require.NoError(t, err)
@@ -576,7 +577,7 @@ func TestFuncMap_DropPackage(t *testing.T) {
 }
 
 func TestFuncMap_AsJSON(t *testing.T) {
-	for _, jsonFunc := range []func(interface{}) (string, error){
+	for _, jsonFunc := range []func(any) (string, error){
 		asJSON,
 		asPrettyJSON,
 	} {
@@ -598,7 +599,7 @@ func TestFuncMap_AsJSON(t *testing.T) {
 func TestFuncMap_Dict(t *testing.T) {
 	d, err := dict("a", "b", "c", "d")
 	require.NoError(t, err)
-	assert.Equal(t, map[string]interface{}{"a": "b", "c": "d"}, d)
+	assert.Equal(t, map[string]any{"a": "b", "c": "d"}, d)
 
 	// odd number of arguments
 	_, err = dict("a", "b", "c")
@@ -616,7 +617,7 @@ func TestIsInteger(t *testing.T) {
 		nilFloat  *float32
 	)
 
-	for _, anInteger := range []interface{}{
+	for _, anInteger := range []any{
 		int8(4),
 		int16(4),
 		int32(4),
@@ -639,7 +640,7 @@ func TestIsInteger(t *testing.T) {
 		require.Truef(t, isInteger(val), "expected %#v to be detected an integer value", val)
 	}
 
-	for _, notAnInteger := range []interface{}{
+	for _, notAnInteger := range []any{
 		float32(12.5),
 		float64(12.5),
 		swag.Float32(12.5),

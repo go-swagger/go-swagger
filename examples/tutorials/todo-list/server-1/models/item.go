@@ -75,7 +75,7 @@ func (m *Item) ContextValidate(ctx context.Context, formats strfmt.Registry) err
 
 func (m *Item) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 

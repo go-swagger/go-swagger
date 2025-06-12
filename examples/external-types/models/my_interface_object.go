@@ -18,7 +18,7 @@ import (
 
 // MyInterfaceObject This object demonstrates several ways to refer to an external interface.
 //
-// The generated code behaves as it is an interface{}: no pointers are generated, and no valication
+// The generated code behaves as it is an interface{}: no pointers are generated, and no validation
 // is required.
 //
 // swagger:model MyInterfaceObject
@@ -78,7 +78,7 @@ func (m *MyInterfaceObject) validateIface2(formats strfmt.Registry) error {
 
 func (m *MyInterfaceObject) validateIface3(formats strfmt.Registry) error {
 
-	if err := validate.Required("iface3", "body", jsonext.RawMessage(m.Iface3)); err != nil {
+	if err := validate.Required("iface3", "body", m.Iface3); err != nil {
 		return err
 	}
 

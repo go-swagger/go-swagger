@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -19,10 +18,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-openapi/runtime/flagext"
-	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
+
+	"github.com/go-openapi/runtime/flagext"
+	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/examples/todo-list-strict/restapi/operations"
 )
@@ -43,8 +43,8 @@ func init() {
 	}
 }
 
-// NewServer creates a new api todo list server but does not configure it
-func NewServer(api *operations.TodoListAPI) *Server {
+// NewServer creates a new api simple to do list API server but does not configure it
+func NewServer(api *operations.SimpleToDoListAPIAPI) *Server {
 	s := new(Server)
 
 	s.shutdown = make(chan struct{})
@@ -67,14 +67,14 @@ func (s *Server) ConfigureFlags() {
 	}
 }
 
-// Server for the todo list API
+// Server for the simple to do list API API
 type Server struct {
 	EnabledListeners []string         `long:"scheme" description:"the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec"`
 	CleanupTimeout   time.Duration    `long:"cleanup-timeout" description:"grace period for which to wait before killing idle connections" default:"10s"`
 	GracefulTimeout  time.Duration    `long:"graceful-timeout" description:"grace period for which to wait before shutting down the server" default:"15s"`
 	MaxHeaderSize    flagext.ByteSize `long:"max-header-size" description:"controls the maximum number of bytes the server will read parsing the request header's keys and values, including the request line. It does not limit the size of the request body." default:"1MiB"`
 
-	SocketPath    flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/todo-list.sock"`
+	SocketPath    flags.Filename `long:"socket-path" description:"the unix socket to listen on" default:"/var/run/simple-to-do-list-api.sock"`
 	domainSocketL net.Listener
 
 	Host         string        `long:"host" description:"the IP to listen on" default:"localhost" env:"HOST"`
@@ -82,7 +82,7 @@ type Server struct {
 	ListenLimit  int           `long:"listen-limit" description:"limit the number of outstanding requests"`
 	KeepAlive    time.Duration `long:"keep-alive" description:"sets the TCP keep-alive timeouts on accepted connections. It prunes dead TCP connections ( e.g. closing laptop mid-download)" default:"3m"`
 	ReadTimeout  time.Duration `long:"read-timeout" description:"maximum duration before timing out read of the request" default:"30s"`
-	WriteTimeout time.Duration `long:"write-timeout" description:"maximum duration before timing out write of the response" default:"60s"`
+	WriteTimeout time.Duration `long:"write-timeout" description:"maximum duration before timing out write of the response" default:"30s"`
 	httpServerL  net.Listener
 
 	TLSHost           string         `long:"tls-host" description:"the IP to listen on for tls, when not specified it's the same as --host" env:"TLS_HOST"`
@@ -96,7 +96,7 @@ type Server struct {
 	TLSWriteTimeout   time.Duration  `long:"tls-write-timeout" description:"maximum duration before timing out write of the response"`
 	httpsServerL      net.Listener
 
-	api          *operations.TodoListAPI
+	api          *operations.SimpleToDoListAPIAPI
 	handler      http.Handler
 	hasListeners bool
 	shutdown     chan struct{}
@@ -106,7 +106,7 @@ type Server struct {
 }
 
 // Logf logs message either via defined user logger or via system one if no user logger is defined.
-func (s *Server) Logf(f string, args ...interface{}) {
+func (s *Server) Logf(f string, args ...any) {
 	if s.api != nil && s.api.Logger != nil {
 		s.api.Logger(f, args...)
 	} else {
@@ -116,7 +116,7 @@ func (s *Server) Logf(f string, args ...interface{}) {
 
 // Fatalf logs message either via defined user logger or via system one if no user logger is defined.
 // Exits with non-zero status after printing
-func (s *Server) Fatalf(f string, args ...interface{}) {
+func (s *Server) Fatalf(f string, args ...any) {
 	if s.api != nil && s.api.Logger != nil {
 		s.api.Logger(f, args...)
 		os.Exit(1)
@@ -126,7 +126,7 @@ func (s *Server) Fatalf(f string, args ...interface{}) {
 }
 
 // SetAPI configures the server with the specified API. Needs to be called before Serve
-func (s *Server) SetAPI(api *operations.TodoListAPI) {
+func (s *Server) SetAPI(api *operations.SimpleToDoListAPIAPI) {
 	if api == nil {
 		s.api = nil
 		s.handler = nil
@@ -187,13 +187,13 @@ func (s *Server) Serve() (err error) {
 
 		servers = append(servers, domainSocket)
 		wg.Add(1)
-		s.Logf("Serving todo list at unix://%s", s.SocketPath)
+		s.Logf("Serving simple to do list API at unix://%s", s.SocketPath)
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := domainSocket.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := domainSocket.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
-			s.Logf("Stopped serving todo list at unix://%s", s.SocketPath)
+			s.Logf("Stopped serving simple to do list API at unix://%s", s.SocketPath)
 		}(s.domainSocketL)
 	}
 
@@ -217,13 +217,13 @@ func (s *Server) Serve() (err error) {
 
 		servers = append(servers, httpServer)
 		wg.Add(1)
-		s.Logf("Serving todo list at http://%s", s.httpServerL.Addr())
+		s.Logf("Serving simple to do list API at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := httpServer.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := httpServer.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
-			s.Logf("Stopped serving todo list at http://%s", l.Addr())
+			s.Logf("Stopped serving simple to do list API at http://%s", l.Addr())
 		}(s.httpServerL)
 	}
 
@@ -282,7 +282,7 @@ func (s *Server) Serve() (err error) {
 			caCertPool := x509.NewCertPool()
 			ok := caCertPool.AppendCertsFromPEM(caCert)
 			if !ok {
-				return fmt.Errorf("cannot parse CA certificate")
+				return errors.New("cannot parse CA certificate")
 			}
 			httpsServer.TLSConfig.ClientCAs = caCertPool
 			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
@@ -310,13 +310,13 @@ func (s *Server) Serve() (err error) {
 
 		servers = append(servers, httpsServer)
 		wg.Add(1)
-		s.Logf("Serving todo list at https://%s", s.httpsServerL.Addr())
+		s.Logf("Serving simple to do list API at https://%s", s.httpsServerL.Addr())
 		go func(l net.Listener) {
 			defer wg.Done()
-			if err := httpsServer.Serve(l); err != nil && err != http.ErrServerClosed {
-				s.Fatalf("%v", err)
+			if errServe := httpsServer.Serve(l); errServe != nil && !errors.Is(errServe, http.ErrServerClosed) {
+				s.Fatalf("%v", errServe)
 			}
-			s.Logf("Stopped serving todo list at https://%s", l.Addr())
+			s.Logf("Stopped serving simple to do list API at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
 	}
 

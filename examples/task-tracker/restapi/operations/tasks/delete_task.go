@@ -12,16 +12,16 @@ import (
 )
 
 // DeleteTaskHandlerFunc turns a function with the right signature into a delete task handler
-type DeleteTaskHandlerFunc func(DeleteTaskParams, interface{}) middleware.Responder
+type DeleteTaskHandlerFunc func(DeleteTaskParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn DeleteTaskHandlerFunc) Handle(params DeleteTaskParams, principal interface{}) middleware.Responder {
+func (fn DeleteTaskHandlerFunc) Handle(params DeleteTaskParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // DeleteTaskHandler interface for that can handle valid delete task params
 type DeleteTaskHandler interface {
-	Handle(DeleteTaskParams, interface{}) middleware.Responder
+	Handle(DeleteTaskParams, any) middleware.Responder
 }
 
 // NewDeleteTask creates a new http.Handler for the delete task operation
@@ -55,9 +55,9 @@ func (o *DeleteTask) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

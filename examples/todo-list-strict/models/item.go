@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -50,7 +52,30 @@ func (m *Item) validateDescription(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("description", "body", string(*m.Description), 1); err != nil {
+	if err := validate.MinLength("description", "body", *m.Description, 1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this item based on the context it is used
+func (m *Item) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Item) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 

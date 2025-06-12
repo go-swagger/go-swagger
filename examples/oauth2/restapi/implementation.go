@@ -3,18 +3,18 @@ package restapi
 // THIS CODE HAS NOT BEEN GENERATED
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 
-	"context"
-
 	oidc "github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -58,7 +58,7 @@ var (
 func login(r *http.Request) middleware.Responder {
 	// implements the login with a redirection
 	return middleware.ResponderFunc(
-		func(w http.ResponseWriter, pr runtime.Producer) {
+		func(w http.ResponseWriter, _ runtime.Producer) {
 			http.Redirect(w, r, config.AuthCodeURL(state), http.StatusFound)
 		})
 }
@@ -101,7 +101,7 @@ func authenticated(token string) (bool, error) {
 	bearToken := "Bearer " + token
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
-		return false, fmt.Errorf("http request: %v", err)
+		return false, fmt.Errorf("http request: %w", err)
 	}
 
 	req.Header.Add("Authorization", bearToken)
@@ -109,13 +109,13 @@ func authenticated(token string) (bool, error) {
 	cli := &http.Client{}
 	resp, err := cli.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("http request: %v", err)
+		return false, fmt.Errorf("http request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	_, err = io.ReadAll(resp.Body)
 	if err != nil {
-		return false, fmt.Errorf("fail to get response: %v", err)
+		return false, fmt.Errorf("fail to get response: %w", err)
 	}
 	if resp.StatusCode != 200 {
 		return false, nil

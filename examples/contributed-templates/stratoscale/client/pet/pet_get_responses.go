@@ -7,6 +7,7 @@ package pet
 
 import (
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"io"
 
@@ -22,7 +23,7 @@ type PetGetReader struct {
 }
 
 // ReadResponse reads a server response into the received o.
-func (o *PetGetReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (interface{}, error) {
+func (o *PetGetReader) ReadResponse(response runtime.ClientResponse, consumer runtime.Consumer) (any, error) {
 	switch response.Code() {
 	case 200:
 		result := NewPetGetOK()
@@ -110,7 +111,7 @@ func (o *PetGetOK) readResponse(response runtime.ClientResponse, consumer runtim
 	o.Payload = new(models.Pet)
 
 	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
 		return err
 	}
 

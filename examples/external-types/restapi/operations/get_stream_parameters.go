@@ -25,7 +25,6 @@ func NewGetStreamParams() GetStreamParams {
 //
 // swagger:parameters GetStream
 type GetStreamParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

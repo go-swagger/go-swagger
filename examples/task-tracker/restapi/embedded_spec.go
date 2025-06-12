@@ -688,13 +688,13 @@ func init() {
       ],
       "properties": {
         "admin": {
-          "description": "Only employees of the owning company can be admins.\nAdmins are like project owners but have access to all the projects in the application.\nThere aren't many admins, and it's only used for extremly critical issues with the application.\n",
+          "description": "Only employees of the owning company can be admins.\nAdmins are like project owners but have access to all the projects in the application.\nThere aren't many admins, and it's only used for extremely critical issues with the application.\n",
           "type": "boolean",
           "title": "When true this user is an admin.",
           "readOnly": true
         },
         "availableKarma": {
-          "description": "In this application users get a cerain amount of karma alotted.\nThis karma can be donated to other users to show appreciation, or it can be used\nby a user to vote on issues.\nOnce an issue is closed or rejected, the user gets his karma back.\n",
+          "description": "In this application users get a cerain amount of karma allotted.\nThis karma can be donated to other users to show appreciation, or it can be used\nby a user to vote on issues.\nOnce an issue is closed or rejected, the user gets his karma back.\n",
           "type": "number",
           "format": "float32",
           "title": "The amount of karma this user has available.",
@@ -1593,13 +1593,13 @@ func init() {
       ],
       "properties": {
         "admin": {
-          "description": "Only employees of the owning company can be admins.\nAdmins are like project owners but have access to all the projects in the application.\nThere aren't many admins, and it's only used for extremly critical issues with the application.\n",
+          "description": "Only employees of the owning company can be admins.\nAdmins are like project owners but have access to all the projects in the application.\nThere aren't many admins, and it's only used for extremely critical issues with the application.\n",
           "type": "boolean",
           "title": "When true this user is an admin.",
           "readOnly": true
         },
         "availableKarma": {
-          "description": "In this application users get a cerain amount of karma alotted.\nThis karma can be donated to other users to show appreciation, or it can be used\nby a user to vote on issues.\nOnce an issue is closed or rejected, the user gets his karma back.\n",
+          "description": "In this application users get a cerain amount of karma allotted.\nThis karma can be donated to other users to show appreciation, or it can be used\nby a user to vote on issues.\nOnce an issue is closed or rejected, the user gets his karma back.\n",
           "type": "number",
           "format": "float32",
           "title": "The amount of karma this user has available.",

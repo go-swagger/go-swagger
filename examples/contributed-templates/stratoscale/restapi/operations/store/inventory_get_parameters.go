@@ -25,7 +25,6 @@ func NewInventoryGetParams() InventoryGetParams {
 //
 // swagger:parameters InventoryGet
 type InventoryGetParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 }

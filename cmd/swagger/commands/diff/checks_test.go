@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-openapi/spec"
 )
 
 func Test_getRef(t *testing.T) {
@@ -19,19 +20,23 @@ func Test_getRef(t *testing.T) {
 		args args
 		want spec.Ref
 	}{
-		{name: "rando object",
+		{
+			name: "rando object",
 			args: args{item: "bob"},
 			want: spec.Ref{},
 		},
-		{name: "refable",
+		{
+			name: "refable",
 			args: args{&spec.Refable{Ref: aRef}},
 			want: aRef,
 		},
-		{name: "schema",
+		{
+			name: "schema",
 			args: args{&spec.Schema{SchemaProps: spec.SchemaProps{Ref: aRef}}},
 			want: aRef,
 		},
-		{name: "schemaProps",
+		{
+			name: "schemaProps",
 			args: args{&spec.SchemaProps{Ref: aRef}},
 			want: aRef,
 		},
@@ -169,7 +174,6 @@ func Test_isRef(t *testing.T) {
 
 	ro := time.Timer{}
 	assert.False(t, isRefType(ro))
-
 }
 
 func Test_compareEnums(t *testing.T) {

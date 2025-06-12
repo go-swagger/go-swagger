@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+
 	"github.com/go-swagger/go-swagger/examples/auto-configure/models"
 	"github.com/go-swagger/go-swagger/examples/auto-configure/restapi/operations/todos"
 )
@@ -19,7 +20,9 @@ type TodosHandlerImpl struct {
 	idx int64
 }
 
-func (i *TodosHandlerImpl) AddOne(params todos.AddOneParams, principal interface{}) middleware.Responder {
+func (i *TodosHandlerImpl) AddOne(params todos.AddOneParams, principal any) middleware.Responder {
+	_ = principal
+
 	i.lock.Lock()
 	defer i.lock.Unlock()
 	newItem := params.Body
@@ -38,7 +41,9 @@ func (i *TodosHandlerImpl) AddOne(params todos.AddOneParams, principal interface
 	return todos.NewAddOneCreated().WithPayload(newItem)
 }
 
-func (i *TodosHandlerImpl) DestroyOne(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+func (i *TodosHandlerImpl) DestroyOne(params todos.DestroyOneParams, principal any) middleware.Responder {
+	_ = principal
+
 	i.lock.Lock()
 	defer i.lock.Unlock()
 	if _, ok := i.items[params.ID]; !ok {
@@ -52,7 +57,9 @@ func (i *TodosHandlerImpl) DestroyOne(params todos.DestroyOneParams, principal i
 	return todos.NewDestroyOneNoContent()
 }
 
-func (i *TodosHandlerImpl) FindTodos(params todos.FindTodosParams, principal interface{}) middleware.Responder {
+func (i *TodosHandlerImpl) FindTodos(params todos.FindTodosParams, principal any) middleware.Responder {
+	_ = principal
+
 	i.lock.Lock()
 	defer i.lock.Unlock()
 	mergedParams := todos.NewFindTodosParams()
@@ -78,7 +85,9 @@ func (i *TodosHandlerImpl) FindTodos(params todos.FindTodosParams, principal int
 	return todos.NewFindTodosOK().WithPayload(result)
 }
 
-func (i *TodosHandlerImpl) UpdateOne(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+func (i *TodosHandlerImpl) UpdateOne(params todos.UpdateOneParams, principal any) middleware.Responder {
+	_ = principal
+
 	i.lock.Lock()
 	defer i.lock.Unlock()
 

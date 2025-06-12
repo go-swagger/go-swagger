@@ -27,7 +27,6 @@ func NewFindPetsByTagsParams() FindPetsByTagsParams {
 //
 // swagger:parameters findPetsByTags
 type FindPetsByTagsParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -46,7 +45,6 @@ func (o *FindPetsByTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qTags, qhkTags, _ := qs.GetOK("tags")

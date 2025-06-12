@@ -5,10 +5,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/require"
 )
 
 type externalTypeFixture struct {
@@ -350,7 +351,7 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			require.NotNil(t, extType)
 
 			tpe, pkg, alias := r.knownDefGoType("A", schema, r.goTypeName)
-			require.EqualValuesf(t,
+			require.Equal(t,
 				struct{ tpe, pkg, alias string }{tpe, pkg, alias},
 				fixture.knownDefs,
 				"fixture %d", i,
@@ -358,10 +359,10 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 
 			resolved := r.shortCircuitResolveExternal(tpe, pkg, alias, extType, &schema, false)
 
-			require.EqualValues(t, fixture.expected, extType)
+			require.Equal(t, fixture.expected, extType)
 
 			resolved.Extensions = nil // don't assert this
-			require.EqualValuesf(t, fixture.resolved, resolved, "fixture %d", i)
+			require.Equal(t, fixture.resolved, resolved, "fixture %d", i)
 		})
 	}
 }
@@ -424,7 +425,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 					MinItems: swag.Int64(15),
 					Maximum:  swag.Float64(12.00),
 					Pattern:  "xyz",
-					Enum:     []interface{}{"x", 34},
+					Enum:     []any{"x", 34},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -494,7 +495,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 					CommonValidations: spec.CommonValidations{
 						MinLength: swag.Int64(15),
 						Pattern:   "xyz",
-						Enum:      []interface{}{"x", 34},
+						Enum:      []any{"x", 34},
 					},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {
@@ -510,7 +511,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 					CommonValidations: spec.CommonValidations{
 						MinLength: swag.Int64(15),
 						Pattern:   "xyz",
-						Enum:      []interface{}{"x", 34},
+						Enum:      []any{"x", 34},
 					},
 				}),
 			Asserter: func(t testing.TB, val spec.SchemaValidations) {

@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -214,11 +215,15 @@ func (m *Zzz) validateBeta(formats strfmt.Registry) error {
 	for i := 0; i < len(m.Beta); i++ {
 
 		if err := m.Beta[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("beta" + "." + strconv.Itoa(i))
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("beta" + "." + strconv.Itoa(i))
 			}
+
 			return err
 		}
 
@@ -233,11 +238,15 @@ func (m *Zzz) validateDelta(formats strfmt.Registry) error {
 	}
 
 	if err := m.Delta.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("delta")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("delta")
 		}
+
 		return err
 	}
 
@@ -252,11 +261,15 @@ func (m *Zzz) validateEpsilon(formats strfmt.Registry) error {
 	for i := 0; i < len(m.Epsilon); i++ {
 
 		if err := m.Epsilon[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("epsilon" + "." + strconv.Itoa(i))
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("epsilon" + "." + strconv.Itoa(i))
 			}
+
 			return err
 		}
 
@@ -271,11 +284,15 @@ func (m *Zzz) validateGamma(formats strfmt.Registry) error {
 	}
 
 	if err := m.Gamma.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("gamma")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("gamma")
 		}
+
 		return err
 	}
 
@@ -288,11 +305,15 @@ func (m *Zzz) validateMeta(formats strfmt.Registry) error {
 	}
 
 	if err := m.Meta.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("meta")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("meta")
 		}
+
 		return err
 	}
 
@@ -317,11 +338,15 @@ func (m *Zzz) validateNullableBeta(formats strfmt.Registry) error {
 
 		if m.NullableBeta[i] != nil {
 			if err := m.NullableBeta[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("nullableBeta" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("nullableBeta" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -338,11 +363,15 @@ func (m *Zzz) validateNullableDelta(formats strfmt.Registry) error {
 
 	if m.NullableDelta != nil {
 		if err := m.NullableDelta.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("nullableDelta")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("nullableDelta")
 			}
+
 			return err
 		}
 	}
@@ -362,11 +391,15 @@ func (m *Zzz) validateNullableEpsilon(formats strfmt.Registry) error {
 
 		if m.NullableEpsilon[i] != nil {
 			if err := m.NullableEpsilon[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("nullableEpsilon" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("nullableEpsilon" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -383,11 +416,15 @@ func (m *Zzz) validateNullableGamma(formats strfmt.Registry) error {
 
 	if m.NullableGamma != nil {
 		if err := m.NullableGamma.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("nullableGamma")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("nullableGamma")
 			}
+
 			return err
 		}
 	}
@@ -401,11 +438,15 @@ func (m *Zzz) validateNullableMeta(formats strfmt.Registry) error {
 	}
 
 	if err := m.NullableMeta.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("nullableMeta")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("nullableMeta")
 		}
+
 		return err
 	}
 
@@ -421,11 +462,15 @@ func (m *Zzz) validateReqBeta(formats strfmt.Registry) error {
 	for i := 0; i < len(m.ReqBeta); i++ {
 
 		if err := m.ReqBeta[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqBeta" + "." + strconv.Itoa(i))
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqBeta" + "." + strconv.Itoa(i))
 			}
+
 			return err
 		}
 
@@ -446,11 +491,15 @@ func (m *Zzz) validateReqDelta(formats strfmt.Registry) error {
 
 	if m.ReqDelta != nil {
 		if err := m.ReqDelta.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqDelta")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqDelta")
 			}
+
 			return err
 		}
 	}
@@ -467,11 +516,15 @@ func (m *Zzz) validateReqEpsilon(formats strfmt.Registry) error {
 	for i := 0; i < len(m.ReqEpsilon); i++ {
 
 		if err := m.ReqEpsilon[i].Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqEpsilon" + "." + strconv.Itoa(i))
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqEpsilon" + "." + strconv.Itoa(i))
 			}
+
 			return err
 		}
 
@@ -488,11 +541,15 @@ func (m *Zzz) validateReqGamma(formats strfmt.Registry) error {
 
 	if m.ReqGamma != nil {
 		if err := m.ReqGamma.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqGamma")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqGamma")
 			}
+
 			return err
 		}
 	}
@@ -508,11 +565,15 @@ func (m *Zzz) validateReqMeta(formats strfmt.Registry) error {
 
 	if m.ReqMeta != nil {
 		if err := m.ReqMeta.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqMeta")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqMeta")
 			}
+
 			return err
 		}
 	}
@@ -549,11 +610,15 @@ func (m *Zzz) contextValidateMeta(ctx context.Context, formats strfmt.Registry) 
 	}
 
 	if err := m.Meta.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("meta")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("meta")
 		}
+
 		return err
 	}
 
@@ -567,11 +632,15 @@ func (m *Zzz) contextValidateNullableMeta(ctx context.Context, formats strfmt.Re
 	}
 
 	if err := m.NullableMeta.ContextValidate(ctx, formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
 			return ve.ValidateName("nullableMeta")
-		} else if ce, ok := err.(*errors.CompositeError); ok {
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
 			return ce.ValidateName("nullableMeta")
 		}
+
 		return err
 	}
 
@@ -583,11 +652,15 @@ func (m *Zzz) contextValidateReqMeta(ctx context.Context, formats strfmt.Registr
 	if m.ReqMeta != nil {
 
 		if err := m.ReqMeta.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("reqMeta")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("reqMeta")
 			}
+
 			return err
 		}
 	}

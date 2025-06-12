@@ -45,37 +45,62 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		TasksAddCommentToTaskHandler: tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal interface{}) middleware.Responder {
+		TasksAddCommentToTaskHandler: tasks.AddCommentToTaskHandlerFunc(func(params tasks.AddCommentToTaskParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 		}),
-		TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal interface{}) middleware.Responder {
+		TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
 		}),
-		TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal interface{}) middleware.Responder {
+		TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
 		}),
 		TasksGetTaskCommentsHandler: tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
 		}),
 		TasksGetTaskDetailsHandler: tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
 		}),
 		TasksListTasksHandler: tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
 		}),
-		TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal interface{}) middleware.Responder {
+		TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
 		}),
-		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal interface{}) middleware.Responder {
+		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation tasks.UploadTaskFile has not yet been implemented")
 		}),
 
 		// Applies when the "token" query is set
-		APIKeyAuth: func(token string) (interface{}, error) {
+		APIKeyAuth: func(token string) (any, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (api_key) token from query param [token] has not yet been implemented")
 		},
 		// Applies when the "X-Token" header is set
-		TokenHeaderAuth: func(token string) (interface{}, error) {
+		TokenHeaderAuth: func(token string) (any, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (token_header) X-Token from header param [X-Token] has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
@@ -128,11 +153,11 @@ type TaskTrackerAPI struct {
 
 	// APIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key token provided in the query
-	APIKeyAuth func(string) (interface{}, error)
+	APIKeyAuth func(string) (any, error)
 
 	// TokenHeaderAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-Token provided in the header
-	TokenHeaderAuth func(string) (interface{}, error)
+	TokenHeaderAuth func(string) (any, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -170,7 +195,7 @@ type TaskTrackerAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -292,6 +317,7 @@ func (o *TaskTrackerAPI) AuthenticatorsFor(schemes map[string]spec.SecuritySchem
 
 		}
 	}
+
 	return result
 }
 
@@ -301,6 +327,7 @@ func (o *TaskTrackerAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
@@ -316,16 +343,17 @@ func (o *TaskTrackerAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Co
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *TaskTrackerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/vnd.goswagger.examples.task-tracker.v1+json":
+		if mt == "application/vnd.goswagger.examples.task-tracker.v1+json" {
 			result["application/vnd.goswagger.examples.task-tracker.v1+json"] = o.JSONProducer
 		}
 
@@ -333,6 +361,7 @@ func (o *TaskTrackerAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pr
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

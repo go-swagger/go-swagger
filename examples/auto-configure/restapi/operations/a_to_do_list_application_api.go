@@ -44,21 +44,35 @@ func NewAToDoListApplicationAPI(spec *loads.Document) *AToDoListApplicationAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+		TodosAddOneHandler: todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 		}),
-		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
 		}),
-		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams, principal interface{}) middleware.Responder {
+		TodosFindTodosHandler: todos.FindTodosHandlerFunc(func(params todos.FindTodosParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation todos.FindTodos has not yet been implemented")
 		}),
-		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation todos.UpdateOne has not yet been implemented")
 		}),
 
 		// Applies when the "x-todolist-token" header is set
-		KeyAuth: func(token string) (interface{}, error) {
+		KeyAuth: func(token string) (any, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (key) x-todolist-token from header param [x-todolist-token] has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
@@ -101,7 +115,7 @@ type AToDoListApplicationAPI struct {
 
 	// KeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key x-todolist-token provided in the header
-	KeyAuth func(string) (interface{}, error)
+	KeyAuth func(string) (any, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -131,7 +145,7 @@ type AToDoListApplicationAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -224,13 +238,12 @@ func (o *AToDoListApplicationAPI) ServeErrorFor(operationID string) func(http.Re
 func (o *AToDoListApplicationAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
-		switch name {
-		case "key":
+		if name == "key" {
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.KeyAuth)
-
 		}
 	}
+
 	return result
 }
 
@@ -240,12 +253,12 @@ func (o *AToDoListApplicationAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *AToDoListApplicationAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/io.goswagger.examples.todo-list.v1+json":
+		if mt == "application/io.goswagger.examples.todo-list.v1+json" {
 			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONConsumer
 		}
 
@@ -253,16 +266,17 @@ func (o *AToDoListApplicationAPI) ConsumersFor(mediaTypes []string) map[string]r
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *AToDoListApplicationAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/io.goswagger.examples.todo-list.v1+json":
+		if mt == "application/io.goswagger.examples.todo-list.v1+json" {
 			result["application/io.goswagger.examples.todo-list.v1+json"] = o.JSONProducer
 		}
 
@@ -270,6 +284,7 @@ func (o *AToDoListApplicationAPI) ProducersFor(mediaTypes []string) map[string]r
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 
@@ -361,6 +376,6 @@ func (o *AToDoListApplicationAPI) AddMiddlewareFor(method, path string, builder 
 	}
 	o.Init()
 	if h, ok := o.handlers[um][path]; ok {
-		o.handlers[method][path] = builder(h)
+		o.handlers[um][path] = builder(h)
 	}
 }

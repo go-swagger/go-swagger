@@ -23,6 +23,7 @@ import (
 
 func configureFlags(api *operations.OauthSampleAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.OauthSampleAPI) http.Handler {
@@ -30,7 +31,7 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	api.Logger = log.Printf
@@ -40,6 +41,8 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	api.OauthSecurityAuth = func(token string, scopes []string) (*models.Principal, error) {
+		_ = scopes
+
 		ok, err := authenticated(token)
 		if err != nil {
 			return nil, errors.New(401, "error authenticate")
@@ -48,8 +51,8 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 			return nil, errors.New(401, "invalid token")
 		}
 		prin := models.Principal(token)
-		return &prin, nil
 
+		return &prin, nil
 	}
 
 	// Set your custom authorizer if needed. Default one is security.Authorized()
@@ -69,9 +72,15 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 		return login(params.HTTPRequest)
 	})
 	api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+		_ = params
+		_ = principal
+
 		return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 	})
 	api.CustomersGetIDHandler = customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+		_ = params
+		_ = principal
+
 		log.Println("hit customer API")
 		return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
 	})
@@ -84,13 +93,17 @@ func configureAPI(api *operations.OauthSampleAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // This demonstrates how to enrich and pass custom context keys.
@@ -110,7 +123,6 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 		handler.ServeHTTP(w, r.WithContext(rctx))
 	}
 	return http.HandlerFunc(ourFunc)
-
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.

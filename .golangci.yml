@@ -5,11 +5,13 @@ linters:
     - errorlint
     - gocritic
     - gosec
+    - ineffassign
     - misspell
     - revive
     - staticcheck
     - testifylint
     - unconvert
+    - unused
   disable:
     - dupl
     - gochecknoglobals
@@ -33,8 +35,9 @@ linters:
     gocyclo:
       min-complexity: 25
     govet:
-      enable:
-        - shadow
+      enable-all: true
+      disable:
+        - fieldalignment
     testifylint:
       enable:
         - bool-compare
@@ -47,41 +50,45 @@ linters:
         - require-error
         - suite-dont-use-pkg
         - suite-extra-assert-call
-      disable:
         - float-compare
         - go-require
   exclusions:
-    generated: lax
+    warn-unused: false
+    generated: disable  # enable linting on generated code (in examples, in generated code under test)
     presets:
       - comments
       - common-false-positives
       - legacy
       - std-error-handling
     paths:
-      - playground
-      - fixtures
-      - cmd
-      - third_party$
-      - builtin$
-      - examples$
+      - fixtures/
+      - examples/
+    rules:
+      # do not exclude examples from linting, but apply slightly different rules
+      - path: examples/
+        linters:
+          - gofumpt # we don't run gofumpt on generated examples, only goimports
+      - path: 'generator/generated/'
+        linters:
+          - gofumpt # we don't run gofumpt on generated code (used during testing)
+      - path: _test.go
+        linters:
+          - unparam
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  new: true
+  new: false
 formatters:
   enable:
     - gofumpt
     - goimports
   settings:
+    # local prefixes regroup imports from these packages
     goimports:
       local-prefixes:
-        - github.com/go-swagger/go-swagger
+        - github.com/go-openapi
+        - github.com/go-swagger/go-swagger # this is for imports in generated examples
   exclusions:
-    generated: lax
+    # do not exclude examples from linting
     paths:
-      - playground
-      - fixtures
-      - cmd
-      - third_party$
-      - builtin$
-      - examples$
+      - fixtures/

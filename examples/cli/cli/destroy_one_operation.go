@@ -11,8 +11,9 @@ import (
 
 	"github.com/go-swagger/go-swagger/examples/cli/client/todos"
 
-	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
+
+	"github.com/go-openapi/swag"
 )
 
 // makeOperationTodosDestroyOneCmd returns a command to handle operation destroyOne
@@ -109,8 +110,8 @@ func retrieveOperationTodosDestroyOneIDFlag(m *todos.DestroyOneParams, cmdPrefix
 // parseOperationTodosDestroyOneResult parses request result and return the string content
 func parseOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respErr error) (string, error) {
 	if respErr != nil {
-
-		var iRespD interface{} = respErr
+		// default response
+		var iRespD any = respErr
 		respD, ok := iRespD.(*todos.DestroyOneDefault)
 		if ok {
 			if !swag.IsZero(respD) && !swag.IsZero(respD.Payload) {
@@ -122,12 +123,12 @@ func parseOperationTodosDestroyOneResult(resp0 *todos.DestroyOneNoContent, respE
 			}
 		}
 
+		// responses
 		// Non schema case: warning destroyOneNoContent is not supported
-
 		return "", respErr
 	}
 
+	// success responses
 	// warning: non schema response destroyOneNoContent is not supported by go-swagger cli yet.
-
 	return "", nil
 }
