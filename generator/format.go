@@ -21,8 +21,8 @@ func formatGo(filename string, content []byte) ([]byte, error) {
 	}
 
 	mergeImports(file)
-	cleanImports(fset, file)
-	removeUnecessaryImportParens(fset, file)
+	cleanImports(file)
+	removeUnecessaryImportParens(file)
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
@@ -75,7 +75,7 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 	return fset, file, nil
 }
 
-func cleanImports(fset *token.FileSet, file *ast.File) {
+func cleanImports(file *ast.File) {
 	seen := make(map[string]*ast.ImportSpec)
 	shouldRemove := []*ast.ImportSpec{}
 	usedNames := collectTopNames(file)
@@ -101,11 +101,11 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 		seen[name] = impt
 	}
 	for _, impt := range shouldRemove {
-		deleteImportSpec(fset, file, impt)
+		deleteImportSpec(file, impt)
 	}
 }
 
-func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec) {
+func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
 	// remove from file.Imports
 	i := slices.IndexFunc(file.Imports, func(i *ast.ImportSpec) bool {
 		return i == spec
@@ -131,7 +131,7 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 	gen.Specs = slices.Delete(gen.Specs, i, i+1)
 }
 
-func removeUnecessaryImportParens(fset *token.FileSet, file *ast.File) {
+func removeUnecessaryImportParens(file *ast.File) {
 	for _, decl := range file.Decls {
 		gen, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -250,8 +250,20 @@ func importPathToAssumedName(importPath string) string {
 // notIdentifier reports whether ch is an invalid identifier character.
 // it is taken from [tools/internal/imports/fix.go](https://github.com/golang/tools/blob/v0.33.0/internal/imports/fix.go#L1233)
 func notIdentifier(ch rune) bool {
-	return !('a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' ||
-		'0' <= ch && ch <= '9' ||
-		ch == '_' ||
-		ch >= utf8.RuneSelf && (unicode.IsLetter(ch) || unicode.IsDigit(ch)))
+	if 'a' <= ch && ch <= 'z' {
+		return false
+	}
+	if 'A' <= ch && ch <= 'Z' {
+		return false
+	}
+	if '0' <= ch && ch <= '9' {
+		return false
+	}
+	if ch == '_' {
+		return false
+	}
+	if ch < utf8.RuneSelf {
+		return true
+	}
+	return !unicode.IsLetter(ch) && !unicode.IsDigit(ch)
 }
