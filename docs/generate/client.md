@@ -8,6 +8,103 @@ weight: 20
 
 The toolkit has a command that will let you generate a client.
 
+### Quick Start Example
+
+Here is a minimal working example to help new users get started quickly.
+
+#### Step 1: Create a Swagger spec
+
+Create a file called `swagger.yaml`:
+
+```yaml
+swagger: "2.0"
+info:
+  title: "Todo API"
+  version: "1.0.0"
+host: "localhost:8080"
+schemes:
+  - http
+paths:
+  /todos:
+    get:
+      summary: "List all todos"
+      operationId: listTodos
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Todo"
+definitions:
+  Todo:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+```
+
+#### Step 2: Initialize a Go module
+
+```bash
+go mod init github.com/yourname/todo-client
+```
+
+#### Step 3: Generate the client
+
+```bash
+swagger generate client -f swagger.yaml -A todo
+```
+
+This will create the following structure:
+
+```
+.
+├── client
+│   ├── operations # or client/<tag>/ if tags are used
+│   │   ├── list_todos_parameters.go
+│   │   ├── list_todos_responses.go
+│   │   └── operations_client.go
+│   └── todo_client.go
+├── go.mod
+├── models
+│   └── todo.go
+└── swagger.yaml
+```
+
+> **Note:** If you add `tags` to your operations, go-swagger will group them under folders named after each tag. Without tags, all operations go into `client/operations/`.
+
+#### Step 4: Use the client
+
+```go
+package main
+
+import (
+  "fmt"
+  "log"
+
+  httptransport "github.com/go-openapi/runtime/client"
+  "github.com/go-openapi/strfmt"
+  "github.com/yourname/todo-client/client"
+  "github.com/yourname/todo-client/client/operations"
+)
+
+func main() {
+  transport := httptransport.New("localhost:8080", "", []string{"http"})
+  apiClient := client.New(transport, strfmt.Default)
+
+  params := operations.NewListTodosParams()
+  resp, err := apiClient.Operations.ListTodos(params)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  fmt.Printf("Todos: %+v\n", resp.Payload)
+}
+```
+
 ### Client usage
 
 ```
@@ -75,6 +172,9 @@ swagger generate client -f [http-url|filepath] -A [application-name] [--principa
 If you want to debug what the client is sending and receiving you can set the environment value DEBUG to a non-empty
 value.
 
+> **Note on folder structure:**
+> - If you do **not** use tags, operations will be placed in `client/operations`
+> - If you **do** use tags, operations will be grouped under folders named after each tag, e.g., `client/todo`
 
 Use a default client, which has an HTTP transport:
 
