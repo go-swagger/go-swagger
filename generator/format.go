@@ -12,6 +12,8 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/tools/go/ast/astutil"
 )
 
 func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, error) {
@@ -22,7 +24,7 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 	}
 
 	mergeImports(file)
-	cleanImports(file)
+	cleanImports(fset, file)
 	removeUnecessaryImportParens(file)
 
 	printConfig := &printer.Config{
@@ -76,7 +78,7 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 	return fset, file, nil
 }
 
-func cleanImports(file *ast.File) {
+func cleanImports(fset *token.FileSet, file *ast.File) {
 	seen := make(map[string]*ast.ImportSpec)
 	shouldRemove := []*ast.ImportSpec{}
 	usedNames := collectTopNames(file)
@@ -101,10 +103,43 @@ func cleanImports(file *ast.File) {
 		}
 		seen[name] = impt
 	}
+
+	for name := range usedNames {
+		if name == "_" || name == "." {
+			continue
+		}
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		if pkg, ok := autoImports[name]; ok {
+			if !astutil.AddImport(fset, file, pkg) {
+				panic("failed to add import " + pkg + " for " + name)
+			}
+		}
+	}
+
 	for _, impt := range shouldRemove {
 		deleteImportSpec(file, impt)
 	}
+
 	// TODO: group local pacages
+}
+
+func addImportSpec(file *ast.File, importPath string) {
+	spec := &ast.ImportSpec{
+		Name: nil,
+		Path: &ast.BasicLit{
+			Kind:  token.STRING,
+			Value: strconv.Quote(importPath),
+		},
+	}
+	file.Imports = append(file.Imports, spec)
+
+	gen, ok := file.Decls[0].(*ast.GenDecl)
+	if !ok {
+		return
+	}
+	gen.Specs = append(gen.Specs, spec)
 }
 
 func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
@@ -268,4 +303,33 @@ func notIdentifier(ch rune) bool {
 		return true
 	}
 	return !unicode.IsLetter(ch) && !unicode.IsDigit(ch)
+}
+
+var autoImports map[string]string
+
+func init() {
+	autoImports = make(map[string]string)
+
+	var stdlibs = []string{
+		"bytes",
+		"context",
+		"encoding/json",
+		"fmt",
+		"io",
+		"mime/multipart",
+		"strconv",
+	}
+
+	for _, pkg := range stdlibs {
+		autoImports[importPathToAssumedName((pkg))] = pkg
+	}
+
+	var goOpenAPIs = []string{
+		"github.com/go-openapi/runtime/yamlpc",
+		"github.com/go-openapi/loads/fmts",
+		"github.com/go-openapi/strfmt",
+	}
+	for _, pkg := range goOpenAPIs {
+		autoImports[importPathToAssumedName((pkg))] = pkg
+	}
 }
