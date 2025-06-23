@@ -19,7 +19,7 @@ require (
 	github.com/go-openapi/validate v0.24.0
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/go-viper/mapstructure/v2 v2.2.1
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kr/pretty v0.3.1
