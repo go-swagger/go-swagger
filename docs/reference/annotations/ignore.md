@@ -14,7 +14,7 @@ swagger:ignore
 ### Example 1: Marks a struct as explicitly ignore from the Swagger spec output
 
 ```go
-//swagger: ignore
+// swagger:ignore
 type Patient struct {
     // example: John Doe
     name        string  `json:"name"`
@@ -32,7 +32,7 @@ type Patient struct {
 ### Example 2: Exclude a specific field from swagger spec output
 
 ```go
-//swagger: model Person
+// swagger:model Person
 type Person struct {
     // example: John Doe
     name        string  `json:"name"`
@@ -43,7 +43,7 @@ type Person struct {
     // example: 1234567890
     phone       string  `json:"phone"`
     // example: 1A2B3C
-    // swagger: ignore
+    // swagger:ignore
     uniqueId    string  `json:"unique_id"`
 }
 ```
