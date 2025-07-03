@@ -40,6 +40,7 @@ import (
 {{- if .ExcludeSpec }} --exclude-spec{{ end }}
 {{- if .DumpData }} --dump-data{{ end }}
 {{- if .StrictResponders }} --strict-responders{{ end }}
+{{- if .ReturnErrors }} --return-errors{{ end }}
 {{ end }}
 func configureFlags(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) {
   // api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -139,22 +140,21 @@ func configureAPI(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) http.Handl
     {{- else }}
       {{- $apipackagealias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ $apipackagealias }}.{{- pascalize .Name }}Params
     {{- end }}
-  {{- if $.GenOpts.StrictResponders }}
-    {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) {{.Package}}.{{ pascalize .Name }}Responder {
-      _ = params
-      {{- if .Authorized }}
-      _ = principal
-      {{- end }}
+    {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}})
+      {{- if $.GenOpts.ReturnErrors }}
+          {{- if $.GenOpts.StrictResponders }} ({{.Package}}.{{ pascalize .Name }}Responder, error) { {{ else }} (middleware.Responder, error) { {{ end }}
+      {{ else }}
+          {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder { {{ else }} middleware.Responder { {{ end }}
+      {{ end -}}
+    _ = params
+    {{- if .Authorized }}
+    _ = principal
+    {{- end }}
 
-     return {{.Package}}.{{ pascalize .Name }}NotImplemented()
-  {{- else }}
-    {{- if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
-      _ = params
-      {{- if .Authorized }}
-      _ = principal
-      {{- end }}
-
-      return middleware.NotImplemented("operation {{ .Package}}.{{pascalize .Name}} has not yet been implemented")
+    {{ if $.GenOpts.StrictResponders }}
+      return {{.Package}}.{{ pascalize .Name }}NotImplemented(){{ if $.GenOpts.ReturnErrors }}, nil {{- end -}}
+    {{ else }}
+      return middleware.NotImplemented("operation {{ .Package}}.{{pascalize .Name}} has not yet been implemented"){{ if $.GenOpts.ReturnErrors }}, nil {{- end -}}
   {{- end }}
     })
   }
