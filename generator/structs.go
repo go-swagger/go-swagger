@@ -266,6 +266,7 @@ type GenResponse struct {
 	StrictResponders bool
 	OperationName    string
 	Examples         GenResponseExamples
+	ReturnErrors     bool
 }
 
 // GenResponseExamples is a sortable collection []GenResponseExample
@@ -639,6 +640,7 @@ type GenOperation struct {
 	Extensions map[string]any
 
 	StrictResponders bool
+	ReturnErrors     bool
 	ExternalDocs     *spec.ExternalDocumentation
 	Produces         []string // original produces for operation (for doc)
 	Consumes         []string // original consumes for operation (for doc)

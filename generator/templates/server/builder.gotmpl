@@ -72,25 +72,28 @@ func New{{ pascalize .Name }}API(spec *loads.Document) *{{ pascalize .Name }}API
       {{- end }}
     {{- end }}
     {{ range .Operations }}
+      {{ $mayBePackage := "" }}
+      {{ if ne .Package $package -}}
+        {{ $mayBePackage = printf "%s." .PackageAlias }}
+      {{ end -}}
+
       {{ if ne .Package $package }}{{ pascalize .Package }}{{ end }}{{ pascalize .Name }}Handler:
-        {{- if ne .Package $package }}{{ .PackageAlias }}.{{ end }}{{ pascalize .Name }}HandlerFunc(func(params {{ if ne .Package $package }}{{ .PackageAlias }}.{{end }}
-    {{- if $.GenOpts.StrictResponders}}
-        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}Responder {
+        {{ $mayBePackage }}{{ pascalize .Name }}HandlerFunc(func(params {{ $mayBePackage }}{{ pascalize .Name }}Params{{if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}})
+          {{- if $.GenOpts.ReturnErrors }}
+            {{- if $.GenOpts.StrictResponders }} ({{ $mayBePackage }}{{ pascalize .Name }}Responder, error) { {{ else }} (middleware.Responder, error) { {{ end }}
+          {{ else }}
+            {{- if $.GenOpts.StrictResponders }} {{ $mayBePackage }}{{ pascalize .Name }}Responder { {{ else }} middleware.Responder { {{ end }}
+          {{ end -}}
       _ = params
       {{- if .Authorized }}
       _ = principal
       {{- end }}
 
-      return {{if ne .Package $package }}{{ .Package }}.{{ end }}{{ pascalize .Name }}NotImplemented()
-    {{- else }}
-        {{- pascalize .Name }}Params{{if .Authorized}}, principal {{if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}}) middleware.Responder {
-      _ = params
-      {{- if .Authorized }}
-      _ = principal
+      {{ if $.GenOpts.StrictResponders }}
+        return {{ $mayBePackage }}{{ pascalize .Name }}NotImplemented(){{ if $.GenOpts.ReturnErrors }}, nil {{- end -}}
+      {{ else }}
+        return middleware.NotImplemented("operation {{ $mayBePackage }}{{pascalize .Name}} has not yet been implemented"){{ if $.GenOpts.ReturnErrors }}, nil {{- end -}}
       {{- end }}
-
-      return middleware.NotImplemented("operation {{ if ne .Package $package }}{{ .Package }}.{{ end }}{{pascalize .Name}} has not yet been implemented")
-    {{- end }}
     }),
     {{- end }}
     {{ range .SecurityDefinitions }}
