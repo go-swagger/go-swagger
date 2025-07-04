@@ -42,6 +42,7 @@ import (
 {{- if .ExcludeSpec }} --exclude-spec{{ end }}
 {{- if .DumpData }} --dump-data{{ end }}
 {{- if .StrictResponders }} --strict-responders{{ end }}
+{{- if .ReturnErrors }} --return-errors{{ end }}
 {{ end }}
 
 // This file auto configures the api backend implementation.
@@ -101,7 +102,11 @@ type {{ pascalize .Name }}Handler interface {
 	{{ end -}}
 	{{ pascalize .Name }}(params {{ if ne .Package $package }}{{ .PackageAlias }}{{ else }}{{- $apipackagealias }}{{ end }}.
     {{- pascalize .Name }}Params {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}})
-    {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder {{ else }} middleware.Responder {{ end }}
+      {{- if $.GenOpts.ReturnErrors }}
+        {{- if $.GenOpts.StrictResponders }} ({{.Package}}.{{ pascalize .Name }}Responder, error) {{ else }} (middleware.Responder, error) {{ end }}
+      {{ else }}
+        {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder {{ else }} middleware.Responder {{ end }}
+      {{ end -}}
 {{ end -}}
 }
 {{ end }}
@@ -163,7 +168,11 @@ func configureAPI(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) http.Handl
       {{- $apipackagealias }}.{{- pascalize .Name }}HandlerFunc(func(params {{ $apipackagealias }}.{{- pascalize .Name }}Params
     {{- end }}
     {{- if .Authorized}}, principal {{ if .PrincipalIsNullable }}*{{ end }}{{.Principal}}{{end}})
-      {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder { {{ else }} middleware.Responder { {{ end }}
+      {{- if $.GenOpts.ReturnErrors }}
+          {{- if $.GenOpts.StrictResponders }} ({{.Package}}.{{ pascalize .Name }}Responder, error) { {{ else }} (middleware.Responder, error) { {{ end }}
+      {{ else }}
+          {{- if $.GenOpts.StrictResponders }} {{.Package}}.{{ pascalize .Name }}Responder { {{ else }} middleware.Responder { {{ end }}
+      {{ end }}
       return Impl.{{ pascalize .Name }}(params {{- if .Authorized}}, principal {{ end }})
     })
   {{- end }}

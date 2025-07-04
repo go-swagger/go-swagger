@@ -520,6 +520,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 
 		PrincipalIsNullable: b.GenOpts.PrincipalIsNullable(),
 		ExternalDocs:        trimExternalDoc(operation.ExternalDocs),
+		ReturnErrors:        b.GenOpts.ReturnErrors,
 	}, nil
 }
 
@@ -566,6 +567,7 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		StrictResponders: b.GenOpts.StrictResponders,
 		OperationName:    b.Name,
 		Examples:         examples,
+		ReturnErrors:     b.GenOpts.ReturnErrors,
 	}
 
 	// prepare response headers

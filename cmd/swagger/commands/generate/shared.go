@@ -127,6 +127,7 @@ type sharedOptionsCommon struct {
 	SkipValidation        bool           `long:"skip-validation" description:"skips validation of spec prior to generation" group:"shared"`
 	DumpData              bool           `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files" group:"shared"`
 	StrictResponders      bool           `long:"strict-responders" description:"Use strict type for the handler return value"`
+	ReturnErrors          bool           `long:"return-errors" short:"e" description:"handlers explicitly return an error as the second value" group:"shared"`
 	FlattenCmdOptions
 }
 
@@ -141,6 +142,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.FlattenOpts = s.SetFlattenOptions(opts.FlattenOpts)
 	opts.Copyright = string(s.CopyrightFile)
 	opts.StrictResponders = s.StrictResponders
+	opts.ReturnErrors = s.ReturnErrors
 
 	swag.AddInitialisms(s.AdditionalInitialisms...)
 }
