@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/swag"
+	"golang.org/x/tools/imports"
 )
 
 var (
@@ -33,6 +34,7 @@ func initLanguage() {
 type FormatOption func(*formatOptions)
 
 type formatOptions struct {
+	imports.Options
 	localPrefixes []string
 }
 
@@ -44,6 +46,14 @@ func WithFormatLocalPrefixes(prefixes ...string) FormatOption {
 }
 
 var defaultFormatOptions = formatOptions{
+	Options: imports.Options{
+		TabIndent: true,
+		TabWidth:  2,
+		Fragment:  true,
+		Comments:  true,
+
+		FormatOnly: true,
+	},
 	localPrefixes: []string{"github.com/go-openapi"},
 }
 

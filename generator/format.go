@@ -10,14 +10,15 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode"
 	"unicode/utf8"
 
 	"golang.org/x/tools/go/ast/astutil"
+	"golang.org/x/tools/imports"
 )
 
 func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, error) {
-	_ = formatOptionsWithDefault(opts) // TODO: use options
 	fset, file, clean, err := parseGoOrFragment(filename, content)
 	if err != nil {
 		return nil, err
@@ -25,7 +26,6 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 
 	mergeImports(file)
 	cleanImports(fset, file)
-	removeUnecessaryImportParens(file)
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
@@ -36,10 +36,16 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		return nil, err
 	}
 
-	out := buf.Bytes()
+	tmp := buf.Bytes()
 	if clean != nil {
-		out = clean(out)
+		tmp = clean(tmp)
 	}
+
+	out, err := formatByImports(filename, tmp, formatOptionsWithDefault(opts))
+	if err != nil {
+		return nil, err
+	}
+
 	return out, nil
 }
 
@@ -121,25 +127,6 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 	for _, impt := range shouldRemove {
 		deleteImportSpec(file, impt)
 	}
-
-	// TODO: group local pacages
-}
-
-func addImportSpec(file *ast.File, importPath string) {
-	spec := &ast.ImportSpec{
-		Name: nil,
-		Path: &ast.BasicLit{
-			Kind:  token.STRING,
-			Value: strconv.Quote(importPath),
-		},
-	}
-	file.Imports = append(file.Imports, spec)
-
-	gen, ok := file.Decls[0].(*ast.GenDecl)
-	if !ok {
-		return
-	}
-	gen.Specs = append(gen.Specs, spec)
 }
 
 func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
@@ -166,23 +153,6 @@ func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
 		return
 	}
 	gen.Specs = slices.Delete(gen.Specs, i, i+1)
-}
-
-func removeUnecessaryImportParens(file *ast.File) {
-	for _, decl := range file.Decls {
-		gen, ok := decl.(*ast.GenDecl)
-		if !ok {
-			break
-		}
-		if gen.Tok != token.IMPORT {
-			break
-		}
-		if len(gen.Specs) != 1 {
-			continue
-		}
-		gen.Lparen = token.NoPos
-		gen.Rparen = token.NoPos
-	}
 }
 
 // mergeImports merges all the import declarations into the first one.
@@ -334,4 +304,23 @@ func init() {
 	for _, pkg := range goOpenAPIs {
 		autoImports[importPathToAssumedName((pkg))] = pkg
 	}
+}
+
+// mutex for imports.LocalPrfix global variable.
+var localPrefixMutex sync.RWMutex
+
+// run import.Process to sort imports.
+func formatByImports(filename string, content []byte, opts formatOptions) ([]byte, error) {
+	lp := strings.Join(opts.localPrefixes, ",")
+	localPrefixMutex.RLock()
+	if lp == imports.LocalPrefix {
+		defer localPrefixMutex.RUnlock()
+		return imports.Process(filename, content, &opts.Options)
+	}
+	localPrefixMutex.RUnlock()
+
+	localPrefixMutex.Lock()
+	defer localPrefixMutex.Unlock()
+	imports.LocalPrefix = lp
+	return imports.Process(filename, content, &opts.Options)
 }
