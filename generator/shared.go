@@ -73,8 +73,10 @@ func DefaultSectionOpts(gen *GenOpts) {
 	}
 
 	if len(sec.PostModels) == 0 && gen.IncludeCLi {
-		// For CLI, we need to postpone the generation of model-supporting source,
-		// in order for go imports to run properly in all cases.
+		// STALE: For CLI, we needed to postpone the generation of model-supporting source,
+		//        in order for go imports to run properly in all cases.
+		// UPDATED: Now we own automatic imports, so we don't need to postpone.
+		// TODO: Don't postpone the generation of model-supporting source.
 		opts := []TemplateOpts{
 			{
 				Name:     "clidefinitionhook",

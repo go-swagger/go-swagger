@@ -287,6 +287,7 @@ func init() {
 		"fmt",
 		"io",
 		"mime/multipart",
+		"os",
 		"strconv",
 	}
 
