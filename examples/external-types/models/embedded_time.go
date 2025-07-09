@@ -25,7 +25,7 @@ type EmbeddedTime struct {
 }
 
 func (m EmbeddedTime) Validate(formats strfmt.Registry) error {
-	var f interface{} = m.Time
+	var f any = m.Time
 	if v, ok := f.(runtime.Validatable); ok {
 		return v.Validate(formats)
 	}
@@ -33,7 +33,7 @@ func (m EmbeddedTime) Validate(formats strfmt.Registry) error {
 }
 
 func (m EmbeddedTime) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
-	var f interface{} = m.Time
+	var f any = m.Time
 	if v, ok := f.(runtime.ContextValidatable); ok {
 		return v.ContextValidate(ctx, formats)
 	}

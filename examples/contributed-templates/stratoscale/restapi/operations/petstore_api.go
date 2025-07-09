@@ -45,39 +45,71 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 
 		JSONProducer: runtime.JSONProducer(),
 
-		StoreInventoryGetHandler: store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal interface{}) middleware.Responder {
+		StoreInventoryGetHandler: store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation store.InventoryGet has not yet been implemented")
 		}),
-		StoreOrderCreateHandler: store.OrderCreateHandlerFunc(func(params store.OrderCreateParams, principal interface{}) middleware.Responder {
+		StoreOrderCreateHandler: store.OrderCreateHandlerFunc(func(params store.OrderCreateParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation store.OrderCreate has not yet been implemented")
 		}),
-		StoreOrderDeleteHandler: store.OrderDeleteHandlerFunc(func(params store.OrderDeleteParams, principal interface{}) middleware.Responder {
+		StoreOrderDeleteHandler: store.OrderDeleteHandlerFunc(func(params store.OrderDeleteParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation store.OrderDelete has not yet been implemented")
 		}),
-		StoreOrderGetHandler: store.OrderGetHandlerFunc(func(params store.OrderGetParams, principal interface{}) middleware.Responder {
+		StoreOrderGetHandler: store.OrderGetHandlerFunc(func(params store.OrderGetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation store.OrderGet has not yet been implemented")
 		}),
-		PetPetCreateHandler: pet.PetCreateHandlerFunc(func(params pet.PetCreateParams, principal interface{}) middleware.Responder {
+		PetPetCreateHandler: pet.PetCreateHandlerFunc(func(params pet.PetCreateParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetCreate has not yet been implemented")
 		}),
-		PetPetDeleteHandler: pet.PetDeleteHandlerFunc(func(params pet.PetDeleteParams, principal interface{}) middleware.Responder {
+		PetPetDeleteHandler: pet.PetDeleteHandlerFunc(func(params pet.PetDeleteParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetDelete has not yet been implemented")
 		}),
-		PetPetGetHandler: pet.PetGetHandlerFunc(func(params pet.PetGetParams, principal interface{}) middleware.Responder {
+		PetPetGetHandler: pet.PetGetHandlerFunc(func(params pet.PetGetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetGet has not yet been implemented")
 		}),
-		PetPetListHandler: pet.PetListHandlerFunc(func(params pet.PetListParams, principal interface{}) middleware.Responder {
+		PetPetListHandler: pet.PetListHandlerFunc(func(params pet.PetListParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetList has not yet been implemented")
 		}),
-		PetPetUpdateHandler: pet.PetUpdateHandlerFunc(func(params pet.PetUpdateParams, principal interface{}) middleware.Responder {
+		PetPetUpdateHandler: pet.PetUpdateHandlerFunc(func(params pet.PetUpdateParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetUpdate has not yet been implemented")
 		}),
-		PetPetUploadImageHandler: pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal interface{}) middleware.Responder {
+		PetPetUploadImageHandler: pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.PetUploadImage has not yet been implemented")
 		}),
 
 		// Applies when the "X-Auth-Roles" header is set
-		RolesAuth: func(token string) (interface{}, error) {
+		RolesAuth: func(token string) (any, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (roles) X-Auth-Roles from header param [X-Auth-Roles] has not yet been implemented")
 		},
 		// default authorizer is authorized meaning no requests are blocked
@@ -120,7 +152,7 @@ type PetstoreAPI struct {
 
 	// RolesAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-Auth-Roles provided in the header
-	RolesAuth func(string) (interface{}, error)
+	RolesAuth func(string) (any, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -162,7 +194,7 @@ type PetstoreAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -273,13 +305,12 @@ func (o *PetstoreAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 func (o *PetstoreAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 	result := make(map[string]runtime.Authenticator)
 	for name := range schemes {
-		switch name {
-		case "roles":
+		if name == "roles" {
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, o.RolesAuth)
-
 		}
 	}
+
 	return result
 }
 
@@ -289,12 +320,12 @@ func (o *PetstoreAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -302,16 +333,17 @@ func (o *PetstoreAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -319,6 +351,7 @@ func (o *PetstoreAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

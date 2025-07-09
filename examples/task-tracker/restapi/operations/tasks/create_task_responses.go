@@ -56,7 +56,7 @@ func (o *CreateTaskCreated) WriteResponse(rw http.ResponseWriter, producer runti
 		rw.Header().Set("Location", location)
 	}
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(201)
 }

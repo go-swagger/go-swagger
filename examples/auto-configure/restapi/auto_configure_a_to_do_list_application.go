@@ -16,7 +16,7 @@ import (
 	"github.com/go-swagger/go-swagger/examples/auto-configure/restapi/operations/todos"
 )
 
-//go:generate swagger generate server --target ../../auto-configure --name AToDoListApplication --spec ../swagger.yml --implementation-package github.com/go-swagger/go-swagger/examples/auto-configure/implementation --principal interface{}
+//go:generate swagger generate server --target ../../auto-configure --name AToDoListApplication --spec ../swagger.yml --implementation-package github.com/go-swagger/go-swagger/examples/auto-configure/implementation --principal any
 
 // This file auto configures the api backend implementation.
 // implementation package must already exist.
@@ -44,15 +44,15 @@ type Configurable interface {
 // Authable handles server authentication
 type Authable interface {
 	// Applies when the "x-todolist-token" header is set
-	KeyAuth(token string) (interface{}, error)
+	KeyAuth(token string) (any, error)
 }
 
 /* TodosHandler  */
 type TodosHandler interface {
-	AddOne(params todos.AddOneParams, principal interface{}) middleware.Responder
-	DestroyOne(params todos.DestroyOneParams, principal interface{}) middleware.Responder
-	FindTodos(params todos.FindTodosParams, principal interface{}) middleware.Responder
-	UpdateOne(params todos.UpdateOneParams, principal interface{}) middleware.Responder
+	AddOne(params todos.AddOneParams, principal any) middleware.Responder
+	DestroyOne(params todos.DestroyOneParams, principal any) middleware.Responder
+	FindTodos(params todos.FindTodosParams, principal any) middleware.Responder
+	UpdateOne(params todos.UpdateOneParams, principal any) middleware.Responder
 }
 
 func configureFlags(api *operations.AToDoListApplicationAPI) {
@@ -70,20 +70,20 @@ func configureAPI(api *operations.AToDoListApplicationAPI) http.Handler {
 	api.JSONProducer = runtime.JSONProducer()
 
 	// Applies when the "x-todolist-token" header is set
-	api.KeyAuth = func(token string) (interface{}, error) {
+	api.KeyAuth = func(token string) (any, error) {
 		return Impl.KeyAuth(token)
 	}
 
-	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) middleware.Responder {
+	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal any) middleware.Responder {
 		return Impl.AddOne(params, principal)
 	})
-	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal interface{}) middleware.Responder {
+	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal any) middleware.Responder {
 		return Impl.DestroyOne(params, principal)
 	})
-	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams, principal interface{}) middleware.Responder {
+	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams, principal any) middleware.Responder {
 		return Impl.FindTodos(params, principal)
 	})
-	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal interface{}) middleware.Responder {
+	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal any) middleware.Responder {
 		return Impl.UpdateOne(params, principal)
 	})
 

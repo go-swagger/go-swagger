@@ -14,6 +14,8 @@ import (
 
 // AssertReadersContent compares the contents from io.Readers, optionally stripping blanks
 func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reader) bool {
+	t.Helper()
+
 	e, err := io.ReadAll(expected)
 	require.NoError(t, err)
 
@@ -26,7 +28,7 @@ func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reade
 
 	if noBlanks {
 		r := strings.NewReplacer(" ", "", "\t", "", "\n", "", "\r", "")
-		return assert.Equalf(t, r.Replace(wants.String()), r.Replace(got.String()), "expected:\n%s\ngot %s", wants.String(), got.String())
+		return assert.Equalf(t, r.Replace(wants.String()), r.Replace(got.String()), "expected:\n%s\ngot:\n%s", wants.String(), got.String())
 	}
 	return assert.Equal(t, wants.String(), got.String())
 }
@@ -34,6 +36,8 @@ func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reade
 // CatchStdOut captures the standard output from a runnable function.
 // You shouln't run this in parallel.
 func CatchStdOut(t testing.TB, runnable func() error) ([]byte, error) {
+	t.Helper()
+
 	realStdout := os.Stdout
 	defer func() { os.Stdout = realStdout }()
 	r, fakeStdout, err := os.Pipe()

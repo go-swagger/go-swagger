@@ -7,9 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/loads"
+
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
 )
 
 func fixturePath(file string, parts ...string) string {
@@ -36,7 +38,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	pattern := fixturePath("*.diff.txt")
 	allTests, err := filepath.Glob(pattern)
 	require.NoError(t, err)
-	require.True(t, len(allTests) > 0)
+	require.NotEmpty(t, allTests)
 
 	// To filter cases for debugging poke an individual case here eg "path", "enum" etc
 	// see the test cases in fixtures/diff
@@ -66,13 +68,12 @@ func TestDiffForVariousCombinations(t *testing.T) {
 		})
 	}
 
-	require.Equalf(t, len(allTests), len(matches), "All test cases were not run. Remove filter")
+	require.Lenf(t, allTests, len(matches), "All test cases were not run. Remove filter")
 }
 
 func getDiffs(oldSpecPath, newSpecPath string) (SpecDifferences, error) {
 	swaggerDoc1 := oldSpecPath
 	specDoc1, err := loads.Spec(swaggerDoc1)
-
 	if err != nil {
 		return nil, err
 	}

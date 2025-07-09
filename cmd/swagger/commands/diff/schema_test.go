@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/go-openapi/spec"
 )
 
 func TestGetTypeFromSimpleSchema(t *testing.T) {
@@ -18,7 +19,6 @@ func TestGetTypeFromSimpleSchema(t *testing.T) {
 	ty, a = getTypeFromSimpleSchema(&arr)
 	assert.Equal(t, "integer.int32", ty)
 	assert.True(t, a)
-
 }
 
 func TestIsArray(t *testing.T) {
@@ -48,10 +48,9 @@ func TestGetSchemaType(t *testing.T) {
 	tt, a = getSchemaType(s)
 	assert.False(t, a)
 	assert.Equal(t, "string", tt)
-
 }
 
 func TestDefinitionFromRef(t *testing.T) {
 	refStr := definitionFromRef(spec.MustCreateRef(""))
-	assert.True(t, len(refStr) == 0)
+	assert.Empty(t, refStr)
 }

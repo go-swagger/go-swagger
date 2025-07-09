@@ -16,10 +16,11 @@ import (
 	"github.com/go-swagger/go-swagger/examples/generated/restapi/operations/user"
 )
 
-//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger-petstore.json --principal interface{}
+//go:generate swagger generate server --target ../../generated --name Petstore --spec ../swagger-petstore.json --principal any
 
 func configureFlags(api *operations.PetstoreAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.PetstoreAPI) http.Handler {
@@ -27,7 +28,7 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -45,12 +46,17 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 
 	// Applies when the "api_key" header is set
 	if api.APIKeyAuth == nil {
-		api.APIKeyAuth = func(token string) (interface{}, error) {
+		api.APIKeyAuth = func(token string) (any, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (api_key) api_key from header param [api_key] has not yet been implemented")
 		}
 	}
 	if api.PetstoreAuthAuth == nil {
-		api.PetstoreAuthAuth = func(token string, scopes []string) (interface{}, error) {
+		api.PetstoreAuthAuth = func(token string, scopes []string) (any, error) {
+			_ = token
+			_ = scopes
+
 			return nil, errors.NotImplemented("oauth2 bearer auth (petstore_auth) has not yet been implemented")
 		}
 	}
@@ -64,92 +70,135 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 	// pet.UpdatePetWithFormMaxParseMemory = 32 << 20
 
 	if api.PetAddPetHandler == nil {
-		api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal interface{}) middleware.Responder {
+		api.PetAddPetHandler = pet.AddPetHandlerFunc(func(params pet.AddPetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 		})
 	}
 	if api.UserCreateUserHandler == nil {
 		api.UserCreateUserHandler = user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
 		})
 	}
 	if api.UserCreateUsersWithArrayInputHandler == nil {
 		api.UserCreateUsersWithArrayInputHandler = user.CreateUsersWithArrayInputHandlerFunc(func(params user.CreateUsersWithArrayInputParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.CreateUsersWithArrayInput has not yet been implemented")
 		})
 	}
 	if api.UserCreateUsersWithListInputHandler == nil {
 		api.UserCreateUsersWithListInputHandler = user.CreateUsersWithListInputHandlerFunc(func(params user.CreateUsersWithListInputParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.CreateUsersWithListInput has not yet been implemented")
 		})
 	}
 	if api.StoreDeleteOrderHandler == nil {
 		api.StoreDeleteOrderHandler = store.DeleteOrderHandlerFunc(func(params store.DeleteOrderParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation store.DeleteOrder has not yet been implemented")
 		})
 	}
 	if api.PetDeletePetHandler == nil {
-		api.PetDeletePetHandler = pet.DeletePetHandlerFunc(func(params pet.DeletePetParams, principal interface{}) middleware.Responder {
+		api.PetDeletePetHandler = pet.DeletePetHandlerFunc(func(params pet.DeletePetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.DeletePet has not yet been implemented")
 		})
 	}
 	if api.UserDeleteUserHandler == nil {
 		api.UserDeleteUserHandler = user.DeleteUserHandlerFunc(func(params user.DeleteUserParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.DeleteUser has not yet been implemented")
 		})
 	}
 	if api.PetFindPetsByStatusHandler == nil {
-		api.PetFindPetsByStatusHandler = pet.FindPetsByStatusHandlerFunc(func(params pet.FindPetsByStatusParams, principal interface{}) middleware.Responder {
+		api.PetFindPetsByStatusHandler = pet.FindPetsByStatusHandlerFunc(func(params pet.FindPetsByStatusParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.FindPetsByStatus has not yet been implemented")
 		})
 	}
 	if api.PetFindPetsByTagsHandler == nil {
-		api.PetFindPetsByTagsHandler = pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal interface{}) middleware.Responder {
+		api.PetFindPetsByTagsHandler = pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.FindPetsByTags has not yet been implemented")
 		})
 	}
 	if api.StoreGetOrderByIDHandler == nil {
 		api.StoreGetOrderByIDHandler = store.GetOrderByIDHandlerFunc(func(params store.GetOrderByIDParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation store.GetOrderByID has not yet been implemented")
 		})
 	}
 	if api.PetGetPetByIDHandler == nil {
-		api.PetGetPetByIDHandler = pet.GetPetByIDHandlerFunc(func(params pet.GetPetByIDParams, principal interface{}) middleware.Responder {
+		api.PetGetPetByIDHandler = pet.GetPetByIDHandlerFunc(func(params pet.GetPetByIDParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.GetPetByID has not yet been implemented")
 		})
 	}
 	if api.UserGetUserByNameHandler == nil {
 		api.UserGetUserByNameHandler = user.GetUserByNameHandlerFunc(func(params user.GetUserByNameParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.GetUserByName has not yet been implemented")
 		})
 	}
 	if api.UserLoginUserHandler == nil {
 		api.UserLoginUserHandler = user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		})
 	}
 	if api.UserLogoutUserHandler == nil {
 		api.UserLogoutUserHandler = user.LogoutUserHandlerFunc(func(params user.LogoutUserParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.LogoutUser has not yet been implemented")
 		})
 	}
 	if api.StorePlaceOrderHandler == nil {
 		api.StorePlaceOrderHandler = store.PlaceOrderHandlerFunc(func(params store.PlaceOrderParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation store.PlaceOrder has not yet been implemented")
 		})
 	}
 	if api.PetUpdatePetHandler == nil {
-		api.PetUpdatePetHandler = pet.UpdatePetHandlerFunc(func(params pet.UpdatePetParams, principal interface{}) middleware.Responder {
+		api.PetUpdatePetHandler = pet.UpdatePetHandlerFunc(func(params pet.UpdatePetParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.UpdatePet has not yet been implemented")
 		})
 	}
 	if api.PetUpdatePetWithFormHandler == nil {
-		api.PetUpdatePetWithFormHandler = pet.UpdatePetWithFormHandlerFunc(func(params pet.UpdatePetWithFormParams, principal interface{}) middleware.Responder {
+		api.PetUpdatePetWithFormHandler = pet.UpdatePetWithFormHandlerFunc(func(params pet.UpdatePetWithFormParams, principal any) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation pet.UpdatePetWithForm has not yet been implemented")
 		})
 	}
 	if api.UserUpdateUserHandler == nil {
 		api.UserUpdateUserHandler = user.UpdateUserHandlerFunc(func(params user.UpdateUserParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation user.UpdateUser has not yet been implemented")
 		})
 	}
@@ -164,13 +213,17 @@ func configureAPI(api *operations.PetstoreAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

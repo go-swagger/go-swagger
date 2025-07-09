@@ -4,10 +4,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/spec"
 )
+
+const epsilon = 1e-9
 
 func TestSchemaBuilder_Struct_Tag(t *testing.T) {
 	sctx := loadPetstorePkgsCtx(t)
@@ -97,10 +100,10 @@ func TestSchemaBuilder(t *testing.T) {
 	prop, ok := schema.Properties["id"]
 	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", prop.Description)
 	assert.True(t, ok, "should have had an 'id' property")
-	assert.EqualValues(t, 1000, *prop.Maximum)
+	assert.InDelta(t, 1000.00, *prop.Maximum, epsilon)
 	assert.True(t, prop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
 	assert.NotNil(t, prop.Minimum)
-	assert.EqualValues(t, 10, *prop.Minimum)
+	assert.InDelta(t, 10.00, *prop.Minimum, epsilon)
 	assert.True(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 	assert.Equal(t, 11, prop.Default, "ID default value is incorrect")
 
@@ -118,21 +121,21 @@ func TestSchemaBuilder(t *testing.T) {
 	prop, ok = schema.Properties["score"]
 	assert.Equal(t, "The Score of this model", prop.Description)
 	assert.True(t, ok, "should have had a 'score' property")
-	assert.EqualValues(t, 45, *prop.Maximum)
+	assert.InDelta(t, 45.00, *prop.Maximum, epsilon)
 	assert.False(t, prop.ExclusiveMaximum, "'score' should not have had an exclusive maximum")
 	assert.NotNil(t, prop.Minimum)
-	assert.EqualValues(t, 3, *prop.Minimum)
+	assert.InDelta(t, 3.00, *prop.Minimum, epsilon)
 	assert.False(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
-	assert.Equal(t, 27, prop.Example)
+	assert.EqualValues(t, 27, prop.Example)
 
 	expectedNameExtensions := spec.Extensions{
 		"x-go-name": "Name",
-		"x-property-array": []interface{}{
+		"x-property-array": []any{
 			"value1",
 			"value2",
 		},
-		"x-property-array-obj": []interface{}{
-			map[string]interface{}{
+		"x-property-array-obj": []any{
+			map[string]any{
 				"name":  "obj",
 				"value": "field",
 			},
@@ -144,10 +147,12 @@ func TestSchemaBuilder(t *testing.T) {
 	prop, ok = schema.Properties["name"]
 	assert.True(t, ok)
 	assert.Equal(t, "Name of this no model instance", prop.Description)
-	assert.EqualValues(t, 4, *prop.MinLength)
-	assert.EqualValues(t, 50, *prop.MaxLength)
+	require.NotNil(t, prop.MinLength)
+	require.NotNil(t, prop.MaxLength)
+	assert.Equal(t, int64(4), *prop.MinLength)
+	assert.Equal(t, int64(50), *prop.MaxLength)
 	assert.Equal(t, "[A-Za-z0-9-.]*", prop.Pattern)
-	assert.EqualValues(t, expectedNameExtensions, prop.Extensions)
+	assert.Equal(t, expectedNameExtensions, prop.Extensions)
 
 	assertProperty(t, &schema, "string", "created", "date-time", "Created")
 	prop, ok = schema.Properties["created"]
@@ -164,73 +169,73 @@ func TestSchemaBuilder(t *testing.T) {
 	prop, ok = schema.Properties["foo_slice"]
 	assert.Equal(t, "a FooSlice has foos which are strings", prop.Description)
 	assert.True(t, ok, "should have a 'foo_slice' property")
-	assert.NotNil(t, prop.Items, "foo_slice should have had an items property")
-	assert.NotNil(t, prop.Items.Schema, "foo_slice.items should have had a schema property")
+	require.NotNil(t, prop.Items, "foo_slice should have had an items property")
+	require.NotNil(t, prop.Items.Schema, "foo_slice.items should have had a schema property")
 	assert.True(t, prop.UniqueItems, "'foo_slice' should have unique items")
-	assert.EqualValues(t, 3, *prop.MinItems, "'foo_slice' should have had 3 min items")
-	assert.EqualValues(t, 10, *prop.MaxItems, "'foo_slice' should have had 10 max items")
+	assert.Equal(t, int64(3), *prop.MinItems, "'foo_slice' should have had 3 min items")
+	assert.Equal(t, int64(10), *prop.MaxItems, "'foo_slice' should have had 10 max items")
 	itprop := prop.Items.Schema
-	assert.EqualValues(t, 3, *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
-	assert.EqualValues(t, 10, *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
-	assert.EqualValues(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+	assert.Equal(t, int64(3), *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
+	assert.Equal(t, int64(10), *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
+	assert.Equal(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 
 	assertArrayProperty(t, &schema, "string", "time_slice", "date-time", "TimeSlice")
 	prop, ok = schema.Properties["time_slice"]
 	assert.Equal(t, "a TimeSlice is a slice of times", prop.Description)
 	assert.True(t, ok, "should have a 'time_slice' property")
-	assert.NotNil(t, prop.Items, "time_slice should have had an items property")
-	assert.NotNil(t, prop.Items.Schema, "time_slice.items should have had a schema property")
+	require.NotNil(t, prop.Items, "time_slice should have had an items property")
+	require.NotNil(t, prop.Items.Schema, "time_slice.items should have had a schema property")
 	assert.True(t, prop.UniqueItems, "'time_slice' should have unique items")
-	assert.EqualValues(t, 3, *prop.MinItems, "'time_slice' should have had 3 min items")
-	assert.EqualValues(t, 10, *prop.MaxItems, "'time_slice' should have had 10 max items")
+	assert.Equal(t, int64(3), *prop.MinItems, "'time_slice' should have had 3 min items")
+	assert.Equal(t, int64(10), *prop.MaxItems, "'time_slice' should have had 10 max items")
 
 	assertArrayProperty(t, &schema, "array", "bar_slice", "", "BarSlice")
 	prop, ok = schema.Properties["bar_slice"]
 	assert.Equal(t, "a BarSlice has bars which are strings", prop.Description)
 	assert.True(t, ok, "should have a 'bar_slice' property")
-	assert.NotNil(t, prop.Items, "bar_slice should have had an items property")
-	assert.NotNil(t, prop.Items.Schema, "bar_slice.items should have had a schema property")
+	require.NotNil(t, prop.Items, "bar_slice should have had an items property")
+	require.NotNil(t, prop.Items.Schema, "bar_slice.items should have had a schema property")
 	assert.True(t, prop.UniqueItems, "'bar_slice' should have unique items")
-	assert.EqualValues(t, 3, *prop.MinItems, "'bar_slice' should have had 3 min items")
-	assert.EqualValues(t, 10, *prop.MaxItems, "'bar_slice' should have had 10 max items")
+	assert.Equal(t, int64(3), *prop.MinItems, "'bar_slice' should have had 3 min items")
+	assert.Equal(t, int64(10), *prop.MaxItems, "'bar_slice' should have had 10 max items")
+
 	itprop = prop.Items.Schema
-	if assert.NotNil(t, itprop) {
-		assert.EqualValues(t, 4, *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
-		assert.EqualValues(t, 9, *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
-		itprop2 := itprop.Items.Schema
-		if assert.NotNil(t, itprop2) {
-			assert.EqualValues(t, 5, *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
-			assert.EqualValues(t, 8, *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
-			itprop3 := itprop2.Items.Schema
-			if assert.NotNil(t, itprop3) {
-				assert.EqualValues(t, 3, *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
-				assert.EqualValues(t, 10, *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
-				assert.EqualValues(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
-			}
-		}
-	}
+	require.NotNil(t, itprop)
+	assert.Equal(t, int64(4), *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
+	assert.Equal(t, int64(9), *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
+
+	itprop2 := itprop.Items.Schema
+	require.NotNil(t, itprop2)
+	assert.Equal(t, int64(5), *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
+	assert.Equal(t, int64(8), *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
+
+	itprop3 := itprop2.Items.Schema
+	require.NotNil(t, itprop3)
+	assert.Equal(t, int64(3), *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
+	assert.Equal(t, int64(10), *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
+	assert.Equal(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
 
 	assertArrayProperty(t, &schema, "array", "deep_time_slice", "", "DeepTimeSlice")
 	prop, ok = schema.Properties["deep_time_slice"]
 	assert.Equal(t, "a DeepSlice has bars which are time", prop.Description)
 	assert.True(t, ok, "should have a 'deep_time_slice' property")
-	assert.NotNil(t, prop.Items, "deep_time_slice should have had an items property")
-	assert.NotNil(t, prop.Items.Schema, "deep_time_slice.items should have had a schema property")
+	require.NotNil(t, prop.Items, "deep_time_slice should have had an items property")
+	require.NotNil(t, prop.Items.Schema, "deep_time_slice.items should have had a schema property")
 	assert.True(t, prop.UniqueItems, "'deep_time_slice' should have unique items")
-	assert.EqualValues(t, 3, *prop.MinItems, "'deep_time_slice' should have had 3 min items")
-	assert.EqualValues(t, 10, *prop.MaxItems, "'deep_time_slice' should have had 10 max items")
+	assert.Equal(t, int64(3), *prop.MinItems, "'deep_time_slice' should have had 3 min items")
+	assert.Equal(t, int64(10), *prop.MaxItems, "'deep_time_slice' should have had 10 max items")
 	itprop = prop.Items.Schema
-	if assert.NotNil(t, itprop) {
-		assert.EqualValues(t, 4, *itprop.MinItems, "'deep_time_slice.items.minItems' should have been 4")
-		assert.EqualValues(t, 9, *itprop.MaxItems, "'deep_time_slice.items.maxItems' should have been 9")
-		itprop2 := itprop.Items.Schema
-		if assert.NotNil(t, itprop2) {
-			assert.EqualValues(t, 5, *itprop2.MinItems, "'deep_time_slice.items.items.minItems' should have been 5")
-			assert.EqualValues(t, 8, *itprop2.MaxItems, "'deep_time_slice.items.items.maxItems' should have been 8")
-			itprop3 := itprop2.Items.Schema
-			assert.NotNil(t, itprop3)
-		}
-	}
+	require.NotNil(t, itprop)
+	assert.Equal(t, int64(4), *itprop.MinItems, "'deep_time_slice.items.minItems' should have been 4")
+	assert.Equal(t, int64(9), *itprop.MaxItems, "'deep_time_slice.items.maxItems' should have been 9")
+
+	itprop2 = itprop.Items.Schema
+	require.NotNil(t, itprop2)
+	assert.Equal(t, int64(5), *itprop2.MinItems, "'deep_time_slice.items.items.minItems' should have been 5")
+	assert.Equal(t, int64(8), *itprop2.MaxItems, "'deep_time_slice.items.items.maxItems' should have been 8")
+
+	itprop3 = itprop2.Items.Schema
+	require.NotNil(t, itprop3)
 
 	assertArrayProperty(t, &schema, "object", "items", "", "Items")
 	prop, ok = schema.Properties["items"]
@@ -244,10 +249,11 @@ func TestSchemaBuilder(t *testing.T) {
 	iprop, ok := itprop.Properties["id"]
 	assert.True(t, ok)
 	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
-	assert.EqualValues(t, 1000, *iprop.Maximum)
+	require.NotNil(t, iprop.Maximum)
+	assert.InDelta(t, 1000.00, *iprop.Maximum, epsilon)
 	assert.True(t, iprop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
-	assert.NotNil(t, iprop.Minimum)
-	assert.EqualValues(t, 10, *iprop.Minimum)
+	require.NotNil(t, iprop.Minimum)
+	assert.InDelta(t, 10.00, *iprop.Minimum, epsilon)
 	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 	assert.Equal(t, 11, iprop.Default, "ID default value is incorrect")
 
@@ -262,8 +268,8 @@ func TestSchemaBuilder(t *testing.T) {
 	iprop, ok = itprop.Properties["quantity"]
 	assert.True(t, ok)
 	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
-	assert.EqualValues(t, 1, *iprop.Minimum)
-	assert.EqualValues(t, 10, *iprop.Maximum)
+	assert.InDelta(t, 1.00, *iprop.Minimum, epsilon)
+	assert.InDelta(t, 10.00, *iprop.Maximum, epsilon)
 
 	assertProperty(t, itprop, "string", "expiration", "date-time", "Expiration")
 	iprop, ok = itprop.Properties["expiration"]
@@ -860,6 +866,76 @@ func TestEmbeddedDescriptionAndTags(t *testing.T) {
 	assert.Equal(t, `{"value": 42}`, schema.Properties["value2"].Example)
 }
 
+func TestPointersAreNullableByDefaultWhenSetXNullableForPointersIsSet(t *testing.T) {
+	assertModel := func(sctx *scanCtx, packagePath, modelName string) {
+		decl, _ := sctx.FindDecl(packagePath, modelName)
+		require.NotNil(t, decl)
+		prs := &schemaBuilder{
+			ctx:  sctx,
+			decl: decl,
+		}
+		models := make(map[string]spec.Schema)
+		require.NoError(t, prs.Build(models))
+
+		schema := models[modelName]
+		require.Len(t, schema.Properties, 5)
+
+		require.Contains(t, schema.Properties, "Value1")
+		assert.Equal(t, true, schema.Properties["Value1"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value2")
+		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value3")
+		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value4")
+		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
+		require.Contains(t, schema.Properties, "Value5")
+		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+	}
+
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
+	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}, SetXNullableForPointers: true})
+	require.NoError(t, err)
+
+	assertModel(sctx, packagePath, "Item")
+	assertModel(sctx, packagePath, "ItemInterface")
+}
+
+func TestPointersAreNotNullableByDefaultWhenSetXNullableForPointersIsNotSet(t *testing.T) {
+	assertModel := func(sctx *scanCtx, packagePath, modelName string) {
+		decl, _ := sctx.FindDecl(packagePath, modelName)
+		require.NotNil(t, decl)
+		prs := &schemaBuilder{
+			ctx:  sctx,
+			decl: decl,
+		}
+		models := make(map[string]spec.Schema)
+		require.NoError(t, prs.Build(models))
+
+		schema := models[modelName]
+		require.Len(t, schema.Properties, 5)
+
+		require.Contains(t, schema.Properties, "Value1")
+		assert.NotContains(t, schema.Properties["Value1"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value2")
+		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.Contains(t, schema.Properties, "Value3")
+		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
+		require.Contains(t, schema.Properties, "Value4")
+		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
+		require.Contains(t, schema.Properties, "Value5")
+		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+	}
+
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
+	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}})
+	require.NoError(t, err)
+
+	assertModel(sctx, packagePath, "Item")
+	assertModel(sctx, packagePath, "ItemInterface")
+}
+
 func TestSwaggerTypeNamed(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "NamedWithType")
@@ -966,7 +1042,7 @@ func TestStructDiscriminators(t *testing.T) {
 	sch = models["giraffe"]
 	assert.Len(t, sch.AllOf, 2)
 	cl, _ = sch.Extensions.GetString("x-class")
-	assert.Equal(t, "", cl)
+	assert.Empty(t, cl)
 	cl, _ = sch.Extensions.GetString("x-go-name")
 	assert.Equal(t, "Giraffe", cl)
 

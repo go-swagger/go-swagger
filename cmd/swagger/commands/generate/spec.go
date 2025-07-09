@@ -17,30 +17,33 @@ package generate
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/go-swagger/go-swagger/codescan"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
 	"github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v3"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 )
 
 // SpecFile command to generate a swagger spec from a go application
 type SpecFile struct {
-	WorkDir     string         `long:"work-dir" short:"w" description:"the base path to use" default:"."`
-	BuildTags   string         `long:"tags" short:"t" description:"build tags" default:""`
-	ScanModels  bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
-	Compact     bool           `long:"compact" description:"when present, doesn't prettify the json"`
-	Output      flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	Input       flags.Filename `long:"input" short:"i" description:"an input swagger file with which to merge"`
-	Include     []string       `long:"include" short:"c" description:"include packages matching pattern"`
-	Exclude     []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
-	IncludeTags []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
-	ExcludeTags []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
-	ExcludeDeps bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
+	WorkDir                 string         `long:"work-dir" short:"w" description:"the base path to use" default:"."`
+	BuildTags               string         `long:"tags" short:"t" description:"build tags" default:""`
+	ScanModels              bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
+	Compact                 bool           `long:"compact" description:"when present, doesn't prettify the json"`
+	Output                  flags.Filename `long:"output" short:"o" description:"the file to write to"`
+	Input                   flags.Filename `long:"input" short:"i" description:"an input swagger file with which to merge"`
+	Include                 []string       `long:"include" short:"c" description:"include packages matching pattern"`
+	Exclude                 []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
+	IncludeTags             []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
+	ExcludeTags             []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
+	ExcludeDeps             bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
+	SetXNullableForPointers bool           `long:"nullable-pointers" short:"n" description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'"`
 }
 
 // Execute runs this command
@@ -65,6 +68,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.IncludeTags = s.IncludeTags
 	opts.ExcludeTags = s.ExcludeTags
 	opts.ExcludeDeps = s.ExcludeDeps
+	opts.SetXNullableForPointers = s.SetXNullableForPointers
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err
@@ -87,6 +91,8 @@ func loadSpec(input string) (*spec.Swagger, error) {
 	return nil, nil
 }
 
+var defaultWriter io.Writer = os.Stdout
+
 func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 	var b []byte
 	var err error
@@ -101,11 +107,15 @@ func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
 		return err
 	}
 
-	if output == "" {
-		fmt.Println(string(b))
-		return nil
+	switch output {
+	case "", "-":
+		_, e := fmt.Fprintf(defaultWriter, "%s\n", b)
+		return e
+	default:
+		return os.WriteFile(output, b, 0o644) //#nosec
 	}
-	return os.WriteFile(output, b, 0644) // #nosec
+
+	// #nosec
 }
 
 func marshalToJSONFormat(swspec *spec.Swagger, pretty bool) ([]byte, error) {
@@ -121,7 +131,7 @@ func marshalToYAMLFormat(swspec *spec.Swagger) ([]byte, error) {
 		return nil, err
 	}
 
-	var jsonObj interface{}
+	var jsonObj any
 	if err := yaml.Unmarshal(b, &jsonObj); err != nil {
 		return nil, err
 	}

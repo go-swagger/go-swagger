@@ -12,16 +12,16 @@ import (
 )
 
 // PetUploadImageHandlerFunc turns a function with the right signature into a pet upload image handler
-type PetUploadImageHandlerFunc func(PetUploadImageParams, interface{}) middleware.Responder
+type PetUploadImageHandlerFunc func(PetUploadImageParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn PetUploadImageHandlerFunc) Handle(params PetUploadImageParams, principal interface{}) middleware.Responder {
+func (fn PetUploadImageHandlerFunc) Handle(params PetUploadImageParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // PetUploadImageHandler interface for that can handle valid pet upload image params
 type PetUploadImageHandler interface {
-	Handle(PetUploadImageParams, interface{}) middleware.Responder
+	Handle(PetUploadImageParams, any) middleware.Responder
 }
 
 // NewPetUploadImage creates a new http.Handler for the pet upload image operation
@@ -53,9 +53,9 @@ func (o *PetUploadImage) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

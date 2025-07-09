@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/swag"
+
 	"github.com/go-swagger/go-swagger/examples/auto-configure/restapi/operations"
 )
 
@@ -30,9 +31,14 @@ func (i *ConfigureImpl) ConfigureFlags(api *operations.AToDoListApplicationAPI) 
 
 func (i *ConfigureImpl) ConfigureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
-func (i *ConfigureImpl) ConfigureServer(s *http.Server, scheme, addr string) {
+func (i *ConfigureImpl) ConfigureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
+
 	if i.flags.Example1 != "something" {
 		log.Println("example1 argument is not something")
 	}

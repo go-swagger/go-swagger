@@ -24,10 +24,11 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
-	"github.com/stretchr/testify/require"
 )
 
 // modelExpectations is a test structure to capture expected codegen lines of code
@@ -263,7 +264,7 @@ func initModelFixtures() {
 	// ReadOnly ContextValidate
 	initFixture936ReadOnly()
 
-	// required interface{}
+	// required any
 	initFixture2081()
 
 	// required map

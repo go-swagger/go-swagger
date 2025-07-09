@@ -6,6 +6,7 @@ package todos
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	stderrors "errors"
 	"fmt"
 	"net/http"
 
@@ -37,7 +38,6 @@ func NewFindParams() FindParams {
 //
 // swagger:parameters find
 type FindParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -46,11 +46,13 @@ type FindParams struct {
 	  In: header
 	*/
 	XRateLimit int32
+
 	/*
 	  Required: true
 	  In: formData
 	*/
 	Limit int32
+
 	/*
 	  Required: true
 	  In: formData
@@ -69,10 +71,10 @@ func (o *FindParams) BindRequest(r *http.Request, route *middleware.MatchedRoute
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(FindMaxParseMemory); err != nil {
-		if err != http.ErrNotMultipart {
+		if !stderrors.Is(err, http.ErrNotMultipart) {
 			return errors.New(400, "%v", err)
-		} else if err := r.ParseForm(); err != nil {
-			return errors.New(400, "%v", err)
+		} else if errParse := r.ParseForm(); errParse != nil {
+			return errors.New(400, "%v", errParse)
 		}
 	}
 	fds := runtime.Values(r.Form)

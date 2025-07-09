@@ -21,6 +21,6 @@ func (c *Cli) generate(opts *generator.GenOpts) error {
 }
 
 // Execute runs this command
-func (c *Cli) Execute(args []string) error {
+func (c *Cli) Execute(_ []string) error {
 	return createSwagger(c)
 }

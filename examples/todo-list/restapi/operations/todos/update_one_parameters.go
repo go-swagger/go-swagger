@@ -30,7 +30,6 @@ func NewUpdateOneParams() UpdateOneParams {
 //
 // swagger:parameters updateOne
 type UpdateOneParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -38,6 +37,7 @@ type UpdateOneParams struct {
 	  In: body
 	*/
 	Body *models.Item
+
 	/*
 	  Required: true
 	  In: path
@@ -55,7 +55,9 @@ func (o *UpdateOneParams) BindRequest(r *http.Request, route *middleware.Matched
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.Item
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

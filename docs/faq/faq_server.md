@@ -34,7 +34,7 @@ Originally from issue [#1085](https://github.com/go-swagger/go-swagger/issues/10
 `go-swagger` ships with an option to select a flag management package: `swagger generate server --flag-strategy=[go-flags|pflag|flag]`
 
 You may of course customize your server to accept arbitrary flags the way you prefer.
-This should be normally done with the generated main.go. For customization, you may either skip the generation of the main package (`--skip-main`)
+This should be normally done with the generated main.go. For customization, you may either skip the generation of the main package (`--exclude-main`)
 and provide your own, or customize template generation to generate a custom main.
 
 Here's an example: [kv store example](https://github.com/go-openapi/kvstore/blob/master/cmd/kvstored/main.go#L50-L57)
@@ -217,7 +217,7 @@ https://github.com/go-swagger/go-swagger/blob/master/generator/templates.go#L61-
 
 Note: customizing templates already brings many options to the table, including generating artifacts in other languages than go.
 
-There is some documentation on the config file format here: https://github.com/go-swagger/go-swagger/blob/gen-layout-configfile/docs/use/template_layout.md
+There is some documentation on the config file format here: https://github.com/go-swagger/go-swagger/blob/master/docs/reference/templates/template_layout.md
 
 Also keep in mind that `go-openapi` and `go-swagger` constitute a _toolkit_
 and provide you the *tools* to adapt to your own use case.

@@ -12,16 +12,16 @@ import (
 )
 
 // PetListHandlerFunc turns a function with the right signature into a pet list handler
-type PetListHandlerFunc func(PetListParams, interface{}) middleware.Responder
+type PetListHandlerFunc func(PetListParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn PetListHandlerFunc) Handle(params PetListParams, principal interface{}) middleware.Responder {
+func (fn PetListHandlerFunc) Handle(params PetListParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // PetListHandler interface for that can handle valid pet list params
 type PetListHandler interface {
-	Handle(PetListParams, interface{}) middleware.Responder
+	Handle(PetListParams, any) middleware.Responder
 }
 
 // NewPetList creates a new http.Handler for the pet list operation
@@ -53,9 +53,9 @@ func (o *PetList) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

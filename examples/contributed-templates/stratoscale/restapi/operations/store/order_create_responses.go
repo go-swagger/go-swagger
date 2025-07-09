@@ -78,7 +78,7 @@ func NewOrderCreateBadRequest() *OrderCreateBadRequest {
 // WriteResponse to the client
 func (o *OrderCreateBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }

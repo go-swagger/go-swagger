@@ -70,6 +70,7 @@ func setOutput(w io.Writer) func() {
 //	t.Run("should execute mycommand", gentest.GoExecInDir(folder, args))
 func GoExecInDir(target string, args ...string) func(*testing.T) {
 	return func(t *testing.T) {
+		t.Helper()
 		cmd := exec.Command("go", args...)
 		cmd.Dir = target
 		p, err := cmd.CombinedOutput()

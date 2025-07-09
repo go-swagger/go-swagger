@@ -12,12 +12,13 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/examples/cli/client"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -35,7 +36,7 @@ var (
 )
 
 // logDebugf writes debug log to stdout
-func logDebugf(format string, v ...interface{}) {
+func logDebugf(format string, v ...any) {
 	if !debug {
 		return
 	}

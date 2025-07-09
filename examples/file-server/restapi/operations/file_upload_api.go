@@ -46,6 +46,8 @@ func NewFileUploadAPI(spec *loads.Document) *FileUploadAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		UploadsUploadFileHandler: uploads.UploadFileHandlerFunc(func(params uploads.UploadFileParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation uploads.UploadFile has not yet been implemented")
 		}),
 	}
@@ -106,7 +108,7 @@ type FileUploadAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -196,6 +198,7 @@ func (o *FileUploadAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *FileUploadAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
@@ -211,16 +214,17 @@ func (o *FileUploadAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Con
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *FileUploadAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -228,6 +232,7 @@ func (o *FileUploadAPI) ProducersFor(mediaTypes []string) map[string]runtime.Pro
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

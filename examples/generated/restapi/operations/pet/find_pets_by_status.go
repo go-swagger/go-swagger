@@ -12,16 +12,16 @@ import (
 )
 
 // FindPetsByStatusHandlerFunc turns a function with the right signature into a find pets by status handler
-type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, interface{}) middleware.Responder
+type FindPetsByStatusHandlerFunc func(FindPetsByStatusParams, any) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal interface{}) middleware.Responder {
+func (fn FindPetsByStatusHandlerFunc) Handle(params FindPetsByStatusParams, principal any) middleware.Responder {
 	return fn(params, principal)
 }
 
 // FindPetsByStatusHandler interface for that can handle valid find pets by status params
 type FindPetsByStatusHandler interface {
-	Handle(FindPetsByStatusParams, interface{}) middleware.Responder
+	Handle(FindPetsByStatusParams, any) middleware.Responder
 }
 
 // NewFindPetsByStatus creates a new http.Handler for the find pets by status operation
@@ -55,9 +55,9 @@ func (o *FindPetsByStatus) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if aCtx != nil {
 		*r = *aCtx
 	}
-	var principal interface{}
+	var principal any
 	if uprinc != nil {
-		principal = uprinc.(interface{}) // this is really a interface{}, I promise
+		principal = uprinc
 	}
 
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params

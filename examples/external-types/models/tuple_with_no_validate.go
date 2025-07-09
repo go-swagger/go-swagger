@@ -99,7 +99,7 @@ func (m *TupleWithNoValidate) UnmarshalJSON(raw []byte) error {
 
 // MarshalJSON marshals this tuple type into a JSON array
 func (m TupleWithNoValidate) MarshalJSON() ([]byte, error) {
-	data := []interface{}{
+	data := []any{
 		m.P0, m.P1,
 	}
 

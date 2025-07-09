@@ -7,8 +7,9 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/go-openapi/spec"
 	"golang.org/x/tools/go/ast/astutil"
+
+	"github.com/go-openapi/spec"
 )
 
 type responseTypable struct {
@@ -333,7 +334,7 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 			continue
 		}
 
-		name, ignore, _, err := parseJSONTag(afld)
+		name, ignore, _, _, err := parseJSONTag(afld)
 		if err != nil {
 			return err
 		}

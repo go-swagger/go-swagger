@@ -170,7 +170,7 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
 	sp.setDescription = func(lines []string) {
 		schema.Description = joinDropLast(lines)
-		enumDesc := getEnumDesc(schema.VendorExtensible.Extensions)
+		enumDesc := getEnumDesc(schema.Extensions)
 		if enumDesc != "" {
 			schema.Description += "\n" + enumDesc
 		}
@@ -653,6 +653,12 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 			ps.AddExtension("x-go-name", fld.Name())
 		}
 
+		if s.ctx.app.setXNullableForPointers {
+			if _, isPointer := fld.Type().(*types.Signature).Results().At(0).Type().(*types.Pointer); isPointer && (ps.Extensions == nil || (ps.Extensions["x-nullable"] == nil && ps.Extensions["x-isnullable"] == nil)) {
+				ps.AddExtension("x-nullable", true)
+			}
+		}
+
 		seen[name] = fld.Name()
 		tgt.Properties[name] = ps
 	}
@@ -718,7 +724,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			continue
 		}
 
-		_, ignore, _, err := parseJSONTag(afld)
+		_, ignore, _, _, err := parseJSONTag(afld)
 		if err != nil {
 			return err
 		}
@@ -818,7 +824,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			continue
 		}
 
-		name, ignore, isString, err := parseJSONTag(afld)
+		name, ignore, isString, omitEmpty, err := parseJSONTag(afld)
 		if err != nil {
 			return err
 		}
@@ -853,6 +859,13 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 
 		if ps.Ref.String() == "" && name != fld.Name() {
 			addExtension(&ps.VendorExtensible, "x-go-name", fld.Name())
+		}
+
+		if s.ctx.app.setXNullableForPointers {
+			if _, isPointer := fld.Type().(*types.Pointer); isPointer && !omitEmpty &&
+				(ps.Extensions == nil || (ps.Extensions["x-nullable"] == nil && ps.Extensions["x-isnullable"] == nil)) {
+				ps.AddExtension("x-nullable", true)
+			}
 		}
 
 		// we have 2 cases:
@@ -975,7 +988,7 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 
 	sp.setDescription = func(lines []string) {
 		ps.Description = joinDropLast(lines)
-		enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
+		enumDesc := getEnumDesc(ps.Extensions)
 		if enumDesc != "" {
 			ps.Description += "\n" + enumDesc
 		}
@@ -1101,17 +1114,17 @@ func (t tagOptions) Name() string {
 	return t[0]
 }
 
-func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, err error) {
+func parseJSONTag(field *ast.Field) (name string, ignore, isString, omitEmpty bool, err error) {
 	if len(field.Names) > 0 {
 		name = field.Names[0].Name
 	}
 	if field.Tag == nil || len(strings.TrimSpace(field.Tag.Value)) == 0 {
-		return name, false, false, nil
+		return name, false, false, false, nil
 	}
 
 	tv, err := strconv.Unquote(field.Tag.Value)
 	if err != nil {
-		return name, false, false, err
+		return name, false, false, false, err
 	}
 
 	if strings.TrimSpace(tv) != "" {
@@ -1124,16 +1137,18 @@ func parseJSONTag(field *ast.Field) (name string, ignore bool, isString bool, er
 			isString = isFieldStringable(field.Type)
 		}
 
+		omitEmpty = jsonParts.Contain("omitempty")
+
 		switch jsonParts.Name() {
 		case "-":
-			return name, true, isString, nil
+			return name, true, isString, omitEmpty, nil
 		case "":
-			return name, false, isString, nil
+			return name, false, isString, omitEmpty, nil
 		default:
-			return jsonParts.Name(), false, isString, nil
+			return jsonParts.Name(), false, isString, omitEmpty, nil
 		}
 	}
-	return name, false, false, nil
+	return name, false, false, false, nil
 }
 
 // isFieldStringable check if the field type is a scalar. If the field type is

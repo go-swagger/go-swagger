@@ -10,6 +10,7 @@ import (
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
+
 	"github.com/go-swagger/go-swagger/examples/stream-server/biz"
 
 	"github.com/go-swagger/go-swagger/examples/stream-server/restapi/operations"
@@ -19,6 +20,7 @@ import (
 
 func configureFlags(api *operations.CountdownAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.CountdownAPI) http.Handler {
@@ -26,7 +28,7 @@ func configureAPI(api *operations.CountdownAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -40,12 +42,12 @@ func configureAPI(api *operations.CountdownAPI) http.Handler {
 		if params.Length == 11 {
 			return operations.NewElapseForbidden()
 		}
-		return middleware.ResponderFunc(func(rw http.ResponseWriter, p runtime.Producer) {
+
+		return middleware.ResponderFunc(func(rw http.ResponseWriter, _ runtime.Producer) {
 			f, _ := rw.(http.Flusher)
 			rw.WriteHeader(200)
 			_ = myCounter.Down(params.Length, &flushWriter{f: f, w: rw})
 		})
-
 	})
 
 	api.ServerShutdown = func() {}
@@ -71,13 +73,17 @@ func (fw *flushWriter) Write(p []byte) (n int, err error) {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

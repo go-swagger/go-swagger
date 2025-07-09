@@ -25,14 +25,14 @@ type UserCard struct {
 	//
 	// Only employees of the owning company can be admins.
 	// Admins are like project owners but have access to all the projects in the application.
-	// There aren't many admins, and it's only used for extremly critical issues with the application.
+	// There aren't many admins, and it's only used for extremely critical issues with the application.
 	//
 	// Read Only: true
 	Admin *bool `json:"admin,omitempty"`
 
 	// The amount of karma this user has available.
 	//
-	// In this application users get a cerain amount of karma alotted.
+	// In this application users get a cerain amount of karma allotted.
 	// This karma can be donated to other users to show appreciation, or it can be used
 	// by a user to vote on issues.
 	// Once an issue is closed or rejected, the user gets his karma back.
@@ -96,7 +96,7 @@ func (m *UserCard) validateAvailableKarma(formats strfmt.Registry) error {
 
 func (m *UserCard) validateID(formats strfmt.Registry) error {
 
-	if err := validate.Required("id", "body", int64(m.ID)); err != nil {
+	if err := validate.Required("id", "body", m.ID); err != nil {
 		return err
 	}
 
@@ -157,7 +157,7 @@ func (m *UserCard) contextValidateAdmin(ctx context.Context, formats strfmt.Regi
 
 func (m *UserCard) contextValidateAvailableKarma(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "availableKarma", "body", float64(m.AvailableKarma)); err != nil {
+	if err := validate.ReadOnly(ctx, "availableKarma", "body", m.AvailableKarma); err != nil {
 		return err
 	}
 
@@ -166,7 +166,7 @@ func (m *UserCard) contextValidateAvailableKarma(ctx context.Context, formats st
 
 func (m *UserCard) contextValidateID(ctx context.Context, formats strfmt.Registry) error {
 
-	if err := validate.ReadOnly(ctx, "id", "body", int64(m.ID)); err != nil {
+	if err := validate.ReadOnly(ctx, "id", "body", m.ID); err != nil {
 		return err
 	}
 

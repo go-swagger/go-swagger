@@ -30,7 +30,6 @@ func NewUpdateUserParams() UpdateUserParams {
 //
 // swagger:parameters updateUser
 type UpdateUserParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -38,6 +37,7 @@ type UpdateUserParams struct {
 	  In: body
 	*/
 	Body *models.User
+
 	/*name that need to be deleted
 	  Required: true
 	  In: path
@@ -55,7 +55,9 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body models.User
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

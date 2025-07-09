@@ -1,6 +1,9 @@
 package codescan
 
 import (
+	"io"
+	"log"
+	"os"
 	"sort"
 	"testing"
 
@@ -16,32 +19,10 @@ var (
 	classificationCtx *scanCtx
 )
 
-func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
-	if petstoreCtx != nil {
-		return petstoreCtx
-	}
-	sctx, err := newScanCtx(&Options{
-		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/..."},
-	})
-	require.NoError(t, err)
-	petstoreCtx = sctx
-	return petstoreCtx
-}
-
-func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
-	if classificationCtx != nil {
-		return classificationCtx
-	}
-	sctx, err := newScanCtx(&Options{
-		Packages: append([]string{
-			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification",
-			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models",
-			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations",
-		}, extra...),
-	})
-	require.NoError(t, err)
-	classificationCtx = sctx
-	return classificationCtx
+func TestMain(m *testing.M) {
+	// initializations to run tests in this package
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
 }
 
 func TestApplication_LoadCode(t *testing.T) {
@@ -87,10 +68,38 @@ func TestAppScanner_Definitions(t *testing.T) {
 	}
 }
 
+func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
+	if petstoreCtx != nil {
+		return petstoreCtx
+	}
+	sctx, err := newScanCtx(&Options{
+		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/..."},
+	})
+	require.NoError(t, err)
+	petstoreCtx = sctx
+	return petstoreCtx
+}
+
+func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
+	if classificationCtx != nil {
+		return classificationCtx
+	}
+	sctx, err := newScanCtx(&Options{
+		Packages: append([]string{
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification",
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models",
+			"github.com/go-swagger/go-swagger/fixtures/goparsing/classification/operations",
+		}, extra...),
+	})
+	require.NoError(t, err)
+	classificationCtx = sctx
+	return classificationCtx
+}
+
 func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
-	assert.EqualValues(t, []string{"application/json"}, doc.Consumes)
-	assert.EqualValues(t, []string{"application/json"}, doc.Produces)
-	assert.EqualValues(t, []string{"http", "https"}, doc.Schemes)
+	assert.Equal(t, []string{"application/json"}, doc.Consumes)
+	assert.Equal(t, []string{"application/json"}, doc.Produces)
+	assert.Equal(t, []string{"http", "https"}, doc.Schemes)
 	assert.Equal(t, "localhost", doc.Host)
 	assert.Equal(t, "/v2", doc.BasePath)
 
@@ -207,7 +216,8 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	iprop, ok = itprop.Properties["qty"]
 	assert.True(t, ok, "should have had a 'qty' property")
 	assert.Equal(t, "the quantity of this pet to order", iprop.Description)
-	assert.EqualValues(t, 1, *iprop.Minimum)
+	require.NotNil(t, iprop.Minimum)
+	assert.InDelta(t, 1.00, *iprop.Minimum, epsilon)
 
 	// responses
 	resp, ok := doc.Responses["genericError"]
@@ -242,7 +252,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "Lists the pets known to the store.", op.Get.Summary)
 	assert.Equal(t, "By default it will only lists pets that are available for sale.\nThis can be changed with the status flag.", op.Get.Description)
 	assert.Equal(t, "listPets", op.Get.ID)
-	assert.EqualValues(t, []string{"pets"}, op.Get.Tags)
+	assert.Equal(t, []string{"pets"}, op.Get.Tags)
 	assert.True(t, op.Get.Deprecated)
 	var names namedParams
 	for i, v := range op.Get.Parameters {
@@ -253,8 +263,8 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "Status\navailable STATUS_AVAILABLE\npending STATUS_PENDING\nsold STATUS_SOLD", sparam.Description)
 	assert.Equal(t, "query", sparam.In)
 	assert.Equal(t, "string", sparam.Type)
-	assert.Equal(t, "", sparam.Format)
-	assert.Equal(t, []interface{}{"available", "pending", "sold"}, sparam.Enum)
+	assert.Empty(t, sparam.Format)
+	assert.Equal(t, []any{"available", "pending", "sold"}, sparam.Enum)
 	assert.False(t, sparam.Required)
 	assert.Equal(t, "Status", sparam.Extensions["x-go-name"])
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
@@ -278,9 +288,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// createPet
 	assert.NotNil(t, op.Post)
 	assert.Equal(t, "Creates a new pet in the store.", op.Post.Summary)
-	assert.Equal(t, "", op.Post.Description)
+	assert.Empty(t, op.Post.Description)
 	assert.Equal(t, "createPet", op.Post.ID)
-	assert.EqualValues(t, []string{"pets"}, op.Post.Tags)
+	assert.Equal(t, []string{"pets"}, op.Post.Tags)
 	verifyRefParam(t, op.Post.Parameters[0], "The pet to submit.", "pet")
 	assert.Equal(t, "#/responses/genericError", op.Post.Responses.Default.Ref.String())
 	rs, ok = op.Post.Responses.StatusCodeResponses[200]
@@ -297,9 +307,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// getPetById
 	assert.NotNil(t, op.Get)
 	assert.Equal(t, "Gets the details for a pet.", op.Get.Summary)
-	assert.Equal(t, "", op.Get.Description)
+	assert.Empty(t, op.Get.Description)
 	assert.Equal(t, "getPetById", op.Get.ID)
-	assert.EqualValues(t, []string{"pets"}, op.Get.Tags)
+	assert.Equal(t, []string{"pets"}, op.Get.Tags)
 	verifyIDParam(t, op.Get.Parameters[0], "The ID of the pet")
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
 	rs, ok = op.Get.Responses.StatusCodeResponses[200]
@@ -311,9 +321,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// updatePet
 	assert.NotNil(t, op.Put)
 	assert.Equal(t, "Updates the details for a pet.", op.Put.Summary)
-	assert.Equal(t, "", op.Put.Description)
+	assert.Empty(t, op.Put.Description)
 	assert.Equal(t, "updatePet", op.Put.ID)
-	assert.EqualValues(t, []string{"pets"}, op.Put.Tags)
+	assert.Equal(t, []string{"pets"}, op.Put.Tags)
 	verifyIDParam(t, op.Put.Parameters[0], "The ID of the pet")
 	verifyRefParam(t, op.Put.Parameters[1], "The pet to submit.", "pet")
 	assert.Equal(t, "#/responses/genericError", op.Put.Responses.Default.Ref.String())
@@ -326,9 +336,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// deletePet
 	assert.NotNil(t, op.Delete)
 	assert.Equal(t, "Deletes a pet from the store.", op.Delete.Summary)
-	assert.Equal(t, "", op.Delete.Description)
+	assert.Empty(t, op.Delete.Description)
 	assert.Equal(t, "deletePet", op.Delete.ID)
-	assert.EqualValues(t, []string{"pets"}, op.Delete.Tags)
+	assert.Equal(t, []string{"pets"}, op.Delete.Tags)
 	verifyIDParam(t, op.Delete.Parameters[0], "The ID of the pet")
 	assert.Equal(t, "#/responses/genericError", op.Delete.Responses.Default.Ref.String())
 	_, ok = op.Delete.Responses.StatusCodeResponses[204]
@@ -342,9 +352,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// getOrderDetails
 	assert.NotNil(t, op.Get)
 	assert.Equal(t, "Gets the details for an order.", op.Get.Summary)
-	assert.Equal(t, "", op.Get.Description)
+	assert.Empty(t, op.Get.Description)
 	assert.Equal(t, "getOrderDetails", op.Get.ID)
-	assert.EqualValues(t, []string{"orders"}, op.Get.Tags)
+	assert.Equal(t, []string{"orders"}, op.Get.Tags)
 	verifyIDParam(t, op.Get.Parameters[0], "The ID of the order")
 	assert.Equal(t, "#/responses/genericError", op.Get.Responses.Default.Ref.String())
 	rs, ok = op.Get.Responses.StatusCodeResponses[200]
@@ -357,9 +367,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// cancelOrder
 	assert.NotNil(t, op.Delete)
 	assert.Equal(t, "Deletes an order.", op.Delete.Summary)
-	assert.Equal(t, "", op.Delete.Description)
+	assert.Empty(t, op.Delete.Description)
 	assert.Equal(t, "cancelOrder", op.Delete.ID)
-	assert.EqualValues(t, []string{"orders"}, op.Delete.Tags)
+	assert.Equal(t, []string{"orders"}, op.Delete.Tags)
 	verifyIDParam(t, op.Delete.Parameters[0], "The ID of the order")
 	assert.Equal(t, "#/responses/genericError", op.Delete.Responses.Default.Ref.String())
 	_, ok = op.Delete.Responses.StatusCodeResponses[204]
@@ -368,9 +378,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// updateOrder
 	assert.NotNil(t, op.Put)
 	assert.Equal(t, "Updates an order.", op.Put.Summary)
-	assert.Equal(t, "", op.Put.Description)
+	assert.Empty(t, op.Put.Description)
 	assert.Equal(t, "updateOrder", op.Put.ID)
-	assert.EqualValues(t, []string{"orders"}, op.Put.Tags)
+	assert.Equal(t, []string{"orders"}, op.Put.Tags)
 	verifyIDParam(t, op.Put.Parameters[0], "The ID of the order")
 	verifyRefParam(t, op.Put.Parameters[1], "The order to submit", "order")
 	assert.Equal(t, "#/responses/genericError", op.Put.Responses.Default.Ref.String())
@@ -388,9 +398,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	// createOrder
 	assert.NotNil(t, op.Post)
 	assert.Equal(t, "Creates an order.", op.Post.Summary)
-	assert.Equal(t, "", op.Post.Description)
+	assert.Empty(t, op.Post.Description)
 	assert.Equal(t, "createOrder", op.Post.ID)
-	assert.EqualValues(t, []string{"orders"}, op.Post.Tags)
+	assert.Equal(t, []string{"orders"}, op.Post.Tags)
 	verifyRefParam(t, op.Post.Parameters[0], "The order to submit", "order")
 	assert.Equal(t, "#/responses/genericError", op.Post.Responses.Default.Ref.String())
 	rs, ok = op.Post.Responses.StatusCodeResponses[200]

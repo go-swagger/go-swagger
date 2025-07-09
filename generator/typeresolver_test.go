@@ -17,10 +17,11 @@ package generator
 import (
 	"testing"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 )
 
 func schTypeVals() []struct{ Type, Format, Expected string } {
@@ -524,7 +525,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 
 		assert.True(t, rt.IsMap)
 		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "interface{}", rt.GoType)
+		assert.Equal(t, "any", rt.GoType)
 		assert.Equal(t, "object", rt.SwaggerType)
 
 		sch.Properties = make(map[string]spec.Schema)
@@ -556,7 +557,7 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 
 		assert.True(t, rt.IsMap)
 		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "interface{}", rt.GoType)
+		assert.Equal(t, "any", rt.GoType)
 		assert.Equal(t, "object", rt.SwaggerType)
 
 		sch = new(spec.Schema)
@@ -647,6 +648,6 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 	assert.False(t, rest.IsComplexObject)
 	assert.False(t, rest.IsCustomFormatter)
 	assert.Equal(t, "[]*jwk.Key", rest.GoType)
-	assert.Equal(t, "", rest.Pkg)
-	assert.Equal(t, "", rest.PkgAlias)
+	assert.Empty(t, rest.Pkg)
+	assert.Empty(t, rest.PkgAlias)
 }

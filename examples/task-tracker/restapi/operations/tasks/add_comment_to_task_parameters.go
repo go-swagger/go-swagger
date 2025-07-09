@@ -29,7 +29,6 @@ func NewAddCommentToTaskParams() AddCommentToTaskParams {
 //
 // swagger:parameters addCommentToTask
 type AddCommentToTaskParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -37,6 +36,7 @@ type AddCommentToTaskParams struct {
 	  In: body
 	*/
 	Body AddCommentToTaskBody
+
 	/*The id of the item
 	  Required: true
 	  In: path
@@ -54,7 +54,9 @@ func (o *AddCommentToTaskParams) BindRequest(r *http.Request, route *middleware.
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body AddCommentToTaskBody
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

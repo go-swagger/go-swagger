@@ -35,7 +35,7 @@ var (
 )
 
 // logDebugf writes debug log to stdout
-func logDebugf(format string, v ...interface{}) {
+func logDebugf(format string, v ...any) {
   if !debug{
     return
   }

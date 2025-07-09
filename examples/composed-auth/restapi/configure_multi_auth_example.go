@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
+
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
@@ -22,6 +23,7 @@ import (
 
 func configureFlags(api *operations.MultiAuthExampleAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
@@ -29,7 +31,7 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
@@ -43,11 +45,11 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 		return auth.HasRole(token, scopes)
 	}
 	// Applies when the Authorization header is set with the Basic scheme
-	api.IsRegisteredAuth = func(user string, pass string) (*models.Principal, error) {
+	api.IsRegisteredAuth = func(user string, password string) (*models.Principal, error) {
 		// The header: Authorization: Basic {base64 string} has already been decoded by the runtime as a
 		// username:password pair
 		api.Logger("IsRegisteredAuth handler called")
-		return auth.IsRegistered(user, pass)
+		return auth.IsRegistered(user, password)
 	}
 	// Applies when the "X-Custom-Key" header is set
 	api.IsResellerAuth = func(token string) (*models.Principal, error) {
@@ -73,11 +75,15 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 		})
 	api.GetAccountHandler = operations.GetAccountHandlerFunc(
 		func(params operations.GetAccountParams, principal *models.Principal) middleware.Responder {
+			_ = params
+
 			log.Printf("GetAccount called with NO params, and principal: %s", spew.Sdump(principal))
 			return middleware.NotImplemented("operation .GetAccount has not yet been implemented")
 		})
 	api.GetItemsHandler = operations.GetItemsHandlerFunc(
 		func(params operations.GetItemsParams) middleware.Responder {
+			_ = params
+
 			log.Printf("GetItems called with NO params and NO principal")
 			return middleware.NotImplemented("operation .GetItems has not yet been implemented")
 		})
@@ -102,13 +108,17 @@ func configureAPI(api *operations.MultiAuthExampleAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.

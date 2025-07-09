@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/swag"
-	"github.com/go-swagger/go-swagger/generator"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
+
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/swag"
+
+	"github.com/go-swagger/go-swagger/generator"
 )
 
 // FlattenCmdOptions determines options to the flatten spec preprocessing
@@ -136,7 +138,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.AllowTemplateOverride = s.AllowTemplateOverride
 	opts.ValidateSpec = !s.SkipValidation
 	opts.DumpData = s.DumpData
-	opts.FlattenOpts = s.FlattenCmdOptions.SetFlattenOptions(opts.FlattenOpts)
+	opts.FlattenOpts = s.SetFlattenOptions(opts.FlattenOpts)
 	opts.Copyright = string(s.CopyrightFile)
 	opts.StrictResponders = s.StrictResponders
 
@@ -167,7 +169,7 @@ func createSwagger(s sharedCommand) error {
 
 	opts.Copyright, err = setCopyright(opts.Copyright)
 	if err != nil {
-		return fmt.Errorf("could not load copyright file: %v", err)
+		return fmt.Errorf("could not load copyright file: %w", err)
 	}
 
 	if opts.Template != "" {

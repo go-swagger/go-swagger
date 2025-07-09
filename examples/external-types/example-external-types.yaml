@@ -480,7 +480,7 @@ definitions:
     description: |
       This object demonstrates several ways to refer to an external interface.
 
-      The generated code behaves as it is an interface{}: no pointers are generated, and no valication
+      The generated code behaves as it is an interface{}: no pointers are generated, and no validation
       is required.
 
     type: object

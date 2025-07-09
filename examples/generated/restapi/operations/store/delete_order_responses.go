@@ -31,7 +31,7 @@ func NewDeleteOrderBadRequest() *DeleteOrderBadRequest {
 // WriteResponse to the client
 func (o *DeleteOrderBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(400)
 }
@@ -56,7 +56,7 @@ func NewDeleteOrderNotFound() *DeleteOrderNotFound {
 // WriteResponse to the client
 func (o *DeleteOrderNotFound) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 
 	rw.WriteHeader(404)
 }

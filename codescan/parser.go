@@ -11,9 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
-	"gopkg.in/yaml.v3"
 )
 
 func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map[string]bool) bool {
@@ -695,11 +696,11 @@ func (sm *setMaximum) Parse(lines []string) error {
 	}
 	matches := sm.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 2 && len(matches[2]) > 0 {
-		max, err := strconv.ParseFloat(matches[2], 64)
+		maximum, err := strconv.ParseFloat(matches[2], 64)
 		if err != nil {
 			return err
 		}
-		sm.builder.SetMaximum(max, matches[1] == "<")
+		sm.builder.SetMaximum(maximum, matches[1] == "<")
 	}
 	return nil
 }
@@ -723,11 +724,11 @@ func (sm *setMinimum) Parse(lines []string) error {
 	}
 	matches := sm.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 2 && len(matches[2]) > 0 {
-		min, err := strconv.ParseFloat(matches[2], 64)
+		minimum, err := strconv.ParseFloat(matches[2], 64)
 		if err != nil {
 			return err
 		}
-		sm.builder.SetMinimum(min, matches[1] == ">")
+		sm.builder.SetMinimum(minimum, matches[1] == ">")
 	}
 	return nil
 }
@@ -1685,8 +1686,8 @@ func (ss *setOpExtensions) Parse(lines []string) error {
 			exts.AddExtension(ext.Extension, ext.Root.(map[string]string)[ext.Extension])
 		} else if _, ok := ext.Root.(map[string]*[]string); ok {
 			exts.AddExtension(ext.Extension, *(ext.Root.(map[string]*[]string)[ext.Extension]))
-		} else if _, ok := ext.Root.(map[string]interface{}); ok {
-			exts.AddExtension(ext.Extension, ext.Root.(map[string]interface{})[ext.Extension])
+		} else if _, ok := ext.Root.(map[string]any); ok {
+			exts.AddExtension(ext.Extension, ext.Root.(map[string]any)[ext.Extension])
 		} else {
 			debugLog("Unknown Extension type: %s", fmt.Sprint(reflect.TypeOf(ext.Root)))
 		}

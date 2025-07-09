@@ -29,19 +29,14 @@ const AuthKey contextKey = "Auth"
 type PetAPI interface {
 	/* PetCreate Add a new pet to the store */
 	PetCreate(ctx context.Context, params pet.PetCreateParams) middleware.Responder
-
 	/* PetDelete Deletes a pet */
 	PetDelete(ctx context.Context, params pet.PetDeleteParams) middleware.Responder
-
 	/* PetGet Get pet by it's ID */
 	PetGet(ctx context.Context, params pet.PetGetParams) middleware.Responder
-
 	/* PetList List pets */
 	PetList(ctx context.Context, params pet.PetListParams) middleware.Responder
-
 	/* PetUpdate Update an existing pet */
 	PetUpdate(ctx context.Context, params pet.PetUpdateParams) middleware.Responder
-
 	/* PetUploadImage uploads an image */
 	PetUploadImage(ctx context.Context, params pet.PetUploadImageParams) middleware.Responder
 }
@@ -52,13 +47,10 @@ type PetAPI interface {
 type StoreAPI interface {
 	/* InventoryGet Returns pet inventories by status */
 	InventoryGet(ctx context.Context, params store.InventoryGetParams) middleware.Responder
-
 	/* OrderCreate Place an order for a pet */
 	OrderCreate(ctx context.Context, params store.OrderCreateParams) middleware.Responder
-
 	/* OrderDelete Delete purchase order by ID */
 	OrderDelete(ctx context.Context, params store.OrderDeleteParams) middleware.Responder
-
 	/* OrderGet Find purchase order by ID */
 	OrderGet(ctx context.Context, params store.OrderGetParams) middleware.Responder
 }
@@ -67,7 +59,7 @@ type StoreAPI interface {
 type Config struct {
 	PetAPI
 	StoreAPI
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 	// InnerMiddleware is for the handler executors. These do not apply to the swagger.json document.
 	// The middleware executes after routing but before authentication, binding and validation
 	InnerMiddleware func(http.Handler) http.Handler
@@ -77,7 +69,7 @@ type Config struct {
 	Authorizer func(*http.Request) error
 
 	// AuthRoles Applies when the "X-Auth-Roles" header is set
-	AuthRoles func(token string) (interface{}, error)
+	AuthRoles func(token string) (any, error)
 
 	// Authenticator to use for all APIKey authentication
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
@@ -103,7 +95,7 @@ func Handler(c Config) (http.Handler, error) {
 func HandlerAPI(c Config) (http.Handler, *operations.PetstoreAPI, error) {
 	spec, err := loads.Analyzed(swaggerCopy(SwaggerJSON), "")
 	if err != nil {
-		return nil, nil, fmt.Errorf("analyze swagger: %v", err)
+		return nil, nil, fmt.Errorf("analyze swagger: %w", err)
 	}
 	api := operations.NewPetstoreAPI(spec)
 	api.ServeError = errors.ServeError
@@ -125,64 +117,87 @@ func HandlerAPI(c Config) (http.Handler, *operations.PetstoreAPI, error) {
 		api.JSONConsumer = runtime.JSONConsumer()
 	}
 	api.JSONProducer = runtime.JSONProducer()
-	api.RolesAuth = func(token string) (interface{}, error) {
+
+	api.RolesAuth = func(token string) (any, error) {
 		if c.AuthRoles == nil {
 			return token, nil
 		}
+
 		return c.AuthRoles(token)
 	}
 
 	api.APIAuthorizer = authorizer(c.Authorizer)
-	api.StoreInventoryGetHandler = store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal interface{}) middleware.Responder {
+
+	api.StoreInventoryGetHandler = store.InventoryGetHandlerFunc(func(params store.InventoryGetParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.StoreAPI.InventoryGet(ctx, params)
+
+		return c.InventoryGet(ctx, params)
 	})
-	api.StoreOrderCreateHandler = store.OrderCreateHandlerFunc(func(params store.OrderCreateParams, principal interface{}) middleware.Responder {
+
+	api.StoreOrderCreateHandler = store.OrderCreateHandlerFunc(func(params store.OrderCreateParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.StoreAPI.OrderCreate(ctx, params)
+
+		return c.OrderCreate(ctx, params)
 	})
-	api.StoreOrderDeleteHandler = store.OrderDeleteHandlerFunc(func(params store.OrderDeleteParams, principal interface{}) middleware.Responder {
+
+	api.StoreOrderDeleteHandler = store.OrderDeleteHandlerFunc(func(params store.OrderDeleteParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.StoreAPI.OrderDelete(ctx, params)
+
+		return c.OrderDelete(ctx, params)
 	})
-	api.StoreOrderGetHandler = store.OrderGetHandlerFunc(func(params store.OrderGetParams, principal interface{}) middleware.Responder {
+
+	api.StoreOrderGetHandler = store.OrderGetHandlerFunc(func(params store.OrderGetParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.StoreAPI.OrderGet(ctx, params)
+
+		return c.OrderGet(ctx, params)
 	})
-	api.PetPetCreateHandler = pet.PetCreateHandlerFunc(func(params pet.PetCreateParams, principal interface{}) middleware.Responder {
+
+	api.PetPetCreateHandler = pet.PetCreateHandlerFunc(func(params pet.PetCreateParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetCreate(ctx, params)
+
+		return c.PetCreate(ctx, params)
 	})
-	api.PetPetDeleteHandler = pet.PetDeleteHandlerFunc(func(params pet.PetDeleteParams, principal interface{}) middleware.Responder {
+
+	api.PetPetDeleteHandler = pet.PetDeleteHandlerFunc(func(params pet.PetDeleteParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetDelete(ctx, params)
+
+		return c.PetDelete(ctx, params)
 	})
-	api.PetPetGetHandler = pet.PetGetHandlerFunc(func(params pet.PetGetParams, principal interface{}) middleware.Responder {
+
+	api.PetPetGetHandler = pet.PetGetHandlerFunc(func(params pet.PetGetParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetGet(ctx, params)
+
+		return c.PetGet(ctx, params)
 	})
-	api.PetPetListHandler = pet.PetListHandlerFunc(func(params pet.PetListParams, principal interface{}) middleware.Responder {
+
+	api.PetPetListHandler = pet.PetListHandlerFunc(func(params pet.PetListParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetList(ctx, params)
+
+		return c.PetList(ctx, params)
 	})
-	api.PetPetUpdateHandler = pet.PetUpdateHandlerFunc(func(params pet.PetUpdateParams, principal interface{}) middleware.Responder {
+
+	api.PetPetUpdateHandler = pet.PetUpdateHandlerFunc(func(params pet.PetUpdateParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetUpdate(ctx, params)
+
+		return c.PetUpdate(ctx, params)
 	})
-	api.PetPetUploadImageHandler = pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal interface{}) middleware.Responder {
+
+	api.PetPetUploadImageHandler = pet.PetUploadImageHandlerFunc(func(params pet.PetUploadImageParams, principal any) middleware.Responder {
 		ctx := params.HTTPRequest.Context()
 		ctx = storeAuth(ctx, principal)
-		return c.PetAPI.PetUploadImage(ctx, params)
+
+		return c.PetUploadImage(ctx, params)
 	})
+
 	api.ServerShutdown = func() {}
 	return api.Serve(c.InnerMiddleware), api, nil
 }
@@ -197,7 +212,7 @@ func swaggerCopy(orig json.RawMessage) json.RawMessage {
 // authorizer is a helper function to implement the runtime.Authorizer interface.
 type authorizer func(*http.Request) error
 
-func (a authorizer) Authorize(req *http.Request, principal interface{}) error {
+func (a authorizer) Authorize(req *http.Request, principal any) error {
 	if a == nil {
 		return nil
 	}
@@ -205,6 +220,6 @@ func (a authorizer) Authorize(req *http.Request, principal interface{}) error {
 	return a(req.WithContext(ctx))
 }
 
-func storeAuth(ctx context.Context, principal interface{}) context.Context {
+func storeAuth(ctx context.Context, principal any) context.Context {
 	return context.WithValue(ctx, AuthKey, principal)
 }

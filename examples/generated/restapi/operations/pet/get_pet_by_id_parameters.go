@@ -27,7 +27,6 @@ func NewGetPetByIDParams() GetPetByIDParams {
 //
 // swagger:parameters getPetById
 type GetPetByIDParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 

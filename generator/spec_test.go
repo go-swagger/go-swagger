@@ -4,9 +4,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSpec_Issue1429(t *testing.T) {

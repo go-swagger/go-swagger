@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -67,11 +68,15 @@ func (m *Order) validateOrderLines(formats strfmt.Registry) error {
 
 		if m.OrderLines[i] != nil {
 			if err := m.OrderLines[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("orderLines" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("orderLines" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -106,11 +111,15 @@ func (m *Order) contextValidateOrderLines(ctx context.Context, formats strfmt.Re
 			}
 
 			if err := m.OrderLines[i].ContextValidate(ctx, formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
+				ve := new(errors.Validation)
+				if stderrors.As(err, &ve) {
 					return ve.ValidateName("orderLines" + "." + strconv.Itoa(i))
-				} else if ce, ok := err.(*errors.CompositeError); ok {
+				}
+				ce := new(errors.CompositeError)
+				if stderrors.As(err, &ce) {
 					return ce.ValidateName("orderLines" + "." + strconv.Itoa(i))
 				}
+
 				return err
 			}
 		}
@@ -183,11 +192,15 @@ func (m *OrderLine) validatePurchasedItem(formats strfmt.Registry) error {
 
 	if m.PurchasedItem != nil {
 		if err := m.PurchasedItem.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("purchasedItem")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("purchasedItem")
 			}
+
 			return err
 		}
 	}
@@ -227,11 +240,15 @@ func (m *OrderLine) contextValidatePurchasedItem(ctx context.Context, formats st
 	if m.PurchasedItem != nil {
 
 		if err := m.PurchasedItem.ContextValidate(ctx, formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
 				return ve.ValidateName("purchasedItem")
-			} else if ce, ok := err.(*errors.CompositeError); ok {
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
 				return ce.ValidateName("purchasedItem")
 			}
+
 			return err
 		}
 	}

@@ -9,10 +9,11 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/loads"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/analysis"
+	"github.com/go-openapi/loads"
 )
 
 const (
@@ -594,7 +595,7 @@ func TestResolvePrincipal(t *testing.T) {
 	}{
 		{
 			Title: "defaults", Principal: "",
-			Expected: []string{"", "interface{}", ""},
+			Expected: []string{"", "any", ""},
 		},
 		{
 			Title: "with base import", Principal: "auth.Principal",
@@ -770,7 +771,7 @@ func TestDefaultImports(t *testing.T) {
 			err := fixture.Opts.EnsureDefaults()
 			require.NoError(t, err)
 			imports := fixture.Opts.defaultImports()
-			require.EqualValuesf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
+			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}
 }

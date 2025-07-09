@@ -15,43 +15,40 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/go-swagger/go-swagger/examples/todo-list/models"
+	"github.com/go-swagger/go-swagger/examples/todo-list-strict/models"
 )
 
-// NewUpdateOneParams creates a new UpdateOneParams object
-// with the default values initialized.
+// NewUpdateOneParams creates a new UpdateOneParams object,
+// with the default timeout for this client.
+//
+// Default values are not hydrated, since defaults are normally applied by the API server side.
+//
+// To enforce default values in parameter, use SetDefaults or WithDefaults.
 func NewUpdateOneParams() *UpdateOneParams {
-	var ()
 	return &UpdateOneParams{
-
 		timeout: cr.DefaultTimeout,
 	}
 }
 
 // NewUpdateOneParamsWithTimeout creates a new UpdateOneParams object
-// with the default values initialized, and the ability to set a timeout on a request
+// with the ability to set a timeout on a request.
 func NewUpdateOneParamsWithTimeout(timeout time.Duration) *UpdateOneParams {
-	var ()
 	return &UpdateOneParams{
-
 		timeout: timeout,
 	}
 }
 
 // NewUpdateOneParamsWithContext creates a new UpdateOneParams object
-// with the default values initialized, and the ability to set a context for a request
+// with the ability to set a context for a request.
 func NewUpdateOneParamsWithContext(ctx context.Context) *UpdateOneParams {
-	var ()
 	return &UpdateOneParams{
-
 		Context: ctx,
 	}
 }
 
 // NewUpdateOneParamsWithHTTPClient creates a new UpdateOneParams object
-// with the default values initialized, and the ability to set a custom HTTPClient for a request
+// with the ability to set a custom HTTPClient for a request.
 func NewUpdateOneParamsWithHTTPClient(client *http.Client) *UpdateOneParams {
-	var ()
 	return &UpdateOneParams{
 		HTTPClient: client,
 	}
@@ -59,18 +56,37 @@ func NewUpdateOneParamsWithHTTPClient(client *http.Client) *UpdateOneParams {
 
 /*
 UpdateOneParams contains all the parameters to send to the API endpoint
-for the update one operation typically these are written to a http.Request
+
+	for the update one operation.
+
+	Typically these are written to a http.Request.
 */
 type UpdateOneParams struct {
 
-	/*Body*/
+	// Body.
 	Body *models.Item
-	/*ID*/
+
+	// ID.
 	ID string
 
 	timeout    time.Duration
 	Context    context.Context
 	HTTPClient *http.Client
+}
+
+// WithDefaults hydrates default values in the update one params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateOneParams) WithDefaults() *UpdateOneParams {
+	o.SetDefaults()
+	return o
+}
+
+// SetDefaults hydrates default values in the update one params (not the query body).
+//
+// All values with no default are reset to their zero value.
+func (o *UpdateOneParams) SetDefaults() {
+	// no default values defined for this parameter
 }
 
 // WithTimeout adds the timeout to the update one params
@@ -135,7 +151,6 @@ func (o *UpdateOneParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Reg
 		return err
 	}
 	var res []error
-
 	if o.Body != nil {
 		if err := r.SetBodyParam(o.Body); err != nil {
 			return err

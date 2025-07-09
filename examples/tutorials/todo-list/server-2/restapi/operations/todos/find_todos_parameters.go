@@ -35,7 +35,6 @@ func NewFindTodosParams() FindTodosParams {
 //
 // swagger:parameters findTodos
 type FindTodosParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -44,6 +43,7 @@ type FindTodosParams struct {
 	  Default: 20
 	*/
 	Limit *int32
+
 	/*
 	  In: query
 	*/
@@ -58,7 +58,6 @@ func (o *FindTodosParams) BindRequest(r *http.Request, route *middleware.Matched
 	var res []error
 
 	o.HTTPRequest = r
-
 	qs := runtime.Values(r.URL.Query())
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")

@@ -28,7 +28,6 @@ func NewCreateUsersWithArrayInputParams() CreateUsersWithArrayInputParams {
 //
 // swagger:parameters createUsersWithArrayInput
 type CreateUsersWithArrayInputParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -48,7 +47,9 @@ func (o *CreateUsersWithArrayInputParams) BindRequest(r *http.Request, route *mi
 	o.HTTPRequest = r
 
 	if runtime.HasBody(r) {
-		defer r.Body.Close()
+		defer func() {
+			_ = r.Body.Close()
+		}()
 		var body []*models.User
 		if err := route.Consumer.Consume(r.Body, &body); err != nil {
 			res = append(res, errors.NewParseError("body", "body", "", err))

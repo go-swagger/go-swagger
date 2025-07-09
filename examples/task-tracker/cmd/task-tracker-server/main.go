@@ -3,11 +3,13 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
-	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
+
+	"github.com/go-openapi/loads"
 
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi"
 	"github.com/go-swagger/go-swagger/examples/task-tracker/restapi/operations"
@@ -17,7 +19,6 @@ import (
 // Make sure not to overwrite this file after you generated it because all your edits would be lost!
 
 func main() {
-
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
 		log.Fatalln(err)
@@ -25,12 +26,11 @@ func main() {
 
 	api := operations.NewTaskTrackerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer server.Shutdown()
+	server.ConfigureFlags() // inject API-specific custom flags. Must be called before args parsing
 
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "Issue Tracker API"
 	parser.LongDescription = "This application implements a very simple issue tracker.\nIt's implemented as an API which is described by this swagger spec document.\n\nThe go-swagger project uses this specification to test the code generation.\nThis document contains all possible values for a swagger definition.\nThis means that it exercises the framework relatively well.\n"
-	server.ConfigureFlags()
 	for _, optsGroup := range api.CommandLineOptionsGroups {
 		_, err := parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
 		if err != nil {
@@ -40,7 +40,8 @@ func main() {
 
 	if _, err := parser.Parse(); err != nil {
 		code := 1
-		if fe, ok := err.(*flags.Error); ok {
+		fe := new(flags.Error)
+		if errors.As(err, &fe) {
 			if fe.Type == flags.ErrHelp {
 				code = 0
 			}
@@ -48,10 +49,11 @@ func main() {
 		os.Exit(code)
 	}
 
-	server.ConfigureAPI()
+	server.ConfigureAPI() // configure handlers, routes and middleware
 
 	if err := server.Serve(); err != nil {
+		_ = server.Shutdown()
+
 		log.Fatalln(err)
 	}
-
 }

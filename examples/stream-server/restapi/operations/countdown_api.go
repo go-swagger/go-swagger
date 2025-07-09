@@ -43,6 +43,8 @@ func NewCountdownAPI(spec *loads.Document) *CountdownAPI {
 		JSONProducer: runtime.JSONProducer(),
 
 		ElapseHandler: ElapseHandlerFunc(func(params ElapseParams) middleware.Responder {
+			_ = params
+
 			return middleware.NotImplemented("operation Elapse has not yet been implemented")
 		}),
 	}
@@ -100,7 +102,7 @@ type CountdownAPI struct {
 	CommandLineOptionsGroups []swag.CommandLineOptionsGroup
 
 	// User defined logger function.
-	Logger func(string, ...interface{})
+	Logger func(string, ...any)
 }
 
 // UseRedoc for documentation at /docs
@@ -187,12 +189,12 @@ func (o *CountdownAPI) Authorizer() runtime.Authorizer {
 }
 
 // ConsumersFor gets the consumers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *CountdownAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONConsumer
 		}
 
@@ -200,16 +202,17 @@ func (o *CountdownAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Cons
 			result[mt] = c
 		}
 	}
+
 	return result
 }
 
 // ProducersFor gets the producers for the specified media types.
+//
 // MIME type parameters are ignored here.
 func (o *CountdownAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
-		switch mt {
-		case "application/json":
+		if mt == "application/json" {
 			result["application/json"] = o.JSONProducer
 		}
 
@@ -217,6 +220,7 @@ func (o *CountdownAPI) ProducersFor(mediaTypes []string) map[string]runtime.Prod
 			result[mt] = p
 		}
 	}
+
 	return result
 }
 

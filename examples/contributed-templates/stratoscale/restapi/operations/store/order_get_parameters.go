@@ -28,7 +28,6 @@ func NewOrderGetParams() OrderGetParams {
 //
 // swagger:parameters OrderGet
 type OrderGetParams struct {
-
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
@@ -83,7 +82,7 @@ func (o *OrderGetParams) bindOrderID(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
-// validateOrderID carries on validations for parameter OrderID
+// validateOrderID carries out validations for parameter OrderID
 func (o *OrderGetParams) validateOrderID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("orderId", "path", o.OrderID, 1, false); err != nil {

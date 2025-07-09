@@ -51,7 +51,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("array_items_with_min_max_properties.go", []string{
-		`type ArrayItemsWithMinMaxProperties []map[string]interface{}`,
+		`type ArrayItemsWithMinMaxProperties []map[string]any`,
 		`func (m ArrayItemsWithMinMaxProperties) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
 		`		nprops := len(m[i])`,
@@ -62,7 +62,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("has_max_properties.go", []string{
-		`	HasMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	HasMaxPropertiesAdditionalProperties map[string]any`,
 		`	props := make(map[string]json.RawMessage, 1+10)`,
 		`	j, err := swag.WriteJSON(m)`,
 		`	if err = swag.ReadJSON(j, &props); err != nil {`,
@@ -72,7 +72,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("has_min_max_properties.go", []string{
-		`	HasMinMaxPropertiesAdditionalProperties map[string]interface{}`,
+		`	HasMinMaxPropertiesAdditionalProperties map[string]any`,
 		`	if m == nil {`,
 		`		return errors.TooFewProperties("", "body", 3)`,
 		`	props := make(map[string]json.RawMessage, 1+10)`,
@@ -86,7 +86,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("has_min_properties.go", []string{
-		`HasMinPropertiesAdditionalProperties map[string]interface{}`,
+		`HasMinPropertiesAdditionalProperties map[string]any`,
 		`	if m == nil {`,
 		`		return errors.TooFewProperties("", "body", 2)`,
 		`	props := make(map[string]json.RawMessage, 1+10)`,
@@ -109,7 +109,7 @@ func initFixture2444() {
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		`			if err := m[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i))`,
 	}, todo, noLines, noLines)
 
@@ -136,7 +136,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("map_with_min_max_properties.go", []string{
-		`type MapWithMinMaxProperties map[string]interface{}`,
+		`type MapWithMinMaxProperties map[string]any`,
 		`	nprops := len(m)`,
 		`	if nprops < 3 {`,
 		`		return errors.TooFewProperties("", "body", 3)`,
@@ -166,7 +166,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("untyped_with_min_max_properties.go", []string{
-		`type UntypedWithMinMaxProperties map[string]interface{}`,
+		`type UntypedWithMinMaxProperties map[string]any`,
 		`	nprops := len(m)`,
 		`	if nprops < 3 {`,
 		`		return errors.TooFewProperties("", "body", 3)`,
@@ -175,7 +175,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("nested_map.go", []string{
-		`type NestedMap map[string]map[string]interface{}`,
+		`type NestedMap map[string]map[string]any`,
 		`nprops := len(m)`,
 		`	if nprops < 3 {`,
 		`		return errors.TooFewProperties("", "body", 3)`,
@@ -190,7 +190,7 @@ func initFixture2444() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("deeper_nested_map.go", []string{
-		`type DeeperNestedMap map[string]map[string]map[string]interface{}`,
+		`type DeeperNestedMap map[string]map[string]map[string]any`,
 		`nprops := len(m)`,
 		`if nprops < 3 {`,
 		`return errors.TooFewProperties("", "body", 3)`,
@@ -290,7 +290,7 @@ func initFixtureGuardFormats() {
 		`	if err := validate.Required("p11", "body", m.P11); err != nil {`,
 		`	if m.P11 != nil {`,
 		`		if err := m.P11.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("p11")`,
 		`func (m *Object) validateP1Nullable(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.P1Nullable) {`,
@@ -328,16 +328,16 @@ func initFixtureGuardFormats() {
 		`	if err := validate.MaxLength("p6", "body", m.P6.String(), 16); err != nil {`,
 		"	if err := validate.Pattern(\"p6\", \"body\", m.P6.String(), `(\\d+)-(\\d+)`); err != nil {",
 		`func (m *Object) validateP7(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("p7", "body", io.ReadCloser(m.P7)); err != nil {`,
+		`	if err := validate.Required("p7", "body", m.P7); err != nil {`,
 		`func (m *Object) validateP8(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("p8", "body", m.P8); err != nil {`,
 		`	if err := validate.Required("p8", "body", m.P8); err != nil {`,
 		`	if m.P8 != nil {`,
 		`		if err := m.P8.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("p8")`,
 		`func (m *Object) validateP9(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("p9", "body", AliasedReader(m.P9)); err != nil {`,
+		`	if err := validate.Required("p9", "body", m.P9); err != nil {`,
 	}, todo,
 		[]string{
 			// disable log assertions (dodgy with parallel tests)
@@ -411,7 +411,7 @@ func initFixture2381() {
 	expandRun := f.AddRun(true)
 
 	flattenRun.AddExpectations("my_object.go", []string{
-		`RequiredReferencedObject MyObjectRef`,  // this is an interface{}
+		`RequiredReferencedObject MyObjectRef`,  // this is an any
 		`RequiredReferencedString *MyStringRef`, // alias to primitive
 		`RequiredString *string`,                // unaliased primitive
 		`RequiredReferencedArray MyArrayRef`,    // no need to use a pointer
@@ -423,7 +423,7 @@ func initFixture2381() {
 		`func (m *MyObject) validateRequiredReferencedString(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("required_referenced_string", "body", m.RequiredReferencedString); err != nil {`,
 		`	if err := m.RequiredReferencedString.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("required_referenced_string")`,
 		`func (m *MyObject) validateRequiredString(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("required_string", "body", m.RequiredString); err != nil {`,
@@ -447,7 +447,7 @@ func initFixture2381() {
 }
 
 func initFixture2300() {
-	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required interface{} is validated with against nil")
+	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// test behaviour with all structs made anonymous (inlined)
@@ -475,7 +475,7 @@ func initFixture2300() {
 
 	// on anonymous
 	expandRun.AddExpectations("obj.go", []string{
-		`Req4 map[string]interface{}`,
+		`Req4 map[string]any`,
 		`func (m *Obj) validateReq1(formats strfmt.Registry) error {`,
 		`	if m.Req1 == nil {`,
 		`		return errors.Required("req1", "body", nil)`,
@@ -497,10 +497,10 @@ func initFixture2300() {
 }
 
 func initFixture2081() {
-	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required interface{} is validated with against nil")
+	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
-	// interface{}
+	// any
 	flattenRun.AddExpectations("event.go", []string{
 		`func (m *Event) validateValue(formats strfmt.Registry) error {`,
 		`if m.Value == nil {`,
@@ -585,7 +585,7 @@ func initFixture936ReadOnly() {
 	// x go type
 	flattenRun.AddExpectations("time.go", []string{
 		`) ContextValidate(ctx context.Context, formats strfmt.Registry) error`,
-		`var f interface{} = m.Time`,
+		`var f any = m.Time`,
 	}, todo, noLines, noLines)
 	// additional properties
 	flattenRun.AddExpectations("object8.go", []string{
@@ -616,7 +616,7 @@ func initFixture2220() {
 
 	flattenRun.AddExpectations("component.go", []string{
 		// This asserts the current schema layout, which works but does not honour inheritance from the base type
-		"ObjectAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"ObjectAdditionalProperties map[string]any `json:\"-\"`",
 	}, todo, noLines, noLines)
 }
 
@@ -670,19 +670,19 @@ func initFixture2116() {
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("object_with_nullable_false.go", []string{
-		"Data interface{} `json:\"Data,omitempty\"`",
+		"Data any `json:\"Data,omitempty\"`",
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("object_with_nullable_true.go", []string{
-		"Data interface{} `json:\"Data,omitempty\"`",
+		"Data any `json:\"Data,omitempty\"`",
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("object_with_omitempty_false.go", []string{
-		"Data interface{} `json:\"Data,omitempty\"`",
+		"Data any `json:\"Data,omitempty\"`",
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("object_with_omitempty_true.go", []string{
-		"Data interface{} `json:\"Data,omitempty\"`",
+		"Data any `json:\"Data,omitempty\"`",
 	}, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("array_with_omit_empty_items.go", []string{
@@ -728,13 +728,13 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.HostConfig) {`,
 		`	if m.HostConfig != nil {`,
 		`		if err := m.HostConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("HostConfig"`,
 		`func (m *ContainerCreateConfigAllOf1) validateNetworkingConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.NetworkingConfig) {`,
 		`	if m.NetworkingConfig != nil {`,
 		`		if err := m.NetworkingConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("NetworkingConfig"`,
 	},
 		// not expected
@@ -755,7 +755,7 @@ func initFixture1479Part() {
 		"	Domainname string `json:\"Domainname,omitempty\"`",
 		"	Entrypoint []string `json:\"Entrypoint\"`",
 		"	Env []string `json:\"Env\"`",
-		"	ExposedPorts map[string]interface{} `json:\"ExposedPorts,omitempty\"`",
+		"	ExposedPorts map[string]any `json:\"ExposedPorts,omitempty\"`",
 		"	Hostname strfmt.Hostname `json:\"Hostname,omitempty\"`",
 		"	Image string `json:\"Image\"`",
 		"	InitScript string `json:\"InitScript,omitempty\"`",
@@ -774,7 +774,7 @@ func initFixture1479Part() {
 		"	StopTimeout *int64 `json:\"StopTimeout,omitempty\"`",
 		"	Tty bool `json:\"Tty,omitempty\"`",
 		"	User string `json:\"User,omitempty\"`",
-		"	Volumes map[string]interface{} `json:\"Volumes,omitempty\"`",
+		"	Volumes map[string]any `json:\"Volumes,omitempty\"`",
 		"	WorkingDir string `json:\"WorkingDir,omitempty\"`",
 		`func (m *ContainerConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateExposedPorts(formats); err != nil {`,
@@ -783,12 +783,12 @@ func initFixture1479Part() {
 		`	if err := m.validateRichMode(formats); err != nil {`,
 		`	if err := m.validateVolumes(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var containerConfigExposedPortsValueEnum []interface{`,
-		`	var res []interface{`,
+		`var containerConfigExposedPortsValueEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[{}]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerConfigExposedPortsValueEnum = append(containerConfigExposedPortsValueEnum, v`,
-		`func (m *ContainerConfig) validateExposedPortsValueEnum(path, location string, value interface{}) error {`,
+		`func (m *ContainerConfig) validateExposedPortsValueEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, containerConfigExposedPortsValueEnum, true); err != nil {`,
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
@@ -800,7 +800,7 @@ func initFixture1479Part() {
 		`	if err := validate.FormatOf("Hostname", "body", "hostname", m.Hostname.String(), formats); err != nil {`,
 		`func (m *ContainerConfig) validateImage(formats strfmt.Registry) error {`,
 		`	if err := validate.RequiredString("Image", "body", m.Image); err != nil {`,
-		`var containerConfigTypeRichModePropEnum []interface{`,
+		`var containerConfigTypeRichModePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -813,12 +813,12 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
-		`var containerConfigVolumesValueEnum []interface{`,
-		`	var res []interface{`,
+		`var containerConfigVolumesValueEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[{}]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerConfigVolumesValueEnum = append(containerConfigVolumesValueEnum, v`,
-		`func (m *ContainerConfig) validateVolumesValueEnum(path, location string, value interface{}) error {`,
+		`func (m *ContainerConfig) validateVolumesValueEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, containerConfigVolumesValueEnum, true); err != nil {`,
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
@@ -841,7 +841,7 @@ func initFixture1479Part() {
 		`func (m *HostConfigAllOf0LogConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateType(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var hostConfigAllOf0LogConfigTypeTypePropEnum []interface{`,
+		`var hostConfigAllOf0LogConfigTypeTypePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -958,7 +958,7 @@ func initFixture1479Part() {
 		// do we need...?
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
-		`var hostConfigAllOf0TypeIsolationPropEnum []interface{`,
+		`var hostConfigAllOf0TypeIsolationPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"default\",\"process\",\"hyperv\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -975,7 +975,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.LogConfig) {`,
 		`	if m.LogConfig != nil {`,
 		`		if err := m.LogConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("LogConfig"`,
 		`func (m *HostConfigAllOf0) validateOomScoreAdj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.OomScoreAdj) {`,
@@ -985,9 +985,9 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.RestartPolicy) {`,
 		`	if m.RestartPolicy != nil {`,
 		`		if err := m.RestartPolicy.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("RestartPolicy"`,
-		`var hostConfigAllOf0TypeRichModePropEnum []interface{`,
+		`var hostConfigAllOf0TypeRichModePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1088,7 +1088,7 @@ func initFixture1479Part() {
 		// do we need...
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
-		`var hostConfigTypeIsolationPropEnum []interface{`,
+		`var hostConfigTypeIsolationPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"default\",\"process\",\"hyperv\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1102,7 +1102,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.LogConfig) {`,
 		`	if m.LogConfig != nil {`,
 		`		if err := m.LogConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("LogConfig"`,
 		`func (m *HostConfig) validateOomScoreAdj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.OomScoreAdj) {`,
@@ -1112,9 +1112,9 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.RestartPolicy) {`,
 		`	if m.RestartPolicy != nil {`,
 		`		if err := m.RestartPolicy.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("RestartPolicy"`,
-		`var hostConfigTypeRichModePropEnum []interface{`,
+		`var hostConfigTypeRichModePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1137,7 +1137,7 @@ func initFixture1479Part() {
 		`func (m *HostConfigAO0LogConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateType(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var hostConfigAO0LogConfigTypeTypePropEnum []interface{`,
+		`var hostConfigAO0LogConfigTypeTypePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1195,7 +1195,7 @@ func initFixture1479Part() {
 		"	Domainname string `json:\"Domainname,omitempty\"`",
 		"	Entrypoint []string `json:\"Entrypoint\"`",
 		"	Env []string `json:\"Env\"`",
-		"	ExposedPorts map[string]interface{} `json:\"ExposedPorts,omitempty\"`",
+		"	ExposedPorts map[string]any `json:\"ExposedPorts,omitempty\"`",
 		"	Hostname strfmt.Hostname `json:\"Hostname,omitempty\"`",
 		"	Image string `json:\"Image\"`",
 		"	InitScript string `json:\"InitScript,omitempty\"`",
@@ -1214,7 +1214,7 @@ func initFixture1479Part() {
 		"	StopTimeout *int64 `json:\"StopTimeout,omitempty\"`",
 		"	Tty bool `json:\"Tty,omitempty\"`",
 		"	User string `json:\"User,omitempty\"`",
-		"	Volumes map[string]interface{} `json:\"Volumes,omitempty\"`",
+		"	Volumes map[string]any `json:\"Volumes,omitempty\"`",
 		"	WorkingDir string `json:\"WorkingDir,omitempty\"`",
 		`	HostConfig struct {`,
 		"		AutoRemove bool `json:\"AutoRemove,omitempty\"`",
@@ -1269,12 +1269,12 @@ func initFixture1479Part() {
 		`	if err := m.validateHostConfig(formats); err != nil {`,
 		`	if err := m.validateNetworkingConfig(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var containerCreateConfigExposedPortsValueEnum []interface{`,
-		`	var res []interface{`,
+		`var containerCreateConfigExposedPortsValueEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[{}]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerCreateConfigExposedPortsValueEnum = append(containerCreateConfigExposedPortsValueEnum, v`,
-		`func (m *ContainerCreateConfig) validateExposedPortsValueEnum(path, location string, value interface{}) error {`,
+		`func (m *ContainerCreateConfig) validateExposedPortsValueEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, containerCreateConfigExposedPortsValueEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
@@ -1286,7 +1286,7 @@ func initFixture1479Part() {
 		`	if err := validate.FormatOf("Hostname", "body", "hostname", m.Hostname.String(), formats); err != nil {`,
 		`func (m *ContainerCreateConfig) validateImage(formats strfmt.Registry) error {`,
 		`	if err := validate.RequiredString("Image", "body", m.Image); err != nil {`,
-		`var containerCreateConfigTypeRichModePropEnum []interface{`,
+		`var containerCreateConfigTypeRichModePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"dumb-init\",\"sbin-init\",\"systemd\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1296,12 +1296,12 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfig) validateRichMode(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.RichMode) {`,
 		`	if err := m.validateRichModeEnum("RichMode", "body", m.RichMode); err != nil {`,
-		`var containerCreateConfigVolumesValueEnum []interface{`,
-		`	var res []interface{`,
+		`var containerCreateConfigVolumesValueEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[{}]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		containerCreateConfigVolumesValueEnum = append(containerCreateConfigVolumesValueEnum, v`,
-		`func (m *ContainerCreateConfig) validateVolumesValueEnum(path, location string, value interface{}) error {`,
+		`func (m *ContainerCreateConfig) validateVolumesValueEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, containerCreateConfigVolumesValueEnum, true); err != nil {`,
 		`func (m *ContainerCreateConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
@@ -1321,13 +1321,13 @@ func initFixture1479Part() {
 		`	if err := m.validateIsolationEnum("HostConfig"+"."+"Isolation", "body", m.HostConfig.Isolation); err != nil {`,
 		`	if m.HostConfig.LogConfig != nil {`,
 		`		if err := m.HostConfig.LogConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("HostConfig" + "." + "LogConfig"`,
 		`	if err := validate.MinimumInt("HostConfig"+"."+"OomScoreAdj", "body", m.HostConfig.OomScoreAdj, -1000, false); err != nil {`,
 		`	if err := validate.MaximumInt("HostConfig"+"."+"OomScoreAdj", "body", m.HostConfig.OomScoreAdj, 1000, false); err != nil {`,
 		`	if m.HostConfig.RestartPolicy != nil {`,
 		`		if err := m.HostConfig.RestartPolicy.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("HostConfig" + "." + "RestartPolicy"`,
 		`	if err := m.validateRichModeEnum("HostConfig"+"."+"RichMode", "body", m.HostConfig.RichMode); err != nil {`,
 		`	if err := validate.MinimumInt("HostConfig"+"."+"ShmSize", "body", *m.HostConfig.ShmSize, 0, false); err != nil {`,
@@ -1337,7 +1337,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.NetworkingConfig) {`,
 		`	if m.NetworkingConfig != nil {`,
 		`		if err := m.NetworkingConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("NetworkingConfig"`,
 		`type ContainerCreateConfigAO1NetworkingConfig struct {`,
 		"	EndpointsConfig map[string]ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnon `json:\"EndpointsConfig,omitempty\"`",
@@ -1372,7 +1372,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.IPAMConfig) {`,
 		`	if m.IPAMConfig != nil {`,
 		`		if err := m.IPAMConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("IPAMConfig"`,
 		`type ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnonIPAMConfig struct {`,
 		"	IPV4Address string `json:\"IPv4Address,omitempty\"`",
@@ -1386,7 +1386,7 @@ func initFixture1479Part() {
 		`func (m *ContainerCreateConfigHostConfigAO0LogConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateType(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum []interface{`,
+		`var containerCreateConfigHostConfigAO0LogConfigTypeTypePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"json-file\",\"syslog\",\"journald\",\"gelf\",\"fluentd\",\"awslogs\",\"splunk\",\"etwlogs\",\"none\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -1487,7 +1487,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.IPAMConfig) {`,
 		`	if m.IPAMConfig != nil {`,
 		`		if err := m.IPAMConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("IPAMConfig"`,
 	},
 		// not expected
@@ -1518,7 +1518,7 @@ func initFixture1479Part() {
 		`	if swag.IsZero(m.IPAMConfig) {`,
 		`	if m.IPAMConfig != nil {`,
 		`		if err := m.IPAMConfig.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("IPAMConfig"`,
 		`type EndpointSettingsIPAMConfig struct {`,
 		"	IPV4Address string `json:\"IPv4Address,omitempty\"`",
@@ -2104,7 +2104,7 @@ func initFixtureSimpleAllOf() {
 		`	if swag.IsZero(m.Prop7) {`,
 		`	if m.Prop7 != nil {`,
 		`		if err := m.Prop7.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop7"`,
 	},
 		// not expected
@@ -2392,7 +2392,7 @@ func initFixtureComplexAllOf() {
 		`	if swag.IsZero(m.Prop2) {`,
 		`	if m.Prop2 != nil {`,
 		`		if err := m.Prop2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop2"`,
 	},
 		// not expected
@@ -2559,7 +2559,7 @@ func initFixtureComplexAllOf() {
 		`	if swag.IsZero(m.Prop1) {`,
 		`	if m.Prop1 != nil {`,
 		`		if err := m.Prop1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop1"`,
 	},
 		// not expected
@@ -2581,7 +2581,7 @@ func initFixtureComplexAllOf() {
 		`	if err := validate.MaxItems("prop1", "body", iProp1Size, 10); err != nil {`,
 		`	for i := 0; i < len(m.Prop1); i++ {`,
 		`		if err := m.Prop1[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop1" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -2602,7 +2602,7 @@ func initFixtureComplexAllOf() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -2623,7 +2623,7 @@ func initFixtureComplexAllOf() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type SliceOfAllOfItems0 struct {`,
@@ -2635,7 +2635,7 @@ func initFixtureComplexAllOf() {
 		`func (m *SliceOfAllOfItems0) validateProp0(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop0) {`,
 		`	if err := validate.FormatOf("prop0", "body", "uuid", m.Prop0.String(), formats); err != nil {`,
-		`type SliceOfAllOfItems0AllOf1 []interface{`,
+		`type SliceOfAllOfItems0AllOf1 []any`,
 		// empty validation
 		"func (m SliceOfAllOfItems0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -2680,7 +2680,7 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: slice_of_interfaces.go
 	flattenRun.AddExpectations("slice_of_interfaces.go", []string{
-		`type SliceOfInterfaces []interface{`,
+		`type SliceOfInterfaces []any`,
 		// empty validation
 		"func (m SliceOfInterfaces) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -2694,7 +2694,7 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: slice_of_interfaces_with_validation.go
 	flattenRun.AddExpectations("slice_of_interfaces_with_validation.go", []string{
-		`type SliceOfInterfacesWithValidation []interface{`,
+		`type SliceOfInterfacesWithValidation []any`,
 		`func (m SliceOfInterfacesWithValidation) Validate(formats strfmt.Registry) error {`,
 		`	iSliceOfInterfacesWithValidationSize := int64(len(m)`,
 		`	if err := validate.MaxItems("", "body", iSliceOfInterfacesWithValidationSize, 10); err != nil {`,
@@ -2758,7 +2758,7 @@ func initFixtureComplexAllOf() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type SliceMixAllOf0Items0 struct {`,
@@ -2770,8 +2770,8 @@ func initFixtureComplexAllOf() {
 		`func (m *SliceMixAllOf0Items0) validateProp0(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop0) {`,
 		`	if err := validate.FormatOf("prop0", "body", "uuid", m.Prop0.String(), formats); err != nil {`,
-		`type SliceMixAllOf0Items0AllOf1 []interface{`,
-		`type SliceMixAllOf1 []interface{`,
+		`type SliceMixAllOf0Items0AllOf1 []any`,
+		`type SliceMixAllOf1 []any`,
 		// empty validation
 		"func (m SliceMixAllOf0Items0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -2831,7 +2831,7 @@ func initFixtureComplexAllOf() {
 		// nullable required:
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName("prop2" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -2881,7 +2881,7 @@ func initFixtureItching() {
 	/*
 		This one regroups a number of itching cases, essentially around additionalProperties.
 		In particular, we test some things with empty objects (no properties) which have additionalProperties of diverse sorts.
-		We also added here some funny models using the special types Files, string format: binary and interface{}
+		We also added here some funny models using the special types Files, string format: binary and any
 		These special cases do not correspond to actual API specs: we use them to verify the internal behavior of the general.
 	*/
 	f := newModelFixture("../fixtures/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
@@ -3062,7 +3062,7 @@ func initFixtureItching() {
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
+		`	if err := validate.Required("myFile", "body", m.MyFile); err != nil {`,
 	},
 		// not expected
 		[]string{
@@ -3088,7 +3088,7 @@ func initFixtureItching() {
 		`	if err := m.validateMyFile(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
-		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
+		`	if err := validate.Required("myFile", "body", m.MyFile); err != nil {`,
 	},
 		// not expected
 		[]string{
@@ -3160,13 +3160,13 @@ func initFixtureItching() {
 		`func (m *ObjectWithEmptyObject) validateEmptyObj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.EmptyObj) {`,
 		`	if err := m.EmptyObj.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("emptyObj"`,
 		`func (m *ObjectWithEmptyObject) validateNonEmptyObj(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.NonEmptyObj) {`,
 		`	if m.NonEmptyObj != nil {`,
 		`		if err := m.NonEmptyObj.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("nonEmptyObj"`,
 	},
 		// not expected
@@ -3229,7 +3229,7 @@ func initFixtureItching() {
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		`			if err := m[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3247,7 +3247,7 @@ func initFixtureItching() {
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		`			if err := m[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type EmptyObjectWithAdditionalSliceItems0 struct {`,
@@ -3267,7 +3267,7 @@ func initFixtureItching() {
 
 	// load expectations for model: additional_aliased_file.go
 	flattenRun.AddExpectations("additional_aliased_file.go", []string{
-		`type AdditionalAliasedFile interface{`,
+		`type AdditionalAliasedFile any`,
 	},
 		// not expected
 		todo,
@@ -3382,20 +3382,20 @@ func initFixtureItching() {
 
 	// load expectations for model: enums_with_additional_props.go
 	flattenRun.AddExpectations("enums_with_additional_props.go", []string{
-		`type EnumsWithAdditionalProps map[string]interface{`,
-		`var enumsWithAdditionalPropsEnum []interface{`,
+		`type EnumsWithAdditionalProps map[string]any`,
+		`var enumsWithAdditionalPropsEnum []any`,
 		`	var res []EnumsWithAdditionalProps`,
 		"	if err := json.Unmarshal([]byte(`[\"{ \\\"a\\\": 1, \\\"b\\\": 2 }\",\"{ \\\"a\\\": 3, \\\"b\\\": 4 }\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		enumsWithAdditionalPropsEnum = append(enumsWithAdditionalPropsEnum, v`,
 		`func (m *EnumsWithAdditionalProps) validateEnumsWithAdditionalPropsEnum(path, location string, value EnumsWithAdditionalProps) error {`,
 		`	if err := validate.EnumCase(path, location, value, enumsWithAdditionalPropsEnum, true); err != nil {`,
-		`var enumsWithAdditionalPropsValueEnum []interface{`,
-		`	var res []interface{`,
+		`var enumsWithAdditionalPropsValueEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[\"{ \\\"b\\\": 2 }\",\"{ \\\"b\\\": 4 }\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		enumsWithAdditionalPropsValueEnum = append(enumsWithAdditionalPropsValueEnum, v`,
-		`func (m *EnumsWithAdditionalProps) validateEnumsWithAdditionalPropsValueEnum(path, location string, value interface{}) error {`,
+		`func (m *EnumsWithAdditionalProps) validateEnumsWithAdditionalPropsValueEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, enumsWithAdditionalPropsValueEnum, true); err != nil {`,
 		`func (m EnumsWithAdditionalProps) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
@@ -3421,7 +3421,7 @@ func initFixtureItching() {
 		`			for ii := 0; ii < len(m[k][i]); ii++ {`,
 		`				for iii := 0; iii < len(m[k][i][ii]); iii++ {`,
 		`					if err := m[k][i][ii][iii].Validate(formats); err != nil {`,
-		`						if ve, ok := err.(*errors.Validation); ok {`,
+		`						if stderrors.As(err, &ve) {`,
 		`							return ve.ValidateName(k + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii) + "." + strconv.Itoa(iii)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3440,7 +3440,7 @@ func initFixtureItching() {
 		`			for ii := 0; ii < len(m[k][i]); ii++ {`,
 		`				for iii := 0; iii < len(m[k][i][ii]); iii++ {`,
 		`					if err := m[k][i][ii][iii].Validate(formats); err != nil {`,
-		`						if ve, ok := err.(*errors.Validation); ok {`,
+		`						if stderrors.As(err, &ve) {`,
 		`							return ve.ValidateName(k + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii) + "." + strconv.Itoa(iii)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type EmptyObjectWithAdditionalNestedSliceItems0 struct {`,
@@ -3566,7 +3566,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := m.AdditionalArrayOfRefedThing[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -3650,7 +3650,7 @@ func initFixtureAdditionalProps() {
 		"	Origin *string `json:\"origin\"`",
 		"	Status string `json:\"status,omitempty\"`",
 		"	AdditionalThings map[string]string `json:\"-\"`",
-		`var additionalThingsValueEnum []interface{`,
+		`var additionalThingsValueEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"bookshop\",\"amazon\",\"library\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -3664,7 +3664,7 @@ func initFixtureAdditionalProps() {
 		// removed undue IsZero call
 		`		if err := m.validateAdditionalThingsValueEnum(k, "body", m.AdditionalThings[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var additionalThingsTypeOriginPropEnum []interface{`,
+		`var additionalThingsTypeOriginPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"print\",\"e-book\",\"collection\",\"museum\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -3678,7 +3678,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalThings) validateOrigin(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("origin", "body", m.Origin); err != nil {`,
 		`	if err := m.validateOriginEnum("origin", "body", *m.Origin); err != nil {`,
-		`var additionalThingsTypeStatusPropEnum []interface{`,
+		`var additionalThingsTypeStatusPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"OK\",\"KO\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -3801,7 +3801,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalSliceOfAliasedNullablePrimitives[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfAliasedNullablePrimitives[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) validateProp3(formats strfmt.Registry) error {`,
@@ -3859,7 +3859,7 @@ func initFixtureAdditionalProps() {
 		// nullable not required:
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
-		`						if ve, ok := err.(*errors.Validation); ok {`,
+		`						if stderrors.As(err, &ve) {`,
 		`							return ve.ValidateName(k + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfSlice) validateProp4(formats strfmt.Registry) error {`,
@@ -3890,7 +3890,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
-		`						if ve, ok := err.(*errors.Validation); ok {`,
+		`						if stderrors.As(err, &ve) {`,
 		`							return ve.ValidateName(k + "." + strconv.Itoa(i) + "." + strconv.Itoa(ii)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfSlice) validateProp4(formats strfmt.Registry) error {`,
@@ -3967,7 +3967,7 @@ func initFixtureAdditionalProps() {
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var additionalThingsNestedAdditionalPropertiesTypePrinterCountryPropEnum []interface{`,
+		`var additionalThingsNestedAdditionalPropertiesTypePrinterCountryPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"US\",\"FR\",\"UK\",\"BE\",\"CA\",\"DE\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4084,7 +4084,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -4113,7 +4113,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -4148,7 +4148,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalTransitiveRefedThingItems0AnonAnon struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -4228,7 +4228,7 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: interface_thing.go
 	flattenRun.AddExpectations("interface_thing.go", []string{
-		`type InterfaceThing interface{}`,
+		`type InterfaceThing any`,
 	},
 		// not expected
 		todo,
@@ -4246,7 +4246,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		`			if err := m[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -4263,7 +4263,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
 		`			if err := m[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type EmptyObjectWithAdditionalSliceItems0 struct {`,
@@ -4297,7 +4297,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -4322,7 +4322,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type AdditionalSliceOfObjectsItems0 struct {`,
@@ -4348,7 +4348,7 @@ func initFixtureAdditionalProps() {
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var additionalThingsNestedTypeOriginPropEnum []interface{`,
+		`var additionalThingsNestedTypeOriginPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"goPrint\",\"goE-book\",\"goCollection\",\"goMuseum\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4380,7 +4380,7 @@ func initFixtureAdditionalProps() {
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var additionalThingsNestedTypeOriginPropEnum []interface{`,
+		`var additionalThingsNestedTypeOriginPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"goPrint\",\"goE-book\",\"goCollection\",\"goMuseum\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4407,7 +4407,7 @@ func initFixtureAdditionalProps() {
 		`			if val != nil {`,
 		`				if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var additionalThingsNestedAnonTypePrinterCountryPropEnum []interface{`,
+		`var additionalThingsNestedAnonTypePrinterCountryPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"US\",\"FR\",\"UK\",\"BE\",\"CA\",\"DE\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4446,7 +4446,7 @@ func initFixtureAdditionalProps() {
 		`type NoValidationThing struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	NoValidationThingAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	NoValidationThingAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *NoValidationThing) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -4462,7 +4462,7 @@ func initFixtureAdditionalProps() {
 	flattenRun.AddExpectations("additional_array_of_interface.go", []string{
 		`type AdditionalArrayOfInterface struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
-		"	AdditionalArrayOfInterface map[string][]interface{} `json:\"-\"`",
+		"	AdditionalArrayOfInterface map[string][]any `json:\"-\"`",
 		`func (m *AdditionalArrayOfInterface) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfInterface {`,
@@ -4529,7 +4529,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -4558,7 +4558,7 @@ func initFixtureAdditionalProps() {
 		// nullable required:
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -4567,7 +4567,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalArrayOfRefedObjectItems0 struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -4590,7 +4590,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
 		`			if err := m.AdditionalSliceOfAliasedPrimitives[k][i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalSliceOfAliasedPrimitives) validateProp2(formats strfmt.Registry) error {`,
@@ -4677,7 +4677,7 @@ func initFixtureAdditionalProps() {
 		`type TransitiveRefedThingAnonAnon struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	TransitiveRefedThingAnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	TransitiveRefedThingAnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *TransitiveRefedThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -4690,8 +4690,8 @@ func initFixtureAdditionalProps() {
 	// load expectations for model: additional_empty_object.go
 	flattenRun.AddExpectations("additional_empty_object.go", []string{
 		`type AdditionalEmptyObject struct {`,
-		"	PropA interface{} `json:\"propA,omitempty\"`",
-		"	AdditionalEmptyObject map[string]interface{} `json:\"-\"`",
+		"	PropA any `json:\"propA,omitempty\"`",
+		"	AdditionalEmptyObject map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalEmptyObject) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -4725,7 +4725,7 @@ func initFixtureAdditionalProps() {
 		`	if swag.IsZero(m.NullableDate) {`,
 		`	if m.NullableDate != nil {`,
 		`		if err := m.NullableDate.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("nullableDate"`,
 	},
 		// not expected
@@ -4789,12 +4789,12 @@ func initFixtureTuple() {
 		`	if err := validate.FormatOf("1", "body", "isbn", m.P1.String(), formats); err != nil {`,
 		`func (m *Classics) validateP2(formats strfmt.Registry) error {`,
 		`	if err := m.P2.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("2"`,
 		`func (m *Classics) validateClassicsItems(formats strfmt.Registry) error {`,
 		`	for i := range m.ClassicsItems {`,
 		`		if err := m.ClassicsItems[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(strconv.Itoa(i + 3)`,
 	},
 		// not expected
@@ -4825,13 +4825,13 @@ func initFixtureTuple() {
 		`	if err := validate.Required("2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("2"`,
 		`func (m *Classics) validateClassicsItems(formats strfmt.Registry) error {`,
 		`	for i := range m.ClassicsItems {`,
 		`		if m.ClassicsItems[i] != nil {`,
 		`			if err := m.ClassicsItems[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i + 3)`,
 		`type ClassicsClassicsItemsTuple0 struct {`,
 		"	P0 *ClassicsClassicsItemsTuple0P0 `json:\"-\"`",
@@ -4848,7 +4848,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P0", "body", m.P0); err != nil {`,
 		`	if m.P0 != nil {`,
 		`		if err := m.P0.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P0"`,
 		`func (m *ClassicsClassicsItemsTuple0) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
@@ -4858,13 +4858,13 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P2"`,
 		`func (m *ClassicsClassicsItemsTuple0) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P3", "body", m.P3); err != nil {`,
 		`	if m.P3 != nil {`,
 		`		if err := m.P3.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P3"`,
 		`type ClassicsClassicsItemsTuple0P0 struct {`,
 		"	Period *string `json:\"period,omitempty\"`",
@@ -4872,7 +4872,7 @@ func initFixtureTuple() {
 		`func (m *ClassicsClassicsItemsTuple0P0) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateTitle(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var classicsClassicsItemsTuple0P0TypeTitlePropEnum []interface{`,
+		`var classicsClassicsItemsTuple0P0TypeTitlePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"Les Misérables\",\"Bleak House\",\"Sherlock Holmes\",\"Siddhartha\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4889,7 +4889,7 @@ func initFixtureTuple() {
 		`type ClassicsClassicsItemsTuple0P2 struct {`,
 		"	Origin *string `json:\"origin,omitempty\"`",
 		"	ClassicsClassicsItemsTuple0P2 map[string]string `json:\"-\"`",
-		`var classicsClassicsItemsTuple0P2ValueEnum []interface{`,
+		`var classicsClassicsItemsTuple0P2ValueEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"bookshop\",\"amazon\",\"library\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4902,7 +4902,7 @@ func initFixtureTuple() {
 		// removed undue IsZero() call
 		`		if err := m.validateClassicsClassicsItemsTuple0P2ValueEnum("P2"+"."+k, "body", m.ClassicsClassicsItemsTuple0P2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var classicsClassicsItemsTuple0P2TypeOriginPropEnum []interface{`,
+		`var classicsClassicsItemsTuple0P2TypeOriginPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"print\",\"e-book\",\"collection\",\"museum\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -4937,19 +4937,19 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
 		`	if m.P1 != nil {`,
 		`		if err := m.P1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P1"`,
 		`func (m *ClassicsClassicsItemsTuple0P3Tuple0) validateP2(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P2"`,
 		`func (m *ClassicsClassicsItemsTuple0P3Tuple0) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P3", "body", m.P3); err != nil {`,
 		`	if m.P3 != nil {`,
 		`		if err := m.P3.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P3"`,
 		`func (m *ClassicsClassicsItemsTuple0P3Tuple0) validateP4(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P4", "body", m.P4); err != nil {`,
@@ -5002,19 +5002,19 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1", "body", m.P1); err != nil {`,
 		`	if m.P1 != nil {`,
 		`		if err := m.P1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P1"`,
 		`func (m *ClassicsTuple0) validateP2(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P2"`,
 		`func (m *ClassicsTuple0) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P3", "body", m.P3); err != nil {`,
 		`	if m.P3 != nil {`,
 		`		if err := m.P3.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("P3"`,
 		`func (m *ClassicsTuple0) validateP4(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("P4", "body", m.P4); err != nil {`,
@@ -5071,7 +5071,7 @@ func initFixtureTuple() {
 		`type ClassicsItemsAdditionalItemsItems2 struct {`,
 		"	Origin string `json:\"origin,omitempty\"`",
 		"	ClassicsItemsAdditionalItemsItems2 map[string]string `json:\"-\"`",
-		`var classicsItemsAdditionalItemsItems2ValueEnum []interface{`,
+		`var classicsItemsAdditionalItemsItems2ValueEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"bookshop\",\"amazon\",\"library\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -5084,7 +5084,7 @@ func initFixtureTuple() {
 		// removed undue IsZero()
 		`		if err := m.validateClassicsItemsAdditionalItemsItems2ValueEnum(k, "body", m.ClassicsItemsAdditionalItemsItems2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []interface{`,
+		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"print\",\"e-book\",\"collection\",\"museum\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -5128,19 +5128,19 @@ func initFixtureTuple() {
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	if m.P1 != nil {`,
 		`		if err := m.P1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("1"`,
 		`func (m *Comics) validateP2(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("2"`,
 		`func (m *Comics) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("3", "body", m.P3); err != nil {`,
 		`	if m.P3 != nil {`,
 		`		if err := m.P3.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("3"`,
 		`func (m *Comics) validateP4(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("4", "body", m.P4); err != nil {`,
@@ -5203,7 +5203,7 @@ func initFixtureTuple() {
 		`func (m *ClassicsItemsAdditionalItemsItems0) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateTitle(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var classicsItemsAdditionalItemsItems0TypeTitlePropEnum []interface{`,
+		`var classicsItemsAdditionalItemsItems0TypeTitlePropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"Les Misérables\",\"Bleak House\",\"Sherlock Holmes\",\"Siddhartha\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -5279,7 +5279,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if m.P0 != nil {`,
 		`		if err := m.P0.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("0"`,
 		`func (m *ClassicsTupleAdditionalItems) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
@@ -5289,11 +5289,11 @@ func initFixtureTuple() {
 		`	if err := validate.Required("2", "body", m.P2); err != nil {`,
 		`	if m.P2 != nil {`,
 		`		if err := m.P2.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("2"`,
 		`func (m *ClassicsTupleAdditionalItems) validateP3(formats strfmt.Registry) error {`,
 		`	if err := m.P3.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("3"`,
 	},
 		// not expected
@@ -5312,7 +5312,7 @@ func initFixture1198() {
 	// load expectations for model: pet.go
 	flattenRun.AddExpectations("pet.go", []string{
 		`type Pet struct {`,
-		"	Date interface{} `json:\"date\"`",
+		"	Date any `json:\"date\"`",
 		`func (m *Pet) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateDate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -5589,7 +5589,7 @@ func initFixture842() {
 		`	if err := validate.Required("Values", "body", m.Values()); err != nil {`,
 		`	for i := 0; i < len(m.Values()); i++ {`,
 		`		if err := m.valuesField[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("Values" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -5693,7 +5693,7 @@ func initFixture607() {
 		`	if err := validate.Required("config", "body", m.Config); err != nil {`,
 		`	if m.Config != nil {`,
 		`		if err := m.Config.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("config"`,
 	},
 		// not expected
@@ -5780,7 +5780,7 @@ func initFixture607() {
 		`	dec.UseNumber(`,
 		`	if err := dec.Decode(&data); err != nil {`,
 		`	propConfig, err := UnmarshalFilterSlice(bytes.NewBuffer(data.Config), runtime.JSONConsumer()`,
-		`	if err != nil && err != io.EOF {`,
+		`	if err != nil && !stderrors.Is(err, io.EOF) {`,
 		`	var result AndFilterAllOf1`,
 		`	result.configField = propConfig`,
 		`	*m = result`,
@@ -5806,7 +5806,7 @@ func initFixture607() {
 		`	if err := validate.Required("config", "body", m.Config()); err != nil {`,
 		`	for i := 0; i < len(m.Config()); i++ {`,
 		`		if err := m.configField[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("config" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -6038,7 +6038,7 @@ func initFixture1336() {
 		`	dec.UseNumber(`,
 		`	if err := dec.Decode(&data); err != nil {`,
 		`		nodes, err := UnmarshalNodeSlice(bytes.NewBuffer(data.Nodes), runtime.JSONConsumer()`,
-		`	if err != nil && err != io.EOF {`,
+		`	if err != nil && !stderrors.Is(err, io.EOF) {`,
 		`	var result Graph`,
 		`	result.nodesField = propNodes`,
 		`	*m = result`,
@@ -6199,7 +6199,7 @@ func initFixtureErrors() {
 
 	// load expectations for model: node.go
 	flattenRun.AddExpectations("array_without_items.go", []string{
-		`type ArrayWithoutItems []interface{}`,
+		`type ArrayWithoutItems []any`,
 		// empty validation
 		"func (m ArrayWithoutItems) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -6213,7 +6213,7 @@ func initFixtureErrors() {
 	expandRun.AddExpectations("array_without_items.go", flattenRun.ExpectedFor("ArrayWithoutItems").ExpectedLines, todo, noLines, noLines)
 
 	flattenRun.AddExpectations("multiple_types.go", []string{
-		`type MultipleTypes interface{`,
+		`type MultipleTypes any`,
 	},
 		// not expected
 		validatable,
@@ -6249,7 +6249,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Coords) {`,
 		`	if m.Coords != nil {`,
 		`		if err := m.Coords.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("coords"`,
 	},
 		// not expected
@@ -6373,7 +6373,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Coords) {`,
 		`	if m.Coords != nil {`,
 		`		if err := m.Coords.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("coords"`,
 	},
 		// not expected
@@ -6625,7 +6625,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Meta) {`,
 		`	if m.Meta != nil {`,
 		`		if err := m.Meta.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("meta"`,
 	},
 		// not expected
@@ -6692,7 +6692,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Args) {`,
 		`	if m.Args != nil {`,
 		`		if err := m.Args.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("args"`,
 		`type ArrayMultiValidationsArgsTuple0 struct {`,
 		"	P0 *string `json:\"-\"`",
@@ -7104,7 +7104,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Args) {`,
 		`	if m.Args != nil {`,
 		`		if err := m.Args.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("args"`,
 	},
 		// not expected
@@ -7123,7 +7123,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Args) {`,
 		`	if m.Args != nil {`,
 		`		if err := m.Args.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("args"`,
 		`type NestedObjectValidationsArgs struct {`,
 		"	Meta *NestedObjectValidationsArgsMeta `json:\"meta,omitempty\"`",
@@ -7134,7 +7134,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Meta) {`,
 		`	if m.Meta != nil {`,
 		`		if err := m.Meta.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("args" + "." + "meta"`,
 		`type NestedObjectValidationsArgsMeta struct {`,
 		"	First string `json:\"first,omitempty\"`",
@@ -7245,13 +7245,13 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Category) {`,
 		`	if m.Category != nil {`,
 		`		if err := m.Category.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("category"`,
 		`func (m *Pet) validateName(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("name", "body", m.Name); err != nil {`,
 		`func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("photoUrls", "body", m.PhotoUrls); err != nil {`,
-		`var petTypeStatusPropEnum []interface{`,
+		`var petTypeStatusPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"available\",\"pending\",\"sold\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -7273,7 +7273,7 @@ func initTodolistSchemavalidation() {
 		// nullable required:
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName("tags" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -7301,13 +7301,13 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Category) {`,
 		`	if m.Category != nil {`,
 		`		if err := m.Category.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("category"`,
 		`func (m *Pet) validateName(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("name", "body", m.Name); err != nil {`,
 		`func (m *Pet) validatePhotoUrls(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("photoUrls", "body", m.PhotoUrls); err != nil {`,
-		`var petTypeStatusPropEnum []interface{`,
+		`var petTypeStatusPropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"available\",\"pending\",\"sold\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -7329,7 +7329,7 @@ func initTodolistSchemavalidation() {
 		// nullable required:
 		`		if m.Tags[i] != nil {`,
 		`			if err := m.Tags[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName("tags" + "." + strconv.Itoa(i)`,
 		`type PetCategory struct {`,
 		"	ID int64 `json:\"id,omitempty\"`",
@@ -7883,7 +7883,7 @@ func initTodolistSchemavalidation() {
 		`func (m *ArrayAdditionalValidations) validateArgs(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Args) {`,
 		`	if err := m.Args.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("args"`,
 	},
 		// not expected
@@ -7902,7 +7902,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Args) {`,
 		`	if m.Args != nil {`,
 		`		if err := m.Args.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("args"`,
 		`type ArrayAdditionalValidationsArgsTuple0 struct {`,
 		"	P0 *string `json:\"-\"`",
@@ -8065,7 +8065,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Meta) {`,
 		`	if m.Meta != nil {`,
 		`		if err := m.Meta.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("meta"`,
 	},
 		// not expected
@@ -8211,7 +8211,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Meta) {`,
 		`	if m.Meta != nil {`,
 		`		if err := m.Meta.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("meta"`,
 	},
 		// not expected
@@ -8230,7 +8230,7 @@ func initTodolistSchemavalidation() {
 		`	if swag.IsZero(m.Meta) {`,
 		`	if m.Meta != nil {`,
 		`		if err := m.Meta.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("meta"`,
 		`type NamedNestedObjectMeta struct {`,
 		"	First string `json:\"first,omitempty\"`",
@@ -8340,7 +8340,7 @@ func initFixtureNestedMaps() {
 
 	// load expectations for model: alias_interface.go
 	flattenRun.AddExpectations("alias_interface.go", []string{
-		`type AliasInterface interface{`,
+		`type AliasInterface any`,
 	},
 		// not expected
 		validatable,
@@ -8365,7 +8365,7 @@ func initFixtureNestedMaps() {
 
 	expandRun.AddExpectations("test_nested_aliased_interface.go", []string{
 		`type TestNestedAliasedInterface struct {`,
-		"	Meta map[string]map[string]map[string]interface{} `json:\"meta,omitempty\"`",
+		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
 		"func (m *TestNestedAliasedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -8459,7 +8459,7 @@ func initFixtureNestedMaps() {
 	// load expectations for model: test_nested_interface.go
 	flattenRun.AddExpectations("test_nested_interface.go", []string{
 		`type TestNestedInterface struct {`,
-		"	Meta map[string]map[string]map[string]interface{} `json:\"meta,omitempty\"`",
+		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
 		"func (m *TestNestedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -8617,7 +8617,7 @@ func initFixture844Variations() {
 
 	// load expectations for model: foo.go
 	flattenRun.AddExpectations("foo.go", []string{
-		`type Foo interface{`,
+		`type Foo any`,
 	},
 		// not expected
 		validatable,
@@ -8642,7 +8642,7 @@ func initFixture844Variations() {
 
 	expandRun.AddExpectations("variation2.go", []string{
 		`type Variation2 struct {`,
-		"	Prop1 interface{} `json:\"prop1,omitempty\"`",
+		"	Prop1 any `json:\"prop1,omitempty\"`",
 		// empty validation
 		"func (m *Variation2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -8654,7 +8654,7 @@ func initFixture844Variations() {
 
 	// load expectations for model: bar.go
 	flattenRun.AddExpectations("bar.go", []string{
-		`type Bar interface{`,
+		`type Bar any`,
 	},
 		// not expected
 		validatable,
@@ -8684,16 +8684,16 @@ func initFixture844Variations() {
 
 	expandRun.AddExpectations("variation3.go", []string{
 		`type Variation3 struct {`,
-		"	Prop1 []interface{} `json:\"prop1\"`",
+		"	Prop1 []any `json:\"prop1\"`",
 		`func (m *Variation3) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp1(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var variation3Prop1ItemsEnum []interface{`,
-		`	var res []interface{`,
+		`var variation3Prop1ItemsEnum []any`,
+		`	var res []any`,
 		"	if err := json.Unmarshal([]byte(`[\"abc\",\"def\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
 		`		variation3Prop1ItemsEnum = append(variation3Prop1ItemsEnum, v`,
-		`func (m *Variation3) validateProp1ItemsEnum(path, location string, value interface{}) error {`,
+		`func (m *Variation3) validateProp1ItemsEnum(path, location string, value any) error {`,
 		`	if err := validate.EnumCase(path, location, value, variation3Prop1ItemsEnum, true); err != nil {`,
 		`func (m *Variation3) validateProp1(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop1) {`,
@@ -8713,7 +8713,7 @@ func initFixture844Variations() {
 		"	P1 Bar `json:\"-\"`",
 		"	P2 NonInterface `json:\"-\"`",
 		"	P3 []Bar `json:\"-\"`",
-		"	TupleVariationItems []interface{} `json:\"-\"`",
+		"	TupleVariationItems []any `json:\"-\"`",
 		`func (m *TupleVariation) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateP0(formats); err != nil {`,
 		`	if err := m.validateP1(formats); err != nil {`,
@@ -8725,11 +8725,11 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`if m.P1 == nil {`, // now required any checked against nil
 		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	if err := m.P2.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("2"`,
 		`func (m *TupleVariation) validateP3(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("3", "body", m.P3); err != nil {`,
@@ -8750,10 +8750,10 @@ func initFixture844Variations() {
 	expandRun.AddExpectations("tuple_variation.go", []string{
 		`type TupleVariation struct {`,
 		"	P0 *int64 `json:\"-\"`",
-		"	P1 interface{} `json:\"-\"`",
+		"	P1 any `json:\"-\"`",
 		"	P2 map[string]strfmt.Date `json:\"-\"`",
-		"	P3 []interface{} `json:\"-\"`",
-		"	TupleVariationItems []interface{} `json:\"-\"`",
+		"	P3 []any `json:\"-\"`",
+		"	TupleVariationItems []any `json:\"-\"`",
 		`func (m *TupleVariation) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateP0(formats); err != nil {`,
 		`	if err := m.validateP1(formats); err != nil {`,
@@ -8765,7 +8765,7 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *TupleVariation) validateP1(formats strfmt.Registry) error {`,
-		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`if m.P1 == nil {`, // now required any checked against nil
 		`return errors.Required("1", "body", m.P1)`,
 		`func (m *TupleVariation) validateP2(formats strfmt.Registry) error {`,
 		`	for k := range m.P2 {`,
@@ -8798,7 +8798,7 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`if m.P1 == nil {`, // now required any checked against nil
 		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
@@ -8813,8 +8813,8 @@ func initFixture844Variations() {
 	expandRun.AddExpectations("add_items_variation.go", []string{
 		`type AddItemsVariation struct {`,
 		"	P0 *int64 `json:\"-\"`",
-		"	P1 interface{} `json:\"-\"`",
-		"	AddItemsVariationItems [][]interface{} `json:\"-\"`",
+		"	P1 any `json:\"-\"`",
+		"	AddItemsVariationItems [][]any `json:\"-\"`",
 		`func (m *AddItemsVariation) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateP0(formats); err != nil {`,
 		`	if err := m.validateP1(formats); err != nil {`,
@@ -8824,7 +8824,7 @@ func initFixture844Variations() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := validate.MaximumInt("0", "body", *m.P0, 10, false); err != nil {`,
 		`func (m *AddItemsVariation) validateP1(formats strfmt.Registry) error {`,
-		`if m.P1 == nil {`, // now required interface{} checked against nil
+		`if m.P1 == nil {`, // now required any checked against nil
 		`return errors.Required("1", "body", m.P1)`,
 		`func (m *AddItemsVariation) validateAddItemsVariationItems(formats strfmt.Registry) error {`,
 		`	for i := range m.AddItemsVariationItems {`,
@@ -8870,8 +8870,8 @@ func initFixture844Variations() {
 		`type Variation0 struct {`,
 		`	Variation0AllOf0`,
 		`	Variation0AllOf1`,
-		`type Variation0AllOf0 interface{}`,
-		`type Variation0AllOf1 interface{}`,
+		`type Variation0AllOf0 any`,
+		`type Variation0AllOf1 any`,
 		// empty validation
 		"func (m *Variation0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -8904,7 +8904,7 @@ func initFixture844Variations() {
 		`	for k := range m.AO1 {`,
 		`		if err := validate.FormatOf(k, "body", "date", m.AO1[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`type Variation1AllOf0 interface{}`,
+		`type Variation1AllOf0 any`,
 	},
 		// not expected
 		todo,
@@ -8914,7 +8914,7 @@ func initFixture844Variations() {
 
 	// load expectations for model: empty_enum.go
 	flattenRun.AddExpectations("empty_enum.go", []string{
-		`type EmptyEnum interface{}`,
+		`type EmptyEnum any`,
 	},
 		// not expected
 		validatable,
@@ -8966,7 +8966,7 @@ func initFixtureMoreAddProps() {
 		`	if swag.IsZero(m.AdditionalProperties) {`,
 		`	if m.AdditionalProperties != nil {`,
 		`		if err := m.AdditionalProperties.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("additionalProperties"`,
 	},
 		// not expected
@@ -8980,7 +8980,7 @@ func initFixtureMoreAddProps() {
 		`type TrialAdditionalProperties struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	TrialAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -9006,7 +9006,7 @@ func initFixtureMoreAddProps() {
 		`	if swag.IsZero(m.Prop1) {`,
 		`	if m.Prop1 != nil {`,
 		`		if err := m.Prop1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop1"`,
 	},
 		// not expected
@@ -9054,7 +9054,7 @@ func initFixtureMoreAddProps() {
 		// nullable not required:
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -9072,7 +9072,7 @@ func initFixtureMoreAddProps() {
 		`type AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -9109,7 +9109,7 @@ func initFixtureMoreAddProps() {
 		`type AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -9124,7 +9124,7 @@ func initFixtureMoreAddProps() {
 		`type AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	B1 strfmt.Date `json:\"b1,omitempty\"`",
-		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		`func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesProp1AdditionalProperties) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateA1(formats); err != nil {`,
 		`	if err := m.validateB1(formats); err != nil {`,
@@ -9207,12 +9207,12 @@ func initFixtureMoreAddProps() {
 		`	if swag.IsZero(m.AdditionalProperties) {`,
 		`	if m.AdditionalProperties != nil {`,
 		`		if err := m.AdditionalProperties.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("additionalProperties"`,
 		`type TrialAdditionalProperties struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	TrialAdditionalPropertiesAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -9239,7 +9239,7 @@ func initFixtureMoreAddProps() {
 		// nullable required:
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
-		`					if ve, ok := err.(*errors.Validation); ok {`,
+		`					if stderrors.As(err, &ve) {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -9279,7 +9279,7 @@ func initFixtureMoreAddProps() {
 		`type AdditionalTransitiveRefedThingItems0AnonAnon struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
 	},
@@ -9318,12 +9318,12 @@ func initFixtureMoreAddProps() {
 		`	if swag.IsZero(m.Prop1) {`,
 		`	if m.Prop1 != nil {`,
 		`		if err := m.Prop1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop1"`,
 		`type AdditionalTransitiveRefedObjectThingAnonAnon struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
-		"	AdditionalTransitiveRefedObjectThingAnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedObjectThingAnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		`type AdditionalTransitiveRefedObjectThingAnonProp1 struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
 		"	AdditionalTransitiveRefedObjectThingAnonProp1 map[string]*AdditionalTransitiveRefedObjectThingAnonProp1Anon `json:\"-\"`",
@@ -9340,7 +9340,7 @@ func initFixtureMoreAddProps() {
 		`type AdditionalTransitiveRefedObjectThingAnonProp1Anon struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	B1 strfmt.Date `json:\"b1,omitempty\"`",
-		"	AdditionalTransitiveRefedObjectThingAnonProp1AnonAdditionalProperties map[string]interface{} `json:\"-\"`",
+		"	AdditionalTransitiveRefedObjectThingAnonProp1AnonAdditionalProperties map[string]any `json:\"-\"`",
 		`func (m *AdditionalTransitiveRefedObjectThingAnonProp1Anon) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateA1(formats); err != nil {`,
 		`	if err := m.validateB1(formats); err != nil {`,
@@ -9388,7 +9388,7 @@ func initFixture1537() {
 		// nullable required:
 		`		if m.ProfileCfg[i] != nil {`,
 		`			if err := m.ProfileCfg[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName("profileCfg" + "." + strconv.Itoa(i)`,
 	},
 		// not expected
@@ -9407,7 +9407,7 @@ func initFixture1537() {
 		`func (m *Profile) validateProfileCfg(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ProfileCfg) {`,
 		`	if err := m.ProfileCfg.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("profileCfg"`,
 	},
 		// not expected
@@ -9427,7 +9427,7 @@ func initFixture1537() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9461,7 +9461,7 @@ func initFixture1537() {
 		`func (m *ProfileRequired) validateProfileCfg(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("profileCfg", "body", m.ProfileCfg); err != nil {`,
 		`	if err := m.ProfileCfg.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("profileCfg"`,
 	},
 		// not expected
@@ -9488,7 +9488,7 @@ func initFixture1537v2() {
 		`func (m Profiles) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
 		`		if err := m[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9509,7 +9509,7 @@ func initFixture1537v2() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9532,7 +9532,7 @@ func initFixture1537v2() {
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9562,7 +9562,7 @@ func initFixture1537v2() {
 		`func (m ProfilesNoValidation) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
 		`		if err := m[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9616,7 +9616,7 @@ func initFixture15365() {
 
 	// load expectations for model: model_array_with_max.go
 	thisRun.AddExpectations("model_array_with_max.go", []string{
-		`type ModelArrayWithMax []interface{`,
+		`type ModelArrayWithMax []any`,
 		`func (m ModelArrayWithMax) Validate(formats strfmt.Registry) error {`,
 		`	iModelArrayWithMaxSize := int64(len(m)`,
 		`	if err := validate.MaxItems("", "body", iModelArrayWithMaxSize, 10); err != nil {`,
@@ -9685,7 +9685,7 @@ func initFixture15365() {
 		`func (m ModelMapOfRef) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		`		if err := m[k].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(k`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9794,7 +9794,7 @@ func initFixture15365() {
 
 	// load expectations for model: model_interface.go
 	thisRun.AddExpectations("model_interface.go", []string{
-		`type ModelInterface interface{`,
+		`type ModelInterface any`,
 	},
 		// not expected
 		todo,
@@ -9808,7 +9808,7 @@ func initFixture15365() {
 		`func (m ModelArrayOfRef) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
 		`		if err := m[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -9945,7 +9945,7 @@ func initFixtureSimpleTuple() {
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithMapElementItems = append(m.TupleThingWithMapElementItems, toadd`,
 		`func (m TupleThingWithMapElement) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithMapElementItems {`,
@@ -9984,7 +9984,7 @@ func initFixtureSimpleTuple() {
 		`type TrueTupleThing struct {`,
 		"	P0 *float64 `json:\"-\"`",
 		"	P1 *string `json:\"-\"`",
-		"	TrueTupleThingItems []interface{} `json:\"-\"`",
+		"	TrueTupleThingItems []any `json:\"-\"`",
 		`func (m *TrueTupleThing) UnmarshalJSON(raw []byte) error {`,
 		`	var stage1 []json.RawMessage`,
 		`	buf := bytes.NewBuffer(raw`,
@@ -10010,14 +10010,14 @@ func initFixtureSimpleTuple() {
 		`		lastIndex = 1`,
 		`	if len(stage1) > lastIndex+1 {`,
 		`		for _, val := range stage1[lastIndex+1:] {`,
-		`			var toadd interface{`,
+		`			var toadd any`,
 		`			buf = bytes.NewBuffer(val`,
 		`			dec := json.NewDecoder(buf`,
 		`			dec.UseNumber(`,
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TrueTupleThingItems = append(m.TrueTupleThingItems, toadd`,
 		`func (m TrueTupleThing) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TrueTupleThingItems {`,
@@ -10069,7 +10069,7 @@ func initFixtureSimpleTuple() {
 		`		if err := dec.Decode(&dataP1); err != nil {`,
 		`		m.P1 = &dataP1`,
 		`func (m FalseTupleThing) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	return json.Marshal(data`,
@@ -10096,7 +10096,7 @@ func initFixtureSimpleTuple() {
 		`type TupleThingWithNotNullable struct {`,
 		"	P0 string `json:\"-\"`",
 		"	P1 *int64 `json:\"-\"`",
-		"	TupleThingWithNotNullableItems []interface{} `json:\"-\"`",
+		"	TupleThingWithNotNullableItems []any `json:\"-\"`",
 		`func (m *TupleThingWithNotNullable) UnmarshalJSON(raw []byte) error {`,
 		`	var stage1 []json.RawMessage`,
 		`	buf := bytes.NewBuffer(raw`,
@@ -10122,14 +10122,14 @@ func initFixtureSimpleTuple() {
 		`		lastIndex = 1`,
 		`	if len(stage1) > lastIndex+1 {`,
 		`		for _, val := range stage1[lastIndex+1:] {`,
-		`			var toadd interface{`,
+		`			var toadd any`,
 		`			buf = bytes.NewBuffer(val`,
 		`			dec := json.NewDecoder(buf`,
 		`			dec.UseNumber(`,
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithNotNullableItems = append(m.TupleThingWithNotNullableItems, toadd`,
 		`func (m TupleThingWithNotNullable) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithNotNullableItems {`,
@@ -10183,7 +10183,7 @@ func initFixtureSimpleTuple() {
 		`		if err := dec.Decode(&dataP1); err != nil {`,
 		`		m.P1 = &dataP1`,
 		`func (m TupleThing) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	return json.Marshal(data`,
@@ -10191,7 +10191,7 @@ func initFixtureSimpleTuple() {
 		`	if err := m.validateP0(formats); err != nil {`,
 		`	if err := m.validateP1(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
-		`var tupleThingTypeP0PropEnum []interface{`,
+		`var tupleThingTypeP0PropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"CONST1\",\"CONST2\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -10203,7 +10203,7 @@ func initFixtureSimpleTuple() {
 		`func (m *TupleThing) validateP0(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if err := m.validateP0Enum("0", "body", *m.P0); err != nil {`,
-		`var tupleThingTypeP1PropEnum []interface{`,
+		`var tupleThingTypeP1PropEnum []any`,
 		`	var res []string`,
 		"	if err := json.Unmarshal([]byte(`[\"CONST3\",\"CONST4\"]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -10263,7 +10263,7 @@ func initFixtureSimpleTuple() {
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithAdditionalItemsItems = append(m.TupleThingWithAdditionalItemsItems, toadd`,
 		`func (m TupleThingWithAdditionalItems) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithAdditionalItemsItems {`,
@@ -10279,7 +10279,7 @@ func initFixtureSimpleTuple() {
 		`func (m *TupleThingWithAdditionalItems) validateP1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("1", "body", m.P1); err != nil {`,
 		`	if err := validate.MaximumInt("1", "body", *m.P1, 10, false); err != nil {`,
-		`var tupleThingWithAdditionalItemsItemsEnum []interface{`,
+		`var tupleThingWithAdditionalItemsItemsEnum []any`,
 		`	var res []int64`,
 		"	if err := json.Unmarshal([]byte(`[1,2]`), &res); err != nil {",
 		`	for _, v := range res {`,
@@ -10340,7 +10340,7 @@ func initFixtureSimpleTuple() {
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithArrayElementItems = append(m.TupleThingWithArrayElementItems, toadd`,
 		`func (m TupleThingWithArrayElement) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithArrayElementItems {`,
@@ -10386,7 +10386,7 @@ func initFixtureSimpleTuple() {
 		`	if err := validate.MinItems("", "body", iArrayOfTuplesSize, 1); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
 		`		if err := m[i].Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName(strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ArrayOfTuplesTuple0 struct {`,
@@ -10425,7 +10425,7 @@ func initFixtureSimpleTuple() {
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.ArrayOfTuplesTuple0Items = append(m.ArrayOfTuplesTuple0Items, toadd`,
 		`func (m ArrayOfTuplesTuple0) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.ArrayOfTuplesTuple0Items {`,
@@ -10502,7 +10502,7 @@ func initFixtureSimpleTuple() {
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithObjectElementItems = append(m.TupleThingWithObjectElementItems, toadd`,
 		`func (m TupleThingWithObjectElement) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithObjectElementItems {`,
@@ -10517,7 +10517,7 @@ func initFixtureSimpleTuple() {
 		`	if err := validate.Required("0", "body", m.P0); err != nil {`,
 		`	if m.P0 != nil {`,
 		`		if err := m.P0.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("0"`,
 		`func (m *TupleThingWithObjectElement) validateP1(formats strfmt.Registry) error {`,
 		`if err := validate.Required("1", "body", m.P1); err != nil {`,
@@ -10573,7 +10573,7 @@ func initFixtureSimpleTuple() {
 		`		if err := dec.Decode(&dataP1); err != nil {`,
 		`		m.P1 = &dataP1`,
 		`func (m TupleThingWithNoAdditionalItems) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	return json.Marshal(data`,
@@ -10601,7 +10601,7 @@ func initFixtureSimpleTuple() {
 		`type TupleThingWithAnyAdditionalItems struct {`,
 		"	P0 *string `json:\"-\"`",
 		"	P1 *int64 `json:\"-\"`",
-		"	TupleThingWithAnyAdditionalItemsItems []interface{} `json:\"-\"`",
+		"	TupleThingWithAnyAdditionalItemsItems []any `json:\"-\"`",
 		`func (m *TupleThingWithAnyAdditionalItems) UnmarshalJSON(raw []byte) error {`,
 		`	var stage1 []json.RawMessage`,
 		`	buf := bytes.NewBuffer(raw`,
@@ -10627,14 +10627,14 @@ func initFixtureSimpleTuple() {
 		`		lastIndex = 1`,
 		`	if len(stage1) > lastIndex+1 {`,
 		`		for _, val := range stage1[lastIndex+1:] {`,
-		`			var toadd interface{`,
+		`			var toadd any`,
 		`			buf = bytes.NewBuffer(val`,
 		`			dec := json.NewDecoder(buf`,
 		`			dec.UseNumber(`,
 		`			if err := dec.Decode(&toadd); err != nil {`,
 		`			m.TupleThingWithAnyAdditionalItemsItems = append(m.TupleThingWithAnyAdditionalItemsItems, toadd`,
 		`func (m TupleThingWithAnyAdditionalItems) MarshalJSON() ([]byte, error) {`,
-		`	data := []interface{}{`,
+		`	data := []any{`,
 		`		m.P0,`,
 		`		m.P1,`,
 		`	for _, v := range m.TupleThingWithAnyAdditionalItemsItems {`,
@@ -10698,13 +10698,13 @@ func initFixtureDeepMaps() {
 		`	if swag.IsZero(m.Prop0) {`,
 		`	if m.Prop0 != nil {`,
 		`		if err := m.Prop0.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop0"`,
 		`func (m *ModelObjectVanilla) validateProp1(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("prop1", "body", m.Prop1); err != nil {`,
 		`	if m.Prop1 != nil {`,
 		`		if err := m.Prop1.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop1"`,
 		`func (m *ModelObjectVanilla) validateProp2(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop2) {`,
@@ -10712,13 +10712,13 @@ func initFixtureDeepMaps() {
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
-		`				if ve, ok := err.(*errors.Validation); ok {`,
+		`				if stderrors.As(err, &ve) {`,
 		`					return ve.ValidateName("prop2" + "." + strconv.Itoa(i)`,
 		`func (m *ModelObjectVanilla) validateProp3(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop3) {`,
 		`	if m.Prop3 != nil {`,
 		`		if err := m.Prop3.Validate(formats); err != nil {`,
-		`			if ve, ok := err.(*errors.Validation); ok {`,
+		`			if stderrors.As(err, &ve) {`,
 		`				return ve.ValidateName("prop3"`,
 		`func (m *ModelObjectVanilla) validateProp4(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop4) {`,
@@ -10803,12 +10803,12 @@ func initFixture1617() {
 		`func (m *ArtifactInfo) validatePath(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Path) {`,
 		`	if err := m.Path.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("Path"`,
 		`func (m *ArtifactInfo) validateStatus(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Status) {`,
 		`	if err := m.Status.Validate(formats); err != nil {`,
-		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`		if stderrors.As(err, &ve) {`,
 		`			return ve.ValidateName("Status"`,
 		`func (m *ArtifactInfo) validateTimestamp(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Timestamp) {`,
@@ -10939,7 +10939,7 @@ func initFixtureRealiasedTypes() {
 
 	// load expectations for model: c1v.go
 	thisRun.AddExpectations("c1v.go", []string{
-		`type C1v interface{`,
+		`type C1v any`,
 	},
 		// not expected
 		todo,
@@ -11180,7 +11180,7 @@ func initFixtureRealiasedTypes() {
 
 	// load expectations for model: c1.go
 	thisRun.AddExpectations("c1.go", []string{
-		`type C1 interface{`,
+		`type C1 any`,
 	},
 		// not expected
 		todo,
@@ -11562,7 +11562,7 @@ func initFixture2604() {
 		noLines)
 
 	thisRun.AddExpectations("interface.go", []string{
-		`type Interface interface{}`,
+		`type Interface any`,
 	},
 		// not expected
 		todo,
@@ -11630,19 +11630,19 @@ func initFixture2163() {
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("obj.go", []string{
-		`E map[string]interface{}`,
-		`Ebis map[string]interface{}`,
-		`I []map[string]interface{}`,
-		`J []map[string][]map[string]interface{}`,
+		`E map[string]any`,
+		`Ebis map[string]any`,
+		`I []map[string]any`,
+		`J []map[string][]map[string]any`,
 		//
-		`func (m *Obj) validateEEnum(path, location string, value map[string]interface{}) error {`,
+		`func (m *Obj) validateEEnum(path, location string, value map[string]any) error {`,
 		`if swag.IsZero(m.E) {`,
 		`nprops := len(m.E)`,
 		`if nprops < 12 {`,
 		`return errors.TooFewProperties("e", "body", 12)`,
 		`if err := m.validateEEnum("e", "body", m.E); err != nil {`,
 		//
-		`func (m *Obj) validateEbisEnum(path, location string, value map[string]interface{}) error {`,
+		`func (m *Obj) validateEbisEnum(path, location string, value map[string]any) error {`,
 		`if swag.IsZero(m.Ebis) {`,
 		`nprops := len(m.Ebis)`,
 		`if nprops < 1 {`,
@@ -11691,7 +11691,7 @@ func initFixture2587() {
 
 	flattenRun.AddExpectations("basic_thing.go", []string{
 		`type BasicThing struct {`,
-		`Data interface{} `,
+		`Data any `,
 		`func (m *BasicThing) Validate(formats strfmt.Registry) error {`,
 		`props := make(map[string]json.RawMessage, 1+10)`,
 		`j, err := swag.WriteJSON(m)`,
@@ -11702,8 +11702,8 @@ func initFixture2587() {
 
 	flattenRun.AddExpectations("nested_thing.go", []string{
 		`type NestedThing struct {`,
-		`Data map[string]interface{} `,
-		`NestedThingAdditionalProperties map[string]interface{}`,
+		`Data map[string]any `,
+		`NestedThingAdditionalProperties map[string]any`,
 		`func (m *NestedThing) Validate(formats strfmt.Registry) error {`,
 		`// short circuits minProperties > 0`,
 		`if m == nil {`,
@@ -11725,7 +11725,7 @@ func initFixture2587() {
 
 	flattenRun.AddExpectations("some_thing.go", []string{
 		`type SomeThing struct {`,
-		`Data map[string]interface{}`,
+		`Data map[string]any`,
 		`func (m *SomeThing) Validate(formats strfmt.Registry) error {`,
 		`if err := m.validateData(formats); err != nil {`,
 		`func (m *SomeThing) validateData(formats strfmt.Registry) error {`,

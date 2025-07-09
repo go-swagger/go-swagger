@@ -19,6 +19,7 @@ import (
 
 func configureFlags(api *operations.AuthSampleAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+	_ = api
 }
 
 func configureAPI(api *operations.AuthSampleAPI) http.Handler {
@@ -26,7 +27,7 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	api.ServeError = errors.ServeError
 
 	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
+	// Expected interface func(string, ...any)
 	//
 	// Example:
 	// api.Logger = log.Printf
@@ -42,6 +43,8 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 	// Applies when the "x-token" header is set
 	if api.KeyAuth == nil {
 		api.KeyAuth = func(token string) (*models.Principal, error) {
+			_ = token
+
 			return nil, errors.NotImplemented("api key auth (key) x-token from header param [x-token] has not yet been implemented")
 		}
 	}
@@ -54,11 +57,17 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 
 	if api.CustomersCreateHandler == nil {
 		api.CustomersCreateHandler = customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		})
 	}
 	if api.CustomersGetIDHandler == nil {
 		api.CustomersGetIDHandler = customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
+			_ = params
+			_ = principal
+
 			return middleware.NotImplemented("operation customers.GetID has not yet been implemented")
 		})
 	}
@@ -73,13 +82,17 @@ func configureAPI(api *operations.AuthSampleAPI) http.Handler {
 // The TLS configuration before HTTPS server starts.
 func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
+	_ = tlsConfig
 }
 
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix".
-func configureServer(s *http.Server, scheme, addr string) {
+func configureServer(server *http.Server, scheme, addr string) {
+	_ = server
+	_ = scheme
+	_ = addr
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
