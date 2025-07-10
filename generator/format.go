@@ -24,6 +24,7 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		return nil, err
 	}
 
+	removeBlankLines(fset, file)
 	mergeImports(file)
 	cleanImports(fset, file)
 	removeUnecessaryImportParens(file)
@@ -41,6 +42,7 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 	if clean != nil {
 		tmp = clean(tmp)
 	}
+	// return tmp, nil
 
 	out, err := formatByImports(filename, tmp, formatOptionsWithDefault(opts))
 	if err != nil {
@@ -126,11 +128,11 @@ func cleanImports(fset *token.FileSet, file *ast.File) {
 	}
 
 	for _, impt := range shouldRemove {
-		deleteImportSpec(file, impt)
+		deleteImportSpec(fset, file, impt)
 	}
 }
 
-func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
+func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec) {
 	// remove from file.Imports
 	i := slices.IndexFunc(file.Imports, func(i *ast.ImportSpec) bool {
 		return i == spec
@@ -140,11 +142,8 @@ func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
 	}
 
 	// remove from file.Decls
-	if len(file.Decls) == 0 {
-		return
-	}
-	gen, ok := file.Decls[0].(*ast.GenDecl)
-	if !ok {
+	gen := importDecl(file)
+	if gen == nil {
 		return
 	}
 	i = slices.IndexFunc(gen.Specs, func(i ast.Spec) bool {
@@ -153,7 +152,56 @@ func deleteImportSpec(file *ast.File, spec *ast.ImportSpec) {
 	if i < 0 {
 		return
 	}
+	if i > 0 {
+		prevImpspec := gen.Specs[i-1].(*ast.ImportSpec)
+		prevLine := fset.PositionFor(prevImpspec.Path.ValuePos, false).Line
+		impspec := gen.Specs[i].(*ast.ImportSpec)
+		line := fset.PositionFor(impspec.Path.ValuePos, false).Line
+
+		// We deleted an entry but now there may be
+		// a blank line-sized hole where the import was.
+		if line-prevLine > 1 || !gen.Rparen.IsValid() {
+			// There was a blank line immediately preceding the deleted import,
+			// so there's no need to close the hole. The right parenthesis is
+			// invalid after AddImport to an import statement without parenthesis.
+			// Do nothing.
+		} else if line != fset.File(gen.Rparen).LineCount() {
+			// There was no blank line. Close the hole.
+			fset.File(gen.Rparen).MergeLine(line)
+		}
+	}
 	gen.Specs = slices.Delete(gen.Specs, i, i+1)
+}
+
+func removeBlankLines(fset *token.FileSet, file *ast.File) {
+	gen := importDecl(file)
+	if gen == nil {
+		return
+	}
+	specs := gen.Specs
+	for i := 0; i+1 < len(specs); i++ {
+		spec, ok1 := specs[i].(*ast.ImportSpec)
+		nextSpec, ok2 := specs[i+1].(*ast.ImportSpec)
+		if !ok1 || !ok2 {
+			continue
+		}
+		line := fset.PositionFor(spec.Path.ValuePos, false).Line
+		nextLine := fset.PositionFor(nextSpec.Path.ValuePos, false).Line
+		if nextLine-line > 1 {
+			fset.File(gen.Rparen).MergeLine(line)
+		}
+	}
+}
+
+func importDecl(file *ast.File) *ast.GenDecl {
+	for _, decl := range file.Decls {
+		gen, ok := decl.(*ast.GenDecl)
+		if !ok || gen.Tok != token.IMPORT {
+			continue
+		}
+		return gen
+	}
+	return nil
 }
 
 func removeUnecessaryImportParens(file *ast.File) {

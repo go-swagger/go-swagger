@@ -36,12 +36,19 @@ type FormatOption func(*formatOptions)
 type formatOptions struct {
 	imports.Options
 	localPrefixes []string
+	baseImport    string
 }
 
 // WithFormatLocalPrefixes adds local prefixes to group imports
 func WithFormatLocalPrefixes(prefixes ...string) FormatOption {
 	return func(o *formatOptions) {
 		o.localPrefixes = append(o.localPrefixes, prefixes...)
+	}
+}
+
+func WithFormatBaseImport(base string) FormatOption {
+	return func(o *formatOptions) {
+		o.baseImport = base
 	}
 }
 
