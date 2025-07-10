@@ -25,7 +25,6 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 	}
 
 	removeBlankLines(fset, file)
-	mergeImports(file)
 	cleanImports(fset, file)
 	removeUnecessaryImportParens(file)
 
@@ -219,49 +218,6 @@ func removeUnecessaryImportParens(file *ast.File) {
 		gen.Lparen = token.NoPos
 		gen.Rparen = token.NoPos
 	}
-}
-
-// mergeImports merges all the import declarations into the first one.
-// Taken from [golang.org/x/tools/ast/astutil](https://cs.opensource.google/go/x/tools/+/refs/tags/v0.32.0:go/ast/astutil/imports.go;l=170).
-// This does not adjust line numbers properly
-func mergeImports(f *ast.File) {
-	var first *ast.GenDecl
-	for i := 0; i < len(f.Decls); i++ {
-		decl := f.Decls[i]
-		gen, ok := decl.(*ast.GenDecl)
-		if !ok || gen.Tok != token.IMPORT || declImports(gen, "C") {
-			continue
-		}
-		if first == nil {
-			first = gen
-			continue // Don't touch the first one.
-		}
-		// We now know there is more than one package in this import
-		// declaration. Ensure that it ends up parenthesized.
-		first.Lparen = first.Pos()
-		// Move the imports of the other import declaration to the first one.
-		for _, spec := range gen.Specs {
-			spec.(*ast.ImportSpec).Path.ValuePos = first.Pos()
-			first.Specs = append(first.Specs, spec)
-		}
-		f.Decls = slices.Delete(f.Decls, i, i+1)
-		i--
-	}
-}
-
-// declImports reports whether gen contains an import of path.
-// Taken from [golang.org/x/tools/ast/astutil](https://cs.opensource.google/go/x/tools/+/refs/tags/v0.32.0:go/ast/astutil/imports.go;l=433).
-func declImports(gen *ast.GenDecl, path string) bool {
-	if gen.Tok != token.IMPORT {
-		return false
-	}
-	for _, spec := range gen.Specs {
-		impspec := spec.(*ast.ImportSpec)
-		if importPath(impspec) == path {
-			return true
-		}
-	}
-	return false
 }
 
 // importPath returns the unquoted import path of s,
