@@ -24,8 +24,8 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		return nil, err
 	}
 
-	removeBlankLines(fset, file)
-	cleanImports(fset, file)
+	removeBlankLines(fset, file) // so that goimoprts sorts all imports together
+	fixImports(fset, file)
 	removeUnecessaryImportParens(file)
 
 	printConfig := &printer.Config{
@@ -87,7 +87,10 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 	return fset, file, nil
 }
 
-func cleanImports(fset *token.FileSet, file *ast.File) {
+// fixImports
+// - removes unused imports
+// - adds missing imports for top-level names
+func fixImports(fset *token.FileSet, file *ast.File) {
 	seen := make(map[string]*ast.ImportSpec)
 	shouldRemove := []*ast.ImportSpec{}
 	usedNames := collectTopNames(file)
