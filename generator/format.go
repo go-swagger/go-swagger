@@ -33,7 +33,8 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		Tabwidth: 2,
 	}
 	var buf bytes.Buffer
-	if err := printConfig.Fprint(&buf, fset, file); err != nil {
+	err = printConfig.Fprint(&buf, fset, file)
+	if err != nil {
 		return nil, err
 	}
 
@@ -151,23 +152,10 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 	if i < 0 {
 		return
 	}
-	if i > 0 {
-		prevImpspec := gen.Specs[i-1].(*ast.ImportSpec)
-		prevLine := fset.PositionFor(prevImpspec.Path.ValuePos, false).Line
+	if i > 0 && gen.Rparen.IsValid() {
 		impspec := gen.Specs[i].(*ast.ImportSpec)
 		line := fset.PositionFor(impspec.Path.ValuePos, false).Line
-
-		// We deleted an entry but now there may be
-		// a blank line-sized hole where the import was.
-		if line-prevLine > 1 || !gen.Rparen.IsValid() {
-			// There was a blank line immediately preceding the deleted import,
-			// so there's no need to close the hole. The right parenthesis is
-			// invalid after AddImport to an import statement without parenthesis.
-			// Do nothing.
-		} else if line != fset.File(gen.Rparen).LineCount() {
-			// There was no blank line. Close the hole.
-			fset.File(gen.Rparen).MergeLine(line)
-		}
+		fset.File(gen.Rparen).MergeLine(line)
 	}
 	gen.Specs = slices.Delete(gen.Specs, i, i+1)
 }
@@ -302,7 +290,7 @@ var autoImports map[string]string
 func init() {
 	autoImports = make(map[string]string)
 
-	var stdlibs = []string{
+	stdlibs := []string{
 		"bytes",
 		"context",
 		"encoding/json",
@@ -317,7 +305,7 @@ func init() {
 		autoImports[importPathToAssumedName((pkg))] = pkg
 	}
 
-	var goOpenAPIs = []string{
+	goOpenAPIs := []string{
 		"github.com/go-openapi/loads/fmts",
 		"github.com/go-openapi/runtime",
 		"github.com/go-openapi/runtime/client",
