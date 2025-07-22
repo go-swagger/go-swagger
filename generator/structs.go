@@ -29,6 +29,7 @@ type GenDefinition struct {
 	GenCommon
 	GenSchema
 	Package        string
+	CliPackage     string
 	Imports        map[string]string
 	DefaultImports map[string]string
 	ExtraSchemas   GenSchemaList
