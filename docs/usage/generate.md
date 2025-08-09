@@ -36,7 +36,7 @@ Available commands:
   support    generate supporting files like the main function and the api builder
 ```
 
-For code generation targets (`cli`, `client`, `model`, `operaion`, `server`, `support`), read more [here](../generate/).
+For code generation targets (`cli`, `client`, `model`, `operation`, `server`, `support`), read more [here](../generate/).
 
 For spec generation targets (`spec`), read more [there](../generate-spec/).
 
