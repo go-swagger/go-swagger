@@ -184,7 +184,21 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 		return nil
 	}
 
-	switch tpe := s.decl.Type.Obj().Type().(type) {
+	if err := s.buildFromDeclType(s.decl.Type.Obj().Type(), schema); err != nil {
+		return err
+	}
+
+	if schema.Ref.String() == "" {
+		if s.Name != s.GoName {
+			addExtension(&schema.VendorExtensible, "x-go-name", s.GoName)
+		}
+		addExtension(&schema.VendorExtensible, "x-go-package", s.decl.Type.Obj().Pkg().Path())
+	}
+	return nil
+}
+
+func (s *schemaBuilder) buildFromDeclType(dtpe types.Type, schema *spec.Schema) error {
+	switch tpe := dtpe.(type) {
 	case *types.Basic:
 		debugLog("basic: %v", tpe.Name())
 	case *types.Struct:
@@ -201,6 +215,9 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 		debugLog("slice: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
 	case *types.Map:
 		debugLog("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
+	case *types.Alias:
+		debugLog("alias(schema.buildFromDeclType): got alias %v to %v", tpe, tpe.Underlying())
+		return s.buildFromDeclType(tpe.Underlying(), schema)
 	case *types.Named:
 		o := tpe.Obj()
 		if o != nil {
@@ -229,12 +246,6 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 		return nil
 	}
 
-	if schema.Ref.String() == "" {
-		if s.Name != s.GoName {
-			addExtension(&schema.VendorExtensible, "x-go-name", s.GoName)
-		}
-		addExtension(&schema.VendorExtensible, "x-go-package", s.decl.Type.Obj().Pkg().Path())
-	}
 	return nil
 }
 
@@ -465,12 +476,15 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 				return s.makeRef(decl, tgt)
 			}
 			return nil
-
 		default:
 			log.Printf("WARNING: can't figure out object type for named type (%T): %v [alias: %t]", tpe.Underlying(), tpe.Underlying(), titpe.Obj().IsAlias())
 
 			return nil
 		}
+	case *types.Alias:
+		debugLog("alias(schema.buildFromType): got alias %v to %v", titpe, titpe.Underlying())
+		return s.buildFromType(titpe.Underlying(), tgt)
+
 	default:
 		panic(fmt.Sprintf("WARNING: can't determine refined type %s (%T)", titpe.String(), titpe))
 	}

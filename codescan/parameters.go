@@ -211,6 +211,9 @@ func (p *parameterBuilder) buildFromType(otpe types.Type, op *spec.Operation, se
 		default:
 			return fmt.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
 		}
+	case *types.Alias:
+		debugLog("alias(parameters.buildFromType): got alias %v to %v", tpe, tpe.Underlying())
+		return p.buildFromType(tpe.Underlying(), op, seen)
 	default:
 		return fmt.Errorf("unhandled type (%T): %s", otpe, tpe.String())
 	}
@@ -279,6 +282,9 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 			return nil
 		}
 		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
+	case *types.Alias:
+		debugLog("Alias(parameters.buildFromField): got alias %v to %v", ftpe, ftpe.Underlying())
+		return p.buildFromField(fld, tpe.Underlying(), typable, seen)
 	default:
 		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
 	}

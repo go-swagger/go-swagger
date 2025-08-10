@@ -243,6 +243,9 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 			return nil
 		}
 		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
+	case *types.Alias:
+		debugLog("alias(responses.buildFromField): got alias %v to %v", tpe, tpe.Underlying())
+		return r.buildFromField(fld, tpe.Underlying(), typable, seen)
 	default:
 		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
 	}
@@ -285,6 +288,9 @@ func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, se
 			}
 			return fmt.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
 		}
+	case *types.Alias:
+		debugLog("alias(responses.buildFromType): got alias %v to %v", tpe, tpe.Underlying())
+		return r.buildFromType(tpe.Underlying(), resp, seen)
 	default:
 		return errors.New("anonymous types are currently not supported for responses")
 	}
