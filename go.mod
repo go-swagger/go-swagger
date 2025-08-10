@@ -1,8 +1,6 @@
 module github.com/go-swagger/go-swagger
 
-go 1.21
-
-toolchain go1.22.3
+go 1.23.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
@@ -29,7 +27,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/toqueteos/webbrowser v1.2.0
 	golang.org/x/net v0.25.0
-	golang.org/x/oauth2 v0.20.0
+	golang.org/x/oauth2 v0.27.0
 	golang.org/x/text v0.15.0
 	golang.org/x/tools v0.21.0
 	gopkg.in/yaml.v2 v2.4.0
