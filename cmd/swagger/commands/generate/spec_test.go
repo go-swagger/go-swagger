@@ -114,11 +114,24 @@ func TestGenerateYAMLSpec(t *testing.T) {
 
 	expected, err := os.ReadFile(yamlResultFile)
 	require.NoError(t, err)
+	{
+		var jsonObj any
+		require.NoError(t, yaml.Unmarshal(expected, &jsonObj))
+
+		rewritten, err := yaml.Marshal(jsonObj)
+		require.NoError(t, err)
+		expected = rewritten
+	}
+
+	os.WriteFile("expected.yaml", expected, 0660)
+	os.WriteFile("generated.yaml", data, 0660)
 
 	verifyYAMLData(t, data, expected)
 }
 
 func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
+	t.Helper()
+
 	var got, expected any
 
 	require.NoError(t, json.Unmarshal(data, &got))
@@ -127,6 +140,8 @@ func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
 }
 
 func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
+	t.Helper()
+
 	var got, expected any
 
 	require.NoError(t, yaml.Unmarshal(data, &got))

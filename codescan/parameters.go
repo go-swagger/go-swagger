@@ -49,7 +49,7 @@ func (pt paramTypable) Schema() *spec.Schema {
 	return pt.param.Schema
 }
 
-func (pt paramTypable) AddExtension(key string, value interface{}) {
+func (pt paramTypable) AddExtension(key string, value any) {
 	if pt.param.In == "body" {
 		pt.Schema().AddExtension(key, value)
 	} else {
@@ -57,7 +57,7 @@ func (pt paramTypable) AddExtension(key string, value interface{}) {
 	}
 }
 
-func (pt paramTypable) WithEnum(values ...interface{}) {
+func (pt paramTypable) WithEnum(values ...any) {
 	pt.param.WithEnum(values...)
 }
 
@@ -95,11 +95,11 @@ func (pt itemsTypable) Items() swaggerTypable {
 	return itemsTypable{pt.items.Items, pt.level + 1}
 }
 
-func (pt itemsTypable) AddExtension(key string, value interface{}) {
+func (pt itemsTypable) AddExtension(key string, value any) {
 	pt.items.AddExtension(key, value)
 }
 
-func (pt itemsTypable) WithEnum(values ...interface{}) {
+func (pt itemsTypable) WithEnum(values ...any) {
 	pt.items.WithEnum(values...)
 }
 
@@ -131,8 +131,8 @@ func (sv paramValidations) SetCollectionFormat(val string) { sv.current.Collecti
 func (sv paramValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
-func (sv paramValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv paramValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv paramValidations) SetDefault(val any) { sv.current.Default = val }
+func (sv paramValidations) SetExample(val any) { sv.current.Example = val }
 
 type itemsValidations struct {
 	current *spec.Items
@@ -158,8 +158,8 @@ func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.Collecti
 func (sv itemsValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
-func (sv itemsValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv itemsValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv itemsValidations) SetDefault(val any) { sv.current.Default = val }
+func (sv itemsValidations) SetExample(val any) { sv.current.Example = val }
 
 type parameterBuilder struct {
 	ctx       *scanCtx
@@ -192,6 +192,7 @@ func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -200,27 +201,44 @@ func (p *parameterBuilder) buildFromType(otpe types.Type, op *spec.Operation, se
 	case *types.Pointer:
 		return p.buildFromType(tpe.Elem(), op, seen)
 	case *types.Named:
-		o := tpe.Obj()
-		switch stpe := o.Type().Underlying().(type) {
-		case *types.Struct:
-			debugLog("build from type %s: %T", tpe.Obj().Name(), otpe)
-			if decl, found := p.ctx.DeclForType(o.Type()); found {
-				return p.buildFromStruct(decl, stpe, op, seen)
-			}
-			return p.buildFromStruct(p.decl, stpe, op, seen)
-		default:
-			return fmt.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
-		}
+		return p.buildNamedType(tpe, op, seen)
 	case *types.Alias:
 		debugLog("alias(parameters.buildFromType): got alias %v to %v", tpe, tpe.Underlying())
-		return p.buildFromType(tpe.Underlying(), op, seen)
+		if tpe.Obj().Name() == "any" && tpe.Obj().Parent() == types.Universe {
+			iface, ok := tpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", tpe.String())
+			}
+			debugLog("alias(parameters.buildFromType): got alias any to inferface{}: %v", iface)
+
+			// return p.buildFromInterface(iface, typable) // TODO(fred)
+			return nil // TODO
+		}
+
+		return p.buildNamedType(tpe, op, seen)
 	default:
 		return fmt.Errorf("unhandled type (%T): %s", otpe, tpe.String())
 	}
 }
 
+func (p *parameterBuilder) buildNamedType(tpe namedObj, op *spec.Operation, seen map[string]spec.Parameter) error {
+	o := tpe.Obj()
+	switch stpe := o.Type().Underlying().(type) {
+	case *types.Struct:
+		debugLog("build from type %s: %T", o.Name(), tpe)
+		if decl, found := p.ctx.DeclForType(o.Type()); found {
+			return p.buildFromStruct(decl, stpe, op, seen)
+		}
+
+		return p.buildFromStruct(p.decl, stpe, op, seen)
+	default:
+		return fmt.Errorf("unhandled type (%T): %s", stpe, o.Type().Underlying().String())
+	}
+}
+
 func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typable swaggerTypable, seen map[string]spec.Parameter) error {
 	debugLog("build from field %s: %T", fld.Name(), tpe)
+
 	switch ftpe := tpe.(type) {
 	case *types.Basic:
 		return swaggerSchemaForType(ftpe.Name(), typable)
@@ -237,15 +255,7 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 	case *types.Pointer:
 		return p.buildFromField(fld, ftpe.Elem(), typable, seen)
 	case *types.Interface:
-		sb := schemaBuilder{
-			decl: p.decl,
-			ctx:  p.ctx,
-		}
-		if err := sb.buildFromType(tpe, typable); err != nil {
-			return err
-		}
-		p.postDecls = append(p.postDecls, sb.postDecls...)
-		return nil
+		return p.buildFromInterface(ftpe, typable)
 	case *types.Array:
 		return p.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
 	case *types.Slice:
@@ -262,32 +272,68 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 		if err := sb.buildFromType(ftpe.Elem(), schemaTypable{schema, typable.Level() + 1}); err != nil {
 			return err
 		}
+
 		return nil
 	case *types.Named:
-		if decl, found := p.ctx.DeclForType(ftpe.Obj().Type()); found {
-			if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
-				typable.Typed("string", "date-time")
-				return nil
-			}
-			if sfnm, isf := strfmtName(decl.Comments); isf {
-				typable.Typed("string", sfnm)
-				return nil
-			}
-			sb := &schemaBuilder{ctx: p.ctx, decl: decl}
-			sb.inferNames()
-			if err := sb.buildFromType(decl.Type, typable); err != nil {
-				return err
-			}
-			p.postDecls = append(p.postDecls, sb.postDecls...)
-			return nil
-		}
-		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
+		return p.buildNamedField(ftpe, typable)
 	case *types.Alias:
 		debugLog("Alias(parameters.buildFromField): got alias %v to %v", ftpe, ftpe.Underlying())
-		return p.buildFromField(fld, tpe.Underlying(), typable, seen)
+		if ftpe.Obj().Name() == "any" && ftpe.Obj().Parent() == types.Universe {
+			iface, ok := tpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", ftpe.String())
+			}
+			debugLog("alias(parameters.buildFromField): got alias any to inferface{}: %v", iface)
+
+			return p.buildFromInterface(iface, typable)
+		}
+
+		return p.buildNamedField(ftpe, typable)
 	default:
 		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
 	}
+}
+
+func (p *parameterBuilder) buildFromInterface(tpe *types.Interface, typable swaggerTypable) error {
+	sb := schemaBuilder{
+		decl: p.decl,
+		ctx:  p.ctx,
+	}
+
+	if err := sb.buildFromType(tpe, typable); err != nil {
+		return err
+	}
+
+	p.postDecls = append(p.postDecls, sb.postDecls...)
+
+	return nil
+}
+
+func (p *parameterBuilder) buildNamedField(ftpe namedObj, typable swaggerTypable) error {
+	decl, found := p.ctx.DeclForType(ftpe.Obj().Type())
+	if !found {
+		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
+	}
+
+	if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
+		typable.Typed("string", "date-time")
+		return nil
+	}
+
+	if sfnm, isf := strfmtName(decl.Comments); isf {
+		typable.Typed("string", sfnm)
+		return nil
+	}
+
+	sb := &schemaBuilder{ctx: p.ctx, decl: decl}
+	sb.inferNames()
+	if err := sb.buildFromType(decl.Type, typable); err != nil {
+		return err
+	}
+
+	p.postDecls = append(p.postDecls, sb.postDecls...)
+
+	return nil
 }
 
 func spExtensionsSetter(ps *spec.Parameter) func(*spec.Extensions) {
@@ -372,6 +418,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		if in == "body" {
 			pty = schemaTypable{pty.Schema(), 0}
 		}
+
 		if in == "formData" && afld.Doc != nil && fileParam(afld.Doc) {
 			pty.Typed("file", "")
 		} else if err := p.buildFromField(fld, fld.Type(), pty, seen); err != nil {
@@ -392,52 +439,17 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				ps.Description += "\n" + enumDesc
 			}
 		}
+
 		if ps.Ref.String() == "" {
-			sp.taggers = []tagParser{
-				newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
-				newSingleLineTagParser("maximum", &setMaximum{paramValidations{&ps}, rxf(rxMaximumFmt, "")}),
-				newSingleLineTagParser("minimum", &setMinimum{paramValidations{&ps}, rxf(rxMinimumFmt, "")}),
-				newSingleLineTagParser("multipleOf", &setMultipleOf{paramValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
-				newSingleLineTagParser("minLength", &setMinLength{paramValidations{&ps}, rxf(rxMinLengthFmt, "")}),
-				newSingleLineTagParser("maxLength", &setMaxLength{paramValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
-				newSingleLineTagParser("pattern", &setPattern{paramValidations{&ps}, rxf(rxPatternFmt, "")}),
-				newSingleLineTagParser("collectionFormat", &setCollectionFormat{paramValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
-				newSingleLineTagParser("minItems", &setMinItems{paramValidations{&ps}, rxf(rxMinItemsFmt, "")}),
-				newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
-				newSingleLineTagParser("unique", &setUnique{paramValidations{&ps}, rxf(rxUniqueFmt, "")}),
-				newSingleLineTagParser("enum", &setEnum{paramValidations{&ps}, rxf(rxEnumFmt, "")}),
-				newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxDefaultFmt, "")}),
-				newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, paramValidations{&ps}, rxf(rxExampleFmt, "")}),
-				newSingleLineTagParser("required", &setRequiredParam{&ps}),
-				newMultiLineTagParser("Extensions", newSetExtensions(spExtensionsSetter(&ps)), true),
-			}
-
-			itemsTaggers := func(items *spec.Items, level int) []tagParser {
-				// the expression is 1-index based not 0-index
-				itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
-
-				return []tagParser{
-					newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
-					newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
-				}
-			}
+			sp.taggers = buildParameterTaggers(&ps)
+			itemsTaggers := buildParameterItemsTaggerFunc()
 
 			var parseArrayTypes func(expr ast.Expr, items *spec.Items, level int) ([]tagParser, error)
 			parseArrayTypes = func(expr ast.Expr, items *spec.Items, level int) ([]tagParser, error) {
 				if items == nil {
 					return []tagParser{}, nil
 				}
+
 				switch iftpe := expr.(type) {
 				case *ast.ArrayType:
 					eleTaggers := itemsTaggers(items, level)
@@ -483,7 +495,6 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				}
 				sp.taggers = append(taggers, sp.taggers...)
 			}
-
 		} else {
 			sp.taggers = []tagParser{
 				newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),
@@ -491,6 +502,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				newMultiLineTagParser("Extensions", newSetExtensions(spExtensionsSetter(&ps)), true),
 			}
 		}
+
 		if err := sp.Parse(afld.Doc); err != nil {
 			return err
 		}
@@ -519,5 +531,50 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		}
 		op.Parameters = append(op.Parameters, p)
 	}
+
 	return nil
+}
+
+func buildParameterTaggers(ps *spec.Parameter) []tagParser {
+	return []tagParser{
+		newSingleLineTagParser("in", &matchOnlyParam{ps, rxIn}),
+		newSingleLineTagParser("maximum", &setMaximum{paramValidations{ps}, rxf(rxMaximumFmt, "")}),
+		newSingleLineTagParser("minimum", &setMinimum{paramValidations{ps}, rxf(rxMinimumFmt, "")}),
+		newSingleLineTagParser("multipleOf", &setMultipleOf{paramValidations{ps}, rxf(rxMultipleOfFmt, "")}),
+		newSingleLineTagParser("minLength", &setMinLength{paramValidations{ps}, rxf(rxMinLengthFmt, "")}),
+		newSingleLineTagParser("maxLength", &setMaxLength{paramValidations{ps}, rxf(rxMaxLengthFmt, "")}),
+		newSingleLineTagParser("pattern", &setPattern{paramValidations{ps}, rxf(rxPatternFmt, "")}),
+		newSingleLineTagParser("collectionFormat", &setCollectionFormat{paramValidations{ps}, rxf(rxCollectionFormatFmt, "")}),
+		newSingleLineTagParser("minItems", &setMinItems{paramValidations{ps}, rxf(rxMinItemsFmt, "")}),
+		newSingleLineTagParser("maxItems", &setMaxItems{paramValidations{ps}, rxf(rxMaxItemsFmt, "")}),
+		newSingleLineTagParser("unique", &setUnique{paramValidations{ps}, rxf(rxUniqueFmt, "")}),
+		newSingleLineTagParser("enum", &setEnum{paramValidations{ps}, rxf(rxEnumFmt, "")}),
+		newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, paramValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, paramValidations{ps}, rxf(rxExampleFmt, "")}),
+		newSingleLineTagParser("required", &setRequiredParam{ps}),
+		newMultiLineTagParser("Extensions", newSetExtensions(spExtensionsSetter(ps)), true),
+	}
+}
+
+func buildParameterItemsTaggerFunc() func(*spec.Items, int) []tagParser {
+	return func(items *spec.Items, level int) []tagParser {
+		// the expression is 1-index based not 0-index
+		itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+
+		return []tagParser{
+			newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+		}
+	}
 }

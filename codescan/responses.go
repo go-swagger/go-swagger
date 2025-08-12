@@ -25,21 +25,23 @@ func (ht responseTypable) Typed(tpe, format string) {
 }
 
 func bodyTypable(in string, schema *spec.Schema) (swaggerTypable, *spec.Schema) {
-	if in == "body" {
-		// get the schema for items on the schema property
-		if schema == nil {
-			schema = new(spec.Schema)
-		}
-		if schema.Items == nil {
-			schema.Items = new(spec.SchemaOrArray)
-		}
-		if schema.Items.Schema == nil {
-			schema.Items.Schema = new(spec.Schema)
-		}
-		schema.Typed("array", "")
-		return schemaTypable{schema.Items.Schema, 1}, schema
+	if in != "body" {
+		return nil, nil
 	}
-	return nil, nil
+
+	// get the schema for items on the schema property
+	if schema == nil {
+		schema = new(spec.Schema)
+	}
+	if schema.Items == nil {
+		schema.Items = new(spec.SchemaOrArray)
+	}
+	if schema.Items.Schema == nil {
+		schema.Items.Schema = new(spec.Schema)
+	}
+	schema.Typed("array", "")
+
+	return schemaTypable{schema.Items.Schema, 1}, schema
 }
 
 func (ht responseTypable) Items() swaggerTypable {
@@ -53,6 +55,7 @@ func (ht responseTypable) Items() swaggerTypable {
 		ht.header.Items = new(spec.Items)
 	}
 	ht.header.Type = "array"
+
 	return itemsTypable{ht.header.Items, 1}
 }
 
@@ -76,11 +79,11 @@ func (ht responseTypable) CollectionOf(items *spec.Items, format string) {
 	ht.header.CollectionOf(items, format)
 }
 
-func (ht responseTypable) AddExtension(key string, value interface{}) {
+func (ht responseTypable) AddExtension(key string, value any) {
 	ht.response.AddExtension(key, value)
 }
 
-func (ht responseTypable) WithEnum(values ...interface{}) {
+func (ht responseTypable) WithEnum(values ...any) {
 	ht.header.WithEnum(values)
 }
 
@@ -138,9 +141,9 @@ func (sv headerValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
 
-func (sv headerValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv headerValidations) SetDefault(val any) { sv.current.Default = val }
 
-func (sv headerValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv headerValidations) SetExample(val any) { sv.current.Example = val }
 
 type responseBuilder struct {
 	ctx       *scanCtx
@@ -176,11 +179,13 @@ func (r *responseBuilder) Build(responses map[string]spec.Response) error {
 		return err
 	}
 	responses[name] = response
+
 	return nil
 }
 
 func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable swaggerTypable, seen map[string]bool) error {
 	debugLog("build from field %s: %T", fld.Name(), tpe)
+
 	switch ftpe := tpe.(type) {
 	case *types.Basic:
 		return swaggerSchemaForType(ftpe.Name(), typable)
@@ -193,19 +198,12 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 			return err
 		}
 		r.postDecls = append(r.postDecls, sb.postDecls...)
+
 		return nil
 	case *types.Pointer:
 		return r.buildFromField(fld, ftpe.Elem(), typable, seen)
 	case *types.Interface:
-		sb := schemaBuilder{
-			decl: r.decl,
-			ctx:  r.ctx,
-		}
-		if err := sb.buildFromType(tpe, typable); err != nil {
-			return err
-		}
-		r.postDecls = append(r.postDecls, sb.postDecls...)
-		return nil
+		return r.buildFromInterface(ftpe, typable)
 	case *types.Array:
 		return r.buildFromField(fld, ftpe.Elem(), typable.Items(), seen)
 	case *types.Slice:
@@ -223,9 +221,109 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 			return err
 		}
 		r.postDecls = append(r.postDecls, sb.postDecls...)
+
 		return nil
 	case *types.Named:
-		if decl, found := r.ctx.DeclForType(ftpe.Obj().Type()); found {
+		return r.buildNamedField(ftpe, typable)
+	case *types.Alias:
+		debugLog("alias(responses.buildFromField): got alias %v to %v", tpe, tpe.Underlying())
+		if ftpe.Obj().Name() == "any" && ftpe.Obj().Parent() == types.Universe {
+			iface, ok := tpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", tpe.String())
+			}
+			debugLog("alias(response.buildFromField): got alias any to inferface{}: %v", iface)
+
+			return r.buildFromInterface(tpe, typable)
+		}
+
+		return r.buildNamedField(ftpe, typable)
+	default:
+		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
+	}
+}
+
+func (r *responseBuilder) buildFromInterface(tpe types.Type, typable swaggerTypable) error {
+	sb := schemaBuilder{
+		decl: r.decl,
+		ctx:  r.ctx,
+	}
+	if err := sb.buildFromType(tpe, typable); err != nil {
+		return err
+	}
+	r.postDecls = append(r.postDecls, sb.postDecls...)
+
+	return nil
+}
+
+func (r *responseBuilder) buildNamedField(ftpe namedObj, typable swaggerTypable) error {
+	decl, found := r.ctx.DeclForType(ftpe.Obj().Type())
+	if !found {
+		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
+	}
+
+	if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
+		typable.Typed("string", "date-time")
+		return nil
+	}
+
+	if sfnm, isf := strfmtName(decl.Comments); isf {
+		typable.Typed("string", sfnm)
+		return nil
+	}
+
+	sb := &schemaBuilder{ctx: r.ctx, decl: decl}
+	sb.inferNames()
+	if err := sb.buildFromType(decl.Type, typable); err != nil {
+		return err
+	}
+
+	r.postDecls = append(r.postDecls, sb.postDecls...)
+
+	return nil
+}
+
+func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, seen map[string]bool) error {
+	switch tpe := otpe.(type) {
+	case *types.Pointer:
+		return r.buildFromType(tpe.Elem(), resp, seen)
+	case *types.Named:
+		return r.buildNamedType(tpe, resp, seen)
+	case *types.Alias:
+		debugLog("alias(responses.buildFromType): got alias %v to %v", tpe, tpe.Underlying())
+		if tpe.Obj().Name() == "any" && tpe.Obj().Parent() == types.Universe {
+			iface, ok := tpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", tpe.String())
+			}
+			debugLog("alias(response.buildFromField): got alias any to inferface{}: %v", iface)
+
+			// return r.buildFromInterface(tpe, typable) // TODO(fred): any
+			return nil // TODO
+		}
+
+		return r.buildNamedType(tpe, resp, seen)
+	default:
+		return errors.New("anonymous types are currently not supported for responses")
+	}
+}
+
+func (r *responseBuilder) buildNamedType(tpe namedObj, resp *spec.Response, seen map[string]bool) error {
+	o := tpe.Obj()
+
+	switch stpe := o.Type().Underlying().(type) {
+	case *types.Struct:
+		debugLog("build from type %s: %T", tpe.Obj().Name(), tpe)
+		if decl, found := r.ctx.DeclForType(o.Type()); found {
+			return r.buildFromStruct(decl, stpe, resp, seen)
+		}
+		return r.buildFromStruct(r.decl, stpe, resp, seen)
+
+	default:
+		if decl, found := r.ctx.DeclForType(o.Type()); found {
+			var schema spec.Schema
+			typable := schemaTypable{schema: &schema, level: 0}
+
 			if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
 				typable.Typed("string", "date-time")
 				return nil
@@ -236,63 +334,14 @@ func (r *responseBuilder) buildFromField(fld *types.Var, tpe types.Type, typable
 			}
 			sb := &schemaBuilder{ctx: r.ctx, decl: decl}
 			sb.inferNames()
-			if err := sb.buildFromType(decl.Type, typable); err != nil {
+			if err := sb.buildFromType(tpe.Underlying(), typable); err != nil {
 				return err
 			}
+			resp.WithSchema(&schema)
 			r.postDecls = append(r.postDecls, sb.postDecls...)
 			return nil
 		}
-		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
-	case *types.Alias:
-		debugLog("alias(responses.buildFromField): got alias %v to %v", tpe, tpe.Underlying())
-		return r.buildFromField(fld, tpe.Underlying(), typable, seen)
-	default:
-		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
-	}
-}
-
-func (r *responseBuilder) buildFromType(otpe types.Type, resp *spec.Response, seen map[string]bool) error {
-	switch tpe := otpe.(type) {
-	case *types.Pointer:
-		return r.buildFromType(tpe.Elem(), resp, seen)
-	case *types.Named:
-		o := tpe.Obj()
-		switch stpe := o.Type().Underlying().(type) {
-		case *types.Struct:
-			debugLog("build from type %s: %T", tpe.Obj().Name(), otpe)
-			if decl, found := r.ctx.DeclForType(o.Type()); found {
-				return r.buildFromStruct(decl, stpe, resp, seen)
-			}
-			return r.buildFromStruct(r.decl, stpe, resp, seen)
-		default:
-			if decl, found := r.ctx.DeclForType(o.Type()); found {
-				var schema spec.Schema
-				typable := schemaTypable{schema: &schema, level: 0}
-
-				if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
-					typable.Typed("string", "date-time")
-					return nil
-				}
-				if sfnm, isf := strfmtName(decl.Comments); isf {
-					typable.Typed("string", sfnm)
-					return nil
-				}
-				sb := &schemaBuilder{ctx: r.ctx, decl: decl}
-				sb.inferNames()
-				if err := sb.buildFromType(tpe.Underlying(), typable); err != nil {
-					return err
-				}
-				resp.WithSchema(&schema)
-				r.postDecls = append(r.postDecls, sb.postDecls...)
-				return nil
-			}
-			return fmt.Errorf("responses can only be structs, did you mean for %s to be the response body?", otpe.String())
-		}
-	case *types.Alias:
-		debugLog("alias(responses.buildFromType): got alias %v to %v", tpe, tpe.Underlying())
-		return r.buildFromType(tpe.Underlying(), resp, seen)
-	default:
-		return errors.New("anonymous types are currently not supported for responses")
+		return fmt.Errorf("responses can only be structs, did you mean for %s to be the response body?", tpe.String())
 	}
 }
 
@@ -304,12 +353,13 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 	for i := 0; i < tpe.NumFields(); i++ {
 		fld := tpe.Field(i)
 		if fld.Embedded() {
-
 			if err := r.buildFromType(fld.Type(), resp, seen); err != nil {
 				return err
 			}
+
 			continue
 		}
+
 		if fld.Anonymous() {
 			debugLog("skipping anonymous field")
 			continue
@@ -379,47 +429,15 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 
 		sp := new(sectionedParser)
 		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
-		sp.taggers = []tagParser{
-			newSingleLineTagParser("maximum", &setMaximum{headerValidations{&ps}, rxf(rxMaximumFmt, "")}),
-			newSingleLineTagParser("minimum", &setMinimum{headerValidations{&ps}, rxf(rxMinimumFmt, "")}),
-			newSingleLineTagParser("multipleOf", &setMultipleOf{headerValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
-			newSingleLineTagParser("minLength", &setMinLength{headerValidations{&ps}, rxf(rxMinLengthFmt, "")}),
-			newSingleLineTagParser("maxLength", &setMaxLength{headerValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
-			newSingleLineTagParser("pattern", &setPattern{headerValidations{&ps}, rxf(rxPatternFmt, "")}),
-			newSingleLineTagParser("collectionFormat", &setCollectionFormat{headerValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
-			newSingleLineTagParser("minItems", &setMinItems{headerValidations{&ps}, rxf(rxMinItemsFmt, "")}),
-			newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
-			newSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
-			newSingleLineTagParser("enum", &setEnum{headerValidations{&ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxExampleFmt, "")}),
-		}
-		itemsTaggers := func(items *spec.Items, level int) []tagParser {
-			// the expression is 1-index based not 0-index
-			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
-
-			return []tagParser{
-				newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
-			}
-		}
+		sp.taggers = buildResponseTaggers(&ps)
+		itemsTaggers := buildResponseItemsTaggerFunc()
 
 		var parseArrayTypes func(expr ast.Expr, items *spec.Items, level int) ([]tagParser, error)
 		parseArrayTypes = func(expr ast.Expr, items *spec.Items, level int) ([]tagParser, error) {
 			if items == nil {
 				return []tagParser{}, nil
 			}
+
 			switch iftpe := expr.(type) {
 			case *ast.ArrayType:
 				eleTaggers := itemsTaggers(items, level)
@@ -484,4 +502,45 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 		}
 	}
 	return nil
+}
+
+func buildResponseTaggers(ps *spec.Header) []tagParser {
+	return []tagParser{
+		newSingleLineTagParser("maximum", &setMaximum{headerValidations{ps}, rxf(rxMaximumFmt, "")}),
+		newSingleLineTagParser("minimum", &setMinimum{headerValidations{ps}, rxf(rxMinimumFmt, "")}),
+		newSingleLineTagParser("multipleOf", &setMultipleOf{headerValidations{ps}, rxf(rxMultipleOfFmt, "")}),
+		newSingleLineTagParser("minLength", &setMinLength{headerValidations{ps}, rxf(rxMinLengthFmt, "")}),
+		newSingleLineTagParser("maxLength", &setMaxLength{headerValidations{ps}, rxf(rxMaxLengthFmt, "")}),
+		newSingleLineTagParser("pattern", &setPattern{headerValidations{ps}, rxf(rxPatternFmt, "")}),
+		newSingleLineTagParser("collectionFormat", &setCollectionFormat{headerValidations{ps}, rxf(rxCollectionFormatFmt, "")}),
+		newSingleLineTagParser("minItems", &setMinItems{headerValidations{ps}, rxf(rxMinItemsFmt, "")}),
+		newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{ps}, rxf(rxMaxItemsFmt, "")}),
+		newSingleLineTagParser("unique", &setUnique{headerValidations{ps}, rxf(rxUniqueFmt, "")}),
+		newSingleLineTagParser("enum", &setEnum{headerValidations{ps}, rxf(rxEnumFmt, "")}),
+		newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, headerValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, headerValidations{ps}, rxf(rxExampleFmt, "")}),
+	}
+}
+
+func buildResponseItemsTaggerFunc() func(*spec.Items, int) []tagParser {
+	return func(items *spec.Items, level int) []tagParser {
+		// the expression is 1-index based not 0-index
+		itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+
+		return []tagParser{
+			newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+		}
+	}
 }

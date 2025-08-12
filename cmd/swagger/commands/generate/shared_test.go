@@ -1,8 +1,6 @@
 package generate
 
 import (
-	"io"
-	"log"
 	"os"
 	"testing"
 
@@ -14,7 +12,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// initializations to run tests in this package
-	log.SetOutput(io.Discard)
+	// log.SetOutput(io.Discard) // TODO FRED
 	os.Exit(m.Run())
 }
 

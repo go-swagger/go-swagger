@@ -18,7 +18,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-func addExtension(ve *spec.VendorExtensible, key string, value interface{}) {
+func addExtension(ve *spec.VendorExtensible, key string, value any) {
 	if os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false" {
 		return
 	}
@@ -69,11 +69,11 @@ func (st schemaTypable) AdditionalProperties() swaggerTypable {
 
 func (st schemaTypable) Level() int { return st.level }
 
-func (st schemaTypable) AddExtension(key string, value interface{}) {
+func (st schemaTypable) AddExtension(key string, value any) {
 	addExtension(&st.schema.VendorExtensible, key, value)
 }
 
-func (st schemaTypable) WithEnum(values ...interface{}) {
+func (st schemaTypable) WithEnum(values ...any) {
 	st.schema.WithEnum(values...)
 }
 
@@ -97,15 +97,15 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetDefault(val any)        { sv.current.Default = val }
+func (sv schemaValidations) SetExample(val any)        { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: sv.current.Type[0]})
 }
@@ -184,7 +184,16 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 		return nil
 	}
 
-	if err := s.buildFromDeclType(s.decl.Type.Obj().Type(), schema); err != nil {
+	var o *types.TypeName
+	if s.decl.Type != nil { // TODO: boiler plate => add an Obj() method to decl (FRED)
+		o = s.decl.Type.Obj()
+	} else if s.decl.Alias != nil {
+		o = s.decl.Alias.Obj()
+	} else {
+		panic("invalid decl with both Type and Alias nil")
+	}
+
+	if err := s.buildFromDeclType(o.Type(), schema); err != nil {
 		return err
 	}
 
@@ -192,8 +201,9 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 		if s.Name != s.GoName {
 			addExtension(&schema.VendorExtensible, "x-go-name", s.GoName)
 		}
-		addExtension(&schema.VendorExtensible, "x-go-package", s.decl.Type.Obj().Pkg().Path())
+		addExtension(&schema.VendorExtensible, "x-go-package", o.Pkg().Path())
 	}
+
 	return nil
 }
 
@@ -201,49 +211,82 @@ func (s *schemaBuilder) buildFromDeclType(dtpe types.Type, schema *spec.Schema) 
 	switch tpe := dtpe.(type) {
 	case *types.Basic:
 		debugLog("basic: %v", tpe.Name())
+		// skipped
 	case *types.Struct:
-		if err := s.buildFromStruct(s.decl, tpe, schema, make(map[string]string)); err != nil {
-			return err
-		}
+		return s.buildFromStruct(s.decl, tpe, schema, make(map[string]string))
 	case *types.Interface:
-		if err := s.buildFromInterface(s.decl, tpe, schema, make(map[string]string)); err != nil {
-			return err
-		}
+		return s.buildFromInterface(s.decl, tpe, schema, make(map[string]string))
 	case *types.Array:
 		debugLog("array: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
+		// skipped
 	case *types.Slice:
 		debugLog("slice: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
+		// skipped
 	case *types.Map:
 		debugLog("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
+		// skipped
 	case *types.Alias:
+		// since go1.22 aliased types are explicit and no longer considered as types.Named
 		debugLog("alias(schema.buildFromDeclType): got alias %v to %v", tpe, tpe.Underlying())
-		return s.buildFromDeclType(tpe.Underlying(), schema)
-	case *types.Named:
-		o := tpe.Obj()
-		if o != nil {
-			debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
-			if o.Pkg().Name() == "time" && o.Name() == "Time" {
-				schema.Typed("string", "date-time")
-				return nil
+		if tpe.Obj().Name() == "any" && tpe.Obj().Parent() == types.Universe {
+			// since go 1.22 the "any" type is considered an alias to "any"
+			iface, ok := tpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", tpe.String())
 			}
+			debugLog("alias(schema.buildFromDeclType): got alias any to inferface{}: %v", iface)
 
-			ps := schemaTypable{schema, 0}
-			for {
-				ti := s.decl.Pkg.TypesInfo.Types[s.decl.Spec.Type]
-				if ti.IsBuiltin() {
-					break
-				}
-				if ti.IsType() {
-					if err := s.buildFromType(ti.Type, ps); err != nil {
-						return err
-					}
-					break
-				}
-			}
+			return s.buildFromInterface(s.decl, iface, schema, make(map[string]string))
 		}
+
+		return s.buildNamedDecl(tpe, schema)
+	case *types.Named:
+		return s.buildNamedDecl(tpe, schema)
 	default:
-		log.Printf("WARNING: Missing parser for a %T, skipping model: %s\n", tpe, s.Name)
+		log.Printf(
+			"WARNING: Missing parser for a %T, skipping model: %s\n",
+			tpe, s.Name,
+		)
+
 		return nil
+	}
+
+	return nil
+}
+
+type namedObj interface {
+	Obj() *types.TypeName
+	Underlying() types.Type
+	TypeArgs() *types.TypeList
+	String() string
+}
+
+func (s *schemaBuilder) buildNamedDecl(tpe namedObj, schema *spec.Schema) error {
+	o := tpe.Obj()
+	if o == nil {
+		fmt.Printf("DEBUG: buildNameDecl: no Obj() found: %v\n", tpe)
+		return nil
+	}
+
+	debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
+	if o.Pkg().Name() == "time" && o.Name() == "Time" {
+		schema.Typed("string", "date-time")
+		return nil
+	}
+
+	ps := schemaTypable{schema, 0}
+	for {
+		ti := s.decl.Pkg.TypesInfo.Types[s.decl.Spec.Type]
+		if ti.IsBuiltin() {
+			break
+		}
+
+		if ti.IsType() {
+			if err := s.buildFromType(ti.Type, ps); err != nil {
+				return err
+			}
+			break
+		}
 	}
 
 	return nil
@@ -340,153 +383,192 @@ func (s *schemaBuilder) buildFromType(tpe types.Type, tgt swaggerTypable) error 
 		if key.Underlying().String() == "string" || isTextMarshaler {
 			return s.buildFromType(titpe.Elem(), eleProp.AdditionalProperties())
 		}
+
 	case *types.Named:
-		tio := titpe.Obj()
-		if tio.Pkg() == nil && tio.Name() == "error" {
-			return swaggerSchemaForType(tio.Name(), tgt)
+		return s.buildNamedType(titpe, tpe, tgt)
+
+	case *types.Alias:
+		debugLog("alias(schema.buildFromType): got alias %v to %v", titpe, titpe.Underlying())
+		if titpe.Obj().Name() == "any" && titpe.Obj().Parent() == types.Universe {
+			iface, ok := titpe.Underlying().(*types.Interface)
+			if !ok {
+				return fmt.Errorf("expected %q to be an alias to the empty interface: %s", "any", tpe.String())
+			}
+			debugLog("alias(schema.buildFromType): got alias any to inferface{}: %v", iface)
+
+			return s.buildFromInterface(s.decl, iface, tgt.Schema(), make(map[string]string))
 		}
-		debugLog("named refined type %s.%s", tio.Pkg().Path(), tio.Name())
-		pkg, found := s.ctx.PkgForType(tpe)
-		if !found {
-			// this must be a builtin
-			debugLog("skipping because package is nil: %s", tpe.String())
+
+		return s.buildNamedType(titpe, tpe, tgt)
+
+	default:
+		panic(fmt.Sprintf(
+			"WARNING: can't determine refined type %s (%T). Check that the version of the go toolchain used does not generated unsupported AST types",
+			titpe.String(), titpe),
+		)
+	}
+
+	return nil
+}
+
+func (s *schemaBuilder) buildNamedType(titpe namedObj, tpe types.Type, tgt swaggerTypable) error {
+	tio := titpe.Obj()
+
+	// special case of the "error" interface.
+	if tio.Pkg() == nil && tio.Name() == "error" {
+		return swaggerSchemaForType(tio.Name(), tgt)
+	}
+
+	pkg, found := s.ctx.PkgForType(tpe)
+	debugLog("named refined type %s.%s", pkg, tio.Name())
+	if !found {
+		// this must be a builtin
+		debugLog("skipping because package is nil: %s", tpe.String())
+		return nil
+	}
+
+	// special case of the "time.Time" type
+	if pkg.Name == "time" && tio.Name() == "Time" {
+		tgt.Typed("string", "date-time")
+		return nil
+	}
+
+	// special case of the "json.RawMessage" type
+	if pkg.PkgPath == "encoding/json" && tio.Name() == "RawMessage" {
+		tgt.Typed("object", "")
+		return nil
+	}
+
+	cmt, hasComments := s.ctx.FindComments(pkg, tio.Name())
+	if !hasComments {
+		cmt = new(ast.CommentGroup)
+	}
+
+	if typeName, ok := typeName(cmt); ok {
+		_ = swaggerSchemaForType(typeName, tgt)
+
+		return nil
+	}
+
+	if s.decl.Spec.Assign.IsValid() {
+		return s.buildFromType(titpe.Underlying(), tgt)
+	}
+
+	if titpe.TypeArgs() != nil && titpe.TypeArgs().Len() > 0 {
+		return s.buildFromType(titpe.Underlying(), tgt)
+	}
+
+	switch utitpe := tpe.Underlying().(type) {
+	case *types.Struct:
+		decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name())
+		if !ok {
 			return nil
 		}
-		if pkg.Name == "time" && tio.Name() == "Time" {
+
+		o := decl.Obj()
+		if o.Pkg().Path() == "time" && o.Name() == "Time" {
 			tgt.Typed("string", "date-time")
 			return nil
 		}
-		if pkg.PkgPath == "encoding/json" && tio.Name() == "RawMessage" {
-			tgt.Typed("object", "")
+
+		if sfnm, isf := strfmtName(cmt); isf {
+			tgt.Typed("string", sfnm)
 			return nil
 		}
-		cmt, hasComments := s.ctx.FindComments(pkg, tio.Name())
-		if !hasComments {
-			cmt = new(ast.CommentGroup)
-		}
-
 		if typeName, ok := typeName(cmt); ok {
 			_ = swaggerSchemaForType(typeName, tgt)
 			return nil
 		}
 
-		if s.decl.Spec.Assign.IsValid() {
-			return s.buildFromType(titpe.Underlying(), tgt)
+		return s.makeRef(decl, tgt)
+	case *types.Interface:
+		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
+			return s.makeRef(decl, tgt)
 		}
 
-		if titpe.TypeArgs() != nil && titpe.TypeArgs().Len() > 0 {
-			return s.buildFromType(titpe.Underlying(), tgt)
+	case *types.Basic:
+		if sfnm, isf := strfmtName(cmt); isf {
+			tgt.Typed("string", sfnm)
+			return nil
 		}
 
-		switch utitpe := tpe.Underlying().(type) {
-		case *types.Struct:
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				if decl.Type.Obj().Pkg().Path() == "time" && decl.Type.Obj().Name() == "Time" {
-					tgt.Typed("string", "date-time")
-					return nil
-				}
-				if sfnm, isf := strfmtName(cmt); isf {
-					tgt.Typed("string", sfnm)
-					return nil
-				}
-				if typeName, ok := typeName(cmt); ok {
-					_ = swaggerSchemaForType(typeName, tgt)
-					return nil
-				}
+		if enumName, ok := enumName(cmt); ok {
+			enumValues, enumDesces, _ := s.ctx.FindEnumValues(pkg, enumName)
+			if len(enumValues) > 0 {
+				tgt.WithEnum(enumValues...)
+				enumTypeName := reflect.TypeOf(enumValues[0]).String()
+				_ = swaggerSchemaForType(enumTypeName, tgt)
+			}
+			if len(enumDesces) > 0 {
+				tgt.WithEnumDescription(strings.Join(enumDesces, "\n"))
+			}
+			return nil
+		}
 
-				return s.makeRef(decl, tgt)
+		if defaultName, ok := defaultName(cmt); ok {
+			debugLog(defaultName) //nolint:govet
+			return nil
+		}
+
+		if typeName, ok := typeName(cmt); ok {
+			_ = swaggerSchemaForType(typeName, tgt)
+			return nil
+
+		}
+
+		if isAliasParam(tgt) || aliasParam(cmt) {
+			err := swaggerSchemaForType(utitpe.Name(), tgt)
+			if err == nil {
+				return nil
 			}
-		case *types.Interface:
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				return s.makeRef(decl, tgt)
+		}
+		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
+			return s.makeRef(decl, tgt)
+		}
+		return swaggerSchemaForType(utitpe.String(), tgt)
+	case *types.Array:
+		if sfnm, isf := strfmtName(cmt); isf {
+			if sfnm == "byte" {
+				tgt.Typed("string", sfnm)
+				return nil
 			}
-		case *types.Basic:
-			if sfnm, isf := strfmtName(cmt); isf {
+			if sfnm == "bsonobjectid" {
 				tgt.Typed("string", sfnm)
 				return nil
 			}
 
-			if enumName, ok := enumName(cmt); ok {
-				enumValues, enumDesces, _ := s.ctx.FindEnumValues(pkg, enumName)
-				if len(enumValues) > 0 {
-					tgt.WithEnum(enumValues...)
-					enumTypeName := reflect.TypeOf(enumValues[0]).String()
-					_ = swaggerSchemaForType(enumTypeName, tgt)
-				}
-				if len(enumDesces) > 0 {
-					tgt.WithEnumDescription(strings.Join(enumDesces, "\n"))
-				}
-				return nil
-			}
-
-			if defaultName, ok := defaultName(cmt); ok {
-				debugLog(defaultName) //nolint:govet
-				return nil
-			}
-
-			if typeName, ok := typeName(cmt); ok {
-				_ = swaggerSchemaForType(typeName, tgt)
-				return nil
-
-			}
-
-			if isAliasParam(tgt) || aliasParam(cmt) {
-				err := swaggerSchemaForType(utitpe.Name(), tgt)
-				if err == nil {
-					return nil
-				}
-			}
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				return s.makeRef(decl, tgt)
-			}
-			return swaggerSchemaForType(utitpe.String(), tgt)
-		case *types.Array:
-			if sfnm, isf := strfmtName(cmt); isf {
-				if sfnm == "byte" {
-					tgt.Typed("string", sfnm)
-					return nil
-				}
-				if sfnm == "bsonobjectid" {
-					tgt.Typed("string", sfnm)
-					return nil
-				}
-
-				tgt.Items().Typed("string", sfnm)
-				return nil
-			}
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				return s.makeRef(decl, tgt)
-			}
-			return s.buildFromType(utitpe.Elem(), tgt.Items())
-		case *types.Slice:
-			if sfnm, isf := strfmtName(cmt); isf {
-				if sfnm == "byte" {
-					tgt.Typed("string", sfnm)
-					return nil
-				}
-				tgt.Items().Typed("string", sfnm)
-				return nil
-			}
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				return s.makeRef(decl, tgt)
-			}
-			return s.buildFromType(utitpe.Elem(), tgt.Items())
-		case *types.Map:
-			if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
-				return s.makeRef(decl, tgt)
-			}
-			return nil
-		default:
-			log.Printf("WARNING: can't figure out object type for named type (%T): %v [alias: %t]", tpe.Underlying(), tpe.Underlying(), titpe.Obj().IsAlias())
-
+			tgt.Items().Typed("string", sfnm)
 			return nil
 		}
-	case *types.Alias:
-		debugLog("alias(schema.buildFromType): got alias %v to %v", titpe, titpe.Underlying())
-		return s.buildFromType(titpe.Underlying(), tgt)
-
+		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
+			return s.makeRef(decl, tgt)
+		}
+		return s.buildFromType(utitpe.Elem(), tgt.Items())
+	case *types.Slice:
+		if sfnm, isf := strfmtName(cmt); isf {
+			if sfnm == "byte" {
+				tgt.Typed("string", sfnm)
+				return nil
+			}
+			tgt.Items().Typed("string", sfnm)
+			return nil
+		}
+		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
+			return s.makeRef(decl, tgt)
+		}
+		return s.buildFromType(utitpe.Elem(), tgt.Items())
+	case *types.Map:
+		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
+			return s.makeRef(decl, tgt)
+		}
+		return nil
 	default:
-		panic(fmt.Sprintf("WARNING: can't determine refined type %s (%T)", titpe.String(), titpe))
+		log.Printf(
+			"WARNING: can't figure out object type for named type (%T): %v [alias: %t]",
+			tpe.Underlying(), tpe.Underlying(), titpe.Obj().IsAlias(),
+		)
+
+		return nil
 	}
 
 	return nil
@@ -515,82 +597,35 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	// create refs when the embedded interface is decorated with an allOf annotation
 	for i := 0; i < it.NumEmbeddeds(); i++ {
 		fld := it.EmbeddedType(i)
+		var (
+			fieldHasAllOf bool
+			err           error
+		)
 
 		switch ftpe := fld.(type) {
-		case *types.Named:
-			o := ftpe.Obj()
-			var afld *ast.Field
-			for _, an := range flist {
-				if len(an.Names) != 0 {
-					continue
-				}
-
-				tpp := decl.Pkg.TypesInfo.Types[an.Type]
-				if tpp.Type.String() != o.Type().String() {
-					continue
-				}
-
-				// decl.
-				debugLog("maybe interface field %s: %s(%T)", o.Name(), o.Type().String(), o.Type())
-				afld = an
-				break
-			}
-
-			if afld == nil {
-				debugLog("can't find source associated with %s for %s", fld.String(), it.String())
-				continue
-			}
-
-			// if the field is annotated with swagger:ignore, ignore it
-			if ignored(afld.Doc) {
-				continue
-			}
-
-			if !allOfMember(afld.Doc) {
-				var newSch spec.Schema
-				if err := s.buildEmbedded(o.Type(), &newSch, seen); err != nil {
-					return err
-				}
-				schema.AllOf = append(schema.AllOf, newSch)
-				hasAllOf = true
-				continue
-			}
-
-			hasAllOf = true
-			if tgt == nil {
-				tgt = &spec.Schema{}
-			}
-			var newSch spec.Schema
-			// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
-			// otherwise the fields will just be included as normal properties
-			if err := s.buildAllOf(o.Type(), &newSch); err != nil {
+		case *types.Alias:
+			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, tgt, seen); err != nil { // TODO(fred): check any
 				return err
 			}
-			if afld.Doc != nil {
-				for _, cmt := range afld.Doc.List {
-					for _, ln := range strings.Split(cmt.Text, "\n") {
-						matches := rxAllOf.FindStringSubmatch(ln)
-						ml := len(matches)
-						if ml > 1 {
-							mv := matches[ml-1]
-							if mv != "" {
-								schema.AddExtension("x-class", mv)
-							}
-						}
-					}
-				}
+		case *types.Named:
+			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, tgt, seen); err != nil {
+				return err
 			}
-
-			schema.AllOf = append(schema.AllOf, newSch)
 		default:
-			log.Printf("WARNING: can't figure out object type for allOf named type (%T): %v", ftpe, ftpe.Underlying())
+			log.Printf(
+				"WARNING: can't figure out object type for allOf named type (%T): %v",
+				ftpe, ftpe.Underlying(),
+			)
 		}
+
 		debugLog("got embedded interface: %s {%T}", fld.String(), fld)
+		hasAllOf = hasAllOf || fieldHasAllOf
 	}
 
 	if tgt == nil {
 		tgt = schema
 	}
+
 	// We can finally build the actual schema for the struct
 	if tgt.Properties == nil {
 		tgt.Properties = make(map[string]spec.Schema)
@@ -599,16 +634,20 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 
 	for i := 0; i < it.NumExplicitMethods(); i++ {
 		fld := it.ExplicitMethod(i)
+
 		if !fld.Exported() {
 			continue
 		}
+
 		sig, isSignature := fld.Type().(*types.Signature)
 		if !isSignature {
 			continue
 		}
+
 		if sig.Params().Len() > 0 {
 			continue
 		}
+
 		if sig.Results() == nil || sig.Results().Len() != 1 {
 			continue
 		}
@@ -649,10 +688,12 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 				}
 			}
 		}
+
 		ps := tgt.Properties[name]
 		if err := s.buildFromType(sig.Results().At(0).Type(), schemaTypable{&ps, 0}); err != nil {
 			return err
 		}
+
 		if sfName, isStrfmt := strfmtName(afld.Doc); isStrfmt {
 			ps.Typed("string", sfName)
 			ps.Ref = spec.Ref{}
@@ -680,20 +721,102 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	if tgt == nil {
 		return nil
 	}
+
 	if hasAllOf && len(tgt.Properties) > 0 {
 		schema.AllOf = append(schema.AllOf, *tgt)
 	}
+
 	for k := range tgt.Properties {
 		if _, ok := seen[k]; !ok {
 			delete(tgt.Properties, k)
 		}
 	}
+
 	return nil
 }
 
+// flist, decl, schema, tgt, seen
+func (s *schemaBuilder) buildNamedInterface(ftpe namedObj, flist []*ast.Field, decl *entityDecl, schema *spec.Schema, tgt *spec.Schema, seen map[string]string) (hasAllOf bool, err error) {
+	o := ftpe.Obj()
+	var afld *ast.Field
+
+	for _, an := range flist {
+		if len(an.Names) != 0 {
+			continue
+		}
+
+		tpp := decl.Pkg.TypesInfo.Types[an.Type]
+		if tpp.Type.String() != o.Type().String() {
+			continue
+		}
+
+		// decl.
+		debugLog("maybe interface field %s: %s(%T)", o.Name(), o.Type().String(), o.Type())
+		afld = an
+		break
+	}
+
+	if afld == nil {
+		debugLog("can't find source associated with %s", ftpe.String())
+		return hasAllOf, nil
+	}
+
+	// if the field is annotated with swagger:ignore, ignore it
+	if ignored(afld.Doc) {
+		return hasAllOf, nil
+	}
+
+	if !allOfMember(afld.Doc) {
+		var newSch spec.Schema
+		if err = s.buildEmbedded(o.Type(), &newSch, seen); err != nil {
+			return hasAllOf, err
+		}
+		schema.AllOf = append(schema.AllOf, newSch)
+		hasAllOf = true
+
+		return hasAllOf, nil
+	}
+
+	hasAllOf = true
+	if tgt == nil {
+		tgt = &spec.Schema{}
+	}
+
+	var newSch spec.Schema
+	// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
+	// otherwise the fields will just be included as normal properties
+	if err = s.buildAllOf(o.Type(), &newSch); err != nil {
+		return hasAllOf, err
+	}
+
+	if afld.Doc != nil {
+		for _, cmt := range afld.Doc.List {
+			for _, ln := range strings.Split(cmt.Text, "\n") {
+				matches := rxAllOf.FindStringSubmatch(ln)
+				ml := len(matches)
+				if ml <= 1 {
+					continue
+				}
+
+				mv := matches[ml-1]
+				if mv != "" {
+					schema.AddExtension("x-class", mv)
+				}
+			}
+		}
+	}
+
+	schema.AllOf = append(schema.AllOf, newSch)
+
+	return hasAllOf, nil
+}
+
 func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, schema *spec.Schema, seen map[string]string) error {
-	s.ctx.FindComments(decl.Pkg, decl.Type.Obj().Name())
-	cmt, hasComments := s.ctx.FindComments(decl.Pkg, decl.Type.Obj().Name())
+	var cmt *ast.CommentGroup
+	var hasComments bool
+	o := decl.Obj()
+	cmt, hasComments = s.ctx.FindComments(decl.Pkg, o.Name())
+
 	if !hasComments {
 		cmt = new(ast.CommentGroup)
 	}
@@ -701,6 +824,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 		_ = swaggerSchemaForType(typeName, schemaTypable{schema: schema})
 		return nil
 	}
+
 	// First check for all of schemas
 	var tgt *spec.Schema
 	hasAllOf := false
@@ -713,7 +837,11 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 		}
 		tg := st.Tag(i)
 
-		debugLog("maybe allof field(%t) %s: %s (%T) [%q](anon: %t, embedded: %t)", fld.IsField(), fld.Name(), fld.Type().String(), fld.Type(), tg, fld.Anonymous(), fld.Embedded())
+		debugLog(
+			"maybe allof field(%t) %s: %s (%T) [%q](anon: %t, embedded: %t)",
+			fld.IsField(), fld.Name(), fld.Type().String(), fld.Type(), tg, fld.Anonymous(), fld.Embedded(),
+		)
+
 		var afld *ast.Field
 		ans, _ := astutil.PathEnclosingInterval(decl.File, fld.Pos(), fld.Pos())
 		// debugLog("got %d nodes (exact: %t)", len(ans), isExact)
@@ -755,6 +883,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			}
 			continue
 		}
+
 		// if this created an allOf property then we have to rejig the schema var
 		// because all the fields collected that aren't from embedded structs should go in
 		// their own proper schema
@@ -775,11 +904,13 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 				for _, ln := range strings.Split(cmt.Text, "\n") {
 					matches := rxAllOf.FindStringSubmatch(ln)
 					ml := len(matches)
-					if ml > 1 {
-						mv := matches[ml-1]
-						if mv != "" {
-							schema.AddExtension("x-class", mv)
-						}
+					if ml <= 1 {
+						continue
+					}
+
+					mv := matches[ml-1]
+					if mv != "" {
+						schema.AddExtension("x-class", mv)
 					}
 				}
 			}
@@ -795,6 +926,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			tgt = &spec.Schema{}
 		}
 	}
+
 	// We can finally build the actual schema for the struct
 	if tgt.Properties == nil {
 		tgt.Properties = make(map[string]spec.Schema)
@@ -861,6 +993,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 			ps.Ref = spec.Ref{}
 			ps.Items = nil
 		}
+
 		if sfName, isStrfmt := strfmtName(afld.Doc); isStrfmt {
 			ps.Typed("string", sfName)
 			ps.Ref = spec.Ref{}
@@ -909,45 +1042,62 @@ func (s *schemaBuilder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 	switch ftpe := tpe.(type) {
 	case *types.Pointer:
 		return s.buildAllOf(ftpe.Elem(), schema)
+	case *types.Alias:
+		return s.buildNamedAllOf(ftpe, schema) // TODO(fred): any
 	case *types.Named:
-		switch utpe := ftpe.Underlying().(type) {
-		case *types.Struct:
-			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
-			if found {
-				if ftpe.Obj().Pkg().Path() == "time" && ftpe.Obj().Name() == "Time" {
-					schema.Typed("string", "date-time")
-					return nil
-				}
-				if sfnm, isf := strfmtName(decl.Comments); isf {
-					schema.Typed("string", sfnm)
-					return nil
-				}
-				if decl.HasModelAnnotation() {
-					return s.makeRef(decl, schemaTypable{schema, 0})
-				}
-				return s.buildFromStruct(decl, utpe, schema, make(map[string]string))
-			}
-			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
-		case *types.Interface:
-			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
-			if found {
-				if sfnm, isf := strfmtName(decl.Comments); isf {
-					schema.Typed("string", sfnm)
-					return nil
-				}
-				if decl.HasModelAnnotation() {
-					return s.makeRef(decl, schemaTypable{schema, 0})
-				}
-				return s.buildFromInterface(decl, utpe, schema, make(map[string]string))
-			}
-			return fmt.Errorf("can't find source file for interface: %s", ftpe.String())
-		default:
-			log.Printf("WARNING: can't figure out object type for allOf named type (%T): %v", ftpe, ftpe.Underlying())
-			return fmt.Errorf("unable to locate source file for allOf %s", utpe.String())
-		}
+		return s.buildNamedAllOf(ftpe, schema)
 	default:
 		log.Printf("WARNING: Missing allOf parser for a %T, skipping field", ftpe)
+
 		return fmt.Errorf("unable to resolve allOf member for: %v", ftpe)
+	}
+}
+
+func (s *schemaBuilder) buildNamedAllOf(ftpe namedObj, schema *spec.Schema) error {
+	switch utpe := ftpe.Underlying().(type) {
+	case *types.Struct:
+		decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
+		if !found {
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
+		}
+
+		if ftpe.Obj().Pkg().Path() == "time" && ftpe.Obj().Name() == "Time" {
+			schema.Typed("string", "date-time")
+			return nil
+		}
+
+		if sfnm, isf := strfmtName(decl.Comments); isf {
+			schema.Typed("string", sfnm)
+			return nil
+		}
+
+		if decl.HasModelAnnotation() {
+			return s.makeRef(decl, schemaTypable{schema, 0})
+		}
+
+		return s.buildFromStruct(decl, utpe, schema, make(map[string]string))
+	case *types.Interface:
+		decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
+		if !found {
+			return fmt.Errorf("can't find source file for interface: %s", ftpe.String())
+		}
+
+		if sfnm, isf := strfmtName(decl.Comments); isf {
+			schema.Typed("string", sfnm)
+			return nil
+		}
+
+		if decl.HasModelAnnotation() {
+			return s.makeRef(decl, schemaTypable{schema, 0})
+		}
+
+		return s.buildFromInterface(decl, utpe, schema, make(map[string]string))
+	default:
+		log.Printf(
+			"WARNING: can't figure out object type for allOf named type (%T): %v",
+			ftpe, ftpe.Underlying(),
+		)
+		return fmt.Errorf("unable to locate source file for allOf %s", utpe.String())
 	}
 }
 
@@ -956,29 +1106,38 @@ func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen 
 	switch ftpe := tpe.(type) {
 	case *types.Pointer:
 		return s.buildEmbedded(ftpe.Elem(), schema, seen)
+	case *types.Alias:
+		return s.buildNamedEmbedded(ftpe, schema, seen)
 	case *types.Named:
-		debugLog("embedded named type: %T", ftpe.Underlying())
-		switch utpe := ftpe.Underlying().(type) {
-		case *types.Struct:
-			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
-			if found {
-				return s.buildFromStruct(decl, utpe, schema, seen)
-			}
-			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
-		case *types.Interface:
-			decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
-			if found {
-				return s.buildFromInterface(decl, utpe, schema, seen)
-			}
-			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
-		default:
-			log.Printf("WARNING: can't figure out object type for embedded named type (%T): %v", ftpe, ftpe.Underlying())
-		}
+		return s.buildNamedEmbedded(ftpe, schema, seen)
 	default:
 		log.Printf("WARNING: Missing embedded parser for a %T, skipping model\n", ftpe)
 		return nil
 	}
+
 	return nil
+}
+
+func (s *schemaBuilder) buildNamedEmbedded(ftpe namedObj, schema *spec.Schema, seen map[string]string) error {
+	debugLog("embedded named type: %T", ftpe.Underlying())
+	switch utpe := ftpe.Underlying().(type) {
+	case *types.Struct:
+		decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
+		if !found {
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
+		}
+
+		return s.buildFromStruct(decl, utpe, schema, seen)
+	case *types.Interface:
+		decl, found := s.ctx.FindModel(ftpe.Obj().Pkg().Path(), ftpe.Obj().Name())
+		if !found {
+			return fmt.Errorf("can't find source file for struct: %s", ftpe.String())
+		}
+		return s.buildFromInterface(decl, utpe, schema, seen)
+	default:
+		log.Printf("WARNING: can't figure out object type for embedded named type (%T): %v", ftpe, ftpe.Underlying())
+		return nil
+	}
 }
 
 func (s *schemaBuilder) makeRef(decl *entityDecl, prop swaggerTypable) error {
@@ -989,6 +1148,7 @@ func (s *schemaBuilder) makeRef(decl *entityDecl, prop swaggerTypable) error {
 	}
 	prop.SetRef(ref)
 	s.postDecls = append(s.postDecls, decl)
+
 	return nil
 }
 
@@ -1000,107 +1160,120 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 		return nil
 	}
 
-	if ps.Ref.String() == "" {
-		sp.setDescription = func(lines []string) {
-			ps.Description = joinDropLast(lines)
-			enumDesc := getEnumDesc(ps.Extensions)
-			if enumDesc != "" {
-				ps.Description += "\n" + enumDesc
-			}
-		}
-		sp.taggers = []tagParser{
-			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
-			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
-			newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
-			newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
-			newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
-			newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
-			newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
-			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
-			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
-			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
-			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
-			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
-			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
-			newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, schemaVendorExtensibleSetter(ps)), true),
-		}
-
-		itemsTaggers := func(items *spec.Schema, level int) []tagParser {
-			schemeType, err := items.Type.MarshalJSON()
-			if err != nil {
-				return nil
-			}
-			// the expression is 1-index based not 0-index
-			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
-			return []tagParser{
-				newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
-			}
-		}
-
-		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
-		parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
-			if items == nil || items.Schema == nil {
-				return []tagParser{}, nil
-			}
-			switch iftpe := expr.(type) {
-			case *ast.ArrayType:
-				eleTaggers := itemsTaggers(items.Schema, level)
-				sp.taggers = append(eleTaggers, sp.taggers...)
-				otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			case *ast.Ident:
-				taggers := []tagParser{}
-				if iftpe.Obj == nil {
-					taggers = itemsTaggers(items.Schema, level)
-				}
-				otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return append(taggers, otherTaggers...), nil
-			case *ast.StarExpr:
-				otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			default:
-				return nil, fmt.Errorf("unknown field type ele for %q", nm)
-			}
-		}
-		// check if this is a primitive, if so parse the validations from the
-		// doc comments of the slice declaration.
-		if ftped, ok := fld.Type.(*ast.ArrayType); ok {
-			taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
-			if err != nil {
-				return sp
-			}
-			sp.taggers = append(taggers, sp.taggers...)
-		}
-
-	} else {
+	if ps.Ref.String() != "" {
 		sp.taggers = []tagParser{
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+		}
+
+		return sp
+	}
+
+	sp.setDescription = func(lines []string) {
+		ps.Description = joinDropLast(lines)
+		enumDesc := getEnumDesc(ps.Extensions)
+		if enumDesc != "" {
+			ps.Description += "\n" + enumDesc
 		}
 	}
+
+	sp.taggers = buildTaggers(nm, schema, ps, schemeType)
+	itemsTaggers := buildItemsTaggersFunc()
+
+	var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
+	parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
+		if items == nil || items.Schema == nil {
+			return []tagParser{}, nil
+		}
+
+		switch iftpe := expr.(type) {
+		case *ast.ArrayType:
+			eleTaggers := itemsTaggers(items.Schema, level)
+			sp.taggers = append(eleTaggers, sp.taggers...)
+			otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
+			if err != nil {
+				return nil, err
+			}
+			return otherTaggers, nil
+		case *ast.Ident:
+			taggers := []tagParser{}
+			if iftpe.Obj == nil {
+				taggers = itemsTaggers(items.Schema, level)
+			}
+			otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
+			if err != nil {
+				return nil, err
+			}
+			return append(taggers, otherTaggers...), nil
+		case *ast.StarExpr:
+			otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
+			if err != nil {
+				return nil, err
+			}
+			return otherTaggers, nil
+		default:
+			return nil, fmt.Errorf("unknown field type element for %q", nm)
+		}
+	}
+
+	// check if this is a primitive, if so parse the validations from the
+	// doc comments of the slice declaration.
+	if ftped, ok := fld.Type.(*ast.ArrayType); ok {
+		taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
+		if err != nil {
+			return sp
+		}
+		sp.taggers = append(taggers, sp.taggers...)
+	}
+
 	return sp
+}
+
+func buildTaggers(nm string, schema, ps *spec.Schema, schemeType []byte) []tagParser {
+	return []tagParser{
+		newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
+		newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
+		newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
+		newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
+		newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
+		newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
+		newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
+		newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
+		newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
+		newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
+		newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
+		newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
+		newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
+		newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
+		newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
+		newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, schemaVendorExtensibleSetter(ps)), true),
+	}
+}
+
+func buildItemsTaggersFunc() func(*spec.Schema, int) []tagParser {
+	return func(items *spec.Schema, level int) []tagParser {
+		schemeType, err := items.Type.MarshalJSON()
+		if err != nil {
+			return nil
+		}
+		// the expression is 1-index based not 0-index
+		itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
+
+		return []tagParser{
+			newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{schemaValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{schemaValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{schemaValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{schemaValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{schemaValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{schemaValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{schemaValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{schemaValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{schemaValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{schemaValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+			newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+		}
+	}
 }
 
 func schemaVendorExtensibleSetter(meta *spec.Schema) func(json.RawMessage) error {
@@ -1110,12 +1283,15 @@ func schemaVendorExtensibleSetter(meta *spec.Schema) func(json.RawMessage) error
 		if err != nil {
 			return err
 		}
+
 		for k := range jsonData {
 			if !rxAllowedExtensions.MatchString(k) {
 				return fmt.Errorf("invalid schema extension name, should start from `x-`: %s", k)
 			}
 		}
+
 		meta.Extensions = jsonData
+
 		return nil
 	}
 }
@@ -1148,45 +1324,50 @@ func parseJSONTag(field *ast.Field) (name string, ignore, isString, omitEmpty bo
 		return name, false, false, false, err
 	}
 
-	if strings.TrimSpace(tv) != "" {
-		st := reflect.StructTag(tv)
-		jsonParts := tagOptions(strings.Split(st.Get("json"), ","))
-
-		if jsonParts.Contain("string") {
-			// Need to check if the field type is a scalar. Otherwise, the
-			// ",string" directive doesn't apply.
-			isString = isFieldStringable(field.Type)
-		}
-
-		omitEmpty = jsonParts.Contain("omitempty")
-
-		switch jsonParts.Name() {
-		case "-":
-			return name, true, isString, omitEmpty, nil
-		case "":
-			return name, false, isString, omitEmpty, nil
-		default:
-			return jsonParts.Name(), false, isString, omitEmpty, nil
-		}
+	if strings.TrimSpace(tv) == "" {
+		return name, false, false, false, nil
 	}
-	return name, false, false, false, nil
+
+	st := reflect.StructTag(tv)
+	jsonParts := tagOptions(strings.Split(st.Get("json"), ","))
+
+	if jsonParts.Contain("string") {
+		// Need to check if the field type is a scalar. Otherwise, the
+		// ",string" directive doesn't apply.
+		isString = isFieldStringable(field.Type)
+	}
+
+	omitEmpty = jsonParts.Contain("omitempty")
+	switch jsonParts.Name() {
+	case "-":
+		return name, true, isString, omitEmpty, nil
+	case "":
+		return name, false, isString, omitEmpty, nil
+	default:
+		return jsonParts.Name(), false, isString, omitEmpty, nil
+	}
 }
 
 // isFieldStringable check if the field type is a scalar. If the field type is
 // *ast.StarExpr and is pointer type, check if it refers to a scalar.
 // Otherwise, the ",string" directive doesn't apply.
 func isFieldStringable(tpe ast.Expr) bool {
-	if ident, ok := tpe.(*ast.Ident); ok {
-		switch ident.Name {
-		case "int", "int8", "int16", "int32", "int64",
-			"uint", "uint8", "uint16", "uint32", "uint64",
-			"float64", "string", "bool":
-			return true
+	ident, ok := tpe.(*ast.Ident)
+	if !ok {
+		// pointer type
+		if starExpr, isStar := tpe.(*ast.StarExpr); isStar {
+			return isFieldStringable(starExpr.X)
 		}
-	} else if starExpr, ok := tpe.(*ast.StarExpr); ok {
-		return isFieldStringable(starExpr.X)
-	} else {
+
 		return false
 	}
-	return false
+
+	switch ident.Name {
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float64", "string", "bool":
+		return true
+	default:
+		return false
+	}
 }
