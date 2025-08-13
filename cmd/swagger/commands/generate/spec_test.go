@@ -2,6 +2,7 @@ package generate
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -21,6 +22,12 @@ const (
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
 )
+
+var enableSpecOutput bool
+
+func init() {
+	flag.BoolVar(&enableSpecOutput, "enable-spec-output", false, "enable spec gen test to write output to a file")
+}
 
 func TestSpecFileExecute(t *testing.T) {
 	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
@@ -114,11 +121,30 @@ func TestGenerateYAMLSpec(t *testing.T) {
 
 	expected, err := os.ReadFile(yamlResultFile)
 	require.NoError(t, err)
+	{
+		var jsonObj any
+		require.NoError(t, yaml.Unmarshal(expected, &jsonObj))
+
+		rewritten, err := yaml.Marshal(jsonObj)
+		require.NoError(t, err)
+		expected = rewritten
+	}
+
+	if enableSpecOutput {
+		require.NoError(t,
+			os.WriteFile("expected.yaml", expected, 0o600),
+		)
+		require.NoError(t,
+			os.WriteFile("generated.yaml", data, 0o600),
+		)
+	}
 
 	verifyYAMLData(t, data, expected)
 }
 
 func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
+	t.Helper()
+
 	var got, expected any
 
 	require.NoError(t, json.Unmarshal(data, &got))
@@ -127,6 +153,8 @@ func verifyJSONData(t *testing.T, data, expectedJSON []byte) {
 }
 
 func verifyYAMLData(t *testing.T, data, expectedYAML []byte) {
+	t.Helper()
+
 	var got, expected any
 
 	require.NoError(t, yaml.Unmarshal(data, &got))

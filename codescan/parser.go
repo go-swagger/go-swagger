@@ -29,6 +29,7 @@ func shouldAcceptTag(tags []string, includeTags map[string]bool, excludeTags map
 			}
 		}
 	}
+
 	return len(includeTags) == 0
 }
 
@@ -76,124 +77,84 @@ func rxf(rxp, ar string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf(rxp, ar))
 }
 
-func allOfMember(comments *ast.CommentGroup) bool {
-	if comments != nil {
+// matchInComments matches a single line pattern in a group of comments.
+func matchInComments(rx *regexp.Regexp) func(*ast.CommentGroup) bool {
+	return func(comments *ast.CommentGroup) bool {
+		if comments == nil {
+			return false
+		}
+
 		for _, cmt := range comments.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
-				if rxAllOf.MatchString(ln) {
+				if rx.MatchString(ln) {
 					return true
 				}
 			}
 		}
+
+		return false
 	}
-	return false
+}
+
+func allOfMember(comments *ast.CommentGroup) bool {
+	return matchInComments(rxAllOf)(comments)
 }
 
 func fileParam(comments *ast.CommentGroup) bool {
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				if rxFileUpload.MatchString(ln) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func strfmtName(comments *ast.CommentGroup) (string, bool) {
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				matches := rxStrFmt.FindStringSubmatch(ln)
-				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
-					return strings.TrimSpace(matches[1]), true
-				}
-			}
-		}
-	}
-	return "", false
+	return matchInComments(rxFileUpload)(comments)
 }
 
 func ignored(comments *ast.CommentGroup) bool {
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				if rxIgnoreOverride.MatchString(ln) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
-func enumName(comments *ast.CommentGroup) (string, bool) {
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				matches := rxEnum.FindStringSubmatch(ln)
-				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
-					return strings.TrimSpace(matches[1]), true
-				}
-			}
-		}
-	}
-	return "", false
+	return matchInComments(rxIgnoreOverride)(comments)
 }
 
 func aliasParam(comments *ast.CommentGroup) bool {
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				if rxAlias.MatchString(ln) {
-					return true
-				}
-			}
+	return matchInComments(rxAlias)(comments)
+}
+
+// submatchInComments matches a single line pattern with a submatch in a group of comments
+func submatchInComments(rx *regexp.Regexp) func(*ast.CommentGroup) (string, bool) {
+	return func(comments *ast.CommentGroup) (string, bool) {
+		if comments == nil {
+			return "", false
 		}
-	}
-	return false
-}
 
-func isAliasParam(prop swaggerTypable) bool {
-	var isParam bool
-	if param, ok := prop.(paramTypable); ok {
-		isParam = param.param.In == "query" ||
-			param.param.In == "path" ||
-			param.param.In == "formData"
-	}
-	return isParam
-}
-
-func defaultName(comments *ast.CommentGroup) (string, bool) {
-	if comments != nil {
 		for _, cmt := range comments.List {
 			for _, ln := range strings.Split(cmt.Text, "\n") {
-				matches := rxDefault.FindStringSubmatch(ln)
+				matches := rx.FindStringSubmatch(ln)
 				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
 					return strings.TrimSpace(matches[1]), true
 				}
 			}
 		}
+
+		return "", false
 	}
-	return "", false
+}
+
+func strfmtName(comments *ast.CommentGroup) (string, bool) {
+	return submatchInComments(rxStrFmt)(comments)
+}
+
+func enumName(comments *ast.CommentGroup) (string, bool) {
+	return submatchInComments(rxEnum)(comments)
+}
+
+func defaultName(comments *ast.CommentGroup) (string, bool) {
+	return submatchInComments(rxDefault)(comments)
 }
 
 func typeName(comments *ast.CommentGroup) (string, bool) {
-	var typ string
-	if comments != nil {
-		for _, cmt := range comments.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
-				matches := rxType.FindStringSubmatch(ln)
-				if len(matches) > 1 && len(strings.TrimSpace(matches[1])) > 0 {
-					typ = strings.TrimSpace(matches[1])
-					return typ, true
-				}
-			}
-		}
+	return submatchInComments(rxType)(comments)
+}
+
+func isAliasParam(prop swaggerTypable) bool {
+	param, ok := prop.(paramTypable)
+	if !ok {
+		return false
 	}
-	return "", false
+
+	return param.param.In == "query" || param.param.In == "path" || param.param.In == "formData"
 }
 
 type swaggerTypable interface {
@@ -202,8 +163,8 @@ type swaggerTypable interface {
 	Items() swaggerTypable
 	Schema() *spec.Schema
 	Level() int
-	AddExtension(key string, value interface{})
-	WithEnum(...interface{})
+	AddExtension(key string, value any)
+	WithEnum(...any)
 	WithEnumDescription(desc string)
 }
 
@@ -315,7 +276,7 @@ func (y *yamlParser) Parse(lines []string) error {
 	uncommented = append(uncommented, removeYamlIndent(lines)...)
 
 	yamlContent := strings.Join(uncommented, "\n")
-	var yamlValue interface{}
+	var yamlValue any
 	err := yaml.Unmarshal([]byte(yamlContent), &yamlValue)
 	if err != nil {
 		return err
@@ -356,6 +317,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 	var uncommented []string
 	var startBlock bool
 	var yamlLines []string
+
 	for i, v := range lines {
 		if yamlBlock != nil && yamlBlock.MatchString(v) && !startBlock {
 			startBlock = true
@@ -364,6 +326,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 			}
 			continue
 		}
+
 		if startBlock {
 			if yamlBlock != nil && yamlBlock.MatchString(v) {
 				startBlock = false
@@ -379,6 +342,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 			}
 			continue
 		}
+
 		str := ur.ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
@@ -472,7 +436,7 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	specYaml = removeIndent(specYaml)
 
 	// 1. parse yaml lines
-	yamlValue := make(map[interface{}]interface{})
+	yamlValue := make(map[any]any)
 
 	yamlContent := strings.Join(specYaml, "\n")
 	err = yaml.Unmarshal([]byte(yamlContent), &yamlValue)
@@ -509,17 +473,21 @@ func removeIndent(spec []string) []string {
 	if loc[1] == 0 {
 		return spec
 	}
-	for i := range spec {
-		if len(spec[i]) >= loc[1] {
-			spec[i] = spec[i][loc[1]-1:]
-			start := rxNotIndent.FindStringIndex(spec[i])
-			if start[1] == 0 {
-				continue
-			}
 
-			spec[i] = strings.Replace(spec[i], "\t", "  ", start[1])
+	for i := range spec {
+		if len(spec[i]) < loc[1] {
+			continue
 		}
+
+		spec[i] = spec[i][loc[1]-1:]
+		start := rxNotIndent.FindStringIndex(spec[i])
+		if start[1] == 0 {
+			continue
+		}
+
+		spec[i] = strings.Replace(spec[i], "\t", "  ", start[1])
 	}
+
 	return spec
 }
 
@@ -590,6 +558,7 @@ COMMENTS:
 					st.ignored = true
 					break COMMENTS // an explicit ignore terminates this parser
 				}
+
 				if st.annotation == nil || !st.annotation.Matches(line) {
 					break COMMENTS // a new swagger: annotation terminates this parser
 				}
@@ -598,6 +567,7 @@ COMMENTS:
 				if len(st.header) > 0 {
 					st.seenTag = true
 				}
+
 				continue
 			}
 
@@ -640,20 +610,24 @@ COMMENTS:
 			}
 		}
 	}
+
 	if st.setTitle != nil {
 		st.setTitle(st.Title())
 	}
 	if st.setDescription != nil {
 		st.setDescription(st.Description())
 	}
+
 	for _, mt := range st.matched {
 		if !mt.SkipCleanUp {
 			mt.Lines = cleanupScannerLines(mt.Lines, rxUncommentHeaders, nil)
 		}
+
 		if err := mt.Parse(mt.Lines); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -671,8 +645,8 @@ type validationBuilder interface {
 
 	SetUnique(bool)
 	SetEnum(string)
-	SetDefault(interface{})
-	SetExample(interface{})
+	SetDefault(any)
+	SetExample(any)
 }
 
 type valueParser interface {
@@ -694,6 +668,7 @@ func (sm *setMaximum) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
+
 	matches := sm.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 2 && len(matches[2]) > 0 {
 		maximum, err := strconv.ParseFloat(matches[2], 64)
@@ -746,14 +721,17 @@ func (sm *setMultipleOf) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
+
 	matches := sm.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 2 && len(matches[1]) > 0 {
 		multipleOf, err := strconv.ParseFloat(matches[1], 64)
 		if err != nil {
 			return err
 		}
+
 		sm.builder.SetMultipleOf(multipleOf)
 	}
+
 	return nil
 }
 
@@ -937,33 +915,33 @@ func (se *setEnum) Parse(lines []string) error {
 	return nil
 }
 
-func parseValueFromSchema(s string, schema *spec.SimpleSchema) (interface{}, error) {
-	if schema != nil {
-		switch strings.Trim(schema.TypeName(), "\"") {
-		case "integer", "int", "int64", "int32", "int16":
-			return strconv.Atoi(s)
-		case "bool", "boolean":
-			return strconv.ParseBool(s)
-		case "number", "float64", "float32":
-			return strconv.ParseFloat(s, 64)
-		case "object":
-			var obj map[string]interface{}
-			if err := json.Unmarshal([]byte(s), &obj); err != nil {
-				// If we can't parse it, just return the string.
-				return s, nil
-			}
-			return obj, nil
-		case "array":
-			var slice []interface{}
-			if err := json.Unmarshal([]byte(s), &slice); err != nil {
-				// If we can't parse it, just return the string.
-				return s, nil
-			}
-			return slice, nil
-		default:
+func parseValueFromSchema(s string, schema *spec.SimpleSchema) (any, error) {
+	if schema == nil {
+		return s, nil
+	}
+
+	switch strings.Trim(schema.TypeName(), "\"") {
+	case "integer", "int", "int64", "int32", "int16":
+		return strconv.Atoi(s)
+	case "bool", "boolean":
+		return strconv.ParseBool(s)
+	case "number", "float64", "float32":
+		return strconv.ParseFloat(s, 64)
+	case "object":
+		var obj map[string]any
+		if err := json.Unmarshal([]byte(s), &obj); err != nil {
+			// If we can't parse it, just return the string.
 			return s, nil
 		}
-	} else {
+		return obj, nil
+	case "array":
+		var slice []any
+		if err := json.Unmarshal([]byte(s), &slice); err != nil {
+			// If we can't parse it, just return the string.
+			return s, nil
+		}
+		return slice, nil
+	default:
 		return s, nil
 	}
 }
@@ -1007,6 +985,7 @@ func (se *setExample) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
+
 	matches := se.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
 		d, err := parseValueFromSchema(matches[1], se.scheme)
@@ -1015,6 +994,7 @@ func (se *setExample) Parse(lines []string) error {
 		}
 		se.builder.SetExample(d)
 	}
+
 	return nil
 }
 
@@ -1051,6 +1031,7 @@ func (su *setRequiredParam) Parse(lines []string) error {
 		}
 		su.tgt.Required = req
 	}
+
 	return nil
 }
 
@@ -1206,6 +1187,7 @@ func (ss *setSchemes) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
+
 	matches := ss.rx.FindStringSubmatch(lines[0])
 	if len(matches) > 1 && len(matches[1]) > 0 {
 		sch := strings.Split(matches[1], ", ")
@@ -1246,23 +1228,24 @@ func (ss *setSecurity) Parse(lines []string) error {
 	var result []map[string][]string
 	for _, line := range lines {
 		kv := strings.SplitN(line, ":", 2)
+		if len(kv) <= 1 {
+			continue
+		}
+
 		scopes := []string{}
 		var key string
-
-		if len(kv) > 1 {
-			scs := strings.Split(kv[1], ",")
-			for _, scope := range scs {
-				tr := strings.TrimSpace(scope)
-				if tr != "" {
-					tr = strings.SplitAfter(tr, " ")[0]
-					scopes = append(scopes, strings.TrimSpace(tr))
-				}
+		scs := strings.Split(kv[1], ",")
+		for _, scope := range scs {
+			tr := strings.TrimSpace(scope)
+			if tr != "" {
+				tr = strings.SplitAfter(tr, " ")[0]
+				scopes = append(scopes, strings.TrimSpace(tr))
 			}
-
-			key = strings.TrimSpace(kv[0])
-
-			result = append(result, map[string][]string{key: scopes})
 		}
+
+		key = strings.TrimSpace(kv[0])
+
+		result = append(result, map[string][]string{key: scopes})
 	}
 	ss.set(result)
 	return nil
@@ -1329,6 +1312,7 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 				isDefinitionRef = false
 			}
 		}
+
 		if foundModelOrResponse {
 			// Read the model or response tag
 			parsedModelOrResponse = true
@@ -1378,78 +1362,20 @@ func (ss *setOpResponses) Parse(lines []string) error {
 
 	for _, line := range lines {
 		kv := strings.SplitN(line, ":", 2)
-		var key, value string
 
-		if len(kv) > 1 {
-			key = strings.TrimSpace(kv[0])
-			if key == "" {
-				// this must be some weird empty line
-				continue
-			}
-			value = strings.TrimSpace(kv[1])
-			if value == "" {
-				var resp spec.Response
-				if strings.EqualFold("default", key) {
-					if def == nil {
-						def = &resp
-					}
-				} else {
-					if sc, err := strconv.Atoi(key); err == nil {
-						if scr == nil {
-							scr = make(map[int]spec.Response)
-						}
-						scr[sc] = resp
-					}
-				}
-				continue
-			}
-			refTarget, arrays, isDefinitionRef, description, err := parseTags(value)
-			if err != nil {
-				return err
-			}
-			// A possible exception for having a definition
-			if _, ok := ss.responses[refTarget]; !ok {
-				if _, ok := ss.definitions[refTarget]; ok {
-					isDefinitionRef = true
-				}
-			}
+		if len(kv) <= 1 {
+			continue
+		}
 
-			var ref spec.Ref
-			if isDefinitionRef {
-				if description == "" {
-					description = refTarget
-				}
-				ref, err = spec.NewRef("#/definitions/" + refTarget)
-			} else {
-				ref, err = spec.NewRef("#/responses/" + refTarget)
-			}
-			if err != nil {
-				return err
-			}
+		key := strings.TrimSpace(kv[0])
+		if key == "" {
+			// this must be some weird empty line
+			continue
+		}
 
-			// description should used on anyway.
-			resp := spec.Response{ResponseProps: spec.ResponseProps{Description: description}}
-
-			if isDefinitionRef {
-				resp.Schema = new(spec.Schema)
-				resp.Description = description
-				if arrays == 0 {
-					resp.Schema.Ref = ref
-				} else {
-					cs := resp.Schema
-					for i := 0; i < arrays; i++ {
-						cs.Typed("array", "")
-						cs.Items = new(spec.SchemaOrArray)
-						cs.Items.Schema = new(spec.Schema)
-						cs = cs.Items.Schema
-					}
-					cs.Ref = ref
-				}
-				// ref. could be empty while use description tag
-			} else if len(refTarget) > 0 {
-				resp.Ref = ref
-			}
-
+		value := strings.TrimSpace(kv[1])
+		if value == "" {
+			var resp spec.Response
 			if strings.EqualFold("default", key) {
 				if def == nil {
 					def = &resp
@@ -1462,15 +1388,80 @@ func (ss *setOpResponses) Parse(lines []string) error {
 					scr[sc] = resp
 				}
 			}
+
+			continue
+		}
+
+		refTarget, arrays, isDefinitionRef, description, err := parseTags(value)
+		if err != nil {
+			return err
+		}
+
+		// A possible exception for having a definition
+		if _, ok := ss.responses[refTarget]; !ok {
+			if _, ok := ss.definitions[refTarget]; ok {
+				isDefinitionRef = true
+			}
+		}
+
+		var ref spec.Ref
+		if isDefinitionRef {
+			if description == "" {
+				description = refTarget
+			}
+			ref, err = spec.NewRef("#/definitions/" + refTarget)
+		} else {
+			ref, err = spec.NewRef("#/responses/" + refTarget)
+		}
+		if err != nil {
+			return err
+		}
+
+		// description should used on anyway.
+		resp := spec.Response{ResponseProps: spec.ResponseProps{Description: description}}
+
+		if isDefinitionRef {
+			resp.Schema = new(spec.Schema)
+			resp.Description = description
+			if arrays == 0 {
+				resp.Schema.Ref = ref
+			} else {
+				cs := resp.Schema
+				for i := 0; i < arrays; i++ {
+					cs.Typed("array", "")
+					cs.Items = new(spec.SchemaOrArray)
+					cs.Items.Schema = new(spec.Schema)
+					cs = cs.Items.Schema
+				}
+				cs.Ref = ref
+			}
+			// ref. could be empty while use description tag
+		} else if len(refTarget) > 0 {
+			resp.Ref = ref
+		}
+
+		if strings.EqualFold("default", key) {
+			if def == nil {
+				def = &resp
+			}
+		} else {
+			if sc, err := strconv.Atoi(key); err == nil {
+				if scr == nil {
+					scr = make(map[int]spec.Response)
+				}
+				scr[sc] = resp
+			}
 		}
 	}
+
 	ss.set(def, scr)
+
 	return nil
 }
 
-func parseEnumOld(val string, s *spec.SimpleSchema) []interface{} {
+func parseEnumOld(val string, s *spec.SimpleSchema) []any {
 	list := strings.Split(val, ",")
-	interfaceSlice := make([]interface{}, len(list))
+	interfaceSlice := make([]any, len(list))
 	for i, d := range list {
 		v, err := parseValueFromSchema(d, s)
 		if err != nil {
@@ -1483,7 +1474,7 @@ func parseEnumOld(val string, s *spec.SimpleSchema) []interface{} {
 	return interfaceSlice
 }
 
-func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
+func parseEnum(val string, s *spec.SimpleSchema) []any {
 	// obtain the raw elements of the list to latter process them with the parseValueFromSchema
 	var rawElements []json.RawMessage
 	if err := json.Unmarshal([]byte(val), &rawElements); err != nil {
@@ -1491,10 +1482,9 @@ func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
 		return parseEnumOld(val, s)
 	}
 
-	interfaceSlice := make([]interface{}, len(rawElements))
+	interfaceSlice := make([]any, len(rawElements))
 
 	for i, d := range rawElements {
-
 		ds, err := strconv.Unquote(string(d))
 		if err != nil {
 			ds = string(d)
@@ -1529,30 +1519,32 @@ type setOpExtensions struct {
 
 type extensionObject struct {
 	Extension string
-	Root      interface{}
+	Root      any
 }
 
-type extensionParsingStack []interface{}
+type extensionParsingStack []any
 
 // Helper function to walk back through extensions until the proper nest level is reached
 func (stack *extensionParsingStack) walkBack(rawLines []string, lineIndex int) {
 	indent := strings.IndexAny(rawLines[lineIndex], AlphaChars)
 	nextIndent := strings.IndexAny(rawLines[lineIndex+1], AlphaChars)
-	if nextIndent < indent {
-		// Pop elements off the stack until we're back where we need to be
-		runbackIndex := 0
-		poppedIndent := 1000
-		for {
-			checkIndent := strings.IndexAny(rawLines[lineIndex-runbackIndex], AlphaChars)
-			if nextIndent == checkIndent {
-				break
-			}
-			if checkIndent < poppedIndent {
-				*stack = (*stack)[:len(*stack)-1]
-				poppedIndent = checkIndent
-			}
-			runbackIndex++
+	if nextIndent >= indent {
+		return
+	}
+
+	// Pop elements off the stack until we're back where we need to be
+	runbackIndex := 0
+	poppedIndent := 1000
+	for {
+		checkIndent := strings.IndexAny(rawLines[lineIndex-runbackIndex], AlphaChars)
+		if nextIndent == checkIndent {
+			break
 		}
+		if checkIndent < poppedIndent {
+			*stack = (*stack)[:len(*stack)-1]
+			poppedIndent = checkIndent
+		}
+		runbackIndex++
 	}
 }
 
@@ -1567,6 +1559,7 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 		}
 		return
 	}
+
 	kv := strings.SplitN(cleanLines[lineIndex], ":", 2)
 	key := strings.TrimSpace(kv[0])
 	if key == "" {
@@ -1615,9 +1608,9 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 					*stack = append(*stack, ext.Root.(map[string]*[]string)[key])
 				} else {
 					// Extension is an object
-					ext.Root = make(map[string]interface{})
-					rootMap := make(map[string]interface{})
-					ext.Root.(map[string]interface{})[key] = rootMap
+					ext.Root = make(map[string]any)
+					rootMap := make(map[string]any)
+					ext.Root.(map[string]any)[key] = rootMap
 					stack = &extensionParsingStack{}
 					*stack = append(*stack, ext)
 					*stack = append(*stack, rootMap)
@@ -1630,18 +1623,18 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 				if nextIsList {
 					// start of new list
 					newList := make([]string, 0)
-					(*stack)[stackIndex].(map[string]interface{})[key] = &newList
+					(*stack)[stackIndex].(map[string]any)[key] = &newList
 					*stack = append(*stack, &newList)
 				} else {
 					// start of new map
-					newMap := make(map[string]interface{})
-					(*stack)[stackIndex].(map[string]interface{})[key] = newMap
+					newMap := make(map[string]any)
+					(*stack)[stackIndex].(map[string]any)[key] = newMap
 					*stack = append(*stack, newMap)
 				}
 			} else {
 				// key:value
 				if reflect.TypeOf((*stack)[stackIndex]).Kind() == reflect.Map {
-					(*stack)[stackIndex].(map[string]interface{})[key] = value
+					(*stack)[stackIndex].(map[string]any)[key] = value
 				}
 				if lineIndex < len(rawLines)-1 && !rxAllowedExtensions.MatchString(cleanLines[lineIndex+1]) {
 					stack.walkBack(rawLines, lineIndex)
@@ -1649,7 +1642,11 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 			}
 			buildExtensionObjects(rawLines, cleanLines, lineIndex+1, extObjs, stack)
 		}
-	} else if stack != nil && len(*stack) != 0 {
+
+		return
+	}
+
+	if stack != nil && len(*stack) != 0 {
 		// Should be a list item
 		stackIndex := len(*stack) - 1
 		list := (*stack)[stackIndex].(*[]string)

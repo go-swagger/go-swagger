@@ -109,6 +109,7 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 type entityDecl struct {
 	Comments               *ast.CommentGroup
 	Type                   *types.Named
+	Alias                  *types.Alias // added to supplement Named, after go1.22
 	Ident                  *ast.Ident
 	Spec                   *ast.TypeSpec
 	File                   *ast.File
@@ -116,6 +117,18 @@ type entityDecl struct {
 	hasModelAnnotation     bool
 	hasResponseAnnotation  bool
 	hasParameterAnnotation bool
+}
+
+// Obj returns the type name for the declaration defining the named type or alias t.
+func (d *entityDecl) Obj() *types.TypeName {
+	if d.Type != nil {
+		return d.Type.Obj()
+	}
+	if d.Alias != nil {
+		return d.Alias.Obj()
+	}
+
+	panic("invalid scanCtx: Type and Alias are both nil")
 }
 
 func (d *entityDecl) Names() (name, goName string) {
@@ -138,6 +151,7 @@ DECLS:
 			}
 		}
 	}
+
 	return
 }
 
@@ -246,60 +260,71 @@ func (d *entityDecl) HasParameterAnnotation() bool {
 }
 
 func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
-	if pkg, ok := s.app.AllPackages[pkgPath]; ok {
-		for _, file := range pkg.Syntax {
-			for _, d := range file.Decls {
-				gd, ok := d.(*ast.GenDecl)
-				if !ok {
-					continue
-				}
+	pkg, ok := s.app.AllPackages[pkgPath]
+	if !ok {
+		return nil, false
+	}
 
-				for _, sp := range gd.Specs {
-					if ts, ok := sp.(*ast.TypeSpec); ok && ts.Name.Name == name {
-						def, ok := pkg.TypesInfo.Defs[ts.Name]
-						if !ok {
-							debugLog("couldn't find type info for %s", ts.Name)
-							continue
-						}
-						nt, isNamed := def.Type().(*types.Named)
-						if !isNamed {
-							debugLog("%s is not a named type but a %T", ts.Name, def.Type())
-							continue
-						}
+	for _, file := range pkg.Syntax {
+		for _, d := range file.Decls {
+			gd, ok := d.(*ast.GenDecl)
+			if !ok {
+				continue
+			}
 
-						comments := ts.Doc // type ( /* doc */ Foo struct{} )
-						if comments == nil {
-							comments = gd.Doc // /* doc */  type ( Foo struct{} )
-						}
-
-						decl := &entityDecl{
-							Comments: comments,
-							Type:     nt,
-							Ident:    ts.Name,
-							Spec:     ts,
-							File:     file,
-							Pkg:      pkg,
-						}
-						return decl, true
+			for _, sp := range gd.Specs {
+				if ts, ok := sp.(*ast.TypeSpec); ok && ts.Name.Name == name {
+					def, ok := pkg.TypesInfo.Defs[ts.Name]
+					if !ok {
+						debugLog("couldn't find type info for %s", ts.Name)
+						continue
 					}
+
+					nt, isNamed := def.Type().(*types.Named)
+					at, isAliased := def.Type().(*types.Alias)
+					if !isNamed && !isAliased {
+						debugLog("%s is not a named or an aliased type but a %T", ts.Name, def.Type())
+
+						continue
+					}
+
+					comments := ts.Doc // type ( /* doc */ Foo struct{} )
+					if comments == nil {
+						comments = gd.Doc // /* doc */  type ( Foo struct{} )
+					}
+
+					decl := &entityDecl{
+						Comments: comments,
+						Type:     nt,
+						Alias:    at,
+						Ident:    ts.Name,
+						Spec:     ts,
+						File:     file,
+						Pkg:      pkg,
+					}
+
+					return decl, true
 				}
 			}
 		}
 	}
+
 	return nil, false
 }
 
 func (s *scanCtx) FindModel(pkgPath, name string) (*entityDecl, bool) {
 	for _, cand := range s.app.Models {
-		ct := cand.Type.Obj()
+		ct := cand.Obj()
 		if ct.Name() == name && ct.Pkg().Path() == pkgPath {
 			return cand, true
 		}
 	}
+
 	if decl, found := s.FindDecl(pkgPath, name); found {
 		s.app.ExtraModels[decl.Ident] = decl
 		return decl, true
 	}
+
 	return nil, false
 }
 
@@ -314,9 +339,12 @@ func (s *scanCtx) DeclForType(t types.Type) (*entityDecl, bool) {
 		return s.DeclForType(tpe.Elem())
 	case *types.Named:
 		return s.FindDecl(tpe.Obj().Pkg().Path(), tpe.Obj().Name())
+	case *types.Alias:
+		return s.FindDecl(tpe.Obj().Pkg().Path(), tpe.Obj().Name())
 
 	default:
-		log.Printf("unknown type to find the package for [%T]: %s", t, t.String())
+		log.Printf("WARNING: unknown type to find the package for [%T]: %s", t, t.String())
+
 		return nil, false
 	}
 }
@@ -331,6 +359,9 @@ func (s *scanCtx) PkgForType(t types.Type) (*packages.Package, bool) {
 	// case *types.Slice:
 	// case *types.Map:
 	case *types.Named:
+		v, ok := s.app.AllPackages[tpe.Obj().Pkg().Path()]
+		return v, ok
+	case *types.Alias:
 		v, ok := s.app.AllPackages[tpe.Obj().Pkg().Path()]
 		return v, ok
 	default:
@@ -359,7 +390,7 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, descList []string, _ bool) {
+func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []any, descList []string, _ bool) {
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			gd, ok := d.(*ast.GenDecl)
@@ -372,50 +403,70 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 			}
 
 			for _, s := range gd.Specs {
-				if vs, ok := s.(*ast.ValueSpec); ok {
-					if vsIdent, ok := vs.Type.(*ast.Ident); ok {
-						if vsIdent.Name == enumName {
-							if len(vs.Values) > 0 {
-								if bl, ok := vs.Values[0].(*ast.BasicLit); ok {
-									blValue := getEnumBasicLitValue(bl)
-									list = append(list, blValue)
+				vs, ok := s.(*ast.ValueSpec)
+				if !ok {
+					continue
+				}
 
-									// build the enum description
-									var (
-										desc     = &strings.Builder{}
-										namesLen = len(vs.Names)
-									)
-									fmt.Fprintf(desc, "%v ", blValue)
-									for i, name := range vs.Names {
-										desc.WriteString(name.Name)
-										if i < namesLen-1 {
-											desc.WriteString(" ")
-										}
-									}
-									if vs.Doc != nil {
-										docListLen := len(vs.Doc.List)
-										if docListLen > 0 {
-											desc.WriteString(" ")
-										}
-										for i, doc := range vs.Doc.List {
-											if doc.Text != "" {
-												text := strings.TrimPrefix(doc.Text, "//")
-												desc.WriteString(text)
-												if i < docListLen-1 {
-													desc.WriteString(" ")
-												}
-											}
-										}
-									}
-									descList = append(descList, desc.String())
-								}
-							}
+				vsIdent, ok := vs.Type.(*ast.Ident)
+				if !ok {
+					continue
+				}
+
+				if vsIdent.Name != enumName {
+					continue
+				}
+
+				if len(vs.Values) == 0 {
+					continue
+				}
+
+				bl, ok := vs.Values[0].(*ast.BasicLit)
+				if !ok {
+					continue
+				}
+
+				blValue := getEnumBasicLitValue(bl)
+				list = append(list, blValue)
+
+				// build the enum description
+				var (
+					desc     = &strings.Builder{}
+					namesLen = len(vs.Names)
+				)
+				fmt.Fprintf(desc, "%v ", blValue)
+
+				for i, name := range vs.Names {
+					desc.WriteString(name.Name)
+					if i < namesLen-1 {
+						desc.WriteString(" ")
+					}
+				}
+
+				if vs.Doc != nil {
+					docListLen := len(vs.Doc.List)
+					if docListLen > 0 {
+						desc.WriteString(" ")
+					}
+
+					for i, doc := range vs.Doc.List {
+						if doc.Text == "" {
+							continue
+						}
+
+						text := strings.TrimPrefix(doc.Text, "//")
+						desc.WriteString(text)
+						if i < docListLen-1 {
+							desc.WriteString(" ")
 						}
 					}
 				}
+
+				descList = append(descList, desc.String())
 			}
 		}
 	}
+
 	return list, descList, true
 }
 
@@ -434,6 +485,7 @@ func newTypeIndex(pkgs []*packages.Package, excludeDeps bool, includeTags, exclu
 	if err := ac.build(pkgs); err != nil {
 		return nil, err
 	}
+
 	return ac, nil
 }
 
@@ -535,6 +587,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -556,6 +609,7 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 			nt, isNamed := def.Type().(*types.Named)
 			if !isNamed {
 				debugLog("%s is not a named type but a %T", ts.Name, def.Type())
+
 				continue
 			}
 
@@ -599,6 +653,7 @@ func (a *typeIndex) walkImports(pkg *packages.Package) error {
 		if err := a.processPackage(v); err != nil {
 			return err
 		}
+
 		if err := a.walkImports(v); err != nil {
 			return err
 		}
@@ -633,27 +688,24 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 				n |= operationNode
 			case "model":
 				n |= modelNode
-				if seenStruct == "" || seenStruct == matches[1] {
-					seenStruct = matches[1]
-				} else {
+				if seenStruct != "" && seenStruct != matches[1] {
 					return 0, fmt.Errorf("classifier: already annotated as %s, can't also be %q - %s", seenStruct, matches[1], cline.Text)
 				}
+				seenStruct = matches[1]
 			case "meta":
 				n |= metaNode
 			case "parameters":
 				n |= parametersNode
-				if seenStruct == "" || seenStruct == matches[1] {
-					seenStruct = matches[1]
-				} else {
+				if seenStruct != "" && seenStruct != matches[1] {
 					return 0, fmt.Errorf("classifier: already annotated as %s, can't also be %q - %s", seenStruct, matches[1], cline.Text)
 				}
+				seenStruct = matches[1]
 			case "response":
 				n |= responseNode
-				if seenStruct == "" || seenStruct == matches[1] {
-					seenStruct = matches[1]
-				} else {
+				if seenStruct != "" && seenStruct != matches[1] {
 					return 0, fmt.Errorf("classifier: already annotated as %s, can't also be %q - %s", seenStruct, matches[1], cline.Text)
 				}
+				seenStruct = matches[1]
 			case "strfmt", "name", "discriminated", "file", "enum", "default", "alias", "type":
 				// TODO: perhaps collect these and pass along to avoid lookups later on
 			case "allOf":
@@ -666,7 +718,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 	return n, nil
 }
 
-func debugLog(format string, args ...interface{}) {
+func debugLog(format string, args ...any) {
 	if Debug {
 		log.Printf(format, args...)
 	}
