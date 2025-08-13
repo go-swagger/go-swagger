@@ -2,6 +2,7 @@ package generate
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -21,6 +22,12 @@ const (
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
 )
+
+var enableSpecOutput bool
+
+func init() {
+	flag.BoolVar(&enableSpecOutput, "enable-spec-output", false, "enable spec gen test to write output to a file")
+}
 
 func TestSpecFileExecute(t *testing.T) {
 	files := []string{"", "spec.json", "spec.yml", "spec.yaml"}
@@ -123,8 +130,14 @@ func TestGenerateYAMLSpec(t *testing.T) {
 		expected = rewritten
 	}
 
-	os.WriteFile("expected.yaml", expected, 0660)
-	os.WriteFile("generated.yaml", data, 0660)
+	if enableSpecOutput {
+		require.NoError(t,
+			os.WriteFile("expected.yaml", expected, 0o600),
+		)
+		require.NoError(t,
+			os.WriteFile("generated.yaml", data, 0o600),
+		)
+	}
 
 	verifyYAMLData(t, data, expected)
 }

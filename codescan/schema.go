@@ -185,11 +185,12 @@ func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error 
 	}
 
 	var o *types.TypeName
-	if s.decl.Type != nil { // TODO: boiler plate => add an Obj() method to decl (FRED)
+	switch {
+	case s.decl.Type != nil:
 		o = s.decl.Type.Obj()
-	} else if s.decl.Alias != nil {
+	case s.decl.Alias != nil:
 		o = s.decl.Alias.Obj()
-	} else {
+	default:
 		panic("invalid decl with both Type and Alias nil")
 	}
 
@@ -595,20 +596,23 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 
 	// First collect the embedded interfaces
 	// create refs when the embedded interface is decorated with an allOf annotation
-	for i := 0; i < it.NumEmbeddeds(); i++ {
+	for i := range it.NumEmbeddeds() {
 		fld := it.EmbeddedType(i)
 		var (
 			fieldHasAllOf bool
 			err           error
 		)
+		if tgt == nil {
+			tgt = &spec.Schema{}
+		}
 
 		switch ftpe := fld.(type) {
 		case *types.Alias:
-			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, tgt, seen); err != nil { // TODO(fred): check any
+			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, seen); err != nil { // TODO(fred): check any
 				return err
 			}
 		case *types.Named:
-			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, tgt, seen); err != nil {
+			if fieldHasAllOf, err = s.buildNamedInterface(ftpe, flist, decl, schema, seen); err != nil {
 				return err
 			}
 		default:
@@ -735,8 +739,8 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	return nil
 }
 
-// flist, decl, schema, tgt, seen
-func (s *schemaBuilder) buildNamedInterface(ftpe namedObj, flist []*ast.Field, decl *entityDecl, schema *spec.Schema, tgt *spec.Schema, seen map[string]string) (hasAllOf bool, err error) {
+// flist, decl, schema, /*tgt,*/ seen
+func (s *schemaBuilder) buildNamedInterface(ftpe namedObj, flist []*ast.Field, decl *entityDecl, schema *spec.Schema, seen map[string]string) (hasAllOf bool, err error) {
 	o := ftpe.Obj()
 	var afld *ast.Field
 
@@ -778,9 +782,6 @@ func (s *schemaBuilder) buildNamedInterface(ftpe namedObj, flist []*ast.Field, d
 	}
 
 	hasAllOf = true
-	if tgt == nil {
-		tgt = &spec.Schema{}
-	}
 
 	var newSch spec.Schema
 	// when the embedded struct is annotated with swagger:allOf it will be used as allOf property
@@ -829,7 +830,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 	var tgt *spec.Schema
 	hasAllOf := false
 
-	for i := 0; i < st.NumFields(); i++ {
+	for i := range st.NumFields() {
 		fld := st.Field(i)
 		if !fld.Anonymous() {
 			debugLog("skipping field %q for allOf scan because not anonymous", fld.Name())
@@ -1103,6 +1104,7 @@ func (s *schemaBuilder) buildNamedAllOf(ftpe namedObj, schema *spec.Schema) erro
 
 func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen map[string]string) error {
 	debugLog("embedded %s", tpe.Underlying())
+
 	switch ftpe := tpe.(type) {
 	case *types.Pointer:
 		return s.buildEmbedded(ftpe.Elem(), schema, seen)
@@ -1114,8 +1116,6 @@ func (s *schemaBuilder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen 
 		log.Printf("WARNING: Missing embedded parser for a %T, skipping model\n", ftpe)
 		return nil
 	}
-
-	return nil
 }
 
 func (s *schemaBuilder) buildNamedEmbedded(ftpe namedObj, schema *spec.Schema, seen map[string]string) error {
