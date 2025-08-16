@@ -1,6 +1,7 @@
 package codescan
 
 import (
+	"flag"
 	"io"
 	"log"
 	"os"
@@ -19,9 +20,29 @@ var (
 	classificationCtx *scanCtx
 )
 
+var (
+	enableSpecOutput bool
+	enableDebug      bool
+)
+
+func init() {
+	flag.BoolVar(&enableSpecOutput, "enable-spec-output", false, "enable spec gen test to write output to a file")
+	flag.BoolVar(&enableDebug, "enable-debug", false, "enable debug output in tests")
+}
+
 func TestMain(m *testing.M) {
 	// initializations to run tests in this package
-	log.SetOutput(io.Discard)
+	flag.Parse()
+
+	if !enableDebug {
+		log.SetOutput(io.Discard)
+	} else {
+		// enable full debug when test is run with -enable-debug arg
+		Debug = true
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		log.SetOutput(os.Stderr)
+	}
+
 	os.Exit(m.Run())
 }
 

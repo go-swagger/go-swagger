@@ -21,6 +21,9 @@ const (
 	basePath       = "../../../../fixtures/goparsing/spec"
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
+
+	jsonResultFileRef = basePath + "/api_spec_go111_ref.json"
+	yamlResultFileRef = basePath + "/api_spec_go111_ref.yml"
 )
 
 var enableSpecOutput bool
@@ -136,6 +139,61 @@ func TestGenerateYAMLSpec(t *testing.T) {
 		)
 		require.NoError(t,
 			os.WriteFile("generated.yaml", data, 0o600),
+		)
+	}
+
+	verifyYAMLData(t, data, expected)
+}
+
+func TestGenerateJSONSpecWithSpec(t *testing.T) {
+	opts := codescan.Options{
+		WorkDir:    basePath,
+		Packages:   []string{"./..."},
+		RefAliases: true,
+	}
+
+	swspec, err := codescan.Run(&opts)
+	require.NoError(t, err)
+
+	data, err := marshalToJSONFormat(swspec, true)
+	require.NoError(t, err)
+
+	expected, err := os.ReadFile(jsonResultFileRef)
+	require.NoError(t, err)
+
+	verifyJSONData(t, data, expected)
+}
+
+func TestGenerateYAMLSpecWithRefAliases(t *testing.T) {
+	opts := codescan.Options{
+		WorkDir:    basePath,
+		Packages:   []string{"./..."},
+		RefAliases: true,
+	}
+
+	swspec, err := codescan.Run(&opts)
+	require.NoError(t, err)
+
+	data, err := marshalToYAMLFormat(swspec)
+	require.NoError(t, err)
+
+	expected, err := os.ReadFile(yamlResultFileRef)
+	require.NoError(t, err)
+	{
+		var jsonObj any
+		require.NoError(t, yaml.Unmarshal(expected, &jsonObj))
+
+		rewritten, err := yaml.Marshal(jsonObj)
+		require.NoError(t, err)
+		expected = rewritten
+	}
+
+	if enableSpecOutput {
+		require.NoError(t,
+			os.WriteFile("expected_ref.yaml", expected, 0o600),
+		)
+		require.NoError(t,
+			os.WriteFile("generated_ref.yaml", data, 0o600),
 		)
 	}
 

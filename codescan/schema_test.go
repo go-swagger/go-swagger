@@ -1,11 +1,14 @@
 package codescan
 
 import (
+	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 
 	"github.com/go-openapi/spec"
 )
@@ -812,6 +815,1083 @@ func TestAliasedModels(t *testing.T) {
 	}
 }
 
+func TestAliasedTopLevelModels(t *testing.T) {
+	t.Run("with options: no scan models, with aliases as ref", func(t *testing.T) {
+		t.Run("with goparsing/spec", func(t *testing.T) {
+			sctx, err := newScanCtx(&Options{
+				Packages: []string{
+					"github.com/go-swagger/go-swagger/fixtures/goparsing/spec",
+				},
+				ScanModels: false,
+				RefAliases: true,
+			})
+			require.NoError(t, err)
+
+			t.Run("should find User definition in source", func(t *testing.T) {
+				_, hasUser := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "User")
+				require.True(t, hasUser)
+			})
+
+			var decl *entityDecl
+			t.Run("should find Customer definition in source", func(t *testing.T) {
+				var hasCustomer bool
+				decl, hasCustomer = sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "Customer")
+				require.True(t, hasCustomer)
+			})
+
+			t.Run("with schema builder", func(t *testing.T) {
+				require.NotNil(t, decl)
+				builder := &schemaBuilder{
+					ctx:  sctx,
+					decl: decl,
+				}
+
+				t.Run("should build model for Customer", func(t *testing.T) {
+					models := make(map[string]spec.Schema)
+					require.NoError(t, builder.Build(models))
+
+					assertRefDefinition(t, models, "Customer", "#/definitions/User", "")
+				})
+
+				t.Run("should have discovered models for User and Customer", func(t *testing.T) {
+					require.Len(t, builder.postDecls, 2)
+					foundUserIndex := -1
+					foundCustomerIndex := -1
+
+					for i, discoveredDecl := range builder.postDecls {
+						switch discoveredDecl.Obj().Name() {
+						case "User":
+							foundUserIndex = i
+						case "Customer":
+							foundCustomerIndex = i
+						}
+					}
+					require.GreaterOrEqual(t, foundUserIndex, 0)
+					require.GreaterOrEqual(t, foundCustomerIndex, 0)
+
+					userBuilder := &schemaBuilder{
+						ctx:  sctx,
+						decl: builder.postDecls[foundUserIndex],
+					}
+
+					t.Run("should build model for User", func(t *testing.T) {
+						models := make(map[string]spec.Schema)
+						require.NoError(t, userBuilder.Build(models))
+
+						require.Contains(t, models, "User")
+
+						user := models["User"]
+						assert.True(t, user.Type.Contains("object"))
+
+						userProperties := user.Properties
+						require.Contains(t, userProperties, "name")
+					})
+				})
+			})
+		})
+	})
+
+	t.Run("with options: no scan models, without aliases as ref", func(t *testing.T) {
+		t.Run("with goparsing/spec", func(t *testing.T) {
+			sctx, err := newScanCtx(&Options{
+				Packages: []string{
+					"github.com/go-swagger/go-swagger/fixtures/goparsing/spec",
+				},
+				ScanModels: false,
+				RefAliases: false,
+			})
+			require.NoError(t, err)
+
+			t.Run("should find User definition in source", func(t *testing.T) {
+				_, hasUser := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "User")
+				require.True(t, hasUser)
+			})
+
+			var decl *entityDecl
+			t.Run("should find Customer definition in source", func(t *testing.T) {
+				var hasCustomer bool
+				decl, hasCustomer = sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "Customer")
+				require.True(t, hasCustomer)
+			})
+
+			t.Run("with schema builder", func(t *testing.T) {
+				require.NotNil(t, decl)
+				builder := &schemaBuilder{
+					ctx:  sctx,
+					decl: decl,
+				}
+
+				t.Run("should build model for Customer", func(t *testing.T) {
+					models := make(map[string]spec.Schema)
+					require.NoError(t, builder.Build(models))
+
+					require.Contains(t, models, "Customer")
+					customer := models["Customer"]
+					require.NotContains(t, models, "User")
+
+					assert.True(t, customer.Type.Contains("object"))
+
+					customerProperties := customer.Properties
+					assert.Contains(t, customerProperties, "name")
+					assert.NotEmpty(t, customer.Title)
+				})
+
+				t.Run("should have discovered only Customer", func(t *testing.T) {
+					require.Len(t, builder.postDecls, 1)
+					discovered := builder.postDecls[0]
+					assert.Equal(t, "Customer", discovered.Obj().Name())
+				})
+			})
+		})
+	})
+}
+
+func TestAliasedSchemas(t *testing.T) {
+	t.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
+
+	fixturesPath := filepath.Join("..", "fixtures", "goparsing", "go123", "aliased", "schema")
+	var sp *spec.Swagger
+	t.Run("end-to-end source scan should succeed", func(t *testing.T) {
+		var err error
+		sp, err = Run(&Options{
+			WorkDir:    fixturesPath,
+			BuildTags:  "testscanner", // fixture code is excluded from normal build
+			ScanModels: true,
+			RefAliases: true,
+		})
+		require.NoError(t, err)
+	})
+
+	if enableSpecOutput {
+		// for debugging, output the resulting spec as YAML
+		yml, err := marshalToYAMLFormat(sp)
+		require.NoError(t, err)
+
+		_, _ = os.Stdout.Write(yml)
+	}
+
+	shouldHaveExt := func(t *testing.T, sch spec.Schema, ext string) {
+		t.Helper()
+		pkg, hasExt := sch.Extensions.GetString(ext)
+		assert.True(t, hasExt)
+		assert.NotEmpty(t, pkg)
+	}
+	shouldHaveGoPackageExt := func(t *testing.T, sch spec.Schema) {
+		t.Helper()
+		shouldHaveExt(t, sch, "x-go-package")
+	}
+	shouldHaveTitle := func(t *testing.T, sch spec.Schema) {
+		t.Helper()
+		assert.NotEmpty(t, sch.Title)
+	}
+	shouldNotHaveTitle := func(t *testing.T, sch spec.Schema) {
+		t.Helper()
+		assert.Empty(t, sch.Title)
+	}
+
+	t.Run("type aliased to any should yield an empty schema", func(t *testing.T) {
+		anything, ok := sp.Definitions["Anything"]
+		require.True(t, ok)
+
+		shouldHaveGoPackageExt(t, anything)
+		shouldHaveTitle(t, anything)
+
+		// after stripping extension and title, should be empty
+		anything.VendorExtensible = spec.VendorExtensible{}
+		anything.Title = ""
+		assert.Equal(t, spec.Schema{}, anything)
+	})
+
+	t.Run("type aliased to an empty struct should yield an empty object", func(t *testing.T) {
+		empty, ok := sp.Definitions["Empty"]
+		require.True(t, ok)
+
+		shouldHaveGoPackageExt(t, empty)
+		shouldHaveTitle(t, empty)
+
+		// after stripping extension and title, should be empty
+		empty.VendorExtensible = spec.VendorExtensible{}
+		empty.Title = ""
+		emptyObject := &spec.Schema{}
+		emptyObject = emptyObject.Typed("object", "").WithProperties(map[string]spec.Schema{})
+		assert.Equal(t, *emptyObject, empty)
+	})
+
+	t.Run("struct fields defined as any or interface{} should yield properties with an empty schema", func(t *testing.T) {
+		extended, ok := sp.Definitions["ExtendedID"]
+		require.True(t, ok)
+
+		t.Run("struct with an embedded alias should render as allOf", func(t *testing.T) {
+			require.Len(t, extended.AllOf, 2)
+			shouldHaveTitle(t, extended)
+
+			foundAliased := false
+			foundProps := false
+			for idx, member := range extended.AllOf {
+				isProps := len(member.Properties) > 0
+				isAlias := member.Ref.String() != ""
+
+				switch {
+				case isProps:
+					props := member
+					t.Run("with property of type any", func(t *testing.T) {
+						evenMore, ok := props.Properties["EvenMore"]
+						require.True(t, ok)
+						assert.Equal(t, spec.Schema{}, evenMore)
+					})
+
+					t.Run("with property of type interface{}", func(t *testing.T) {
+						evenMore, ok := props.Properties["StillMore"]
+						require.True(t, ok)
+						assert.Equal(t, spec.Schema{}, evenMore)
+					})
+
+					t.Run("non-aliased properties remain unaffected", func(t *testing.T) {
+						more, ok := props.Properties["more"]
+						require.True(t, ok)
+
+						shouldHaveExt(t, more, "x-go-name") // because we have a struct tag
+						shouldNotHaveTitle(t, more)
+
+						// after stripping extension and title, should be empty
+						more.VendorExtensible = spec.VendorExtensible{}
+
+						strSchema := &spec.Schema{}
+						strSchema = strSchema.Typed("string", "")
+						assert.Equal(t, *strSchema, more)
+					})
+					foundProps = true
+				case isAlias:
+					assertIsRef(t, &member, "#/definitions/Empty")
+					foundAliased = true
+				default:
+					assert.Failf(t, "embedded members in struct are not as expected", "unexpected member in allOf: %d", idx)
+				}
+			}
+			require.True(t, foundProps)
+			require.True(t, foundAliased)
+		})
+	})
+
+	t.Run("aliased primitive types remain unaffected", func(t *testing.T) {
+		uuid, ok := sp.Definitions["UUID"]
+		require.True(t, ok)
+
+		shouldHaveGoPackageExt(t, uuid)
+		shouldHaveTitle(t, uuid)
+
+		// after strip extension, should be equal to integer with format
+		uuid.VendorExtensible = spec.VendorExtensible{}
+		uuid.Title = ""
+		intSchema := &spec.Schema{}
+		intSchema = intSchema.Typed("integer", "int64")
+		assert.Equal(t, *intSchema, uuid)
+	})
+
+	t.Run("with struct having fields aliased to any or interface{}", func(t *testing.T) {
+		order, ok := sp.Definitions["order"]
+		require.True(t, ok)
+
+		t.Run("field defined on an alias should produce a ref", func(t *testing.T) {
+			t.Run("with alias to any", func(t *testing.T) {
+				_, ok = order.Properties["DeliveryOption"]
+				require.True(t, ok)
+				assertRef(t, &order, "DeliveryOption", "", "#/definitions/Anything") // points to an alias to any
+			})
+
+			t.Run("with alias to primitive type", func(t *testing.T) {
+				_, ok = order.Properties["id"]
+				require.True(t, ok)
+				assertRef(t, &order, "id", "", "#/definitions/UUID") // points to an alias to any
+			})
+
+			t.Run("with alias to struct type", func(t *testing.T) {
+				_, ok = order.Properties["extended_id"]
+				require.True(t, ok)
+				assertRef(t, &order, "extended_id", "", "#/definitions/ExtendedID") // points to an alias to any
+			})
+
+			t.Run("inside anonymous array", func(t *testing.T) {
+				items, ok := order.Properties["items"]
+				require.True(t, ok)
+
+				require.NotNil(t, items)
+				require.NotNil(t, items.Items)
+
+				assert.True(t, items.Type.Contains("array"))
+				t.Run("field as any should render as empty object", func(t *testing.T) {
+					require.NotNil(t, items.Items.Schema)
+					itemsSchema := items.Items.Schema
+					assert.True(t, itemsSchema.Type.Contains("object"))
+
+					require.Contains(t, itemsSchema.Properties, "extra_options")
+					extraOptions := itemsSchema.Properties["extra_options"]
+					shouldHaveExt(t, extraOptions, "x-go-name")
+
+					extraOptions.VendorExtensible = spec.VendorExtensible{}
+					empty := spec.Schema{}
+					assert.Equal(t, empty, extraOptions)
+				})
+			})
+		})
+
+		t.Run("struct field defined as any should produce an empty schema", func(t *testing.T) {
+			extras, ok := order.Properties["Extras"]
+			require.True(t, ok)
+			assert.Equal(t, spec.Schema{}, extras)
+		})
+
+		t.Run("struct field defined as interface{} should produce an empty schema", func(t *testing.T) {
+			extras, ok := order.Properties["MoreExtras"]
+			require.True(t, ok)
+			assert.Equal(t, spec.Schema{}, extras)
+		})
+	})
+
+	t.Run("type redefinitions and syntactic aliases to any should render the same", func(t *testing.T) {
+		whatnot, ok := sp.Definitions["whatnot"]
+		require.True(t, ok)
+		// after strip extension, should be empty
+		whatnot.VendorExtensible = spec.VendorExtensible{}
+		assert.Equal(t, spec.Schema{}, whatnot)
+
+		whatnotAlias, ok := sp.Definitions["whatnot_alias"]
+		require.True(t, ok)
+		// after strip extension, should be empty
+		whatnotAlias.VendorExtensible = spec.VendorExtensible{}
+		assert.Equal(t, spec.Schema{}, whatnotAlias)
+
+		whatnot2, ok := sp.Definitions["whatnot2"]
+		require.True(t, ok)
+		// after strip extension, should be empty
+		whatnot2.VendorExtensible = spec.VendorExtensible{}
+		assert.Equal(t, spec.Schema{}, whatnot2)
+
+		whatnot2Alias, ok := sp.Definitions["whatnot2_alias"]
+		require.True(t, ok)
+		// after strip extension, should be empty
+		whatnot2Alias.VendorExtensible = spec.VendorExtensible{}
+		assert.Equal(t, spec.Schema{}, whatnot2Alias)
+	})
+
+	t.Run("alias to another alias is resolved as a ref", func(t *testing.T) {
+		void, ok := sp.Definitions["void"]
+		require.True(t, ok)
+
+		assertIsRef(t, &void, "#/definitions/Empty") // points to another alias
+	})
+
+	t.Run("type redefinition to anonymous is not an alias and is resolved as an object", func(t *testing.T) {
+		empty, ok := sp.Definitions["empty_redefinition"]
+		require.True(t, ok)
+
+		shouldHaveGoPackageExt(t, empty)
+		shouldNotHaveTitle(t, empty)
+
+		// after stripping extension and title, should be empty
+		empty.VendorExtensible = spec.VendorExtensible{}
+		emptyObject := &spec.Schema{}
+		emptyObject = emptyObject.Typed("object", "").WithProperties(map[string]spec.Schema{})
+		assert.Equal(t, *emptyObject, empty)
+	})
+
+	t.Run("alias to a named interface should render as a $ref", func(t *testing.T) {
+		iface, ok := sp.Definitions["iface_alias"]
+		require.True(t, ok)
+
+		assertIsRef(t, &iface, "#/definitions/iface") // points to an interface
+	})
+
+	t.Run("interface redefinition is not an alias and should render as a $ref", func(t *testing.T) {
+		iface, ok := sp.Definitions["iface_redefinition"]
+		require.True(t, ok)
+
+		assertIsRef(t, &iface, "#/definitions/iface") // points to an interface
+	})
+
+	t.Run("anonymous interface should render a schema", func(t *testing.T) {
+		iface, ok := sp.Definitions["anonymous_iface"]
+		require.True(t, ok)
+
+		require.NotEmpty(t, iface.Properties)
+		require.Contains(t, iface.Properties, "String")
+	})
+
+	t.Run("anonymous struct should render as an anonymous schema", func(t *testing.T) {
+		obj, ok := sp.Definitions["anonymous_struct"]
+		require.True(t, ok)
+
+		require.NotEmpty(t, obj.Properties)
+		require.Contains(t, obj.Properties, "A")
+
+		a := obj.Properties["A"]
+		assert.True(t, a.Type.Contains("object"))
+		require.Contains(t, a.Properties, "B")
+		b := a.Properties["B"]
+		assert.True(t, b.Type.Contains("integer"))
+	})
+
+	t.Run("standalone model with a tag should be rendered", func(t *testing.T) {
+		shouldSee, ok := sp.Definitions["ShouldSee"]
+		require.True(t, ok)
+		assert.True(t, shouldSee.Type.Contains("boolean"))
+	})
+
+	t.Run("standalone model without a tag should not be rendered", func(t *testing.T) {
+		_, ok := sp.Definitions["ShouldNotSee"]
+		require.False(t, ok)
+
+		_, ok = sp.Definitions["ShouldNotSeeSlice"]
+		require.False(t, ok)
+
+		_, ok = sp.Definitions["ShouldNotSeeMap"]
+		require.False(t, ok)
+	})
+
+	t.Run("with aliases in slices and arrays", func(t *testing.T) {
+		t.Run("slice redefinition should render as schema", func(t *testing.T) {
+			t.Run("with anonymous slice", func(t *testing.T) {
+				slice, ok := sp.Definitions["slice_type"] // []any
+				require.True(t, ok)
+				assert.True(t, slice.Type.Contains("array"))
+				require.NotNil(t, slice.Items)
+				require.NotNil(t, slice.Items.Schema)
+
+				assert.Equal(t, &spec.Schema{}, slice.Items.Schema)
+			})
+
+			t.Run("with anonymous struct", func(t *testing.T) {
+				slice, ok := sp.Definitions["slice_of_structs"] // type X = []struct{}
+				require.True(t, ok)
+				assert.True(t, slice.Type.Contains("array"))
+
+				require.NotNil(t, slice.Items)
+				require.NotNil(t, slice.Items.Schema)
+
+				emptyObject := &spec.Schema{}
+				emptyObject = emptyObject.Typed("object", "").WithProperties(map[string]spec.Schema{})
+				assert.Equal(t, emptyObject, slice.Items.Schema)
+			})
+		})
+
+		t.Run("alias to anonymous slice should render as schema", func(t *testing.T) {
+			t.Run("with anonymous slice", func(t *testing.T) {
+				slice, ok := sp.Definitions["slice_alias"] // type X = []any
+				require.True(t, ok)
+				assert.True(t, slice.Type.Contains("array"))
+
+				require.NotNil(t, slice.Items)
+				require.NotNil(t, slice.Items.Schema)
+
+				assert.Equal(t, &spec.Schema{}, slice.Items.Schema)
+			})
+
+			t.Run("with anonymous struct", func(t *testing.T) {
+				slice, ok := sp.Definitions["slice_of_structs_alias"] // type X = []struct{}
+				require.True(t, ok)
+				assert.True(t, slice.Type.Contains("array"))
+				require.NotNil(t, slice.Items)
+				require.NotNil(t, slice.Items.Schema)
+
+				emptyObject := &spec.Schema{}
+				emptyObject = emptyObject.Typed("object", "").WithProperties(map[string]spec.Schema{})
+				assert.Equal(t, emptyObject, slice.Items.Schema)
+			})
+		})
+
+		t.Run("alias to named alias to anonymous slice should render as ref", func(t *testing.T) {
+			slice, ok := sp.Definitions["slice_to_slice"] // type X = Slice
+			require.True(t, ok)
+			assertIsRef(t, &slice, "#/definitions/slice_type") // points to a named alias
+		})
+	})
+
+	t.Run("with aliases in interfaces", func(t *testing.T) {
+		t.Run("should render anonymous interface as a schema", func(t *testing.T) {
+			iface, ok := sp.Definitions["anonymous_iface"] // e.g. type X interface{ String() string}
+			require.True(t, ok)
+
+			require.True(t, iface.Type.Contains("object"))
+			require.Contains(t, iface.Properties, "String")
+			prop := iface.Properties["String"]
+			require.True(t, prop.Type.Contains("string"))
+			assert.Len(t, iface.Properties, 1)
+		})
+
+		t.Run("alias to an anonymous interface should render as a $ref", func(t *testing.T) {
+			iface, ok := sp.Definitions["anonymous_iface_alias"]
+			require.True(t, ok)
+
+			assertIsRef(t, &iface, "#/definitions/anonymous_iface") // points to an anonymous interface
+		})
+
+		t.Run("named interface should render as a schema", func(t *testing.T) {
+			iface, ok := sp.Definitions["iface"]
+			require.True(t, ok)
+
+			require.True(t, iface.Type.Contains("object"))
+			require.Contains(t, iface.Properties, "Get")
+			prop := iface.Properties["Get"]
+			require.True(t, prop.Type.Contains("string"))
+			assert.Len(t, iface.Properties, 1)
+		})
+
+		t.Run("named interface with embedded types should render as allOf", func(t *testing.T) {
+			iface, ok := sp.Definitions["iface_embedded"]
+			require.True(t, ok)
+
+			require.Len(t, iface.AllOf, 2)
+			foundEmbedded := false
+			foundMethod := false
+			for idx, member := range iface.AllOf {
+				require.True(t, member.Type.Contains("object"))
+				require.NotEmpty(t, member.Properties)
+				require.Len(t, member.Properties, 1)
+				propGet, isEmbedded := member.Properties["Get"]
+				propMethod, isMethod := member.Properties["Dump"]
+
+				switch {
+				case isEmbedded:
+					assert.True(t, propGet.Type.Contains("string"))
+					foundEmbedded = true
+				case isMethod:
+					assert.True(t, propMethod.Type.Contains("array"))
+					foundMethod = true
+				default:
+					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
+				}
+			}
+			require.True(t, foundEmbedded)
+			require.True(t, foundMethod)
+		})
+
+		t.Run("named interface with embedded anonymous interface should render as allOf", func(t *testing.T) {
+			iface, ok := sp.Definitions["iface_embedded_anonymous"]
+			require.True(t, ok)
+
+			require.Len(t, iface.AllOf, 2)
+			foundEmbedded := false
+			foundAnonymous := false
+			for idx, member := range iface.AllOf {
+				require.True(t, member.Type.Contains("object"))
+				require.NotEmpty(t, member.Properties)
+				require.Len(t, member.Properties, 1)
+				propGet, isEmbedded := member.Properties["String"]
+				propAnonymous, isAnonymous := member.Properties["Error"]
+
+				switch {
+				case isEmbedded:
+					assert.True(t, propGet.Type.Contains("string"))
+					foundEmbedded = true
+				case isAnonymous:
+					assert.True(t, propAnonymous.Type.Contains("string"))
+					foundAnonymous = true
+				default:
+					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
+				}
+			}
+			require.True(t, foundEmbedded)
+			require.True(t, foundAnonymous)
+		})
+
+		t.Run("composition of empty interfaces is rendered as an empty schema", func(t *testing.T) {
+			iface, ok := sp.Definitions["iface_embedded_empty"]
+			require.True(t, ok)
+
+			iface.VendorExtensible = spec.VendorExtensible{}
+			assert.Equal(t, spec.Schema{}, iface)
+		})
+
+		t.Run("interface embedded with an alias should be rendered as allOf, with a ref", func(t *testing.T) {
+			iface, ok := sp.Definitions["iface_embedded_with_alias"]
+			require.True(t, ok)
+
+			require.Len(t, iface.AllOf, 3)
+			foundEmbedded := false
+			foundEmbeddedAnon := false
+			foundRef := false
+			for idx, member := range iface.AllOf {
+				propGet, isEmbedded := member.Properties["String"]
+				propAnonymous, isAnonymous := member.Properties["Dump"]
+				isRef := member.Ref.String() != ""
+
+				switch {
+				case isEmbedded:
+					require.True(t, member.Type.Contains("object"))
+					require.Len(t, member.Properties, 1)
+					assert.True(t, propGet.Type.Contains("string"))
+					foundEmbedded = true
+				case isAnonymous:
+					require.True(t, member.Type.Contains("object"))
+					require.Len(t, member.Properties, 1)
+					assert.True(t, propAnonymous.Type.Contains("array"))
+					foundEmbeddedAnon = true
+				case isRef:
+					require.Empty(t, member.Properties)
+					assertIsRef(t, &member, "#/definitions/iface_alias")
+					foundRef = true
+				default:
+					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
+				}
+			}
+			require.True(t, foundEmbedded)
+			require.True(t, foundEmbeddedAnon)
+			require.True(t, foundRef)
+		})
+	})
+
+	t.Run("with aliases in embedded types", func(t *testing.T) {
+		t.Run("embedded alias should render as a $ref", func(t *testing.T) {
+			iface, ok := sp.Definitions["embedded_with_alias"]
+			require.True(t, ok)
+
+			require.Len(t, iface.AllOf, 3)
+			foundAnything := false
+			foundUUID := false
+			foundProps := false
+			for idx, member := range iface.AllOf {
+				isProps := len(member.Properties) > 0
+				isRef := member.Ref.String() != ""
+
+				switch {
+				case isProps:
+					require.True(t, member.Type.Contains("object"))
+					require.Len(t, member.Properties, 3)
+					assert.Contains(t, member.Properties, "EvenMore")
+					foundProps = true
+				case isRef:
+					switch member.Ref.String() {
+					case "#/definitions/Anything":
+						foundAnything = true
+					case "#/definitions/UUID":
+						foundUUID = true
+					default:
+						assert.Failf(t,
+							"embedded members in interface are not as expected", "unexpected $ref for member (%v): %d",
+							member.Ref, idx,
+						)
+					}
+				default:
+					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
+				}
+			}
+			require.True(t, foundAnything)
+			require.True(t, foundUUID)
+			require.True(t, foundProps)
+		})
+	})
+}
+
+func TestSpecialSchemas(t *testing.T) {
+	t.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
+
+	fixturesPath := filepath.Join("..", "fixtures", "goparsing", "go123", "special")
+	var sp *spec.Swagger
+
+	t.Run("end-to-end source scan should succeed", func(t *testing.T) {
+		var err error
+		sp, err = Run(&Options{
+			WorkDir:    fixturesPath,
+			BuildTags:  "testscanner", // fixture code is excluded from normal build
+			ScanModels: true,
+			RefAliases: true,
+		})
+		require.NoError(t, err)
+	})
+
+	if enableSpecOutput {
+		// for debugging, output the resulting spec as YAML
+		yml, err := marshalToYAMLFormat(sp)
+		require.NoError(t, err)
+
+		_, _ = os.Stdout.Write(yml)
+	}
+
+	t.Run("top-level primitive declaration should render just fine", func(t *testing.T) {
+		primitive, ok := sp.Definitions["primitive"]
+		require.True(t, ok)
+
+		require.True(t, primitive.Type.Contains("string"))
+	})
+
+	t.Run("alias to unsafe pointer at top level should render empty", func(t *testing.T) {
+		uptr, ok := sp.Definitions["unsafe_pointer_alias"]
+		require.True(t, ok)
+		var empty spec.Schema
+		uptr.VendorExtensible = spec.VendorExtensible{}
+		require.Equal(t, empty, uptr)
+	})
+
+	t.Run("alias to uintptr at top level should render as integer", func(t *testing.T) {
+		uptr, ok := sp.Definitions["upointer_alias"]
+		require.True(t, ok)
+		require.True(t, uptr.Type.Contains("integer"))
+		require.Equal(t, "uint64", uptr.Format)
+	})
+
+	t.Run("top-level map[string]... should render just fine", func(t *testing.T) {
+		gomap, ok := sp.Definitions["go_map"]
+		require.True(t, ok)
+		require.True(t, gomap.Type.Contains("object"))
+		require.NotNil(t, gomap.AdditionalProperties)
+
+		mapSchema := gomap.AdditionalProperties.Schema
+		require.NotNil(t, mapSchema)
+		require.True(t, mapSchema.Type.Contains("integer"))
+		require.Equal(t, "uint16", mapSchema.Format)
+	})
+
+	t.Run("untagged struct referenced by a tagged model should be discovered", func(t *testing.T) {
+		gostruct, ok := sp.Definitions["GoStruct"]
+		require.True(t, ok)
+		require.True(t, gostruct.Type.Contains("object"))
+		require.NotEmpty(t, gostruct.Properties)
+
+		t.Run("pointer property should render just fine", func(t *testing.T) {
+			a, ok := gostruct.Properties["A"]
+			require.True(t, ok)
+			require.True(t, a.Type.Contains("number"))
+			require.Equal(t, "float", a.Format)
+		})
+	})
+
+	t.Run("tagged unsupported map type should render empty", func(t *testing.T) {
+		idx, ok := sp.Definitions["index_map"]
+		require.True(t, ok)
+		var empty spec.Schema
+		idx.VendorExtensible = spec.VendorExtensible{}
+		require.Equal(t, empty, idx)
+	})
+
+	t.Run("redefinition of the builtin error type should render as a string", func(t *testing.T) {
+		goerror, ok := sp.Definitions["go_error"]
+		require.True(t, ok)
+		require.True(t, goerror.Type.Contains("string"))
+
+		t.Run("a type based on the error builtin should be decorated with a x-go-type: error extension", func(t *testing.T) {
+			val, hasExt := goerror.Extensions.GetString("x-go-type")
+			assert.True(t, hasExt)
+			assert.Equal(t, "error", val)
+		})
+	})
+
+	t.Run("with SpecialTypes struct", func(t *testing.T) {
+		t.Run("in spite of all the pitfalls, the struct should be rendered", func(t *testing.T) {
+			special, ok := sp.Definitions["special_types"]
+			require.True(t, ok)
+			require.True(t, special.Type.Contains("object"))
+			props := special.Properties
+			require.NotEmpty(t, props)
+			require.Empty(t, special.AllOf)
+
+			t.Run("property pointer to struct should render as a ref", func(t *testing.T) {
+				ptr, ok := props["PtrStruct"]
+				require.True(t, ok)
+				assertIsRef(t, &ptr, "#/definitions/GoStruct")
+			})
+
+			t.Run("property as time.Time should render as a formatted string", func(t *testing.T) {
+				str, ok := props["ShouldBeStringTime"]
+				require.True(t, ok)
+				require.True(t, str.Type.Contains("string"))
+				require.Equal(t, "date-time", str.Format)
+			})
+
+			t.Run("property as *time.Time should also render as a formatted string", func(t *testing.T) {
+				str, ok := props["ShouldAlsoBeStringTime"]
+				require.True(t, ok)
+				require.True(t, str.Type.Contains("string"))
+				require.Equal(t, "date-time", str.Format)
+			})
+
+			t.Run("property as builtin error should render as a string", func(t *testing.T) {
+				goerror, ok := props["Err"]
+				require.True(t, ok)
+				require.True(t, goerror.Type.Contains("string"))
+
+				t.Run("a type based on the error builtin should be decorated with a x-go-type: error extension", func(t *testing.T) {
+					val, hasExt := goerror.Extensions.GetString("x-go-type")
+					assert.True(t, hasExt)
+					assert.Equal(t, "error", val)
+				})
+			})
+
+			t.Run("type recognized as a text marshaler should render as a string", func(t *testing.T) {
+				m, ok := props["Marshaler"]
+				require.True(t, ok)
+				require.True(t, m.Type.Contains("string"))
+
+				t.Run("a type based on the encoding.TextMarshaler decorated with a x-go-type extension", func(t *testing.T) {
+					val, hasExt := m.Extensions.GetString("x-go-type")
+					assert.True(t, hasExt)
+					assert.Equal(t, "github.com/go-swagger/go-swagger/fixtures/goparsing/go123/special.IsATextMarshaler", val)
+				})
+			})
+
+			t.Run("a json.RawMessage should be recognized and render as an object (yes this is wrong)", func(t *testing.T) {
+				m, ok := props["Message"]
+				require.True(t, ok)
+				require.True(t, m.Type.Contains("object"))
+			})
+
+			t.Run("type time.Duration is not recognized as a special type and should just render as a ref", func(t *testing.T) {
+				d, ok := props["Duration"]
+				require.True(t, ok)
+				assertIsRef(t, &d, "#/definitions/Duration")
+
+				t.Run("discovered definition should be an integer", func(t *testing.T) {
+					duration, ok := sp.Definitions["Duration"]
+					require.True(t, ok)
+					require.True(t, duration.Type.Contains("integer"))
+					require.Equal(t, "int64", duration.Format)
+
+					t.Run("time.Duration schema should be decorated with a x-go-package: time", func(t *testing.T) {
+						val, hasExt := duration.Extensions.GetString("x-go-package")
+						assert.True(t, hasExt)
+						assert.Equal(t, "time", val)
+					})
+				})
+			})
+
+			t.Run("with strfmt types", func(t *testing.T) {
+				t.Run("a strfmt.Date should be recognized and render as a formatted string", func(t *testing.T) {
+					d, ok := props["FormatDate"]
+					require.True(t, ok)
+					require.True(t, d.Type.Contains("string"))
+					require.Equal(t, "date", d.Format)
+				})
+
+				t.Run("a strfmt.DateTime should be recognized and render as a formatted string", func(t *testing.T) {
+					d, ok := props["FormatTime"]
+					require.True(t, ok)
+					require.True(t, d.Type.Contains("string"))
+					require.Equal(t, "date-time", d.Format)
+				})
+
+				t.Run("a strfmt.UUID should be recognized and render as a formatted string", func(t *testing.T) {
+					u, ok := props["FormatUUID"]
+					require.True(t, ok)
+					require.True(t, u.Type.Contains("string"))
+					require.Equal(t, "uuid", u.Format)
+				})
+
+				t.Run("a pointer to strfmt.UUID should be recognized and render as a formatted string", func(t *testing.T) {
+					u, ok := props["PtrFormatUUID"]
+					require.True(t, ok)
+					require.True(t, u.Type.Contains("string"))
+					require.Equal(t, "uuid", u.Format)
+				})
+			})
+
+			t.Run("a property which is a map should render just fine, with a ref", func(t *testing.T) {
+				mm, ok := props["Map"]
+				require.True(t, ok)
+				require.True(t, mm.Type.Contains("object"))
+				require.NotNil(t, mm.AdditionalProperties)
+				mapSchema := mm.AdditionalProperties.Schema
+				require.NotNil(t, mapSchema)
+				assertIsRef(t, mapSchema, "#/definitions/GoStruct")
+			})
+
+			t.Run(`with the "WhatNot" anonymous inner struct`, func(t *testing.T) {
+				t.Run("should render as an anonymous schema, in spite of all the unsupported things", func(t *testing.T) {
+					wn, ok := props["WhatNot"]
+					require.True(t, ok)
+					require.True(t, wn.Type.Contains("object"))
+					require.NotEmpty(t, wn.Properties)
+
+					markedProps := make([]string, 0)
+
+					for _, unsupportedProp := range []string{
+						"AA", // complex128
+						"A",  // complex64
+						"B",  // chan int
+						"C",  // func()
+						"D",  // func() string
+						"E",  // unsafe.Pointer
+					} {
+						t.Run("with property "+unsupportedProp, func(t *testing.T) {
+							prop, ok := wn.Properties[unsupportedProp]
+							require.True(t, ok)
+							markedProps = append(markedProps, unsupportedProp)
+
+							t.Run("unsupported type in property should render as an empty schema", func(t *testing.T) {
+								var empty spec.Schema
+								require.Equal(t, empty, prop)
+							})
+						})
+					}
+
+					for _, supportedProp := range []string{
+						"F", // uintptr
+						"G",
+						"H",
+						"I",
+						"J",
+						"K",
+					} {
+						t.Run("with property "+supportedProp, func(t *testing.T) {
+							prop, ok := wn.Properties[supportedProp]
+							require.True(t, ok)
+							markedProps = append(markedProps, supportedProp)
+
+							switch supportedProp {
+							case "F":
+								t.Run("uintptr should render as integer", func(t *testing.T) {
+									require.True(t, prop.Type.Contains("integer"))
+									require.Equal(t, "uint64", prop.Format)
+								})
+							case "G", "H":
+								t.Run(
+									"math/big types are not recognized as special types and as TextMarshalers they render as string",
+									func(t *testing.T) {
+										require.True(t, prop.Type.Contains("string"))
+									})
+							case "I":
+								t.Run("go array should render as a json array", func(t *testing.T) {
+									require.True(t, prop.Type.Contains("array"))
+									require.NotNil(t, prop.Items)
+									itemsSchema := prop.Items.Schema
+									require.NotNil(t, itemsSchema)
+
+									require.True(t, itemsSchema.Type.Contains("integer"))
+									// [5]byte is not recognized an array of bytes, but of uint8
+									// (internally this is the same for go)
+									require.Equal(t, "uint8", itemsSchema.Format)
+								})
+							case "J", "K":
+								t.Run("reflect types should render just fine", func(t *testing.T) {
+									var dest string
+									if supportedProp == "J" {
+										dest = "Type"
+									} else {
+										dest = "Value"
+									}
+									assertIsRef(t, &prop, "#/definitions/"+dest)
+
+									t.Run("the $ref should exist", func(t *testing.T) {
+										deref, ok := sp.Definitions[dest]
+										require.True(t, ok)
+										val, hasExt := deref.Extensions.GetString("x-go-package")
+										assert.True(t, hasExt)
+										assert.Equal(t, "reflect", val)
+									})
+								})
+							}
+						})
+					}
+
+					t.Run("we should not have any property left in WhatNot", func(t *testing.T) {
+						for _, key := range markedProps {
+							delete(wn.Properties, key)
+						}
+
+						require.Empty(t, wn.Properties)
+					})
+
+					t.Run("surprisingly, a tagged unexported top-level definition can be rendered", func(t *testing.T) {
+						unexported, ok := sp.Definitions["unexported"]
+						require.True(t, ok)
+						require.True(t, unexported.Type.Contains("object"))
+					})
+
+					t.Run("the IsATextMarshaler type is not identified as a discovered type and is not rendered", func(t *testing.T) {
+						_, ok := sp.Definitions["IsATextMarshaler"]
+						require.False(t, ok)
+					})
+
+					t.Run("a top-level go array should render just fine", func(t *testing.T) {
+						// Notice that the semantics of fixed length are lost in this mapping
+						goarray, ok := sp.Definitions["go_array"]
+						require.True(t, ok)
+						require.True(t, goarray.Type.Contains("array"))
+						require.NotNil(t, goarray.Items)
+						itemsSchema := goarray.Items.Schema
+						require.NotNil(t, itemsSchema)
+						require.True(t, itemsSchema.Type.Contains("integer"))
+						require.Equal(t, "int64", itemsSchema.Format)
+					})
+				})
+			})
+		})
+	})
+
+	t.Run("with generic types", func(t *testing.T) {
+		// NOTE: codescan does not really support generic types.
+		// This test just makes sure generic definitions don't crash the scanner.
+		//
+		// The general approach of the scanner is to make an empty schema out of anything
+		// it doesn't understand.
+
+		// generic_constraint
+		t.Run("generic type constraint should render like an interface", func(t *testing.T) {
+			generic, ok := sp.Definitions["generic_constraint"]
+			require.True(t, ok)
+			require.Len(t, generic.AllOf, 1) // scanner only understood one member, and skipped the ~uint16 member is doesn't understand
+			member := generic.AllOf[0]
+			require.True(t, member.Type.Contains("object"))
+			require.Len(t, member.Properties, 1)
+			prop, ok := member.Properties["Uint"]
+			require.True(t, ok)
+			require.True(t, prop.Type.Contains("integer"))
+			require.Equal(t, "uint16", prop.Format)
+		})
+
+		// numerical_constraint
+		t.Run("generic type constraint with union type should render an empty schema", func(t *testing.T) {
+			generic, ok := sp.Definitions["numerical_constraint"]
+			require.True(t, ok)
+			var empty spec.Schema
+			generic.VendorExtensible = spec.VendorExtensible{}
+			require.Equal(t, empty, generic)
+		})
+
+		// generic_map
+		t.Run("generic map should render an empty schema", func(t *testing.T) {
+			generic, ok := sp.Definitions["generic_map"]
+			require.True(t, ok)
+			var empty spec.Schema
+			generic.VendorExtensible = spec.VendorExtensible{}
+			require.Equal(t, empty, generic)
+		})
+
+		// generic_map_alias
+		t.Run("generic map alias to an anonymous generic type should render an empty schema", func(t *testing.T) {
+			generic, ok := sp.Definitions["generic_map_alias"]
+			require.True(t, ok)
+			var empty spec.Schema
+			generic.VendorExtensible = spec.VendorExtensible{}
+			require.Equal(t, empty, generic)
+		})
+
+		// generic_indirect
+		t.Run("generic map alias to a named generic type should render a ref", func(t *testing.T) {
+			generic, ok := sp.Definitions["generic_indirect"]
+			require.True(t, ok)
+			assertIsRef(t, &generic, "#/definitions/generic_map_alias")
+		})
+
+		// generic_slice
+		t.Run("generic slice should render as an array of empty schemas", func(t *testing.T) {
+			generic, ok := sp.Definitions["generic_slice"]
+			require.True(t, ok)
+			require.True(t, generic.Type.Contains("array"))
+			require.NotNil(t, generic.Items)
+			itemsSchema := generic.Items.Schema
+			require.NotNil(t, itemsSchema)
+			var empty spec.Schema
+			require.Equal(t, &empty, itemsSchema)
+		})
+
+		// union_alias:
+		t.Run("alias to type constraint should render a ref", func(t *testing.T) {
+			generic, ok := sp.Definitions["union_alias"]
+			require.True(t, ok)
+			assertIsRef(t, &generic, "#/definitions/numerical_constraint")
+		})
+	})
+}
+
 func TestEmbeddedAllOf(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	decl := getClassificationModel(sctx, "AllOfModel")
@@ -1157,12 +2237,22 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 }
 
 func assertRef(t testing.TB, schema *spec.Schema, jsonName, _, fragment string) {
+	t.Helper()
+
 	assert.Empty(t, schema.Properties[jsonName].Type)
 	psch := schema.Properties[jsonName]
 	assert.Equal(t, fragment, psch.Ref.String())
 }
 
+func assertIsRef(t testing.TB, schema *spec.Schema, fragment string) {
+	t.Helper()
+
+	assert.Equal(t, fragment, schema.Ref.String())
+}
+
 func assertDefinition(t testing.TB, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+	t.Helper()
+
 	schema, ok := defs[defName]
 	if assert.True(t, ok) {
 		if assert.NotEmpty(t, schema.Type) {
@@ -1288,4 +2378,18 @@ func assertMapRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment 
 	assertMapProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].AdditionalProperties.Schema
 	assert.Equal(t, fragment, psch.Ref.String())
+}
+
+func marshalToYAMLFormat(swspec any) ([]byte, error) {
+	b, err := json.Marshal(swspec)
+	if err != nil {
+		return nil, err
+	}
+
+	var jsonObj any
+	if err := yaml.Unmarshal(b, &jsonObj); err != nil {
+		return nil, err
+	}
+
+	return yaml.Marshal(jsonObj)
 }
