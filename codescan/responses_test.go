@@ -1,6 +1,9 @@
 package codescan
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -305,4 +308,26 @@ func TestParseResponses_Issue2145(t *testing.T) {
 	require.NotNil(t, resp.Schema)
 
 	assert.NotEmpty(t, prs.postDecls) // should have Product
+}
+
+func TestParseResponsesIssues(t *testing.T) {
+	t.Run("should generate example in response (issue #3035)", func(t *testing.T) {
+		fixturesDir := filepath.Join("..", "fixtures", "goparsing")
+
+		opts := &Options{
+			BuildTags: "goparsing",
+			Packages:  []string{"."},
+			WorkDir:   filepath.Join(fixturesDir, "bugs", "3035"),
+		}
+		spec, err := Run(opts)
+		require.NoError(t, err)
+
+		output, err := json.Marshal(spec)
+		require.NoError(t, err)
+
+		expected, err := os.ReadFile(filepath.Join(opts.WorkDir, "expected.json"))
+		require.NoError(t, err)
+
+		assert.JSONEq(t, string(expected), string(output))
+	})
 }
