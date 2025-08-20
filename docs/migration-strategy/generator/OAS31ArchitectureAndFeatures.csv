@@ -1,0 +1,53 @@
+ID,Type,Epic ID,Title,Description,Priority,Estimate (pts),Dependencies
+E0,Epic,,Architecture & Compatibility,"Dual-pipeline architecture (v2 & v3.1) with shared core, no breaking changes to v2.",P0,8,
+E1,Epic,,OAS3.1 Loader & Analysis,"Load/validate/deref OAS3.1, compute effective servers/security, stable naming.",P0,13,
+E2,Epic,,JSON Schema 2020-12 Models,"Type mapping, unions/null, composition, validations (hybrid).",P0,21,
+E3,Epic,,Parameters & Serialization,"OAS3 parameter styles/explode; requestBody/response content; negotiation.",P0,21,
+E4,Epic,,Servers, Security & Routing,"Server URL vars, security schemes, updated router templates.",P1,13,
+E5,Epic,,Client Generation (OAS3.1),"Per-tag clients, request builders, response readers, auth.",P1,13,
+E6,Epic,,Callbacks & Webhooks,"Callback scaffolding and webhook server stubs.",P2,8,
+E7,Epic,,Templates, CLI & Naming,"Versioned templates, CLI flags, helpers, name mangling.",P0,13,
+E8,Epic,,Backward Compatibility & Migration,"v2 regression protection, migration guide, lints.",P0,8,
+E9,Epic,,Testing, Fuzzing & Performance,"Golden tests, JSON Schema suite, fuzzing, benchmarks, CI.",P0,13
+S0.1,Story,E0,Define dual-pipeline architecture,"ADR defining v2/v3.1 pipelines, shared core, interfaces (Analyzer/Resolver/Emitters).",P0,3,
+S0.2,Story,E0,Spec version detection & flags,"Auto-detect 2.0 vs 3.1; --oas-version=auto|2.0|3.1; --experimental-oas3.",P0,3,S0.1
+S0.3,Story,E0,Feature scope & milestones,"Scope doc for alpha/beta/GA; in/out lists per phase.",P1,2,S0.1
+S1.1,Story,E1,OAS3.1 loader,"Load JSON/YAML, parse servers/components/paths/webhooks/links.",P0,5,S0.1
+S1.2,Story,E1,Dereferencing with $id/$anchor,"Resolve $ref across files; anchors; clear errors for unsupported dynamicRef (TODO).",P0,5,S1.1
+S1.3,Story,E1,JSON Schema dialect handling,"Honor jsonSchemaDialect, per-node $schema, compute effective dialect.",P1,3,S1.1
+S1.4,Story,E1,Analysis model,"Enumerate operations, parameters, requestBodies, responses, headers, security, servers.",P0,5,S1.2
+S1.5,Story,E1,Cross-version interfaces,"Define SpecAnalyzer/SchemaResolver/Emitters; implement v3 adapters.",P0,5,S1.4
+S2.1,Story,E2,Type mapping (primitives/arrays/maps),"Map core types; prefixItems; additionalProperties true/false/schema.",P0,5,S1.5
+S2.2,Story,E2,Null & union representation,"Represent T|null and oneOf/anyOf with helpers; JSON round-trip guaranteed.",P0,5,S2.1
+S2.3,Story,E2,Composition semantics,"Implement allOf (merge/embed), oneOf/anyOf with discriminator support.",P0,5,S2.2
+S2.4,Story,E2,Inline validations (basics),"Generate Validate for required, min/max, lengths, pattern, enum, items, uniqueItems.",P0,5,S2.1
+S2.5,Story,E2,Runtime validator integration,"Introduce shared validator for if/then/else, dependentSchemas, contains, unevaluatedProperties.",P1,8,S2.4
+S2.6,Story,E2,Enum types & helpers,"Typed enums with consts; String()/Ptr(); strict (un)marshal.",P1,3,S2.1
+S2.7,Story,E2,Format policy & registry,"--format-assert true|false; registry of formats; default non-assertive.",P1,3,S2.4
+S3.1,Story,E3,Parameter decoding (server),"Bind path/query/header/cookie per styles: form/simple/spaceDelimited/pipeDelimited/deepObject.",P0,8,S1.4
+S3.2,Story,E3,Parameter encoding (client),"Mirror encoders; encode→decode round-trip tests.",P1,5,S3.1
+S3.3,Story,E3,requestBody content & encodings,"Support content map (JSON, multipart/form-data encodings).",P0,8,S1.4
+S3.4,Story,E3,Response content & headers,"Decode by media type; headers validation; default responses.",P0,5,S3.3
+S3.5,Story,E3,Content negotiation helpers,"Best-match producer/consumer; 406/415 handling; client Accept prefs.",P1,5,S3.3,S3.4
+S4.1,Story,E4,Servers & variables,"Select server; interpolate variables with defaults/enums; per-operation override.",P1,5,S1.4
+S4.2,Story,E4,Security schemes wiring,"API key, HTTP basic/bearer, oauth2 flows, mutualTLS; per-operation policy (AND/OR).",P1,8,S1.4
+S4.3,Story,E4,Routing templates update,"Update chi/gorilla/std templates to use OAS3 binders; compile across routers.",P0,5,S3.1
+S5.1,Story,E5,Client per-tag/per-op APIs,"Typed methods; WithContext; Accept/Content-Type options; retries placeholder.",P1,5,S3.2,S3.3
+S5.2,Story,E5,Response readers (content map),"Map 2xx/non-2xx to typed results by media type.",P1,5,S3.4
+S5.3,Story,E5,Client security application,"Inject API key/bearer; mTLS via TLS config; OAuth2 token sources.",P2,5,S4.2
+S6.1,Story,E6,Callback types & helpers,"Generate callback request types; server helpers to invoke callback client.",P3,5,S5.1
+S6.2,Story,E6,Webhooks server stubs,"Generate webhook endpoints/handlers from top-level webhooks.",P3,5,S4.3
+S6.3,Story,E6,Callback/webhook docs,"Usage docs and examples.",P3,2,S6.1,S6.2
+S7.1,Story,E7,Introduce v3 template set,"templates/v3 for models/server/client/partials; keep v2 intact.",P0,5,S0.1
+S7.2,Story,E7,Template helpers & functions,"Name casing, imports, union emission, param style snippets.",P0,5,S7.1,S2.2,S3.1
+S7.3,Story,E7,CLI flags & help,"--oas-version, --format-assert, --server-url, --server-var.*, --prefer-content-type, --prefer-accept, --enable-label-matrix-styles.",P0,3,S0.2
+S7.4,Story,E7,Name mangling & collisions,"Stable identifiers for components/operationIds; collision resolution & warnings.",P0,3,S1.4
+S8.1,Story,E8,v2 regression protection,"Run existing v2 fixtures; zero diffs except headers if any.",P0,3,All shared
+S8.2,Story,E8,Migration guide 2.0→3.1,"Concept mapping; examples; nullable changes; servers vs host/basePath.",P1,3,S7.1
+S8.3,Story,E8,Lints & warnings,"Warn on missing operationId, ambiguous oneOf, multiple content without preference, non-unique components.",P1,3,S1.4,S2.3,S3.3
+S9.1,Story,E9,Golden tests (v3 fixtures),"Representative OAS3.1 specs; compare generated outputs.",P0,5,S7.1
+S9.2,Story,E9,JSON Schema test suite subset,"Run core/applicator/validation subsets via runtime validator.",P1,5,S2.5
+S9.3,Story,E9,Fuzz loaders & binders,"Fuzz spec loader (refs/cycles) and parameter decoders.",P1,5,S1.1,S3.1
+S9.4,Story,E9,Performance benchmarks,"Bench deref/analysis/codegen for sizes; track allocations/time.",P2,5,S1.2,S2.1,S7.1
+S9.5,Story,E9,Dual-lane CI (v2+v3),"CI jobs for v2 and v3 lanes; lint/unit/golden/fuzz seeds; bench smoke.",P0,5,S8.1,S9.1
+MVP,Milestone,,MVP slice completion,"Alpha: minimal JSON-only 3.1 server, one operation with query params + JSON requestBody/response.",P0,0,"S1.1,S1.4,S1.5,S2.1,S2.4,S3.1,S3.3,S4.3,S7.1,S0.2"

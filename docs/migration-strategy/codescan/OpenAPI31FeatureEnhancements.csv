@@ -1,0 +1,18 @@
+Epic,StoryID,Title,Priority,Estimate(pts),Notes
+OAS31-EP1,OAS31-1,Introduce SpecWriter abstraction and flag --oas 3.1,P0,5,Interface + plumbing to select writer (V2 vs OAS3.1)
+OAS31-EP1,OAS31-2,Implement OpenAPI31Writer skeleton with core doc fields (info/servers/paths/components),P0,8,Build in-memory 3.1 document structure via adapter
+OAS31-EP2,OAS31-3,Map swagger:route/operation to OAS3.1 Operation,P0,5,Paths + methods + operationId + tags + descriptions
+OAS31-EP2,OAS31-4,Add requestBody/content mapping (from swagger:parameters),P0,8,Body/formData → requestBody with application/json default
+OAS31-EP2,OAS31-5,Add responses/content mapping (from swagger:response),P0,8,Ensure description required; support 1 media type
+OAS31-EP3,OAS31-6,Schema generation for JSON Schema 2020-12 (core),P0,13,Types/arrays/objects/required; pointer-null → ["T","null"] when enabled
+OAS31-EP3,OAS31-7,Components registry (schemas/parameters/responses/requestBodies/headers),P0,5,Stable naming + $ref management
+OAS31-EP4,OAS31-8,Parameter serialization controls (style/explode) and cookie params,P1,8,Add directives and defaults per OAS rules
+OAS31-EP4,OAS31-9,Multiple media types for request/response,P1,5,Per oas:requestContent/oas:responseContent
+OAS31-EP4,OAS31-10,Headers and examples support,P1,5,MediaType examples (+ components.examples)
+OAS31-EP5,OAS31-11,Security Schemes (http/apiKey/oauth2/openIdConnect) + per-op overrides,P1,8,Components.securitySchemes + security arrays
+OAS31-EP5,OAS31-12,Advanced JSON Schema (oneOf/anyOf/allOf, discriminator, const),P2,13,Feature-flag advanced keywords
+OAS31-EP6,OAS31-13,Links and Callbacks,P2,8,Operation links + callbacks
+OAS31-EP6,OAS31-14,Top-level Webhooks and components.pathItems (3.1),P2,8,Reusable PathItems and webhooks
+OAS31-EP7,OAS31-15,3.1 validation integration and golden tests,P0,5,Add validators and CI checks
+OAS31-EP7,OAS31-16,Author annotation reference and migration guide,P0,3,Docs for oas:* and mapping from 2.0
+OAS31-EP7,OAS31-17,Strict mode (--strict-3.1) and diagnostics,P1,5,Warn/fail on unmappable constructs

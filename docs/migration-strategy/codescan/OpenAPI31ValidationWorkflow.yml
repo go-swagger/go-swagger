@@ -1,0 +1,23 @@
+name: Validate OpenAPI 3.1
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  lint-oas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate (YAML)
+        uses: docker://redocly/cli:latest
+        with:
+          args: lint OpenAPI31CodescanMVPSpecification.yml
+
+      - name: Validate (JSON)
+        uses: docker://redocly/cli:latest
+        with:
+          args: lint OpenAPI31CodescanMVPSpecification.json
