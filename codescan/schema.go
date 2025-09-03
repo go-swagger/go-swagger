@@ -498,7 +498,7 @@ func (s *schemaBuilder) buildNamedType(titpe *types.Named, tgt swaggerTypable) e
 		}
 
 		if defaultName, ok := defaultName(cmt); ok {
-			debugLog(defaultName) //nolint:govet
+			debugLog("default name: %s", defaultName)
 			return nil
 		}
 
