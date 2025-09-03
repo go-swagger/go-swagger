@@ -50,23 +50,27 @@ func NewMultiAuthExampleAPI(spec *loads.Document) *MultiAuthExampleAPI {
 
 			return middleware.NotImplemented("operation AddOrder has not yet been implemented")
 		}),
+
 		GetAccountHandler: GetAccountHandlerFunc(func(params GetAccountParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation GetAccount has not yet been implemented")
 		}),
+
 		GetItemsHandler: GetItemsHandlerFunc(func(params GetItemsParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation GetItems has not yet been implemented")
 		}),
+
 		GetOrderHandler: GetOrderHandlerFunc(func(params GetOrderParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation GetOrder has not yet been implemented")
 		}),
+
 		GetOrdersForItemHandler: GetOrdersForItemHandlerFunc(func(params GetOrdersForItemParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal

@@ -44,6 +44,7 @@ type SpecFile struct {
 	ExcludeTags             []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
 	ExcludeDeps             bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
 	SetXNullableForPointers bool           `long:"nullable-pointers" short:"n" description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'"`
+	RefAliases              bool           `long:"ref-aliases" short:"r" description:"transform aliased types into $ref rather than expanding their definition"`
 }
 
 // Execute runs this command
@@ -69,6 +70,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.ExcludeTags = s.ExcludeTags
 	opts.ExcludeDeps = s.ExcludeDeps
 	opts.SetXNullableForPointers = s.SetXNullableForPointers
+	opts.RefAliases = s.RefAliases
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err

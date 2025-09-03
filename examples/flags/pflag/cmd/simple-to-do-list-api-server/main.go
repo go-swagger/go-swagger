@@ -34,11 +34,11 @@ func main() {
 
 		title := "Simple To Do List API"
 		if title != "" {
-			fmt.Fprint(os.Stderr, title+"\n\n")
+			fmt.Fprintf(os.Stderr, "%s\n\n", title)
 		}
 		desc := "This is a simple todo list API\nillustrating go-swagger codegen\ncapabilities.\n"
 		if desc != "" {
-			fmt.Fprintf(os.Stderr, desc+"\n\n")
+			fmt.Fprintf(os.Stderr, "%s\n\n", desc)
 		}
 		fmt.Fprintln(os.Stderr, flag.CommandLine.FlagUsages())
 	}
