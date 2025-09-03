@@ -50,18 +50,21 @@ func NewSimpleToDoListAPIAPI(spec *loads.Document) *SimpleToDoListAPIAPI {
 
 			return todos.AddOneNotImplemented()
 		}),
+
 		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal any) todos.DestroyOneResponder {
 			_ = params
 			_ = principal
 
 			return todos.DestroyOneNotImplemented()
 		}),
+
 		TodosFindHandler: todos.FindHandlerFunc(func(params todos.FindParams, principal any) todos.FindResponder {
 			_ = params
 			_ = principal
 
 			return todos.FindNotImplemented()
 		}),
+
 		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal any) todos.UpdateOneResponder {
 			_ = params
 			_ = principal

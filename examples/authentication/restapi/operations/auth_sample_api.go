@@ -51,6 +51,7 @@ func NewAuthSampleAPI(spec *loads.Document) *AuthSampleAPI {
 
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		}),
+
 		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal

@@ -47,16 +47,19 @@ func NewExternalTypesDemoAPI(spec *loads.Document) *ExternalTypesDemoAPI {
 
 			return middleware.NotImplemented("operation GetStream has not yet been implemented")
 		}),
+
 		GetTestHandler: GetTestHandlerFunc(func(params GetTestParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation GetTest has not yet been implemented")
 		}),
+
 		PostTestHandler: PostTestHandlerFunc(func(params PostTestParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation PostTest has not yet been implemented")
 		}),
+
 		PutTestHandler: PutTestHandlerFunc(func(params PutTestParams) middleware.Responder {
 			_ = params
 

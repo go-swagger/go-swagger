@@ -27,11 +27,11 @@
 
     title := {{ template "specTitle" . }}
     if title != "" {
-		  fmt.Fprint(os.Stderr, title+"\n\n")
+		  fmt.Fprintf(os.Stderr, "%s\n\n", title)
     }
     desc := {{ template "specDescription" . }}
     if desc != "" {
-			fmt.Fprintf(os.Stderr, desc+"\n\n")
+			fmt.Fprintf(os.Stderr, "%s\n\n", desc)
 		}
 {{- end }}
 

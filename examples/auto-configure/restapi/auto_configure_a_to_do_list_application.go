@@ -75,15 +75,19 @@ func configureAPI(api *operations.AToDoListApplicationAPI) http.Handler {
 	}
 
 	api.TodosAddOneHandler = todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal any) middleware.Responder {
+
 		return Impl.AddOne(params, principal)
 	})
 	api.TodosDestroyOneHandler = todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal any) middleware.Responder {
+
 		return Impl.DestroyOne(params, principal)
 	})
 	api.TodosFindTodosHandler = todos.FindTodosHandlerFunc(func(params todos.FindTodosParams, principal any) middleware.Responder {
+
 		return Impl.FindTodos(params, principal)
 	})
 	api.TodosUpdateOneHandler = todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal any) middleware.Responder {
+
 		return Impl.UpdateOne(params, principal)
 	})
 
