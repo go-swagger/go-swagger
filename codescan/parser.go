@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"go/types"
 	"log"
 	"reflect"
 	"regexp"
@@ -205,6 +206,7 @@ type swaggerTypable interface {
 	AddExtension(key string, value interface{})
 	WithEnum(...interface{})
 	WithEnumDescription(desc string)
+	In() string
 }
 
 // Map all Go builtin types that have Json representation to Swagger/Json types.
@@ -1695,4 +1697,61 @@ func (ss *setOpExtensions) Parse(lines []string) error {
 
 	ss.set(&exts.Extensions)
 	return nil
+}
+
+var unsupportedTypes = map[string]struct{}{
+	"complex64":  {},
+	"complex128": {},
+}
+
+type objecter interface {
+	Obj() *types.TypeName
+}
+
+func unsupportedBuiltinType(tpe types.Type) bool {
+	unaliased := types.Unalias(tpe)
+
+	switch ftpe := unaliased.(type) {
+	case *types.Basic:
+		return unsupportedBasic(ftpe)
+	case *types.TypeParam:
+		return true
+	case *types.Chan:
+		return true
+	case *types.Signature:
+		return true
+	case objecter:
+		return unsupportedBuiltin(ftpe)
+	default:
+		return false
+	}
+}
+
+func unsupportedBuiltin(tpe objecter) bool {
+	o := tpe.Obj()
+	if o == nil {
+		return false
+	}
+
+	if o.Pkg() != nil {
+		if o.Pkg().Path() == "unsafe" {
+			return true
+		}
+
+		return false // not a builtin type
+	}
+
+	_, found := unsupportedTypes[o.Name()]
+
+	return found
+}
+
+func unsupportedBasic(tpe *types.Basic) bool {
+	if tpe.Kind() == types.UnsafePointer {
+		return true
+	}
+
+	_, found := unsupportedTypes[tpe.Name()]
+
+	return found
 }

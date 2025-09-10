@@ -50,17 +50,20 @@ func NewOauthSampleAPI(spec *loads.Document) *OauthSampleAPI {
 
 			return middleware.NotImplemented("operation GetAuthCallback has not yet been implemented")
 		}),
+
 		GetLoginHandler: GetLoginHandlerFunc(func(params GetLoginParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation GetLogin has not yet been implemented")
 		}),
+
 		CustomersCreateHandler: customers.CreateHandlerFunc(func(params customers.CreateParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation customers.Create has not yet been implemented")
 		}),
+
 		CustomersGetIDHandler: customers.GetIDHandlerFunc(func(params customers.GetIDParams, principal *models.Principal) middleware.Responder {
 			_ = params
 			_ = principal

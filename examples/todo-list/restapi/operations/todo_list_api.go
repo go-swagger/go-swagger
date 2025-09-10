@@ -50,18 +50,21 @@ func NewTodoListAPI(spec *loads.Document) *TodoListAPI {
 
 			return middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
 		}),
+
 		TodosDestroyOneHandler: todos.DestroyOneHandlerFunc(func(params todos.DestroyOneParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation todos.DestroyOne has not yet been implemented")
 		}),
+
 		TodosFindHandler: todos.FindHandlerFunc(func(params todos.FindParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation todos.Find has not yet been implemented")
 		}),
+
 		TodosUpdateOneHandler: todos.UpdateOneHandlerFunc(func(params todos.UpdateOneParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal

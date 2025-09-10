@@ -51,39 +51,46 @@ func NewTaskTrackerAPI(spec *loads.Document) *TaskTrackerAPI {
 
 			return middleware.NotImplemented("operation tasks.AddCommentToTask has not yet been implemented")
 		}),
+
 		TasksCreateTaskHandler: tasks.CreateTaskHandlerFunc(func(params tasks.CreateTaskParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation tasks.CreateTask has not yet been implemented")
 		}),
+
 		TasksDeleteTaskHandler: tasks.DeleteTaskHandlerFunc(func(params tasks.DeleteTaskParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation tasks.DeleteTask has not yet been implemented")
 		}),
+
 		TasksGetTaskCommentsHandler: tasks.GetTaskCommentsHandlerFunc(func(params tasks.GetTaskCommentsParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation tasks.GetTaskComments has not yet been implemented")
 		}),
+
 		TasksGetTaskDetailsHandler: tasks.GetTaskDetailsHandlerFunc(func(params tasks.GetTaskDetailsParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation tasks.GetTaskDetails has not yet been implemented")
 		}),
+
 		TasksListTasksHandler: tasks.ListTasksHandlerFunc(func(params tasks.ListTasksParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation tasks.ListTasks has not yet been implemented")
 		}),
+
 		TasksUpdateTaskHandler: tasks.UpdateTaskHandlerFunc(func(params tasks.UpdateTaskParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation tasks.UpdateTask has not yet been implemented")
 		}),
+
 		TasksUploadTaskFileHandler: tasks.UploadTaskFileHandlerFunc(func(params tasks.UploadTaskFileParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal

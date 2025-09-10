@@ -55,92 +55,109 @@ func NewPetstoreAPI(spec *loads.Document) *PetstoreAPI {
 
 			return middleware.NotImplemented("operation pet.AddPet has not yet been implemented")
 		}),
+
 		UserCreateUserHandler: user.CreateUserHandlerFunc(func(params user.CreateUserParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.CreateUser has not yet been implemented")
 		}),
+
 		UserCreateUsersWithArrayInputHandler: user.CreateUsersWithArrayInputHandlerFunc(func(params user.CreateUsersWithArrayInputParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.CreateUsersWithArrayInput has not yet been implemented")
 		}),
+
 		UserCreateUsersWithListInputHandler: user.CreateUsersWithListInputHandlerFunc(func(params user.CreateUsersWithListInputParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.CreateUsersWithListInput has not yet been implemented")
 		}),
+
 		StoreDeleteOrderHandler: store.DeleteOrderHandlerFunc(func(params store.DeleteOrderParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation store.DeleteOrder has not yet been implemented")
 		}),
+
 		PetDeletePetHandler: pet.DeletePetHandlerFunc(func(params pet.DeletePetParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.DeletePet has not yet been implemented")
 		}),
+
 		UserDeleteUserHandler: user.DeleteUserHandlerFunc(func(params user.DeleteUserParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.DeleteUser has not yet been implemented")
 		}),
+
 		PetFindPetsByStatusHandler: pet.FindPetsByStatusHandlerFunc(func(params pet.FindPetsByStatusParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.FindPetsByStatus has not yet been implemented")
 		}),
+
 		PetFindPetsByTagsHandler: pet.FindPetsByTagsHandlerFunc(func(params pet.FindPetsByTagsParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.FindPetsByTags has not yet been implemented")
 		}),
+
 		StoreGetOrderByIDHandler: store.GetOrderByIDHandlerFunc(func(params store.GetOrderByIDParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation store.GetOrderByID has not yet been implemented")
 		}),
+
 		PetGetPetByIDHandler: pet.GetPetByIDHandlerFunc(func(params pet.GetPetByIDParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.GetPetByID has not yet been implemented")
 		}),
+
 		UserGetUserByNameHandler: user.GetUserByNameHandlerFunc(func(params user.GetUserByNameParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.GetUserByName has not yet been implemented")
 		}),
+
 		UserLoginUserHandler: user.LoginUserHandlerFunc(func(params user.LoginUserParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.LoginUser has not yet been implemented")
 		}),
+
 		UserLogoutUserHandler: user.LogoutUserHandlerFunc(func(params user.LogoutUserParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation user.LogoutUser has not yet been implemented")
 		}),
+
 		StorePlaceOrderHandler: store.PlaceOrderHandlerFunc(func(params store.PlaceOrderParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation store.PlaceOrder has not yet been implemented")
 		}),
+
 		PetUpdatePetHandler: pet.UpdatePetHandlerFunc(func(params pet.UpdatePetParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.UpdatePet has not yet been implemented")
 		}),
+
 		PetUpdatePetWithFormHandler: pet.UpdatePetWithFormHandlerFunc(func(params pet.UpdatePetWithFormParams, principal any) middleware.Responder {
 			_ = params
 			_ = principal
 
 			return middleware.NotImplemented("operation pet.UpdatePetWithForm has not yet been implemented")
 		}),
+
 		UserUpdateUserHandler: user.UpdateUserHandlerFunc(func(params user.UpdateUserParams) middleware.Responder {
 			_ = params
 
