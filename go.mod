@@ -1,4 +1,4 @@
-module github.com/go-swagger/go-swagger
+module github.com/wallester/go-swagger
 
 go 1.24.0
 
