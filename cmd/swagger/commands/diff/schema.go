@@ -73,7 +73,7 @@ func getSchemaType(item interface{}) (typeName string, isArray bool) {
 		typeName = "unknown"
 	}
 
-	return
+	return typeName, isArray
 }
 
 func formatTypeString(typ string, isarray bool) string {

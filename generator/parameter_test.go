@@ -263,7 +263,7 @@ func (ctx *paramTestContext) assertParameter(t testing.TB) (result bool) {
 		assert.True(t, ctx.assertGenParam(t, param, gp))
 	}
 
-	return
+	return !t.Failed()
 }
 
 func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {

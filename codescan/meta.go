@@ -242,11 +242,11 @@ func splitURL(line string) (notURL, url string) {
 		if len(str) > 0 {
 			notURL = str
 		}
-		return
+		return notURL, ""
 	}
 	if len(parts) > 0 {
 		notURL = strings.TrimSpace(str[:parts[0]])
 		url = strings.TrimSpace(str[parts[0]:])
 	}
-	return
+	return notURL, url
 }

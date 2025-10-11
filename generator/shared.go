@@ -996,7 +996,8 @@ func pruneEmpty(in []string) (out []string) {
 			out = append(out, v)
 		}
 	}
-	return
+
+	return out
 }
 
 func trimBOM(in string) string {
@@ -1042,7 +1043,7 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 		})
 	}
 	sort.Sort(security)
-	return
+	return security
 }
 
 // securityRequirements just clones the original SecurityRequirements from either the spec
