@@ -27,7 +27,7 @@ func collectScannerTitleDescription(headers []string) (title, desc []string) {
 		} else {
 			desc = nil
 		}
-		return
+		return title, desc
 	}
 
 	if len(hdrs) > 0 {
@@ -44,5 +44,5 @@ func collectScannerTitleDescription(headers []string) (title, desc []string) {
 		}
 	}
 
-	return
+	return title, desc
 }

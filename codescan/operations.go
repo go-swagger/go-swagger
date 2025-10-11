@@ -78,7 +78,7 @@ func parsePathAnnotation(annotation *regexp.Regexp, lines []*ast.Comment) (cnt p
 		}
 	}
 
-	return
+	return cnt
 }
 
 func setPathOperation(method, id string, pthObj *spec.PathItem, op *spec.Operation) *spec.Operation {

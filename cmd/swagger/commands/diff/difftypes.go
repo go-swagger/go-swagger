@@ -244,7 +244,7 @@ func (s SpecChangeCode) Description() (result string) {
 		log.Printf("warning: No description for %v", s)
 		result = "UNDEFINED"
 	}
-	return
+	return result
 }
 
 // MarshalJSON marshals the enum as a quoted json string

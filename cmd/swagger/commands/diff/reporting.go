@@ -24,7 +24,7 @@ func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 		return nil, err
 	}
 	diffs = analyser.Diffs
-	return
+	return diffs, nil
 }
 
 // PathItemOp - combines path and operation into a single keyed entity

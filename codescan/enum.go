@@ -28,5 +28,5 @@ const extEnumDesc = "x-go-enum-desc"
 
 func getEnumDesc(extensions spec.Extensions) (desc string) {
 	desc, _ = extensions.GetString(extEnumDesc)
-	return
+	return desc
 }
