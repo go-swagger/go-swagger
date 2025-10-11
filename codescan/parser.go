@@ -70,7 +70,7 @@ func removeEmptyLines(lines []string) (notEmpty []string) {
 			notEmpty = append(notEmpty, l)
 		}
 	}
-	return
+	return notEmpty
 }
 
 func rxf(rxp, ar string) *regexp.Regexp {
@@ -479,30 +479,31 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	yamlContent := strings.Join(specYaml, "\n")
 	err = yaml.Unmarshal([]byte(yamlContent), &yamlValue)
 	if err != nil {
-		return
+		return err
 	}
 
 	// 2. convert to json
 	var jsonValue json.RawMessage
 	jsonValue, err = fmts.YAMLToJSON(yamlValue)
 	if err != nil {
-		return
+		return err
 	}
 
 	// 3. unmarshal the json into an interface
 	var data []byte
 	data, err = jsonValue.MarshalJSON()
 	if err != nil {
-		return
+		return err
 	}
 	err = u(data)
 	if err != nil {
-		return
+		return err
 	}
 
 	// all parsed, returning...
 	sp.yamlSpec = nil // spec is now consumed, so let's erase the parsed lines
-	return
+
+	return nil
 }
 
 // removes indent base on the first line
@@ -1362,12 +1363,12 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 				err = fmt.Errorf("invalid tag: %s", tag)
 			}
 			// return error
-			return
+			return modelOrResponse, arrays, isDefinitionRef, description, err
 		}
 	}
 
 	// TODO: Maybe do, if !parsedModelOrResponse {return some error}
-	return
+	return modelOrResponse, arrays, isDefinitionRef, description, err
 }
 
 func (ss *setOpResponses) Parse(lines []string) error {

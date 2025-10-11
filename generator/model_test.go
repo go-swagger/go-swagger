@@ -49,7 +49,7 @@ func (tt *templateTest) assertRender(data any, expected string) (success bool) {
 	exp := strings.TrimLeft(expected, "\n\t ")
 	assert.Equal(tt.t, exp, trimmed)
 
-	return
+	return !tt.t.Failed()
 }
 
 func TestGenerateModel_Sanity(t *testing.T) {

@@ -393,7 +393,7 @@ func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) 
 	if err := opts.EnsureDefaults(); err != nil {
 		panic("Cannot initialize GenOpts")
 	}
-	return
+	return opts
 }
 
 // opBuilderWithFlatten prepares the making of an operation with spec full flattening prior to rendering
@@ -1069,13 +1069,11 @@ func TestBuilder_Issue1214(t *testing.T) {
 			`CAuth: func\(token string\) \(any, error\) {`+matchAny+
 			`DAuth: func\(token string\) \(any, error\) {`+matchAny+
 			`EAuth: func\(token string, scopes \[\]string\) \(any, error\) {`+matchAny+
-
 			`AAuth func\(string, string\) \(any, error\)`+matchAny+
 			`BAuth func\(string\) \(any, error\)`+matchAny+
 			`CAuth func\(string\) \(any, error\)`+matchAny+
 			`DAuth func\(string\) \(any, error\)`+matchAny+
 			`EAuth func\(string, \[\]string\) \(any, error\)`+matchAny+
-
 			`if o\.AAuth == nil {`+matchAny+
 			`unregistered = append\(unregistered, "AAuth"\)`+matchAny+
 			`if o\.BAuth == nil {`+matchAny+
@@ -1086,7 +1084,6 @@ func TestBuilder_Issue1214(t *testing.T) {
 			`unregistered = append\(unregistered, "K3Auth"\)`+matchAny+
 			`if o\.EAuth == nil {`+matchAny+
 			`unregistered = append\(unregistered, "EAuth"\)`+matchAny+
-
 			`case "A":`+matchAny+
 			`case "B":`+matchAny+
 			`case "C":`+matchAny+

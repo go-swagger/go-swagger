@@ -674,7 +674,8 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolvedType) (hasValidations bool, hasSliceValidations bool) {
 	hasSliceValidations = sh.HasArrayValidations() || sh.HasEnum()
 	hasValidations = sh.HasNumberValidations() || sh.HasStringValidations() || hasSliceValidations || hasFormatValidation(rt)
-	return
+
+	return hasValidations, hasSliceValidations
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, _ *spec.Items) (GenItems, error) {
@@ -1066,7 +1067,7 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *sp
 
 	// rebuild schema within local package
 	if err = pg.makeGenSchema(); err != nil {
-		return
+		return nil, err
 	}
 
 	// lift nested extra schemas (inlined types)
@@ -1080,7 +1081,7 @@ func (b *codeGenOpBuilder) liftExtraSchemas(resolver, rslv *typeResolver, bs *sp
 		}
 	}
 	schema = &pg.GenSchema
-	return
+	return schema, nil
 }
 
 // buildOperationSchema constructs a schema for an operation (for body params or responses).

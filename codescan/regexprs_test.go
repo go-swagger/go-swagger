@@ -125,7 +125,7 @@ func makeMinMax(lower string) (res []string) {
 	for _, a := range []string{"", "imum"} {
 		res = append(res, lower+a, strings.Title(lower)+a) //nolint:staticcheck
 	}
-	return
+	return res
 }
 
 func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string) {
