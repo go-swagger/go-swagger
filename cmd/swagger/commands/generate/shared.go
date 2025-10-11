@@ -29,7 +29,7 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 		*res = *dflt
 	}
 	if f == nil {
-		return
+		return res
 	}
 	verboseIsSet := false
 	minimalIsSet := false
@@ -70,7 +70,7 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 			res.KeepNames = true
 		}
 	}
-	return
+	return res
 }
 
 type sharedCommand interface {
