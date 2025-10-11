@@ -996,7 +996,8 @@ func pruneEmpty(in []string) (out []string) {
 			out = append(out, v)
 		}
 	}
-	return
+
+	return out
 }
 
 func trimBOM(in string) string {

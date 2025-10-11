@@ -47,7 +47,7 @@ func (f fromArrayStruct) DiffsTo(toArray []string) (added, deleted, common []str
 			common = append(common, key)
 		}
 	}
-	return
+	return added, deleted, common
 }
 
 // fromMapStruct utility struct to encompass diffing of string arrays

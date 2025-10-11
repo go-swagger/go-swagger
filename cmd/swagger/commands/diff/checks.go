@@ -148,7 +148,7 @@ func CheckRefChange(diffs []TypeDiff, type1, type2 interface{}) (diffReturn []Ty
 	} else if isRefType(type1) != isRefType(type2) {
 		diffReturn = addTypeDiff(diffReturn, TypeDiff{Change: ChangedType, FromType: getSchemaTypeStr(type1), ToType: getSchemaTypeStr(type2)})
 	}
-	return
+	return diffReturn
 }
 
 // checkNumericTypeChanges checks for changes to or from a numeric type

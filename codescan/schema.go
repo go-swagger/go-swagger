@@ -125,7 +125,7 @@ type schemaBuilder struct {
 func (s *schemaBuilder) inferNames() (goName string, name string) {
 	if s.GoName != "" {
 		goName, name = s.GoName, s.Name
-		return
+		return goName, name
 	}
 
 	goName = s.decl.Ident.Name
@@ -135,7 +135,7 @@ func (s *schemaBuilder) inferNames() (goName string, name string) {
 		s.Name = name
 	}()
 	if s.decl.Comments == nil {
-		return
+		return goName, name
 	}
 
 DECLS:
@@ -151,7 +151,7 @@ DECLS:
 			}
 		}
 	}
-	return
+	return goName, name
 }
 
 func (s *schemaBuilder) Build(definitions map[string]spec.Schema) error {

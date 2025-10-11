@@ -152,7 +152,7 @@ func (d *entityDecl) Names() (name, goName string) {
 	goName = d.Ident.Name
 	name = goName
 	if d.Comments == nil {
-		return
+		return name, goName
 	}
 
 DECLS:
@@ -169,14 +169,14 @@ DECLS:
 		}
 	}
 
-	return
+	return name, goName
 }
 
 func (d *entityDecl) ResponseNames() (name, goName string) {
 	goName = d.Ident.Name
 	name = goName
 	if d.Comments == nil {
-		return
+		return name, goName
 	}
 
 DECLS:
@@ -192,7 +192,7 @@ DECLS:
 			}
 		}
 	}
-	return
+	return name, goName
 }
 
 func (d *entityDecl) OperationIDs() (result []string) {
@@ -216,7 +216,7 @@ func (d *entityDecl) OperationIDs() (result []string) {
 			}
 		}
 	}
-	return
+	return result
 }
 
 func (d *entityDecl) HasModelAnnotation() bool {
