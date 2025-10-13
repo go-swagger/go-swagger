@@ -307,7 +307,7 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	}, nil
 }
 
-// methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening
+// methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening.
 func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
 	defer discardOutput()()
 
@@ -343,7 +343,7 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 	}, nil
 }
 
-// opBuilderWithOpts prepares the making of an operation with spec flattening options
+// opBuilderWithOpts prepares the making of an operation with spec flattening options.
 func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error) {
 	defer discardOutput()()
 
@@ -396,7 +396,7 @@ func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) 
 	return opts
 }
 
-// opBuilderWithFlatten prepares the making of an operation with spec full flattening prior to rendering
+// opBuilderWithFlatten prepares the making of an operation with spec full flattening prior to rendering.
 func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
 	return opBuilderWithOpts(name, fname, o)
@@ -410,13 +410,13 @@ func opBuilderWithMinimalFlatten(name, fname string) (codeGenOpBuilder, error) {
 }
 */
 
-// opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering
+// opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering.
 func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, false, false) // flatten: false => expand
 	return opBuilderWithOpts(name, fname, o)
 }
 
-// opBuilder prepares the making of an operation with spec minimal flattening (default for CLI)
+// opBuilder prepares the making of an operation with spec minimal flattening (default for CLI).
 func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, true, true) // flatten:true, minimal: true
 	// some fixtures do not fully validate - skip this
@@ -1009,7 +1009,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	require.NoError(t, GenerateClient("foo", nil, nil, opts))
 }
 
-// This tests that securityDefinitions generate stable code
+// This tests that securityDefinitions generate stable code.
 func TestBuilder_Issue1214(t *testing.T) {
 	defer discardOutput()()
 
@@ -1040,7 +1040,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 	op, e := appGen.makeCodegenApp()
 	require.NoError(t, e)
 
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		buf := bytes.NewBuffer(nil)
 		err := templates.MustGet("serverConfigureapi").Execute(buf, op)
 		require.NoError(t, err)
@@ -1093,7 +1093,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 }
 
 func TestGenSecurityRequirements(t *testing.T) {
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		operation := "asecOp"
 		b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
 		require.NoError(t, err)
@@ -1241,7 +1241,7 @@ func TestGenerateServerOperation(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// This tests that mimetypes generate stable code
+// This tests that mimetypes generate stable code.
 func TestBuilder_Issue1646(t *testing.T) {
 	defer discardOutput()()
 
@@ -1272,7 +1272,7 @@ func TestBuilder_Issue1646(t *testing.T) {
 	preProds, preProdj := appGen.makeProduces()
 	assert.True(t, preConj)
 	assert.True(t, preProdj)
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		cons, conj := appGen.makeConsumes()
 		prods, prodj := appGen.makeProduces()
 		assert.True(t, conj)

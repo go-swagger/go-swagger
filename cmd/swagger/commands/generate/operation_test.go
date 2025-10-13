@@ -1,7 +1,10 @@
 package generate_test
 
 import (
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
@@ -11,35 +14,41 @@ import (
 )
 
 func TestGenerateOperation(t *testing.T) {
-	testGenerateOperation(t, false)
+	t.Run("should generate operation with simple Responder", testGenerateOperation(false))
 }
 
 func TestGenerateOperationStrict(t *testing.T) {
-	testGenerateOperation(t, true)
+	t.Run("should generate operation with strict Responder", testGenerateOperation(true))
 }
 
-func testGenerateOperation(t *testing.T, strict bool) {
-	specs := []string{
-		"tasklist.basic.yml",
-	}
+func testGenerateOperation(strict bool) func(*testing.T) {
+	return func(t *testing.T) {
+		specs := []string{
+			"tasklist.basic.yml",
+		}
 
-	for i, spec := range specs {
-		t.Run(spec, func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		base := t.TempDir()
 
-			m := &generate.Operation{}
-			if i == 0 {
-				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
-			}
-			_, _ = flags.ParseArgs(m, []string{"--name=listTasks"})
-			m.Shared.Spec = flags.Filename(path)
-			m.Shared.Target = flags.Filename(generated)
-			m.Shared.StrictResponders = strict
+		for i, spec := range specs {
+			t.Run(spec, func(t *testing.T) {
+				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+				require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
-			require.NoError(t, m.Execute([]string{}))
-		})
+				m := &generate.Operation{}
+				if i == 0 {
+					m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
+				}
+				_, _ = flags.ParseArgs(m, []string{"--name=listTasks"})
+				m.Shared.Spec = flags.Filename(pth)
+				m.Shared.Target = flags.Filename(generated)
+				m.Shared.StrictResponders = strict
+
+				t.Run("go mod", gomodinit(generated))
+
+				require.NoError(t, m.Execute([]string{}))
+			})
+		}
 	}
 }
 

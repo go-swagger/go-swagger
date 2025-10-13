@@ -20,7 +20,7 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-// Support generates the supporting files
+// Support generates the supporting files.
 type Support struct {
 	WithShared
 	WithModels
@@ -31,7 +31,7 @@ type Support struct {
 	schemeOptions
 	mediaOptions
 
-	Name string `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 }
 
 func (s *Support) apply(opts *generator.GenOpts) {
@@ -60,7 +60,7 @@ For this generation to compile you need to have some packages in go.mod:
 You can get these now with: go mod tidy`)
 }
 
-// Execute generates the supporting files file
+// Execute generates the supporting files file.
 func (s *Support) Execute(_ []string) error {
 	return createSwagger(s)
 }

@@ -9,47 +9,47 @@ import (
 )
 
 const (
-	// ParamDescriptionKey indicates the tag used to define a parameter description in swagger:route
+	// ParamDescriptionKey indicates the tag used to define a parameter description in swagger:route.
 	ParamDescriptionKey = "description"
-	// ParamNameKey indicates the tag used to define a parameter name in swagger:route
+	// ParamNameKey indicates the tag used to define a parameter name in swagger:route.
 	ParamNameKey = "name"
-	// ParamInKey indicates the tag used to define a parameter location in swagger:route
+	// ParamInKey indicates the tag used to define a parameter location in swagger:route.
 	ParamInKey = "in"
-	// ParamRequiredKey indicates the tag used to declare whether a parameter is required in swagger:route
+	// ParamRequiredKey indicates the tag used to declare whether a parameter is required in swagger:route.
 	ParamRequiredKey = "required"
-	// ParamTypeKey indicates the tag used to define the parameter type in swagger:route
+	// ParamTypeKey indicates the tag used to define the parameter type in swagger:route.
 	ParamTypeKey = "type"
-	// ParamAllowEmptyKey indicates the tag used to indicate whether a parameter allows empty values in swagger:route
+	// ParamAllowEmptyKey indicates the tag used to indicate whether a parameter allows empty values in swagger:route.
 	ParamAllowEmptyKey = "allowempty"
 
-	// SchemaMinKey indicates the tag used to indicate the minimum value allowed for this type in swagger:route
+	// SchemaMinKey indicates the tag used to indicate the minimum value allowed for this type in swagger:route.
 	SchemaMinKey = "min"
-	// SchemaMaxKey indicates the tag used to indicate the maximum value allowed for this type in swagger:route
+	// SchemaMaxKey indicates the tag used to indicate the maximum value allowed for this type in swagger:route.
 	SchemaMaxKey = "max"
-	// SchemaEnumKey indicates the tag used to specify the allowed values for this type in swagger:route
+	// SchemaEnumKey indicates the tag used to specify the allowed values for this type in swagger:route.
 	SchemaEnumKey = "enum"
-	// SchemaFormatKey indicates the expected format for this field in swagger:route
+	// SchemaFormatKey indicates the expected format for this field in swagger:route.
 	SchemaFormatKey = "format"
-	// SchemaDefaultKey indicates the default value for this field in swagger:route
+	// SchemaDefaultKey indicates the default value for this field in swagger:route.
 	SchemaDefaultKey = "default"
-	// SchemaMinLenKey indicates the minimum length this field in swagger:route
+	// SchemaMinLenKey indicates the minimum length this field in swagger:route.
 	SchemaMinLenKey = "minlength"
-	// SchemaMaxLenKey indicates the minimum length this field in swagger:route
+	// SchemaMaxLenKey indicates the minimum length this field in swagger:route.
 	SchemaMaxLenKey = "maxlength"
 
-	// TypeArray is the identifier for an array type in swagger:route
+	// TypeArray is the identifier for an array type in swagger:route.
 	TypeArray = "array"
-	// TypeNumber is the identifier for a number type in swagger:route
+	// TypeNumber is the identifier for a number type in swagger:route.
 	TypeNumber = "number"
-	// TypeInteger is the identifier for an integer type in swagger:route
+	// TypeInteger is the identifier for an integer type in swagger:route.
 	TypeInteger = "integer"
-	// TypeBoolean is the identifier for a boolean type in swagger:route
+	// TypeBoolean is the identifier for a boolean type in swagger:route.
 	TypeBoolean = "boolean"
-	// TypeBool is the identifier for a boolean type in swagger:route
+	// TypeBool is the identifier for a boolean type in swagger:route.
 	TypeBool = "bool"
-	// TypeObject is the identifier for an object type in swagger:route
+	// TypeObject is the identifier for an object type in swagger:route.
 	TypeObject = "object"
-	// TypeString is the identifier for a string type in swagger:route
+	// TypeString is the identifier for a string type in swagger:route.
 	TypeString = "string"
 )
 

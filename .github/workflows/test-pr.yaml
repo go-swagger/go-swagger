@@ -79,9 +79,6 @@ jobs:
       matrix:
         go: ["oldstable", "stable"]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        exclude: # <- temporarily exclude go1.22.0 on windows. We hit this bug:https://github.com/golang/go/issues/65653
-          - go: stable
-            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +94,16 @@ jobs:
       - name: Install Tools
         run: |
           go install gotest.tools/gotestsum@latest
+
+      - name: Ensure TMP is created on windows runners
+        # On windows, tests require testing.TempDir to reside on the same drive as the code.
+        # TMP is used by os.TempDir() to determine the location of temporary files.
+        if: ${{ runner.os  == 'Windows' }}
+        shell: bash
+        run: |
+          TMP="${{ github.workspace }}\..\tmp"
+          mkdir -p ${TMP}
+          echo "TMP=${TMP}" >> "${GITHUB_ENV}"
 
       - name: Run unit tests with code coverage
         run: >

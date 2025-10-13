@@ -70,7 +70,7 @@ func forParam(param spec.Parameter) *spec.SchemaProps {
 	}
 }
 
-// OperationMap saves indexing operations in PathItems individually
+// OperationMap saves indexing operations in PathItems individually.
 type OperationMap map[string]*spec.Operation
 
 func toMap(item *spec.PathItem) OperationMap {
@@ -104,7 +104,6 @@ func getURLMethodsFor(spec *spec.Swagger) URLMethods {
 	returnURLMethods := URLMethods{}
 
 	for url, eachPath := range spec.Paths.Paths {
-		eachPath := eachPath
 		opsMap := toMap(&eachPath)
 		for method, op := range opsMap {
 			returnURLMethods[URLMethod{url, method}] = &PathItemOp{&eachPath, op, eachPath.Extensions}
@@ -117,7 +116,7 @@ func isStringType(typeName string) bool {
 	return typeName == "string" || typeName == "password"
 }
 
-// SchemaFromRefFn define this to get a schema for a ref
+// SchemaFromRefFn define this to get a schema for a ref.
 type SchemaFromRefFn func(spec.Ref) (*spec.Schema, string)
 
 func propertiesFor(schema *spec.Schema, getRefFn SchemaFromRefFn) PropertyMap {
@@ -134,7 +133,6 @@ func propertiesFor(schema *spec.Schema, getRefFn SchemaFromRefFn) PropertyMap {
 
 	if schema.Properties != nil {
 		for name, prop := range schema.Properties {
-			prop := prop
 			required := requiredMap[name]
 			props[name] = PropertyDefn{Schema: &prop, Required: required}
 		}

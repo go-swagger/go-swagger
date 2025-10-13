@@ -1,8 +1,10 @@
 package generate_test
 
 import (
-	"fmt"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/jessevdk/go-flags"
@@ -33,18 +35,20 @@ func TestRegressionIssue2601(t *testing.T) {
 		"impl.yml",
 	}
 
+	base := t.TempDir()
+
 	for i, spec := range specs {
-		t.Run(fmt.Sprintf("should generate server from spec %s", spec), func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		t.Run("should generate server from spec "+spec, func(t *testing.T) {
+			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
 			m := &generate.Server{}
 			_, _ = flags.Parse(m)
 			if i == 0 {
 				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
 			}
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
 
 			// Error was coming from these two being set together
@@ -54,6 +58,8 @@ func TestRegressionIssue2601(t *testing.T) {
 			// Load new copy of template
 			m.Shared.AllowTemplateOverride = true
 			m.Shared.TemplateDir = flags.Filename(filepath.Join(testBase(), "generator/templates"))
+
+			t.Run("go mod", gomodinit(generated))
 
 			require.NoError(t, m.Execute([]string{}))
 		})
@@ -68,10 +74,9 @@ func testGenerateServer(t *testing.T, strict bool) {
 	}
 
 	for i, spec := range specs {
-		t.Run(fmt.Sprintf("should generate server from spec %s", spec), func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		t.Run("should generate server from spec "+spec, func(t *testing.T) {
+			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+			generated := t.TempDir()
 
 			m := &generate.Server{}
 			_, _ = flags.Parse(m)
@@ -84,9 +89,11 @@ func testGenerateServer(t *testing.T, strict bool) {
 			case 2:
 				m.FlagStrategy = "flag"
 			}
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
 			m.Shared.StrictResponders = strict
+
+			t.Run("go mod", gomodinit(generated))
 
 			require.NoError(t, m.Execute([]string{}))
 		})

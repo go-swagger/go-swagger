@@ -6,13 +6,13 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-// Markdown generates a markdown representation of the spec
+// Markdown generates a markdown representation of the spec.
 type Markdown struct {
 	WithShared
 	WithModels
 	WithOperations
 
-	Output flags.Filename `long:"output" short:"" description:"the file to write the generated markdown." default:"markdown.md"`
+	Output flags.Filename `default:"markdown.md" description:"the file to write the generated markdown." long:"output" short:""`
 }
 
 func (m Markdown) apply(opts *generator.GenOpts) {
@@ -28,7 +28,7 @@ func (m *Markdown) generate(opts *generator.GenOpts) error {
 func (m Markdown) log(_ string) {
 }
 
-// Execute runs this command
+// Execute runs this command.
 func (m *Markdown) Execute(_ []string) error {
 	return createSwagger(m)
 }

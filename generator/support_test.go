@@ -1,7 +1,9 @@
 package generator
 
 import (
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -43,42 +45,65 @@ type baseImportTest struct {
 }
 
 func baseImportTestFixtures(tempdir string) []baseImportTest {
+	suffixParts := []string{"github.com", "go-swagger"}
+	goParts := []string{"root", "go"} // root/go
+	srcParts := goParts
+	srcParts = append(srcParts, "src") // e.g. root/go/src
+
+	pathParts := srcParts
+	pathParts = append(pathParts, suffixParts...) // e.g. root/go/src/github.com/go-swagger
+	tmp := []string{tempdir}
+
+	tmpGoParts := tmp
+	tmpGoParts = append(tmpGoParts, goParts...) // e.g. /tmp/root/go
+
+	tmpSrcParts := tmp
+	tmpSrcParts = append(tmpSrcParts, srcParts...) // e.g. /tmp/root/go/src
+
+	tmpPathParts := tmp
+	tmpPathParts = append(tmpPathParts, pathParts...) // e.g. /tmp/root/go/src/github.com/go-swagger
+
+	tmpSymLinkParts := []string{tempdir, "root", "symlink"}
+
 	return []baseImportTest{
 		{
 			title:        "No sym link. Positive Test Case",
-			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
-			gopath:       tempdir + "/root/go/",
-			targetpath:   tempdir + "/root/go/src/github.com/go-swagger",
+			path:         []string{filepath.Join(tmpPathParts...)},
+			gopath:       filepath.Join(tmpGoParts...),
+			targetpath:   filepath.Join(tmpPathParts...),
 			symlinksrc:   "",
 			symlinkdest:  "",
-			expectedpath: "github.com/go-swagger",
+			expectedpath: filepath.Join(suffixParts...),
 		},
 		{
 			title:        "Symlink points inside GOPATH",
-			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
-			gopath:       tempdir + "/root/go/",
-			targetpath:   tempdir + "/root/symlink",
-			symlinksrc:   tempdir + "/root/symlink",
-			symlinkdest:  tempdir + "/root/go/src/",
+			path:         []string{filepath.Join(tmpPathParts...)},
+			gopath:       filepath.Join(tmpGoParts...),
+			targetpath:   filepath.Join(tmpSymLinkParts...),
+			symlinksrc:   filepath.Join(tmpSymLinkParts...),
+			symlinkdest:  filepath.Join(tmpSrcParts...),
 			expectedpath: ".",
 		},
 		{
 			title:        "Symlink points inside GOPATH (2)",
-			path:         []string{tempdir + "/root/go/src/github.com/go-swagger"},
-			gopath:       tempdir + "/root/go/",
-			targetpath:   tempdir + "/root/symlink",
-			symlinksrc:   tempdir + "/root/symlink",
-			symlinkdest:  tempdir + "/root/go/src/github.com",
+			path:         []string{filepath.Join(tmpPathParts...)},
+			gopath:       filepath.Join(tmpGoParts...),
+			targetpath:   filepath.Join(tmpSymLinkParts...),
+			symlinksrc:   filepath.Join(tmpSymLinkParts...),
+			symlinkdest:  filepath.Join(tempdir, "root", "go", "src", "github.com"),
 			expectedpath: "github.com",
 		},
 		{
-			title:        "Symlink point outside GOPATH : Targets Case 1: in baseImport implementation",
-			path:         []string{tempdir + "/root/go/src/github.com/go-swagger", tempdir + "/root/gopher/go/"},
-			gopath:       tempdir + "/root/go/",
-			targetpath:   tempdir + "/root/go/src/github.com/gopher",
-			symlinksrc:   tempdir + "/root/go/src/github.com/gopher",
-			symlinkdest:  tempdir + "/root/gopher/go",
-			expectedpath: "github.com/gopher",
+			title: "Symlink point outside GOPATH : Targets Case 1: in baseImport implementation",
+			path: []string{
+				filepath.Join(tmpPathParts...),
+				filepath.Join(tempdir, "root", "gopher", "go"),
+			},
+			gopath:       filepath.Join(tmpGoParts...),
+			targetpath:   filepath.Join(tempdir, "root", "go", "src", "github.com", "gopher"),
+			symlinksrc:   filepath.Join(tempdir, "root", "go", "src", "github.com", "gopher"),
+			symlinkdest:  filepath.Join(tempdir, "root", "gopher", "go"),
+			expectedpath: path.Join("github.com", "gopher"), // with a "/", on every platform
 		},
 	}
 }
@@ -102,6 +127,10 @@ func TestBaseImport(t *testing.T) {
 	//  2.c Symlink from inside of GOPATH to outside.
 	// 3. Check results.
 
+	// NOTE: on windows, this test requires that TempDir and the local target reside on the same drive.
+	// This all stems from the use of RelPath to compute the import path, and this should not be really
+	// needed (inherited from old GOPATH shinenigans).
+
 	tempdir := t.TempDir()
 
 	golang := GoLangOpts()
@@ -119,6 +148,11 @@ func TestBaseImport(t *testing.T) {
 		}
 
 		// Create Symlink
+		_, err := os.Stat(item.symlinksrc)
+		if os.IsNotExist(err) {
+			// specifically for windows, we need to create the entry a symlink points to
+			require.NoError(t, os.MkdirAll(item.symlinkdest, fs.ModePerm))
+		}
 		require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
 			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s\n%s",
 			item.symlinksrc, item.symlinkdest,

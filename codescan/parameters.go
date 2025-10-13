@@ -642,7 +642,6 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				}
 				sp.taggers = append(taggers, sp.taggers...)
 			}
-
 		} else {
 			sp.taggers = []tagParser{
 				newSingleLineTagParser("in", &matchOnlyParam{&ps, rxIn}),

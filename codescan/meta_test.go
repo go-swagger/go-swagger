@@ -172,7 +172,6 @@ func TestMoreParseMeta(t *testing.T) {
 		"../fixtures/goparsing/meta/v3/doc.go",
 		"../fixtures/goparsing/meta/v4/doc.go",
 	} {
-
 		swspec := new(spec.Swagger)
 		parser := newMetaParser(swspec)
 		fileSet := token.NewFileSet()

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Commands requires at least one arg
+// Commands requires at least one arg.
 func TestCmd_Expand(t *testing.T) {
 	v := &ExpandSpec{}
 	testRequireParam(t, v)
@@ -18,8 +18,7 @@ func TestCmd_Expand(t *testing.T) {
 
 func TestCmd_Expand_NoError(t *testing.T) {
 	specDoc := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
-	outDir, output := getOutput(t, specDoc, "flatten", "fixture-1536-flat-expand.json")
-	defer os.RemoveAll(outDir)
+	output := filepath.Join(t.TempDir(), "fixture-1536-flat-expand.json")
 	v := &ExpandSpec{
 		Format:  "json",
 		Compact: false,

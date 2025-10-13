@@ -1,6 +1,7 @@
 package diff
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,26 +15,8 @@ import (
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
 )
 
-func fixturePath(file string, parts ...string) string {
-	return filepath.Join("..", "..", "..", "..", "fixtures", "diff", strings.Join(append([]string{file}, parts...), ""))
-}
-
-type testCaseData struct {
-	name          string
-	oldSpec       string
-	newSpec       string
-	expectedLines io.Reader
-	expectedFile  string
-}
-
-func fixturePart(file string) string {
-	base := filepath.Base(file)
-	parts := strings.Split(base, ".diff.txt")
-	return parts[0]
-}
-
 // TestDiffForVariousCombinations - computes the diffs for a number
-// of scenarios and compares the computed diff with expected diffs
+// of scenarios and compares the computed diff with expected diffs.
 func TestDiffForVariousCombinations(t *testing.T) {
 	pattern := fixturePath("*.diff.txt")
 	allTests, err := filepath.Glob(pattern)
@@ -50,21 +33,28 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	testCases := makeTestCases(t, matches)
 
 	for i, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
-			require.NoError(t, err)
+			t.Parallel()
 
-			out, err, warn := diffs.ReportAllDiffs(false)
-			require.NoError(t, err)
+			t.Run("should diff", func(t *testing.T) {
+				diffs, err := getDiffs(tc.oldSpec, tc.newSpec)
+				require.NoError(t, err)
 
-			if !cmdtest.AssertReadersContent(t, true, tc.expectedLines, out) {
-				t.Logf("unexpected content for fixture %q[%d] (file: %s)", tc.name, i, tc.expectedFile)
-			}
+				t.Run("should report all diff", func(t *testing.T) {
+					out, err, warn := diffs.ReportAllDiffs(false)
+					require.NoError(t, err)
 
-			if diffs.BreakingChangeCount() > 0 {
-				require.Error(t, warn)
-			}
+					if !cmdtest.AssertReadersContent(t, true, tc.expectedLines, out) {
+						t.Logf("unexpected content for fixture %q[%d] (file: %s)", tc.name, i, tc.expectedFile)
+					}
+
+					if diffs.BreakingChangeCount() > 0 {
+						t.Run("should error when breaking changes are detected", func(t *testing.T) {
+							require.Error(t, warn)
+						})
+					}
+				})
+			})
 		})
 	}
 
@@ -88,9 +78,12 @@ func getDiffs(oldSpecPath, newSpecPath string) (SpecDifferences, error) {
 }
 
 func makeTestCases(t testing.TB, matches []string) []testCaseData {
+	t.Helper()
+
 	testCases := make([]testCaseData, 0, len(matches))
 	for _, eachFile := range matches {
 		namePart := fixturePart(eachFile)
+
 		if _, err := os.Stat(fixturePath(namePart, ".v1.json")); err == nil {
 			testCases = append(
 				testCases, testCaseData{
@@ -100,6 +93,7 @@ func makeTestCases(t testing.TB, matches []string) []testCaseData {
 					expectedLines: linesInFile(t, fixturePath(namePart, ".diff.txt")),
 				})
 		}
+
 		if _, err := os.Stat(fixturePath(namePart, ".v1.yml")); err == nil {
 			testCases = append(
 				testCases, testCaseData{
@@ -110,21 +104,53 @@ func makeTestCases(t testing.TB, matches []string) []testCaseData {
 				})
 		}
 	}
-	return testCases
-}
 
-func linesInFile(t testing.TB, fileName string) io.ReadCloser {
-	file, err := os.Open(fileName)
-	require.NoError(t, err)
-	return file
+	return testCases
 }
 
 func TestIssue2962(t *testing.T) {
 	oldSpec := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "2962", "old.json")
 	newSpec := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "2962", "new.json")
-	diffs, err := getDiffs(oldSpec, newSpec)
+
+	t.Run("should diff", func(t *testing.T) {
+		diffs, err := getDiffs(oldSpec, newSpec)
+		require.NoError(t, err)
+
+		const (
+			expectedChanges  = 3
+			expectedBreaking = 1
+		)
+
+		t.Run(fmt.Sprintf("should find %d breaking changes", expectedBreaking), func(t *testing.T) {
+			require.Len(t, diffs, expectedChanges)
+			require.Equal(t, expectedBreaking, diffs.BreakingChangeCount())
+		})
+	})
+}
+
+func fixturePath(file string, parts ...string) string {
+	return filepath.Join("..", "..", "..", "..", "fixtures", "diff", strings.Join(append([]string{file}, parts...), ""))
+}
+
+type testCaseData struct {
+	name          string
+	oldSpec       string
+	newSpec       string
+	expectedLines io.Reader
+	expectedFile  string
+}
+
+func fixturePart(file string) string {
+	base := filepath.Base(file)
+	parts := strings.Split(base, ".diff.txt")
+	return parts[0]
+}
+
+func linesInFile(t testing.TB, fileName string) io.ReadCloser {
+	t.Helper()
+
+	file, err := os.Open(fileName)
 	require.NoError(t, err)
 
-	require.Len(t, diffs, 3)
-	require.Equal(t, 1, diffs.BreakingChangeCount())
+	return file
 }

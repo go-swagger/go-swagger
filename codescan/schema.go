@@ -263,7 +263,7 @@ func (s *schemaBuilder) buildDeclNamed(tpe *types.Named, schema *spec.Schema) er
 	return s.buildFromType(ti.Type, ps)
 }
 
-// buildFromTextMarshal renders a type that marshals as text as a string
+// buildFromTextMarshal renders a type that marshals as text as a string.
 func (s *schemaBuilder) buildFromTextMarshal(tpe types.Type, tgt swaggerTypable) error {
 	if typePtr, ok := tpe.(*types.Pointer); ok {
 		return s.buildFromTextMarshal(typePtr.Elem(), tgt)
@@ -506,7 +506,6 @@ func (s *schemaBuilder) buildNamedType(titpe *types.Named, tgt swaggerTypable) e
 		if typeName, ok := typeName(cmt); ok {
 			_ = swaggerSchemaForType(typeName, tgt)
 			return nil
-
 		}
 
 		if isAliasParam(tgt) || aliasParam(cmt) {

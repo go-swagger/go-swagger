@@ -10,25 +10,25 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// StringType For identifying string types
+// StringType For identifying string types.
 const StringType = "string"
 
-// URLMethodResponse encapsulates these three elements to act as a map key
+// URLMethodResponse encapsulates these three elements to act as a map key.
 type URLMethodResponse struct {
 	Path     string `json:"path"`
 	Method   string `json:"method"`
 	Response string `json:"response"`
 }
 
-// MarshalText - for serializing as a map key
+// MarshalText - for serializing as a map key.
 func (p URLMethod) MarshalText() (text []byte, err error) {
 	return fmt.Appendf([]byte{}, "%s %s", p.Path, p.Method), nil
 }
 
-// URLMethods allows iteration of endpoints based on url and method
+// URLMethods allows iteration of endpoints based on url and method.
 type URLMethods map[URLMethod]*PathItemOp
 
-// SpecAnalyser contains all the differences for a Spec
+// SpecAnalyser contains all the differences for a Spec.
 type SpecAnalyser struct {
 	Diffs                 SpecDifferences
 	urlMethods1           URLMethods
@@ -43,7 +43,7 @@ type SpecAnalyser struct {
 	titler          cases.Caser
 }
 
-// NewSpecAnalyser returns an empty SpecDiffs
+// NewSpecAnalyser returns an empty SpecDiffs.
 func NewSpecAnalyser() *SpecAnalyser {
 	return &SpecAnalyser{
 		Diffs:                 SpecDifferences{},
@@ -52,7 +52,7 @@ func NewSpecAnalyser() *SpecAnalyser {
 	}
 }
 
-// Analyse the differences in two specs
+// Analyse the differences in two specs.
 func (sd *SpecAnalyser) Analyse(spec1, spec2 *spec.Swagger) error {
 	sd.schemasCompared = make(map[string]struct{})
 	sd.Definitions1 = spec1.Definitions
@@ -132,7 +132,7 @@ func (sd *SpecAnalyser) analyseEndpoints() {
 	sd.findAddedEndpoints()
 }
 
-// AnalyseDefinitions check for changes to definition objects not referenced in any endpoint
+// AnalyseDefinitions check for changes to definition objects not referenced in any endpoint.
 func (sd *SpecAnalyser) AnalyseDefinitions() {
 	alreadyReferenced := map[string]bool{}
 	for k := range sd.ReferencedDefinitions {
@@ -172,7 +172,6 @@ func (sd *SpecAnalyser) analyseEndpointData() {
 			}
 
 			sd.compareDescripton(location, op1.Operation.Description, op2.Operation.Description)
-
 		}
 	}
 }
@@ -185,7 +184,6 @@ func (sd *SpecAnalyser) analyseRequestParams() {
 		sd.titler.Reset()
 		for URLMethod, op2 := range sd.urlMethods2 {
 			if op1, ok := sd.urlMethods1[URLMethod]; ok {
-
 				params1 := getParams(op1.ParentPathItem.Parameters, op1.Operation.Parameters, paramLocation)
 				params2 := getParams(op2.ParentPathItem.Parameters, op2.Operation.Parameters, paramLocation)
 
@@ -305,7 +303,6 @@ func (sd *SpecAnalyser) analyseResponseParams() {
 							Code:               AddedProperty,
 						})
 					}
-
 				} else {
 					// op2Response
 					sd.Diffs = sd.Diffs.addDiff(SpecDifference{
@@ -361,7 +358,6 @@ func (sd *SpecAnalyser) analyzeOperationExtensions() {
 				resp2 := op2.Operation.Responses.StatusCodeResponses[code]
 				sd.analyzeSchemaExtensions(resp.Schema, resp2.Schema, code, urlMethod)
 			}
-
 		}
 	}
 
@@ -546,7 +542,7 @@ func addTypeDiff(diffs []TypeDiff, diff TypeDiff) []TypeDiff {
 	return diffs
 }
 
-// CompareProps computes type specific property diffs
+// CompareProps computes type specific property diffs.
 func (sd *SpecAnalyser) CompareProps(type1, type2 *spec.SchemaProps) []TypeDiff {
 	diffs := []TypeDiff{}
 
@@ -671,7 +667,7 @@ func (sd *SpecAnalyser) getRefSchemaFromSpec2(ref spec.Ref) (*spec.Schema, strin
 	return sd.schemaFromRef(ref, &sd.Definitions2)
 }
 
-// CompareSchemaFn Fn spec for comparing schemas
+// CompareSchemaFn Fn spec for comparing schemas.
 type CompareSchemaFn func(location DifferenceLocation, schema1, schema2 *spec.Schema)
 
 func (sd *SpecAnalyser) compareSchema(location DifferenceLocation, schema1, schema2 *spec.Schema) {
@@ -847,11 +843,11 @@ func schemaLocationKey(location DifferenceLocation) string {
 	return k
 }
 
-// PropertyDefn combines a property with its required-ness
+// PropertyDefn combines a property with its required-ness.
 type PropertyDefn struct {
 	Schema   *spec.Schema
 	Required bool
 }
 
-// PropertyMap a unified map including all AllOf fields
+// PropertyMap a unified map including all AllOf fields.
 type PropertyMap map[string]PropertyDefn

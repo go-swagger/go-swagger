@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	// Output messages
+	// Output messages.
 	nothingToDo                           = "nothing to do. Need some swagger files to merge.\nUSAGE: swagger mixin [-c <expected#Collisions>] <primary-swagger-file> <mixin-swagger-file...>"
 	ignoreConflictsAndCollisionsSpecified = "both the flags ignore conflicts and collisions were specified. These have conflicting meaning so please only specify one"
 )
@@ -25,12 +25,12 @@ const (
 // command. The flags are defined using struct field tags with the
 // "github.com/jessevdk/go-flags" format.
 type MixinSpec struct {
-	ExpectedCollisionCount uint           `short:"c" description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual."`
-	Compact                bool           `long:"compact" description:"applies to JSON formatted specs. When present, doesn't prettify the json"`
-	Output                 flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	KeepSpecOrder          bool           `long:"keep-spec-order" description:"Keep schema properties order identical to spec file"`
-	Format                 string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
-	IgnoreConflicts        bool           `long:"ignore-conflicts" description:"Ignore conflict"`
+	ExpectedCollisionCount uint           `description:"expected # of rejected mixin paths, defs, etc due to existing key. Non-zero exit if does not match actual." short:"c"`
+	Compact                bool           `description:"applies to JSON formatted specs. When present, doesn't prettify the json"                                   long:"compact"`
+	Output                 flags.Filename `description:"the file to write to"                                                                                       long:"output"           short:"o"`
+	KeepSpecOrder          bool           `description:"Keep schema properties order identical to spec file"                                                        long:"keep-spec-order"`
+	Format                 string         `choice:"yaml"                                                                                                            choice:"json"           default:"json" description:"the format for the spec document" long:"format"`
+	IgnoreConflicts        bool           `description:"Ignore conflict"                                                                                            long:"ignore-conflicts"`
 }
 
 // Execute runs the mixin command which merges Swagger 2.0 specs into
@@ -97,7 +97,7 @@ func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, _ io.Wri
 	}
 	primary := primaryDoc.Spec()
 
-	var mixins []*spec.Swagger
+	mixins := make([]*spec.Swagger, 0, len(mixinFiles))
 	for _, mixinFile := range mixinFiles {
 		if c.KeepSpecOrder {
 			mixinFile = generator.WithAutoXOrder(mixinFile)

@@ -30,26 +30,26 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// SpecFile command to generate a swagger spec from a go application
+// SpecFile command to generate a swagger spec from a go application.
 type SpecFile struct {
-	WorkDir                 string         `long:"work-dir" short:"w" description:"the base path to use" default:"."`
-	BuildTags               string         `long:"tags" short:"t" description:"build tags" default:""`
-	ScanModels              bool           `long:"scan-models" short:"m" description:"includes models that were annotated with 'swagger:model'"`
-	Compact                 bool           `long:"compact" description:"when present, doesn't prettify the json"`
-	Output                  flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	Input                   flags.Filename `long:"input" short:"i" description:"an input swagger file with which to merge"`
-	Include                 []string       `long:"include" short:"c" description:"include packages matching pattern"`
-	Exclude                 []string       `long:"exclude" short:"x" description:"exclude packages matching pattern"`
-	IncludeTags             []string       `long:"include-tag" short:"" description:"include routes having specified tags (can be specified many times)"`
-	ExcludeTags             []string       `long:"exclude-tag" short:"" description:"exclude routes having specified tags (can be specified many times)"`
-	ExcludeDeps             bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
-	SetXNullableForPointers bool           `long:"nullable-pointers" short:"n" description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'"`
-	RefAliases              bool           `long:"ref-aliases" short:"r" description:"transform aliased types into $ref rather than expanding their definition"`
-	DescWithRef             bool           `long:"allow-desc-with-ref" short:"" description:"allow descriptions to flow alongside $ref"`
-	Format                  string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
+	WorkDir                 string         `default:"."                                                                                                  description:"the base path to use" long:"work-dir" short:"w"`
+	BuildTags               string         `default:""                                                                                                   description:"build tags"           long:"tags"     short:"t"`
+	ScanModels              bool           `description:"includes models that were annotated with 'swagger:model'"                                       long:"scan-models"                 short:"m"`
+	Compact                 bool           `description:"when present, doesn't prettify the json"                                                        long:"compact"`
+	Output                  flags.Filename `description:"the file to write to"                                                                           long:"output"                      short:"o"`
+	Input                   flags.Filename `description:"an input swagger file with which to merge"                                                      long:"input"                       short:"i"`
+	Include                 []string       `description:"include packages matching pattern"                                                              long:"include"                     short:"c"`
+	Exclude                 []string       `description:"exclude packages matching pattern"                                                              long:"exclude"                     short:"x"`
+	IncludeTags             []string       `description:"include routes having specified tags (can be specified many times)"                             long:"include-tag"                 short:""`
+	ExcludeTags             []string       `description:"exclude routes having specified tags (can be specified many times)"                             long:"exclude-tag"                 short:""`
+	ExcludeDeps             bool           `description:"exclude all dependencies of project"                                                            long:"exclude-deps"                short:""`
+	SetXNullableForPointers bool           `description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'" long:"nullable-pointers"           short:"n"`
+	RefAliases              bool           `description:"transform aliased types into $ref rather than expanding their definition"                       long:"ref-aliases"                 short:"r"`
+	DescWithRef             bool           `description:"allow descriptions to flow alongside $ref"                                                      long:"allow-desc-with-ref"         short:""`
+	Format                  string         `choice:"yaml"                                                                                                choice:"json"                      default:"json"  description:"the format for the spec document" long:"format"`
 }
 
-// Execute runs this command
+// Execute runs this command.
 func (s *SpecFile) Execute(args []string) error {
 	if len(args) == 0 { // by default consider all the paths under the working directory
 		args = []string{"./..."}

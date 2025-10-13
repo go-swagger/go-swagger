@@ -130,7 +130,7 @@ func Test_GenerateClient(t *testing.T) {
 			opts := testClientGenOpts()
 			opts.Spec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
 
-			tft, err := os.MkdirTemp(cwd, "generated")
+			tft, err := os.MkdirTemp(cwd, "generated") //nolint:usetesting // want to be able to retrieve generate code and debug
 			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = os.RemoveAll(tft)
@@ -152,7 +152,7 @@ func Test_GenerateClient(t *testing.T) {
 			opts := testClientGenOpts()
 			opts.Spec = filepath.Join("..", "fixtures", "bugs", "2527", "swagger-fixed.yml")
 
-			tft, err := os.MkdirTemp(cwd, "generated")
+			tft, err := os.MkdirTemp(cwd, "generated") //nolint:usetesting // want to be able to retrieve generated code and debug
 			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = os.RemoveAll(tft)
@@ -434,7 +434,7 @@ func TestGenClient_1518(t *testing.T) {
 			`case *GetRecords4Created:`,
 			`return nil, value, nil`,
 			`unexpectedSuccess := result.(*GetRecords4Default)`,
-			`return nil, nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())`,
+			`return nil, runtime.NewAPIError("unexpected success response: content available as default response in error", unexpectedSuccess, unexpectedSuccess.Code())`,
 		},
 	}
 

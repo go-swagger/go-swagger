@@ -5,7 +5,7 @@ import (
 )
 
 // a shared function that can be used to split given headers
-// into a title and description
+// into a title and description.
 func collectScannerTitleDescription(headers []string) (title, desc []string) {
 	hdrs := cleanupScannerLines(headers, rxUncommentHeaders, nil)
 

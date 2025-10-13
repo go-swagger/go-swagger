@@ -83,7 +83,7 @@ func (ht responseTypable) AddExtension(key string, value interface{}) {
 }
 
 func (ht responseTypable) WithEnum(values ...interface{}) {
-	ht.header.WithEnum(values)
+	ht.header.WithEnum(values) //nolint:asasalint
 }
 
 func (ht responseTypable) WithEnumDescription(_ string) {
@@ -418,7 +418,6 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 	for i := 0; i < tpe.NumFields(); i++ {
 		fld := tpe.Field(i)
 		if fld.Embedded() {
-
 			if err := r.buildFromType(fld.Type(), resp, seen); err != nil {
 				return err
 			}

@@ -22,13 +22,13 @@ import (
 )
 
 type operationOptions struct {
-	Operations []string `long:"operation" short:"O" description:"specify an operation to include, repeat for multiple (defaults to all)"`
-	Tags       []string `long:"tags" description:"the tags to include, if not specified defaults to all" group:"operations"`
-	APIPackage string   `long:"api-package" short:"a" description:"the package to save the operations" default:"operations"`
-	WithEnumCI bool     `long:"with-enum-ci" description:"allow case-insensitive enumerations"`
+	Operations []string `description:"specify an operation to include, repeat for multiple (defaults to all)" long:"operation"                                 short:"O"`
+	Tags       []string `description:"the tags to include, if not specified defaults to all"                  group:"operations"                               long:"tags"`
+	APIPackage string   `default:"operations"                                                                 description:"the package to save the operations" long:"api-package" short:"a"`
+	WithEnumCI bool     `description:"allow case-insensitive enumerations"                                    long:"with-enum-ci"`
 
 	// tags handling
-	SkipTagPackages bool `long:"skip-tag-packages" description:"skips the generation of tag-based operation packages, resulting in a flat generation"`
+	SkipTagPackages bool `description:"skips the generation of tag-based operation packages, resulting in a flat generation" long:"skip-tag-packages"`
 }
 
 func (oo operationOptions) apply(opts *generator.GenOpts) {
@@ -39,12 +39,12 @@ func (oo operationOptions) apply(opts *generator.GenOpts) {
 	opts.SkipTagPackages = oo.SkipTagPackages
 }
 
-// WithOperations adds the operations options group
+// WithOperations adds the operations options group.
 type WithOperations struct {
 	Operations operationOptions `group:"Options for operation generation"`
 }
 
-// Operation the generate operation files command
+// Operation the generate operation files command.
 type Operation struct {
 	WithShared
 	WithOperations
@@ -54,14 +54,14 @@ type Operation struct {
 	schemeOptions
 	mediaOptions
 
-	ModelPackage string `long:"model-package" short:"m" description:"the package to save the models" default:"models"`
+	ModelPackage string `default:"models" description:"the package to save the models" long:"model-package" short:"m"`
 
-	NoHandler    bool `long:"skip-handler" description:"when present will not generate an operation handler"`
-	NoStruct     bool `long:"skip-parameters" description:"when present will not generate the parameter model struct"`
-	NoResponses  bool `long:"skip-responses" description:"when present will not generate the response model struct"`
-	NoURLBuilder bool `long:"skip-url-builder" description:"when present will not generate a URL builder"`
+	NoHandler    bool `description:"when present will not generate an operation handler"       long:"skip-handler"`
+	NoStruct     bool `description:"when present will not generate the parameter model struct" long:"skip-parameters"`
+	NoResponses  bool `description:"when present will not generate the response model struct"  long:"skip-responses"`
+	NoURLBuilder bool `description:"when present will not generate a URL builder"              long:"skip-url-builder"`
 
-	Name []string `long:"name" short:"n" description:"the operations to generate, repeat for multiple (defaults to all). Same as --operations"`
+	Name []string `description:"the operations to generate, repeat for multiple (defaults to all). Same as --operations" long:"name" short:"n"`
 }
 
 func (o Operation) apply(opts *generator.GenOpts) {
@@ -93,7 +93,7 @@ For this generation to compile you need to have some packages in your go.mod:
 You can get these now with: go mod tidy`)
 }
 
-// Execute generates a model file
+// Execute generates a model file.
 func (o *Operation) Execute(_ []string) error {
 	if o.Shared.DumpData && len(append(o.Name, o.Operations.Operations...)) > 1 {
 		return errors.New("only 1 operation at a time is supported for dumping data")

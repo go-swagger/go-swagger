@@ -335,6 +335,8 @@ func validateRoutesParameters(t *testing.T, ops spec.Paths) {
 }
 
 func assertOperation(t *testing.T, op *spec.Operation, id, summary, description string, tags, scopes []string, extensions spec.Extensions) {
+	t.Helper()
+
 	assert.NotNil(t, op)
 	assert.Equal(t, summary, op.Summary)
 	assert.Equal(t, description, op.Description)

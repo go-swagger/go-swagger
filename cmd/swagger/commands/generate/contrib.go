@@ -4,9 +4,8 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-// contribOptionsOverride gives contributed templates the ability to override the options if they need
+// contribOptionsOverride gives contributed templates the ability to override the options if they need.
 func contribOptionsOverride(opts *generator.GenOpts) {
-	// nolint: gocritic
 	switch opts.Template {
 	case "stratoscale":
 		// Stratoscale template needs to regenerate the configureapi on every run.

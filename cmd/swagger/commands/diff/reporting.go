@@ -9,14 +9,14 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// ArrayType const for array
+// ArrayType const for array.
 var ArrayType = "array"
 
-// ObjectType const for object
+// ObjectType const for object.
 var ObjectType = "object"
 
 // Compare returns the result of analysing breaking and non breaking changes
-// between to Swagger specs
+// between to Swagger specs.
 func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 	analyser := NewSpecAnalyser()
 	err = analyser.Analyse(spec1, spec2)
@@ -27,26 +27,26 @@ func Compare(spec1, spec2 *spec.Swagger) (diffs SpecDifferences, err error) {
 	return diffs, nil
 }
 
-// PathItemOp - combines path and operation into a single keyed entity
+// PathItemOp - combines path and operation into a single keyed entity.
 type PathItemOp struct {
 	ParentPathItem *spec.PathItem  `json:"pathitem"`
 	Operation      *spec.Operation `json:"operation"`
 	Extensions     spec.Extensions `json:"extensions"`
 }
 
-// URLMethod - combines url and method into a single keyed entity
+// URLMethod - combines url and method into a single keyed entity.
 type URLMethod struct {
 	Path   string `json:"path"`
 	Method string `json:"method"`
 }
 
-// DataDirection indicates the direction of change Request vs Response
+// DataDirection indicates the direction of change Request vs Response.
 type DataDirection int
 
 const (
-	// Request Used for messages/param diffs in a request
+	// Request Used for messages/param diffs in a request.
 	Request DataDirection = iota
-	// Response Used for messages/param diffs in a response
+	// Response Used for messages/param diffs in a response.
 	Response
 )
 
@@ -81,15 +81,15 @@ func primitiveTypeString(typeName, typeFormat string) string {
 	return typeName
 }
 
-// TypeDiff - describes a primitive type change
+// TypeDiff - describes a primitive type change.
 type TypeDiff struct {
-	Change      SpecChangeCode `json:"change-type,omitempty"`
+	Change      SpecChangeCode `json:"change_type,omitempty"`
 	Description string         `json:"description,omitempty"`
-	FromType    string         `json:"from-type,omitempty"`
+	FromType    string         `json:"from_type,omitempty"`
 	ToType      string         `json:"to-type,omitempty"`
 }
 
-// didn't use 'width' so as not to confuse with bit width
+// didn't use 'width' so as not to confuse with bit width.
 var numberWideness = map[string]int{
 	"number":        3,
 	"number.double": 3,
@@ -108,7 +108,7 @@ func prettyprint(b []byte) (io.ReadWriter, error) {
 	return &out, err
 }
 
-// JSONMarshal allows the item to be correctly rendered to json
+// JSONMarshal allows the item to be correctly rendered to json.
 func JSONMarshal(t interface{}) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
