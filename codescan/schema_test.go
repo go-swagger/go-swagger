@@ -2160,7 +2160,6 @@ func TestInterfaceDiscriminators(t *testing.T) {
 
 	schema, ok = models["modelA"]
 	if assert.True(t, ok) {
-
 		cl, _ := schema.Extensions.GetString("x-go-name")
 		assert.Equal(t, "ModelA", cl)
 
@@ -2185,13 +2184,13 @@ func TestAddExtension(t *testing.T) {
 
 	key2 := "x-go-package"
 	value2 := "schema"
-	_ = os.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
+	t.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
 	addExtension(ve, key2, value2)
 	assert.Equal(t, value2, ve.Extensions[key2].(string))
 
 	key3 := "x-go-class"
 	value3 := "Spec"
-	_ = os.Setenv("SWAGGER_GENERATE_EXTENSION", "false")
+	t.Setenv("SWAGGER_GENERATE_EXTENSION", "false")
 	addExtension(ve, key3, value3)
 	assert.Nil(t, ve.Extensions[key3])
 }

@@ -123,7 +123,7 @@ func TestSchemaValueExtractors(t *testing.T) {
 
 func makeMinMax(lower string) (res []string) {
 	for _, a := range []string{"", "imum"} {
-		res = append(res, lower+a, strings.Title(lower)+a) //nolint:staticcheck
+		res = append(res, lower+a, strings.Title(lower)+a) //nolint:staticcheck // Title is deprecated, yet still useful here. The replacement is bit heavy for just this test
 	}
 	return res
 }
@@ -133,12 +133,12 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 	prefixes := []string{"//", "*", ""}
 	validArgs := []string{"true", "false"}
 	invalidArgs := []string{"TRUE", "FALSE", "t", "f", "1", "0", "True", "False", "true*", "false*"}
-	var nms []string
+	nms := make([]string, 0, len(names))
 	for _, nm := range names {
 		nms = append(nms, nm, strings.Title(nm)) //nolint:staticcheck
 	}
 
-	var nms2 []string
+	nms2 := make([]string, 0, len(names2))
 	for _, nm := range names2 {
 		nms2 = append(nms2, nm, strings.Title(nm)) //nolint:staticcheck
 	}
@@ -180,6 +180,7 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 			}
 		}
 	}
+
 	var nm2 string
 	if len(names2) > 0 {
 		nm2 = " " + names2[0]
@@ -196,7 +197,7 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 	validNumericArgs := []string{"0", "1234"}
 	invalidNumericArgs := []string{"1A3F", "2e10", "*12", "12*", "-1235", "0.0", "1234.0394", "-2948.484"}
 
-	var names []string
+	names := make([]string, 0, len(words))
 	for _, w := range words {
 		names = append(names, w, strings.Title(w)) //nolint:staticcheck
 	}
@@ -352,9 +353,9 @@ func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixe
 
 func verifySwaggerMultiArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixes, validParams, invalidParams []string) {
 	var actualParams []string
-	for i := 0; i < len(validParams); i++ {
+	for i := range validParams {
 		var vp []string
-		for j := 0; j < (i + 1); j++ {
+		for j := range i + 1 {
 			vp = append(vp, validParams[j])
 		}
 		actualParams = append(actualParams, strings.Join(vp, " "))

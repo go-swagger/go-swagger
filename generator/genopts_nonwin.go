@@ -11,6 +11,7 @@ import (
 
 type GenOpts struct {
 	GenOptsCommon
+
 	TemplatePlugin string
 }
 

@@ -1,6 +1,8 @@
 package generator_test
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,23 +58,32 @@ func TestGenerateAndBuild(t *testing.T) {
 	}
 
 	t.Run("build client", func(t *testing.T) {
+		// This test builds a client as a go module outside of the go source tree.
+		// It needs a go mod initialized and a go mod tidy sync, which slows down the test
+		// a bit but is quite realistic of a full-fledged build with modules.
 		for name, toPin := range cases {
 			cas := toPin
 
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
-				spec := filepath.FromSlash(cas.spec)
 
-				generated, err := os.MkdirTemp(filepath.Dir(spec), "generated")
-				require.NoErrorf(t, err, "TempDir()=%s", generated)
-				t.Cleanup(func() { _ = os.RemoveAll(generated) })
+				specPath := filepath.Clean(filepath.FromSlash(cas.spec))
+				generatedLocation := filepath.Join(t.TempDir(), filepath.Base(specPath), "generated")
+				t.Logf("building client in %q", generatedLocation)
+				require.NoError(t, os.MkdirAll(generatedLocation, fs.ModePerm))
 
-				require.NoErrorf(t, newTestClient(spec, generated).Execute(nil), "Execute()=%s", err)
+				module := gentest.SanitizeGoModPath(generatedLocation)
+				t.Run(fmt.Sprintf("should initialize module %q", module),
+					gentest.GoExecInDir(generatedLocation, "mod", "init", module),
+				)
 
-				packages := filepath.Join(generated, "...")
+				t.Run("should build client", func(t *testing.T) {
+					require.NoError(t, newTestClient(specPath, generatedLocation).Execute(nil))
+				})
 
-				t.Run("should go get imports", gentest.GoExecInDir("", "get"))
-				t.Run("should build client", gentest.GoExecInDir("", "build", packages))
+				t.Run("should go get imports", gentest.GoExecInDir(generatedLocation, "get", "./..."))
+				t.Run("should go mod tidy", gentest.GoExecInDir(generatedLocation, "mod", "tidy"))
+				t.Run("should build client", gentest.GoExecInDir(generatedLocation, "build", "./..."))
 			})
 		}
 	})
@@ -80,6 +91,7 @@ func TestGenerateAndBuild(t *testing.T) {
 
 func newTestClient(input, output string) *generate.Client {
 	c := &generate.Client{}
+
 	c.DefaultScheme = "http"
 	c.DefaultProduces = "application/json"
 	c.Shared.Spec = flags.Filename(input)
@@ -87,5 +99,6 @@ func newTestClient(input, output string) *generate.Client {
 	c.Operations.APIPackage = defaultAPIPackage
 	c.Models.ModelPackage = defaultModelPackage
 	c.ClientPackage = defaultClientPackage
+
 	return c
 }

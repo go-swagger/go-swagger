@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// SpecDifference encapsulates the details of an individual diff in part of a spec
+// SpecDifference encapsulates the details of an individual diff in part of a spec.
 type SpecDifference struct {
 	DifferenceLocation DifferenceLocation `json:"location"`
 	Code               SpecChangeCode     `json:"code"`
@@ -17,10 +17,10 @@ type SpecDifference struct {
 	DiffInfo           string             `json:"info,omitempty"`
 }
 
-// SpecDifferences list of differences
+// SpecDifferences list of differences.
 type SpecDifferences []SpecDifference
 
-// Matches returns true if the diff matches another
+// Matches returns true if the diff matches another.
 func (sd SpecDifference) Matches(other SpecDifference) bool {
 	return sd.Code == other.Code &&
 		sd.Compatibility == other.Compatibility &&
@@ -48,7 +48,7 @@ func equalNodes(a, b *Node) bool {
 		equalNodes(a.ChildNode, b.ChildNode)
 }
 
-// BreakingChangeCount Calculates the breaking change count
+// BreakingChangeCount Calculates the breaking change count.
 func (sd SpecDifferences) BreakingChangeCount() int {
 	count := 0
 	for _, eachDiff := range sd {
@@ -59,7 +59,7 @@ func (sd SpecDifferences) BreakingChangeCount() int {
 	return count
 }
 
-// WarningChangeCount Calculates the warning change count
+// WarningChangeCount Calculates the warning change count.
 func (sd SpecDifferences) WarningChangeCount() int {
 	count := 0
 	for _, eachDiff := range sd {
@@ -70,7 +70,7 @@ func (sd SpecDifferences) WarningChangeCount() int {
 	return count
 }
 
-// FilterIgnores returns a copy of the list without the items in the specified ignore list
+// FilterIgnores returns a copy of the list without the items in the specified ignore list.
 func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences {
 	newDiffs := SpecDifferences{}
 	for _, eachDiff := range sd {
@@ -81,7 +81,7 @@ func (sd SpecDifferences) FilterIgnores(ignores SpecDifferences) SpecDifferences
 	return newDiffs
 }
 
-// Contains Returns true if the item contains the specified item
+// Contains Returns true if the item contains the specified item.
 func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	for _, eachDiff := range sd {
 		if eachDiff.Matches(diff) {
@@ -91,7 +91,7 @@ func (sd SpecDifferences) Contains(diff SpecDifference) bool {
 	return false
 }
 
-// String std string renderer
+// String std string renderer.
 func (sd SpecDifference) String() string {
 	isResponse := sd.DifferenceLocation.Response > 0
 	hasMethod := len(sd.DifferenceLocation.Method) > 0
@@ -143,7 +143,7 @@ func (sd SpecDifferences) addDiff(diff SpecDifference) SpecDifferences {
 	return append(sd, diff)
 }
 
-// ReportCompatibility lists and spec
+// ReportCompatibility lists and spec.
 func (sd *SpecDifferences) ReportCompatibility() (io.Reader, error, error) {
 	var out bytes.Buffer
 	breakingCount := sd.BreakingChangeCount()
@@ -181,7 +181,7 @@ func (sd SpecDifferences) reportChanges(compat Compatibility) io.Reader {
 	return &out
 }
 
-// ReportAllDiffs lists all the diffs between two specs
+// ReportAllDiffs lists all the diffs between two specs.
 func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error) {
 	if fmtJSON {
 		b, err := JSONMarshal(sd)
@@ -193,7 +193,7 @@ func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error)
 	}
 	numDiffs := len(sd)
 	if numDiffs == 0 {
-		return bytes.NewBuffer([]byte("No changes identified\n")), nil, nil
+		return bytes.NewBufferString("No changes identified\n"), nil, nil
 	}
 
 	var out bytes.Buffer

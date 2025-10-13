@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	// Output messages
+	// Output messages.
 	missingArgMsg  = "the validate command requires the swagger document url to be specified"
 	validSpecMsg   = "\nThe swagger spec at %q is valid against swagger specification %s\n"
 	invalidSpecMsg = "\nThe swagger spec at %q is invalid against swagger specification %s.\nSee errors below:\n"
@@ -33,14 +33,14 @@ const (
 )
 
 // ValidateSpec is a command that validates a swagger document
-// against the swagger specification
+// against the swagger specification.
 type ValidateSpec struct {
 	// SchemaURL string `long:"schema" description:"The schema url to use" default:"http://swagger.io/v2/schema.json"`
-	SkipWarnings bool `long:"skip-warnings" description:"when present will not show up warnings upon validation"`
-	StopOnError  bool `long:"stop-on-error" description:"when present will not continue validation after critical errors are found"`
+	SkipWarnings bool `description:"when present will not show up warnings upon validation"                    long:"skip-warnings"`
+	StopOnError  bool `description:"when present will not continue validation after critical errors are found" long:"stop-on-error"`
 }
 
-// Execute validates the spec
+// Execute validates the spec.
 func (c *ValidateSpec) Execute(args []string) error {
 	if len(args) == 0 {
 		return errors.New(missingArgMsg)

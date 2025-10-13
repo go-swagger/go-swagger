@@ -31,7 +31,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// modelExpectations is a test structure to capture expected codegen lines of code
+// modelExpectations is a test structure to capture expected codegen lines of code.
 type modelExpectations struct {
 	GeneratedFile    string
 	ExpectedLines    []string
@@ -84,13 +84,13 @@ func (m modelExpectations) AssertModelCodegen(t testing.TB, msg, definitionName,
 	}
 }
 
-// modelTestRun is a test structure to configure generations options to test a spec
+// modelTestRun is a test structure to configure generations options to test a spec.
 type modelTestRun struct {
 	FixtureOpts *GenOpts
 	Definitions map[string]*modelExpectations
 }
 
-// AddExpectations adds expected / not expected sets of lines of code to the current run
+// AddExpectations adds expected / not expected sets of lines of code to the current run.
 func (r *modelTestRun) AddExpectations(file string, expectedCode, notExpectedCode, expectedLogs, notExpectedLogs []string) {
 	k := strings.ToLower(swag.ToJSONName(strings.TrimSuffix(file, ".go")))
 	if def, ok := r.Definitions[k]; ok {
@@ -110,7 +110,7 @@ func (r *modelTestRun) AddExpectations(file string, expectedCode, notExpectedCod
 	}
 }
 
-// ExpectedFor returns the map of model expectations from the run for a given model definition
+// ExpectedFor returns the map of model expectations from the run for a given model definition.
 func (r *modelTestRun) ExpectedFor(definition string) *modelExpectations {
 	if def, ok := r.Definitions[strings.ToLower(definition)]; ok {
 		return def
@@ -123,14 +123,14 @@ func (r *modelTestRun) WithMinimalFlatten(minimal bool) *modelTestRun {
 	return r
 }
 
-// modelFixture is a test structure to launch configurable test runs on a given spec
+// modelFixture is a test structure to launch configurable test runs on a given spec.
 type modelFixture struct {
 	SpecFile    string
 	Description string
 	Runs        []*modelTestRun
 }
 
-// Add adds a new run to the provided model fixture
+// Add adds a new run to the provided model fixture.
 func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts := &GenOpts{}
 	opts.IncludeValidator = true
@@ -154,7 +154,7 @@ func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	return run
 }
 
-// ExpectedBy returns the expectations from another run of the current fixture, recalled by its index in the list of planned runs
+// ExpectedBy returns the expectations from another run of the current fixture, recalled by its index in the list of planned runs.
 func (f *modelFixture) ExpectedFor(index int, definition string) *modelExpectations {
 	if index > len(f.Runs)-1 {
 		return nil
@@ -190,7 +190,7 @@ var (
 	modelTestMutex = &sync.Mutex{} // mutex to protect log capture
 	testedModels   []*modelFixture
 
-	// convenient vars for (not) matching some lines
+	// convenient vars for (not) matching some lines.
 	noLines     []string
 	todo        []string
 	validatable []string
@@ -205,7 +205,7 @@ func initSchemaValidationTest() {
 	warning = []string{`warning`}
 }
 
-// initModelFixtures loads all tests to be performed
+// initModelFixtures loads all tests to be performed.
 func initModelFixtures() {
 	initFixtureSimpleAllOf()
 	initFixtureComplexAllOf()

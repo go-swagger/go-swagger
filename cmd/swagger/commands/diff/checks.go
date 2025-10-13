@@ -7,7 +7,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// CompareEnums returns added, deleted enum values
+// CompareEnums returns added, deleted enum values.
 func CompareEnums(left, right []interface{}) []TypeDiff {
 	diffs := []TypeDiff{}
 
@@ -32,7 +32,7 @@ func CompareEnums(left, right []interface{}) []TypeDiff {
 	return diffs
 }
 
-// CompareProperties recursive property comparison
+// CompareProperties recursive property comparison.
 func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema2 *spec.Schema, getRefFn1 SchemaFromRefFn, getRefFn2 SchemaFromRefFn, cmp CompareSchemaFn) []SpecDifference {
 	propDiffs := []SpecDifference{}
 
@@ -45,7 +45,6 @@ func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema
 
 	// find deleted and changed properties
 	for eachProp1Name, eachProp1 := range schema1Props {
-		eachProp1 := eachProp1
 		childLoc := addChildDiffNode(location, eachProp1Name, eachProp1.Schema)
 
 		if eachProp2, ok := schema2Props[eachProp1Name]; ok {
@@ -63,7 +62,6 @@ func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema
 
 	// find added properties
 	for eachProp2Name, eachProp2 := range schema2.Properties {
-		eachProp2 := eachProp2
 		if _, ok := schema1.Properties[eachProp2Name]; !ok {
 			childLoc := addChildDiffNode(location, eachProp2Name, &eachProp2)
 
@@ -78,7 +76,7 @@ func CompareProperties(location DifferenceLocation, schema1 *spec.Schema, schema
 	return propDiffs
 }
 
-// CompareFloatValues compares a float data item
+// CompareFloatValues compares a float data item.
 func CompareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
 	diffs := []TypeDiff{}
 	if val1 != nil && val2 != nil {
@@ -99,7 +97,7 @@ func CompareFloatValues(fieldName string, val1 *float64, val2 *float64, ifGreate
 	return diffs
 }
 
-// CompareIntValues compares to int data items
+// CompareIntValues compares to int data items.
 func CompareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode SpecChangeCode, ifLessCode SpecChangeCode) []TypeDiff {
 	diffs := []TypeDiff{}
 	if val1 != nil && val2 != nil {
@@ -120,7 +118,7 @@ func CompareIntValues(fieldName string, val1 *int64, val2 *int64, ifGreaterCode 
 	return diffs
 }
 
-// CheckToFromPrimitiveType check for diff to or from a primitive
+// CheckToFromPrimitiveType check for diff to or from a primitive.
 func CheckToFromPrimitiveType(diffs []TypeDiff, type1, type2 interface{}) []TypeDiff {
 	type1IsPrimitive := isPrimitive(type1)
 	type2IsPrimitive := isPrimitive(type2)
@@ -135,7 +133,7 @@ func CheckToFromPrimitiveType(diffs []TypeDiff, type1, type2 interface{}) []Type
 	return diffs
 }
 
-// CheckRefChange has the property ref changed
+// CheckRefChange has the property ref changed.
 func CheckRefChange(diffs []TypeDiff, type1, type2 interface{}) (diffReturn []TypeDiff) {
 	diffReturn = diffs
 	if isRefType(type1) && isRefType(type2) {
@@ -151,7 +149,7 @@ func CheckRefChange(diffs []TypeDiff, type1, type2 interface{}) (diffReturn []Ty
 	return diffReturn
 }
 
-// checkNumericTypeChanges checks for changes to or from a numeric type
+// checkNumericTypeChanges checks for changes to or from a numeric type.
 func checkNumericTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []TypeDiff {
 	// Number
 	_, type1IsNumeric := numberWideness[type1.Type[0]]
@@ -185,7 +183,7 @@ func checkNumericTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) [
 	return diffs
 }
 
-// CheckStringTypeChanges checks for changes to or from a string type
+// CheckStringTypeChanges checks for changes to or from a string type.
 func CheckStringTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []TypeDiff {
 	// string changes
 	if type1.Type[0] == StringType &&
@@ -207,7 +205,7 @@ func CheckStringTypeChanges(diffs []TypeDiff, type1, type2 *spec.SchemaProps) []
 	return diffs
 }
 
-// CheckToFromRequired checks for changes to or from a required property
+// CheckToFromRequired checks for changes to or from a required property.
 func CheckToFromRequired(required1, required2 bool) (diffs []TypeDiff) {
 	if required1 != required2 {
 		code := ChangedOptionalToRequired

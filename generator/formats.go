@@ -16,7 +16,7 @@ package generator
 
 // TODO: we may probably find a way to register most of this dynamically from strfmt
 
-// map of function calls to be generated to get the zero value of a given type
+// map of function calls to be generated to get the zero value of a given type.
 var zeroes = map[string]string{
 	"bool":    "false",
 	"float32": "0",
@@ -62,7 +62,7 @@ var zeroes = map[string]string{
 }
 
 // conversion functions from string representation to a numerical or boolean
-// primitive type
+// primitive type.
 var stringConverters = map[string]string{
 	"bool":    "swag.ConvertBool",
 	"float32": "swag.ConvertFloat32",
@@ -78,7 +78,7 @@ var stringConverters = map[string]string{
 }
 
 // formatting (string representation) functions from a native representation
-// of a numerical or boolean primitive type
+// of a numerical or boolean primitive type.
 var stringFormatters = map[string]string{
 	"bool":    "swag.FormatBool",
 	"float32": "swag.FormatFloat32",
@@ -93,7 +93,7 @@ var stringFormatters = map[string]string{
 	"uint64":  "swag.FormatUint64",
 }
 
-// typeMapping contains a mapping of type name to go type
+// typeMapping contains a mapping of type name to go type.
 var typeMapping = map[string]string{
 	// Standard formats with native, straightforward, mapping
 	"string":  "string",
@@ -104,7 +104,7 @@ var typeMapping = map[string]string{
 	"file": "runtime.File",
 }
 
-// formatMapping contains a type-specific version of mapping of format to go type
+// formatMapping contains a type-specific version of mapping of format to go type.
 var formatMapping = map[string]map[string]string{
 	"number": {
 		"double": "float64",
@@ -172,7 +172,7 @@ var formatMapping = map[string]map[string]string{
 	},
 }
 
-// go primitive types
+// go primitive types.
 var primitives = map[string]struct{}{
 	"bool":       {},
 	"byte":       {},
@@ -196,7 +196,7 @@ var primitives = map[string]struct{}{
 }
 
 // Formats with a custom formatter.
-// Currently, 23 such formats are supported
+// Currently, 23 such formats are supported.
 var customFormatters = map[string]struct{}{
 	"strfmt.Base64":     {},
 	"strfmt.CreditCard": {},

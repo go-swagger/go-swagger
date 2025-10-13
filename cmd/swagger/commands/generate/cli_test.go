@@ -1,24 +1,29 @@
 package generate_test
 
 import (
-	"os/exec"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
-// Make sure generated code compiles
+type cliTestCase struct {
+	name         string
+	spec         string
+	skip         bool
+	wantError    bool
+	wantVetError bool
+}
+
+// Make sure generated code compiles.
 func TestGenerateCLI(t *testing.T) {
-	testcases := []struct {
-		name      string
-		spec      string
-		wantError bool
-	}{
+	testcases := []cliTestCase{
 		{
 			name:      "tasklist_basic",
 			spec:      "tasklist.basic.yml",
@@ -76,16 +81,20 @@ func TestGenerateCLI(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	base := t.TempDir()
+
+	for i, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", tc.spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+			pth := filepath.Join(testBase(), "fixtures/codegen", tc.spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
 			m := &generate.Cli{}
 			_, _ = flags.Parse(m)
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
+
+			t.Run("go mod", gomodinit(generated))
 
 			err := m.Execute([]string{})
 			if tc.wantError {
@@ -93,14 +102,14 @@ func TestGenerateCLI(t *testing.T) {
 
 				return
 			}
-
 			require.NoError(t, err)
-			// change to true to run go vet on generated files
-			runVet := false
-			if runVet {
-				vet := exec.Command("go", "vet", generated+"/...") //nolint:gosec
-				output, err := vet.CombinedOutput()
-				assert.NoError(t, err, string(output))
+
+			// run test with GOVET_TEST=1 go test -v -run CLI to run go vet on generated files.
+			//
+			// There are known issues there at this moment
+			if enableGoVet {
+				t.Run("go mod tidy", gomodtidy(generated))
+				t.Run("go vet", govet(generated, tc.wantVetError))
 			}
 		})
 	}
@@ -109,8 +118,10 @@ func TestGenerateCLI(t *testing.T) {
 func TestGenerateCli_Check(t *testing.T) {
 	m := &generate.Cli{}
 	_, _ = flags.Parse(m)
-	err := m.Execute([]string{})
-	require.Error(t, err)
+
+	t.Run("generate CLI requires an argument", func(t *testing.T) {
+		require.Error(t, m.Execute([]string{}))
+	})
 }
 
 // This test runs cli generation on various swagger specs, for sanity check.
@@ -119,61 +130,43 @@ func TestVariousCli(t *testing.T) {
 	// comment out this skip to run test
 	t.Skip()
 
-	// change to true to run test case with runOnly set true
-	runOnlyTest := false
-
-	testcases := []struct {
-		skip          bool
-		name          string
-		spec          string
-		wantError     bool
-		wantVetError  bool
-		preserveFiles bool // force to preserve files
-		runOnly       bool // run only this test, and skip all others
-	}{
+	testcases := []cliTestCase{
 		{
-			skip:         true, // do not run this since it is known to have bug
+			skip:         true, // do not run this in CI since it is known to have bug
 			name:         "crazy-alias",
 			spec:         "fixtures/bugs/1260/fixture-realiased-types.yaml",
 			wantError:    false, // generate files should success
 			wantVetError: true,  // polymorphism is not supported. model import is not right. TODO: fix this.
 		},
 		{
-			name:          "multi-auth",
-			spec:          "examples/composed-auth/swagger.yml",
-			preserveFiles: true,
+			name: "multi-auth",
+			spec: "examples/composed-auth/swagger.yml",
 		},
 		// not working because of model generation order.
 		// {
 		// 	name:          "enum",
 		// 	spec:          "fixtures/enhancements/1623/swagger.yml",
-		// 	preserveFiles: true,
-		// 	runOnly:       true,
 		// },
 	}
 
-	for _, tc := range testcases {
-		if runOnlyTest && !tc.runOnly {
-			continue
-		}
+	base := t.TempDir()
+
+	for i, tc := range testcases {
 		t.Run(tc.name, func(tt *testing.T) {
 			if tc.skip {
 				tt.Skip()
 			}
-			path := filepath.Join(testBase(), tc.spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(func() {
-				// only clean up if success, and leave the files around for developer to inspect
-				if !tt.Failed() {
-					if !tc.preserveFiles {
-						cleanup()
-					}
-				}
-			})
+
+			pth := filepath.Join(testBase(), tc.spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
+
 			m := &generate.Cli{}
 			_, _ = flags.Parse(m)
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
+
+			t.Run("go mod", gomodinit(generated))
 
 			err := m.Execute([]string{})
 			if tc.wantError {
@@ -181,18 +174,12 @@ func TestVariousCli(t *testing.T) {
 
 				return
 			}
-
 			require.NoError(tt, err)
-			// always run go vet on generated files
-			runVet := true
-			if runVet {
-				vet := exec.Command("go", "vet", generated+"/...") //nolint:gosec
-				output, err := vet.CombinedOutput()
-				if !tc.wantVetError {
-					require.NoError(tt, err, string(output))
-				} else {
-					require.Error(t, err)
-				}
+
+			// run go vet on generated files
+			if enableGoVet {
+				t.Run("go mod tidy", gomodtidy(generated))
+				t.Run("go vet", govet(generated, tc.wantVetError))
 			}
 		})
 	}

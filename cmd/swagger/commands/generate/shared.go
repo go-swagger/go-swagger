@@ -16,13 +16,13 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
-// FlattenCmdOptions determines options to the flatten spec preprocessing
+// FlattenCmdOptions determines options to the flatten spec preprocessing.
 type FlattenCmdOptions struct {
-	WithExpand  bool     `long:"with-expand" description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)"  group:"shared"`
-	WithFlatten []string `long:"with-flatten" description:"flattens all $ref's in spec prior to generation" choice:"minimal" choice:"full" choice:"expand" choice:"verbose" choice:"noverbose" choice:"remove-unused" choice:"keep-names" default:"minimal" default:"verbose" group:"shared"`
+	WithExpand  bool     `description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)" group:"shared" long:"with-expand"`
+	WithFlatten []string `choice:"minimal"                                                                                  choice:"full"  choice:"expand"    choice:"verbose" choice:"noverbose" choice:"remove-unused" choice:"keep-names" default:"minimal" default:"verbose" description:"flattens all $ref's in spec prior to generation" group:"shared" long:"with-flatten"`
 }
 
-// SetFlattenOptions builds flatten options from command line args
+// SetFlattenOptions builds flatten options from command line args.
 func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *analysis.FlattenOpts) {
 	res = &analysis.FlattenOpts{}
 	if dflt != nil {
@@ -81,10 +81,10 @@ type sharedCommand interface {
 }
 
 type schemeOptions struct {
-	Principal     string `short:"P" long:"principal" description:"the model to use for the security principal"`
-	DefaultScheme string `long:"default-scheme" description:"the default scheme for this API" default:"http"`
+	Principal     string `description:"the model to use for the security principal" long:"principal"                              short:"P"`
+	DefaultScheme string `default:"http"                                            description:"the default scheme for this API" long:"default-scheme"`
 
-	PrincipalIface bool `long:"principal-is-interface" description:"the security principal provided is an interface, not a struct"`
+	PrincipalIface bool `description:"the security principal provided is an interface, not a struct" long:"principal-is-interface"`
 }
 
 func (so schemeOptions) apply(opts *generator.GenOpts) {
@@ -94,8 +94,8 @@ func (so schemeOptions) apply(opts *generator.GenOpts) {
 }
 
 type mediaOptions struct {
-	DefaultProduces string `long:"default-produces" description:"the default mime type that API operations produce" default:"application/json"`
-	DefaultConsumes string `long:"default-consumes" description:"the default mime type that API operations consume" default:"application/json"`
+	DefaultProduces string `default:"application/json" description:"the default mime type that API operations produce" long:"default-produces"`
+	DefaultConsumes string `default:"application/json" description:"the default mime type that API operations consume" long:"default-consumes"`
 }
 
 func (m mediaOptions) apply(opts *generator.GenOpts) {
@@ -106,7 +106,7 @@ func (m mediaOptions) apply(opts *generator.GenOpts) {
 	opts.WithXML = strings.Contains(opts.DefaultProduces, xmlIdentifier) || strings.Contains(opts.DefaultConsumes, xmlIdentifier)
 }
 
-// WithShared adds the shared options group
+// WithShared adds the shared options group.
 type WithShared struct {
 	Shared sharedOptions `group:"Options common to all code generation commands"`
 }
@@ -116,19 +116,20 @@ func (w WithShared) getConfigFile() string {
 }
 
 type sharedOptionsCommon struct {
-	Spec                  flags.Filename `long:"spec" short:"f" description:"the spec file to use (default swagger.{json,yml,yaml})" group:"shared"`
-	Target                flags.Filename `long:"target" short:"t" default:"./" description:"the base directory for generating the files" group:"shared"`
-	Template              string         `long:"template" description:"load contributed templates" choice:"stratoscale" group:"shared"`
-	TemplateDir           flags.Filename `long:"template-dir" short:"T" description:"alternative template override directory" group:"shared"`
-	ConfigFile            flags.Filename `long:"config-file" short:"C" description:"configuration file to use for overriding template options" group:"shared"`
-	CopyrightFile         flags.Filename `long:"copyright-file" short:"r" description:"copyright file used to add copyright header" group:"shared"`
-	AdditionalInitialisms []string       `long:"additional-initialism" description:"consecutive capitals that should be considered intialisms" group:"shared"`
-	AllowTemplateOverride bool           `long:"allow-template-override" description:"allows overriding protected templates" group:"shared"`
-	SkipValidation        bool           `long:"skip-validation" description:"skips validation of spec prior to generation" group:"shared"`
-	DumpData              bool           `long:"dump-data" description:"when present dumps the json for the template generator instead of generating files" group:"shared"`
-	StrictResponders      bool           `long:"strict-responders" description:"Use strict type for the handler return value"`
-	ReturnErrors          bool           `long:"return-errors" short:"e" description:"handlers explicitly return an error as the second value" group:"shared"`
 	FlattenCmdOptions
+
+	Spec                  flags.Filename `description:"the spec file to use (default swagger.{json,yml,yaml})"                             group:"shared"                                            long:"spec"                    short:"f"`
+	Target                flags.Filename `default:"./"                                                                                     description:"the base directory for generating the files" group:"shared"                 long:"target"   short:"t"`
+	Template              string         `choice:"stratoscale"                                                                             description:"load contributed templates"                  group:"shared"                 long:"template"`
+	TemplateDir           flags.Filename `description:"alternative template override directory"                                            group:"shared"                                            long:"template-dir"            short:"T"`
+	ConfigFile            flags.Filename `description:"configuration file to use for overriding template options"                          group:"shared"                                            long:"config-file"             short:"C"`
+	CopyrightFile         flags.Filename `description:"copyright file used to add copyright header"                                        group:"shared"                                            long:"copyright-file"          short:"r"`
+	AdditionalInitialisms []string       `description:"consecutive capitals that should be considered intialisms"                          group:"shared"                                            long:"additional-initialism"`
+	AllowTemplateOverride bool           `description:"allows overriding protected templates"                                              group:"shared"                                            long:"allow-template-override"`
+	SkipValidation        bool           `description:"skips validation of spec prior to generation"                                       group:"shared"                                            long:"skip-validation"`
+	DumpData              bool           `description:"when present dumps the json for the template generator instead of generating files" group:"shared"                                            long:"dump-data"`
+	StrictResponders      bool           `description:"Use strict type for the handler return value"                                       long:"strict-responders"`
+	ReturnErrors          bool           `description:"handlers explicitly return an error as the second value"                            group:"shared"                                            long:"return-errors"           short:"e"`
 }
 
 func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {

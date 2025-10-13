@@ -1,6 +1,6 @@
 package diff
 
-// CompatibilityPolicy decides which changes are breaking and which are not
+// CompatibilityPolicy decides which changes are breaking and which are not.
 type CompatibilityPolicy struct {
 	ForResponse map[SpecChangeCode]Compatibility
 	ForRequest  map[SpecChangeCode]Compatibility

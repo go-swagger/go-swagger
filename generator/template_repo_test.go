@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	// Test template environment
+	// Test template environment.
 	singleTemplate        = `test`
 	multipleDefinitions   = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 	dependantTemplate     = `{{ template "T1" }}D1`
@@ -244,7 +244,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 // Test that definitions are available to templates
 // TODO: should test also with the codeGenApp context
 
-// Test copyright definition
+// Test copyright definition.
 func TestTemplates_DefinitionCopyright(t *testing.T) {
 	defer discardOutput()()
 
@@ -286,7 +286,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	assert.Equal(t, expected, rendered.String())
 }
 
-// Test TargetImportPath definition
+// Test TargetImportPath definition.
 func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	const targetImportPath = `{{ .TargetImportPath }}`
 	defer discardOutput()()
@@ -329,7 +329,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	assert.Equal(t, expected, rendered.String())
 }
 
-// Simulates a definition environment for model templates
+// Simulates a definition environment for model templates.
 func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 	defer discardOutput()()
 
@@ -350,7 +350,7 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 	return nil, nil
 }
 
-// Simulates a definition environment for operation templates
+// Simulates a definition environment for operation templates.
 func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
 	defer discardOutput()()
 
@@ -444,7 +444,7 @@ func TestTemplates_AddFile(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot overwrite protected template")
 }
 
-// Test LoadDir
+// Test LoadDir.
 func TestTemplates_LoadDir(t *testing.T) {
 	defer discardOutput()()
 
@@ -474,7 +474,7 @@ func TestTemplates_LoadDir(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Test LoadDir
+// Test LoadDir.
 func TestTemplates_SetAllowOverride(t *testing.T) {
 	defer discardOutput()()
 
@@ -490,7 +490,7 @@ func TestTemplates_SetAllowOverride(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Test LoadContrib
+// Test LoadContrib.
 func TestTemplates_LoadContrib(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -522,7 +522,7 @@ func TestTemplates_LoadContrib(t *testing.T) {
 }
 
 // TODO: test error case in LoadDefaults()
-// test DumpTemplates()
+// test DumpTemplates().
 func TestTemplates_DumpTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	defer captureOutput(&buf)()

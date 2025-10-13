@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Commands requires at least one arg
+// Commands requires at least one arg.
 func TestCmd_Validate_MissingArgs(t *testing.T) {
 	var v ValidateSpec
 	require.Error(t, v.Execute([]string{}))
 	require.Error(t, v.Execute([]string{"nowhere.json"}))
 }
 
-// Test proper validation: items in object error
+// Test proper validation: items in object error.
 func TestCmd_Validate_Issue1238(t *testing.T) {
 	var v ValidateSpec
 	specDoc := filepath.Join(fixtureBase(), "bugs", "1238", "swagger.yaml")
@@ -29,14 +29,14 @@ func TestCmd_Validate_Issue1238(t *testing.T) {
 	assert.Contains(t, result.Error(), "definitions.RRSets in body must be of type array")
 }
 
-// Test proper validation: missing items in array error
+// Test proper validation: missing items in array error.
 func TestCmd_Validate_Issue1171(t *testing.T) {
 	var v ValidateSpec
 	specDoc := filepath.Join(fixtureBase(), "bugs", "1171", "swagger.yaml")
 	require.Error(t, v.Execute([]string{specDoc}))
 }
 
-// Test proper validation: reference to inner property in schema
+// Test proper validation: reference to inner property in schema.
 func TestCmd_Validate_Issue342_ForbiddenProperty(t *testing.T) {
 	var v ValidateSpec
 	specDoc := filepath.Join(fixtureBase(), "bugs", "342", "fixture-342.yaml")
@@ -64,7 +64,7 @@ func TestCmd_Validate_Issue342_CannotUnmarshal(t *testing.T) {
 	assert.Contains(t, result.Error(), "of type []spec.Parameter")
 }
 
-// This one is a correct version of issue#342 and it validates
+// This one is a correct version of issue#342 and it validates.
 func TestCmd_Validate_Issue342_Correct(t *testing.T) {
 	var v ValidateSpec
 	specDoc := filepath.Join(fixtureBase(), "bugs", "342", "fixture-342-3.yaml")

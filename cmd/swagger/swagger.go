@@ -26,8 +26,8 @@ import (
 
 var opts struct {
 	// General options applicable to all commands
-	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
-	LogFile func(string) `long:"log-output" description:"redirect logs to file" value-name:"LOG-FILE"`
+	Quiet   func()       `description:"silence logs"          long:"quiet"      short:"q"`
+	LogFile func(string) `description:"redirect logs to file" long:"log-output" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 

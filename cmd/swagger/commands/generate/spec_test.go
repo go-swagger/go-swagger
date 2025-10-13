@@ -42,7 +42,7 @@ func TestSpecFileExecute(t *testing.T) {
 			name = "to stdout"
 		}
 
-		t.Run(fmt.Sprintf("should produce spec file %s", name), func(t *testing.T) {
+		t.Run("should produce spec file "+name, func(t *testing.T) {
 			spec := &SpecFile{
 				WorkDir: basePath,
 				Output:  flags.Filename(outputFile),

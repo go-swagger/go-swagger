@@ -1602,7 +1602,7 @@ func TestGenModel_Issue222(t *testing.T) {
 
 	res := string(ct)
 	assertInCode(t, "Price) Validate(formats strfmt.Registry) error", res)
-	assertInCode(t, "Currency Currency `json:\"currency,omitempty\"`", res)
+	assertInCode(t, "Currency `json:\"currency,omitempty\"`", res)
 	assertInCode(t, "m.Currency.Validate(formats); err != nil", res)
 }
 
@@ -2071,7 +2071,7 @@ func TestGenModel_Issue1341(t *testing.T) {
 	assertInCode(t, "Test: m.Test(),", res)
 }
 
-// This tests to check that format validation is performed on non required schema properties
+// This tests to check that format validation is performed on non required schema properties.
 func TestGenModel_Issue1347(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1347/fixture-1347.yaml")
 	require.NoError(t, err)
@@ -2093,7 +2093,7 @@ func TestGenModel_Issue1347(t *testing.T) {
 	assertInCode(t, `validate.FormatOf("config1", "body", "hostname", m.Config1.String(), formats)`, res)
 }
 
-// This tests to check that format validation is performed on MAC format
+// This tests to check that format validation is performed on MAC format.
 func TestGenModel_Issue1348(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/1348/fixture-1348.yaml")
 	require.NoError(t, err)
@@ -2239,7 +2239,7 @@ func TestGenModel_Issue2911(t *testing.T) {
 	}`, res)
 }
 
-// This tests makes sure model definitions from inline schema in response are properly flattened and get validation
+// This tests makes sure model definitions from inline schema in response are properly flattened and get validation.
 func TestGenModel_Issue866(t *testing.T) {
 	defer discardOutput()()
 
@@ -2272,7 +2272,7 @@ func TestGenModel_Issue866(t *testing.T) {
 	}
 }
 
-// This tests makes sure marshalling and validation is generated in aliased formatted definitions
+// This tests makes sure marshalling and validation is generated in aliased formatted definitions.
 func TestGenModel_Issue946(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/946/fixture-946.yaml")
 	require.NoError(t, err)
@@ -2299,7 +2299,7 @@ func TestGenModel_Issue946(t *testing.T) {
 	assertInCode(t, `if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`, res)
 }
 
-// This tests makes sure that docstring in inline schema in response properly reflect the Required property
+// This tests makes sure that docstring in inline schema in response properly reflect the Required property.
 func TestGenModel_Issue910(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/bugs/910/fixture-910.yaml")
 	require.NoError(t, err)
@@ -2693,7 +2693,7 @@ func TestGenerateModels(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Run(fmt.Sprintf("generating test models from: %s", opts.Spec), func(t *testing.T) {
+				t.Run("generating test models from: "+opts.Spec, func(t *testing.T) {
 					err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
 					if thisCas.wantError {
 						require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)

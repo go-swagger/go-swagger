@@ -22,18 +22,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mutex for -race because this test alters a global
+// mutex for -race because this test alters a global.
 var logMutex = &sync.Mutex{}
 
 func TestDebugLog(t *testing.T) {
-	tmpFile, _ := os.CreateTemp("", "debug-test")
+	tmpFile, _ := os.CreateTemp(t.TempDir(), "debug-test")
 	tmpName := tmpFile.Name()
 	logMutex.Lock()
 	defer func() {
 		Debug = false
 		// mutex for -race
 		logMutex.Unlock()
-		_ = os.Remove(tmpName)
 	}()
 
 	// mutex for -race
@@ -54,11 +53,8 @@ func TestDebugLog(t *testing.T) {
 	_ = flushed.Close()
 
 	// test debugLogAsJSON()
-	tmpJSONFile, _ := os.CreateTemp("", "debug-test")
+	tmpJSONFile, _ := os.CreateTemp(t.TempDir(), "debug-test")
 	tmpJSONName := tmpJSONFile.Name()
-	defer func() {
-		_ = os.Remove(tmpJSONName)
-	}()
 	generatorLogger.SetOutput(tmpJSONFile)
 	debugLogAsJSON("A short debug")
 

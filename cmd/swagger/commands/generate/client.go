@@ -21,14 +21,14 @@ import (
 )
 
 type clientOptions struct {
-	ClientPackage string `long:"client-package" short:"c" description:"the package to save the client specific code" default:"client"`
+	ClientPackage string `default:"client" description:"the package to save the client specific code" long:"client-package" short:"c"`
 }
 
 func (co clientOptions) apply(opts *generator.GenOpts) {
 	opts.ClientPackage = co.ClientPackage
 }
 
-// Client the command to generate a swagger client
+// Client the command to generate a swagger client.
 type Client struct {
 	WithShared
 	WithModels
@@ -38,10 +38,10 @@ type Client struct {
 	schemeOptions
 	mediaOptions
 
-	SkipModels     bool `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations bool `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
+	SkipModels     bool `description:"no models will be generated when this flag is specified"     long:"skip-models"`
+	SkipOperations bool `description:"no operations will be generated when this flag is specified" long:"skip-operations"`
 
-	Name string `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 }
 
 func (c Client) apply(opts *generator.GenOpts) {
@@ -79,7 +79,7 @@ For this generation to compile you need to have some packages in your go.mod:
 You can get these now with: go mod tidy`)
 }
 
-// Execute runs this command
+// Execute runs this command.
 func (c *Client) Execute(_ []string) error {
 	return createSwagger(c)
 }

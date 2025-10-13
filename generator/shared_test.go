@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"os"
 	"path"
@@ -77,7 +77,7 @@ func testGenOpts() *GenOpts {
 // Errors in CheckOpts are hard to simulate since
 // they occur only on os.Getwd() errors
 // Windows style path is difficult to test on unix
-// since the filepath pkg is platform dependent
+// since the filepath pkg is platform dependent.
 func TestShared_CheckOpts(t *testing.T) {
 	defer discardOutput()()
 	testPath := filepath.Join("a", "b", "b")
@@ -182,7 +182,7 @@ func TestShared_TargetPath(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-// NOTE: file://url is not supported
+// NOTE: file://url is not supported.
 func TestShared_SpecPath(t *testing.T) {
 	defer discardOutput()()
 
@@ -267,7 +267,7 @@ func TestShared_SpecPath(t *testing.T) {
 	}
 }
 
-// Low level testing: templates not found (higher level calls raise panic(), see above)
+// Low level testing: templates not found (higher level calls raise panic(), see above).
 func TestShared_NotFoundTemplate(t *testing.T) {
 	defer discardOutput()()
 
@@ -287,7 +287,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 }
 
 // Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
-// TODO: better error discrimination between absent definition and non-parsing template
+// TODO: better error discrimination between absent definition and non-parsing template.
 func TestShared_GarbledTemplate(t *testing.T) {
 	defer discardOutput()()
 
@@ -310,11 +310,11 @@ func TestShared_GarbledTemplate(t *testing.T) {
 	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 
-// Template execution failure
+// Template execution failure.
 type myTemplateData struct{}
 
 func (*myTemplateData) MyFaultyMethod() (string, error) {
-	return "", fmt.Errorf("myFaultyError")
+	return "", errors.New("myFaultyError")
 }
 
 func TestShared_ExecTemplate(t *testing.T) {
@@ -359,7 +359,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
 }
 
-// Test correctly parsed templates, with bad formatting
+// Test correctly parsed templates, with bad formatting.
 func TestShared_BadFormatTemplate(t *testing.T) {
 	// TODO: fred refact
 	defer discardOutput()()
@@ -429,7 +429,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	// os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
 }
 
-// Test dir creation
+// Test dir creation.
 func TestShared_DirectoryTemplate(t *testing.T) {
 	defer discardOutput()()
 
@@ -470,7 +470,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 }
 
 // Test templates which are not assets (open in file)
-// Low level testing: templates loaded from file
+// Low level testing: templates loaded from file.
 func TestShared_LoadTemplate(t *testing.T) {
 	defer discardOutput()()
 
@@ -765,7 +765,7 @@ func TestDefaultImports(t *testing.T) {
 		},
 	} {
 		fixture := toPin
-		i := i
+
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
 			err := fixture.Opts.EnsureDefaults()

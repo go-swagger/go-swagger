@@ -19,7 +19,7 @@ func TestMediaWellKnownMime(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "yaml", w)
 
-	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1") //nolint:testifylint // This is not a json value, this is a mime type
+	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1")
 	assert.True(t, ok)
 	assert.Equal(t, jsonSerializer, w) //nolint:testifylint
 

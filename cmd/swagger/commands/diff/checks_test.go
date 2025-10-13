@@ -58,7 +58,7 @@ func Test_getRef(t *testing.T) {
 // 	}
 // 	tests := []struct {
 // 		name string
-// 		args args
+// 		args
 // 		want []TypeDiff
 // 	}{
 // 		{
