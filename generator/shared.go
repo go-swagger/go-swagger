@@ -1055,7 +1055,7 @@ func securityRequirements(orig []map[string][]string) (result []analysis.Securit
 		}
 	}
 	// TODO(fred): sort this for stable generation
-	return
+	return result
 }
 
 // gatherExtraSchemas produces a sorted list of extra schemas.
@@ -1073,7 +1073,7 @@ func gatherExtraSchemas(extraMap map[string]GenSchema) (extras GenSchemaList) {
 		p.HasValidations = shallowValidationLookup(p)
 		extras = append(extras, p)
 	}
-	return
+	return extras
 }
 
 func getExtraSchemes(ext spec.Extensions) []string {
