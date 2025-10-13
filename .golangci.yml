@@ -7,6 +7,7 @@ linters:
     - gosec
     - ineffassign
     - misspell
+    - nakedret
     - revive
     - staticcheck
     - testifylint
@@ -17,7 +18,6 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - lll
-    - nakedret
     - unparam
   settings:
     depguard:
