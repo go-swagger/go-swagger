@@ -1004,10 +1004,16 @@ func trimBOM(in string) string {
 	return strings.Trim(in, "\xef\xbb\xbf")
 }
 
+const (
+	securitySchemeAPIKey = "apikey"
+	securitySchemeBasic  = "basic"
+	securitySchemeOAuth2 = "oauth2"
+)
+
 // gatherSecuritySchemes produces a sorted representation from a map of spec security schemes
 func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string, nullable bool) (security GenSecuritySchemes) {
 	for scheme, req := range securitySchemes {
-		isOAuth2 := strings.ToLower(req.Type) == "oauth2"
+		isOAuth2 := strings.EqualFold(req.Type, securitySchemeOAuth2)
 		scopes := make([]string, 0, len(req.Scopes))
 		genScopes := make([]GenSecurityScope, 0, len(req.Scopes))
 		if isOAuth2 {
@@ -1023,8 +1029,8 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 			ID:           scheme,
 			ReceiverName: receiver,
 			Name:         req.Name,
-			IsBasicAuth:  strings.ToLower(req.Type) == "basic",
-			IsAPIKeyAuth: strings.ToLower(req.Type) == "apikey",
+			IsBasicAuth:  strings.EqualFold(req.Type, securitySchemeBasic),
+			IsAPIKeyAuth: strings.EqualFold(req.Type, securitySchemeAPIKey),
 			IsOAuth2:     isOAuth2,
 			Scopes:       scopes,
 			ScopesDesc:   genScopes,
