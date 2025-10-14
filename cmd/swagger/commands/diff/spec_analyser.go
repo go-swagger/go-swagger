@@ -836,7 +836,7 @@ func (sd *SpecAnalyser) schemaFromRef(ref spec.Ref, defns *spec.Definitions) (ac
 	}
 	sd.ReferencedDefinitions[definitionName] = true
 	actualSchema = &foundSchema
-	return
+	return actualSchema, definitionName
 }
 
 func schemaLocationKey(location DifferenceLocation) string {

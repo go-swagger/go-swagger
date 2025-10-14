@@ -83,7 +83,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 		result.IsPrimitive = true
 		result.GoType = formatMapping[str][binary]
 		result.IsStream = true
-		return
+		return result
 	}
 
 	if fmt != "" {
@@ -102,7 +102,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 				result.IsStream = fmt == binary
 				// special case of swagger format "byte", rendered as a strfmt.Base64 type: no validation
 				result.IsBase64 = fmt == b64
-				return
+				return result
 			}
 		}
 	}
@@ -111,7 +111,7 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 		result.GoType = tpe
 		_, result.IsPrimitive = primitives[tpe]
 		result.IsPrimitive = ok
-		return
+		return result
 	}
 
 	if tn == array {
@@ -121,15 +121,15 @@ func simpleResolvedType(tn, fmt string, items *spec.Items, v *spec.CommonValidat
 		result.IsNullable = false
 		if items == nil {
 			result.GoType = "[]" + iface
-			return
+			return result
 		}
 		res := simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
 		result.GoType = "[]" + res.GoType
-		return
+		return result
 	}
 	result.GoType = tn
 	_, result.IsPrimitive = primitives[tn]
-	return
+	return result
 }
 
 func newTypeResolver(pkg, _ string, doc *loads.Document) *typeResolver {
@@ -293,7 +293,7 @@ func (t *typeResolver) withDefinitionPackage(pkg string) *typeResolver {
 
 func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (returns bool, result resolvedType, err error) {
 	if schema.Ref.String() == "" {
-		return
+		return false, result, nil
 	}
 	debugLog("resolving ref (anon: %t, req: %t) %s", false, isRequired, schema.Ref.String())
 
@@ -305,7 +305,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	if er != nil {
 		debugLog("error resolving ref %s: %v", schema.Ref.String(), er)
 		err = er
-		return
+		return returns, result, err
 	}
 
 	extType, isExternalType := t.resolveExternalType(schema.Extensions)
@@ -317,7 +317,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	res, er := t.ResolveSchema(ref, false, isRequired)
 	if er != nil {
 		err = er
-		return
+		return returns, result, err
 	}
 	result = res
 
@@ -333,7 +333,8 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	result.IsBaseType = result.HasDiscriminator
 	result.IsNullable = result.IsNullable || t.isNullable(ref) // this has to be overridden for slices and maps
 	result.IsEnumCI = false
-	return
+
+	return returns, result, err
 }
 
 func (t *typeResolver) inferAliasing(result *resolvedType, _ *spec.Schema, isAnonymous bool, _ bool) {
@@ -389,7 +390,7 @@ func (t *typeResolver) resolveFormat(schema *spec.Schema, isAnonymous bool, isRe
 	}
 
 	guardFormatConflicts(schema.Format, schema)
-	return
+	return returns, result, nil
 }
 
 // isNullable hints the generator as to render the type with a pointer or not.
@@ -455,7 +456,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.SwaggerFormat = ""
 		t.inferAliasing(&result, schema, isAnonymous, isRequired)
 
-		return
+		return result, nil
 	}
 
 	if len(schema.Items.Schemas) > 0 {
@@ -465,14 +466,14 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 		result.SwaggerFormat = ""
 		t.inferAliasing(&result, schema, isAnonymous, isRequired)
 
-		return
+		return result, nil
 	}
 
 	// resolve anonymous items
 	rt, er := t.ResolveSchema(schema.Items.Schema, true, false)
 	if er != nil {
 		err = er
-		return
+		return result, err
 	}
 
 	// Override the general nullability rule from ResolveSchema() in array elements:
@@ -510,7 +511,7 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	t.inferAliasing(&result, schema, isAnonymous, isRequired)
 	result.Extensions = schema.Extensions
 
-	return
+	return result, nil
 }
 
 func (t *typeResolver) goTypeName(nm string) string {
@@ -563,7 +564,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 			result.IsNullable = isNullable
 		}
 		result.SwaggerType = object
-		return
+		return result, nil
 	}
 
 	// if this schema has properties, build a map of property name to
@@ -581,7 +582,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 		et, er := t.ResolveSchema(sch, sch.Ref.String() == "", false)
 		if er != nil {
 			err = er
-			return
+			return result, err
 		}
 
 		result.IsMap = !result.IsComplexObject
@@ -625,7 +626,8 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 				for s.Items != nil && s.Items.Schema != nil {
 					it, er = t.ResolveSchema(s.Items.Schema, sch.Ref.String() == "", false)
 					if er != nil {
-						return
+						// TODO(thaJeztah): should this return the error? (It didn't do so before)
+						return result, nil
 					}
 					s = s.Items.Schema
 				}
@@ -641,11 +643,11 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 
 		t.inferAliasing(&result, schema, isAnonymous, false)
 		result.ElemType = &et
-		return
+		return result, nil
 	}
 
 	if len(schema.Properties) > 0 {
-		return
+		return result, nil
 	}
 
 	// an object without property and without AdditionalProperties schema is rendered as any
@@ -659,7 +661,8 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 	} else {
 		result.GoType = "map[string]any"
 	}
-	return
+
+	return result, err
 }
 
 // nullableBool makes a boolean a pointer when we want to distinguish the zero value from no value set.
@@ -811,7 +814,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	if schema == nil {
 		result.IsInterface = true
 		result.GoType = iface
-		return
+		return result, nil
 	}
 
 	extType, isExternalType := t.resolveExternalType(schema.Extensions)
@@ -825,7 +828,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			debugLog("short circuits external type resolution with hint for %s", tpe)
 			result = t.shortCircuitResolveExternal(tpe, pkg, alias, extType, schema, isRequired)
 			result.IsExternal = isAnonymous // mark anonymous external types only, not definitions
-			return
+			return result, nil
 		}
 
 		// use spec to qualify type
@@ -899,7 +902,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsComplexObject = true
 		}
 
-		return
+		return result, err
 	}
 
 	defer func() {
@@ -913,12 +916,12 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		result.IsNullable = false
 		result.GoType = formatMapping[str][binary]
 		result.IsStream = true
-		return
+		return result, nil
 	}
 
 	returns, result, err = t.resolveFormat(schema, isAnonymous, isRequired)
 	if returns {
-		return
+		return result, err
 	}
 
 	result.IsNullable = t.isNullable(schema) || isRequired
@@ -984,7 +987,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 		err = fmt.Errorf("unresolvable: %v (format %q)", schema.Type, schema.Format)
 	}
 
-	return
+	return result, err
 }
 
 func warnSkipValidation(types any) func(string, any) {
@@ -1198,7 +1201,7 @@ func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
 		return
 	}
 	// array of primitives are by default not empty-omitted, but arrays of aliased type are
-	rt.IsEmptyOmitted = (tpe != array) || (tpe == array && rt.IsAliased)
+	rt.IsEmptyOmitted = (tpe != array) || rt.IsAliased
 }
 
 func (rt *resolvedType) setIsJSONString(schema *spec.Schema, _ string) {
