@@ -1,4 +1,4 @@
-package _3125
+package minimal
 
 // swagger:model Item
 type Item struct {

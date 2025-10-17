@@ -21,18 +21,21 @@ Help Options:
   -h, --help                   Show this help message
 
 [spec command options]
-      -w, --work-dir=          the base path to use (default: .)
-      -t, --tags=              build tags
-      -m, --scan-models        includes models that were annotated with 'swagger:model'
-          --compact            when present, doesn't prettify the json
-      -o, --output=            the file to write to
-      -i, --input=             an input swagger file with which to merge
-      -c, --include=           include packages matching pattern
-      -x, --exclude=           exclude packages matching pattern
-          --include-tag=       include routes having specified tags (can be specified many times)
-          --exclude-tag=       exclude routes having specified tags (can be specified many times)
-          --exclude-deps       exclude all dependencies of project
-      -n, --nullable-pointers  set x-nullable extension to true automatically for fields of pointer types without 'omitempty'
+      -w, --work-dir=               the base path to use (default: .)
+      -t, --tags=                   build tags
+      -m, --scan-models             includes models that were annotated with 'swagger:model'
+          --compact                 when present, doesn't prettify the json
+      -o, --output=                 the file to write to
+      -i, --input=                  an input swagger file with which to merge
+      -c, --include=                include packages matching pattern
+      -x, --exclude=                exclude packages matching pattern
+          --include-tag=            include routes having specified tags (can be specified many times)
+          --exclude-tag=            exclude routes having specified tags (can be specified many times)
+          --exclude-deps            exclude all dependencies of project
+      -n, --nullable-pointers       set x-nullable extension to true automatically for fields of pointer types without 'omitempty'
+      -r, --ref-aliases             transform aliased types into $ref rather than expanding their definition
+          --allow-desc-with-ref     allow descriptions to flow alongside $ref
+          --format=[yaml|json]      the format for the spec document (default: json)
 ```
 
 See code annotation rules [here](../reference/annotations)

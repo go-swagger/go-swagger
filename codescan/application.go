@@ -53,11 +53,14 @@ type Options struct {
 	ExcludeTags             []string
 	SetXNullableForPointers bool
 	RefAliases              bool // aliases result in $ref, otherwise aliases are expanded
+	DescWithRef             bool // allow overloaded descriptions together with $ref, otherwise jsonschema draft4 $ref predates everything
 }
 
 type scanCtx struct {
 	pkgs []*packages.Package
 	app  *typeIndex
+
+	opts *Options
 }
 
 func sliceToSet(names []string) map[string]bool {
@@ -109,6 +112,7 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 	return &scanCtx{
 		pkgs: pkgs,
 		app:  app,
+		opts: opts,
 	}, nil
 }
 
