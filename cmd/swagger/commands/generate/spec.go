@@ -45,6 +45,8 @@ type SpecFile struct {
 	ExcludeDeps             bool           `long:"exclude-deps" short:"" description:"exclude all dependencies of project"`
 	SetXNullableForPointers bool           `long:"nullable-pointers" short:"n" description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'"`
 	RefAliases              bool           `long:"ref-aliases" short:"r" description:"transform aliased types into $ref rather than expanding their definition"`
+	DescWithRef             bool           `long:"allow-desc-with-ref" short:"" description:"allow descriptions to flow alongside $ref"`
+	Format                  string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
 }
 
 // Execute runs this command
@@ -71,12 +73,13 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.ExcludeDeps = s.ExcludeDeps
 	opts.SetXNullableForPointers = s.SetXNullableForPointers
 	opts.RefAliases = s.RefAliases
+	opts.DescWithRef = s.DescWithRef
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err
 	}
 
-	return writeToFile(swspec, !s.Compact, string(s.Output))
+	return writeToFile(swspec, !s.Compact, s.Format, string(s.Output))
 }
 
 func loadSpec(input string) (*spec.Swagger, error) {
@@ -95,11 +98,11 @@ func loadSpec(input string) (*spec.Swagger, error) {
 
 var defaultWriter io.Writer = os.Stdout
 
-func writeToFile(swspec *spec.Swagger, pretty bool, output string) error {
+func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string) error {
 	var b []byte
 	var err error
 
-	if strings.HasSuffix(output, "yml") || strings.HasSuffix(output, "yaml") {
+	if strings.HasSuffix(output, "yml") || strings.HasSuffix(output, "yaml") || format == "yaml" {
 		b, err = marshalToYAMLFormat(swspec)
 	} else {
 		b, err = marshalToJSONFormat(swspec, pretty)

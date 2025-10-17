@@ -2395,8 +2395,11 @@ func marshalToYAMLFormat(swspec any) ([]byte, error) {
 }
 
 func TestEmbeddedDescriptionAndTags(t *testing.T) {
-	packagePath := "github.com/go-swagger/go-swagger/fixtures/bugs/3125"
-	sctx, err := newScanCtx(&Options{Packages: []string{packagePath}})
+	packagePath := "github.com/go-swagger/go-swagger/fixtures/bugs/3125/minimal"
+	sctx, err := newScanCtx(&Options{
+		Packages:    []string{packagePath},
+		DescWithRef: true,
+	})
 	require.NoError(t, err)
 	decl, _ := sctx.FindDecl(packagePath, "Item")
 	require.NotNil(t, decl)
@@ -2419,4 +2422,78 @@ func TestEmbeddedDescriptionAndTags(t *testing.T) {
 	assert.Equal(t, "Non-nullable value", schema.Properties["value2"].Description)
 	assert.NotContains(t, schema.Properties["value2"].Extensions, "x-nullable")
 	assert.Equal(t, `{"value": 42}`, schema.Properties["value2"].Example)
+}
+
+func TestIssue2540(t *testing.T) {
+	t.Run("should produce example and default for top level declaration only",
+		testIssue2540(false, `{
+		"Book": {
+      "description": "At this moment, a book is only described by its publishing date\nand author.",
+      "type": "object",
+      "title": "Book holds all relevant information about a book.",
+			"example": "{ \"Published\": 2026, \"Author\": \"Fred\" }",
+      "default": "{ \"Published\": 1900, \"Author\": \"Unknown\" }",
+      "properties": {
+        "Author": {
+          "$ref": "#/definitions/Author"
+        },
+        "Published": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 0,
+          "example": 2021
+        }
+      }
+    }
+  }`),
+	)
+	t.Run("should produce example and default for top level declaration and embedded $ref field",
+		testIssue2540(true, `{
+		"Book": {
+      "description": "At this moment, a book is only described by its publishing date\nand author.",
+      "type": "object",
+      "title": "Book holds all relevant information about a book.",
+			"example": "{ \"Published\": 2026, \"Author\": \"Fred\" }",
+      "default": "{ \"Published\": 1900, \"Author\": \"Unknown\" }",
+      "properties": {
+        "Author": {
+          "$ref": "#/definitions/Author",
+          "example": "{ \"Name\": \"Tolkien\" }"
+        },
+        "Published": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 0,
+          "example": 2021
+        }
+      }
+    }
+  }`),
+	)
+}
+
+func testIssue2540(descWithRef bool, expectedJSON string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Setenv("SWAGGER_GENERATE_EXTENSION", "false")
+		packagePath := "github.com/go-swagger/go-swagger/fixtures/bugs/2540/foo"
+		sctx, err := newScanCtx(&Options{
+			Packages:    []string{packagePath},
+			DescWithRef: descWithRef,
+		})
+		require.NoError(t, err)
+
+		decl, _ := sctx.FindDecl(packagePath, "Book")
+		require.NotNil(t, decl)
+		prs := &schemaBuilder{
+			ctx:  sctx,
+			decl: decl,
+		}
+
+		models := make(map[string]spec.Schema)
+		require.NoError(t, prs.Build(models))
+
+		b, err := json.Marshal(models)
+		require.NoError(t, err)
+		assert.JSONEq(t, expectedJSON, string(b))
+	}
 }

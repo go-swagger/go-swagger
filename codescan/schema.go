@@ -168,7 +168,8 @@ func (s *schemaBuilder) Build(definitions map[string]spec.Schema) error {
 
 func (s *schemaBuilder) buildFromDecl(_ *entityDecl, schema *spec.Schema) error {
 	// analyze doc comment for the model
-	sp := new(sectionedParser)
+	// This includes parsing "example", "default" and other validation at the top-level declaration.
+	sp := s.createParser("", schema, schema, nil)
 	sp.setTitle = func(lines []string) { schema.Title = joinDropLast(lines) }
 	sp.setDescription = func(lines []string) {
 		schema.Description = joinDropLast(lines)
@@ -1066,8 +1067,9 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 	if !hasComments {
 		cmt = new(ast.CommentGroup)
 	}
-	if typeName, ok := typeName(cmt); ok {
-		_ = swaggerSchemaForType(typeName, schemaTypable{schema: schema})
+	name, ok := typeName(cmt)
+	if ok {
+		_ = swaggerSchemaForType(name, schemaTypable{schema: schema})
 		return nil
 	}
 	// First check for all of schemas
@@ -1474,43 +1476,23 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 		return nil
 	}
 
-		sp.setDescription = func(lines []string) {
-			ps.Description = joinDropLast(lines)
-			enumDesc := getEnumDesc(ps.Extensions)
-			if enumDesc != "" {
-				ps.Description += "\n" + enumDesc
-			}
-		}
+	if ps.Ref.String() != "" && !s.ctx.opts.DescWithRef {
+		// if DescWithRef option is enabled, allow the tagged documentation to flow alongside the $ref
+		// otherwise behave as expected by jsonschema draft4: $ref predates all sibling keys.
 		sp.taggers = []tagParser{
-			newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
-			newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
-			newSingleLineTagParser("multipleOf", &setMultipleOf{schemaValidations{ps}, rxf(rxMultipleOfFmt, "")}),
-			newSingleLineTagParser("minLength", &setMinLength{schemaValidations{ps}, rxf(rxMinLengthFmt, "")}),
-			newSingleLineTagParser("maxLength", &setMaxLength{schemaValidations{ps}, rxf(rxMaxLengthFmt, "")}),
-			newSingleLineTagParser("pattern", &setPattern{schemaValidations{ps}, rxf(rxPatternFmt, "")}),
-			newSingleLineTagParser("minItems", &setMinItems{schemaValidations{ps}, rxf(rxMinItemsFmt, "")}),
-			newSingleLineTagParser("maxItems", &setMaxItems{schemaValidations{ps}, rxf(rxMaxItemsFmt, "")}),
-			newSingleLineTagParser("unique", &setUnique{schemaValidations{ps}, rxf(rxUniqueFmt, "")}),
-			newSingleLineTagParser("enum", &setEnum{schemaValidations{ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("type", &setDefault{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("example", &setExample{&spec.SimpleSchema{Type: string(schemeType)}, schemaValidations{ps}, rxf(rxExampleFmt, "")}),
 			newSingleLineTagParser("required", &setRequiredSchema{schema, nm}),
-			newSingleLineTagParser("readOnly", &setReadOnlySchema{ps}),
-			newSingleLineTagParser("discriminator", &setDiscriminator{schema, nm}),
-			newMultiLineTagParser("YAMLExtensionsBlock", newYamlParser(rxExtensions, schemaVendorExtensibleSetter(ps)), true),
-		/*
-=======
-	sp.setDescription = func(lines []string) {
-		ps.Description = joinDropLast(lines)
-		enumDesc := getEnumDesc(ps.VendorExtensible.Extensions)
-		if enumDesc != "" {
-			ps.Description += "\n" + enumDesc
->>>>>>> 2342b89c (Preserve descriptions and tags of fields containing embedded structures)
 		}
-				*/
+
+		return sp
 	}
 
+	sp.setDescription = func(lines []string) {
+		ps.Description = joinDropLast(lines)
+		enumDesc := getEnumDesc(ps.Extensions)
+		if enumDesc != "" {
+			ps.Description += "\n" + enumDesc
+		}
+	}
 	sp.taggers = []tagParser{
 		newSingleLineTagParser("maximum", &setMaximum{schemaValidations{ps}, rxf(rxMaximumFmt, "")}),
 		newSingleLineTagParser("minimum", &setMinimum{schemaValidations{ps}, rxf(rxMinimumFmt, "")}),
@@ -1573,49 +1555,7 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 			if iftpe.Obj == nil {
 				taggers = itemsTaggers(items.Schema, level)
 			}
-		}
-
-		var parseArrayTypes func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error)
-		parseArrayTypes = func(expr ast.Expr, items *spec.SchemaOrArray, level int) ([]tagParser, error) {
-			if items == nil || items.Schema == nil {
-				return []tagParser{}, nil
-			}
-			switch iftpe := expr.(type) {
-			case *ast.ArrayType:
-				eleTaggers := itemsTaggers(items.Schema, level)
-				sp.taggers = append(eleTaggers, sp.taggers...)
-				otherTaggers, err := parseArrayTypes(iftpe.Elt, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			case *ast.Ident:
-				taggers := []tagParser{}
-				if iftpe.Obj == nil {
-					taggers = itemsTaggers(items.Schema, level)
-				}
-				otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
-				if err != nil {
-					return nil, err
-				}
-				return append(taggers, otherTaggers...), nil
-			case *ast.StarExpr:
-				otherTaggers, err := parseArrayTypes(iftpe.X, items, level)
-				if err != nil {
-					return nil, err
-				}
-				return otherTaggers, nil
-			default:
-				return nil, fmt.Errorf("unknown field type element for %q", nm)
-			}
-		}
-		// check if this is a primitive, if so parse the validations from the
-		// doc comments of the slice declaration.
-		if ftped, ok := fld.Type.(*ast.ArrayType); ok {
-			taggers, err := parseArrayTypes(ftped.Elt, ps.Items, 0)
-=======
 			otherTaggers, err := parseArrayTypes(expr, items.Schema.Items, level+1)
->>>>>>> 2342b89c (Preserve descriptions and tags of fields containing embedded structures)
 			if err != nil {
 				return nil, err
 			}
@@ -1627,9 +1567,16 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 			}
 			return otherTaggers, nil
 		default:
-			return nil, fmt.Errorf("unknown field type ele for %q", nm)
+			return nil, fmt.Errorf("unknown field type element for %q", nm)
 		}
 	}
+
+	if fld == nil {
+		// the parser may be called outside the context of struct field.
+		// In that case, just return the outcome of the parsing now.
+		return sp
+	}
+
 	// check if this is a primitive, if so parse the validations from the
 	// doc comments of the slice declaration.
 	if ftped, ok := fld.Type.(*ast.ArrayType); ok {
@@ -1639,6 +1586,7 @@ func (s *schemaBuilder) createParser(nm string, schema, ps *spec.Schema, fld *as
 		}
 		sp.taggers = append(taggers, sp.taggers...)
 	}
+
 	return sp
 }
 
