@@ -325,6 +325,12 @@ func (r *responseBuilder) buildAlias(tpe *types.Alias, resp *spec.Response, seen
 	mustHaveRightHandSide(tpe)
 
 	rhs := tpe.Rhs()
+
+	// If transparent aliases are enabled, use the underlying type directly without creating a definition
+	if r.ctx.app.transparentAliases {
+		return r.buildFromType(rhs, resp, seen)
+	}
+
 	decl, ok := r.ctx.FindModel(o.Pkg().Path(), o.Name())
 	if !ok {
 		return fmt.Errorf("can't find source file for aliased type: %v -> %v", tpe, rhs)
@@ -399,6 +405,19 @@ func (r *responseBuilder) buildFieldAlias(tpe *types.Alias, typable swaggerTypab
 		_ = typable.Schema()
 
 		return nil // just leave an empty schema
+	}
+
+	// If transparent aliases are enabled, use the underlying type directly without creating a definition
+	if r.ctx.app.transparentAliases {
+		sb := schemaBuilder{
+			decl: r.decl,
+			ctx:  r.ctx,
+		}
+		if err := sb.buildFromType(tpe.Rhs(), typable); err != nil {
+			return err
+		}
+		r.postDecls = append(r.postDecls, sb.postDecls...)
+		return nil
 	}
 
 	decl, ok := r.ctx.FindModel(o.Pkg().Path(), o.Name())

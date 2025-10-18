@@ -1,0 +1,98 @@
+consumes:
+    - application/json
+definitions:
+    Booking:
+        description: A Booking in the system
+        properties:
+            Subject:
+                description: Subject the subject of this booking
+                type: string
+            id:
+                description: ID the id of the booking
+                format: int64
+                readOnly: true
+                type: integer
+                x-go-name: ID
+        required:
+            - id
+            - Subject
+        type: object
+        x-go-package: github.com/go-swagger/scan-repo-boundary/makeplans
+    DateRange:
+        description: |-
+            DateRange represents a scheduled appointments time
+            DateRange should be in definitions since it's being used in a response
+        properties:
+            end:
+                type: string
+                x-go-name: End
+            start:
+                type: string
+                x-go-name: Start
+        type: object
+        x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+    User:
+        properties:
+            name:
+                type: string
+                x-go-name: Name
+        type: object
+        x-go-package: github.com/go-swagger/go-swagger/fixtures/goparsing/spec
+host: localhost
+info:
+    description: |-
+        the purpose of this application is to provide an application
+        that is using plain go code to define an API
+    title: API.
+    version: 0.0.1
+paths:
+    /admin/bookings/:
+        get:
+            consumes:
+                - application/json
+            deprecated: true
+            operationId: Bookings
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/BookingResponse'
+            schemes:
+                - http
+                - https
+            summary: Bookings lists all the appointments that have been made on the site.
+            tags:
+                - booking
+produces:
+    - application/json
+responses:
+    BookingResponse:
+        description: BookingResponse represents a scheduled appointment
+        schema:
+            properties:
+                booking:
+                    $ref: '#/definitions/Booking'
+                customer:
+                    $ref: '#/definitions/User'
+                dates:
+                    $ref: '#/definitions/DateRange'
+                map:
+                    additionalProperties:
+                        type: string
+                    example:
+                        key: value
+                    type: object
+                    x-go-name: Map
+                slice:
+                    example:
+                        - 1
+                        - 2
+                    items:
+                        format: int64
+                        type: integer
+                    type: array
+                    x-go-name: Slice
+            type: object
+schemes:
+    - https
+swagger: "2.0"
