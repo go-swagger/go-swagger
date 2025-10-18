@@ -21,12 +21,12 @@ const (
 	AddedRequiredProperty
 	// DeletedOptionalParam - An endpoint parameter has been deleted in the new spec.
 	DeletedOptionalParam
-	// ChangedDescripton - Changed a description.
-	ChangedDescripton
-	// AddedDescripton - Added a description.
-	AddedDescripton
-	// DeletedDescripton - Deleted a description.
-	DeletedDescripton
+	// ChangedDescription - Changed a description.
+	ChangedDescription
+	// AddedDescription - Added a description.
+	AddedDescription
+	// DeletedDescription - Deleted a description.
+	DeletedDescription
 	// ChangedTag - Changed a tag.
 	ChangedTag
 	// AddedTag - Added a tag.
@@ -128,9 +128,9 @@ var toLongStringSpecChangeCode = map[SpecChangeCode]string{
 	DeletedDeprecatedEndpoint: "Deleted a deprecated endpoint",
 	AddedRequiredProperty:     "Added required property",
 	DeletedProperty:           "Deleted property",
-	ChangedDescripton:         "Changed a description",
-	AddedDescripton:           "Added a description",
-	DeletedDescripton:         "Deleted a description",
+	ChangedDescription:        "Changed a description",
+	AddedDescription:          "Added a description",
+	DeletedDescription:        "Deleted a description",
 	ChangedTag:                "Changed a tag",
 	AddedTag:                  "Added a tag",
 	DeletedTag:                "Deleted a tag",
@@ -186,9 +186,9 @@ var toStringSpecChangeCode = map[SpecChangeCode]string{
 	AddedRequiredProperty:     "AddedRequiredProperty",
 	DeletedProperty:           "DeletedProperty",
 	AddedProperty:             "AddedProperty",
-	ChangedDescripton:         "ChangedDescription",
-	AddedDescripton:           "AddedDescription",
-	DeletedDescripton:         "DeletedDescription",
+	ChangedDescription:        "ChangedDescription",
+	AddedDescription:          "AddedDescription",
+	DeletedDescription:        "DeletedDescription",
 	ChangedTag:                "ChangedTag",
 	AddedTag:                  "AddedTag",
 	DeletedTag:                "DeletedTag",

@@ -13,7 +13,7 @@ import (
 )
 
 type executable interface {
-	Execute([]string) error
+	Execute(args []string) error
 }
 
 // Commands requires at least one arg.

@@ -44,6 +44,12 @@ type Client struct {
 	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 }
 
+// Execute runs this command.
+func (c *Client) Execute(_ []string) error {
+	return createSwagger(c)
+}
+
+// apply options.
 func (c Client) apply(opts *generator.GenOpts) {
 	c.Shared.apply(opts)
 	c.Models.apply(opts)
@@ -77,9 +83,4 @@ For this generation to compile you need to have some packages in your go.mod:
 	* github.com/go-openapi/strfmt
 
 You can get these now with: go mod tidy`)
-}
-
-// Execute runs this command.
-func (c *Client) Execute(_ []string) error {
-	return createSwagger(c)
 }

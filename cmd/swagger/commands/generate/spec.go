@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -55,9 +56,14 @@ func (s *SpecFile) Execute(args []string) error {
 		args = []string{"./..."}
 	}
 
-	input, err := loadSpec(string(s.Input))
-	if err != nil {
-		return err
+	var input *spec.Swagger
+	if len(s.Input) > 0 {
+		// load an external spec to merge into
+		swspec, err := loadSpec(string(s.Input))
+		if err != nil {
+			return err
+		}
+		input = swspec
 	}
 
 	var opts codescan.Options
@@ -74,6 +80,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.SetXNullableForPointers = s.SetXNullableForPointers
 	opts.RefAliases = s.RefAliases
 	opts.DescWithRef = s.DescWithRef
+
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
 		return err
@@ -83,17 +90,21 @@ func (s *SpecFile) Execute(args []string) error {
 }
 
 func loadSpec(input string) (*spec.Swagger, error) {
-	if fi, err := os.Stat(input); err == nil {
-		if fi.IsDir() {
-			return nil, fmt.Errorf("expected %q to be a file not a directory", input)
-		}
-		sp, err := loads.Spec(input)
-		if err != nil {
-			return nil, err
-		}
-		return sp.Spec(), nil
+	fi, err := os.Stat(input)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+
+	if fi.IsDir() {
+		return nil, fmt.Errorf("expected %q to be a file not a directory", input)
+	}
+
+	sp, err := loads.Spec(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return sp.Spec(), nil
 }
 
 var defaultWriter io.Writer = os.Stdout
@@ -117,7 +128,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		_, e := fmt.Fprintf(defaultWriter, "%s\n", b)
 		return e
 	default:
-		return os.WriteFile(output, b, 0o644) //#nosec
+		return os.WriteFile(output, b, fs.ModePerm) //#nosec
 	}
 
 	// #nosec

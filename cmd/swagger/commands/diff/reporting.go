@@ -89,17 +89,24 @@ type TypeDiff struct {
 	ToType      string         `json:"to-type,omitempty"`
 }
 
+const (
+	numberMappedAsInt32   = 0
+	numberMappedAsInt64   = 1
+	numberMappedAsFloat32 = 2
+	numberMappedAsFloat64 = 3
+)
+
 // didn't use 'width' so as not to confuse with bit width.
 var numberWideness = map[string]int{
-	"number":        3,
-	"number.double": 3,
-	"double":        3,
-	"number.float":  2,
-	"float":         2,
-	"long":          1,
-	"integer.int64": 1,
-	"integer":       0,
-	"integer.int32": 0,
+	"number":        numberMappedAsFloat64,
+	"number.double": numberMappedAsFloat64,
+	"double":        numberMappedAsFloat64,
+	"number.float":  numberMappedAsFloat32,
+	"float":         numberMappedAsFloat32,
+	"long":          numberMappedAsInt64,
+	"integer.int64": numberMappedAsInt64,
+	"integer":       numberMappedAsInt32,
+	"integer.int32": numberMappedAsInt32,
 }
 
 func prettyprint(b []byte) (io.ReadWriter, error) {

@@ -39,8 +39,7 @@ func TestCmd_Mixin_NoError(t *testing.T) {
 	}
 
 	require.NoError(t, v.Execute([]string{specDoc1, specDoc2}))
-	_, exists := os.Stat(output)
-	assert.False(t, os.IsNotExist(exists))
+	require.FileExists(t, output)
 }
 
 func TestCmd_Mixin_BothConflictsAndIgnoreConflictsSpecified(t *testing.T) {

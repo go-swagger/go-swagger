@@ -34,6 +34,12 @@ type Support struct {
 	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 }
 
+// Execute generates the supporting files file.
+func (s *Support) Execute(_ []string) error {
+	return createSwagger(s)
+}
+
+// apply options.
 func (s *Support) apply(opts *generator.GenOpts) {
 	s.Shared.apply(opts)
 	s.Models.apply(opts)
@@ -44,10 +50,12 @@ func (s *Support) apply(opts *generator.GenOpts) {
 	s.mediaOptions.apply(opts)
 }
 
+// generate support source.
 func (s *Support) generate(opts *generator.GenOpts) error {
 	return generator.GenerateSupport(s.Name, s.Models.Models, s.Operations.Operations, opts)
 }
 
+// log after generation.
 func (s Support) log(_ string) {
 	log.Println(`Generation completed!
 
@@ -58,9 +66,4 @@ For this generation to compile you need to have some packages in go.mod:
   * github.com/jessevdk/go-flags
 
 You can get these now with: go mod tidy`)
-}
-
-// Execute generates the supporting files file.
-func (s *Support) Execute(_ []string) error {
-	return createSwagger(s)
 }

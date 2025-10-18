@@ -6,8 +6,7 @@ import (
 
 // contribOptionsOverride gives contributed templates the ability to override the options if they need.
 func contribOptionsOverride(opts *generator.GenOpts) {
-	switch opts.Template {
-	case "stratoscale":
+	if opts.Template == "stratoscale" {
 		// Stratoscale template needs to regenerate the configureapi on every run.
 		opts.RegenerateConfigureAPI = true
 		// It also does not use the main.go

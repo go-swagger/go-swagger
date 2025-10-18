@@ -64,6 +64,16 @@ type Operation struct {
 	Name []string `description:"the operations to generate, repeat for multiple (defaults to all). Same as --operations" long:"name" short:"n"`
 }
 
+// Execute generates a model file.
+func (o *Operation) Execute(_ []string) error {
+	if o.Shared.DumpData && len(append(o.Name, o.Operations.Operations...)) > 1 {
+		return errors.New("only 1 operation at a time is supported for dumping data")
+	}
+
+	return createSwagger(o)
+}
+
+// apply options.
 func (o Operation) apply(opts *generator.GenOpts) {
 	o.Shared.apply(opts)
 	o.Operations.apply(opts)
@@ -91,13 +101,4 @@ For this generation to compile you need to have some packages in your go.mod:
 	* github.com/go-openapi/runtime
 
 You can get these now with: go mod tidy`)
-}
-
-// Execute generates a model file.
-func (o *Operation) Execute(_ []string) error {
-	if o.Shared.DumpData && len(append(o.Name, o.Operations.Operations...)) > 1 {
-		return errors.New("only 1 operation at a time is supported for dumping data")
-	}
-
-	return createSwagger(o)
 }
