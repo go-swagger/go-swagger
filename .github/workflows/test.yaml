@@ -108,9 +108,11 @@ jobs:
           echo "TMP=${TMP}" >> "${GITHUB_ENV}"
 
       - name: Run unit tests with code coverage
+        shell: bash
         run: >
           gotestsum --
-          -p 1
+          -p 2
+          -count 1
           -timeout=20m
           -coverprofile='coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
           -covermode=atomic
