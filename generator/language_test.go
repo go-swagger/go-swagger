@@ -14,7 +14,7 @@ func TestGolang_MangleFileName(t *testing.T) {
 	res := o.MangleFileName("aFileEndingInOsNameWindows")
 	assert.True(t, strings.HasSuffix(res, "_windows"))
 
-	o = GoLangOpts()
+	o = GolangOpts()
 	res = o.MangleFileName("aFileEndingInOsNameWindows")
 	assert.True(t, strings.HasSuffix(res, "_windows_swagger"))
 	res = o.MangleFileName("aFileEndingInOsNameWindowsAmd64")
@@ -24,7 +24,7 @@ func TestGolang_MangleFileName(t *testing.T) {
 }
 
 func TestGolang_ManglePackage(t *testing.T) {
-	o := GoLangOpts()
+	o := GolangOpts()
 
 	for _, v := range []struct {
 		tested       string
@@ -51,7 +51,7 @@ func TestGolang_ManglePackage(t *testing.T) {
 
 // Go literal initializer func.
 func TestGolang_SliceInitializer(t *testing.T) {
-	o := GoLangOpts()
+	o := GolangOpts()
 	goSliceInitializer := o.ArrayInitializerFunc
 
 	a0 := []any{"a", "b"}
@@ -67,7 +67,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	a2 := map[string]any{"a": "y", "b": "z"}
 	res, err = goSliceInitializer(a2)
 	require.NoError(t, err)
-	assert.Equal(t, `{"a":"y","b":"z",}`, res) //nolint:testifylint // We're testing the ArrayInitializer behavior, no need to run JSONEq
+	assert.Equal(t, `{"a":"y","b":"z",}`, res) //nolint:testifylint // OK: we're testing the ArrayInitializer behavior, this is not really JSON
 
 	_, err = goSliceInitializer(struct {
 		A string `json:"a"`
@@ -87,7 +87,7 @@ func TestGolangInit(t *testing.T) {
 	res, err := opts.FormatContent("x", []byte("y"))
 	require.NoError(t, err)
 	assert.Equal(t, []byte("y"), res)
-	opts = GoLangOpts()
+	opts = GolangOpts()
 	o := opts
 	o.Init()
 	assert.Equal(t, opts, o)

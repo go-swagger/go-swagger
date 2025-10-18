@@ -27,6 +27,7 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
 func TestUniqueOperationNameMangling(t *testing.T) {
@@ -39,7 +40,7 @@ func TestUniqueOperationNameMangling(t *testing.T) {
 }
 
 func TestUniqueOperationNames(t *testing.T) {
-	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
+	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
 	sp := doc.Spec()
@@ -58,7 +59,7 @@ func TestUniqueOperationNames(t *testing.T) {
 }
 
 func TestEmptyOperationNames(t *testing.T) {
-	doc, err := loads.Spec("../fixtures/codegen/todolist.simple.yml")
+	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
 	sp := doc.Spec()
@@ -272,11 +273,13 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
 }
 
+const fixtureTodoList = "../fixtures/codegen/todolist.simple.yml"
+
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	defer discardOutput()()
 
 	if fname == "" {
-		fname = "../fixtures/codegen/todolist.simple.yml"
+		fname = fixtureTodoList
 	}
 	o := opts()
 	o.Spec = fname
@@ -312,7 +315,7 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 	defer discardOutput()()
 
 	if fname == "" {
-		fname = "../fixtures/codegen/todolist.simple.yml"
+		fname = fixtureTodoList
 	}
 
 	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
@@ -349,7 +352,7 @@ func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error)
 
 	if fname == "" {
 		// default fixture
-		fname = "../fixtures/codegen/todolist.simple.yml"
+		fname = fixtureTodoList
 	}
 
 	o.Spec = fname
@@ -710,7 +713,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
-			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			Spec:              filepath.FromSlash(fixture890),
 			IncludeModel:      true,
 			IncludeHandler:    true,
 			IncludeParameters: true,
@@ -748,6 +751,8 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	assertInCode(t, "GetHealthCheck", res)
 }
 
+const fixture890 = "../fixtures/bugs/890/swagger.yaml"
+
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	defer discardOutput()()
 
@@ -757,7 +762,7 @@ func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	}()
 
 	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.Spec = fixture890
 	opts.ValidateSpec = true
 	opts.FlattenOpts.Minimal = false
 
@@ -773,7 +778,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
-			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			Spec:              filepath.FromSlash(fixture890),
 			IncludeModel:      true,
 			IncludeHandler:    true,
 			IncludeParameters: true,
@@ -819,7 +824,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 	}()
 
 	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.Spec = fixture890
 	opts.ValidateSpec = false
 	// full flattening
 	opts.FlattenOpts.Minimal = false
@@ -835,7 +840,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
-			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			Spec:              filepath.FromSlash(fixture890),
 			IncludeModel:      true,
 			IncludeHandler:    true,
 			IncludeParameters: true,
@@ -870,7 +875,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	}()
 
 	opts := testGenOpts()
-	opts.Spec = "../fixtures/bugs/890/swagger.yaml"
+	opts.Spec = fixture890
 	opts.ValidateSpec = false
 	// minimal flattening
 	opts.FlattenOpts.Minimal = true
@@ -887,7 +892,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
-			Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+			Spec:              filepath.FromSlash(fixture890),
 			IncludeModel:      true,
 			IncludeHandler:    true,
 			IncludeParameters: true,
@@ -928,7 +933,7 @@ func TestGenServerWithTemplate(t *testing.T) {
 			name: "None_existing_contributor_template",
 			opts: &GenOpts{
 				GenOptsCommon: GenOptsCommon{
-					Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+					Spec:              filepath.FromSlash(fixture890),
 					IncludeModel:      true,
 					IncludeHandler:    true,
 					IncludeParameters: true,
@@ -950,7 +955,7 @@ func TestGenServerWithTemplate(t *testing.T) {
 			name: "Existing_contributor",
 			opts: &GenOpts{
 				GenOptsCommon: GenOptsCommon{
-					Spec:              filepath.FromSlash("../fixtures/bugs/890/swagger.yaml"),
+					Spec:              filepath.FromSlash(fixture890),
 					IncludeModel:      true,
 					IncludeHandler:    true,
 					IncludeParameters: true,
@@ -1001,7 +1006,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	}()
 
 	opts := testGenOpts()
-	opts.Spec = filepath.FromSlash("../fixtures/bugs/890/swagger.yaml")
+	opts.Spec = filepath.FromSlash(fixture890)
 	opts.ValidateSpec = true
 	// Testing this is enough as there is only one operation which is specified as $ref.
 	// If this doesn't get resolved then there will be an error definitely.
@@ -1184,12 +1189,9 @@ func TestGenSecurityRequirements(t *testing.T) {
 func TestGenerateServerOperation(t *testing.T) {
 	defer discardOutput()()
 
-	fname := "../fixtures/codegen/todolist.simple.yml"
+	fname := fixtureTodoList
 
-	tgt, _ := os.MkdirTemp(filepath.Dir(fname), "generated")
-	defer func() {
-		_ = os.RemoveAll(tgt)
-	}()
+	tgt := t.TempDir()
 	o := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
 			ValidateSpec:      false,
@@ -1202,43 +1204,74 @@ func TestGenerateServerOperation(t *testing.T) {
 			Target:            tgt,
 		},
 	}
-	require.NoError(t, o.EnsureDefaults())
+	t.Run("gen options should be valid", func(t *testing.T) {
+		require.NoError(t, o.EnsureDefaults())
+	})
 
-	require.Error(t, GenerateServerOperation([]string{"createTask"}, nil))
+	t.Run("shoud init go.mod", gentest.GoModInit(tgt))
 
-	d := o.TemplateDir
-	o.TemplateDir = "./nowhere"
-	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
+	t.Run("should not generate an operation", func(t *testing.T) {
+		t.Run("with nil options", func(t *testing.T) {
+			require.Error(t, GenerateServerOperation([]string{"createTask"}, nil))
+		})
 
-	o.TemplateDir = d
-	d = o.Spec
-	o.Spec = "nowhere.yaml"
-	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
+		t.Run("with invalid templates directory", func(t *testing.T) {
+			oo := *o
+			oo.TemplateDir = "./nowhere"
 
-	o.Spec = d
-	require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
+			require.Error(t, GenerateServerOperation([]string{"notFound"}, &oo))
+		})
 
-	require.NoError(t, GenerateServerOperation([]string{"createTask"}, o))
+		t.Run("with unreachable input spec file", func(t *testing.T) {
+			oo := *o
+			oo.Spec = "nowhere.yaml"
 
-	// check expected files are generated and that's it
-	_, err := os.Stat(filepath.Join(tgt, "tasks", "create_task.go"))
-	require.NoError(t, err)
-	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_parameters.go"))
-	require.NoError(t, err)
-	_, err = os.Stat(filepath.Join(tgt, "tasks", "create_task_responses.go"))
-	require.NoError(t, err)
+			require.Error(t, GenerateServerOperation([]string{"notFound"}, &oo))
+		})
 
-	origStdout := os.Stdout
-	defer func() {
-		os.Stdout = origStdout
-	}()
-	os.Stdout, _ = os.Create(filepath.Join(tgt, "stdout"))
-	o.DumpData = true
-	// just checks this does not fail
-	err = GenerateServerOperation([]string{"createTask"}, o)
-	require.NoError(t, err)
-	_, err = os.Stat(filepath.Join(tgt, "stdout"))
-	require.NoError(t, err)
+		t.Run("with operation not in spec", func(t *testing.T) {
+			require.Error(t, GenerateServerOperation([]string{"notFound"}, o))
+		})
+	})
+
+	t.Run("should generate an operation", func(t *testing.T) {
+		require.NoError(t, GenerateServerOperation([]string{"createTask"}, o))
+
+		t.Run("should have generated go source files", func(t *testing.T) {
+			// check expected files are generated and that's it
+			require.FileExists(t, filepath.Join(tgt, "tasks", "create_task.go"))
+			require.FileExists(t, filepath.Join(tgt, "tasks", "create_task_parameters.go"))
+			require.FileExists(t, filepath.Join(tgt, "tasks", "create_task_responses.go"))
+		})
+	})
+
+	t.Run("should dump template data", func(t *testing.T) {
+		origStdout := os.Stdout
+		const capture = "stdout-capture.log"
+		writer, err := os.Create(filepath.Join(tgt, capture))
+		require.NoError(t, err)
+
+		defer func() {
+			if writer != nil {
+				_ = writer.Close()
+			}
+			os.Stdout = origStdout
+		}()
+
+		os.Stdout = writer
+		o.DumpData = true
+
+		// just checks this does not fail
+		require.NoError(t, GenerateServerOperation([]string{"createTask"}, o))
+
+		require.NoError(t, writer.Close())
+		writer = nil // so we don't close it again
+
+		f, err := os.Stat(filepath.Join(tgt, capture))
+		require.NoError(t, err)
+
+		require.Positive(t, f.Size()) // i.e. StrictlyPositive
+	})
 }
 
 // This tests that mimetypes generate stable code.
@@ -1439,8 +1472,8 @@ func TestParamMappings(t *testing.T) {
 
 func TestDeconflictTag(t *testing.T) {
 	assert.Equal(t, "runtimeops", deconflictTag(nil, "runtime"))
-	assert.Equal(t, "apiops", deconflictTag([]string{"tag1"}, "api"))
-	assert.Equal(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, "api"))
+	assert.Equal(t, "apiops", deconflictTag([]string{"tag1"}, apiPkg))
+	assert.Equal(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, apiPkg))
 	assert.Equal(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
 	assert.Equal(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
 
@@ -1452,12 +1485,8 @@ func TestGenServer_2161_panic(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	generated, err := os.MkdirTemp(testCwd(t), "generated_2161")
-	require.NoError(t, err)
-
-	defer func() {
-		_ = os.RemoveAll(generated)
-	}()
+	generated := t.TempDir()
+	t.Run("shoud init go.mod", gentest.GoModInit(generated, gentest.WithGoModuleName("fixture-2161")))
 
 	opts := &GenOpts{
 		GenOptsCommon: GenOptsCommon{
@@ -1478,29 +1507,39 @@ func TestGenServer_2161_panic(t *testing.T) {
 	}
 	require.NoError(t, opts.EnsureDefaults())
 
-	appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
-	require.NoError(t, err)
+	t.Run("should construct an app generator", func(t *testing.T) {
+		appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
+		require.NoError(t, err)
 
-	op, err := appGen.makeCodegenApp()
-	require.NoError(t, err)
+		op, err := appGen.makeCodegenApp()
+		require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	var selectedOp int
-	for i := range op.Operations {
-		if op.Operations[i].Name == "configuration_update_configuration_module" {
-			selectedOp = i
-		}
-	}
-	require.NotEmpty(t, selectedOp, "dev error: invalid test vs fixture")
+		buf := bytes.NewBuffer(nil)
 
-	require.NoError(t, opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp]))
+		t.Run("should pick a selected operation", func(t *testing.T) {
+			var selectedOp int
+			for i := range op.Operations {
+				if op.Operations[i].Name == "configuration_update_configuration_module" {
+					selectedOp = i
+				}
+			}
+			require.NotEmpty(t, selectedOp, "dev error: invalid test vs fixture")
 
-	_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
-	require.NoErrorf(t, err, buf.String())
-	// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
-	// The test with this fix simply asserts that there is no panic / internal error with building this.
+			t.Run("should execute the server operation template", func(t *testing.T) {
+				require.NoError(t, opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[selectedOp]))
+
+				t.Run("should format the template output", func(t *testing.T) {
+					_, err = appGen.GenOpts.LanguageOpts.FormatContent(op.Operations[selectedOp].Name+".go", buf.Bytes())
+					require.NoErrorf(t, err, buf.String())
+					// NOTE(fred): I know that the generated model is wrong from this spec at the moment.
+					// The test with this fix simply asserts that there is no panic / internal error when building this.
+				})
+			})
+		})
+	})
 }
 
+//nolint:maintidx // TODO(fredbi): refactor
 func TestGenServer_1659_Principal(t *testing.T) {
 	defer discardOutput()()
 

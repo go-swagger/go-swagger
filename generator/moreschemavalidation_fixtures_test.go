@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//nolint:maintidx // the index is correct, this is hard to maintain. Not much else we can do to check models.
 package generator
 
 func initFixture2494() {

@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -132,42 +133,45 @@ func TestBaseImport(t *testing.T) {
 	// needed (inherited from old GOPATH shinenigans).
 
 	tempdir := t.TempDir()
-
-	golang := GoLangOpts()
+	golang := GolangOpts()
 
 	for _, item := range baseImportTestFixtures(tempdir) {
-		t.Logf("TestBaseImport(%q)", item.title)
+		t.Run(fmt.Sprintf("TestBaseImport(%q)", item.title), func(t *testing.T) {
+			t.Run("should create paths", func(t *testing.T) {
+				for _, paths := range item.path {
+					require.NoError(t, os.MkdirAll(paths, 0o700))
+				}
+			})
+			t.Cleanup(func() {
+				_ = os.RemoveAll(filepath.Join(tempdir, "root"))
+			})
 
-		// Create Paths
-		for _, paths := range item.path {
-			require.NoError(t, os.MkdirAll(paths, 0o700))
-		}
+			if item.symlinksrc == "" {
+				return
+			}
 
-		if item.symlinksrc == "" {
-			continue
-		}
+			t.Run("should create Symlink", func(t *testing.T) {
+				_, err := os.Stat(item.symlinksrc)
+				if os.IsNotExist(err) {
+					// specifically for windows, we need to create the entry a symlink points to. linux doesn't care.
+					require.NoError(t, os.MkdirAll(item.symlinkdest, fs.ModePerm))
+				}
 
-		// Create Symlink
-		_, err := os.Stat(item.symlinksrc)
-		if os.IsNotExist(err) {
-			// specifically for windows, we need to create the entry a symlink points to
-			require.NoError(t, os.MkdirAll(item.symlinkdest, fs.ModePerm))
-		}
-		require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
-			"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s\n%s",
-			item.symlinksrc, item.symlinkdest,
-			"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",
-		)
+				require.NoErrorf(t, os.Symlink(item.symlinkdest, item.symlinksrc),
+					"WARNING:TestBaseImport with symlink could not be carried on. Symlink creation failed for %s -> %s\n%s",
+					item.symlinksrc, item.symlinkdest,
+					"NOTE:TestBaseImport with symlink on Windows requires extended privileges (admin or a user with SeCreateSymbolicLinkPrivilege)",
+				)
+			})
 
-		// Change GOPATH
-		t.Setenv("GOPATH", item.gopath)
+			t.Run("baseImport should be "+item.expectedpath, func(t *testing.T) {
+				t.Setenv("GOPATH", item.gopath)
 
-		// Test (baseImport always with /)
-		actualpath := golang.baseImport(item.targetpath)
-
-		require.Equalf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
-
-		_ = os.RemoveAll(filepath.Join(tempdir, "root"))
+				// Test (baseImport always with /)
+				actualpath := golang.baseImport(item.targetpath)
+				require.Equalf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
+			})
+		})
 	}
 }
 

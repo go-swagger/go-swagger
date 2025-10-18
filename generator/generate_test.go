@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -12,206 +13,115 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
+const testServerPkg = "nrcodegen-server"
+
 func TestGenerateAndTest(t *testing.T) {
+	// Full codegen test, with advanced assertions, which may be:
+	// * simple assertions about generated folders or code
+	// * inclusion of a test program to exercise the generated program
+	// * inclusion of test dependencies to exercise the build
+	//
+	// All generated code is built as go modules in t.TempDir().
+	t.Parallel()
 	defer discardOutput()()
 
-	cwd := testCwd(t)
-	const root = "generated"
-	t.Cleanup(func() {
-		_ = os.RemoveAll(filepath.Join(cwd, root))
-	})
-
-	t.Run("server build", func(t *testing.T) {
-		for name, cas := range generateFixtures(t) {
-			thisCas := cas
-			thisName := name
-
-			t.Run(thisName, func(t *testing.T) {
-				t.Parallel()
-
-				defer thisCas.warnFailed(t)
-				opts := testGenOpts() // default opts
-
-				// create directory layout, defer clean
-				defer thisCas.prepareTarget(t, thisName, "server_test", root, opts)()
-
-				// preparation before generation
-				if thisCas.prepare != nil {
-					thisCas.prepare(t, opts)
-				}
-
-				t.Run("generating test server from "+opts.Spec, func(t *testing.T) {
-					err := GenerateServer("", nil, nil, opts)
-					if thisCas.wantError {
-						require.Errorf(t, err, "expected an error for server build fixture: %s", opts.Spec)
-					} else {
-						require.NoError(t, err, "unexpected error for server build fixture: %s", opts.Spec)
-					}
-
-					// verify
-					if thisCas.verify != nil {
-						thisCas.verify(t, opts.Target)
-					}
-				})
-
-				// fixture-specific clean
-				if thisCas.clean != nil {
-					thisCas.clean()
-				}
-			})
-		}
-	})
-
-	t.Run("client build", func(t *testing.T) {
-		for name, cas := range generateClientFixtures(t) {
-			thisCas := cas
-			thisName := name
-
-			t.Run(thisName, func(t *testing.T) {
-				t.Parallel()
-
-				defer thisCas.warnFailed(t)
-				opts := testClientGenOpts() // default opts for client codegen
-
-				// create directory layout, defer clean
-				defer thisCas.prepareTarget(t, thisName, "server_test", root, opts)()
-
-				// preparation before generation
-				if thisCas.prepare != nil {
-					thisCas.prepare(t, opts)
-				}
-
-				t.Run("generating test client from "+opts.Spec, func(t *testing.T) {
-					err := GenerateClient(thisName, nil, nil, opts)
-					if thisCas.wantError {
-						require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
-					} else {
-						require.NoError(t, err, "unexpected error for client build fixture: %s", opts.Spec)
-					}
-
-					// verify
-					if thisCas.verify != nil {
-						thisCas.verify(t, opts.Target)
-					}
-				})
-
-				// fixture-specific clean
-				if thisCas.clean != nil {
-					thisCas.clean()
-				}
-			})
-		}
-	})
+	root := t.TempDir()
+	t.Run("server build", testHarnessBuildServers(root, generateServerFixtures())) // debugging mode: add selected fixture keys to limit the scope
+	t.Run("client build", testHarnessBuildClients(root, generateClientFixtures())) // debugging mode: add selected fixtures keys to limit the scope
 }
 
-type generateFixture struct {
-	name      string
-	spec      string
-	target    string
-	wantError bool
-	prepare   func(*testing.T, *GenOpts)
-	verify    func(*testing.T, string)
-	clean     func()
-}
-
-func (f generateFixture) base(t testing.TB, root string) (string, func()) {
-	// base generation target
-	cwd := testCwd(t)
-
-	base := filepath.Join(cwd, root)
-	require.NoErrorf(t, os.MkdirAll(base, 0o700), "error in test creating target dir")
-
-	generated, err := os.MkdirTemp(base, "generated")
-	require.NoErrorf(t, err, "error in test creating temp dir")
-
-	return generated, func() {
-		_ = os.RemoveAll(generated)
-	}
-}
-
-func (f generateFixture) prepareTarget(t testing.TB, name, base, root string, opts *GenOpts) func() {
-	if name == "" {
-		name = f.name
-	}
-
-	spec := filepath.FromSlash(f.spec)
-	opts.Spec = spec
-
-	generated, clean := f.base(t, root)
-
-	if f.target == "" {
-		opts.Target = filepath.Join(generated, opts.LanguageOpts.ManglePackageName(name, base))
-	} else {
-		opts.Target = filepath.Join(generated, filepath.Base(f.target))
-	}
-
-	require.NoErrorf(t, os.MkdirAll(opts.Target, 0o700), "error in test creating target dir")
-
-	return clean
-}
-
-func (f generateFixture) warnFailed(t testing.TB) func() {
-	return func() {
-		if t.Failed() {
-			t.Log("ERROR: generation failed")
-		}
-	}
-}
-
-func generateFixtures(_ testing.TB) map[string]generateFixture {
+func generateServerFixtures() map[string]generateFixture {
 	return map[string]generateFixture{
-		"issue 1943": {
-			spec:   "../fixtures/bugs/1943/fixture-1943.yaml",
-			target: "../fixtures/bugs/1943",
-			prepare: func(t *testing.T, opts *GenOpts) {
+		"issue 1943":                       fixtureServer1943(),
+		"packages_mangling":                fixtureServerPackageMangling(),
+		"packages_flattening":              fixtureServerPackageFlattening(),
+		"main_package":                     fixtureServerMainPackage(),
+		"external_model":                   fixtureServerExternalModel(),
+		"external_models_hints":            fixtureServerExternalModelsHints(),
+		"conflict_name_api_issue_2405_1":   fixtureServerNameConflict2405_1(),
+		"conflict_name_api_issue_2405_2":   fixtureServerNameConflict2405_2(),
+		"conflict_name_api_issue_2405_3":   fixtureServerNameConflict2405_3(),
+		"ext_types_issue_2385":             fixtureServerExternalTypes2385(),
+		"ext_types_full_example":           fixtureServerExternalTypesFull(),
+		"conflict_name_server_issue_2730":  fixtureServerNameConflictServer2730(),
+		"tag_package_name_issue_2866":      fixtureServerTagPackageName2866(),
+		"tag_package_name_regression_3143": fixtureServerTagPackageName3143(),
+	}
+}
+
+func generateClientFixtures() map[string]generateFixture {
+	return map[string]generateFixture{
+		"issue1083":                       fixtureClientRoundTrip1083(),
+		"conflict_name_client_issue_2730": fixtureClientNameConflict2730(),
+		"type conversions":                fixtureClientTypeConversions(),
+	}
+}
+
+func fixtureServer1943() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/1943/fixture-1943.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
 				input, err := os.ReadFile("../fixtures/bugs/1943/datarace_test.go")
 				require.NoError(t, err)
 
 				// rewrite imports for the relocated test program
-				cwd := testCwd(t)
-				rebased := bytes.ReplaceAll(
+				rebasedContent := bytes.ReplaceAll(
 					input,
-					[]byte("/fixtures/bugs/1943"),
-					[]byte(filepath.ToSlash(strings.TrimPrefix(opts.Target, filepath.Dir(cwd)))),
+					[]byte("github.com/go-swagger/go-swagger/fixtures/bugs/1943"),
+					[]byte(gentest.SanitizeGoModPath(opts.Target)),
 				)
 
-				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebased, 0o600))
+				rebasedContent = removeBuildTags(rebasedContent)
+				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebasedContent, 0o600))
 				opts.ExcludeSpec = false
-			},
-			verify: func(t *testing.T, target string) {
-				if runtime.GOOS == "windows" {
-					// don't run race tests on Appveyor CI
-					t.Logf("warn: race test skipped on windows")
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				if runtime.GOOS == winOS {
+					// don't run race tests on windows (why so?)
+					t.Skipf("warn: race test skipped on os %s", runtime.GOOS)
+
 					return
 				}
 
-				const packages = "./..."
 				testPrg := "datarace_test.go"
-
-				t.Run("go get", goExecInDir(target, "get", packages))
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("go get", gentest.GoExecInDir(target, "get", "./..."))
 				t.Run("running data race test on generated server",
-					goExecInDir(target, "test", "-v", "-race", testPrg),
+					gentest.GoExecInDir(target, "test", "-v", "-race", testPrg),
 				)
-			},
+			}
 		},
-		"packages_mangling": {
-			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ *testing.T, opts *GenOpts) {
+	}
+}
+
+func fixtureServerPackageMangling() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
-				require.True(t, fileExists(target, defaultServerTarget))
-				assert.True(t, fileExists(filepath.Join(target, "cmd", "unsafe-tag-names-server"), "main.go"))
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				require.DirExists(t, filepath.Join(target, defaultServerTarget))
+				assert.FileExists(t, filepath.Join(target, "cmd", "unsafe-tag-names-server", "main.go"))
 
 				srvTarget := filepath.Join(target, defaultServerTarget)
 				opsTarget := filepath.Join(srvTarget, defaultOperationsTarget)
-				require.True(t, fileExists(opsTarget, ""))
+				require.DirExists(t, srvTarget)
+				require.DirExists(t, opsTarget)
 
 				for _, fileOrDir := range []string{
 					"abc_linux", "abc_test",
-					"api",
+					apiPkg,
 					"custom",
 					"hash_tag_donuts",
 					"nr123abc", "nr_at_donuts", "plus_donuts",
@@ -223,7 +133,12 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 					"get_notag.go",
 					"operationsops",
 				} {
-					assert.True(t, fileExists(opsTarget, fileOrDir))
+					if strings.HasSuffix(fileOrDir, ".go") {
+						assert.FileExists(t, filepath.Join(opsTarget, fileOrDir))
+
+						continue
+					}
+					assert.DirExists(t, filepath.Join(opsTarget, fileOrDir))
 				}
 
 				buf, err := os.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
@@ -232,11 +147,7 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				code := string(buf)
 
 				// assert imports, with deconfliction
-				cwd := testCwd(t)
-				base := path.Join("github.com", "go-swagger", "go-swagger",
-					filepath.ToSlash(strings.TrimPrefix(target, filepath.Dir(cwd))),
-				)
-
+				base := gentest.SanitizeGoModPath(target)
 				baseImport := path.Join(base, `restapi/operations`)
 				assertImports(t, baseImport, code)
 
@@ -269,23 +180,31 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				assertInCode(t, `ForcedPostTestOverrideHandler forced.PostTestOverrideHandler`, api)
 				assertInCode(t, `Nr12nastyPutTestOverrideHandler nr12nasty.PutTestOverrideHandler`, api)
 				assertInCode(t, `Nr123abcTestIDHandler nr123abc.TestIDHandler`, api)
-			},
+			}
 		},
-		"packages_flattening": {
-			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ *testing.T, opts *GenOpts) {
+	}
+}
+
+func fixtureServerPackageFlattening() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
 				opts.SkipTagPackages = true
-			},
-			verify: func(t *testing.T, target string) {
-				require.True(t, fileExists(target, defaultServerTarget))
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				require.DirExists(t, filepath.Join(target, defaultServerTarget))
 
 				srvTarget := filepath.Join(target, defaultServerTarget)
 				opsTarget := filepath.Join(srvTarget, defaultOperationsTarget)
-				require.True(t, fileExists(opsTarget, ""))
+				require.DirExists(t, srvTarget)
+				require.DirExists(t, opsTarget)
 
 				for _, fileOrDir := range []string{
 					"abc_linux", "abc_test",
-					"api",
+					apiPkg,
 					"custom",
 					"hash_tag_donuts",
 					"nr123abc", "nr_at_donuts", "plus_donuts",
@@ -305,11 +224,7 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				require.NoError(t, err)
 				code := string(buf)
 
-				cwd := testCwd(t)
-				base := path.Join("github.com", "go-swagger", "go-swagger",
-					filepath.ToSlash(strings.TrimPrefix(target, filepath.Dir(cwd))),
-				)
-
+				base := gentest.SanitizeGoModPath(target)
 				baseImport := path.Join(base, `restapi/operations`)
 				assertRegexpInCode(t, baseImport, code)
 
@@ -340,64 +255,72 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				assertInCode(t, `PostTestOverrideHandler`, api)
 				assertInCode(t, `PutTestOverrideHandler`, api)
 				assertInCode(t, `TestIDHandler`, api)
-			},
+			}
 		},
-		"main_package": {
-			spec: "../fixtures/bugs/2111/fixture-2111.yaml",
-			prepare: func(_ *testing.T, opts *GenOpts) {
+	}
+}
+
+func fixtureServerMainPackage() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
 				opts.IncludeMain = true
 				opts.MainPackage = "custom-api"
 				opts.SkipTagPackages = true
-			},
-			verify: func(t *testing.T, target string) {
-				assert.True(t, fileExists(filepath.Join(target, "cmd", "custom-api"), "main.go"))
-			},
+			}
 		},
-		"external_model": {
-			spec: "../fixtures/bugs/1897/fixture-1897.yaml",
-			prepare: func(t *testing.T, opts *GenOpts) {
-				modelOpts := *opts
-				modelOpts.AcceptDefinitionsOnly = true
-				modelOpts.Spec = "../fixtures/bugs/1897/model.yaml"
-				modelOpts.ModelPackage = "external"
-				modelOpts.Target = filepath.Dir(modelOpts.Spec)
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				assert.FileExists(t, filepath.Join(target, "cmd", "custom-api", "main.go"))
+			}
+		},
+	}
+}
 
-				require.NoError(t, GenerateModels(nil, &modelOpts))
-
-				t.Run("external model should be available", func(t *testing.T) {
-					require.True(t, fileExists(modelOpts.Target, "external"))
-					require.True(t, fileExists(modelOpts.Target, filepath.Join("external", "error.go")))
-				})
+func fixtureServerExternalModel() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/1897/fixture-1897.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
+				// generate a module for external models in {test dir}/external
+				t.Run("should generate external model", generateExternalModel(
+					opts,
+					filepath.Join("..", "fixtures", "bugs", "1897", "model.yaml"),  // the spec for the external model
+					"github.com/go-swagger/go-swagger/fixtures/bugs/1897/external", // the external package in imports
+				))
 
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "repro1897-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
-			clean: func() {
-				// remove generated external models
-				_ = os.RemoveAll(filepath.Join("..", "fixtures", "bugs", "1897", "external"))
-			},
+			}
 		},
-		"external_models_hints": {
-			spec:   "../fixtures/enhancements/2224/fixture-2224.yaml",
-			target: "2224-hints",
-			prepare: func(t *testing.T, opts *GenOpts) {
-				modelOpts := *opts
-				modelOpts.AcceptDefinitionsOnly = true
-				modelOpts.Spec = "../fixtures/enhancements/2224/fixture-2224-models.yaml"
-				modelOpts.ModelPackage = "external"
-				modelOpts.Target = filepath.Dir(modelOpts.Spec)
+		verify: func(target string) func(*testing.T) {
+			// verify that all dependencies are found and that a complete server can build
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", "repro1897-server")
+				require.DirExists(t, location)
 
-				require.NoError(t, GenerateModels(nil, &modelOpts))
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerExternalModelsHints() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/enhancements/2224/fixture-2224.yaml",
+		// in this test case, we have a mix of generated models and external models
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
+				// generate a module for external models in {test dir}/external
+				t.Run("should generate external model", generateExternalModel(
+					opts,
+					filepath.Join("..", "fixtures", "enhancements", "2224", "fixture-2224-models.yaml"), // the spec for the external model
+					"github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external",              // the external package in imports
+				))
 
 				t.Run("external models should be available", func(t *testing.T) {
-					require.True(t, fileExists(modelOpts.Target, "external"))
+					require.DirExists(t, filepath.Join(opts.Target, "external"))
 
 					for _, model := range []string{
 						"access_point.go", "base.go",
@@ -408,280 +331,315 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 						"raw.go", "request.go",
 						"request_pointer.go", "time_as_object.go", "time.go",
 					} {
-						require.True(t, fileExists(modelOpts.Target, filepath.Join("external", model)))
+						require.FileExists(t, filepath.Join(opts.Target, "external", model))
 					}
 				})
 
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
 				// generated models (not external)
-				require.True(t, fileExists(target, "models"))
+				require.DirExists(t, filepath.Join(target, "models"))
 				for _, model := range []string{"error.go", "external_with_embed.go"} {
-					require.True(t, fileExists(target, filepath.Join("models", model)))
+					require.FileExists(t, filepath.Join(target, "models", model))
 				}
 
 				location := filepath.Join(target, "cmd", "external-types-with-hints-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
-			clean: func() {
-				// remove generated external models
-				_ = os.RemoveAll(filepath.Join("..", "fixtures", "enhancements", "2224", "external"))
-			},
+				require.DirExists(t, location)
+				// verify that all dependencies are found and that a complete server can build
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
 		},
-		"conflict_name_api_issue_2405_1": {
-			spec:   "../examples/todo-list/swagger.yml",
-			target: "2405-1",
-			prepare: func(_ *testing.T, opts *GenOpts) {
-				opts.ServerPackage = "api"
+	}
+}
+
+func fixtureServerNameConflict2405_1() generateFixture {
+	return generateFixture{
+		spec: "../examples/todo-list/swagger.yml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
+				opts.ServerPackage = apiPkg
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
+			}
 		},
-		"conflict_name_api_issue_2405_2": {
-			spec:   "../examples/todo-list/swagger.yml",
-			target: "2405-2",
-			prepare: func(_ *testing.T, opts *GenOpts) {
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerNameConflict2405_2() generateFixture {
+	return generateFixture{
+		spec: "../examples/todo-list/swagger.yml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
 				opts.ServerPackage = "loads"
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
+			}
 		},
-		"conflict_name_api_issue_2405_3": {
-			spec:   "../fixtures/bugs/2405/fixture-2405.yaml",
-			target: "2405-3",
-			prepare: func(_ *testing.T, opts *GenOpts) {
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerNameConflict2405_3() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2405/fixture-2405.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
 				opts.ServerPackage = "server"
-				opts.APIPackage = "api"
+				opts.APIPackage = apiPkg
 				opts.IncludeMain = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
+			}
 		},
-		"ext_types_issue_2385": {
-			spec:   "../fixtures/bugs/2385/fixture-2385.yaml",
-			target: "2385",
-			prepare: func(t *testing.T, opts *GenOpts) {
-				opts.MainPackage = "nrcodegen-server"
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", "simple-to-do-list-api-server")
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerExternalTypes2385() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2385/fixture-2385.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
+				opts.MainPackage = testServerPkg
 				opts.IncludeMain = true
 				location := filepath.Join(opts.Target, "models")
 
 				// add some custom model to the generated models
 				addModelsToLocation(t, location, "my_type.go")
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "nrcodegen-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", testServerPkg)
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
 
 				location = filepath.Join(target, "models")
-
-				t.Run("building generated models",
-					goExecInDir(location, "build"),
-				)
-			},
+				require.DirExists(t, location)
+				t.Run("building generated models", gentest.GoBuild(location))
+			}
 		},
-		"ext_types_full_example": {
-			spec:   "../examples/external-types/example-external-types.yaml",
-			target: "external-full",
-			prepare: func(t *testing.T, opts *GenOpts) {
-				opts.MainPackage = "nrcodegen-server"
+	}
+}
+
+func fixtureServerExternalTypesFull() generateFixture {
+	return generateFixture{
+		spec: "../examples/external-types/example-external-types.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
+				opts.MainPackage = testServerPkg
 				opts.IncludeMain = true
 				opts.ValidateSpec = false // the spec contains AdditionalItems
-				location := filepath.Join(opts.Target, "models")
 
 				// add some custom model to the generated models
+				location := filepath.Join(opts.Target, "models")
 				addModelsToLocation(t, location, "my_type.go")
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "nrcodegen-server")
-				require.True(t, fileExists("", location))
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", testServerPkg)
+				require.DirExists(t, location)
 
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
 				location = filepath.Join(target, "models")
-
-				t.Run("building generated models",
-					goExecInDir(location, "build"),
-				)
-			},
-		},
-		"conflict_name_server_issue_2730": {
-			spec:   "../fixtures/bugs/2730/2730.yaml",
-			target: "server-2730",
-			prepare: func(_ *testing.T, opts *GenOpts) {
-				opts.MainPackage = "nrcodegen-server"
-				opts.IncludeMain = true
-				opts.ValidateSpec = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "nrcodegen-server")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
-		},
-		"tag_package_name_issue_2866": {
-			spec:   "../fixtures/bugs/2866/2866.yaml",
-			target: "server-2866",
-			prepare: func(_ *testing.T, opts *GenOpts) {
-				opts.MainPackage = "nrcodegen-server"
-				opts.IncludeMain = true
-				opts.ValidateSpec = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "nrcodegen-server")
-				require.True(t, fileExists("", location))
-
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "version1")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "version3")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v2_validations")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_validations")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_actual")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "v3_planned")))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
-		},
-		"tag_package_name_regression_3143": {
-			spec:   "../fixtures/bugs/3143/3143.yaml",
-			target: "server-3143",
-			prepare: func(_ *testing.T, opts *GenOpts) {
-				opts.MainPackage = "nrcodegen-server"
-				opts.IncludeMain = true
-				opts.ValidateSpec = true
-			},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "cmd", "nrcodegen-server")
-				require.True(t, fileExists("", location))
-
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "av2on")))
-				require.True(t, fileExists("", filepath.Join(target, "restapi", "operations", "trailingv2")))
-
-				t.Run("building generated server",
-					goExecInDir(location, "build"),
-				)
-			},
+				t.Run("building generated models", gentest.GoBuild(location))
+			}
 		},
 	}
 }
 
-func generateClientFixtures(_ testing.TB) map[string]generateFixture {
-	return map[string]generateFixture{
-		"issue1083": {
-			spec:   "../fixtures/bugs/1083/petstore.yaml",
-			target: "../fixtures/bugs/1083/codegen",
-			prepare: func(t *testing.T, opts *GenOpts) {
-				input, err := os.ReadFile("../fixtures/bugs/1083/pathparam_test.go")
-				require.NoError(t, err)
+func fixtureServerNameConflictServer2730() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2730/2730.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
+				opts.MainPackage = testServerPkg
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", testServerPkg)
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
 
-				// rewrite imports for the relocated test program
-				cwd := testCwd(t)
-				rebased := bytes.ReplaceAll(
-					input,
-					[]byte("/fixtures/bugs/1083/codegen"),
-					[]byte(filepath.ToSlash(strings.TrimPrefix(opts.Target, filepath.Dir(cwd)))),
-				)
+func fixtureServerTagPackageName2866() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/2866/2866.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
+				opts.MainPackage = testServerPkg
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", testServerPkg)
+				require.DirExists(t, location)
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "version1"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "version3"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "v2_validations"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "v3_validations"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "v3_actual"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "v3_planned"))
 
-				require.NoError(t, os.WriteFile(filepath.Join(filepath.Dir(opts.Target), "pathparam_test.go"), rebased, 0o600))
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerTagPackageName3143() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/3143/3143.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(_ *testing.T) {
+				opts.MainPackage = testServerPkg
+				opts.IncludeMain = true
+				opts.ValidateSpec = true
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "cmd", testServerPkg)
+				require.DirExists(t, location)
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "av2on"))
+				require.DirExists(t, filepath.Join(target, "restapi", "operations", "trailingv2"))
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureClientRoundTrip1083() generateFixture {
+	return generateFixture{
+		// exercise generated client + untyped server
+		spec: "../fixtures/bugs/1083/petstore.yaml",
+		prepare: func(opts *GenOpts) func(*testing.T) {
+			return func(t *testing.T) {
+				targetImport := gentest.SanitizeGoModPath(opts.Target) // the generated module
+
+				t.Run("should relocate test program", func(t *testing.T) {
+					input, err := os.ReadFile(filepath.Join("..", "fixtures", "bugs", "1083", "pathparam_test.go"))
+					require.NoError(t, err)
+
+					// rewrite imports and relocates test program to the codegen target directory.
+					//
+					// Imports are rewritten such that there is no need for a replace directive in the generated go.mod
+					rebasedContent := bytes.ReplaceAll(
+						input,
+						[]byte("github.com/go-swagger/go-swagger/fixtures/bugs/1083/codegen"),
+						[]byte(targetImport),
+					)
+					rebasedContent = removeBuildTags(rebasedContent)
+					require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "pathparam_test.go"), rebasedContent, 0o600))
+				})
+
 				opts.ExcludeSpec = false
 
-				// copy spec to run untyped server
-				f, err := os.Open(filepath.Join("..", "fixtures", "bugs", "1083", "petstore.yaml"))
-				require.NoError(t, err)
-				defer func() {
-					_ = f.Close()
-				}()
-				w, err := os.OpenFile(filepath.Join(filepath.Dir(opts.Target), "petstore.yaml"), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0o700)
-				require.NoError(t, err)
-				defer func() {
-					_ = w.Close()
-				}()
-				_, err = io.Copy(w, f)
-				require.NoError(t, err)
-			},
-			verify: func(t *testing.T, target string) {
-				const packages = "./..."
+				t.Run("should copy spec for untyped usage", func(t *testing.T) {
+					f, err := os.Open(filepath.Join("..", "fixtures", "bugs", "1083", "petstore.yaml"))
+					require.NoError(t, err)
+					defer func() {
+						_ = f.Close()
+					}()
+
+					w, err := os.Create(filepath.Join(opts.Target, "petstore.yaml"))
+					require.NoError(t, err)
+					defer func() {
+						_ = w.Close()
+					}()
+					_, err = io.Copy(w, f)
+					require.NoError(t, err)
+				})
+			}
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
 				testPrg := "pathparam_test.go"
-				testDir := filepath.Dir(target)
 
-				t.Run("go get",
-					goExecInDir(testDir, "get", packages),
-				)
-
+				t.Run("go get", gentest.GoExecInDir(target, "get", "./..."))
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
 				t.Run("running runtime request test on generated client",
-					// This test runs a generated client against a untyped API server.
+					// This test runs a generated client against an untyped API server.
 					// It verifies that path parameters are properly escaped and unescaped.
 					// It exercises the full stack of runtime client and server.
-					goExecInDir(testDir, "test", "-v", testPrg),
+					gentest.GoExecInDir(target, "test", "-v", testPrg),
 				)
-			},
-		},
-		"conflict_name_client_issue_2730": {
-			spec:    "../fixtures/bugs/2730/2730.yaml",
-			target:  "server-2730",
-			prepare: func(_ *testing.T, _ *GenOpts) {},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "client")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated client",
-					goExecInDir(location, "build"),
-				)
-			},
-		},
-		"type conversions": {
-			spec:    "../fixtures/codegen/conversions.yaml",
-			target:  "server-conversions",
-			prepare: func(_ *testing.T, _ *GenOpts) {},
-			verify: func(t *testing.T, target string) {
-				location := filepath.Join(target, "client")
-				require.True(t, fileExists("", location))
-
-				t.Run("building generated client",
-					goExecInDir(location, "build"),
-				)
-			},
+			}
 		},
 	}
 }
 
-func addModelsToLocation(t testing.TB, location, file string) {
+func fixtureClientNameConflict2730() generateFixture {
+	return generateFixture{
+		spec:    "../fixtures/bugs/2730/2730.yaml",
+		prepare: nil,
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "client")
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated client", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureClientTypeConversions() generateFixture {
+	return generateFixture{
+		spec:    "../fixtures/codegen/conversions.yaml",
+		prepare: nil,
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				location := filepath.Join(target, "client")
+				require.DirExists(t, location)
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("building generated client", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func addModelsToLocation(t *testing.T, location, file string) {
 	// writes some external model to a file to supplement codegen
 	// (test external types)
+	t.Helper()
+
 	require.NoError(t, os.MkdirAll(location, 0o700))
 
 	require.NoError(t, os.WriteFile(filepath.Join(location, file), []byte(`
@@ -729,5 +687,39 @@ func (MyOtherType) ContextValidate(context.Context, strfmt.Registry) error { ret
 // MyStreamer ...
 type MyStreamer io.Reader
 `),
-		0o600))
+		readableFile))
+}
+
+// generateExternalModel prepares some independently generated models, before we generate a server
+// or client which imports them.
+//
+// Models are generated as their own go module, in folder "external" located in the temporary test directory.
+// The module must be named exactly as it is imported (e.g. declared import location in the server spec) and
+// a "replace" clause is added to the consuming module to locate the newly generated models.
+func generateExternalModel(opts *GenOpts, modelSpecPath string, modelsPackage string) func(t *testing.T) {
+	return func(t *testing.T) {
+		// we first generate an external model from model.yaml, as its own module
+		modelOpts := *opts
+		modelOpts.AcceptDefinitionsOnly = true
+		// the location of the spec for external models
+		modelOpts.Spec = modelSpecPath
+		modelOpts.ModelPackage = "external"
+		targetPackageLocation := filepath.Join(modelOpts.Target, modelOpts.ModelPackage)
+		require.NoError(t, os.MkdirAll(targetPackageLocation, readableDir))
+
+		// generate module "external" with its fully qualified name referenced by imports
+		t.Run("models mod init", gentest.GoModInit(targetPackageLocation, gentest.WithGoModuleName(modelsPackage)))
+
+		// generate the external models package in package "external/models"
+		require.NoError(t, GenerateModels(nil, &modelOpts))
+
+		t.Run("should replace external package by test module",
+			// in the module of the target server, replace the reference to the external module by its actual generated location
+			gentest.GoExecInDir(
+				opts.Target,
+				"mod", "edit",
+				"-replace", fmt.Sprintf("%s=%s", modelsPackage, targetPackageLocation),
+			),
+		)
+	}
 }

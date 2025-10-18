@@ -421,7 +421,7 @@ func TestEnum_Issue265(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "SodaBrand"
+	const k = "SodaBrand"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -472,64 +472,90 @@ func TestGenerateModel_Issue303(t *testing.T) {
 }
 
 func TestEnum_Issue325(t *testing.T) {
+	t.Parallel()
+
 	specDoc, err := loads.Spec("../fixtures/codegen/sodabooths.json")
 	require.NoError(t, err)
-
 	definitions := specDoc.Spec().Definitions
-	k := "SodaBrand"
-	schema := definitions[k]
-	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-	require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	t.Run("with SodaBrand enum", func(t *testing.T) {
+		const k = "SodaBrand"
+		schema := definitions[k]
 
-	ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
-	require.NoErrorf(t, err, buf.String())
+		t.Run("should generate model", func(t *testing.T) {
+			modelOpts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
+			require.NoError(t, err)
 
-	res := string(ff)
-	assertInCode(t, "var sodaBrandEnum []any", res)
-	assertInCode(t, "err := validate.EnumCase(path, location, value, sodaBrandEnum, true)", res)
-	assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+			buf := bytes.NewBuffer(nil)
+			err = templates.MustGet("model").Execute(buf, genModel)
+			require.NoError(t, err)
 
-	k = "Soda"
-	schema = definitions[k]
-	genModel, err = makeGenDefinition(k, "models", schema, specDoc, opts)
-	require.NoError(t, err)
+			ff, err := modelOpts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
+			require.NoErrorf(t, err, buf.String())
 
-	buf = bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+			t.Run("code should define enum slice", func(t *testing.T) {
+				res := string(ff)
+				assertInCode(t, "var sodaBrandEnum []any", res)
+				assertInCode(t, "err := validate.EnumCase(path, location, value, sodaBrandEnum, true)", res)
+				assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+			})
+		})
+	})
 
-	ff, err = opts.LanguageOpts.FormatContent("soda.go", buf.Bytes())
-	require.NoErrorf(t, err, buf.String())
+	t.Run("with Soda enum", func(t *testing.T) {
+		const k = "Soda"
+		schema := definitions[k]
 
-	res = string(ff)
-	assertInCode(t, "var sodaTypeBrandPropEnum []any", res)
-	assertInCode(t, "err := validate.EnumCase(path, location, value, sodaTypeBrandPropEnum, true)", res)
-	assert.Equal(t, 1, strings.Count(res, "m.validateBrandEnum"))
+		t.Run("should generate model", func(t *testing.T) {
+			modelOpts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			err = templates.MustGet("model").Execute(buf, genModel)
+			require.NoError(t, err)
+
+			ff, err := modelOpts.LanguageOpts.FormatContent("soda.go", buf.Bytes())
+			require.NoErrorf(t, err, buf.String())
+
+			t.Run("code should define enum slice", func(t *testing.T) {
+				res := string(ff)
+				assertInCode(t, "var sodaTypeBrandPropEnum []any", res)
+				assertInCode(t, "err := validate.EnumCase(path, location, value, sodaTypeBrandPropEnum, true)", res)
+				assert.Equal(t, 1, strings.Count(res, "m.validateBrandEnum"))
+			})
+		})
+	})
 }
 
 func TestEnum_Issue352(t *testing.T) {
+	t.Parallel()
+
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
 	require.NoError(t, err)
-
 	definitions := specDoc.Spec().Definitions
-	k := "slp_action_enum"
-	schema := definitions[k]
-	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
-	require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	t.Run("with slp_action enum", func(t *testing.T) {
+		const k = "slp_action_enum"
 
-	ff, err := opts.LanguageOpts.FormatContent("slp_action_enum.go", buf.Bytes())
-	require.NoErrorf(t, err, buf.String())
+		t.Run("should generate model", func(t *testing.T) {
+			schema := definitions[k]
+			opts := opts()
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			require.NoError(t, err)
 
-	res := string(ff)
-	assertInCode(t, ", value SlpActionEnum", res)
+			buf := bytes.NewBuffer(nil)
+			err = templates.MustGet("model").Execute(buf, genModel)
+			require.NoError(t, err)
+
+			ff, err := opts.LanguageOpts.FormatContent("slp_action_enum.go", buf.Bytes())
+			require.NoErrorf(t, err, buf.String())
+
+			t.Run("code should define value for enum type", func(t *testing.T) {
+				res := string(ff)
+				assertInCode(t, ", value SlpActionEnum", res)
+			})
+		})
+	})
 }

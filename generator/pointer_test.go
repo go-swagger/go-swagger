@@ -11,6 +11,11 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+const (
+	myAlias      = "MyAliasedThing"
+	myAliasModel = "models." + myAlias
+)
+
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -117,7 +122,7 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 		if t == "integer" {
 			vv = "int64"
 		} else {
-			vv = "float64"
+			vv = float64String
 		}
 	}
 	if vv == "uint" && t == "integer" {
@@ -127,7 +132,7 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 		if v == "float" {
 			vv = "float32"
 		} else {
-			vv = "float64"
+			vv = float64String
 		}
 	}
 	return []builtinVal{
@@ -381,9 +386,11 @@ var strfmtValues = []builtinVal{
 	{Type: "string", Format: "binary", Expected: "io.ReadCloser", Nullable: false, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 39
 }
 
-func testPointToAdditionalPropertiesElements(t testing.TB, tr typeResolver, aliased bool) bool {
+func testPointToAdditionalPropertiesElements(t *testing.T, tr typeResolver, aliased bool) bool {
+	t.Helper()
+
 	if aliased {
-		tr.ModelName = "MyAliasedThing"
+		tr.ModelName = myAlias
 	}
 	resolver := &tr
 	for i, val := range boolPointerVals {
@@ -426,9 +433,11 @@ func testPointToAdditionalPropertiesElements(t testing.TB, tr typeResolver, alia
 	return true
 }
 
-func testPointToSliceElements(t testing.TB, tr typeResolver, aliased bool) bool {
+func testPointToSliceElements(t *testing.T, tr typeResolver, aliased bool) bool {
+	t.Helper()
+
 	if aliased {
-		tr.ModelName = "MyAliasedThing"
+		tr.ModelName = myAlias
 	}
 	resolver := &tr
 	for i, val := range boolPointerVals {
@@ -471,9 +480,11 @@ func testPointToSliceElements(t testing.TB, tr typeResolver, aliased bool) bool 
 	return true
 }
 
-func testPointToPrimitives(t testing.TB, tr typeResolver, aliased bool) bool {
+func testPointToPrimitives(t *testing.T, tr typeResolver, aliased bool) bool {
+	t.Helper()
+
 	if aliased {
-		tr.ModelName = "MyAliasedThing"
+		tr.ModelName = myAlias
 		tr.KnownDefs[tr.ModelName] = struct{}{}
 	}
 	resolver := &tr
@@ -519,11 +530,13 @@ func testPointToPrimitives(t testing.TB, tr typeResolver, aliased bool) bool {
 	return true
 }
 
-func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+func assertBuiltinVal(t *testing.T, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+	t.Helper()
+
 	val.Aliased = aliased
 	if aliased {
 		val.AliasedType = val.Expected
-		val.Expected = "models.MyAliasedThing"
+		val.Expected = myAliasModel
 	}
 
 	sch := new(spec.Schema)
@@ -566,7 +579,9 @@ func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int,
 	return true
 }
 
-func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+func assertBuiltinSliceElem(t *testing.T, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+	t.Helper()
+
 	val.Nullable = false
 	if nullableExtension(val.Extensions) != nil {
 		val.Nullable = *nullableExtension(val.Extensions)
@@ -580,7 +595,7 @@ func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, 
 	val.Aliased = aliased
 	if aliased {
 		val.AliasedType = val.Expected
-		val.Expected = "models.MyAliasedThing"
+		val.Expected = myAliasModel
 	}
 
 	items := new(spec.Schema)
@@ -624,10 +639,12 @@ func assertBuiltinSliceElem(t testing.TB, resolver *typeResolver, aliased bool, 
 	return true
 }
 
-func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+func assertBuiltinAdditionalPropertiesElem(t *testing.T, resolver *typeResolver, aliased bool, i int, val builtinVal) bool {
+	t.Helper()
+
 	val.Nullable = false
-	if nullableExtension(val.Extensions) != nil {
-		val.Nullable = *nullableExtension(val.Extensions)
+	if ext := nullableExtension(val.Extensions); ext != nil {
+		val.Nullable = *ext
 	}
 	sliceType := "map[string]" + val.Expected
 	if val.Nullable {
@@ -638,7 +655,7 @@ func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver,
 	val.Aliased = aliased
 	if aliased {
 		val.AliasedType = val.Expected
-		val.Expected = "models.MyAliasedThing"
+		val.Expected = myAliasModel
 	}
 
 	items := new(spec.Schema)
@@ -683,13 +700,17 @@ func assertBuiltinAdditionalPropertiesElem(t testing.TB, resolver *typeResolver,
 	return true
 }
 
-func assertBuiltinResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+func assertBuiltinResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+	t.Helper()
+
 	return assert.Equal(t, tpe, tr.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
 		assert.Equal(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
 		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
 }
 
-func assertBuiltinSliceElemnResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+func assertBuiltinSliceElemnResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType, i int) bool {
+	t.Helper()
+
 	return assert.Equal(t, tpe, tr.ElemType.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
 		assert.Equal(t, tfmt, tr.ElemType.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
 		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)

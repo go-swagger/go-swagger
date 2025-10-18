@@ -105,7 +105,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		assertInCode(t, "validate.Required(\"name\", \"body\", m.Name())", res)
 	}
 
-	k := "Pet"
+	const k = "Pet"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)

@@ -20,11 +20,14 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -46,7 +49,9 @@ func (m modelExpectations) ExpectLogs() bool {
 	return len(m.ExpectedLogs) > 0 || len(m.NotExpectedLogs) > 0
 }
 
-func (m modelExpectations) AssertModelLogs(t testing.TB, msg, definitionName, fixtureSpec string) {
+func (m modelExpectations) AssertModelLogs(t *testing.T, msg, definitionName, fixtureSpec string) {
+	t.Helper()
+
 	// assert logged output
 	for line, logLine := range m.ExpectedLogs {
 		if !assertInCode(t, strings.TrimSpace(logLine), msg) {
@@ -65,7 +70,9 @@ func (m modelExpectations) AssertModelLogs(t testing.TB, msg, definitionName, fi
 	}
 }
 
-func (m modelExpectations) AssertModelCodegen(t testing.TB, msg, definitionName, fixtureSpec string) {
+func (m modelExpectations) AssertModelCodegen(t *testing.T, msg, definitionName, fixtureSpec string) {
+	t.Helper()
+
 	// assert generated code
 	for line, codeLine := range m.ExpectedLines {
 		if !assertInCode(t, strings.TrimSpace(codeLine), msg) {
@@ -328,12 +335,12 @@ func TestModelGenerateDefinition(t *testing.T) {
 	// exercise the top level model generation func
 	defer discardOutput()()
 
-	fixtureSpec := "../fixtures/bugs/1487/fixture-is-nullable.yaml"
-	gendir, err := os.MkdirTemp(".", "model-test")
-	require.NoError(t, err)
-	defer func() {
-		_ = os.RemoveAll(gendir)
-	}()
+	const fixtureSpec = "../fixtures/bugs/1487/fixture-is-nullable.yaml"
+
+	root := t.TempDir()
+	gendir := filepath.Join(root, "model-test")
+	require.NoError(t, os.MkdirAll(gendir, readableDir))
+	t.Run("go mod init", gentest.GoModInit(gendir))
 
 	opts := &GenOpts{}
 	opts.IncludeValidator = true
@@ -457,7 +464,7 @@ func findTestDefinition(k string, definitions spec.Definitions) (string, *spec.S
 	return definitionName, schema
 }
 
-func checkDefinitionCodegen(t testing.TB, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations) {
+func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, schema *spec.Schema, specDoc *loads.Document, opts *GenOpts, fixtureExpectations *modelExpectations) {
 	// prepare assertions on log output (e.g. generation warnings)
 	var logCapture bytes.Buffer
 	var msg string

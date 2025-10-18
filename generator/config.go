@@ -18,7 +18,7 @@ type LanguageDefinition struct {
 func (d *LanguageDefinition) ConfigureOpts(opts *GenOpts) error {
 	opts.Sections = d.Layout
 	if opts.LanguageOpts == nil {
-		opts.LanguageOpts = GoLangOpts()
+		opts.LanguageOpts = GolangOpts()
 	}
 	return nil
 }

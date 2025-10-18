@@ -16,6 +16,7 @@ package generator
 
 import (
 	"errors"
+	"os"
 	"path"
 
 	"github.com/go-openapi/swag"
@@ -106,7 +107,7 @@ func (c *clientGenerator) Generate() error {
 	}
 
 	if c.DumpData {
-		return dumpData(swag.ToDynamicJSON(app))
+		return dumpData(os.Stdout, swag.ToDynamicJSON(app))
 	}
 
 	if c.GenOpts.IncludeModel {

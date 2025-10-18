@@ -1,9 +1,9 @@
 //go:build !windows
-// +build !windows
 
 package generator
 
 import (
+	"fmt"
 	"log"
 	"plugin"
 	"text/template"
@@ -44,6 +44,12 @@ func (t *Repository) LoadPlugin(pluginPath string) error {
 		return err
 	}
 
-	f.(func(template.FuncMap))(t.funcs)
+	funcmap, ok := f.(func(template.FuncMap))
+	if !ok {
+		return fmt.Errorf("invalid plugin: AddFuncs is of an unexpected type: %T", f)
+	}
+
+	funcmap(t.funcs)
+
 	return nil
 }

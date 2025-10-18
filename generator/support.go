@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -156,7 +157,7 @@ func (a *appGenerator) Generate() error {
 	}
 
 	if a.DumpData {
-		return dumpData(app)
+		return dumpData(os.Stdout, app)
 	}
 
 	// NOTE: relative to previous implem with chan.
@@ -250,6 +251,7 @@ func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver, a.GenOpts.PrincipalIsNullable())
 }
 
+//nolint:gocognit,gocyclo,cyclop,maintidx // TODO(fredbi): refactor
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("building a plan for generation")
 
@@ -265,7 +267,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	defaultImports := a.GenOpts.defaultImports()
 
-	imports := make(map[string]string, 50)
+	imports := make(map[string]string, sensibleDefaultMapAlloc)
 	alias := deconflictPkg(a.GenOpts.LanguageOpts.ManglePackageName(a.OperationsPackage, defaultOperationsTarget), renameAPIPackage)
 	if !a.GenOpts.IsClient { // we don't want to inject this import for clients
 		imports[alias] = path.Join(
@@ -411,12 +413,14 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Printf("grouping operations into packages (packages: %d)", len(opsGroupedByPackage))
 
 	opGroups := make(GenOperationGroups, 0, len(opsGroupedByPackage))
+	const sensibleConsumesAlloc = 2
+
 	for k, v := range opsGroupedByPackage {
 		log.Printf("operations for package %q (found: %d)", k, len(v))
 		sort.Sort(v)
 
-		consumesInGroup := make([]string, 0, 2)
-		producesInGroup := make([]string, 0, 2)
+		consumesInGroup := make([]string, 0, sensibleConsumesAlloc)
+		producesInGroup := make([]string, 0, sensibleConsumesAlloc)
 
 		// trim duplicate extra schemas within the same package
 		vv := make(GenOperations, 0, len(v))

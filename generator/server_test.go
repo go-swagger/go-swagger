@@ -16,48 +16,13 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
-const invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
-
-func testAppGenerator(t testing.TB, specPath, name string) (*appGenerator, error) {
-	specDoc, err := loads.Spec(specPath)
-	require.NoError(t, err)
-	analyzed := analysis.New(specDoc.Spec())
-
-	models, err := gatherModels(specDoc, nil)
-	require.NoError(t, err)
-
-	operations := gatherOperations(analyzed, nil)
-	if len(operations) == 0 {
-		return nil, errors.New("no operations were selected")
-	}
-
-	opts := testGenOpts()
-	opts.Spec = specPath
-	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), "api")
-
-	return &appGenerator{
-		Name:            appNameOrDefault(specDoc, name, "swagger"),
-		Receiver:        "o",
-		SpecDoc:         specDoc,
-		Analyzed:        analyzed,
-		Models:          models,
-		Operations:      operations,
-		Target:          ".",
-		DumpData:        opts.DumpData,
-		Package:         apiPackage,
-		APIPackage:      apiPackage,
-		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
-		Principal:       opts.Principal,
-		DefaultScheme:   "http",
-		DefaultProduces: runtime.JSONMime,
-		DefaultConsumes: runtime.JSONMime,
-		GenOpts:         opts,
-	}, nil
-}
+const (
+	invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
+	apiPkg             = "api"
+)
 
 func TestServer_UrlEncoded(t *testing.T) {
 	defer discardOutput()()
@@ -379,100 +344,143 @@ func TestServer_Issue1648(t *testing.T) {
 func TestServer_Issue1746(t *testing.T) {
 	defer discardOutput()()
 
-	targetdir, err := os.MkdirTemp(".", "swagger_server")
-	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
-	defer func() {
-		_ = os.RemoveAll(targetdir)
-	}()
+	specPath, err := filepath.Abs(filepath.Join("..", "fixtures"))
+	require.NoError(t, err)
 
-	cwd := testCwd(t)
-	require.NoErrorf(t, os.Chdir(targetdir), "failed to create a test target directory: %v", err)
-	defer func() {
-		_ = os.Chdir(cwd)
-	}()
+	targetdir := t.TempDir()
+	t.Chdir(targetdir) // all the following tests are executed relative to the current working directory
+	const target = "x"
 
 	opts := testGenOpts()
-	opts.Target = "x"
-	opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "1746", "fixture-1746.yaml")
-	tgtSpec := regexp.QuoteMeta(filepath.Join("..", "..", opts.Spec))
-
-	require.NoError(t, os.Mkdir(opts.Target, 0o755))
-
-	require.NoError(t, GenerateServer("", nil, nil, opts))
-
-	gulp, err := os.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
+	opts.Target = target
+	opts.Spec = filepath.Join(specPath, "bugs", "1746", "fixture-1746.yaml")
+	relative, err := filepath.Rel(filepath.Join(targetdir, target), opts.Spec) // attention: on windows, this means that TempDir is located on the same drive as your code
 	require.NoError(t, err)
+	tgtSpec := regexp.QuoteMeta(filepath.Join("..", relative)) // add backwards dir because the "go generate" clause is generated in a folder inside target
 
-	res := string(gulp)
+	t.Run("should generate a server in spite of reserved words in API name", func(t *testing.T) {
+		require.NoError(t, os.Mkdir(opts.Target, readableDir))
+		t.Run("shoud init go.mod", gentest.GoModInit(opts.Target))
+		require.NoError(t, GenerateServer("", nil, nil, opts))
 
-	tgtPath := regexp.QuoteMeta(filepath.Join("..", "..", opts.Target))
-	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-target `+tgtPath, res)
-	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-name\s+ExampleSwaggerServer`, res)
-	assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, res)
-}
+		gulp, err := os.ReadFile(filepath.Join("x", "restapi", "configure_example_swagger_server.go"))
+		require.NoError(t, err)
 
-func doGenAppTemplate(t testing.TB, fixture, template string) string {
-	gen, err := testAppGenerator(t, fixture, "generate: "+fixture)
-	require.NoError(t, err)
+		res := string(gulp)
 
-	app, err := gen.makeCodegenApp()
-	require.NoError(t, err)
-
-	buf := bytes.NewBuffer(nil)
-	require.NoError(t, templates.MustGet(template).Execute(buf, app))
-
-	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-	require.NoError(t, err)
-
-	return string(formatted)
+		tgtPath := regexp.QuoteMeta(filepath.Join("..", "..", target))
+		assertRegexpInCode(t, `go:generate swagger generate server.+\-\-target `+tgtPath, res)
+		assertRegexpInCode(t, `go:generate swagger generate server.+\-\-name\s+ExampleSwaggerServer`, res)
+		assertRegexpInCode(t, `go:generate swagger generate server.+\-\-spec\s+`+tgtSpec, res)
+	})
 }
 
 func TestServer_Issue1816(t *testing.T) {
 	defer discardOutput()()
 
-	// fixed regression: gob encoding in $ref
-	res := doGenAppTemplate(t, "../fixtures/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
-	assertNotInCode(t, `"$ref": "#"`, res)
+	t.Run("should resolve $ref from embedded spec correctly", func(t *testing.T) {
+		// fixed regression: gob encoding in $ref
+		res := doGenAppTemplate(t, "../fixtures/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
+		assertNotInCode(t, `"$ref": "#"`, res)
+	})
 
-	// fixed regression: gob encoding in operation security requirements
-	res = doGenAppTemplate(t, "../fixtures/bugs/1824/swagger.json", "swaggerJsonEmbed")
-	assertInCode(t, `"api_key": []`, res)
-	assertNotInCode(t, `"api_key": null`, res)
+	t.Run("should resolve security requirements from embedded spec correctly", func(t *testing.T) {
+		// fixed regression: gob encoding in operation security requirements
+		res := doGenAppTemplate(t, "../fixtures/bugs/1824/swagger.json", "swaggerJsonEmbed")
+		assertInCode(t, `"api_key": []`, res)
+		assertNotInCode(t, `"api_key": null`, res)
+	})
 }
 
 func TestServer_Issue2346(t *testing.T) {
 	defer discardOutput()()
+	specPath, err := filepath.Abs(filepath.Join("..", "fixtures"))
+	require.NoError(t, err)
 
-	targetdir, err := os.MkdirTemp(".", "swagger_server")
-	require.NoErrorf(t, err, "failed to create a test target directory: %v", err)
-	t.Cleanup(func() {
-		_ = os.RemoveAll(targetdir)
-	})
+	targetdir := t.TempDir()
+	t.Chdir(targetdir) // all the following tests are executed relative to the current working directory
 
-	cwd := testCwd(t)
-	require.NoErrorf(t, os.Chdir(targetdir), "failed to chdir to test target directory: %v", err)
-	defer func() {
-		_ = os.Chdir(cwd)
-	}()
+	t.Run("should build server with flatten Expand option", func(t *testing.T) {
+		const target = "x"
 
-	t.Run("should build server with flatten Expand optio", func(t *testing.T) {
 		opts := testGenOpts()
-		opts.Target = "x"
+		opts.Target = target
 		opts.FlattenOpts.Expand = true // this issue pops up spcifically when using this option
-		opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "2346", "swagger.yaml")
-		require.NoError(t, os.Mkdir(opts.Target, 0o755))
+		opts.Spec = filepath.Join(specPath, "bugs", "2346", "swagger.yaml")
 
+		require.NoError(t, os.Mkdir(opts.Target, readableDir))
+		t.Run("shoud init go.mod", gentest.GoModInit(opts.Target))
 		require.NoError(t, GenerateServer("api-2346", nil, nil, opts))
 	})
 
 	t.Run("should build server with flatten Minimal (no expand)", func(t *testing.T) {
+		const target = "y"
+
 		opts := testGenOpts()
-		opts.Target = "y"
+		opts.Target = target
 		opts.FlattenOpts.Minimal = true
 		opts.FlattenOpts.Expand = false
-		opts.Spec = filepath.Join("..", "..", "fixtures", "bugs", "2346", "swagger.yaml")
-		require.NoError(t, os.Mkdir(opts.Target, 0o755))
+		opts.Spec = filepath.Join(specPath, "bugs", "2346", "swagger.yaml")
 
+		require.NoError(t, os.Mkdir(opts.Target, readableDir))
+		t.Run("shoud init go.mod", gentest.GoModInit(opts.Target))
 		require.NoError(t, GenerateServer("api-2346", nil, nil, opts))
 	})
+}
+
+func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, error) {
+	specDoc, err := loads.Spec(specPath)
+	require.NoError(tb, err)
+	analyzed := analysis.New(specDoc.Spec())
+
+	models, err := gatherModels(specDoc, nil)
+	require.NoError(tb, err)
+
+	operations := gatherOperations(analyzed, nil)
+	if len(operations) == 0 {
+		return nil, errors.New("no operations were selected")
+	}
+
+	opts := testGenOpts()
+	opts.Spec = specPath
+	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), apiPkg)
+
+	return &appGenerator{
+		Name:            appNameOrDefault(specDoc, name, "swagger"),
+		Receiver:        "o",
+		SpecDoc:         specDoc,
+		Analyzed:        analyzed,
+		Models:          models,
+		Operations:      operations,
+		Target:          ".",
+		DumpData:        opts.DumpData,
+		Package:         apiPackage,
+		APIPackage:      apiPackage,
+		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		Principal:       opts.Principal,
+		DefaultScheme:   "http",
+		DefaultProduces: runtime.JSONMime,
+		DefaultConsumes: runtime.JSONMime,
+		GenOpts:         opts,
+	}, nil
+}
+
+func doGenAppTemplate(tb testing.TB, fixture, template string) string {
+	tb.Helper()
+
+	gen, err := testAppGenerator(tb, fixture, "generate: "+fixture)
+	require.NoError(tb, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(tb, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(tb, templates.MustGet(template).Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(tb, err)
+
+	return string(formatted)
 }

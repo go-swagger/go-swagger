@@ -32,7 +32,7 @@ linters:
     - paralleltest # unclear added value
     - recvcheck  # disagree
     - tagliatelle # false positives, want to impose camel case everywhere => should be disabled sparingly only
-    - testpackage # disagree: we like test packages, just not for everything like the linter suggest
+    - testpackage # disagree: we like test packages, just not for everything like the linter suggests
     - tparallel
     - varnamelen
     - wrapcheck
@@ -51,17 +51,22 @@ linters:
     goconst:
       min-len: 2
       min-occurrences: 3
+    gocognit:
+      min-complexity: 32
     gocyclo:
-      min-complexity: 30
+      min-complexity: 32
     cyclop:
-      max-complexity: 30
+      max-complexity: 32
     govet:
       enable-all: true
       disable:
         - fieldalignment
     thelper:
       tb:
-        name: false  # dont' want issue "parameter testing.TB should have name tb"
+        #name: false  # dont' want issue "parameter testing.TB should have name tb"
+        begin: false
+      test:
+        begin: false # don't want issue "test helper function should start from tb.Helper()"
     testifylint:
       enable:
         - bool-compare
