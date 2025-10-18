@@ -16,6 +16,8 @@ var (
 type PrintVersion struct{}
 
 // Execute this command.
+//
+//nolint:forbidigo // this commands is allowed to use fmt.Println
 func (p *PrintVersion) Execute(_ []string) error {
 	if Version == "" {
 		if info, available := debug.ReadBuildInfo(); available && info.Main.Version != "(devel)" {

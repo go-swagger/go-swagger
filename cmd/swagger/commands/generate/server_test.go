@@ -14,17 +14,16 @@ import (
 )
 
 func TestGenerateServer(t *testing.T) {
-	testGenerateServer(t, false)
+	t.Run("should generate server with Responder", testGenerateServer(false))
+
+	t.Run("should generate server with StrictResponder", testGenerateServer(true))
 }
 
-func TestGenerateServerStrict(t *testing.T) {
-	testGenerateServer(t, true)
-}
-
-func TestGenerateServer_Checks(t *testing.T) {
+func TestGenerateServerChecks(t *testing.T) {
 	t.Run("invalid provided copyright file should error", func(t *testing.T) {
 		m := &generate.Server{}
 		_, _ = flags.Parse(m)
+
 		m.Shared.CopyrightFile = "nowhere"
 		require.Error(t, m.Execute([]string{}))
 	})
@@ -66,36 +65,38 @@ func TestRegressionIssue2601(t *testing.T) {
 	}
 }
 
-func testGenerateServer(t *testing.T, strict bool) {
-	specs := []string{
-		"billforward.discriminators.yml",
-		"todolist.simplequery.yml",
-		"todolist.simplequery.yml",
-	}
+func testGenerateServer(strict bool) func(*testing.T) {
+	return func(t *testing.T) {
+		specs := []string{
+			"billforward.discriminators.yml",
+			"todolist.simplequery.yml",
+			"todolist.simplequery.yml",
+		}
 
-	for i, spec := range specs {
-		t.Run("should generate server from spec "+spec, func(t *testing.T) {
-			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated := t.TempDir()
+		for i, spec := range specs {
+			t.Run("should generate server from spec "+spec, func(t *testing.T) {
+				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				generated := t.TempDir()
 
-			m := &generate.Server{}
-			_, _ = flags.Parse(m)
-			if i == 0 {
-				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
-			}
-			switch i {
-			case 1:
-				m.FlagStrategy = "pflag"
-			case 2:
-				m.FlagStrategy = "flag"
-			}
-			m.Shared.Spec = flags.Filename(pth)
-			m.Shared.Target = flags.Filename(generated)
-			m.Shared.StrictResponders = strict
+				m := &generate.Server{}
+				_, _ = flags.Parse(m)
+				if i == 0 {
+					m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
+				}
+				switch i {
+				case 1:
+					m.FlagStrategy = "pflag"
+				case 2:
+					m.FlagStrategy = "flag"
+				}
+				m.Shared.Spec = flags.Filename(pth)
+				m.Shared.Target = flags.Filename(generated)
+				m.Shared.StrictResponders = strict
 
-			t.Run("go mod", gomodinit(generated))
+				t.Run("go mod", gomodinit(generated))
 
-			require.NoError(t, m.Execute([]string{}))
-		})
+				require.NoError(t, m.Execute([]string{}))
+			})
+		}
 	}
 }

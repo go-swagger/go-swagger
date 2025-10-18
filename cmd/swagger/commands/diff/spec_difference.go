@@ -28,24 +28,37 @@ func (sd SpecDifference) Matches(other SpecDifference) bool {
 		equalLocations(sd.DifferenceLocation, other.DifferenceLocation)
 }
 
-func equalLocations(a, b DifferenceLocation) bool {
-	return a.Method == b.Method &&
-		a.Response == b.Response &&
-		a.URL == b.URL &&
-		equalNodes(a.Node, b.Node)
-}
+// ReportAllDiffs lists all the diffs between two specs.
+func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error) {
+	if fmtJSON {
+		b, err := JSONMarshal(sd)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't print results: %w", err), nil
+		}
+		out, err := prettyprint(b)
+		return out, err, nil
+	}
+	numDiffs := len(sd)
+	if numDiffs == 0 {
+		return bytes.NewBufferString("No changes identified\n"), nil, nil
+	}
 
-func equalNodes(a, b *Node) bool {
-	if a == nil && b == nil {
-		return true
+	var out bytes.Buffer
+	if numDiffs != sd.BreakingChangeCount() {
+		fmt.Fprintln(&out, "NON-BREAKING CHANGES:\n=====================")
+		_, _ = out.ReadFrom(sd.reportChanges(NonBreaking))
+		if sd.WarningChangeCount() > 0 {
+			fmt.Fprintln(&out, "\nNON-BREAKING CHANGES WITH WARNING:\n==================================")
+			_, _ = out.ReadFrom(sd.reportChanges(Warning))
+		}
 	}
-	if a == nil || b == nil {
-		return false
+
+	more, err, warn := sd.ReportCompatibility()
+	if err != nil {
+		return nil, err, warn
 	}
-	return a.Field == b.Field &&
-		a.IsArray == b.IsArray &&
-		a.TypeName == b.TypeName &&
-		equalNodes(a.ChildNode, b.ChildNode)
+	_, _ = out.ReadFrom(more)
+	return &out, nil, warn
 }
 
 // BreakingChangeCount Calculates the breaking change count.
@@ -133,16 +146,6 @@ func (sd SpecDifference) String() string {
 	// return fmt.Sprintf("%s%s%s - %s%s", prefix, direction, paramOrPropertyLocation, sd.Code.Description(), optionalInfo)
 }
 
-func (sd SpecDifferences) addDiff(diff SpecDifference) SpecDifferences {
-	context := Request
-	if diff.DifferenceLocation.Response > 0 {
-		context = Response
-	}
-	diff.Compatibility = getCompatibilityForChange(diff.Code, context)
-
-	return append(sd, diff)
-}
-
 // ReportCompatibility lists and spec.
 func (sd *SpecDifferences) ReportCompatibility() (io.Reader, error, error) {
 	var out bytes.Buffer
@@ -159,6 +162,36 @@ func (sd *SpecDifferences) ReportCompatibility() (io.Reader, error, error) {
 	}
 	fmt.Fprintf(&out, "compatibility test OK. No breaking changes identified.\n")
 	return &out, nil, nil
+}
+
+func equalLocations(a, b DifferenceLocation) bool {
+	return a.Method == b.Method &&
+		a.Response == b.Response &&
+		a.URL == b.URL &&
+		equalNodes(a.Node, b.Node)
+}
+
+func equalNodes(a, b *Node) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.Field == b.Field &&
+		a.IsArray == b.IsArray &&
+		a.TypeName == b.TypeName &&
+		equalNodes(a.ChildNode, b.ChildNode)
+}
+
+func (sd SpecDifferences) addDiff(diff SpecDifference) SpecDifferences {
+	context := Request
+	if diff.DifferenceLocation.Response > 0 {
+		context = Response
+	}
+	diff.Compatibility = getCompatibilityForChange(diff.Code, context)
+
+	return append(sd, diff)
 }
 
 func (sd SpecDifferences) reportChanges(compat Compatibility) io.Reader {
@@ -179,37 +212,4 @@ func (sd SpecDifferences) reportChanges(compat Compatibility) io.Reader {
 		fmt.Fprintln(&out, eachDiff)
 	}
 	return &out
-}
-
-// ReportAllDiffs lists all the diffs between two specs.
-func (sd SpecDifferences) ReportAllDiffs(fmtJSON bool) (io.Reader, error, error) {
-	if fmtJSON {
-		b, err := JSONMarshal(sd)
-		if err != nil {
-			return nil, fmt.Errorf("couldn't print results: %w", err), nil
-		}
-		out, err := prettyprint(b)
-		return out, err, nil
-	}
-	numDiffs := len(sd)
-	if numDiffs == 0 {
-		return bytes.NewBufferString("No changes identified\n"), nil, nil
-	}
-
-	var out bytes.Buffer
-	if numDiffs != sd.BreakingChangeCount() {
-		fmt.Fprintln(&out, "NON-BREAKING CHANGES:\n=====================")
-		_, _ = out.ReadFrom(sd.reportChanges(NonBreaking))
-		if sd.WarningChangeCount() > 0 {
-			fmt.Fprintln(&out, "\nNON-BREAKING CHANGES WITH WARNING:\n==================================")
-			_, _ = out.ReadFrom(sd.reportChanges(Warning))
-		}
-	}
-
-	more, err, warn := sd.ReportCompatibility()
-	if err != nil {
-		return nil, err, warn
-	}
-	_, _ = out.ReadFrom(more)
-	return &out, nil, warn
 }

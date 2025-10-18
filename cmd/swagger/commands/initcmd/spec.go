@@ -13,9 +13,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Spec a command struct for initializing a new swagger application.
+// Spec represents a command for initializing a new swagger application.
 type Spec struct {
-	Format      string   `choice:"yaml"                            choice:"json"                                                                   default:"yaml"  description:"the format for the spec document" long:"format"` //nolint:staticcheck
+	Format      string   `choice:"yaml"                            choice:"json"                                                                   default:"yaml"  description:"the format for the spec document" long:"format"` //nolint:staticcheck // false positive detecting duplicate tags (it works fine on other files with the same pattern)
 	Title       string   `description:"the title of the API"       long:"title"`
 	Description string   `description:"the description of the API" long:"description"`
 	Version     string   `default:"0.1.0"                          description:"the version of the API"                                            long:"version"`

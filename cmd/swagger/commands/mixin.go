@@ -19,6 +19,9 @@ const (
 	// Output messages.
 	nothingToDo                           = "nothing to do. Need some swagger files to merge.\nUSAGE: swagger mixin [-c <expected#Collisions>] <primary-swagger-file> <mixin-swagger-file...>"
 	ignoreConflictsAndCollisionsSpecified = "both the flags ignore conflicts and collisions were specified. These have conflicting meaning so please only specify one"
+
+	minRequiredMixinArgs = 2
+	exitCodeOnCollisions = 254
 )
 
 // MixinSpec holds command line flag definitions specific to the mixin
@@ -51,7 +54,7 @@ type MixinSpec struct {
 // generation tools that natively support hosting multiple specs in
 // one server process will not need this tool.
 func (c *MixinSpec) Execute(args []string) error {
-	if len(args) < 2 {
+	if len(args) < minRequiredMixinArgs {
 		return errors.New(nothingToDo)
 	}
 	if c.IgnoreConflicts && c.ExpectedCollisionCount != 0 {
@@ -73,23 +76,32 @@ func (c *MixinSpec) Execute(args []string) error {
 	if c.IgnoreConflicts {
 		return nil
 	}
-	if len(collisions) != int(c.ExpectedCollisionCount) {
-		if len(collisions) != 0 {
-			// use bash $? to get actual # collisions
-			// (but has to be non-zero)
+
+	if c.ExpectedCollisionCount > 0 {
+		// return the number of unexpected collisions as command exit code.
+		// Use shell $? to get the actual number of collisions (it has to be non-zero)
+		if len(collisions) > 0 && len(collisions) != int(c.ExpectedCollisionCount) {
 			os.Exit(len(collisions))
 		}
-		os.Exit(254)
+
+		return nil
 	}
+
+	if len(collisions) > 0 {
+		// return non-zero exit code on merge with collisions
+		os.Exit(exitCodeOnCollisions)
+	}
+
 	return nil
 }
 
 // MixinFiles is a convenience function for Mixin that reads the given
 // swagger files, adds the mixins to primary, calls
 // FixEmptyResponseDescriptions on the primary, and writes the primary
-// with mixins to the given writer in JSON.  Returns the warning
-// messages for collisions that occurred during mixin process and any
-// error.
+// with mixins to the given writer in JSON.
+//
+// Returns the warning messages for collisions that occurred during the mixin
+// process and any error.
 func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, _ io.Writer) ([]string, error) {
 	primaryDoc, err := loads.Spec(primaryFile)
 	if err != nil {

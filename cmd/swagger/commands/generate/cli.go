@@ -11,6 +11,12 @@ type Cli struct {
 	CliPackage string `default:"cli" description:"the package to save the cli specific code"                   long:"cli-package"`
 }
 
+// Execute runs this command.
+func (c *Cli) Execute(_ []string) error {
+	return createSwagger(c)
+}
+
+// apply options.
 func (c Cli) apply(opts *generator.GenOpts) {
 	c.Client.apply(opts)
 	opts.IncludeCLi = true
@@ -20,9 +26,4 @@ func (c Cli) apply(opts *generator.GenOpts) {
 
 func (c *Cli) generate(opts *generator.GenOpts) error {
 	return c.Client.generate(opts)
-}
-
-// Execute runs this command.
-func (c *Cli) Execute(_ []string) error {
-	return createSwagger(c)
 }

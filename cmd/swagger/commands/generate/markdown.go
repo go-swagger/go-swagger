@@ -15,6 +15,12 @@ type Markdown struct {
 	Output flags.Filename `default:"markdown.md" description:"the file to write the generated markdown." long:"output" short:""`
 }
 
+// Execute runs this command.
+func (m *Markdown) Execute(_ []string) error {
+	return createSwagger(m)
+}
+
+// apply options.
 func (m Markdown) apply(opts *generator.GenOpts) {
 	m.Shared.apply(opts)
 	m.Models.apply(opts)
@@ -26,9 +32,4 @@ func (m *Markdown) generate(opts *generator.GenOpts) error {
 }
 
 func (m Markdown) log(_ string) {
-}
-
-// Execute runs this command.
-func (m *Markdown) Execute(_ []string) error {
-	return createSwagger(m)
 }

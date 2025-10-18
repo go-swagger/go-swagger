@@ -126,8 +126,9 @@ other: abc
 		Expected    map[string]any
 	}{
 		{
-			Name:     "empty",
-			Filename: "",
+			Name:        "empty",
+			Filename:    "",
+			ExpectError: true,
 		},
 		{
 			Name:        "no file",

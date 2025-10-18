@@ -57,6 +57,12 @@ type Server struct {
 	WithContext bool `description:"handlers get a context as first arg (deprecated)" long:"with-context"`
 }
 
+// Execute runs this command.
+func (s *Server) Execute(_ []string) error {
+	return createSwagger(s)
+}
+
+// apply options.
 func (s *Server) apply(opts *generator.GenOpts) {
 	if s.WithContext {
 		log.Printf("warning: deprecated option --with-context is ignored")
@@ -112,9 +118,4 @@ For this generation to compile you need to have some packages in your go.mod:
 	* ` + flagsPackage + `
 
 You can get these now with: go mod tidy`)
-}
-
-// Execute runs this command.
-func (s *Server) Execute(_ []string) error {
-	return createSwagger(s)
 }

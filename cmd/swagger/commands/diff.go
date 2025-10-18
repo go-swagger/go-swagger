@@ -43,7 +43,7 @@ func (c *DiffCommand) Execute(_ []string) error {
 		err    error
 	)
 	if c.Destination != "stdout" {
-		output, err = os.OpenFile(c.Destination, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+		output, err = os.Create(c.Destination)
 		if err != nil {
 			return fmt.Errorf("%s: %w", c.Destination, err)
 		}

@@ -74,10 +74,10 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 }
 
 type sharedCommand interface {
-	apply(*generator.GenOpts)
+	apply(options *generator.GenOpts)
 	getConfigFile() string
-	generate(*generator.GenOpts) error
-	log(string)
+	generate(options *generator.GenOpts) error
+	log(command string)
 }
 
 type schemeOptions struct {
@@ -161,11 +161,20 @@ func setCopyright(copyrightFile string) (string, error) {
 }
 
 func createSwagger(s sharedCommand) error {
-	cfg, err := readConfig(s.getConfigFile())
-	if err != nil {
-		return err
+	var (
+		cfg *viper.Viper
+		err error
+	)
+
+	if configFile := s.getConfigFile(); configFile != "" {
+		// process explicit config file argument
+		cfg, err = readConfig(configFile)
+		if err != nil {
+			return err
+		}
+
+		setDebug(cfg) // viper config Debug
 	}
-	setDebug(cfg) // viper config Debug
 
 	opts := new(generator.GenOpts)
 	s.apply(opts)
@@ -200,6 +209,9 @@ func createSwagger(s sharedCommand) error {
 	if err != nil {
 		return err
 	}
+	// TODO(fredbi): we should try and remove the need to work with relative paths,
+	// as this causes unnecessary constraints on os'es that support multiple drives
+	// (i.e. not single root like on unix), for example Windows.
 	rp, err := filepath.Rel(basepath, targetAbs)
 	if err != nil {
 		return err
@@ -211,15 +223,13 @@ func createSwagger(s sharedCommand) error {
 }
 
 func readConfig(filename string) (*viper.Viper, error) {
-	if filename == "" {
-		return nil, nil
-	}
-
 	abspath, err := filepath.Abs(filename)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("trying to read config from", abspath)
+
+	log.Println("reading config from", abspath)
+
 	return generator.ReadConfig(abspath)
 }
 
@@ -236,12 +246,10 @@ func configureOptsFromConfig(cfg *viper.Viper, opts *generator.GenOpts) error {
 }
 
 func setDebug(cfg *viper.Viper) {
-	// viper config debug
-	if os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != "" {
-		if cfg != nil {
-			cfg.Debug()
-		} else {
-			log.Println("No config read")
-		}
+	if os.Getenv("DEBUG") == "" && os.Getenv("SWAGGER_DEBUG") == "" {
+		return
 	}
+
+	// viper config debug
+	cfg.Debug()
 }
