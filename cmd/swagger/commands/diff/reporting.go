@@ -86,7 +86,7 @@ type TypeDiff struct {
 	Change      SpecChangeCode `json:"change_type,omitempty"`
 	Description string         `json:"description,omitempty"`
 	FromType    string         `json:"from_type,omitempty"`
-	ToType      string         `json:"to-type,omitempty"`
+	ToType      string         `json:"to_type,omitempty"`
 }
 
 const (

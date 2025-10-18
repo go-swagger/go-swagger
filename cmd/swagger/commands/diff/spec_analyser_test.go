@@ -1,6 +1,7 @@
 package diff
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -146,11 +147,12 @@ func fixturePart(file string) string {
 	return parts[0]
 }
 
-func linesInFile(t testing.TB, fileName string) io.ReadCloser {
+func linesInFile(t testing.TB, fileName string) io.Reader {
 	t.Helper()
 
-	file, err := os.Open(fileName)
+	file, err := os.ReadFile(fileName)
 	require.NoError(t, err)
 
-	return file
+	// consumes a bit of extra memory, but no longer leaks open files
+	return bytes.NewBuffer(file)
 }
