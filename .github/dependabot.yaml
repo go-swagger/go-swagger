@@ -1,0 +1,85 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directories:
+      - "**/*"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    open-pull-requests-limit: 2          # <- default is 5
+    allow:
+      - dependency-type: all
+    groups:                              # <- group all github actions updates in a single PR
+      # 1. development-dependencies are auto-merged
+      development-dependencies:
+        patterns:
+          - '*'
+    assignees:
+      - fredbi
+
+  - package-ecosystem: "docker"
+    directories:
+      - "**/*"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+    open-pull-requests-limit: 2          # <- default is 5
+    allow:
+      - dependency-type: all
+    groups:                              # <- group all github actions updates in a single PR
+      # 1. development-dependencies are auto-merged
+      development-dependencies:
+        patterns:
+          - '*'
+    assignees:
+      - fredbi
+
+# go.mod update by dependabot remains disabled for now.
+#
+#  - package-ecosystem: "gomod"
+#    # We define 4 groups of dependencies to regroup update pull requests:
+#    # - development (e.g. test dependencies)
+#    # - go-openapi updates
+#    # - golang.org (e.g. golang.org/x/... packages)
+#    # - other dependencies (direct or indirect)
+#    #
+#    # * All groups are checked once a week and each produce at most 1 PR.
+#    # * All dependabot PRs are auto-approved
+#    #
+#    # Auto-merging policy, when requirements are met:
+#    # 1. development-dependencies are auto-merged
+#    # 2. golang.org-dependencies are auto-merged
+#    # 3. go-openapi patch updates are auto-merged. Minor/major version updates require a manual merge.
+#    # 4. other dependencies require a manual merge
+#    directories:
+#      - "**/*"
+#    schedule:
+#      interval: "weekly"
+#      day: "friday"
+#    open-pull-requests-limit: 4
+#    groups:
+#      development-dependencies:
+#        patterns:
+#          - "github.com/stretchr/testify"
+#          - "github.com/go-openapi/testify"
+#
+#      golang-org-dependencies:
+#        patterns:
+#          - "golang.org/*"
+#
+#      go-openapi-dependencies:
+#        patterns:
+#          - "github.com/go-openapi/*"
+#        exclude-patterns:
+#          - "github.com/go-openapi/testify"
+#
+#      other-dependencies:
+#        exclude-patterns:
+#          - "github.com/go-openapi/*"
+#          - "github.com/stretchr/testify"
+#          - "github.com/go-openapi/testify"
+#          - "golang.org/*"
+#    allow:
+#      - dependency-type: all
+#    assignees:
+#      - fredbi
