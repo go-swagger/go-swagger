@@ -34,6 +34,7 @@ Help Options:
           --exclude-deps            exclude all dependencies of project
       -n, --nullable-pointers       set x-nullable extension to true automatically for fields of pointer types without 'omitempty'
       -r, --ref-aliases             transform aliased types into $ref rather than expanding their definition
+          --transparent-aliases     treat type aliases as completely transparent, never creating definitions for them
           --allow-desc-with-ref     allow descriptions to flow alongside $ref
           --format=[yaml|json]      the format for the spec document (default: json)
 ```

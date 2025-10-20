@@ -253,6 +253,39 @@ func TestParseResponses(t *testing.T) {
 	assert.Equal(t, "#/definitions/user", res.Schema.Ref.String())
 }
 
+func TestParseResponses_TransparentAliases(t *testing.T) {
+	sctx, err := newScanCtx(&Options{
+		Packages:           []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/transparentalias"},
+		TransparentAliases: true,
+		ScanModels:         true,
+	})
+	require.NoError(t, err)
+
+	td := getResponse(sctx, "TransparentAliasResponse")
+	require.NotNil(t, td)
+
+	// Build the response map using the transparent alias fixtures.
+	responses := make(map[string]spec.Response)
+	prs := &responseBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(responses))
+
+	resp, ok := responses["transparentAliasResponse"]
+	require.True(t, ok)
+	require.NotNil(t, resp.Schema)
+	assert.True(t, resp.Schema.Type.Contains("object"))
+	assert.Empty(t, resp.Schema.Ref.String())
+
+	payload, ok := resp.Schema.Properties["payload"]
+	require.True(t, ok)
+	// The response payload alias should expand inline and retain field metadata.
+	assert.True(t, payload.Type.Contains("object"))
+	assert.Empty(t, payload.Ref.String())
+	assert.Equal(t, "Payload", payload.Extensions["x-go-name"])
+}
+
 func TestParseResponses_Issue2007(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	responses := make(map[string]spec.Response)
