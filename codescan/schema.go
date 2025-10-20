@@ -607,6 +607,11 @@ func (s *schemaBuilder) buildDeclAlias(tpe *types.Alias, tgt swaggerTypable) err
 	mustHaveRightHandSide(tpe)
 	rhs := tpe.Rhs()
 
+	// If transparent aliases are enabled, use the underlying type directly without creating a definition
+	if s.ctx.app.transparentAliases {
+		return s.buildFromType(rhs, tgt)
+	}
+
 	decl, ok := s.ctx.FindModel(o.Pkg().Path(), o.Name())
 	if !ok {
 		return fmt.Errorf("can't find source file for aliased type: %v -> %v", tpe, rhs)
@@ -764,6 +769,11 @@ func (s *schemaBuilder) buildAlias(tpe *types.Alias, tgt swaggerTypable) error {
 		return nil
 	}
 	mustNotBeABuiltinType(o)
+
+	// If transparent aliases are enabled, use the underlying type directly
+	if s.ctx.app.transparentAliases {
+		return s.buildFromType(tpe.Rhs(), tgt)
+	}
 
 	decl, ok := s.ctx.FindModel(o.Pkg().Path(), o.Name())
 	if !ok {
