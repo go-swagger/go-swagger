@@ -30,7 +30,7 @@ var (
 	assets             map[string][]byte
 	protectedTemplates map[string]bool
 
-	// FuncMapFunc yields a map with all functions for templates
+	// FuncMapFunc yields a map with all functions for templates.
 	FuncMapFunc func(*LanguageOpts) template.FuncMap
 
 	templates *Repository
@@ -58,7 +58,7 @@ func initTemplateRepo() {
 }
 
 // DefaultFuncMap yields a map with default functions for use in the templates.
-// These are available in every template
+// These are available in every template.
 func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 	f := sprig.TxtFuncMap()
 	extra := template.FuncMap{
@@ -335,12 +335,12 @@ func defaultProtectedTemplates() map[string]bool {
 // directory separators and Camelcase the next letter.
 // e.g validation/primitive.gotmpl will become validationPrimitive
 //
-// If the file contains a definition for a template that is protected the whole file will not be added
+// If the file contains a definition for a template that is protected the whole file will not be added.
 func AddFile(name, data string) error {
 	return templates.addFile(name, data, false)
 }
 
-// NewRepository creates a new template repository with the provided functions defined
+// NewRepository creates a new template repository with the provided functions defined.
 func NewRepository(funcs template.FuncMap) *Repository {
 	repo := Repository{
 		files:     make(map[string]string),
@@ -355,7 +355,7 @@ func NewRepository(funcs template.FuncMap) *Repository {
 	return &repo
 }
 
-// Repository is the repository for the generator templates
+// Repository is the repository for the generator templates.
 type Repository struct {
 	files         map[string]string
 	templates     map[string]*template.Template
@@ -388,7 +388,7 @@ func (t *Repository) ShallowClone() *Repository {
 	return clone
 }
 
-// LoadDefaults will load the embedded templates
+// LoadDefaults will load the embedded templates.
 func (t *Repository) LoadDefaults() {
 	for name, asset := range assets {
 		if err := t.addFile(name, string(asset), true); err != nil {
@@ -397,7 +397,7 @@ func (t *Repository) LoadDefaults() {
 	}
 }
 
-// LoadDir will walk the specified path and add each .gotmpl file it finds to the repository
+// LoadDir will walk the specified path and add each .gotmpl file it finds to the repository.
 func (t *Repository) LoadDir(templatePath string) error {
 	err := filepath.Walk(templatePath, func(path string, _ os.FileInfo, err error) error {
 		if strings.HasSuffix(path, ".gotmpl") {
@@ -424,7 +424,7 @@ func (t *Repository) LoadDir(templatePath string) error {
 	return nil
 }
 
-// LoadContrib loads template from contrib directory
+// LoadContrib loads template from contrib directory.
 func (t *Repository) LoadContrib(name string) error {
 	log.Printf("loading contrib %s", name)
 	const pathPrefix = "templates/contrib/"
@@ -470,7 +470,6 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 
 	// Add each defined template into the cache
 	for _, template := range templ.Templates() {
-
 		t.files[template.Name()] = fileName
 		t.templates[template.Name()] = template.Lookup(template.Name())
 	}
@@ -478,7 +477,7 @@ func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	return nil
 }
 
-// MustGet a template by name, panics when fails
+// MustGet a template by name, panics when fails.
 func (t *Repository) MustGet(name string) *template.Template {
 	tpl, err := t.Get(name)
 	if err != nil {
@@ -492,12 +491,12 @@ func (t *Repository) MustGet(name string) *template.Template {
 // directory separators and Camelcase the next letter.
 // e.g validation/primitive.gotmpl will become validationPrimitive
 //
-// If the file contains a definition for a template that is protected the whole file will not be added
+// If the file contains a definition for a template that is protected the whole file will not be added.
 func (t *Repository) AddFile(name, data string) error {
 	return t.addFile(name, data, false)
 }
 
-// SetAllowOverride allows setting allowOverride after the Repository was initialized
+// SetAllowOverride allows setting allowOverride after the Repository was initialized.
 func (t *Repository) SetAllowOverride(value bool) {
 	t.allowOverride = value
 }
@@ -563,7 +562,6 @@ func (t *Repository) flattenDependencies(templ *template.Template, dependencies 
 
 	for _, d := range deps {
 		if _, found := dependencies[d]; !found {
-
 			dependencies[d] = true
 
 			if tt := t.templates[d]; tt != nil {
@@ -572,7 +570,6 @@ func (t *Repository) flattenDependencies(templ *template.Template, dependencies 
 		}
 
 		dependencies[d] = true
-
 	}
 
 	return dependencies
@@ -584,7 +581,6 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 	deps := t.flattenDependencies(templ, nil)
 
 	for dep := range deps {
-
 		if dep == "" {
 			continue
 		}
@@ -606,7 +602,6 @@ func (t *Repository) addDependencies(templ *template.Template) (*template.Templa
 			if err != nil {
 				return templ, fmt.Errorf("dependency error: %w", err)
 			}
-
 		}
 	}
 	return templ.Lookup(name), nil
@@ -672,7 +667,7 @@ func dropPackage(str string) string {
 	return parts[len(parts)-1]
 }
 
-// return true if the GoType str contains pkg. For example "model.MyType" -> true, "MyType" -> false
+// return true if the GoType str contains pkg. For example "model.MyType" -> true, "MyType" -> false.
 func containsPkgStr(str string) bool {
 	dropped := dropPackage(str)
 	return dropped != str
@@ -681,13 +676,13 @@ func containsPkgStr(str string) bool {
 func padSurround(entry, padWith string, i, ln int) string {
 	var res []string
 	if i > 0 {
-		for j := 0; j < i; j++ {
+		for range i {
 			res = append(res, padWith)
 		}
 	}
 	res = append(res, entry)
 	tot := ln - i - 1
-	for j := 0; j < tot; j++ {
+	for range tot {
 		res = append(res, padWith)
 	}
 	return strings.Join(res, ",")

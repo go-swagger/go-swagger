@@ -1,0 +1,79 @@
+basePath: /
+consumes:
+    - application/json
+definitions:
+    FooBarRequest:
+        properties:
+            bar:
+                description: Bar params
+                items:
+                    format: int64
+                    type: integer
+                type: array
+                x-go-name: Bar
+            foo:
+                description: Foo param
+                type: string
+                x-go-name: Foo
+            user:
+                $ref: '#/definitions/User'
+        title: FooBarRequest represents body of FooBar request.
+        type: object
+        x-go-package: swagger/api
+    FooBarResponse:
+        properties:
+            baz:
+                properties:
+                    prop:
+                        type: string
+                        x-go-name: Prop
+                type: object
+                x-go-name: Baz
+        title: FooBarResponse represents body of FooBar response.
+        type: object
+        x-go-package: swagger/api
+    User:
+        properties:
+            age:
+                format: int64
+                type: integer
+                x-go-name: Age
+            name:
+                type: string
+                x-go-name: Name
+        type: object
+        x-go-package: swagger/api
+host: some-url.com
+info:
+    description: Documentation of our awesome API.
+    title: awesome.
+    version: 1.0.0
+paths:
+    /foobar:
+        post:
+            operationId: idOfFoobarEndpoint
+            parameters:
+                - description: This text will appear as description of your request body.
+                  in: body
+                  name: Body
+                  schema:
+                    $ref: '#/definitions/FooBarRequest'
+            responses:
+                "200":
+                    $ref: '#/responses/foobarResponse'
+            summary: Foobar does some amazing stuff.
+            tags:
+                - foobar-tag
+produces:
+    - application/json
+responses:
+    foobarResponse:
+        description: This text will appear as description of your response body.
+        schema:
+            $ref: '#/definitions/FooBarResponse'
+schemes:
+    - http
+securityDefinitions:
+    basic:
+        type: basic
+swagger: "2.0"

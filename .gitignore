@@ -10,7 +10,7 @@ _test
 # Architecture specific extensions/prefixes
 *.[568vq]
 [568vq].out
-
+*.out
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c

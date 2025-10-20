@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AssertReadersContent compares the contents from io.Readers, optionally stripping blanks
+// AssertReadersContent compares the contents from io.Readers, optionally stripping blanks.
 func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reader) bool {
 	t.Helper()
 

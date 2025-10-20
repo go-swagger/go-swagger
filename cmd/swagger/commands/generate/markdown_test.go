@@ -11,13 +11,12 @@ import (
 )
 
 func TestMarkdown(t *testing.T) {
-	path := filepath.Join(".", "test-markdown")
-	generated, cleanup := testTempDir(t, path)
-	t.Cleanup(cleanup)
+	generated := t.TempDir()
 
 	m := &generate.Markdown{}
 	_, _ = flags.ParseArgs(m, []string{"--skip-validation"})
 	m.Shared.Spec = flags.Filename(filepath.Join(testBase(), "fixtures", "enhancements", "184", "fixture-184.yaml"))
-	m.Output = flags.Filename(filepath.Join(generated, "markdown.md"))
+	m.Shared.Target = flags.Filename(generated)
+	m.Output = flags.Filename("markdown.md")
 	require.NoError(t, m.Execute([]string{}))
 }

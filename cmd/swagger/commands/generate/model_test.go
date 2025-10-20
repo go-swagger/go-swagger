@@ -1,7 +1,10 @@
 package generate_test
 
 import (
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
@@ -23,19 +26,23 @@ func TestGenerateModel(t *testing.T) {
 		"todolist.simplequery.yml",
 	}
 
+	base := t.TempDir()
+
 	for i, spec := range specs {
 		_ = t.Run(spec, func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
 			m := &generate.Model{}
 			_, _ = flags.Parse(m)
 			if i == 0 {
 				m.Models.ExistingModels = "nonExisting"
 			}
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
+
+			t.Run("go mod", gomodinit(generated))
 
 			require.NoError(t, m.Execute([]string{}))
 		})

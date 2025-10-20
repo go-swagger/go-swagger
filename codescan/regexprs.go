@@ -92,5 +92,5 @@ var (
 	rxExtensions      = regexp.MustCompile(`[Ee]xtensions\p{Zs}*:`)
 	rxInfoExtensions  = regexp.MustCompile(`[In]nfo\p{Zs}*[Ee]xtensions:`)
 	rxDeprecated      = regexp.MustCompile(`[Dd]eprecated\p{Zs}*:\p{Zs}*(true|false)$`)
-	// currently unused: rxExample         = regexp.MustCompile(`[Ex]ample\p{Zs}*:\p{Zs}*(.*)$`)
+	// currently unused: rxExample         = regexp.MustCompile(`[Ex]ample\p{Zs}*:\p{Zs}*(.*)$`).
 )

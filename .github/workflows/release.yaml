@@ -1,0 +1,214 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows:
+      - test
+    types:
+      - completed
+    tags:
+      - 'v*'
+    branches:
+      - master
+      - 'prepare-release/*'
+    paths-ignore:
+      - 'docs/*'
+      - 'hack/hugo/*'
+      - .github/workflows/update-doc.yaml
+
+permissions:
+  contents: write
+
+jobs:
+  docker_dev:
+    name: Docker latest master (dev)
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
+        with:
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          tags: |
+            type=ref,event=branch
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
+
+      - name: Login to Quay Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=dev
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+
+  publish_release:
+    name: Publish release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: "stable"
+          check-latest: true
+          cache: true
+
+      - name: Install Tools
+        run: |
+          go install github.com/github-release/github-release@latest
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+
+      - name: Build release
+        run: |
+          set -x
+          rm -rf dist
+          mkdir -p dist/bin
+          mkdir -p dist/build
+
+          build_binary() {
+            LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
+            LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
+            out="swagger_$1_$2"
+            if [[ $1 == "windows" ]]; then
+              out="${out}.exe"
+            fi
+            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -o "./dist/bin/$out" ./cmd/swagger
+          }
+
+          go mod download
+
+          build_binary linux amd64
+          build_binary linux arm64
+          build_binary linux arm
+          build_binary linux ppc64le
+          build_binary linux s390x
+          build_binary darwin amd64
+          build_binary darwin arm64
+          build_binary windows amd64
+          build_binary windows arm64
+
+          nfpm p -p deb -t dist/build
+          nfpm p -p rpm -t dist/build
+
+          pushd dist/bin || exit 1
+          sha1sum * > sha1sum.txt
+          sha256sum * > sha256sum.txt
+          popd || exit 1
+
+      - name: Push RPM
+        id: push_rpm
+        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "rpm"
+          owner: "go-swagger"
+          repo: "go-swagger"
+          distro: "fedora"
+          release: "any-version"
+          file: "dist/build/swagger-*.x86_64.rpm"
+
+      - name: Push Deb
+        id: push
+        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: "push"
+          format: "deb"
+          owner: "go-swagger"
+          repo: "go-swagger"
+          distro: "debian"
+          release: "any-version"
+          file: "dist/build/swagger_*_amd64.deb"
+
+      - name: Publish Binaries
+        uses: fnkr/github-action-ghr@96b1448dc6162f370067e1de51e856e733a76b4f # v1.3
+        env:
+          GHR_PATH: dist/bin/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Tagged docker images
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
+
+      - name: Login to Quay Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}

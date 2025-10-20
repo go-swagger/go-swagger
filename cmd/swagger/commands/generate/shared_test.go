@@ -110,11 +110,8 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 }
 
 func Test_Shared_ReadConfig(t *testing.T) {
-	tmpFile, errio := os.CreateTemp("", "tmp-config*.yaml")
+	tmpFile, errio := os.CreateTemp(t.TempDir(), "tmp-config*.yaml")
 	require.NoError(t, errio)
-	t.Cleanup(func() {
-		_ = os.Remove(tmpFile.Name())
-	})
 	tmpConfig := tmpFile.Name()
 	require.NoError(t,
 		os.WriteFile(tmpConfig, []byte(`param: 123
@@ -129,8 +126,9 @@ other: abc
 		Expected    map[string]any
 	}{
 		{
-			Name:     "empty",
-			Filename: "",
+			Name:        "empty",
+			Filename:    "",
+			ExpectError: true,
 		},
 		{
 			Name:        "no file",

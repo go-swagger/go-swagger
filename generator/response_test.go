@@ -319,7 +319,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 	assertInCode(t, "payload = make([]models.Foo, 0, 50)", string(ff))
 }
 
-// Issue776 includes references that span multiple files. Flattening or Expanding is required
+// Issue776 includes references that span multiple files. Flattening or Expanding is required.
 func TestGenResponses_Issue776_Spec(t *testing.T) {
 	defer discardOutput()()
 
@@ -360,7 +360,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 
 func TestIssue846(t *testing.T) {
 	// do it 8 times, to ensure it's always in the same order
-	for i := 0; i < 8; i++ {
+	for range 8 {
 		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
 		require.NoError(t, err)
 		op, err := b.MakeOperation()

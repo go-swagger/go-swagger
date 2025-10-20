@@ -1,8 +1,10 @@
 package generate_test
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
@@ -46,20 +48,25 @@ func TestGenerateClient(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	// calling TempDir() within the loop exposes the test to unwanted waits or sometimes failures on windows (e.g. sub-test locking file).
+	// Best to trigger the cleanup only once.
+	base := t.TempDir()
+
+	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", tt.spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+			pth := filepath.Join(testBase(), "fixtures/codegen", tt.spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 			m := &generate.Client{}
 			_, _ = flags.Parse(m)
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
 			m.Shared.Template = tt.template
 
 			if tt.prepare != nil {
 				tt.prepare(m)
 			}
+			t.Run("go mod", gomodinit(generated))
 
 			err := m.Execute([]string{})
 			if tt.wantError {
@@ -77,21 +84,8 @@ func TestGenerateClient_Check(t *testing.T) {
 	m := &generate.Client{}
 	_, _ = flags.Parse(m)
 	m.Shared.CopyrightFile = "nullePart"
-	require.Error(t, m.Execute([]string{}))
-}
 
-func testBase() string {
-	return filepath.FromSlash("../../../../")
-}
-
-func testTempDir(t testing.TB, path string) (generated string, cleanup func()) {
-	t.Helper()
-	var err error
-
-	generated, err = os.MkdirTemp(filepath.Dir(path), "generated")
-	require.NoErrorf(t, err, "TempDir()=%s", generated)
-
-	return generated, func() {
-		_ = os.RemoveAll(generated)
-	}
+	t.Run("should error when the copyright file does not exist", func(t *testing.T) {
+		require.Error(t, m.Execute([]string{}))
+	})
 }

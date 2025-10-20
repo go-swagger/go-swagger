@@ -31,7 +31,7 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// GenerateServer generates a server application
+// GenerateServer generates a server application.
 func GenerateServer(name string, modelNames, operationIDs []string, opts *GenOpts) error {
 	generator, err := newAppGenerator(name, modelNames, operationIDs, opts)
 	if err != nil {
@@ -40,7 +40,7 @@ func GenerateServer(name string, modelNames, operationIDs []string, opts *GenOpt
 	return generator.Generate()
 }
 
-// GenerateSupport generates the supporting files for an API
+// GenerateSupport generates the supporting files for an API.
 func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOpts) error {
 	generator, err := newAppGenerator(name, modelNames, operationIDs, opts)
 	if err != nil {
@@ -49,7 +49,7 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOp
 	return generator.GenerateSupport(nil)
 }
 
-// GenerateMarkdown documentation for a swagger specification
+// GenerateMarkdown documentation for a swagger specification.
 func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *GenOpts) error {
 	if output == "." || output == "" {
 		output = "markdown.md"
@@ -492,8 +492,14 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		basePath = sw.BasePath
 	}
 
-	jsonb, _ := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
-	flatjsonb, _ := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
+	jsonb, err := json.MarshalIndent(a.SpecDoc.OrigSpec(), "", "  ")
+	if err != nil {
+		return GenApp{}, err
+	}
+	flatjsonb, err := json.MarshalIndent(a.SpecDoc.Spec(), "", "  ")
+	if err != nil {
+		return GenApp{}, err
+	}
 
 	return GenApp{
 		GenCommon: GenCommon{

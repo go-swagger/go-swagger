@@ -22,16 +22,16 @@ import (
 )
 
 type serverOptions struct {
-	ServerPackage         string `long:"server-package" short:"s" description:"the package to save the server specific code" default:"restapi"`
-	MainTarget            string `long:"main-package" short:"" description:"the location of the generated main. Defaults to cmd/{name}-server" default:""`
-	ImplementationPackage string `long:"implementation-package" short:"" description:"the location of the backend implementation of the server, which will be autowired with api" default:""`
+	ServerPackage         string `default:"restapi" description:"the package to save the server specific code"                                               long:"server-package"         short:"s"`
+	MainTarget            string `default:""        description:"the location of the generated main. Defaults to cmd/{name}-server"                          long:"main-package"           short:""`
+	ImplementationPackage string `default:""        description:"the location of the backend implementation of the server, which will be autowired with api" long:"implementation-package" short:""`
 }
 
 func (cs serverOptions) apply(opts *generator.GenOpts) {
 	opts.ServerPackage = cs.ServerPackage
 }
 
-// Server the command to generate an entire server application
+// Server the command to generate an entire server application.
 type Server struct {
 	WithShared
 	WithModels
@@ -41,22 +41,28 @@ type Server struct {
 	schemeOptions
 	mediaOptions
 
-	SkipModels             bool   `long:"skip-models" description:"no models will be generated when this flag is specified"`
-	SkipOperations         bool   `long:"skip-operations" description:"no operations will be generated when this flag is specified"`
-	SkipSupport            bool   `long:"skip-support" description:"no supporting files will be generated when this flag is specified"`
-	ExcludeMain            bool   `long:"exclude-main" description:"exclude main function, so just generate the library"`
-	ExcludeSpec            bool   `long:"exclude-spec" description:"don't embed the swagger specification"`
-	FlagStrategy           string `long:"flag-strategy" description:"the strategy to provide flags for the server" default:"go-flags" choice:"go-flags" choice:"pflag" choice:"flag"` // nolint: staticcheck
-	CompatibilityMode      string `long:"compatibility-mode" description:"the compatibility mode for the tls server" default:"modern" choice:"modern" choice:"intermediate"`          // nolint: staticcheck
-	RegenerateConfigureAPI bool   `long:"regenerate-configureapi" description:"Force regeneration of configureapi.go"`
+	SkipModels             bool   `description:"no models will be generated when this flag is specified"           long:"skip-models"`
+	SkipOperations         bool   `description:"no operations will be generated when this flag is specified"       long:"skip-operations"`
+	SkipSupport            bool   `description:"no supporting files will be generated when this flag is specified" long:"skip-support"`
+	ExcludeMain            bool   `description:"exclude main function, so just generate the library"               long:"exclude-main"`
+	ExcludeSpec            bool   `description:"don't embed the swagger specification"                             long:"exclude-spec"`
+	FlagStrategy           string `choice:"go-flags"                                                               choice:"pflag"                 choice:"flag"    default:"go-flags"                                      description:"the strategy to provide flags for the server" long:"flag-strategy"`
+	CompatibilityMode      string `choice:"modern"                                                                 choice:"intermediate"          default:"modern" description:"the compatibility mode for the tls server" long:"compatibility-mode"`
+	RegenerateConfigureAPI bool   `description:"Force regeneration of configureapi.go"                             long:"regenerate-configureapi"`
 
-	Name string `long:"name" short:"A" description:"the name of the application, defaults to a mangled value of info.title"`
+	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 	// TODO(fredbi): CmdName string `long:"cmd-name" short:"A" description:"the name of the server command, when main is generated (defaults to {name}-server)"`
 
 	// deprecated flags
-	WithContext bool `long:"with-context" description:"handlers get a context as first arg (deprecated)"`
+	WithContext bool `description:"handlers get a context as first arg (deprecated)" long:"with-context"`
 }
 
+// Execute runs this command.
+func (s *Server) Execute(_ []string) error {
+	return createSwagger(s)
+}
+
+// apply options.
 func (s *Server) apply(opts *generator.GenOpts) {
 	if s.WithContext {
 		log.Printf("warning: deprecated option --with-context is ignored")
@@ -112,9 +118,4 @@ For this generation to compile you need to have some packages in your go.mod:
 	* ` + flagsPackage + `
 
 You can get these now with: go mod tidy`)
-}
-
-// Execute runs this command
-func (s *Server) Execute(_ []string) error {
-	return createSwagger(s)
 }

@@ -1,47 +1,76 @@
 ## Contribution Guidelines
 
-You'll find below general guidelines, which mostly correspond to standard
-practices for open sourced repositories.
-For a more technical insight, please see our
-[guidelines to maintainers](../docs/guidelines/README.md).
+You'll find below general guidelines, which mostly correspond to standard practices for open sourced repositories.
+
+For a more technical insight, please see our [guidelines to maintainers](../docs/guidelines/README.md).
 
 ### Pull requests are always welcome
 
 We are always thrilled to receive pull requests, and do our best to
-process them as fast as possible. Not sure if that typo is worth a pull
-request? Do it! We will appreciate it.
+process them as fast as possible.
+
+Not sure if that typo is worth a pull request? Do it! We will appreciate it.
 
 If your pull request is not accepted on the first try, don't be
 discouraged! If there's a problem with the implementation, hopefully you
 received feedback on what to improve.
 
-We're trying very hard to keep go-swagger lean and focused. We don't want it
-to do everything for everybody. This means that we might decide against
-incorporating a new feature. However, there might be a way to implement
-that feature *on top of* go-swagger.
+We're trying very hard to keep go-swagger lean and focused.
+We don't want it to do everything for everybody.
 
+This means that we might decide against incorporating a new feature.
+However, there might be a way to implement that feature *on top of* go-swagger
+as the tool is highly customizable.
 
 ### Conventions
 
-Fork the repo and make changes on your fork in a feature branch:
+#### Git flow
 
-- If it's a bugfix branch, name it XXX-something where XXX is the number of the
-  issue
-- If it's a feature branch, create an enhancement issue to announce your
-  intentions, and name it XXX-something where XXX is the number of the issue.
+Fork the repo and make changes to your fork in a feature branch.
 
-Submit unit tests for your changes.  Go has a great test framework built in; use
+To submit a pull request, push your branch to your fork (e.g. `upstream` remote):
+github will propose to open a pull request on the original repository.
+
+Typically you'd follow some common naming conventions:
+
+- if it's a bugfix branch, name it `fix/XXX-something`where XXX is the number of the
+  issue on github
+- if it's a feature branch, create an enhancement issue to announce your
+  intentions, and name it `feature/XXX-something` where XXX is the number of the issue.
+
+> NOTE: we don't enforce naming conventions on branches: it's your fork.
+
+#### Tests
+
+Submit unit tests for your changes.  Go has a great built-in test framework ; use
 it! Take a look at existing tests for inspiration. Run the full test suite on
 your branch before submitting a pull request.
 
-Update the documentation when creating or modifying features. Test
-your documentation changes for clarity, concision, and correctness, as
-well as a clean documentation build. See ``docs/README.md`` for more
-information on building the docs and how docs get released.
+#### Documentation
 
-Write clean code. Universally formatted code promotes ease of writing, reading,
-and maintenance. Always run `gofmt -s -w file.go` on each changed file before
-committing your changes. Most editors have plugins that do this automatically.
+Update the documentation when creating or modifying features.
+
+There are two sources of documentation:
+* the go docs: <https://pkg.go.dev/github.com/go-swagger/go-swagger>
+* the project docs: <https://goswagger.io/go-swagger/>
+
+Test your documentation changes for clarity, concision, and correctness, as
+well as a clean documentation build.
+
+See ``docs/README.md`` for more information on building the docs and how docs get released.
+
+#### Coding style
+
+Write clean code.
+
+Universally formatted go code promotes ease of writing, reading, and maintenance.
+
+We use the `golangci-lint` metalinter (configuration lies in `.golangci-lint.yml`).
+Always run `golangci-lint run` before committing your changes.
+
+Many editors have plugins that do that automatically.
+
+#### Commit messages
 
 Pull requests descriptions should be as clear as possible and include a
 reference to all the issues that they address.
@@ -52,26 +81,32 @@ Commit messages must start with a capitalized and short summary (max. 50
 chars) written in the imperative, followed by an optional, more detailed
 explanatory text which is separated from the summary by an empty line.
 
+Commits that fix or close an issue should include a reference like `Closes #XXX`
+or `Fixes #XXX`, which will automatically close the issue when merged.
+
+#### Code review
+
 Code review comments may be added to your pull request. Discuss, then make the
 suggested modifications and push additional commits to your feature branch. Be
 sure to post a comment after pushing. The new commits will show up in the pull
 request automatically, but the reviewers will not be notified unless you
 comment.
 
-Before the pull request is merged, make sure that you squash your commits into
-logical units of work using `git rebase -i` and `git push -f`. After every
-commit the test suite should be passing. Include documentation changes in the
-same commit so that a revert would remove all traces of the feature or fix.
+Before the pull request is merged,
+**make sure that you squash your commits into logical units of work**
+using `git rebase -i` and `git push -f`.
 
-Commits that fix or close an issue should include a reference like `Closes #XXX`
-or `Fixes #XXX`, which will automatically close the issue when merged.
+After every commit the test suite should be passing.
+
+Include documentation changes in the same commit so that a revert would remove all traces of the feature or fix.
 
 ### Sign your work
 
-The sign-off is a simple line at the end of the explanation for the
-patch, which certifies that you wrote it or otherwise have the right to
-pass it on as an open-source patch.  The rules are pretty simple: if you
-can certify the below (from
+The sign-off is a simple line at the end of your commit message,
+which certifies that you wrote it or otherwise have the right to
+pass it on as an open-source patch.
+
+The rules are pretty simple: if you can certify the below (from
 [developercertificate.org](http://developercertificate.org/)):
 
 ```
@@ -121,6 +156,17 @@ using your real name (sorry, no pseudonyms or anonymous contributions.)
 
 You can add the sign off when creating the git commit via `git commit -s`.
 
+> Notice that at this moment, we do not require commits to be PGP-signed.
+
 ## Issue Triage [![Open Source Helpers](https://www.codetriage.com/go-swagger/go-swagger/badges/users.svg)](https://www.codetriage.com/go-swagger/go-swagger)
 
-You can triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to go-swagger on CodeTriage](https://www.codetriage.com/go-swagger/go-swagger).
+You can help triage issues which may include:
+
+* reproducing bug reports
+* asking for important information, such as version numbers or reproduction instructions
+* answering questions and sharing your insight in issue comments
+
+If you would like to start triaging issues, one easy way to get started is to
+[subscribe to go-swagger on CodeTriage](https://www.codetriage.com/go-swagger/go-swagger).
+
+> Disclaimer: the go-swagger maintainers have no affiliation with `www.codetriage.com`.

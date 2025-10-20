@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	// DefaultLanguageFunc defines the default generation language
+	// DefaultLanguageFunc defines the default generation language.
 	DefaultLanguageFunc func() *LanguageOpts
 
 	moduleRe *regexp.Regexp
@@ -31,15 +31,16 @@ func initLanguage() {
 	moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
 }
 
-// FormatOption allows for more flexible code formatting settings
+// FormatOption allows for more flexible code formatting settings.
 type FormatOption func(*formatOptions)
 
 type formatOptions struct {
 	imports.Options
+
 	localPrefixes []string
 }
 
-// WithFormatLocalPrefixes adds local prefixes to group imports
+// WithFormatLocalPrefixes adds local prefixes to group imports.
 func WithFormatLocalPrefixes(prefixes ...string) FormatOption {
 	return func(o *formatOptions) {
 		o.localPrefixes = append(o.localPrefixes, prefixes...)
@@ -68,7 +69,7 @@ func formatOptionsWithDefault(opts []FormatOption) formatOptions {
 	return o
 }
 
-// LanguageOpts to describe a language to the code generator
+// LanguageOpts to describe a language to the code generator.
 type LanguageOpts struct {
 	ReservedWords        []string
 	BaseImportFunc       func(string) string            `json:"-"`
@@ -81,7 +82,7 @@ type LanguageOpts struct {
 	dirNameFunc          func(string) string // language specific directory naming rules
 }
 
-// Init the language option
+// Init the language option.
 func (l *LanguageOpts) Init() {
 	if l.initialized {
 		return
@@ -93,7 +94,7 @@ func (l *LanguageOpts) Init() {
 	}
 }
 
-// MangleName makes sure a reserved word gets a safe name
+// MangleName makes sure a reserved word gets a safe name.
 func (l *LanguageOpts) MangleName(name, suffix string) string {
 	if _, ok := l.reservedWordsSet[swag.ToFileName(name)]; !ok {
 		return name
@@ -101,7 +102,7 @@ func (l *LanguageOpts) MangleName(name, suffix string) string {
 	return strings.Join([]string{name, suffix}, "_")
 }
 
-// MangleVarName makes sure a reserved word gets a safe name
+// MangleVarName makes sure a reserved word gets a safe name.
 func (l *LanguageOpts) MangleVarName(name string) string {
 	nm := swag.ToVarName(name)
 	if _, ok := l.reservedWordsSet[nm]; !ok {
@@ -110,7 +111,7 @@ func (l *LanguageOpts) MangleVarName(name string) string {
 	return nm + "Var"
 }
 
-// MangleFileName makes sure a file name gets a safe name
+// MangleFileName makes sure a file name gets a safe name.
 func (l *LanguageOpts) MangleFileName(name string) string {
 	if l.fileNameFunc != nil {
 		return l.fileNameFunc(name)
@@ -144,7 +145,7 @@ func (l *LanguageOpts) ManglePackagePath(name string, suffix string) string {
 	return strings.Join(parts, "/")
 }
 
-// FormatContent formats a file with a language specific formatter
+// FormatContent formats a file with a language specific formatter.
 func (l *LanguageOpts) FormatContent(name string, content []byte, opts ...FormatOption) ([]byte, error) {
 	if l.formatFunc != nil {
 		return l.formatFunc(name, content, opts...)
@@ -154,7 +155,7 @@ func (l *LanguageOpts) FormatContent(name string, content []byte, opts ...Format
 	return content, nil
 }
 
-// imports generate the code to import some external packages, possibly aliased
+// imports generate the code to import some external packages, possibly aliased.
 func (l *LanguageOpts) imports(imports map[string]string) string {
 	if l.ImportsFunc != nil {
 		return l.ImportsFunc(imports)
@@ -162,7 +163,7 @@ func (l *LanguageOpts) imports(imports map[string]string) string {
 	return ""
 }
 
-// arrayInitializer builds a litteral array
+// arrayInitializer builds a litteral array.
 func (l *LanguageOpts) arrayInitializer(data any) (string, error) {
 	if l.ArrayInitializerFunc != nil {
 		return l.ArrayInitializerFunc(data)
@@ -170,7 +171,7 @@ func (l *LanguageOpts) arrayInitializer(data any) (string, error) {
 	return "", nil
 }
 
-// baseImport figures out the base path to generate import statements
+// baseImport figures out the base path to generate import statements.
 func (l *LanguageOpts) baseImport(tgt string) string {
 	if l.BaseImportFunc != nil {
 		return l.BaseImportFunc(tgt)
@@ -179,7 +180,7 @@ func (l *LanguageOpts) baseImport(tgt string) string {
 	return ""
 }
 
-// GoLangOpts for rendering items as golang code
+// GoLangOpts for rendering items as golang code.
 func GoLangOpts() *LanguageOpts {
 	goOtherReservedSuffixes := map[string]bool{
 		// see:
@@ -376,7 +377,6 @@ func GoLangOpts() *LanguageOpts {
 				pth = relativepath
 				break
 			}
-
 		}
 
 		mod, goModuleAbsPath, err := tryResolveModule(tgtAbsPath)
@@ -436,6 +436,9 @@ func tryResolveModule(baseTargetPath string) (string, string, error) {
 	case err != nil:
 		return "", "", err
 	}
+	defer func() {
+		_ = f.Close()
+	}()
 
 	src, err := io.ReadAll(f)
 	if err != nil {
@@ -452,7 +455,7 @@ func tryResolveModule(baseTargetPath string) (string, string, error) {
 
 // 1. Checks if the child path and parent path coincide.
 // 2. If they do return child path  relative to parent path.
-// 3. Everything else return false
+// 3. Everything else return false.
 func checkPrefixAndFetchRelativePath(childpath string, parentpath string) (bool, string) {
 	// Windows (local) file systems - NTFS, as well as FAT and variants
 	// are case insensitive.

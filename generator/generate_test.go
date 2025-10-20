@@ -2,7 +2,6 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -43,7 +42,7 @@ func TestGenerateAndTest(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Run(fmt.Sprintf("generating test server from %s", opts.Spec), func(t *testing.T) {
+				t.Run("generating test server from "+opts.Spec, func(t *testing.T) {
 					err := GenerateServer("", nil, nil, opts)
 					if thisCas.wantError {
 						require.Errorf(t, err, "expected an error for server build fixture: %s", opts.Spec)
@@ -84,7 +83,7 @@ func TestGenerateAndTest(t *testing.T) {
 					thisCas.prepare(t, opts)
 				}
 
-				t.Run(fmt.Sprintf("generating test client from %s", opts.Spec), func(t *testing.T) {
+				t.Run("generating test client from "+opts.Spec, func(t *testing.T) {
 					err := GenerateClient(thisName, nil, nil, opts)
 					if thisCas.wantError {
 						require.Errorf(t, err, "expected an error for client build fixture: %s", opts.Spec)
@@ -260,7 +259,7 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				assertInCode(t, `APIGetConflictHandler apiops.GetConflictHandler`, api)
 				assertInCode(t, `CustomGetCustomHandler custom.GetCustomHandler`, api)
 				assertInCode(t, `AbcLinuxGetMultipleHandler abc_linux.GetMultipleHandler`, api)
-				assertInCode(t, `GetNotagHandler GetNotagHandler`, api)
+				assertInCode(t, `GetNotagHandler`, api)
 				assertInCode(t, `AbcLinuxGetOtherReservedHandler abc_linux.GetOtherReservedHandler`, api)
 				assertInCode(t, `PlusDonutsGetOtherUnsafeHandler plus_donuts.GetOtherUnsafeHandler`, api)
 				assertInCode(t, `AbcTestGetReservedHandler abc_test.GetReservedHandler`, api)
@@ -326,21 +325,21 @@ func generateFixtures(_ testing.TB) map[string]generateFixture {
 				assertInCode(t, `GetAnotherConflictHandler: GetAnotherConflictHandlerFunc(func(params GetAnotherConflictParams) middleware.Responder {`, api)
 				assertInCode(t, `NotagHandler: GetNotagHandlerFunc(func(params GetNotagParams) middleware.Responder {`, api)
 
-				assertInCode(t, `DeleteTestOverrideHandler DeleteTestOverrideHandler`, api)
-				assertInCode(t, `GetAnotherConflictHandler GetAnotherConflictHandler`, api)
-				assertInCode(t, `GetConflictHandler GetConflictHandler`, api)
-				assertInCode(t, `GetCustomHandler GetCustomHandler`, api)
-				assertInCode(t, `GetMultipleHandler GetMultipleHandler`, api)
-				assertInCode(t, `GetNotagHandler GetNotagHandler`, api)
-				assertInCode(t, `GetOtherReservedHandler GetOtherReservedHandler`, api)
-				assertInCode(t, `GetOtherUnsafeHandler GetOtherUnsafeHandler`, api)
-				assertInCode(t, `GetReservedHandler GetReservedHandler`, api)
-				assertInCode(t, `GetTestOverrideHandler GetTestOverrideHandler`, api)
-				assertInCode(t, `GetUnsafeHandler GetUnsafeHandler`, api)
-				assertInCode(t, `GetYetAnotherUnsafeHandler GetYetAnotherUnsafeHandler`, api)
-				assertInCode(t, `PostTestOverrideHandler PostTestOverrideHandler`, api)
-				assertInCode(t, `PutTestOverrideHandler PutTestOverrideHandler`, api)
-				assertInCode(t, `TestIDHandler TestIDHandler`, api)
+				assertInCode(t, `DeleteTestOverrideHandler`, api)
+				assertInCode(t, `GetAnotherConflictHandler`, api)
+				assertInCode(t, `GetConflictHandler`, api)
+				assertInCode(t, `GetCustomHandler`, api)
+				assertInCode(t, `GetMultipleHandler`, api)
+				assertInCode(t, `GetNotagHandler`, api)
+				assertInCode(t, `GetOtherReservedHandler`, api)
+				assertInCode(t, `GetOtherUnsafeHandler`, api)
+				assertInCode(t, `GetReservedHandler`, api)
+				assertInCode(t, `GetTestOverrideHandler`, api)
+				assertInCode(t, `GetUnsafeHandler`, api)
+				assertInCode(t, `GetYetAnotherUnsafeHandler`, api)
+				assertInCode(t, `PostTestOverrideHandler`, api)
+				assertInCode(t, `PutTestOverrideHandler`, api)
+				assertInCode(t, `TestIDHandler`, api)
 			},
 		},
 		"main_package": {

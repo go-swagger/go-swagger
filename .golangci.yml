@@ -1,24 +1,43 @@
 version: "2"
 linters:
-  enable:
-    - depguard
-    - errorlint
-    - gocritic
-    - gosec
-    - ineffassign
-    - misspell
-    - nakedret
-    - revive
-    - staticcheck
-    - testifylint
-    - unconvert
-    - unused
+  # Project stance regarding linting - see also https://github.com/go-swagger/go-swagger/issues/3237:
+  #
+  # * we enable all linters by default
+  # * we disable explicitly linters which:
+  #   * do not correspond to our own views of go best practices (e.g. recvcheck, nonamedreturns)
+  #   * impose a lot of (cosmetic) changes for no real value AND do not provide an auto-fix (e.g. godox, nlreturn)
+  #   * impose a lot of not-cosmetic changes with no high value AND do not provide an auto-fix (e.g. err113)
+  #   * introduce breaking changes (normally, we should disable them sparingly with code hints, no globally)
+  #   * we overall agree with but are temporarily disabled: these issues would be addressed progressively
+  #
+  # This project has been living around for about 10 years now.
+  # It adopted golangci-lint as one of its early adopters.
+  # Since then, we've seen a lot of back and forth on how we should write good go code.
+  # So we pick every month's new doxa with a pinch of salt.
+  default: all
   disable:
-    - dupl
-    - gochecknoglobals
-    - gochecknoinits
-    - lll
-    - unparam
+    - dupl  # temporary => should be disabled sparingly
+    - err113 # temporary
+    - exhaustruct # temporary
+    - funlen # temporary
+    - gochecknoglobals  # agree, but breaking
+    - gochecknoinits # agree, but breaking
+    - godox # temporary
+    - ireturn # temporary
+    - lll # unclear added value
+    - nestif # temporary
+    - nonamedreturns # unclear added value
+    - nlreturn # unclear added value
+    - noinlineerr # unclear added value
+    - paralleltest # unclear added value
+    - recvcheck  # disagree
+    - tagliatelle # false positives, want to impose camel case everywhere => should be disabled sparingly only
+    - testpackage # disagree: we like test packages, just not for everything like the linter suggest
+    - tparallel
+    - varnamelen
+    - wrapcheck
+    - wsl # unclear added value
+    - wsl_v5 # unclear added value
   settings:
     depguard:
       rules:
@@ -31,13 +50,18 @@ linters:
       threshold: 200
     goconst:
       min-len: 2
-      min-occurrences: 2
+      min-occurrences: 3
     gocyclo:
-      min-complexity: 25
+      min-complexity: 30
+    cyclop:
+      max-complexity: 30
     govet:
       enable-all: true
       disable:
         - fieldalignment
+    thelper:
+      tb:
+        name: false  # dont' want issue "parameter testing.TB should have name tb"
     testifylint:
       enable:
         - bool-compare

@@ -26,27 +26,12 @@ import (
 
 var opts struct {
 	// General options applicable to all commands
-	Quiet   func()       `long:"quiet" short:"q" description:"silence logs"`
-	LogFile func(string) `long:"log-output" description:"redirect logs to file" value-name:"LOG-FILE"`
+	Quiet   func()       `description:"silence logs"          long:"quiet"      short:"q"`
+	LogFile func(string) `description:"redirect logs to file" long:"log-output" value-name:"LOG-FILE"`
 	// Version bool `long:"version" short:"v" description:"print the version of the command"`
 }
 
 func main() {
-	// TODO: reactivate 'defer catch all' once product is stable
-	// Recovering from internal panics
-	// Stack may be printed in Debug mode
-	// Need import "runtime/debug".
-	// defer func() {
-	//	r := recover()
-	//	if r != nil {
-	//		log.Printf("Fatal error:", r)
-	//		if Debug {
-	//			debug.PrintStack()
-	//		}
-	//		os.Exit(1)
-	//	}
-	// }()
-
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.ShortDescription = "helps you keep your API well described"
 	parser.LongDescription = `
@@ -130,8 +115,9 @@ It aims to represent the contract of your API with a language agnostic descripti
 	opts.Quiet = func() {
 		log.SetOutput(io.Discard)
 	}
+
 	opts.LogFile = func(logfile string) {
-		f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o666)
+		f, err := os.Create(logfile)
 		if err != nil {
 			log.Fatalf("cannot write to file %s: %v", logfile, err)
 		}

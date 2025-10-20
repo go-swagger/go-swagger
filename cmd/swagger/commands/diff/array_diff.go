@@ -2,17 +2,17 @@ package diff
 
 // This is a simple DSL for diffing arrays
 
-// fromArrayStruct utility struct to encompass diffing of string arrays
+// fromArrayStruct utility struct to encompass diffing of string arrays.
 type fromArrayStruct struct {
 	from []string
 }
 
-// fromStringArray starts a fluent diff expression
+// fromStringArray starts a fluent diff expression.
 func fromStringArray(from []string) fromArrayStruct {
 	return fromArrayStruct{from}
 }
 
-// DiffsTo completes a fluent diff expression
+// DiffsTo completes a fluent diff expression.
 func (f fromArrayStruct) DiffsTo(toArray []string) (added, deleted, common []string) {
 	inFrom := 1
 	inTo := 2
@@ -50,23 +50,23 @@ func (f fromArrayStruct) DiffsTo(toArray []string) (added, deleted, common []str
 	return added, deleted, common
 }
 
-// fromMapStruct utility struct to encompass diffing of string arrays
+// fromMapStruct utility struct to encompass diffing of string arrays.
 type fromMapStruct struct {
 	srcMap map[string]interface{}
 }
 
-// fromStringMap starts a comparison by declaring a source map
+// fromStringMap starts a comparison by declaring a source map.
 func fromStringMap(srcMap map[string]interface{}) fromMapStruct {
 	return fromMapStruct{srcMap}
 }
 
-// Pair stores a pair of items which share a key in two maps
+// Pair stores a pair of items which share a key in two maps.
 type Pair struct {
 	First  interface{}
 	Second interface{}
 }
 
-// DiffsTo - generates diffs for a comparison
+// DiffsTo - generates diffs for a comparison.
 func (f fromMapStruct) DiffsTo(destMap map[string]interface{}) (added, deleted, common map[string]interface{}) {
 	added = make(map[string]interface{})
 	deleted = make(map[string]interface{})

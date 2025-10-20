@@ -136,7 +136,7 @@ func (g *GenOpts) printFlattenOpts() {
 	log.Printf("preprocessing spec with option:  %s", preprocessingOption)
 }
 
-// findSwaggerSpec fetches a default swagger spec if none is provided
+// findSwaggerSpec fetches a default swagger spec if none is provided.
 func findSwaggerSpec(nm string) (string, error) {
 	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
 	if nm != "" {
@@ -248,7 +248,7 @@ func WithAutoXOrder(specPath string) string {
 	return tmpFile
 }
 
-// BytesToYAMLDoc converts a byte slice into a YAML document
+// BytesToYAMLv2Doc converts a byte slice into a YAML document.
 func BytesToYAMLv2Doc(data []byte) (any, error) {
 	var canary map[any]any // validate this is an object and not a different type
 	if err := yamlv2.Unmarshal(data, &canary); err != nil {

@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	// default generation targets structure
+	// default generation targets structure.
 	defaultModelsTarget         = "models"
 	defaultServerTarget         = "restapi"
 	defaultClientTarget         = "client"
@@ -57,7 +57,7 @@ func init() {
 }
 
 // DefaultSectionOpts for a given opts, this is used when no config file is passed
-// and uses the embedded templates when no local override can be found
+// and uses the embedded templates when no local override can be found.
 func DefaultSectionOpts(gen *GenOpts) {
 	sec := gen.Sections
 	if len(sec.Models) == 0 {
@@ -252,7 +252,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 	gen.Sections = sec
 }
 
-// MarkdownOpts for rendering a spec as markdown
+// MarkdownOpts for rendering a spec as markdown.
 func MarkdownOpts() *LanguageOpts {
 	opts := &LanguageOpts{}
 	opts.Init()
@@ -276,7 +276,7 @@ func MarkdownSectionOpts(gen *GenOpts, output string) {
 	}
 }
 
-// TemplateOpts allows for codegen customization
+// TemplateOpts allows for codegen customization.
 type TemplateOpts struct {
 	Name       string `mapstructure:"name"`
 	Source     string `mapstructure:"source"`
@@ -286,7 +286,7 @@ type TemplateOpts struct {
 	SkipFormat bool   `mapstructure:"skip_format"` // not a feature, but for debugging. generated code before formatting might not work because of unused imports.
 }
 
-// SectionOpts allows for specifying options to customize the templates used for generation
+// SectionOpts allows for specifying options to customize the templates used for generation.
 type SectionOpts struct {
 	Application     []TemplateOpts `mapstructure:"application"`
 	Operations      []TemplateOpts `mapstructure:"operations"`
@@ -295,7 +295,7 @@ type SectionOpts struct {
 	PostModels      []TemplateOpts `mapstructure:"post_models"`
 }
 
-// GenOptsCommon the options for the generator
+// GenOptsCommon the options for the generator.
 type GenOptsCommon struct {
 	IncludeModel               bool
 	IncludeValidator           bool
@@ -403,7 +403,7 @@ func (g *GenOpts) CheckOpts() error {
 // ServerPackage: abc/efg
 //
 // Server is generated in ${PWD}/tmp/abc/efg
-// relative TargetPath returned: ../../../tmp
+// relative TargetPath returned: ../../../tmp.
 func (g *GenOpts) TargetPath() string {
 	var tgt string
 	if g.Target == "" {
@@ -451,13 +451,13 @@ func (g *GenOpts) SpecPath() string {
 }
 
 // PrincipalIsNullable indicates whether the principal type used for authentication
-// may be used as a pointer
+// may be used as a pointer.
 func (g *GenOpts) PrincipalIsNullable() bool {
 	debugLog("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
 	return g.Principal != iface && !g.PrincipalCustomIface
 }
 
-// EnsureDefaults for these gen opts
+// EnsureDefaults for these gen opts.
 func (g *GenOpts) EnsureDefaults() error {
 	if g.defaultsEnsured {
 		return nil
@@ -806,7 +806,7 @@ func (g *GenOptsCommon) setTemplates() error {
 	return nil
 }
 
-// defaultImports produces a default map for imports with models
+// defaultImports produces a default map for imports with models.
 func (g *GenOpts) defaultImports() map[string]string {
 	baseImport := g.LanguageOpts.baseImport(g.Target)
 	defaultImports := make(map[string]string, 50)
@@ -842,7 +842,7 @@ func (g *GenOpts) defaultImports() map[string]string {
 	return defaultImports
 }
 
-// initImports produces a default map for import with the specified root for operations
+// initImports produces a default map for import with the specified root for operations.
 func (g *GenOpts) initImports(operationsPackage string) map[string]string {
 	baseImport := g.LanguageOpts.baseImport(g.Target)
 
@@ -853,7 +853,7 @@ func (g *GenOpts) initImports(operationsPackage string) map[string]string {
 	return imports
 }
 
-// PrincipalAlias returns an aliased type to the principal
+// PrincipalAlias returns an aliased type to the principal.
 func (g *GenOpts) PrincipalAlias() string {
 	_, principal, _ := g.resolvePrincipal()
 	return principal
@@ -912,7 +912,7 @@ func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec
 	return models, nil
 }
 
-// titleOrDefault infers a name for the app from the title of the spec
+// titleOrDefault infers a name for the app from the title of the spec.
 func titleOrDefault(specDoc *loads.Document, name, defaultName string) string {
 	if strings.TrimSpace(name) == "" {
 		if specDoc.Spec().Info != nil && strings.TrimSpace(specDoc.Spec().Info.Title) != "" {
@@ -1012,7 +1012,7 @@ const (
 	securitySchemeOAuth2 = "oauth2"
 )
 
-// gatherSecuritySchemes produces a sorted representation from a map of spec security schemes
+// gatherSecuritySchemes produces a sorted representation from a map of spec security schemes.
 func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appName, principal, receiver string, nullable bool) (security GenSecuritySchemes) {
 	for scheme, req := range securitySchemes {
 		isOAuth2 := strings.EqualFold(req.Type, securitySchemeOAuth2)
@@ -1117,7 +1117,7 @@ func importAlias(pkg string) string {
 	return k
 }
 
-// concatUnique concatenate collections of strings with deduplication
+// concatUnique concatenate collections of strings with deduplication.
 func concatUnique(collections ...[]string) []string {
 	resultSet := make(map[string]struct{})
 	for _, c := range collections {

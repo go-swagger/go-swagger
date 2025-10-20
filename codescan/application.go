@@ -25,7 +25,7 @@ func safeConvert(str string) bool {
 	return b
 }
 
-// Debug is true when process is run with DEBUG=1 env var
+// Debug is true when process is run with DEBUG=1 env var.
 var Debug = safeConvert(os.Getenv("DEBUG"))
 
 type node uint32
@@ -39,7 +39,7 @@ const (
 	responseNode
 )
 
-// Options for the scanner
+// Options for the scanner.
 type Options struct {
 	Packages                []string
 	InputSpec               *spec.Swagger
@@ -53,11 +53,14 @@ type Options struct {
 	ExcludeTags             []string
 	SetXNullableForPointers bool
 	RefAliases              bool // aliases result in $ref, otherwise aliases are expanded
+	DescWithRef             bool // allow overloaded descriptions together with $ref, otherwise jsonschema draft4 $ref predates everything
 }
 
 type scanCtx struct {
 	pkgs []*packages.Package
 	app  *typeIndex
+
+	opts *Options
 }
 
 func sliceToSet(names []string) map[string]bool {
@@ -68,7 +71,7 @@ func sliceToSet(names []string) map[string]bool {
 	return result
 }
 
-// Run the scanner to produce a spec with the options provided
+// Run the scanner to produce a spec with the options provided.
 func Run(opts *Options) (*spec.Swagger, error) {
 	sc, err := newScanCtx(opts)
 	if err != nil {
@@ -109,6 +112,7 @@ func newScanCtx(opts *Options) (*scanCtx, error) {
 	return &scanCtx{
 		pkgs: pkgs,
 		app:  app,
+		opts: opts,
 	}, nil
 }
 

@@ -6,16 +6,18 @@ import (
 )
 
 var (
-	// Version for the swagger command
+	// Version for the swagger command.
 	Version string
-	// Commit for the swagger command
+	// Commit for the swagger command.
 	Commit string
 )
 
-// PrintVersion the command
+// PrintVersion the command.
 type PrintVersion struct{}
 
-// Execute this command
+// Execute this command.
+//
+//nolint:forbidigo // this commands is allowed to use fmt.Println
 func (p *PrintVersion) Execute(_ []string) error {
 	if Version == "" {
 		if info, available := debug.ReadBuildInfo(); available && info.Main.Version != "(devel)" {

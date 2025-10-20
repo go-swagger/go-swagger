@@ -1,7 +1,10 @@
 package generate_test
 
 import (
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
@@ -11,34 +14,37 @@ import (
 )
 
 func TestGenerateSupport(t *testing.T) {
-	testGenerateSupport(t, false)
+	t.Run("should generate support with Responder", testGenerateSupport(false))
+	t.Run("should generate support with StrictResponder", testGenerateSupport(true))
 }
 
-func TestGenerateSupportStrict(t *testing.T) {
-	testGenerateSupport(t, true)
-}
+func testGenerateSupport(strict bool) func(*testing.T) {
+	return func(t *testing.T) {
+		specs := []string{
+			"tasklist.basic.yml",
+		}
 
-func testGenerateSupport(t *testing.T, strict bool) {
-	specs := []string{
-		"tasklist.basic.yml",
-	}
+		base := t.TempDir()
 
-	for i, spec := range specs {
-		t.Run(spec, func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		for i, spec := range specs {
+			t.Run(spec, func(t *testing.T) {
+				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+				require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
-			m := &generate.Support{}
-			if i == 0 {
-				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
-			}
-			_, _ = flags.Parse(m)
-			m.Shared.Spec = flags.Filename(path)
-			m.Shared.Target = flags.Filename(generated)
-			m.Shared.StrictResponders = strict
+				m := &generate.Support{}
+				if i == 0 {
+					m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
+				}
+				_, _ = flags.Parse(m)
+				m.Shared.Spec = flags.Filename(pth)
+				m.Shared.Target = flags.Filename(generated)
+				m.Shared.StrictResponders = strict
 
-			require.NoError(t, m.Execute([]string{}))
-		})
+				t.Run("go mod", gomodinit(generated))
+
+				require.NoError(t, m.Execute([]string{}))
+			})
+		}
 	}
 }

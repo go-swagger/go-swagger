@@ -49,7 +49,7 @@ func TestGolang_ManglePackage(t *testing.T) {
 	}
 }
 
-// Go literal initializer func
+// Go literal initializer func.
 func TestGolang_SliceInitializer(t *testing.T) {
 	o := GoLangOpts()
 	goSliceInitializer := o.ArrayInitializerFunc

@@ -43,7 +43,7 @@ const (
 	b64     = "byte"
 )
 
-// Extensions supported by go-swagger
+// Extensions supported by go-swagger.
 const (
 	xClass        = "x-class"         // class name used by discriminator
 	xGoCustomTag  = "x-go-custom-tag" // additional tag for serializers on struct fields
@@ -60,7 +60,7 @@ const (
 	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )
 
-// swaggerTypeName contains a mapping from go type to swagger type or format
+// swaggerTypeName contains a mapping from go type to swagger type or format.
 var swaggerTypeName map[string]string
 
 func initTypes() {
@@ -142,7 +142,7 @@ func newTypeResolver(pkg, _ string, doc *loads.Document) *typeResolver {
 	return &resolver
 }
 
-// knownDefGoType returns go type, package and package alias for definition
+// knownDefGoType returns go type, package and package alias for definition.
 func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clearFunc func(string) string) (string, string, string) {
 	debugLog("known def type: %q", def)
 	ext := schema.Extensions
@@ -259,7 +259,7 @@ type typeResolver struct {
 	definitionPkg      string // pkg alias to fill in GenSchema.Pkg
 }
 
-// NewWithModelName clones a type resolver and specifies a new model name
+// NewWithModelName clones a type resolver and specifies a new model name.
 func (t *typeResolver) NewWithModelName(name string) *typeResolver {
 	tt := newTypeResolver(t.ModelsPackage, t.ModelsFullPkg, t.Doc)
 	tt.ModelName = name
@@ -285,7 +285,7 @@ func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *ty
 // withDefinitionPackage sets the definition pkg that object/struct types to be generated
 // in GenSchema.Pkg field.
 // ModelsPackage field can not replace definitionPkg since ModelsPackage will be prepend to .GoType,
-// while definitionPkg is just used to fill the .Pkg in GenSchema
+// while definitionPkg is just used to fill the .Pkg in GenSchema.
 func (t *typeResolver) withDefinitionPackage(pkg string) *typeResolver {
 	t.definitionPkg = pkg
 	return t
@@ -409,7 +409,7 @@ func (t *typeResolver) isNullable(schema *spec.Schema) bool {
 	return len(schema.Properties) > 0 || len(schema.AllOf) > 0
 }
 
-// isNullableOverride determines a nullable flag forced by an extension
+// isNullableOverride determines a nullable flag forced by an extension.
 func (t *typeResolver) isNullableOverride(schema *spec.Schema) (bool, bool) {
 	check := func(extension string) (bool, bool) {
 		v, found := schema.Extensions[extension]
@@ -670,7 +670,7 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 // - a x-nullable extension says so in the spec
 // - it is **not** a read-only property
 // - it is a required property
-// - it has a default value
+// - it has a default value.
 func nullableBool(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
@@ -712,7 +712,7 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 // - it is **not** a read-only property
 // - it is a required property
 // - it has a MinLength property set to 0
-// - it has a default other than "" (the zero for strings) and no MinLength or zero MinLength
+// - it has a default other than "" (the zero for strings) and no MinLength or zero MinLength.
 func nullableString(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
@@ -1071,7 +1071,7 @@ func guardFormatConflicts(format string, schema interface {
 }
 
 // resolvedType is a swagger type that has been resolved and analyzed for usage
-// in a template
+// in a template.
 type resolvedType struct {
 	IsAnonymous       bool
 	IsArray           bool
@@ -1126,7 +1126,7 @@ type resolvedType struct {
 	SkipExternalValidation bool
 }
 
-// Zero returns an initializer for the type
+// Zero returns an initializer for the type.
 func (rt resolvedType) Zero() string {
 	// if type is aliased, provide zero from the aliased type
 	if rt.IsAliased {
@@ -1159,7 +1159,7 @@ func (rt resolvedType) Zero() string {
 	return ""
 }
 
-// ToString returns a string conversion for a type akin to a string
+// ToString returns a string conversion for a type akin to a string.
 func (rt resolvedType) ToString(value string) string {
 	if !rt.IsPrimitive || rt.SwaggerType != "string" || rt.IsStream {
 		return ""
@@ -1168,7 +1168,7 @@ func (rt resolvedType) ToString(value string) string {
 		if rt.IsAliased {
 			return fmt.Sprintf("%s(%s).String()", rt.AliasedType, value)
 		}
-		return fmt.Sprintf("%s.String()", value)
+		return value + ".String()"
 	}
 	var deref string
 	if rt.IsNullable {
