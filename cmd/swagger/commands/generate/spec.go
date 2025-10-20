@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"os"
 	"strings"
 
@@ -130,7 +129,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		_, e := fmt.Fprintf(defaultWriter, "%s\n", b)
 		return e
 	default:
-		return os.WriteFile(output, b, fs.ModePerm) //#nosec
+		return os.WriteFile(output, b, 0o644) //#nosec
 	}
 
 	// #nosec
