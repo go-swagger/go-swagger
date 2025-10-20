@@ -13,15 +13,16 @@ import (
 
 // FlattenSpec is a command that flattens a swagger document
 // which will expand the remote references in a spec and move inline schemas to definitions
-// after flattening there are no complex inlined anymore
+// after flattening there are no complex inlined anymore.
 type FlattenSpec struct {
-	Compact bool           `long:"compact" description:"applies to JSON formatted specs. When present, doesn't prettify the json"`
-	Output  flags.Filename `long:"output" short:"o" description:"the file to write to"`
-	Format  string         `long:"format" description:"the format for the spec document" default:"json" choice:"yaml" choice:"json"`
 	generate.FlattenCmdOptions
+
+	Compact bool           `description:"applies to JSON formatted specs. When present, doesn't prettify the json" long:"compact"`
+	Output  flags.Filename `description:"the file to write to"                                                     long:"output"  short:"o"`
+	Format  string         `choice:"yaml"                                                                          choice:"json"  default:"json" description:"the format for the spec document" long:"format"`
 }
 
-// Execute flattens the spec
+// Execute flattens the spec.
 func (c *FlattenSpec) Execute(args []string) error {
 	if len(args) != 1 {
 		return errors.New("flatten command requires the single swagger document url to be specified")

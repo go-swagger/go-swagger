@@ -270,7 +270,7 @@ func TestParamsParser(t *testing.T) {
 			assert.Equal(t, 3, iprop.Default, "Items.ID default value is incorrect")
 
 			assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
-			iprop, ok = itprop.Properties["pet"]
+			_, ok = itprop.Properties["pet"]
 			assert.True(t, ok)
 			// if itprop.Ref.String() == "" {
 			// 	assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)

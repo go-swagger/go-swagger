@@ -1,8 +1,10 @@
 package generate_test
 
 import (
-	"fmt"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/jessevdk/go-flags"
@@ -12,17 +14,16 @@ import (
 )
 
 func TestGenerateServer(t *testing.T) {
-	testGenerateServer(t, false)
+	t.Run("should generate server with Responder", testGenerateServer(false))
+
+	t.Run("should generate server with StrictResponder", testGenerateServer(true))
 }
 
-func TestGenerateServerStrict(t *testing.T) {
-	testGenerateServer(t, true)
-}
-
-func TestGenerateServer_Checks(t *testing.T) {
+func TestGenerateServerChecks(t *testing.T) {
 	t.Run("invalid provided copyright file should error", func(t *testing.T) {
 		m := &generate.Server{}
 		_, _ = flags.Parse(m)
+
 		m.Shared.CopyrightFile = "nowhere"
 		require.Error(t, m.Execute([]string{}))
 	})
@@ -33,18 +34,20 @@ func TestRegressionIssue2601(t *testing.T) {
 		"impl.yml",
 	}
 
+	base := t.TempDir()
+
 	for i, spec := range specs {
-		t.Run(fmt.Sprintf("should generate server from spec %s", spec), func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		t.Run("should generate server from spec "+spec, func(t *testing.T) {
+			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
+			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
 			m := &generate.Server{}
 			_, _ = flags.Parse(m)
 			if i == 0 {
 				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
 			}
-			m.Shared.Spec = flags.Filename(path)
+			m.Shared.Spec = flags.Filename(pth)
 			m.Shared.Target = flags.Filename(generated)
 
 			// Error was coming from these two being set together
@@ -55,40 +58,45 @@ func TestRegressionIssue2601(t *testing.T) {
 			m.Shared.AllowTemplateOverride = true
 			m.Shared.TemplateDir = flags.Filename(filepath.Join(testBase(), "generator/templates"))
 
+			t.Run("go mod", gomodinit(generated))
+
 			require.NoError(t, m.Execute([]string{}))
 		})
 	}
 }
 
-func testGenerateServer(t *testing.T, strict bool) {
-	specs := []string{
-		"billforward.discriminators.yml",
-		"todolist.simplequery.yml",
-		"todolist.simplequery.yml",
-	}
+func testGenerateServer(strict bool) func(*testing.T) {
+	return func(t *testing.T) {
+		specs := []string{
+			"billforward.discriminators.yml",
+			"todolist.simplequery.yml",
+			"todolist.simplequery.yml",
+		}
 
-	for i, spec := range specs {
-		t.Run(fmt.Sprintf("should generate server from spec %s", spec), func(t *testing.T) {
-			path := filepath.Join(testBase(), "fixtures/codegen", spec)
-			generated, cleanup := testTempDir(t, path)
-			t.Cleanup(cleanup)
+		for i, spec := range specs {
+			t.Run("should generate server from spec "+spec, func(t *testing.T) {
+				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				generated := t.TempDir()
 
-			m := &generate.Server{}
-			_, _ = flags.Parse(m)
-			if i == 0 {
-				m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
-			}
-			switch i {
-			case 1:
-				m.FlagStrategy = "pflag"
-			case 2:
-				m.FlagStrategy = "flag"
-			}
-			m.Shared.Spec = flags.Filename(path)
-			m.Shared.Target = flags.Filename(generated)
-			m.Shared.StrictResponders = strict
+				m := &generate.Server{}
+				_, _ = flags.Parse(m)
+				if i == 0 {
+					m.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))
+				}
+				switch i {
+				case 1:
+					m.FlagStrategy = "pflag"
+				case 2:
+					m.FlagStrategy = "flag"
+				}
+				m.Shared.Spec = flags.Filename(pth)
+				m.Shared.Target = flags.Filename(generated)
+				m.Shared.StrictResponders = strict
 
-			require.NoError(t, m.Execute([]string{}))
-		})
+				t.Run("go mod", gomodinit(generated))
+
+				require.NoError(t, m.Execute([]string{}))
+			})
+		}
 	}
 }

@@ -1,58 +1,142 @@
-name: Run CI (master/tag)
+name: Test
 
-env:
-  GOCOVMODE: atomic
+# description: |
+#   Test suite that runs on every commit (on pull requests, on merges to master).
 
 on:
+  pull_request:
   push:
-    tags:
-      - v*
     branches:
       - master
-    paths-ignore:
-      - docs/*
-      - hack/hugo/*
-      - .github/workflows/update-doc.yaml
 
 permissions:
-  contents: write
   pull-requests: read
 
 jobs:
+  code-changed:
+    # description: |
+    #   Check for changes in source code.
+    #
+    #   We do not use "on.paths" because we want a PR workflow to run and be subject to
+    #   status changes.
+    #
+    #   We also want to document on the github UI (as job summary) what the different
+    #   stages of this workflow are doing.
+    name: Check code changes
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.changed-source-files.outputs.any_changed }}
+      all_changed_files: ${{ steps.changed-source-files.outputs.all_changed_files }}
+    steps:
+    - name: Originating repo checkout (e.g. public fork)
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+    - name: Get changed source files
+      uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v4.7.0
+      id: changed-source-files
+      with:
+        # check if anything changed in go source, templates or the way we test those
+        files: |
+          **/*.go
+          **/*.gotmpl
+          .golangci.yml
+          .codecov.yml
+          .github/workflows/test*.yaml
+          fixtures/*
+          hack/*
+
+    - name: Notify
+      run: |
+        echo "::notice::Detection of changed source files"
+        echo "${{ steps.changed-source-files.outputs.all_changed_files }}"
+
+    - name: Workflow summary
+      run: |
+        function spew() {
+         echo $1 >> "$GITHUB_STEP_SUMMARY"
+        }
+
+        spew "# Workflow summary"
+        spew ""
+
+        if [[ "${{ steps.changed-source-files.outputs.any_changed }}" != "true" ]] ; then
+          spew "1. [ ] Detect a change in source or the way we test it"
+          spew "2. [x] All tests are skipped. Other workflows may kick in (e.g. doc update)"
+          spew "3. [x] Tests completed: so PR may be approved"
+
+          exit 0
+        fi
+
+        spew "1. [x] Detect a change in source or the way we test it"
+        spew "2. [x] Lint go source code, including (generated examples)."
+        spew "3. [x] Run a build (smoke) test (6x matrix)"
+        spew "4. [x] Run unit tests (6x matrix)"
+        spew "5. [x] Run codegen integration tests (2x matrix)"
+        spew "6. [x] Tests completed: so PR may be approved"
+        spew "7. [x] Merge test reports and publish (codecov, github)"
+        spew "8. [x] Merge test coverage reports and publish (codecov)"
+        spew ""
+        spew "Steps (7) and (8) may sometimes fail and are not strictly required by PR check rules"
+
   lint:
+    # description: |
+    # Lint go source code.
     name: lint
+    needs: [code-changed]
+    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: stable
           check-latest: true
           cache: true
       - name: golangci-lint
-        # do not actually lint on pushed tags. The diff evaluated by golangci-lint action is wrong (https://github.com/golangci/golangci-lint-action/issues/1246).
-        if: ${{ ! startsWith(github.ref,'refs/tags/') }}
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@4afd733a84b1f43292c63897423277bb7f4313a9 # v8.0.0
         with:
           args: --verbose
           only-new-issues: true
           skip-cache: true
           version: latest
 
-  build:
+  skip-test:
+    # description: |
+    #   Be explicit about tests being skipped, without blocking a PR.
+    name: skipped tests
+    needs: [code-changed]
+    if: ${{ needs.code-changed.outputs.proceed != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Notify
+      run: |
+        echo "::notice::Linting and tests skipped: this PR doesn't change any code"
+        echo "${{ steps.changed-source-files.outputs.all_changed_files }}"
+
+  build-test:
     # description: |
     #   Make sure we build and run elementary operations.
-    #   And that, at this moment, it still runs with go 1.20.
     #   The full test suite warrants support for the 2 latest go minor releases.
-    needs: [lint]
+    name: build test
+    needs: [code-changed, lint]
+    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -76,68 +160,84 @@ jobs:
           swagger validate fixtures/bugs/2493/fixture-2493.yaml
           swagger validate fixtures/bugs/2866/2866.yaml
 
-  test:
+  unit-test:
     # description: |
     #   Run unit tests on the 2 most recent go releases and 3 popular platforms.
-    needs: [lint]
+    name: unit test
+    needs: [code-changed, lint]
+    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        exclude: # <- temporarily exclude go1.22.0 on windows. We hit this bug:https://github.com/golang/go/issues/65653
-          - go: stable
-            os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
 
       - name: Install Tools
+        # TODO: pin version
         run: |
           go install gotest.tools/gotestsum@latest
 
+      - name: Ensure TMP is created on windows runners
+        # On windows, tests require testing.TempDir to reside on the same drive as the code.
+        # TMP is used by os.TempDir() to determine the location of temporary files.
+        if: ${{ runner.os  == 'Windows' }}
+        shell: bash
+        run: |
+          TMP="${{ github.workspace }}\..\tmp"
+          mkdir -p ${TMP}
+          echo "TMP=${TMP}" >> "${GITHUB_ENV}"
+
       - name: Run unit tests with code coverage
+        # * disabled test cache (windows): https://github.com/golang/go/issues/72992
+        # * added json test report
+        shell: bash
         run: >
-          gotestsum --
-          -p 1
+          gotestsum
+          --jsonfile 'unit.report.${{ matrix.os }}-${{ matrix.go }}.json'
+          --
+          -p 2
+          -count 1
           -timeout=20m
-          -coverprofile='coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
+          -coverprofile='unit.coverage.${{ matrix.os }}-${{ matrix.go }}.out'
           -covermode=atomic
           -coverpkg=$(go list)/...
           ./...
 
-      - name: Publish To Codecov
-        # retry after 30s whenever codecov servers experience delays.
-        # inspired by https://github.com/Kong/kubernetes-testing-framework/blob/230e26621db6af0d8543e784afb208e8c2a6b710/.github/workflows/tests.yaml#L57
-        # until retries are eventually natively supported by the codecov CLI: https://github.com/codecov/codecov-action/issues/926
-        uses: Wandalen/wretry.action@v3
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          action: codecov/codecov-action@v4
-          attempt_limit: 10
-          attempt_delay: 30000
-          with: |
-            files: 'coverage-${{ matrix.os }}-${{ matrix.go }}.txt'
-            flags: 'unit-${{ matrix.go }}'
-            os: '${{ matrix.os }}'
-            fail_ci_if_error: true
-            verbose: true
-            # This secret is not passed on when triggered by PR from a fork: in this case,
-            # tokenless upload is used by the codecov CLI.
-            # It is used when running the workflow from pushed commits or tags on master.
-            token: ${{ secrets.CODECOV_TOKEN }}
+          # *.coverage.* pattern is automatically detected by codecov
+          path: '**/*.coverage.*.out'
+          name: 'unit.coverage.${{ matrix.os }}-${{ matrix.go }}'
 
-  codegen_test:
+      - name: Upload test report artifacts
+        # upload report even if test fail. BTW, this is when they are valuable.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: '**/unit.report.*.json'
+          name: 'unit.report.${{ matrix.os }}-${{ matrix.go }}'
+
+  codegen-test:
     # description: |
     #   Exercise go-swagger from the command line, with a bunch of specs
     #   and several options (flatten/expand spec).
     #
     #   The test matrix applies to linux only. OS-specific quirks should
     #   be covered by unit tests.
-    needs: [lint]
+    needs: [code-changed, lint]
+    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -151,19 +251,24 @@ jobs:
     env:
       GOCOVERDIR: /tmp/cov
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
           cache: true
 
       - name: Install Tools
+        # TODO: pin this dependency
         run: |
           go get gotest.tools/icmd@latest
           mkdir /tmp/cov
 
       - name: Build binary with test coverage instrumentation
+        # TODO: should explicit / simplify this hack
         run: >
           ./hack/build-docker.sh --github-action
           -cover
@@ -171,215 +276,210 @@ jobs:
           -coverpkg=$(go list)/...
 
       - name: Run codegen tests
+        # TODO: this test harness should output a json test report
         run: >
           go test -v -timeout 30m -parallel 3
           hack/codegen_nonreg_test.go
           -args -fixture-file "${{ matrix.fixture }}.yaml" $${{ matrix.args }}
+
       - name: Construct coverage reports from integration tests
         run: >
           go tool covdata textfmt
           -i "${GOCOVERDIR}"
-          -o "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
+          -o "codegen.coverage.${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.out"
 
-      - name: Publish To Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          files: "codegen-coverage-${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.txt"
-          flags: "codegen-${{ matrix.go }}-${{ matrix.fixture }}"
-          os: "${{ matrix.os }}"
-          fail_ci_if_error: true
-          verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }} # <- this secret is not passed on when triggered by PR from a fork
+          path: '**/codegen.coverage.*.out'
+          name: 'codegen.coverage.${{ matrix.os }}-${{ matrix.go }}'
 
-  docker_dev:
-    needs: [lint, build, test, codegen_test]
-    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+  test-complete:
+    # description: |
+    #   Be explicit about all tests being passed. This allows for setting up only a few status checks on PRs.
+    name: tests completed
+    needs: [code-changed, skip-test, build-test, codegen-test, unit-test]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: debug
+        run: |
+          echo "needs.code-changed.outputs.proceed=${{ needs.code-changed.outputs.proceed }}"
+          echo "needs.build-test.result=${{ needs.build-test.result }}"
+          echo "needs.codegen-test.result=${{ needs.codegen-test.result }}"
+          echo "needs.unit-test.result=${{ needs.unit-test.result }}"
+          echo "${{ toJSON( needs ) }}"
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            quay.io/goswagger/swagger
-            ghcr.io/go-swagger/go-swagger
-          tags: |
-            type=ref,event=branch
-            type=sha
+      - name: Tests completed
+        if: >-
+          ${{
+              needs.code-changed.outputs.proceed == 'true' &&
+              needs.build-test.result == 'success' &&
+              needs.codegen-test.result == 'success' &&
+              needs.unit-test.result == 'success'
+           }}
+        run: |
+          echo "::notice title=Success:All tests completed"
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Tests failed
+        if: >-
+          ${{
+              needs.code-changed.outputs.proceed == 'true' &&
+              (
+                needs.build-test.result != 'success' ||
+                needs.codegen-test.result != 'success' ||
+                needs.unit-test.result != 'success'
+              )
+           }}
+        run: |
+          echo "::error title=Failure:Tests failed"
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+          exit 1
 
-      - name: Login to Quay Registry
-        uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASS }}
+      - name: Tests completed
+        if: ${{ needs.code-changed.outputs.proceed != 'true' }}
+        run: |
+          echo "::notice title=Success:All tests skipped (nothing to do)"
 
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
+      - name: Ensure status
+        run: |
+          # This step is added to ensure that the next job in line will get a status
+          exit 0
 
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          build-args: |
-            commit_hash=${{ github.sha }}
-            tag_name=dev
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-
-  publish_release:
-    needs: [lint, build, test, codegen_test]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+  collect-coverage:
+    # description: |
+    #   Gather, merge then uploads test coverage files from all test jobs (this includes integration tests,
+    #   like codegen-test).
+    name: collect test coverage
+    needs: [test-complete]
+    if: ${{ !cancelled() && needs.test-complete.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          go-version: "stable"
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          run-id: "${{ github.run_id }}"
+          pattern: "*.coverage.*"
+          # artifacts resolve as folders
+          path: coverage/
+
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          name: Aggregated coverage
+          # All *.coverage.*.out files uploaded should be detected by the codecov action.
+          # NOTE: we lose the flags on individual test reports (e.g. by os, by go version, unit vs codegen)
+          flags: '${{ matrix.go_version }}-${{ matrix.os }}'
+          fail_ci_if_error: false
+          verbose: false
+
+  collect-reports:
+    # description: |
+    #   Gather, merge then uploads test report files from unit test jobs.
+    #
+    #   At this moment test reports are published on both codecov
+    #   (see <https://app.codecov.io/gh/go-swagger/go-swagger/tests>) and the github actions UI
+    #   (see <https://github.com/go-swagger/go-swagger/actions>).
+    name: collect test reports
+    needs: [code-changed, unit-test]
+    if: ${{ needs.code-changed.outputs.proceed == 'true' && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: stable
           check-latest: true
           cache: true
 
-      - name: Install Tools
+      - name: Download test report artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          run-id: "${{ github.run_id }}"
+          pattern: "*.report.*"
+          # artifacts resolve as folders
+          path: reports/
+
+      - name: Convert test reports to a merged JUnit XML
+        # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
+        # Ideally, codecov improve a bit their platform, so we may only need a single pass to CTRF format.
+        #
+        # As a contemplated alternative, we could use gotestsum above to produce the JUnit XML directly.
+        # At this moment, we keep a json format to dispatch test reports to codecov as well as to CTRF reports.
+        #
+        # TODO: pin go-junit-report
         run: |
-          go install github.com/github-release/github-release@latest
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+          go install github.com/jstemmer/go-junit-report/v2@latest
+          go-junit-report -version
 
-      - name: Build release
+          find reports/ -name \*.json | xargs cat | go-junit-report -parser gojson -out=reports/junit_report.xml
+
+      - name: Upload test results to Codecov
+        # This allows for using the test results UI on codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          files: '**/junit_report.xml'
+          report_type: 'test_results'
+          fail_ci_if_error: false
+          handle_no_reports_found: true
+          verbose: true
+
+      - name: Convert test reports to CTRF JSON
+        # description: |
+        #   This step publishes CTRF test reports on github UI (actions)
+        # TODO: pin this dependency
         run: |
-          set -x
-          rm -rf dist
-          mkdir -p dist/bin
-          mkdir -p dist/build
+          go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@v0.0.10
 
-          build_binary() {
-            LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
-            LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
-            out="swagger_$1_$2"
-            if [[ $1 == "windows" ]]; then
-              out="${out}.exe"
-            fi
-            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -o "./dist/bin/$out" ./cmd/swagger
-          }
+          appName="go-swagger"
+          buildNumber="${{ github.run_id }}"
+          appVersion="${{ github.event.pull_request.head.sha }}"
 
-          go mod download
+          # reconstruct platform information from the file name
+          # set -x
+          while read report ; do
+            # echo "::notice::converting report: ${report}"
+            # 'unit.report.${{ matrix.os }}-${{ matrix.go }}.json'
+            reformated=$(echo "${report##*/}"|sed -E 's/(go)([[:digit:]]+)\.([[:digit:]]+)/\1\2\3/') # e.g. go1.24 becomes go124
+            mapfile -d'.' -t -s 2 -n 2 split < <(echo $reformated) # skip the first 2 parts, stop on 2 more parts
+            envstring="${split[0]}"
+            osPlatform="${envstring%-*}"
+            osRelease="${envstring##*-}"
 
-          build_binary linux amd64
-          build_binary linux arm64
-          build_binary linux arm
-          build_binary linux ppc64le
-          build_binary linux s390x
-          build_binary darwin amd64
-          build_binary darwin arm64
-          build_binary windows amd64
-          build_binary windows arm64
+            # this is a best effort only: tests may be cancelled upstream and produce incorrect reports
+            go-ctrf-json-reporter \
+              -quiet \
+              -appName "${appName}" \
+              -appVersion "${appVersion}" \
+              -buildNumber "${buildNumber}" \
+              -osPlatform "${osPlatform}" \
+              -osRelease "${osRelease}" \
+              -output "./reports/ctrf_report_${osPlatform}_${osRelease}.json" < "${report}" || true
+          done < <(find reports -name \*.json)
 
-          nfpm p -p deb -t dist/build
-          nfpm p -p rpm -t dist/build
-
-          pushd dist/bin || exit 1
-          sha1sum * > sha1sum.txt
-          sha256sum * > sha256sum.txt
-          popd || exit 1
-
-      - name: Push RPM
-        id: push_rpm
-        uses: cloudsmith-io/action@master
+      # NOTE: at this moment, we don't upload CTRF reports as artifacts.
+      # Some of the CTRF reports are therefore not available (flaky tests, history, ...).
+      #
+      # See https://github.com/ctrf-io/github-test-reporter?tab=readme-ov-file#report-showcase
+      # for more reporting possibilities. At the moment, we keep it simple, as most advanced features
+      # require a github token (thus adding the complexity of a separate workflow starting on pull_request_target).
+      #
+      # For the moment, we are contented with these simple reports. This is an opportunity to compare the insight they
+      # provide as compared to what is uploaded to codecov.
+      #
+      # Codecov analytics are pretty poor at this moment. On the other hand, they manage the bot that pushes back
+      # PR comments.
+      #
+      # They also handle the storage of past test reports, so as to assess flaky tests.
+      - name: Publish Test Summary Results
+        uses: ctrf-io/github-test-reporter@646f98cfc16c6f7a0e1f6100cabe2deb95dd2eef # v1.0.22
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "rpm"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "fedora"
-          release: "any-version"
-          file: "dist/build/swagger-*.x86_64.rpm"
-
-      - name: Push Deb
-        id: push
-        uses: cloudsmith-io/action@master
-        with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "deb"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "debian"
-          release: "any-version"
-          file: "dist/build/swagger_*_amd64.deb"
-
-      - name: Publish Binaries
-        uses: fnkr/github-action-ghr@v1
-        env:
-          GHR_PATH: dist/bin/
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  docker:
-    needs: [lint, build, test, codegen_test]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            quay.io/goswagger/swagger
-            ghcr.io/go-swagger/go-swagger
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Quay Registry
-        uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASS }}
-
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          build-args: |
-            commit_hash=${{ github.sha }}
-            tag_name=${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+          report-path: 'reports/ctrf_report_*.json'
+          use-suite-name: true
+          summary-report: true             # post a report to the github actions summary
+          github-report: true
+          failed-folded-report: true

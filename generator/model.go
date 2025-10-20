@@ -47,7 +47,7 @@ Every action that happens tracks the path which is a linked list of refs
 
 */
 
-// GenerateModels generates all model files for some schema definitions
+// GenerateModels generates all model files for some schema definitions.
 func GenerateModels(modelNames []string, opts *GenOpts) error {
 	// overide any default or incompatible options setting
 	opts.IncludeModel = true
@@ -63,7 +63,7 @@ func GenerateModels(modelNames []string, opts *GenOpts) error {
 	return generator.Generate()
 }
 
-// GenerateDefinition generates a single model file for some schema definitions
+// GenerateDefinition generates a single model file for some schema definitions.
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	if err := opts.CheckOpts(); err != nil {
 		return err
@@ -350,7 +350,6 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 			}
 			pg.GenSchema.AllOf[i].Properties = remainingProperties
 		}
-
 	}
 
 	defaultImports := map[string]string{
@@ -772,7 +771,7 @@ func (sg *schemaGenContext) buildProperties() error {
 
 		var hasValidation bool
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
-			// this is an anonymous complex construct: build a new new type for it
+			// this is an anonymous complex construct: build a new type for it
 			pg := sg.makeNewStruct(sg.makeRefName()+swag.ToGoName(k), v)
 			pg.IsTuple = sg.IsTuple
 			if sg.Path != "" {
@@ -1088,7 +1087,7 @@ func newMapStack(context *schemaGenContext) (first, last *mapStack, err error) {
 	return ms, l, nil
 }
 
-// Build rewinds the stack of additional properties, building schemas from bottom to top
+// Build rewinds the stack of additional properties, building schemas from bottom to top.
 func (mt *mapStack) Build() error {
 	if mt.NewObj == nil && mt.ValueRef == nil && mt.Next == nil && mt.Previous == nil {
 		csch := mt.Type.AdditionalProperties.Schema
@@ -2078,7 +2077,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 			return nil
 		}
 		// TODO: case for embedded types as anonymous definitions
-		return fmt.Errorf("ERROR: inline definitions embedded types are not supported")
+		return errors.New("ERROR: inline definitions embedded types are not supported")
 	}
 
 	debugLog("gschema nullable: %t", sg.GenSchema.IsNullable)

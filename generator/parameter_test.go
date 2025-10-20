@@ -1452,7 +1452,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 	}
 }
 
-// verifies that validation method is called on body param with $ref
+// Verifies that validation method is called on body param with $ref.
 func TestGenParameter_Issue1237(t *testing.T) {
 	defer discardOutput()()
 
@@ -1714,7 +1714,7 @@ func TestGenParameter_Issue1513(t *testing.T) {
 	assertInCode(t, assertion, res)
 }
 
-// Body param validation on empty objects
+// Body param validation on empty objects.
 func TestGenParameter_Issue1536(t *testing.T) {
 	defer discardOutput()()
 

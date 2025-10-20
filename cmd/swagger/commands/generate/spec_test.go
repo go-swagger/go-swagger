@@ -45,7 +45,7 @@ func TestSpecFileExecute(t *testing.T) {
 			name = "to stdout"
 		}
 
-		t.Run(fmt.Sprintf("should produce spec file %s", name), func(t *testing.T) {
+		t.Run("should produce spec file "+name, func(t *testing.T) {
 			spec := &SpecFile{
 				WorkDir: basePath,
 				Output:  flags.Filename(outputFile),
@@ -89,9 +89,11 @@ func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 
 	require.Len(t, got["definitions"], 2)
 	require.Contains(t, got["definitions"], "Item")
-	itemDefinition := got["definitions"].(map[string]any)["Item"].(map[string]any)
+	itemDefinition, ok := got["definitions"].(map[string]any)["Item"].(map[string]any)
+	require.True(t, ok)
 	require.Contains(t, itemDefinition["properties"], "Value1")
-	value1Property := itemDefinition["properties"].(map[string]any)["Value1"].(map[string]any)
+	value1Property, ok := itemDefinition["properties"].(map[string]any)["Value1"].(map[string]any)
+	require.True(t, ok)
 	require.Contains(t, value1Property, "x-nullable")
 	assert.Equal(t, true, value1Property["x-nullable"])
 }

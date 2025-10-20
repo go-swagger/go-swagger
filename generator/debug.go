@@ -25,9 +25,9 @@ import (
 
 var (
 	// Debug when the env var DEBUG or SWAGGER_DEBUG is not empty
-	// the generators will be very noisy about what they are doing
+	// the generators will be very noisy about what they are doing.
 	Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-	// generatorLogger is a debug logger for this package
+	// generatorLogger is a debug logger for this package.
 	generatorLogger *log.Logger
 )
 
@@ -35,7 +35,7 @@ func debugOptions() {
 	generatorLogger = log.New(os.Stdout, "generator:", log.LstdFlags)
 }
 
-// debugLog wraps log.Printf with a debug-specific logger
+// debugLog wraps log.Printf with a debug-specific logger.
 func debugLog(frmt string, args ...any) {
 	if Debug {
 		_, file, pos, _ := runtime.Caller(1)
@@ -44,21 +44,23 @@ func debugLog(frmt string, args ...any) {
 	}
 }
 
-// debugLogAsJSON unmarshals its last arg as pretty JSON
+// debugLogAsJSON unmarshals its last arg as pretty JSON.
 func debugLogAsJSON(frmt string, args ...any) {
 	if Debug {
 		var dfrmt string
 		_, file, pos, _ := runtime.Caller(1)
 		dargs := make([]any, 0, len(args)+2)
 		dargs = append(dargs, filepath.Base(file), pos)
+
 		if len(args) > 0 {
 			dfrmt = "%s:%d: " + frmt + "\n%s"
-			bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ")
+			bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ") //nolint:errchkjson // it's okay for debug
 			dargs = append(dargs, args[0:len(args)-1]...)
 			dargs = append(dargs, string(bbb))
 		} else {
 			dfrmt = "%s:%d: " + frmt
 		}
+
 		generatorLogger.Printf(dfrmt, dargs...)
 	}
 }

@@ -15,11 +15,16 @@
 package gentest
 
 import (
+	"context"
 	"io"
 	"log"
 	"os/exec"
+	"path"
+	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -71,9 +76,20 @@ func setOutput(w io.Writer) func() {
 func GoExecInDir(target string, args ...string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
-		cmd := exec.Command("go", args...)
+
+		const minute = 60 * time.Second
+		ctx, cancel := context.WithTimeout(t.Context(), minute)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, "go", args...)
 		cmd.Dir = target
 		p, err := cmd.CombinedOutput()
 		require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
 	}
+}
+
+var sanitizer = strings.NewReplacer("(", "-", ")", "-", ".", "-", "_", "-", "\\", "/", ":", "-", " ", "x")
+
+func SanitizeGoModPath(pth string) string {
+	return path.Clean(sanitizer.Replace(filepath.Base(pth)))
 }

@@ -337,7 +337,7 @@ func (y *yamlParser) Matches(line string) bool {
 }
 
 // aggregates lines in header until it sees `---`,
-// the beginning of a YAML spec
+// the beginning of a YAML spec.
 type yamlSpecScanner struct {
 	header         []string
 	yamlSpec       []string
@@ -348,24 +348,29 @@ type yamlSpecScanner struct {
 	skipHeader     bool
 }
 
-func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Regexp) []string {
+func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Regexp) []string { //nolint:unparam
 	// bail early when there is nothing to parse
 	if len(lines) == 0 {
 		return lines
 	}
 	seenLine := -1
-	var lastContent int
-	var uncommented []string
-	var startBlock bool
-	var yamlLines []string
+	var (
+		lastContent int
+		startBlock  bool
+		yamlLines   []string
+	)
+	uncommented := make([]string, 0, len(lines))
+
 	for i, v := range lines {
 		if yamlBlock != nil && yamlBlock.MatchString(v) && !startBlock {
 			startBlock = true
 			if seenLine < 0 {
 				seenLine = i
 			}
+
 			continue
 		}
+
 		if startBlock {
 			if yamlBlock != nil && yamlBlock.MatchString(v) {
 				startBlock = false
@@ -379,8 +384,10 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 				}
 				lastContent = i
 			}
+
 			continue
 		}
+
 		str := ur.ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
@@ -506,7 +513,7 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	return nil
 }
 
-// removes indent base on the first line
+// removes indent base on the first line.
 func removeIndent(spec []string) []string {
 	loc := rxIndent.FindStringIndex(spec[0])
 	if loc[1] == 0 {
@@ -526,7 +533,7 @@ func removeIndent(spec []string) []string {
 	return spec
 }
 
-// removes indent base on the first line
+// removes indent base on the first line.
 func removeYamlIndent(spec []string) []string {
 	loc := rxIndent.FindStringIndex(spec[0])
 	if loc[1] == 0 {
@@ -1291,13 +1298,13 @@ func (ss *setOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
-// ResponseTag used when specifying a response to point to a defined swagger:response
+// ResponseTag used when specifying a response to point to a defined swagger:response.
 const ResponseTag = "response"
 
-// BodyTag used when specifying a response to point to a model/schema
+// BodyTag used when specifying a response to point to a model/schema.
 const BodyTag = "body"
 
-// DescriptionTag used when specifying a response that gives a description of the response
+// DescriptionTag used when specifying a response that gives a description of the response.
 const DescriptionTag = "description"
 
 func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef bool, description string, err error) {
@@ -1440,7 +1447,7 @@ func (ss *setOpResponses) Parse(lines []string) error {
 					resp.Schema.Ref = ref
 				} else {
 					cs := resp.Schema
-					for i := 0; i < arrays; i++ {
+					for range arrays {
 						cs.Typed("array", "")
 						cs.Items = new(spec.SchemaOrArray)
 						cs.Items.Schema = new(spec.Schema)
@@ -1497,7 +1504,6 @@ func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
 	interfaceSlice := make([]interface{}, len(rawElements))
 
 	for i, d := range rawElements {
-
 		ds, err := strconv.Unquote(string(d))
 		if err != nil {
 			ds = string(d)
@@ -1515,7 +1521,7 @@ func parseEnum(val string, s *spec.SimpleSchema) []interface{} {
 	return interfaceSlice
 }
 
-// AlphaChars used when parsing for Vendor Extensions
+// AlphaChars used when parsing for Vendor Extensions.
 const AlphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func newSetExtensions(setter func(*spec.Extensions)) *setOpExtensions {
@@ -1537,7 +1543,7 @@ type extensionObject struct {
 
 type extensionParsingStack []interface{}
 
-// Helper function to walk back through extensions until the proper nest level is reached
+// Helper function to walk back through extensions until the proper nest level is reached.
 func (stack *extensionParsingStack) walkBack(rawLines []string, lineIndex int) {
 	indent := strings.IndexAny(rawLines[lineIndex], AlphaChars)
 	nextIndent := strings.IndexAny(rawLines[lineIndex+1], AlphaChars)

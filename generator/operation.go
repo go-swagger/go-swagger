@@ -43,7 +43,7 @@ func (s responses) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s responses) Less(i, j int) bool { return s[i].Code < s[j].Code }
 
 // sortedResponses produces a sorted list of responses.
-// TODO: this is redundant with the definition given in struct.go
+// TODO: this is redundant with the definition given in struct.go.
 func sortedResponses(input map[int]spec.Response) responses {
 	var res responses
 	for k, v := range input {
@@ -58,7 +58,7 @@ func sortedResponses(input map[int]spec.Response) responses {
 // GenerateServerOperation generates a parameter model, parameter validator, http handler implementations for a given operation.
 //
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
-// Allows for specifying a list of tags to include only certain tags for the generation
+// Allows for specifying a list of tags to include only certain tags for the generation.
 func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err := opts.CheckOpts(); err != nil {
 		return err
@@ -149,7 +149,7 @@ type operationGenerator struct {
 	GenOpts              *GenOpts
 }
 
-// Generate a single operation
+// Generate a single operation.
 func (o *operationGenerator) Generate() error {
 	defaultImports := o.GenOpts.defaultImports()
 
@@ -238,7 +238,7 @@ type codeGenOpBuilder struct {
 	GenOpts             *GenOpts
 }
 
-// paramMappings yields a map of safe parameter names for an operation
+// paramMappings yields a map of safe parameter names for an operation.
 func paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string) {
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(params)),
@@ -670,7 +670,7 @@ func (b *codeGenOpBuilder) MakeHeaderItem(receiver, paramName, indexVar, path, v
 	return res, nil
 }
 
-// HasValidations resolves the validation status for simple schema objects
+// HasValidations resolves the validation status for simple schema objects.
 func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolvedType) (hasValidations bool, hasSliceValidations bool) {
 	hasSliceValidations = sh.HasArrayValidations() || sh.HasEnum()
 	hasValidations = sh.HasNumberValidations() || sh.HasStringValidations() || hasSliceValidations || hasFormatValidation(rt)
@@ -808,7 +808,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	return res, nil
 }
 
-// MakeBodyParameter constructs a body parameter schema
+// MakeBodyParameter constructs a body parameter schema.
 func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeResolver, sch *spec.Schema) error {
 	// resolve schema model
 	schema, ers := b.buildOperationSchema(res.Path, b.Operation.ID+"ParamsBody", swag.ToGoName(b.Operation.ID+" Body"), res.ReceiverName, res.IndexVar, sch, resolver)
@@ -846,7 +846,7 @@ func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeRe
 // MakeBodyParameterItemsAndMaps clones the .Items schema structure (resp. .AdditionalProperties) as a .GenItems structure
 // for compatibility with simple param templates.
 //
-// Constructed children assume simple structures: any complex object is assumed to be resolved by a model or extra schema definition
+// Constructed children assume simple structures: any complex object is assumed to be resolved by a model or extra schema definition.
 func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *GenSchema) *GenItems {
 	items := new(GenItems)
 	if it != nil {
@@ -994,7 +994,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 	}
 }
 
-// makeSecuritySchemes produces a sorted list of security schemes for this operation
+// makeSecuritySchemes produces a sorted list of security schemes for this operation.
 func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchemes {
 	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver, b.GenOpts.PrincipalIsNullable())
 }
@@ -1027,11 +1027,19 @@ func (b *codeGenOpBuilder) makeSecurityRequirements(_ string) []GenSecurityRequi
 	return securityRequirements
 }
 
-// cloneSchema returns a deep copy of a schema
+// cloneSchema returns a deep copy of a schema.
 func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
 	savedSchema := &spec.Schema{}
-	schemaRep, _ := json.Marshal(schema)
-	_ = json.Unmarshal(schemaRep, savedSchema)
+	schemaRep, err := json.Marshal(schema)
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(schemaRep, savedSchema)
+	if err != nil {
+		panic(err)
+	}
+
 	return savedSchema
 }
 
@@ -1211,7 +1219,7 @@ func intersectTags(left, right []string) []string {
 	return filtered
 }
 
-// analyze tags for an operation
+// analyze tags for an operation.
 func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 	var (
 		filter         []string
@@ -1271,13 +1279,13 @@ func maxInt(a, b int) int {
 }
 
 // deconflictTag ensures generated packages for operations based on tags do not conflict
-// with other imports
+// with other imports.
 func deconflictTag(seenTags []string, pkg string) string {
 	return deconflictPkg(pkg, func(pkg string) string { return renameOperationPackage(seenTags, pkg) })
 }
 
 // deconflictPrincipal ensures that whenever an external principal package is added, it doesn't conflict
-// with standard imports
+// with standard imports.
 func deconflictPrincipal(pkg string) string {
 	switch pkg {
 	case "principal":
@@ -1287,7 +1295,7 @@ func deconflictPrincipal(pkg string) string {
 	}
 }
 
-// deconflictPkg renames package names which conflict with standard imports
+// deconflictPkg renames package names which conflict with standard imports.
 func deconflictPkg(pkg string, renamer func(string) string) string {
 	switch pkg {
 	// package conflict with variables

@@ -26,7 +26,7 @@ type testCaseData struct {
 }
 
 // TestDiffForVariousCombinations - computes the diffs for a number
-// of scenarios and compares the computed diff with expected diffs
+// of scenarios and compares the computed diff with expected diffs.
 func TestDiffForVariousCombinations(t *testing.T) {
 	pattern := fixtureDiffPath("*.diff.txt")
 
@@ -41,8 +41,9 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	testCases := makeTestCases(t, allTests)
 
 	for i, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			cmd := DiffCommand{}
 			cmd.Args.OldSpec = tc.oldSpec
 			cmd.Args.NewSpec = tc.newSpec
@@ -112,8 +113,10 @@ func TestDiffProcessIgnores(t *testing.T) {
 		expectedLines: linesInFile(t, fixtureDiffPath("ignoreDiffs.json")),
 	}
 
-	reportFile, err := os.CreateTemp("", "report.txt")
+	reportFile, err := os.CreateTemp(t.TempDir(), "report.txt")
 	require.NoError(t, err)
+	require.NoError(t, reportFile.Close())
+
 	defer func() {
 		_ = os.Remove(reportFile.Name())
 	}()
@@ -166,11 +169,7 @@ func TestDiffCannotReport(t *testing.T) {
 }
 
 func TestDiffOnlyBreaking(t *testing.T) {
-	reportDir, err := os.MkdirTemp("", "diff-reports")
-	require.NoError(t, err)
-	defer func() {
-		_ = os.RemoveAll(reportDir)
-	}()
+	reportDir := t.TempDir()
 	txtReport := filepath.Join(reportDir, "report.txt")
 
 	cmd := DiffCommand{
@@ -180,36 +179,42 @@ func TestDiffOnlyBreaking(t *testing.T) {
 		Destination:         txtReport,
 	}
 
-	const namePart = "enum"
-	cmd.Args.OldSpec = fixtureDiffPath(namePart, ".v1.json")
-	cmd.Args.NewSpec = fixtureDiffPath(namePart, ".v2.json")
-	err = cmd.Execute(nil)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "compatibility test FAILED")
+	t.Run("diff should return an error when breaking changes are detected", func(t *testing.T) {
+		const namePart = "enum"
+		cmd.Args.OldSpec = fixtureDiffPath(namePart, ".v1.json")
+		cmd.Args.NewSpec = fixtureDiffPath(namePart, ".v2.json")
+		err := cmd.Execute(nil)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "compatibility test FAILED")
+	})
 
-	actual, err := os.Open(txtReport)
-	require.NoError(t, err)
-	defer func() {
-		_ = actual.Close()
-	}()
+	t.Run("diff should correctly identify breaking changes", func(t *testing.T) {
+		actual, err := os.Open(txtReport)
+		require.NoError(t, err)
+		defer func() {
+			_ = actual.Close()
+		}()
 
-	expected, err := os.Open(fixtureDiffPath("enum", ".diff.breaking.txt"))
-	require.NoError(t, err)
-	defer func() {
-		_ = expected.Close()
-	}()
+		expected, err := os.Open(fixtureDiffPath("enum", ".diff.breaking.txt"))
+		require.NoError(t, err)
+		defer func() {
+			_ = expected.Close()
+		}()
 
-	cmdtest.AssertReadersContent(t, true, expected, actual)
+		cmdtest.AssertReadersContent(t, true, expected, actual)
 
-	// assert stdout just the same (we do it just once, so there is no race condition on os.Stdout)
-	cmd.Destination = "stdout"
-	output, err := cmdtest.CatchStdOut(t, func() error { return cmd.Execute(nil) })
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "compatibility test FAILED")
+		t.Run("same expectations should hold when output is stdout", func(t *testing.T) {
+			// assert stdout just the same (we do it just once, so there is no race condition on os.Stdout)
+			cmd.Destination = "stdout"
+			output, err := cmdtest.CatchStdOut(t, func() error { return cmd.Execute(nil) })
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "compatibility test FAILED")
 
-	_, _ = expected.Seek(0, io.SeekStart)
-	result := bytes.NewBuffer(output)
-	cmdtest.AssertReadersContent(t, true, expected, result)
+			_, _ = expected.Seek(0, io.SeekStart)
+			result := bytes.NewBuffer(output)
+			cmdtest.AssertReadersContent(t, true, expected, result)
+		})
+	})
 }
 
 func fixturePart(file string) string {
@@ -229,6 +234,8 @@ func hasFixtureBreaking(part string) bool {
 }
 
 func makeTestCases(t testing.TB, matches []string) []testCaseData {
+	t.Helper()
+
 	testCases := make([]testCaseData, 0, len(matches)+2)
 	for _, eachFile := range matches {
 		namePart := fixturePart(eachFile)
@@ -266,7 +273,10 @@ func fixtureDiffPath(file string, parts ...string) string {
 }
 
 func linesInFile(t testing.TB, fileName string) io.ReadCloser {
+	t.Helper()
+
 	file, err := os.Open(fileName)
 	require.NoError(t, err)
+
 	return file
 }
