@@ -110,6 +110,8 @@ func loadSpec(input string) (*spec.Swagger, error) {
 
 var defaultWriter io.Writer = os.Stdout
 
+const generatedFileMode os.FileMode = 0o644
+
 func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string) error {
 	var b []byte
 	var err error
@@ -129,7 +131,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		_, e := fmt.Fprintf(defaultWriter, "%s\n", b)
 		return e
 	default:
-		return os.WriteFile(output, b, 0o644) //#nosec
+		return os.WriteFile(output, b, generatedFileMode) //#nosec
 	}
 
 	// #nosec
