@@ -64,6 +64,7 @@ Help Options:
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
           --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
           --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+          --with-custom-formatter                                                 use faster custom contributed go import processing instead of the standard one
 
     Options for model generation:
       -m, --model-package=                                                        the package to save the models (default: models)
