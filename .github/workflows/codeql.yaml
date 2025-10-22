@@ -1,5 +1,8 @@
 name: "CodeQL"
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "master" ]
@@ -8,16 +11,13 @@ on:
   schedule:
     - cron: '31 21 * * 4'
 
-permissions:
-  contents: read
-
 jobs:
   analyze:
     name: Analyze.
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
-      actions: read
+      # actions: read # needed only for private repositories
       contents: read
       security-events: write
 

@@ -1,0 +1,55 @@
+name: Vulnerability scans
+
+permissions: read-all
+
+# description: |
+#   A fast vulnerability scan on the repo that effectively supplements ossf scorecard and codesql
+#   and may run every day.
+#
+# TODO(fredbi): we may supplement this analysis with snyk (to be experimented with) (requires a token).
+
+on:
+  branch_protection_rule:
+  push:
+    branches: [ "master" ]
+  schedule:
+    - cron: '14 3 * * *'
+
+jobs:
+  analysis:
+    name: Vulnerability scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Vulnerability scan by trivy
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        with:
+          scan-type: repo
+          format: sarif
+          hide-progress: false
+          output: trivy-code-report.sarif
+          scanners: vuln,secret
+          exit-code: 0
+
+      # Upload the results to GitHub's code scanning dashboard.
+      - name: "Upload trivy findings to code-scanning"
+        uses: github/codeql-action/upload-sarif@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
+        with:
+          category: trivy
+          sarif_file: trivy-code-report.sarif
+
+      # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
+      # format to the repository Actions tab.
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: SARIF file
+          path: trivy-code-report.sarif
+          retention-days: 5
