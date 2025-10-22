@@ -399,6 +399,59 @@ func TestParamsParser(t *testing.T) {
 	}
 }
 
+func TestParamsParser_TransparentAliases(t *testing.T) {
+	sctx, err := newScanCtx(&Options{
+		Packages:           []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/transparentalias"},
+		TransparentAliases: true,
+		ScanModels:         true,
+	})
+	require.NoError(t, err)
+
+	td := getParameter(sctx, "TransparentAliasParams")
+	require.NotNil(t, td)
+
+	// Build the operation map from the transparent alias fixtures.
+	operations := make(map[string]*spec.Operation)
+	prs := &parameterBuilder{
+		ctx:  sctx,
+		decl: td,
+	}
+	require.NoError(t, prs.Build(operations))
+
+	op, ok := operations["transparentAlias"]
+	require.True(t, ok)
+	require.Len(t, op.Parameters, 2)
+
+	var bodyParam, queryParam *spec.Parameter
+	for i := range op.Parameters {
+		p := &op.Parameters[i]
+		switch p.In {
+		case "body":
+			bodyParam = p
+		case "query":
+			queryParam = p
+		}
+	}
+
+	require.NotNil(t, bodyParam)
+	require.NotNil(t, queryParam)
+	require.NotNil(t, bodyParam.Schema)
+
+	// Body aliases should expand inline instead of producing a $ref definition.
+	assert.Equal(t, "aliasBody", bodyParam.Name)
+	assert.True(t, bodyParam.Schema.Type.Contains("object"))
+	assert.Empty(t, bodyParam.Schema.Ref.String())
+	assert.Contains(t, bodyParam.Schema.Required, "id")
+	idSchema, ok := bodyParam.Schema.Properties["id"]
+	require.True(t, ok)
+	assert.True(t, idSchema.Type.Contains("integer"))
+	assert.Equal(t, "ID", idSchema.Extensions["x-go-name"])
+	// Query aliases should behave like their underlying scalar type.
+	assert.Equal(t, "aliasQuery", queryParam.Name)
+	assert.Equal(t, "string", queryParam.Type)
+	assert.Empty(t, queryParam.Ref.String())
+}
+
 func TestParameterParser_Issue2007(t *testing.T) {
 	sctx := loadClassificationPkgsCtx(t)
 	operations := make(map[string]*spec.Operation)

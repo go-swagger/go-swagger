@@ -46,6 +46,7 @@ type SpecFile struct {
 	ExcludeDeps             bool           `description:"exclude all dependencies of project"                                                            long:"exclude-deps"                short:""`
 	SetXNullableForPointers bool           `description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'" long:"nullable-pointers"           short:"n"`
 	RefAliases              bool           `description:"transform aliased types into $ref rather than expanding their definition"                       long:"ref-aliases"                 short:"r"`
+	TransparentAliases      bool           `description:"treat type aliases as completely transparent, never creating definitions for them"              long:"transparent-aliases"         short:""`
 	DescWithRef             bool           `description:"allow descriptions to flow alongside $ref"                                                      long:"allow-desc-with-ref"         short:""`
 	Format                  string         `choice:"yaml"                                                                                                choice:"json"                      default:"json"  description:"the format for the spec document" long:"format"`
 }
@@ -79,6 +80,7 @@ func (s *SpecFile) Execute(args []string) error {
 	opts.ExcludeDeps = s.ExcludeDeps
 	opts.SetXNullableForPointers = s.SetXNullableForPointers
 	opts.RefAliases = s.RefAliases
+	opts.TransparentAliases = s.TransparentAliases
 	opts.DescWithRef = s.DescWithRef
 
 	swspec, err := codescan.Run(&opts)
