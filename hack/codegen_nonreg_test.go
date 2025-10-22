@@ -53,7 +53,8 @@ type skipT struct {
 	SkipValidation  bool `yaml:"skipValidation,omitempty"`
 
 	// specific include settings
-	IncludeCLI bool `yaml:"includeCLI,omitempty"`
+	IncludeCLI      bool `yaml:"includeCLI,omitempty"`
+	CustomFormatter bool `yaml:"customFormatter,omitempty"`
 }
 
 // fixtureT describe a spec and what _not_ to do with it
@@ -390,6 +391,7 @@ func TestMain(m *testing.M) {
 	flag.StringVar(&args.fixtureFile, "fixture-file", defaultFixtureFile, "fixture configuration file")
 	flag.StringVar(&args.runPattern, "run", "", "regexp to include fixture")
 	flag.StringVar(&args.excludePattern, "exclude", "", "regexp to exclude fixture")
+	flag.BoolVar(&args.skipExpand, "custom-formatter", false, "use faster custom formatter")
 	flag.Parse()
 	status := m.Run()
 	if status == 0 {

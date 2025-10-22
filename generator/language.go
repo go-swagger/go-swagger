@@ -25,6 +25,13 @@ var (
 	moduleRe *regexp.Regexp
 )
 
+const defaultIndent = 2
+
+// FormatterFunc is a function that processes go code to reformat it, e.g. [golang.org/x/tools/imports.Process]).
+//
+// Formatting options allow for injecting a custom formatter for the generated code. See [WithCustomFormatter].
+type FormatterFunc func(filename string, src []byte, opts ...FormatOption) ([]byte, error)
+
 func initLanguage() {
 	DefaultLanguageFunc = GoLangOpts
 
@@ -47,14 +54,19 @@ func WithFormatLocalPrefixes(prefixes ...string) FormatOption {
 	}
 }
 
+// WithFormatOnly tells the formatter to skip imports processing.
+func WithFormatOnly(enabled bool) FormatOption {
+	return func(o *formatOptions) {
+		o.FormatOnly = enabled
+	}
+}
+
 var defaultFormatOptions = formatOptions{
 	Options: imports.Options{
 		TabIndent: true,
-		TabWidth:  2,
+		TabWidth:  defaultIndent,
 		Fragment:  true,
 		Comments:  true,
-
-		FormatOnly: true,
 	},
 	localPrefixes: []string{"github.com/go-openapi"},
 }
@@ -75,6 +87,7 @@ type LanguageOpts struct {
 	BaseImportFunc       func(string) string            `json:"-"`
 	ImportsFunc          func(map[string]string) string `json:"-"`
 	ArrayInitializerFunc func(any) (string, error)      `json:"-"`
+	FormatOnly           bool
 	reservedWordsSet     map[string]struct{}
 	initialized          bool
 	formatFunc           func(string, []byte, ...FormatOption) ([]byte, error)
@@ -245,7 +258,12 @@ func GoLangOpts() *LanguageOpts {
 		"continue", "for", "import", "return", "var",
 	}
 
-	opts.formatFunc = formatGo
+	// default: this may be overridden by [GenOptsCommon]
+	opts.formatFunc = func(ffn string, content []byte, fmtOpts ...FormatOption) ([]byte, error) {
+		o := formatOptionsWithDefault(fmtOpts)
+		imports.LocalPrefix = strings.Join(o.localPrefixes, ",") // regroup these packages
+		return imports.Process(ffn, content, &o.Options)
+	}
 
 	opts.fileNameFunc = func(name string) string {
 		// whenever a generated file name ends with a suffix
