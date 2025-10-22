@@ -246,7 +246,7 @@ jobs:
           - fixture: codegen-fixtures # <- complex API specs to torture the code generator
             args: "-skip-models -skip-full-flatten"
           - fixture: canary-fixtures # <- popular real-life API specs
-            args: "-skip-models -skip-full-flatten -skip-expand"
+            args: "-skip-models -skip-full-flatten -skip-expand -custom-formatter"
     runs-on: ${{ matrix.os }}
     env:
       GOCOVERDIR: /tmp/cov

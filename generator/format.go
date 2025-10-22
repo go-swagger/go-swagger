@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -24,13 +25,13 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		return nil, err
 	}
 
-	removeBlankLines(fset, file) // so that goimoprts sorts all imports together
+	removeBlankLines(fset, file) // so that goimports sorts all imports together
 	fixImports(fset, file)
 	removeUnecessaryImportParens(file)
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
-		Tabwidth: 2,
+		Tabwidth: defaultIndent,
 	}
 	var buf bytes.Buffer
 	err = printConfig.Fprint(&buf, fset, file)
@@ -89,7 +90,7 @@ func parseGo(ffn string, content []byte) (*token.FileSet, *ast.File, error) {
 
 // fixImports
 // - removes unused imports
-// - adds missing imports for top-level names
+// - adds missing imports for top-level names.
 func fixImports(fset *token.FileSet, file *ast.File) {
 	seen := make(map[string]*ast.ImportSpec)
 	shouldRemove := []*ast.ImportSpec{}
@@ -156,7 +157,10 @@ func deleteImportSpec(fset *token.FileSet, file *ast.File, spec *ast.ImportSpec)
 		return
 	}
 	if i > 0 && gen.Rparen.IsValid() {
-		impspec := gen.Specs[i].(*ast.ImportSpec)
+		impspec, ok := gen.Specs[i].(*ast.ImportSpec)
+		if !ok {
+			panic(fmt.Errorf("expected specs to be *ast.ImportSpec, but got %T instead", gen.Specs[i]))
+		}
 		line := fset.PositionFor(impspec.Path.ValuePos, false).Line
 		fset.File(gen.Rparen).MergeLine(line)
 	}
