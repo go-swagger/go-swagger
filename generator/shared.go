@@ -73,8 +73,9 @@ func DefaultSectionOpts(gen *GenOpts) {
 	}
 
 	if len(sec.PostModels) == 0 && gen.IncludeCLi {
-		// For CLI, we need to postpone the generation of model-supporting source,
+		// For CLI with default formatter (goimports), we needed to postpone the generation of model-supporting source,
 		// in order for go imports to run properly in all cases.
+		// If we completely migrate own custom formatter, we don't need to postpone.
 		opts := []TemplateOpts{
 			{
 				Name:     "clidefinitionhook",
@@ -353,6 +354,7 @@ type GenOptsCommon struct {
 	AcceptDefinitionsOnly  bool
 	WantsRootedErrorPath   bool
 	ReturnErrors           bool
+	WithCustomFormatter    bool
 
 	templates *Repository // a shallow clone of the global template repository
 }
@@ -386,6 +388,13 @@ func (g *GenOpts) CheckOpts() error {
 	g.Spec, err = filepath.Abs(pth)
 	if err != nil {
 		return fmt.Errorf("could not locate spec: %s", g.Spec)
+	}
+
+	if g.WithCustomFormatter {
+		// whenever opting for the custom formatter, we leave the basic formatting to the standard
+		// imports.Process and focus on a custom handling of imports.
+		g.LanguageOpts.FormatOnly = true
+		g.LanguageOpts.formatFunc = formatGo
 	}
 
 	return nil
@@ -673,7 +682,12 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 
 	if !t.SkipFormat {
 		baseImport := g.LanguageOpts.baseImport(g.Target)
-		formatted, err = g.LanguageOpts.FormatContent(filepath.Join(dir, fname), content, WithFormatLocalPrefixes(baseImport))
+
+		formatted, err = g.LanguageOpts.FormatContent(
+			filepath.Join(dir, fname), content,
+			WithFormatOnly(g.LanguageOpts.FormatOnly),
+			WithFormatLocalPrefixes(baseImport),
+		)
 		if err != nil {
 			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
 			writeerr = os.WriteFile(filepath.Join(dir, fname), content, 0o644) // #nosec

@@ -18,8 +18,9 @@ import (
 
 // FlattenCmdOptions determines options to the flatten spec preprocessing.
 type FlattenCmdOptions struct {
-	WithExpand  bool     `description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)" group:"shared" long:"with-expand"`
-	WithFlatten []string `choice:"minimal"                                                                                  choice:"full"  choice:"expand"    choice:"verbose" choice:"noverbose" choice:"remove-unused" choice:"keep-names" default:"minimal" default:"verbose" description:"flattens all $ref's in spec prior to generation" group:"shared" long:"with-flatten"`
+	WithExpand          bool     `description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)" group:"shared" long:"with-expand"`
+	WithFlatten         []string `choice:"minimal"                                                                                  choice:"full"  choice:"expand"              choice:"verbose" choice:"noverbose" choice:"remove-unused" choice:"keep-names" default:"minimal" default:"verbose" description:"flattens all $ref's in spec prior to generation" group:"shared" long:"with-flatten"`
+	WithCustomFormatter bool     `description:"use faster custom contributed go import processing instead of the standard one"      group:"shared" long:"with-custom-formatter"`
 }
 
 // SetFlattenOptions builds flatten options from command line args.
@@ -144,6 +145,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.Copyright = string(s.CopyrightFile)
 	opts.StrictResponders = s.StrictResponders
 	opts.ReturnErrors = s.ReturnErrors
+	opts.WithCustomFormatter = s.WithCustomFormatter
 
 	swag.AddInitialisms(s.AdditionalInitialisms...)
 }
