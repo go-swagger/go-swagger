@@ -16,6 +16,7 @@ package generator
 
 import (
 	"errors"
+	"path"
 
 	"github.com/go-openapi/swag"
 )
@@ -77,6 +78,31 @@ func (c *clientGenerator) Generate() error {
 	app, err := c.makeCodegenApp()
 	if err != nil {
 		return err
+	}
+	app.DefaultImports["cli"] = path.Join(
+		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		"cli",
+	)
+	app.DefaultImports["client"] = path.Join(
+		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		"client",
+	)
+	app.DefaultImports["operations"] = path.Join(
+		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		"client",
+		"operations",
+	)
+
+	for i := range app.Models {
+		di := app.Models[i].DefaultImports
+		di["models"] = path.Join(
+			c.GenOpts.LanguageOpts.baseImport(c.Target),
+			"models",
+		)
+		di["client"] = path.Join(
+			c.GenOpts.LanguageOpts.baseImport(c.Target),
+			"client",
+		)
 	}
 
 	if c.DumpData {

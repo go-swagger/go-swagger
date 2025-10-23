@@ -53,6 +53,8 @@ var defaultFormatOptions = formatOptions{
 		TabWidth:  2,
 		Fragment:  true,
 		Comments:  true,
+
+		FormatOnly: true,
 	},
 	localPrefixes: []string{"github.com/go-openapi"},
 }
@@ -243,11 +245,7 @@ func GoLangOpts() *LanguageOpts {
 		"continue", "for", "import", "return", "var",
 	}
 
-	opts.formatFunc = func(ffn string, content []byte, opts ...FormatOption) ([]byte, error) {
-		o := formatOptionsWithDefault(opts)
-		imports.LocalPrefix = strings.Join(o.localPrefixes, ",") // regroup these packages
-		return imports.Process(ffn, content, &o.Options)
-	}
+	opts.formatFunc = formatGo
 
 	opts.fileNameFunc = func(name string) string {
 		// whenever a generated file name ends with a suffix
