@@ -244,7 +244,7 @@ jobs:
         os: [ubuntu-latest]
         include:
           - fixture: codegen-fixtures # <- complex API specs to torture the code generator
-            args: "-skip-models -skip-full-flatten"
+            args: "-skip-models -skip-full-flatten -custom-formatter"
           - fixture: canary-fixtures # <- popular real-life API specs
             args: "-skip-models -skip-full-flatten -skip-expand -custom-formatter"
     runs-on: ${{ matrix.os }}
@@ -264,6 +264,7 @@ jobs:
       - name: Install Tools
         # TODO: pin this dependency
         run: |
+          go mod download
           go get gotest.tools/icmd@latest
           mkdir /tmp/cov
 
@@ -278,9 +279,10 @@ jobs:
       - name: Run codegen tests
         # TODO: this test harness should output a json test report
         run: >
-          go test -v -timeout 30m -parallel 3
+          /usr/bin/time
+          go test -v -timeout 30m
           hack/codegen_nonreg_test.go
-          -args -fixture-file "${{ matrix.fixture }}.yaml" $${{ matrix.args }}
+          -args -fixture-file "${{ matrix.fixture }}.yaml" ${{ matrix.args }}
 
       - name: Construct coverage reports from integration tests
         run: >

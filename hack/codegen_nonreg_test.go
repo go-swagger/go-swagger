@@ -27,10 +27,11 @@ const (
 
 	// run options
 
-	FullFlatten    = "--with-flatten=full"
-	MinimalFlatten = "--with-flatten=minimal"
-	Expand         = "--with-flatten=expand"
-	SkipValidation = "--skip-validation"
+	FullFlatten     = "--with-flatten=full"
+	MinimalFlatten  = "--with-flatten=minimal"
+	Expand          = "--with-flatten=expand"
+	SkipValidation  = "--skip-validation"
+	CustomFormatter = "--with-custom-formatter"
 )
 
 // skipT indicates known failures to skip in the test suite
@@ -322,6 +323,10 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 		template.GenOpts = append(template.GenOpts, SkipValidation)
 	}
 
+	if globalOpts.CustomFormatter {
+		template.GenOpts = append(template.GenOpts, CustomFormatter)
+	}
+
 	if skip.KnownClientFailure {
 		warn(t, "known client generation failure: skipped for %s", spec)
 		template.GenClient = false
@@ -371,14 +376,15 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 
 var (
 	args struct {
-		skipModels     bool
-		skipClients    bool
-		skipServers    bool
-		skipFlatten    bool
-		skipExpand     bool
-		fixtureFile    string
-		runPattern     string
-		excludePattern string
+		skipModels      bool
+		skipClients     bool
+		skipServers     bool
+		skipFlatten     bool
+		skipExpand      bool
+		fixtureFile     string
+		runPattern      string
+		excludePattern  string
+		customFormatter bool
 	}
 )
 
@@ -391,7 +397,7 @@ func TestMain(m *testing.M) {
 	flag.StringVar(&args.fixtureFile, "fixture-file", defaultFixtureFile, "fixture configuration file")
 	flag.StringVar(&args.runPattern, "run", "", "regexp to include fixture")
 	flag.StringVar(&args.excludePattern, "exclude", "", "regexp to exclude fixture")
-	flag.BoolVar(&args.skipExpand, "custom-formatter", false, "use faster custom formatter")
+	flag.BoolVar(&args.customFormatter, "custom-formatter", false, "use faster custom formatter")
 	flag.Parse()
 	status := m.Run()
 	if status == 0 {
@@ -436,6 +442,7 @@ func TestCodegen(t *testing.T) {
 		SkipModel:       args.skipModels,
 		SkipClient:      args.skipClients,
 		SkipServer:      args.skipServers,
+		CustomFormatter: args.customFormatter,
 	}
 
 	specMap := buildFixtures(t, fixtures)
