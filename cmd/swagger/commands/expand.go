@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/yamlutils"
 )
 
 const readableMode fs.FileMode = 0o644 & fs.ModePerm
@@ -85,8 +85,8 @@ func marshalAsYAML(swspec *spec.Swagger) ([]byte, error) {
 		return nil, err
 	}
 
-	var data swag.JSONMapSlice
-	err = json.Unmarshal(b, &data)
+	var data yamlutils.YAMLMapSlice
+	err = data.UnmarshalJSON(b)
 	if err != nil {
 		return nil, err
 	}

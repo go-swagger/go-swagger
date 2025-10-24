@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,4 +45,17 @@ func TestCmd_Expand_NoOutputFile(t *testing.T) {
 func TestCmd_Expand_Error(t *testing.T) {
 	v := new(ExpandSpec)
 	testValidRefs(t, v)
+}
+
+func TestCmd_Expand_AsYAML(t *testing.T) {
+	specDoc := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
+	output := filepath.Join(t.TempDir(), "fixture-1536-flat-expand.yaml")
+	v := &ExpandSpec{
+		Format:  "yaml",
+		Compact: false,
+		Output:  flags.Filename(output),
+	}
+	testProduceOutput(t, v, specDoc, output)
+	b, _ := os.ReadFile(output)
+	assert.Contains(t, string(b), `swagger: "2.0"`)
 }
