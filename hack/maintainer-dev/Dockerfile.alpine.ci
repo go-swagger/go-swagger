@@ -1,14 +1,10 @@
-FROM golang:latest
+FROM golang:alpine@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34
 
 ENV GOCOVMODE atomic
 
-RUN apt-get update -qq &&\
-    apt-get install -yqq tar gzip procps git curl build-essential rpm openssh-client ncurses-term python3-pip &&\
-    curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz | tar -C /usr/bin --strip-components=1 -xzf - &&\
-    pip install --upgrade cloudsmith-cli &&\
-    apt-get clean autoclean &&\
-    apt-get autoremove --yes &&\
-    rm -rf /var/lib/{apt,dpkg,cache,log}
+RUN apk add -U --no-cache bash tar gzip xz procps git curl alpine-sdk libffi-dev rpm dpkg openssh-client ncurses py3-pip &&\
+  pip install --upgrade cloudsmith-cli &&\
+  curl -sSL https://download.docker.com/linux/static/stable/x86_64/docker-20.10.12.tgz | tar -C /usr/bin --strip-components=1 -xzf -
 
 RUN set -e -x \
   && mkdir -p /usr/share/coverage /usr/share/testresults /usr/share/dist \
@@ -19,7 +15,8 @@ RUN set -e -x \
   && go install github.com/aktau/github-release@latest \
   && go install github.com/mitchellh/gox@latest \
   && go install gotest.tools/gotestsum@latest \
-  && go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+  && go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest \
+  && go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 
 VOLUME /usr/share/coverage
 VOLUME /usr/share/testresults
