@@ -1,5 +1,10 @@
 name: Release
 
+permissions:
+  contents: read
+
+# TODO: sign release artifacts
+
 on:
   workflow_run:
     workflows:
@@ -9,71 +14,48 @@ on:
     tags:
       - 'v*'
     branches:
-      - master
       - 'prepare-release/*'
     paths-ignore:
       - 'docs/*'
       - 'hack/hugo/*'
       - .github/workflows/update-doc.yaml
 
-permissions:
-  contents: write
-
 jobs:
-  docker_dev:
-    name: Docker latest master (dev)
-    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+  on-success:
+    name: Ensure triggering workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - run: |
+          echo "The triggering workflow was successful"
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
-        with:
-          images: |
-            quay.io/goswagger/swagger
-            ghcr.io/go-swagger/go-swagger
-          tags: |
-            type=ref,event=branch
-            type=sha
+  on-failure:
+    name: Triggering workflow was unsuccessful
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "The triggering workflow failed. Stopping here"
+          exit 1
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
-
-      - name: Login to Quay Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASS }}
-
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
-
-      - name: Build and push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
-        with:
-          context: .
-          build-args: |
-            commit_hash=${{ github.sha }}
-            tag_name=dev
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
+  docker-release:
+    name: Docker with release tag
+    needs: [on-success]
+    uses: ./.github/workflows/build-docker.yaml
+    with:
+      push: true
+      tagged: true
+      latest: true
+      record_retention: 90
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASS: $${{ secrets.QUAY_PASS }}
 
   publish_release:
+    # TODO: replace by goreleaser
     name: Publish release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [on-success]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -126,6 +108,7 @@ jobs:
           popd || exit 1
 
       - name: Push RPM
+        if: startsWith(github.ref, 'refs/tags/v')
         id: push_rpm
         uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
         with:
@@ -139,6 +122,7 @@ jobs:
           file: "dist/build/swagger-*.x86_64.rpm"
 
       - name: Push Deb
+        if: startsWith(github.ref, 'refs/tags/v')
         id: push
         uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
         with:
@@ -152,63 +136,8 @@ jobs:
           file: "dist/build/swagger_*_amd64.deb"
 
       - name: Publish Binaries
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: fnkr/github-action-ghr@96b1448dc6162f370067e1de51e856e733a76b4f # v1.3
         env:
           GHR_PATH: dist/bin/
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  docker:
-    name: Tagged docker images
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            quay.io/goswagger/swagger
-            ghcr.io/go-swagger/go-swagger
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
-
-      - name: Login to Quay Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASS }}
-
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.CR_PAT }}
-
-      - name: Build and push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
-        with:
-          context: .
-          build-args: |
-            commit_hash=${{ github.sha }}
-            tag_name=${{ github.ref_name }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}

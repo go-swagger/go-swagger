@@ -1,0 +1,51 @@
+name: docker-dev
+
+permissions:
+  contents: read
+
+on:
+  workflow_run:
+    workflows:
+      - test
+    types:
+      - completed
+    branches:
+      - master
+      - 'prepare-release/*'
+    paths-ignore:
+      - 'docs/*'
+      - 'hack/hugo/*'
+      - .github/workflows/update-doc.yaml
+      - '**/*.md'
+
+jobs:
+  on-success:
+    name: Ensure triggering workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "The triggering workflow was successful"
+
+  on-failure:
+    name: Triggering workflow was unsuccessful
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "The triggering workflow failed. Stopping here"
+
+  docker-dev:
+    permissions:
+      contents: read
+      security-events: write
+    name: Docker latest master (dev)
+    needs: [on-success]
+    uses: ./.github/workflows/build-docker.yaml
+    with:
+      push: true
+      record_retention: 7
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASS: $${{ secrets.QUAY_PASS }}

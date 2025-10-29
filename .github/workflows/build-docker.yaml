@@ -1,0 +1,261 @@
+name: build-docker
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      push:
+        description: |
+          Whether the calling workflow wants to login and push to image registries
+          (implies secrets are accessible).
+        type: boolean
+        required: false
+        default: false
+      tagged:
+        description: |
+          Whether the calling workflow wants to use git tags for tagging images
+        type: boolean
+        required: false
+        default: false
+      tag_sha:
+        description: |
+          Whether the calling workflow wants to use commit sha for tagging images
+        type: boolean
+        required: false
+        default: false
+      latest:
+        description: |
+          Whether the calling workflow wants to tag the image as "latest"
+        type: boolean
+        required: false
+        default: false
+      pr:
+        description: |
+          Whether the calling workflow wants to comment on PR (requires pull_request: write)
+        type: boolean
+        required: false
+        default: false
+      record_retention:
+        description: |
+          How many days does the calling the workflow want to keep the build record artifact?
+        type: number
+        required: false
+        default: 1
+    secrets:
+      CR_PAT:
+        description: token to push to ghcr.io registry
+        required: false
+      QUAY_USERNAME:
+        description: user to push to quay.io registry
+        required: false
+      QUAY_PASS:
+        description: user to push to quay.io registry
+        required: false
+      # GITHUB_TOKEN is implied
+
+jobs:
+  build-docker:
+    name: Docker latest master (dev)
+    runs-on: ubuntu-latest
+    env:
+      SUPPORTED_PLATFORMS: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
+      DOCKER_CACHE: '../.docker-cache' # <- out of docker build context
+      DOCKER_DEST: '../.docker-dst/go-swagger-${{ github.sha}}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          # will be empty on push to master and default to head from master
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Lint Dockerfiles
+        # NOTE: linting does not account for diff in Dockerfiles. The full Dockerfile is linted and reported.
+        uses: jbergstroem/hadolint-gh-action@2b00b87f8a56783930b6a4749837d7c45c567ff2
+        with:
+          # Dockerfile is the main builder. Other dockerfiles are for dev usage and also subject to linting
+          dockerfile: 'Dockerfile*'
+          error_level: 0 # errors in Dockerfiles are showstoppers
+          annotate: true
+
+      - name: Layout working area
+        # The working area is used:
+        # * to cache layers from the first (pre-scan) build
+        # * to save an image fs locally for a complete scan (docker format doesn't support SBOM and attestations)
+        run: |
+          mkdir -p "${DOCKER_CACHE}"
+          mkdir -p "${DOCKER_DEST}"
+
+      - name: Meta usage
+        id: meta-usage
+        run: |
+          # Determine the docker tagging rules that will be used by docker/metadata-action.
+          #
+          # Example for tagged releases: v0.33, v0.331. We don't tag a v0
+          # Example for dev images: master, edge
+          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+          BUILD_TAG="dev"
+
+          if [[ "${{ inputs.tagged }}" == "true" ]] ; then
+            # tagging rules for git tag
+            echo "type=ref,event=tag" >> "$GITHUB_OUTPUT"
+            echo "type=semver,pattern={{version}}" >> "$GITHUB_OUTPUT"
+            echo "type=semver,pattern={{major}}.{{minor}}" >> "$GITHUB_OUTPUT"
+            # disabled if major zero
+            echo "type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}" >> "$GITHUB_OUTPUT"
+            BUILD_TAG="${{ github.ref_name }}"
+          else
+            # tagging rules for git branch
+            echo "type=ref,event=branch" >> "$GITHUB_OUTPUT"
+            echo "type=edge" >> "$GITHUB_OUTPUT"
+            echo "type=sha" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ "${{ inputs.tag_sha }}" == "true" ]] ; then
+            # tagging rules for commit sha
+            echo "type=sha" >> "$GITHUB_OUTPUT"
+          fi
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "build_tag=${BUILD_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker meta
+        id: meta
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
+        with:
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          flavor: |
+            latest=${{ inputs.latest }}
+          tags: ${{ steps.meta-usage.outputs.tags }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
+        with:
+          platforms: ${{ env.SUPPORTED_PLATFORMS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
+
+      - name: Build to scan
+        id: scan-build
+        env:
+          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          file: Dockerfile
+          cache-to: type=local,dest=${{ env.DOCKER_CACHE }}  # layers from this build may be reused by the next build
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ steps.meta-usage.outputs.build_tag }}
+          # use OCI format to keep all metadata and help the scanner. Disable tar because trivy doesn't catch OCI tarballs.
+          outputs: type=oci,platform-split=false,tar=false,dest=${{ env.DOCKER_DEST}}
+          push: false
+          tags: go-swagger/go-swagger:sha-${{ github.sha }}  # this is not pushed
+          sbom: true
+          provenance: mode=max
+          annotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Scan image for vulnerabilities
+        # scan the fully annotated image
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        with:
+          scan-type: image
+          scanners: vuln
+          input: ${{ env.DOCKER_DEST }}
+          format: sarif
+          hide-progress: false
+          output: /tmp/trivy-image-report.sarif
+          exit-code: 0
+
+      - name: Upload vulnerability report artifacts
+        # another job, with elevated permissions, will upload this to GHAS
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          path: /tmp/trivy-image-report.sarif
+          name: 'trivy-image-report'
+          retention-days: 1
+
+      - name: Produce trivy human-readable report
+        # halts on critical vulnerabilities
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        with:
+          scan-type: image
+          scanners: vuln
+          input: ${{ env.DOCKER_DEST }}
+          format: table
+          hide-progress: false
+          skip-setup-trivy: true
+          severity: CRITICAL
+          exit-code: 1
+
+      - name: Login to Quay Registry
+        if: ${{ inputs.push && !inputs.pr }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+        continue-on-error: true # TODO: for testing only
+
+      - name: Login to GitHub Container Registry
+        if: ${{ inputs.push && !inputs.pr }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+        continue-on-error: true # TODO: for testing only
+
+      - name: Build and push
+        if: ${{ inputs.push && !inputs.pr }}
+        env:
+          DOCKER_BUILD_SUMMARY: true
+          DOCKER_BUILD_RECORD_UPLOAD: true
+          DOCKER_BUILD_RECORD_RETENTION_DAYS: ${{ inputs.record_retention }}
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          file: Dockerfile
+          cache-from: type=local,src=${{ env.DOCKER_CACHE }}
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ steps.meta-usage.outputs.build_tag }}
+          platforms: ${{ env.SUPPORTED_PLATFORMS }}
+          push: '${{ inputs.push }}'
+          tags: ${{ steps.meta.outputs.tags }}
+          sbom: true
+          provenance: mode=max
+          annotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  upload-sarif:
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: ${{ !cancelled() && inputs.push && !inputs.pr }}
+    steps:
+      - name: Download vulnerability report artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          run-id: "${{ github.run_id }}"
+          pattern: 'trivy-image-report'
+          path: sarif/
+      - name: Upload trivy result to GHAS
+        if: ${{ inputs.push }}
+        uses: github/codeql-action/upload-sarif@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sarif_file: sarif/
+          category: trivy-docker
+        continue-on-error: true

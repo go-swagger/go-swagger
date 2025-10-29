@@ -1,5 +1,8 @@
 name: "Update documentation"
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
@@ -15,9 +18,6 @@ on:
     - docs/**
     - hack/doc-site/**
     - .github/workflows/update-doc.yaml
-
-permissions:
-  contents: read
 
 concurrency:
   group: "pages"
