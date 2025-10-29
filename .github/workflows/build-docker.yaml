@@ -177,7 +177,7 @@ jobs:
           exit-code: 0
 
       - name: Upload vulnerability report artifacts
-        # another job, with elevated permissions, will upload this to GHAS
+        # another workflow, with elevated permissions, will upload this to GHAS
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           path: /tmp/trivy-image-report.sarif
@@ -204,7 +204,6 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASS }}
-        continue-on-error: true # TODO: for testing only
 
       - name: Login to GitHub Container Registry
         if: ${{ inputs.push && !inputs.pr }}
@@ -213,7 +212,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
-        continue-on-error: true # TODO: for testing only
 
       - name: Build and push
         if: ${{ inputs.push && !inputs.pr }}
@@ -236,26 +234,3 @@ jobs:
           provenance: mode=max
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
-
-  upload-sarif:
-    permissions:
-      contents: read
-      security-events: write
-    runs-on: ubuntu-latest
-    needs: [build-docker]
-    if: ${{ !cancelled() && inputs.push && !inputs.pr }}
-    steps:
-      - name: Download vulnerability report artifacts
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        with:
-          run-id: "${{ github.run_id }}"
-          pattern: 'trivy-image-report'
-          path: sarif/
-      - name: Upload trivy result to GHAS
-        if: ${{ inputs.push }}
-        uses: github/codeql-action/upload-sarif@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          sarif_file: sarif/
-          category: trivy-docker
-        continue-on-error: true

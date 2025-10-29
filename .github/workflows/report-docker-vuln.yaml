@@ -1,0 +1,50 @@
+name: report-docker-vuln
+
+permissions:
+  contents: read
+
+on:
+  workflow_run:
+    workflows:
+      - build-docker
+    types:
+      - completed
+
+jobs:
+  on-success:
+    name: Ensure triggering workflow was successful
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "The triggering workflow was successful"
+
+  on-failure:
+    name: Triggering workflow was unsuccessful
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "The triggering workflow failed. Stopping here"
+          exit 1
+
+  upload-sarif:
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download vulnerability report artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          run-id: "${{ github.event.workflow_run.run_id }}"
+          pattern: 'trivy-image-report'
+          path: sarif/
+      - name: Upload trivy result to GHAS
+        if: ${{ inputs.push }}
+        uses: github/codeql-action/upload-sarif@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sarif_file: sarif/
+          category: trivy-docker
+        continue-on-error: true

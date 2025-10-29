@@ -32,7 +32,7 @@ jobs:
            steps.changed-source-files.outputs.should_run_codegen_any_changed == 'true'
          }}
       proceed_with_codegen: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
-      proceed_with_docker: ${{ steps.changed-source-files.outputs.should_build_docker_any_changed }}
+      proceed_with_docker: ${{ steps.changed-source-files.outputs.should_build_docker_any_changed == 'true' && github.event_name != 'push' }}
       proceed: >-
         ${{
           steps.changed-source-files.outputs.should_run_tests_any_changed == 'true' ||
@@ -134,7 +134,7 @@ jobs:
           spew "5. [ ] Run codegen integration tests (2x matrix) (skipped)"
         fi
 
-        if [[ "${{ steps.changed-source-files.outputs.should_build_docker_any_changed }}" == "true" ]] ; then
+        if [[ "${{ steps.changed-source-files.outputs.should_build_docker_any_changed == 'true' && github.event_name != 'push' }}" == "true" ]] ; then
           spew "6. [x] Run build docker test"
         else
           spew "6. [ ] Run build docker test (skipped)"
@@ -198,6 +198,7 @@ jobs:
   docker-test:
     name: test docker build
     needs: [code-changed]
+    # push event is omitted: it is redundant when pushing a merged PR, since another workflow is executing the build & push
     if: ${{ needs.code-changed.outputs.proceed_with_docker == 'true' }}
     uses: ./.github/workflows/build-docker.yaml
     with:
