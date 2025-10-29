@@ -49,4 +49,4 @@ jobs:
     secrets:
       CR_PAT: ${{ secrets.CR_PAT }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-      QUAY_PASS: $${{ secrets.QUAY_PASS }}
+      QUAY_PASS: ${{ secrets.QUAY_PASS }}
