@@ -200,11 +200,10 @@ jobs:
     needs: [code-changed]
     if: ${{ needs.code-changed.outputs.proceed_with_docker == 'true' }}
     runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/build-docker.yaml
-        with:
-          tag_sha: true
-          pr: true
+    uses: ./.github/workflows/build-docker.yaml
+    with:
+      tag_sha: true
+      pr: true
 
   build-test:
     # description: |
