@@ -199,7 +199,6 @@ jobs:
     name: test docker build
     needs: [code-changed]
     if: ${{ needs.code-changed.outputs.proceed_with_docker == 'true' }}
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/build-docker.yaml
     with:
       tag_sha: true
