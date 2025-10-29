@@ -44,14 +44,14 @@ jobs:
       - name: Get all tags (go-swagger repo)
         if: ${{ github.repository == 'go-swagger/go-swagger' }}
         run: |
-          git fetch --prune --unshallow --tags
+          git fetch origin --prune --update-shallow --tags 'refs/tags/*:refs/tags/*'
 
       - name: Get all tags (fork)
         if: ${{ github.repository != 'go-swagger/go-swagger' }}
         run: |
           git remote add upstream "https://github.com/go-swagger/go-swagger"
-          git fetch upstream --prune --unshallow --tags
-          git fetch --prune --unshallow --tags
+          git fetch upstream --prune --update-shallow --tags 'refs/tags/*:refs/tags/*'
+          git fetch origin --prune --update-shallow --tags 'refs/tags/*:refs/tags/*'
 
       -
         name: Initialize themes
@@ -67,7 +67,7 @@ jobs:
           # Set go-swagger specific parameters that are used in some parameterized documents
           # This is used to keep up-to-date installation instructions.
           cd hack/doc-site/hugo
-          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          LATEST_RELEASE=$(git tag --list --sort -version:refname -i 'v*'|head -1)
           VERSION_MESSAGE="Documentation set for latest master."
           ROOT=$(git rev-parse --show-toplevel)
           REQUIRED_GO_VERSION=$(grep "^go\s" "${ROOT}"/go.mod|cut -d" " -f2)
