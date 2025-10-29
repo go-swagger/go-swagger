@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
-FROM --platform=$BUILDPLATFORM golang@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34 AS build
+FROM golang:alpine@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34 AS build
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 ARG TARGETOS TARGETARCH
@@ -19,9 +19,9 @@ RUN mkdir -p bin &&\
   LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=${tag_name}" &&\
   CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags osusergo,netgo -o bin/swagger -ldflags "$LDFLAGS" -a ./cmd/swagger
 
-FROM --platform=$TARGETPLATFORM alpine@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412
+FROM alpine@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412
 
-LABEL maintainer="Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)"
+LABEL maintainer="Frédéric BIDON <fredbi@yahoo.com> (@fredbi)"
 
 RUN apk --no-cache add ca-certificates shared-mime-info mailcap
 
