@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_run:
     workflows:
-      - build-docker
+      - docker-dev
     types:
       - completed
 
