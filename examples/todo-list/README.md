@@ -16,3 +16,9 @@ To run the full server you need to build the binary and run it with sudo enabled
 go build ./cmd/todo-list-server
 sudo ./todo-list-server --tls-certificate mycert1.crt --tls-key mycert1.key
 ```
+
+## Creating the certificates
+
+You may use the script there: `../../hack/gen-self-signed-certs.sh` to generate the
+keys and certificates used by this demo, or use https://github.com/cloudflare/cfssl
+to make these more to your liking.

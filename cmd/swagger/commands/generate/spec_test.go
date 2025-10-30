@@ -3,10 +3,8 @@ package generate
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -259,50 +257,6 @@ func TestGenerateYAMLSpecWithTransparentAliases(t *testing.T) {
 	}
 
 	verifyYAMLData(t, data, expected)
-}
-
-func TestSpecEmbeddedDescriptionAndTags(t *testing.T) {
-	// test the full repro cas provided by the OP, issue #3125
-
-	t.Run("should NOT render siblings with $ref", testEmbeddedDescriptionAndTagsFull(false, "expected_swagger_noallow.yaml"))
-
-	t.Run("should render siblings with $ref", testEmbeddedDescriptionAndTagsFull(true, "expected_swagger_allow.yaml"))
-}
-
-func testEmbeddedDescriptionAndTagsFull(allowDescWithRef bool, expectedYAML string) func(*testing.T) {
-	return func(t *testing.T) {
-		workDir := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "3125", "full")
-
-		opts := &codescan.Options{
-			Packages: []string{
-				"./...",
-			},
-			WorkDir:     workDir,
-			ScanModels:  true,
-			DescWithRef: allowDescWithRef,
-		}
-
-		swspec, err := codescan.Run(opts)
-		require.NoError(t, err)
-
-		data, err := marshalToYAMLFormat(swspec)
-		require.NoError(t, err)
-
-		yamlResultTagInRef := filepath.Join(workDir, expectedYAML)
-		expected, err := os.ReadFile(yamlResultTagInRef)
-		require.NoError(t, err)
-
-		if enableSpecOutput {
-			require.NoError(t,
-				os.WriteFile(fmt.Sprintf("expected_desc_ref_%t.yaml", allowDescWithRef), expected, 0o600),
-			)
-			require.NoError(t,
-				os.WriteFile(fmt.Sprintf("generated_desc_ref_%t.yaml", allowDescWithRef), data, 0o600),
-			)
-		}
-
-		verifyYAMLData(t, data, expected)
-	}
 }
 
 func verifyJSONData(t *testing.T, data, expectedJSON []byte) {

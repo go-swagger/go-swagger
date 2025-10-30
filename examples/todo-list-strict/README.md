@@ -22,3 +22,9 @@ sudo ./todo-list-server --tls-certificate mycert1.crt --tls-key mycert1.key
 ```shellsession
 swagger generate server -A todo-list -f ./swagger.yml --strict-responders --regenerate-configureapi
 ```
+
+## Creating the certificates
+
+You may use the script there: `../../hack/gen-self-signed-certs.sh` to generate the
+keys and certificates used by this demo, or use https://github.com/cloudflare/cfssl
+to make these more to your liking.

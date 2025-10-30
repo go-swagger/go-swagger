@@ -69,3 +69,17 @@ func gomodtidy(pth string) func(*testing.T) {
 		})
 	}
 }
+
+func gomoddownload(pth string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Run("should download dependencies", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			vet := exec.CommandContext(ctx, "go", "mod", "tidy")
+			vet.Dir = pth
+			output, err := vet.CombinedOutput()
+			require.NoError(t, err, string(output))
+		})
+	}
+}
