@@ -166,7 +166,7 @@ jobs:
 
       - name: Scan image for vulnerabilities
         # scan the fully annotated image
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: image
           scanners: vuln
@@ -185,8 +185,11 @@ jobs:
           retention-days: 1
 
       - name: Produce trivy human-readable report
-        # halts on critical vulnerabilities
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        # halts on critical vulnerabilities (but deferred to a gate step at the end,
+        # so the SARIF report is still uploaded to GitHub)
+        id: trivy-critical
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: image
           scanners: vuln
@@ -198,7 +201,7 @@ jobs:
           exit-code: 1
 
       - name: Login to Quay Registry
-        if: ${{ inputs.push && !inputs.pr }}
+        if: ${{ inputs.push && !inputs.pr && steps.trivy-critical.outcome == 'success' }}
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
         with:
           registry: quay.io
@@ -206,7 +209,7 @@ jobs:
           password: ${{ secrets.QUAY_PASS }}
 
       - name: Login to GitHub Container Registry
-        if: ${{ inputs.push && !inputs.pr }}
+        if: ${{ inputs.push && !inputs.pr && steps.trivy-critical.outcome == 'success' }}
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
         with:
           registry: ghcr.io
@@ -214,7 +217,7 @@ jobs:
           password: ${{ secrets.CR_PAT }}
 
       - name: Build and push
-        if: ${{ inputs.push && !inputs.pr }}
+        if: ${{ inputs.push && !inputs.pr && steps.trivy-critical.outcome == 'success' }}
         env:
           DOCKER_BUILD_SUMMARY: true
           DOCKER_BUILD_RECORD_UPLOAD: true
@@ -234,3 +237,9 @@ jobs:
           provenance: mode=max
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Fail on critical vulnerabilities
+        if: ${{ steps.trivy-critical.outcome == 'failure' }}
+        run: |
+          echo "::error::Critical vulnerabilities detected by Trivy. Image was not pushed."
+          exit 1

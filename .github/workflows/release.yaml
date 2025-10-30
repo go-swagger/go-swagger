@@ -3,44 +3,29 @@ name: Release
 permissions:
   contents: read
 
-# TODO: sign release artifacts
-
 on:
-  workflow_run:
-    workflows:
-      - test
-    types:
-      - completed
+  push:
     tags:
       - 'v*'
-    branches:
-      - 'prepare-release/*'
-    paths-ignore:
-      - 'docs/*'
-      - 'hack/hugo/*'
-      - .github/workflows/update-doc.yaml
+
+env:
+  CLOUDSMITH_REPO: go-swagger/go-swagger
 
 jobs:
-  on-success:
-    name: Ensure triggering workflow was successful
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow was successful"
-
-  on-failure:
-    name: Triggering workflow was unsuccessful
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow failed. Stopping here"
-          exit 1
+  update-doc:
+    name: Build documentation site
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/update-doc.yaml
 
   docker-release:
     name: Docker with release tag
-    needs: [on-success]
+    needs: [update-doc]
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/build-docker.yaml
     with:
       push: true
@@ -52,92 +37,125 @@ jobs:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASS: ${{ secrets.QUAY_PASS }}
 
-  publish_release:
-    # TODO: replace by goreleaser
+  publish-release:
     name: Publish release
-    needs: [on-success]
+    needs: [docker-release]
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+      -
+        name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      -
+        name: Setup Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: "stable"
           check-latest: true
           cache: true
-
-      - name: Install Tools
-        run: |
-          go install github.com/github-release/github-release@latest
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
-
-      - name: Build release
-        run: |
-          set -x
-          rm -rf dist
-          mkdir -p dist/bin
-          mkdir -p dist/build
-
-          build_binary() {
-            LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
-            LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
-            out="swagger_$1_$2"
-            if [[ $1 == "windows" ]]; then
-              out="${out}.exe"
-            fi
-            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -o "./dist/bin/$out" ./cmd/swagger
-          }
-
-          go mod download
-
-          build_binary linux amd64
-          build_binary linux arm64
-          build_binary linux arm
-          build_binary linux ppc64le
-          build_binary linux s390x
-          build_binary darwin amd64
-          build_binary darwin arm64
-          build_binary windows amd64
-          build_binary windows arm64
-
-          nfpm p -p deb -t dist/build
-          nfpm p -p rpm -t dist/build
-
-          pushd dist/bin || exit 1
-          sha1sum * > sha1sum.txt
-          sha256sum * > sha256sum.txt
-          popd || exit 1
-
-      - name: Push RPM
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: push_rpm
-        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
+      -
+        name: Install UPX
+        uses: crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368 # v4.0.0
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "rpm"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "fedora"
-          release: "any-version"
-          file: "dist/build/swagger-*.x86_64.rpm"
-
-      - name: Push Deb
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: push
-        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
+          install-only: true
+      -
+        name: UPX version
+        run: upx --version
+      -
+        name: Install git-cliff
+        uses: taiki-e/install-action@5ab5d1729c22acd8f798b267eadcfe5e5be6f5c2 # v2.68.27
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "deb"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "debian"
-          release: "any-version"
-          file: "dist/build/swagger_*_amd64.deb"
-
-      - name: Publish Binaries
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: fnkr/github-action-ghr@96b1448dc6162f370067e1de51e856e733a76b4f # v1.3
+          tool: git-cliff
+      -
+        name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          fingerprint: E9627BC5E152A7EA657ADB7732475DCD662E8EED
+      -
+        name: Verify installed GPG keys
+        run: |
+           gpg --list-keys --with-subkey-fingerprints --keyid-format long || true
+      -
+        name: Write GPG key file for nfpm
+        # nfpm uses Go's openpgp library which cannot handle DSA keys or subkey-only exports.
+        # A standalone RSA signing key (GPG_NFPM_KEY) is used specifically for deb/rpm signing.
+        id: gpg-key-file
         env:
-          GHR_PATH: dist/bin/
+          GPG_NFPM_KEY: ${{ secrets.GPG_NFPM_KEY }}
+        run: |
+          GPG_NFPM_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.asc)"
+          printenv GPG_NFPM_KEY > "${GPG_NFPM_KEY_FILE}"
+          echo "path=${GPG_NFPM_KEY_FILE}" >> "${GITHUB_OUTPUT}"
+
+          # Verify the content of the key file
+          gpg --list-packets "${GPG_NFPM_KEY_FILE}" 2>&1 || true
+          wc -l "${GPG_NFPM_KEY_FILE}"
+      -
+        name: Extract tag message
+        id: tag-message
+        run: |
+          TAG_MESSAGE="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          {
+            echo 'message<<TAGEOF'
+            echo "${TAG_MESSAGE}"
+            echo 'TAGEOF'
+          } >> "${GITHUB_OUTPUT}"
+      -
+        name: Generate release notes
+        run: |
+          git cliff \
+            --config .cliff.toml \
+            --latest \
+            --with-tag-message "${{ steps.tag-message.outputs.message }}" \
+            --output /tmp/release-notes.md
+
+          # log the release notes for inspection & debug
+          cat /tmp/release-notes.md
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build release
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7.0.0
+        with:
+          version: "~> v2"
+          args: release --clean --release-notes /tmp/release-notes.md --fail-fast
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_NFPM_KEY_FILE: ${{ steps.gpg-key-file.outputs.path }}
+          GPG_FINGERPRINT: ${{ steps.import-gpg.outputs.fingerprint }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+      -
+        name: Install CloudSmith CLI
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        uses: cloudsmith-io/cloudsmith-cli-action@9c315294dcaf0bc33ede92e45ee3b63c32789684 # v1.0.8
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+      -
+        name: Push RPM package to CloudSmith
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+        run: >
+          cloudsmith push rpm --verbose
+            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+            dist/swagger-*.x86_64*.rpm
+      -
+        name: Push Deb package to CloudSmith
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+        run: >
+          cloudsmith push deb --verbose
+            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+            dist/swagger-*.x86_64*.deb
