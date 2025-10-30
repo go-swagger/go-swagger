@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -39,8 +40,9 @@ func debugOptions() {
 func debugLog(frmt string, args ...any) {
 	if Debug {
 		_, file, pos, _ := runtime.Caller(1)
+		safeArgs := sanitizeDebugLogArgs(args...)
 		generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
-			fmt.Sprintf(frmt, args...))
+			fmt.Sprintf(frmt, safeArgs...))
 	}
 }
 
@@ -62,5 +64,60 @@ func debugLogAsJSON(frmt string, args ...any) {
 		}
 
 		generatorLogger.Printf(dfrmt, dargs...)
+	}
+}
+
+// sanitizeDebugLogArgs traverses arguments to debugLog and redacts fields
+// that may contain sensitive information, such as API keys or credentials.
+func sanitizeDebugLogArgs(args ...any) []any {
+	safeArgs := make([]any, len(args))
+	for i, arg := range args {
+		safeArgs[i] = sanitizeValue(arg)
+	}
+	return safeArgs
+}
+
+// sanitizeValue redacts sensitive information from known data structures.
+// It can be expanded for more types over time as needed.
+func sanitizeValue(val any) any {
+	switch v := val.(type) {
+	case map[string]any:
+		// Recursively sanitize map values
+		res := make(map[string]any, len(v))
+		for k, subv := range v {
+			if k == "IsAPIKeyAuth" || k == "TokenURL" { // false positive: this is a bool indicator, not a sensitive value
+				continue
+			}
+			lower := strings.ToLower(k)
+			if lower == "apikey" || lower == "token" ||
+				lower == "secret" ||
+				strings.Contains(lower, "password") ||
+				strings.Contains(lower, "apikey") ||
+				strings.Contains(lower, "token") {
+				res[k] = "***REDACTED***"
+
+				continue
+			}
+
+			res[k] = sanitizeValue(subv)
+		}
+		return res
+	case []any:
+		res := make([]any, len(v))
+		for i, subv := range v {
+			res[i] = sanitizeValue(subv)
+		}
+		return res
+	case string:
+		// heuristic: redact if looks like a key/secret
+		lower := strings.ToLower(v)
+		if strings.Contains(lower, "apikey") || strings.Contains(lower, "token") || strings.Contains(lower, "secret") ||
+			strings.Contains(lower, "password") {
+			return "***REDACTED***"
+		}
+		return v
+	default:
+		// Optionally, process struct types for known sensitive fields
+		return v
 	}
 }
