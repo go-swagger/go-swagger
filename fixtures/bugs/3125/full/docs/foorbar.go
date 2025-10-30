@@ -1,3 +1,5 @@
+//go:build testintegration
+
 package docs
 
 import "swagger/api"

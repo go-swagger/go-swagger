@@ -1,4 +1,13 @@
 #! /bin/bash
+
+# regen all certs
+../../../hack/gen-self-signed-certs.sh
+
+(head -5 mycert1.crt  && \
+ echo "****************************************************************" &&
+ tail +6 mycert1.crt
+) > mycert1.corrupted.crt
+
 fixturePath="./gen-fixture-1558-flatten/cmd/nrcodegen-server"
 cmd="${fixturePath}/nrcodegen-server"
 # Generates a fresh server

@@ -1,16 +1,49 @@
-#!/bin/sh
+#!/bin/bash
 
-# generate CA
-openssl genrsa -out myCA.key 4096
-openssl req -x509 -new -key myCA.key -out myCA.crt -days 730 -subj /CN="Go Swagger"
+go install github.com/cloudflare/cfssl/cmd/...@latest
 
-# generate server cert and key
-openssl genrsa -out mycert1.key 4096
-openssl req -new -out mycert1.req -key mycert1.key -subj /CN="goswagger.local"
-openssl x509 -req -in mycert1.req -out mycert1.crt -CAkey myCA.key -CA myCA.crt -days 365 -CAcreateserial -CAserial serial
+csr=$(cat <<EOF
+{
+    "hosts": [
+        "goswagger.local",
+        "www.example.com",
+        "https://www.example.com",
+        "localhost",
+        "127.0.0.1"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C":  "US",
+            "L":  "San Francisco",
+            "O":  "go-swagger",
+            "OU": "go-swagger",
+            "ST": "California"
+        }
+    ]
+}
+EOF
+)
+TEMP=/tmp/certs
+mkdir "${TEMP}"
+CSR="${TEMP}/csr.json"
+echo "${csr}" > "${CSR}"
+cat "${CSR}"
+pushd  "${TEMP}"
+cfssl genkey -initca "${CSR}" | cfssljson -bare ca
+cfssl gencert -ca "${TEMP}"/ca.pem -ca-key "${TEMP}"/ca-key.pem "${CSR}" |cfssljson -bare server
+cfssl gencert -ca "${TEMP}"/ca.pem -ca-key "${TEMP}"/ca-key.pem "${CSR}" |cfssljson -bare client
+popd
 
-# generate client cert, key and bundle
-openssl genrsa -out myclient.key 4096
-openssl req -new -key myclient.key -out myclient.csr
-openssl x509 -req -days 730 -in myclient.csr -out myclient.crt -CAkey myCA.key -CA myCA.crt -days 365 -CAcreateserial -CAserial serial
-openssl pkcs12 -export -clcerts -in myclient.crt -inkey myclient.key -out myclient.p12
+# restore keys and certs with their expected name
+cp "${TEMP}"/ca-key.pem myCA.key
+cp "${TEMP}"/ca.pem myCA.crt
+cp "${TEMP}"/server-key.pem mycert1.key
+cp "${TEMP}"/server.pem mycert1.crt
+cp "${TEMP}"/client-key.pem myclient.key
+cp "${TEMP}"/client.pem myclient.crt
+
+rm -rf "${TEMP}"

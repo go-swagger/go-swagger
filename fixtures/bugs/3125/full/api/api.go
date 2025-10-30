@@ -1,3 +1,5 @@
+//go:build testintegration
+
 package api
 
 import (

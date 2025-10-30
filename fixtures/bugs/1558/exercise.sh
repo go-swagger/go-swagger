@@ -1,4 +1,12 @@
 #! /bin/bash
+# regen all certs
+../../../hack/gen-self-signed-certs.sh
+
+(head -5 mycert1.crt  && \
+ echo "****************************************************************" &&
+ tail +6 mycert1.crt
+) > mycert1.corrupted.crt
+
 fixturePath="./gen-fixture-1558-flatten/cmd/nrcodegen-server"
 cmd="${fixturePath}/nrcodegen-server"
 captured="./srv.log"
@@ -17,7 +25,7 @@ function runWithOpts() {
     pid=$!
     sleep 1
     ps -efo pid|grep -q ${pid}
-    isInactive=$? 
+    isInactive=$?
     if [[ ${isInactive} -eq 0 ]] ; then
         ./killme.sh ${pid}
     fi
@@ -51,7 +59,7 @@ function runWithOpts() {
             echo "Terminated gracefully. OK"
         fi
     fi
-    if [[ ${wrong} -eq 1 ]] ; then 
+    if [[ ${wrong} -eq 1 ]] ; then
         echo "Unexpected startup behavior"
     fi
     echo "Here is the captured output:"
