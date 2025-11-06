@@ -348,46 +348,17 @@ type yamlSpecScanner struct {
 	skipHeader     bool
 }
 
-func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Regexp) []string { //nolint:unparam
+func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
 	// bail early when there is nothing to parse
 	if len(lines) == 0 {
 		return lines
 	}
+
 	seenLine := -1
-	var (
-		lastContent int
-		startBlock  bool
-		yamlLines   []string
-	)
+	var lastContent int
+
 	uncommented := make([]string, 0, len(lines))
-
 	for i, v := range lines {
-		if yamlBlock != nil && yamlBlock.MatchString(v) && !startBlock {
-			startBlock = true
-			if seenLine < 0 {
-				seenLine = i
-			}
-
-			continue
-		}
-
-		if startBlock {
-			if yamlBlock != nil && yamlBlock.MatchString(v) {
-				startBlock = false
-				uncommented = append(uncommented, removeIndent(yamlLines)...)
-				continue
-			}
-			yamlLines = append(yamlLines, v)
-			if v != "" {
-				if seenLine < 0 {
-					seenLine = i
-				}
-				lastContent = i
-			}
-
-			continue
-		}
-
 		str := ur.ReplaceAllString(v, "")
 		uncommented = append(uncommented, str)
 		if str != "" {
@@ -402,6 +373,7 @@ func cleanupScannerLines(lines []string, ur *regexp.Regexp, yamlBlock *regexp.Re
 	if seenLine == -1 {
 		return nil
 	}
+
 	return uncommented[seenLine : lastContent+1]
 }
 
@@ -410,7 +382,7 @@ func (sp *yamlSpecScanner) collectTitleDescription() {
 		return
 	}
 	if sp.setTitle == nil {
-		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders, nil)
+		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders)
 		return
 	}
 
@@ -468,7 +440,7 @@ COMMENTS:
 }
 
 func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
-	specYaml := cleanupScannerLines(sp.yamlSpec, rxUncommentYAML, nil)
+	specYaml := cleanupScannerLines(sp.yamlSpec, rxUncommentYAML)
 	if len(specYaml) == 0 {
 		return errors.New("no spec available to unmarshal")
 	}
@@ -513,38 +485,57 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	return nil
 }
 
-// removes indent base on the first line.
+// removes indent based on the first line.
 func removeIndent(spec []string) []string {
-	loc := rxIndent.FindStringIndex(spec[0])
-	if loc[1] == 0 {
+	if len(spec) == 0 {
 		return spec
 	}
-	for i := range spec {
-		if len(spec[i]) >= loc[1] {
-			spec[i] = spec[i][loc[1]-1:]
-			start := rxNotIndent.FindStringIndex(spec[i])
-			if start[1] == 0 {
-				continue
-			}
 
-			spec[i] = strings.Replace(spec[i], "\t", "  ", start[1])
-		}
+	loc := rxIndent.FindStringIndex(spec[0])
+	if len(loc) < 2 || loc[1] <= 1 {
+		return spec
 	}
-	return spec
+
+	s := make([]string, len(spec))
+	copy(s, spec)
+
+	for i := range s {
+		if len(s[i]) < loc[1] {
+			continue
+		}
+
+		s[i] = spec[i][loc[1]-1:]
+		start := rxNotIndent.FindStringIndex(s[i])
+		if len(start) < 2 || start[1] == 0 {
+			continue
+		}
+
+		s[i] = strings.Replace(s[i], "\t", "  ", start[1])
+	}
+
+	return s
 }
 
 // removes indent base on the first line.
+//
+// The difference with removeIndent is that lines shorter than the indentation are elided.
 func removeYamlIndent(spec []string) []string {
-	loc := rxIndent.FindStringIndex(spec[0])
-	if loc[1] == 0 {
-		return nil
+	if len(spec) == 0 {
+		return spec
 	}
-	var s []string
+
+	loc := rxIndent.FindStringIndex(spec[0])
+	if len(loc) < 2 || loc[1] <= 1 {
+		return spec
+	}
+
+	s := make([]string, 0, len(spec))
 	for i := range spec {
 		if len(spec[i]) >= loc[1] {
 			s = append(s, spec[i][loc[1]-1:])
 		}
 	}
+
 	return s
 }
 
@@ -570,7 +561,7 @@ func (st *sectionedParser) collectTitleDescription() {
 		return
 	}
 	if st.setTitle == nil {
-		st.header = cleanupScannerLines(st.header, rxUncommentHeaders, nil)
+		st.header = cleanupScannerLines(st.header, rxUncommentHeaders)
 		return
 	}
 
@@ -658,7 +649,7 @@ COMMENTS:
 	}
 	for _, mt := range st.matched {
 		if !mt.SkipCleanUp {
-			mt.Lines = cleanupScannerLines(mt.Lines, rxUncommentHeaders, nil)
+			mt.Lines = cleanupScannerLines(mt.Lines, rxUncommentHeaders)
 		}
 		if err := mt.Parse(mt.Lines); err != nil {
 			return err
@@ -1680,7 +1671,7 @@ func (ss *setOpExtensions) Parse(lines []string) error {
 		return nil
 	}
 
-	cleanLines := cleanupScannerLines(lines, rxUncommentHeaders, nil)
+	cleanLines := cleanupScannerLines(lines, rxUncommentHeaders)
 
 	exts := new(spec.VendorExtensible)
 	extList := make([]extensionObject, 0)
