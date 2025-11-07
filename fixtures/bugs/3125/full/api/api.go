@@ -3,9 +3,10 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
-
-	"github.com/labstack/echo/v4"
+	"strconv"
 )
 
 type User struct {
@@ -31,13 +32,34 @@ type FooBarResponse struct {
 }
 
 // FooBarHandler handles incoming foobar requests
-func FooBarHandler(ctx echo.Context) error {
-	req := FooBarRequest{}
-	if err := ctx.Bind(&req); err != nil {
-		return echo.ErrBadRequest
+func FooBarHandler(w http.ResponseWriter, req *http.Request) {
+	if err := req.ParseForm(); err != nil {
+		http.Error(w, fmt.Sprintf("%s: %v", http.StatusText(http.StatusBadRequest), err), http.StatusBadRequest)
+		return
 	}
-	resp := doSthWithRequest(req)
-	return ctx.JSON(http.StatusOK, resp)
+	raw := req.FormValue("age")
+	age, err := strconv.Atoi(raw)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("%s: %v", http.StatusText(http.StatusBadRequest), err), http.StatusBadRequest)
+		return
+	}
+
+	r := FooBarRequest{
+		Foo: req.FormValue("foo"),
+		User: User{
+			Name: req.FormValue("name"),
+			Age:  age,
+		},
+	}
+
+	resp := doSthWithRequest(r)
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(resp)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("%s: %v", http.StatusText(http.StatusInternalServerError), err), http.StatusInternalServerError)
+		return
+	}
 }
 
 func doSthWithRequest(req FooBarRequest) FooBarResponse {
