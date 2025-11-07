@@ -120,6 +120,12 @@ func MakeRootCmd() (*cobra.Command, error) {
 	// add cobra completion
 	rootCmd.AddCommand(makeGenCompletionCmd())
 
+	// add cobra markdown
+	markdownDocCmd := makeMarkdownDocumentationCmd()
+	rootCmd.AddCommand(markdownDocCmd)
+	markdownDocCmd.Flags().String("dir", "./markdown/", "The destination directory to save docs in")
+	_ = viper.BindPFlag("markdown_dir", markdownDocCmd.Flags().Lookup("dir"))
+
 	return rootCmd, nil
 }
 
