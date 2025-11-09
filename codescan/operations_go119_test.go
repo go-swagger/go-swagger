@@ -41,9 +41,9 @@ func TestIndentedYAMLBlock(t *testing.T) {
 
 	assert.Contains(t, op.Extensions, "x-codeSamples")
 
-	samples := op.Extensions["x-codeSamples"].([]interface{})
+	samples := op.Extensions["x-codeSamples"].([]any)
 	assert.Len(t, samples, 1)
-	sample := samples[0].(map[string]interface{})
+	sample := samples[0].(map[string]any)
 	assert.Contains(t, sample, "lang")
 	assert.Equal(t, "curl", sample["lang"])
 
@@ -63,9 +63,9 @@ curl -u "${LOGIN}:${PASSWORD}" -d '{"key2": "value2"}' -X POST   "https://{host}
 
 	assert.Contains(t, op2.Extensions, "x-codeSamples")
 
-	samples2 := op2.Extensions["x-codeSamples"].([]interface{})
+	samples2 := op2.Extensions["x-codeSamples"].([]any)
 	assert.Len(t, samples2, 1)
-	sample2 := samples2[0].(map[string]interface{})
+	sample2 := samples2[0].(map[string]any)
 	assert.Contains(t, sample2, "lang")
 	assert.Equal(t, "curl", sample2["lang"])
 

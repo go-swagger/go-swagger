@@ -81,11 +81,11 @@ func (ht responseTypable) CollectionOf(items *spec.Items, format string) {
 	ht.header.CollectionOf(items, format)
 }
 
-func (ht responseTypable) AddExtension(key string, value interface{}) {
+func (ht responseTypable) AddExtension(key string, value any) {
 	ht.response.AddExtension(key, value)
 }
 
-func (ht responseTypable) WithEnum(values ...interface{}) {
+func (ht responseTypable) WithEnum(values ...any) {
 	ht.header.WithEnum(values) //nolint:asasalint
 }
 
@@ -143,9 +143,9 @@ func (sv headerValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
 
-func (sv headerValidations) SetDefault(val interface{}) { sv.current.Default = val }
+func (sv headerValidations) SetDefault(val any) { sv.current.Default = val }
 
-func (sv headerValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv headerValidations) SetExample(val any) { sv.current.Example = val }
 
 type responseBuilder struct {
 	ctx       *scanCtx
@@ -488,7 +488,7 @@ func (r *responseBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, r
 		// scan for param location first, this changes some behavior down the line
 		if afld.Doc != nil {
 			for _, cmt := range afld.Doc.List {
-				for _, line := range strings.Split(cmt.Text, "\n") {
+				for line := range strings.SplitSeq(cmt.Text, "\n") {
 					matches := rxIn.FindStringSubmatch(line)
 					if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
 						in = strings.TrimSpace(matches[1])

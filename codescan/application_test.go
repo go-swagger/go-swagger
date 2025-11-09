@@ -189,7 +189,7 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	prop, ok = mod.Properties["status"]
 	assert.True(t, ok)
 	assert.Equal(t, "The current status of the pet in the store.\navailable STATUS_AVAILABLE\npending STATUS_PENDING\nsold STATUS_SOLD", prop.Description)
-	assert.Equal(t, []interface{}{"available", "pending", "sold"}, prop.Enum)
+	assert.Equal(t, []any{"available", "pending", "sold"}, prop.Enum)
 
 	assertProperty(t, &mod, "string", "birthday", "date", "Birthday")
 	prop, ok = mod.Properties["birthday"]

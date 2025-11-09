@@ -5,6 +5,7 @@ package codescan
 
 import (
 	"errors"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -224,14 +225,14 @@ func convertEnum(schema *spec.Schema, enumValues []string) {
 		return
 	}
 
-	var finalEnum []interface{}
+	var finalEnum []any
 	for _, v := range enumValues {
 		finalEnum = append(finalEnum, convert(schema.Type[0], strings.TrimSpace(v)))
 	}
 	schema.Enum = finalEnum
 }
 
-func convert(typeStr, valueStr string) interface{} {
+func convert(typeStr, valueStr string) any {
 	switch typeStr {
 	case TypeInteger:
 		fallthrough
@@ -257,10 +258,5 @@ func getType(schema *spec.Schema) string {
 }
 
 func contains(arr []string, obj string) bool {
-	for _, v := range arr {
-		if v == obj {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(arr, obj)
 }

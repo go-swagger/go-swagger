@@ -54,7 +54,7 @@ func (pt paramTypable) Schema() *spec.Schema {
 	return pt.param.Schema
 }
 
-func (pt paramTypable) AddExtension(key string, value interface{}) {
+func (pt paramTypable) AddExtension(key string, value any) {
 	if pt.param.In == "body" {
 		pt.Schema().AddExtension(key, value)
 	} else {
@@ -62,7 +62,7 @@ func (pt paramTypable) AddExtension(key string, value interface{}) {
 	}
 }
 
-func (pt paramTypable) WithEnum(values ...interface{}) {
+func (pt paramTypable) WithEnum(values ...any) {
 	pt.param.WithEnum(values...)
 }
 
@@ -103,11 +103,11 @@ func (pt itemsTypable) Items() swaggerTypable {
 	return itemsTypable{pt.items.Items, pt.level + 1, pt.in}
 }
 
-func (pt itemsTypable) AddExtension(key string, value interface{}) {
+func (pt itemsTypable) AddExtension(key string, value any) {
 	pt.items.AddExtension(key, value)
 }
 
-func (pt itemsTypable) WithEnum(values ...interface{}) {
+func (pt itemsTypable) WithEnum(values ...any) {
 	pt.items.WithEnum(values...)
 }
 
@@ -139,8 +139,8 @@ func (sv paramValidations) SetCollectionFormat(val string) { sv.current.Collecti
 func (sv paramValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
-func (sv paramValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv paramValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv paramValidations) SetDefault(val any) { sv.current.Default = val }
+func (sv paramValidations) SetExample(val any) { sv.current.Example = val }
 
 type itemsValidations struct {
 	current *spec.Items
@@ -166,8 +166,8 @@ func (sv itemsValidations) SetCollectionFormat(val string) { sv.current.Collecti
 func (sv itemsValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
 }
-func (sv itemsValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv itemsValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv itemsValidations) SetDefault(val any) { sv.current.Default = val }
+func (sv itemsValidations) SetExample(val any) { sv.current.Example = val }
 
 type parameterBuilder struct {
 	ctx       *scanCtx
@@ -539,7 +539,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		// scan for param location first, this changes some behavior down the line
 		if afld.Doc != nil {
 			for _, cmt := range afld.Doc.List {
-				for _, line := range strings.Split(cmt.Text, "\n") {
+				for line := range strings.SplitSeq(cmt.Text, "\n") {
 					matches := rxIn.FindStringSubmatch(line)
 					if len(matches) > 0 && len(strings.TrimSpace(matches[1])) > 0 {
 						in = strings.TrimSpace(matches[1])

@@ -32,7 +32,7 @@ func Test_getEnumBasicLitValue(t *testing.T) {
 	verifyGetEnumBasicLitValue(t, ast.BasicLit{Kind: token.STRING, Value: "1.1"}, "1.1")
 }
 
-func verifyGetEnumBasicLitValue(t *testing.T, basicLit ast.BasicLit, expected interface{}) {
+func verifyGetEnumBasicLitValue(t *testing.T, basicLit ast.BasicLit, expected any) {
 	actual := getEnumBasicLitValue(&basicLit)
 
 	assert.Equal(t, expected, actual)

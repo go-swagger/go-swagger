@@ -166,7 +166,7 @@ func (d *entityDecl) Names() (name, goName string) {
 
 DECLS:
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxModelOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasModelAnnotation = true
@@ -190,7 +190,7 @@ func (d *entityDecl) ResponseNames() (name, goName string) {
 
 DECLS:
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxResponseOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasResponseAnnotation = true
@@ -210,13 +210,13 @@ func (d *entityDecl) OperationIDs() (result []string) {
 	}
 
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxParametersOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasParameterAnnotation = true
 			}
 			if len(matches) > 1 && len(matches[1]) > 0 {
-				for _, pt := range strings.Split(matches[1], " ") {
+				for pt := range strings.SplitSeq(matches[1], " ") {
 					tr := strings.TrimSpace(pt)
 					if len(tr) > 0 {
 						result = append(result, tr)
@@ -236,7 +236,7 @@ func (d *entityDecl) HasModelAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxModelOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasModelAnnotation = true
@@ -255,7 +255,7 @@ func (d *entityDecl) HasResponseAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxResponseOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasResponseAnnotation = true
@@ -274,7 +274,7 @@ func (d *entityDecl) HasParameterAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxParametersOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasParameterAnnotation = true
@@ -414,7 +414,7 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, descList []string, _ bool) {
+func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []any, descList []string, _ bool) {
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			gd, ok := d.(*ast.GenDecl)
@@ -779,7 +779,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 	return n, nil
 }
 
-func debugLog(format string, args ...interface{}) {
+func debugLog(format string, args ...any) {
 	if Debug {
 		_ = log.Output(2, fmt.Sprintf(format, args...))
 	}

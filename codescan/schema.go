@@ -21,7 +21,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-func addExtension(ve *spec.VendorExtensible, key string, value interface{}) {
+func addExtension(ve *spec.VendorExtensible, key string, value any) {
 	if os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false" {
 		return
 	}
@@ -74,11 +74,11 @@ func (st schemaTypable) AdditionalProperties() swaggerTypable {
 
 func (st schemaTypable) Level() int { return st.level }
 
-func (st schemaTypable) AddExtension(key string, value interface{}) {
+func (st schemaTypable) AddExtension(key string, value any) {
 	addExtension(&st.schema.VendorExtensible, key, value)
 }
 
-func (st schemaTypable) WithEnum(values ...interface{}) {
+func (st schemaTypable) WithEnum(values ...any) {
 	st.schema.WithEnum(values...)
 }
 
@@ -102,15 +102,15 @@ func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
 	sv.current.Minimum = &val
 	sv.current.ExclusiveMinimum = exclusive
 }
-func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
+func (sv schemaValidations) SetMultipleOf(val float64) { sv.current.MultipleOf = &val }
+func (sv schemaValidations) SetMinItems(val int64)     { sv.current.MinItems = &val }
+func (sv schemaValidations) SetMaxItems(val int64)     { sv.current.MaxItems = &val }
+func (sv schemaValidations) SetMinLength(val int64)    { sv.current.MinLength = &val }
+func (sv schemaValidations) SetMaxLength(val int64)    { sv.current.MaxLength = &val }
+func (sv schemaValidations) SetPattern(val string)     { sv.current.Pattern = val }
+func (sv schemaValidations) SetUnique(val bool)        { sv.current.UniqueItems = val }
+func (sv schemaValidations) SetDefault(val any)        { sv.current.Default = val }
+func (sv schemaValidations) SetExample(val any)        { sv.current.Example = val }
 func (sv schemaValidations) SetEnum(val string) {
 	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: sv.current.Type[0]})
 }
@@ -143,7 +143,7 @@ func (s *schemaBuilder) inferNames() (goName string, name string) {
 
 DECLS:
 	for _, cmt := range s.decl.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxModelOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				s.annotated = true
@@ -671,8 +671,7 @@ func (s *schemaBuilder) buildDeclAlias(tpe *types.Alias, tgt swaggerTypable) err
 func (s *schemaBuilder) buildAnonymousInterface(it *types.Interface, tgt swaggerTypable, decl *entityDecl) error {
 	tgt.Typed("object", "")
 
-	for i := range it.NumExplicitMethods() {
-		fld := it.ExplicitMethod(i)
+	for fld := range it.ExplicitMethods() {
 		if !fld.Exported() {
 			continue
 		}
@@ -714,7 +713,7 @@ func (s *schemaBuilder) buildAnonymousInterface(it *types.Interface, tgt swagger
 		name := fld.Name()
 		if afld.Doc != nil {
 			for _, cmt := range afld.Doc.List {
-				for _, ln := range strings.Split(cmt.Text, "\n") {
+				for ln := range strings.SplitSeq(cmt.Text, "\n") {
 					matches := rxName.FindStringSubmatch(ln)
 					ml := len(matches)
 					if ml > 1 {
@@ -828,8 +827,7 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	//
 	//   1. the embedded interface is decorated with an allOf annotation
 	//   2. the embedded interface is an alias
-	for i := range it.NumEmbeddeds() {
-		fld := it.EmbeddedType(i)
+	for fld := range it.EmbeddedTypes() {
 		debugLog("inspecting embedded type in interface: %v", fld)
 		var (
 			fieldHasAllOf bool
@@ -905,8 +903,7 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 	}
 	tgt.Typed("object", "")
 
-	for i := range it.NumExplicitMethods() {
-		fld := it.ExplicitMethod(i)
+	for fld := range it.ExplicitMethods() {
 		if !fld.Exported() {
 			continue
 		}
@@ -948,7 +945,7 @@ func (s *schemaBuilder) buildFromInterface(decl *entityDecl, it *types.Interface
 		name := fld.Name()
 		if afld.Doc != nil {
 			for _, cmt := range afld.Doc.List {
-				for _, ln := range strings.Split(cmt.Text, "\n") {
+				for ln := range strings.SplitSeq(cmt.Text, "\n") {
 					matches := rxName.FindStringSubmatch(ln)
 					ml := len(matches)
 					if ml > 1 {
@@ -1053,7 +1050,7 @@ func (s *schemaBuilder) buildNamedInterface(ftpe *types.Named, flist []*ast.Fiel
 
 	if afld.Doc != nil {
 		for _, cmt := range afld.Doc.List {
-			for _, ln := range strings.Split(cmt.Text, "\n") {
+			for ln := range strings.SplitSeq(cmt.Text, "\n") {
 				matches := rxAllOf.FindStringSubmatch(ln)
 				ml := len(matches)
 				if ml <= 1 {
@@ -1166,7 +1163,7 @@ func (s *schemaBuilder) buildFromStruct(decl *entityDecl, st *types.Struct, sche
 
 		if afld.Doc != nil {
 			for _, cmt := range afld.Doc.List {
-				for _, ln := range strings.Split(cmt.Text, "\n") {
+				for ln := range strings.SplitSeq(cmt.Text, "\n") {
 					matches := rxAllOf.FindStringSubmatch(ln)
 					ml := len(matches)
 					if ml > 1 {

@@ -263,7 +263,7 @@ maximum: 20
 
 func ascg(txt string) *ast.CommentGroup {
 	var cg ast.CommentGroup
-	for _, line := range strings.Split(txt, "\n") {
+	for line := range strings.SplitSeq(txt, "\n") {
 		var cmt ast.Comment
 		cmt.Text = "// " + line
 		cg.List = append(cg.List, &cmt)
