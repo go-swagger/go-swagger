@@ -1,0 +1,22 @@
+paths:
+    /v1/example-endpoint:
+        post:
+            consumes:
+                - application/json
+            description: Creates and validates a new configuration request.
+            operationId: addExampleConfig
+            responses:
+                "201":
+                    $ref: '#/responses/createdResponse'
+                "400":
+                    $ref: '#/responses/badRequestResponse'
+                "412":
+                    $ref: '#/responses/preconditionFailedResponse'
+                "500":
+                    $ref: '#/responses/internalServerErrorResponse'
+            security:
+                - AuthToken: []
+            summary: Adds a new configuration entry
+            tags:
+                - Example|Configuration
+swagger: "2.0"
