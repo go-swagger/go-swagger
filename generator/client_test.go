@@ -129,23 +129,28 @@ func TestGenClient(t *testing.T) {
 				opts.DumpData = true
 
 				origStdout := os.Stdout
-				defer func() {
-					os.Stdout = origStdout
-				}()
-
 				capture := filepath.Join(opts.Target, "stdout")
 				writer, err := os.Create(capture)
 				require.NoError(t, err)
+				defer func() {
+					if writer != nil {
+						_ = writer.Close()
+					}
+					os.Stdout = origStdout
+				}()
+
 				os.Stdout = writer
 
 				require.NoError(t,
 					GenerateClient(clientName, []string{}, []string{}, opts),
 				)
+				require.NoError(t, writer.Close())
+				writer = nil // so we don't close it again
 
 				t.Run("make sure this did not fail and we have some output", func(t *testing.T) {
 					stat, err := os.Stat(capture)
 					require.NoError(t, err)
-					require.Positive(t, stat.Size())
+					require.Positive(t, stat.Size()) // i.e. StrictlyPositive
 				})
 			})
 		})
