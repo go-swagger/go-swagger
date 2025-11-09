@@ -1575,18 +1575,30 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 				if nextIsList {
 					// start of new list
 					newList := make([]string, 0)
-					(*stack)[stackIndex].(map[string]any)[key] = &newList
+					asMap, ok := (*stack)[stackIndex].(map[string]any)
+					if !ok {
+						panic(fmt.Errorf("internal error: stack index expected to be map[string]any, but got %T", (*stack)[stackIndex]))
+					}
+					asMap[key] = &newList
 					*stack = append(*stack, &newList)
 				} else {
 					// start of new map
 					newMap := make(map[string]any)
-					(*stack)[stackIndex].(map[string]any)[key] = newMap
+					asMap, ok := (*stack)[stackIndex].(map[string]any)
+					if !ok {
+						panic(fmt.Errorf("internal error: stack index expected to be map[string]any, but got %T", (*stack)[stackIndex]))
+					}
+					asMap[key] = newMap
 					*stack = append(*stack, newMap)
 				}
 			} else {
 				// key:value
 				if reflect.TypeOf((*stack)[stackIndex]).Kind() == reflect.Map {
-					(*stack)[stackIndex].(map[string]any)[key] = value
+					asMap, ok := (*stack)[stackIndex].(map[string]any)
+					if !ok {
+						panic(fmt.Errorf("internal error: stack index expected to be map[string]any, but got %T", (*stack)[stackIndex]))
+					}
+					asMap[key] = value
 				}
 				if lineIndex < len(rawLines)-1 && !rxAllowedExtensions.MatchString(cleanLines[lineIndex+1]) {
 					stack.walkBack(rawLines, lineIndex)
