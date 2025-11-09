@@ -70,7 +70,7 @@ func TestParseSwagger(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func verifyMeta(t testing.TB, doc *spec.Swagger) {
+func verifyMeta(t *testing.T, doc *spec.Swagger) {
 	assert.NotNil(t, doc)
 	verifyInfo(t, doc.Info)
 	assert.Equal(t, []string{"application/json", "application/xml"}, doc.Consumes)
@@ -132,7 +132,9 @@ func verifyMeta(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "/v2", doc.BasePath)
 }
 
-func verifyInfo(t testing.TB, info *spec.Info) {
+func verifyInfo(t *testing.T, info *spec.Info) {
+	t.Helper()
+
 	assert.NotNil(t, info)
 	assert.Equal(t, "0.0.1", info.Version)
 	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", info.TermsOfService)

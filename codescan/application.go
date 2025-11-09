@@ -298,7 +298,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 					if ts, ok := sp.(*ast.TypeSpec); ok && ts.Name.Name == name {
 						def, ok := pkg.TypesInfo.Defs[ts.Name]
 						if !ok {
-							debugLog("couldn't find type info for %s", ts.Name)
+							debugLogf("couldn't find type info for %s", ts.Name)
 
 							continue
 						}
@@ -306,7 +306,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 						nt, isNamed := def.Type().(*types.Named)
 						at, isAliased := def.Type().(*types.Alias)
 						if !isNamed && !isAliased {
-							debugLog("%s is not a named or an aliased type but a %T", ts.Name, def.Type())
+							debugLogf("%s is not a named or an aliased type but a %T", ts.Name, def.Type())
 
 							continue
 						}
@@ -578,7 +578,7 @@ func (a *typeIndex) build(pkgs []*packages.Package) error {
 
 func (a *typeIndex) processPackage(pkg *packages.Package) error {
 	if !shouldAcceptPkg(pkg.PkgPath, a.includePkgs, a.excludePkgs) {
-		debugLog("package %s is ignored due to rules", pkg.Name)
+		debugLogf("package %s is ignored due to rules", pkg.Name)
 		return nil
 	}
 
@@ -599,7 +599,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue // not a valid operation
 				}
 				if !shouldAcceptTag(pp.Tags, a.includeTags, a.excludeTags) {
-					debugLog("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
+					debugLogf("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
 					continue
 				}
 				a.Operations = append(a.Operations, pp)
@@ -613,7 +613,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue // not a valid operation
 				}
 				if !shouldAcceptTag(pp.Tags, a.includeTags, a.excludeTags) {
-					debugLog("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
+					debugLogf("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
 					continue
 				}
 				a.Routes = append(a.Routes, pp)
@@ -647,21 +647,21 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 	for _, sp := range gd.Specs {
 		switch ts := sp.(type) {
 		case *ast.ValueSpec:
-			debugLog("saw value spec: %v", ts.Names)
+			debugLogf("saw value spec: %v", ts.Names)
 			return
 		case *ast.ImportSpec:
-			debugLog("saw import spec: %v", ts.Name)
+			debugLogf("saw import spec: %v", ts.Name)
 			return
 		case *ast.TypeSpec:
 			def, ok := pkg.TypesInfo.Defs[ts.Name]
 			if !ok {
-				debugLog("couldn't find type info for %s", ts.Name)
+				debugLogf("couldn't find type info for %s", ts.Name)
 				continue
 			}
 			nt, isNamed := def.Type().(*types.Named)
 			at, isAliased := def.Type().(*types.Alias)
 			if !isNamed && !isAliased {
-				debugLog("%s is not a named or aliased type but a %T", ts.Name, def.Type())
+				debugLogf("%s is not a named or aliased type but a %T", ts.Name, def.Type())
 
 				continue
 			}
@@ -689,7 +689,7 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 			case n&responseNode != 0 && decl.HasResponseAnnotation():
 				a.Responses = append(a.Responses, decl)
 			default:
-				debugLog(
+				debugLogf(
 					"type %q skipped because it is not tagged as a model, a parameter or a response. %s",
 					decl.Obj().Name(),
 					"It may reenter the scope because it is a discovered dependency",
@@ -779,7 +779,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 	return n, nil
 }
 
-func debugLog(format string, args ...any) {
+func debugLogf(format string, args ...any) {
 	if Debug {
 		_ = log.Output(2, fmt.Sprintf(format, args...))
 	}

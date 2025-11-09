@@ -92,7 +92,7 @@ func TestAppScanner_Definitions(t *testing.T) {
 	}
 }
 
-func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
+func loadPetstorePkgsCtx(t *testing.T) *scanCtx {
 	if petstoreCtx != nil {
 		return petstoreCtx
 	}
@@ -104,7 +104,7 @@ func loadPetstorePkgsCtx(t testing.TB) *scanCtx {
 	return petstoreCtx
 }
 
-func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
+func loadClassificationPkgsCtx(t *testing.T, extra ...string) *scanCtx {
 	if classificationCtx != nil {
 		return classificationCtx
 	}
@@ -120,7 +120,7 @@ func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
 	return classificationCtx
 }
 
-func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
+func verifyParsedPetStore(t *testing.T, doc *spec.Swagger) {
 	assert.Equal(t, []string{"application/json"}, doc.Consumes)
 	assert.Equal(t, []string{"application/json"}, doc.Produces)
 	assert.Equal(t, []string{"http", "https"}, doc.Schemes)
@@ -435,7 +435,9 @@ func verifyParsedPetStore(t testing.TB, doc *spec.Swagger) {
 	assert.Equal(t, "#/definitions/order", rsm.Schema.Ref.String())
 }
 
-func verifyIDParam(t testing.TB, param spec.Parameter, description string) {
+func verifyIDParam(t *testing.T, param spec.Parameter, description string) {
+	t.Helper()
+
 	assert.Equal(t, description, param.Description)
 	assert.Equal(t, "path", param.In)
 	assert.Equal(t, "integer", param.Type)
@@ -444,7 +446,9 @@ func verifyIDParam(t testing.TB, param spec.Parameter, description string) {
 	assert.Equal(t, "ID", param.Extensions["x-go-name"])
 }
 
-func verifyRefParam(t testing.TB, param spec.Parameter, description, refed string) {
+func verifyRefParam(t *testing.T, param spec.Parameter, description, refed string) {
+	t.Helper()
+
 	assert.Equal(t, description, param.Description)
 	assert.Equal(t, "body", param.In)
 	// TODO: this may fail sometimes (seen on go1.12 windows test): require pointer to be valid and avoid panicking

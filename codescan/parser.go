@@ -169,13 +169,13 @@ func typeName(comments *ast.CommentGroup) (string, bool) {
 }
 
 type swaggerTypable interface {
-	Typed(string, string)
-	SetRef(spec.Ref)
+	Typed(swaggerType string, format string)
+	SetRef(ref spec.Ref)
 	Items() swaggerTypable
 	Schema() *spec.Schema
 	Level() int
 	AddExtension(key string, value any)
-	WithEnum(...any)
+	WithEnum(values ...any)
 	WithEnumDescription(desc string)
 	In() string
 }
@@ -267,16 +267,16 @@ func (st *tagParser) Parse(lines []string) error {
 	return st.Parser.Parse(lines)
 }
 
-func newYamlParser(rx *regexp.Regexp, setter func(json.RawMessage) error) valueParser {
+type yamlParser struct {
+	set func(json.RawMessage) error
+	rx  *regexp.Regexp
+}
+
+func newYamlParser(rx *regexp.Regexp, setter func(json.RawMessage) error) *yamlParser {
 	return &yamlParser{
 		set: setter,
 		rx:  rx,
 	}
-}
-
-type yamlParser struct {
-	set func(json.RawMessage) error
-	rx  *regexp.Regexp
 }
 
 func (y *yamlParser) Parse(lines []string) error {
@@ -317,48 +317,6 @@ type yamlSpecScanner struct {
 	workedOutTitle bool
 	title          []string
 	skipHeader     bool
-}
-
-func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
-	// bail early when there is nothing to parse
-	if len(lines) == 0 {
-		return lines
-	}
-
-	seenLine := -1
-	var lastContent int
-
-	uncommented := make([]string, 0, len(lines))
-	for i, v := range lines {
-		str := ur.ReplaceAllString(v, "")
-		uncommented = append(uncommented, str)
-		if str != "" {
-			if seenLine < 0 {
-				seenLine = i
-			}
-			lastContent = i
-		}
-	}
-
-	// fixes issue #50
-	if seenLine == -1 {
-		return nil
-	}
-
-	return uncommented[seenLine : lastContent+1]
-}
-
-func (sp *yamlSpecScanner) collectTitleDescription() {
-	if sp.workedOutTitle {
-		return
-	}
-	if sp.setTitle == nil {
-		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders)
-		return
-	}
-
-	sp.workedOutTitle = true
-	sp.title, sp.header = collectScannerTitleDescription(sp.header)
 }
 
 func (sp *yamlSpecScanner) Title() []string {
@@ -456,6 +414,19 @@ func (sp *yamlSpecScanner) UnmarshalSpec(u func([]byte) error) (err error) {
 	return nil
 }
 
+func (sp *yamlSpecScanner) collectTitleDescription() {
+	if sp.workedOutTitle {
+		return
+	}
+	if sp.setTitle == nil {
+		sp.header = cleanupScannerLines(sp.header, rxUncommentHeaders)
+		return
+	}
+
+	sp.workedOutTitle = true
+	sp.title, sp.header = collectScannerTitleDescription(sp.header)
+}
+
 // removes indent based on the first line.
 func removeIndent(spec []string) []string {
 	if len(spec) == 0 {
@@ -525,19 +496,6 @@ type sectionedParser struct {
 	currentTagger  *tagParser
 	title          []string
 	ignored        bool
-}
-
-func (st *sectionedParser) collectTitleDescription() {
-	if st.workedOutTitle {
-		return
-	}
-	if st.setTitle == nil {
-		st.header = cleanupScannerLines(st.header, rxUncommentHeaders)
-		return
-	}
-
-	st.workedOutTitle = true
-	st.title, st.header = collectScannerTitleDescription(st.header)
 }
 
 func (st *sectionedParser) Title() []string {
@@ -629,32 +587,45 @@ COMMENTS:
 	return nil
 }
 
+func (st *sectionedParser) collectTitleDescription() {
+	if st.workedOutTitle {
+		return
+	}
+	if st.setTitle == nil {
+		st.header = cleanupScannerLines(st.header, rxUncommentHeaders)
+		return
+	}
+
+	st.workedOutTitle = true
+	st.title, st.header = collectScannerTitleDescription(st.header)
+}
+
 type validationBuilder interface {
-	SetMaximum(float64, bool)
-	SetMinimum(float64, bool)
-	SetMultipleOf(float64)
+	SetMaximum(maxium float64, isExclusive bool)
+	SetMinimum(minimum float64, isExclusive bool)
+	SetMultipleOf(multiple float64)
 
-	SetMinItems(int64)
-	SetMaxItems(int64)
+	SetMinItems(minItems int64)
+	SetMaxItems(maxItems int64)
 
-	SetMinLength(int64)
-	SetMaxLength(int64)
-	SetPattern(string)
+	SetMinLength(minLength int64)
+	SetMaxLength(maxLength int64)
+	SetPattern(pattern string)
 
-	SetUnique(bool)
-	SetEnum(string)
-	SetDefault(any)
-	SetExample(any)
+	SetUnique(isUniqueItems bool)
+	SetEnum(enumValue string)
+	SetDefault(defaultValue any)
+	SetExample(example any)
 }
 
 type valueParser interface {
-	Parse([]string) error
-	Matches(string) bool
+	Parse(commentlines []string) error
+	Matches(commentLine string) bool
 }
 
 type operationValidationBuilder interface {
 	validationBuilder
-	SetCollectionFormat(string)
+	SetCollectionFormat(collectionFormat string)
 }
 
 type setMaximum struct {
@@ -1568,8 +1539,9 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 					Extension: key,
 				}
 				// Extension is simple key:value pair, no stack
-				ext.Root = make(map[string]string)
-				ext.Root.(map[string]string)[key] = value
+				rootMap := make(map[string]string)
+				rootMap[key] = value
+				ext.Root = rootMap
 				*extObjs = append(*extObjs, ext)
 				buildExtensionObjects(rawLines, cleanLines, lineIndex+1, extObjs, nil)
 			} else {
@@ -1578,20 +1550,22 @@ func buildExtensionObjects(rawLines []string, cleanLines []string, lineIndex int
 				}
 				if nextIsList {
 					// Extension is an array
-					ext.Root = make(map[string]*[]string)
+					rootMap := make(map[string]*[]string)
 					rootList := make([]string, 0)
-					ext.Root.(map[string]*[]string)[key] = &rootList
+					rootMap[key] = &rootList
+					ext.Root = rootMap
 					stack = &extensionParsingStack{}
 					*stack = append(*stack, ext)
 					*stack = append(*stack, ext.Root.(map[string]*[]string)[key])
 				} else {
 					// Extension is an object
-					ext.Root = make(map[string]any)
 					rootMap := make(map[string]any)
-					ext.Root.(map[string]any)[key] = rootMap
+					innerMap := make(map[string]any)
+					rootMap[key] = innerMap
+					ext.Root = rootMap
 					stack = &extensionParsingStack{}
 					*stack = append(*stack, ext)
-					*stack = append(*stack, rootMap)
+					*stack = append(*stack, innerMap)
 				}
 				buildExtensionObjects(rawLines, cleanLines, lineIndex+1, extObjs, stack)
 			}
@@ -1660,7 +1634,7 @@ func (ss *setOpExtensions) Parse(lines []string) error {
 		} else if _, ok := ext.Root.(map[string]any); ok {
 			exts.AddExtension(ext.Extension, ext.Root.(map[string]any)[ext.Extension])
 		} else {
-			debugLog("Unknown Extension type: %s", fmt.Sprint(reflect.TypeOf(ext.Root)))
+			debugLogf("Unknown Extension type: %s", fmt.Sprint(reflect.TypeOf(ext.Root)))
 		}
 	}
 
@@ -1723,4 +1697,33 @@ func unsupportedBasic(tpe *types.Basic) bool {
 	_, found := unsupportedTypes[tpe.Name()]
 
 	return found
+}
+
+func cleanupScannerLines(lines []string, ur *regexp.Regexp) []string {
+	// bail early when there is nothing to parse
+	if len(lines) == 0 {
+		return lines
+	}
+
+	seenLine := -1
+	var lastContent int
+
+	uncommented := make([]string, 0, len(lines))
+	for i, v := range lines {
+		str := ur.ReplaceAllString(v, "")
+		uncommented = append(uncommented, str)
+		if str != "" {
+			if seenLine < 0 {
+				seenLine = i
+			}
+			lastContent = i
+		}
+	}
+
+	// fixes issue #50
+	if seenLine == -1 {
+		return nil
+	}
+
+	return uncommented[seenLine : lastContent+1]
 }

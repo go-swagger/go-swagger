@@ -225,7 +225,7 @@ func convertEnum(schema *spec.Schema, enumValues []string) {
 		return
 	}
 
-	var finalEnum []any
+	finalEnum := make([]any, 0, len(enumValues))
 	for _, v := range enumValues {
 		finalEnum = append(finalEnum, convert(schema.Type[0], strings.TrimSpace(v)))
 	}

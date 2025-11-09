@@ -187,7 +187,7 @@ func (p *parameterBuilder) Build(operations map[string]*spec.Operation) error {
 			operations[opid] = operation
 			operation.ID = opid
 		}
-		debugLog("building parameters for: %s", opid)
+		debugLogf("building parameters for: %s", opid)
 
 		// analyze struct body for fields etc
 		// each exported struct field:
@@ -211,7 +211,7 @@ func (p *parameterBuilder) buildFromType(otpe types.Type, op *spec.Operation, se
 	case *types.Named:
 		return p.buildNamedType(tpe, op, seen)
 	case *types.Alias:
-		debugLog("alias(parameters.buildFromType): got alias %v to %v", tpe, tpe.Rhs())
+		debugLogf("alias(parameters.buildFromType): got alias %v to %v", tpe, tpe.Rhs())
 		return p.buildAlias(tpe, op, seen)
 	default:
 		return fmt.Errorf("unhandled type (%T): %s", otpe, tpe.String())
@@ -227,7 +227,7 @@ func (p *parameterBuilder) buildNamedType(tpe *types.Named, op *spec.Operation, 
 
 	switch stpe := o.Type().Underlying().(type) {
 	case *types.Struct:
-		debugLog("build from named type %s: %T", o.Name(), tpe)
+		debugLogf("build from named type %s: %T", o.Name(), tpe)
 		if decl, found := p.ctx.DeclForType(o.Type()); found {
 			return p.buildFromStruct(decl, stpe, op, seen)
 		}
@@ -287,7 +287,7 @@ func (p *parameterBuilder) buildAlias(tpe *types.Alias, op *spec.Operation, seen
 }
 
 func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typable swaggerTypable, seen map[string]spec.Parameter) error {
-	debugLog("build from field %s: %T", fld.Name(), tpe)
+	debugLogf("build from field %s: %T", fld.Name(), tpe)
 
 	switch ftpe := tpe.(type) {
 	case *types.Basic:
@@ -307,7 +307,7 @@ func (p *parameterBuilder) buildFromField(fld *types.Var, tpe types.Type, typabl
 	case *types.Named:
 		return p.buildNamedField(ftpe, typable)
 	case *types.Alias:
-		debugLog("alias(parameters.buildFromField): got alias %v to %v", ftpe, ftpe.Rhs()) // TODO
+		debugLogf("alias(parameters.buildFromField): got alias %v to %v", ftpe, ftpe.Rhs()) // TODO
 		return p.buildFieldAlias(ftpe, typable, fld, seen)
 	default:
 		return fmt.Errorf("unknown type for %s: %T", fld.String(), fld.Type())
@@ -481,13 +481,14 @@ func spExtensionsSetter(ps *spec.Parameter) func(*spec.Extensions) {
 }
 
 func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, op *spec.Operation, seen map[string]spec.Parameter) error {
-	if tpe.NumFields() == 0 {
+	numFields := tpe.NumFields()
+
+	if numFields == 0 {
 		return nil
 	}
 
-	var sequence []string
-
-	for i := 0; i < tpe.NumFields(); i++ {
+	sequence := make([]string, 0, numFields)
+	for i := range numFields {
 		fld := tpe.Field(i)
 
 		if fld.Embedded() {
@@ -498,7 +499,7 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 		}
 
 		if !fld.Exported() {
-			debugLog("skipping field %s because it's not exported", fld.Name())
+			debugLogf("skipping field %s because it's not exported", fld.Name())
 			continue
 		}
 
@@ -512,13 +513,13 @@ func (p *parameterBuilder) buildFromStruct(decl *entityDecl, tpe *types.Struct, 
 				continue
 			}
 
-			debugLog("field %s: %s(%T) [%q] ==> %s", fld.Name(), fld.Type().String(), fld.Type(), tg, at.Doc.Text())
+			debugLogf("field %s: %s(%T) [%q] ==> %s", fld.Name(), fld.Type().String(), fld.Type(), tg, at.Doc.Text())
 			afld = at
 			break
 		}
 
 		if afld == nil {
-			debugLog("can't find source associated with %s for %s", fld.String(), tpe.String())
+			debugLogf("can't find source associated with %s for %s", fld.String(), tpe.String())
 			continue
 		}
 

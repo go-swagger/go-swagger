@@ -5,7 +5,6 @@ package codescan
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -132,11 +131,14 @@ func makeMinMax(lower string) (res []string) {
 }
 
 func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string) {
+	t.Helper()
+
 	extraSpaces := []string{"", " ", "  ", "     "}
 	prefixes := []string{"//", "*", ""}
 	validArgs := []string{"true", "false"}
 	invalidArgs := []string{"TRUE", "FALSE", "t", "f", "1", "0", "True", "False", "true*", "false*"}
 	nms := make([]string, 0, len(names))
+
 	for _, nm := range names {
 		nms = append(nms, nm, strings.Title(nm)) //nolint:staticcheck
 	}
@@ -188,13 +190,13 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 	if len(names2) > 0 {
 		nm2 = " " + names2[0]
 	}
-	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-	if Debug {
-		fmt.Printf("tested %d %s%s combinations\n", cnt, names[0], nm2)
-	}
+
+	t.Logf("tested %d %s%s combinations\n", cnt, names[0], nm2)
 }
 
 func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 string, words []string) {
+	t.Helper()
+
 	extraSpaces := []string{"", " ", "  ", "     "}
 	prefixes := []string{"//", "*", ""}
 	validNumericArgs := []string{"0", "1234"}
@@ -237,13 +239,13 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 	if len(words) > 0 {
 		nm2 = " " + words[0]
 	}
-	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-	if Debug {
-		fmt.Printf("tested %d %s%s combinations\n", cnt, name1, nm2)
-	}
+
+	t.Logf("tested %d %s%s combinations\n", cnt, name1, nm2)
 }
 
 func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 string) {
+	t.Helper()
+
 	extraSpaces := []string{"", " ", "  ", "     "}
 	prefixes := []string{"//", "*", ""}
 	validNumericArgs := []string{"0", "1234", "-1235", "0.0", "1234.0394", "-2948.484"}
@@ -287,13 +289,13 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 			}
 		}
 	}
-	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-	if Debug {
-		fmt.Printf("tested %d %s %s combinations\n", cnt, name1, name2)
-	}
+
+	t.Logf("tested %d %s %s combinations\n", cnt, name1, name2)
 }
 
 func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators []string) {
+	t.Helper()
+
 	extraSpaces := []string{"", " ", "  ", "     "}
 	prefixes := []string{"//", "*", ""}
 	validNumericArgs := []string{"0", "1234", "-1235", "0.0", "1234.0394", "-2948.484"}
@@ -328,13 +330,13 @@ func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators [
 			}
 		}
 	}
-	Debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
-	if Debug {
-		fmt.Printf("tested %d %s combinations\n", cnt, name)
-	}
+
+	t.Logf("tested %d %s combinations\n", cnt, name)
 }
 
 func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixes, validParams, invalidParams []string) {
+	t.Helper()
+
 	for _, pref := range prefixes {
 		for _, param := range validParams {
 			line := pref + param
@@ -355,19 +357,24 @@ func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixe
 }
 
 func verifySwaggerMultiArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixes, validParams, invalidParams []string) {
-	var actualParams []string
+	t.Helper()
+
+	actualParams := make([]string, 0, len(validParams))
+	vp := make([]string, 0, len(validParams)+1)
+
 	for i := range validParams {
-		var vp []string
+		vp = vp[:0]
 		for j := range i + 1 {
 			vp = append(vp, validParams[j])
 		}
+
 		actualParams = append(actualParams, strings.Join(vp, " "))
 	}
+
 	for _, pref := range prefixes {
 		for _, param := range actualParams {
 			line := pref + param
 			matches := matcher.FindStringSubmatch(line)
-			// fmt.Printf("matching %q with %q, matches (%d): %v\n", line, matcher, len(matches), matches)
 			assert.Len(t, matches, 2)
 			assert.Equal(t, strings.TrimSpace(param), matches[1])
 		}
