@@ -45,7 +45,8 @@ func TestIndentedYAMLBlock(t *testing.T) {
 	samples, ok := op.Extensions["x-codeSamples"].([]any)
 	require.True(t, ok)
 	require.Len(t, samples, 1)
-	sample := samples[0].(map[string]any)
+	sample, ok := samples[0].(map[string]any)
+	require.True(t, ok)
 	assert.Contains(t, sample, "lang")
 	assert.Equal(t, "curl", sample["lang"])
 
@@ -68,7 +69,8 @@ curl -u "${LOGIN}:${PASSWORD}" -d '{"key2": "value2"}' -X POST   "https://{host}
 	samples2, ok := op2.Extensions["x-codeSamples"].([]any)
 	require.True(t, ok)
 	require.Len(t, samples2, 1)
-	sample2 := samples2[0].(map[string]any)
+	sample2, ok := samples2[0].(map[string]any)
+	require.True(t, ok)
 	assert.Contains(t, sample2, "lang")
 	assert.Equal(t, "curl", sample2["lang"])
 

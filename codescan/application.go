@@ -426,52 +426,81 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 				continue
 			}
 
-			for _, s := range gd.Specs {
-				if vs, ok := s.(*ast.ValueSpec); ok {
-					if vsIdent, ok := vs.Type.(*ast.Ident); ok {
-						if vsIdent.Name == enumName {
-							if len(vs.Values) > 0 {
-								if bl, ok := vs.Values[0].(*ast.BasicLit); ok {
-									blValue := getEnumBasicLitValue(bl)
-									list = append(list, blValue)
+			for _, spec := range gd.Specs {
+				literalValue, description := s.findEnumValue(spec, enumName)
+				if literalValue == nil {
+					continue
+				}
 
-									// build the enum description
-									var (
-										desc     = &strings.Builder{}
-										namesLen = len(vs.Names)
-									)
-									fmt.Fprintf(desc, "%v ", blValue)
-									for i, name := range vs.Names {
-										desc.WriteString(name.Name)
-										if i < namesLen-1 {
-											desc.WriteString(" ")
-										}
-									}
-									if vs.Doc != nil {
-										docListLen := len(vs.Doc.List)
-										if docListLen > 0 {
-											desc.WriteString(" ")
-										}
-										for i, doc := range vs.Doc.List {
-											if doc.Text != "" {
-												text := strings.TrimPrefix(doc.Text, "//")
-												desc.WriteString(text)
-												if i < docListLen-1 {
-													desc.WriteString(" ")
-												}
-											}
-										}
-									}
-									descList = append(descList, desc.String())
-								}
-							}
-						}
-					}
+				list = append(list, literalValue)
+				descList = append(descList, description)
+			}
+		}
+	}
+
+	return list, descList, true
+}
+
+func (s *scanCtx) findEnumValue(spec ast.Spec, enumName string) (literalValue any, description string) {
+	vs, ok := spec.(*ast.ValueSpec)
+	if !ok {
+		return nil, ""
+	}
+
+	vsIdent, ok := vs.Type.(*ast.Ident)
+	if !ok {
+		return nil, ""
+	}
+
+	if vsIdent.Name != enumName {
+		return nil, ""
+	}
+
+	if len(vs.Values) == 0 {
+		return nil, ""
+	}
+
+	bl, ok := vs.Values[0].(*ast.BasicLit)
+	if !ok {
+		return nil, ""
+	}
+
+	literalValue = getEnumBasicLitValue(bl)
+
+	// build the enum description
+	var (
+		desc     = &strings.Builder{}
+		namesLen = len(vs.Names)
+	)
+
+	fmt.Fprintf(desc, "%v ", literalValue)
+	for i, name := range vs.Names {
+		desc.WriteString(name.Name)
+		if i < namesLen-1 {
+			desc.WriteString(" ")
+		}
+	}
+
+	if vs.Doc != nil {
+		docListLen := len(vs.Doc.List)
+		if docListLen > 0 {
+			desc.WriteString(" ")
+		}
+
+		for i, doc := range vs.Doc.List {
+			if doc.Text != "" {
+				text := strings.TrimPrefix(doc.Text, "//")
+				desc.WriteString(text)
+				if i < docListLen-1 {
+					desc.WriteString(" ")
 				}
 			}
 		}
 	}
-	return list, descList, true
+
+	description = desc.String()
+
+	return literalValue, description
 }
 
 type typeIndexOption func(*typeIndex)
