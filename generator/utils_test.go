@@ -14,7 +14,6 @@ import (
 var (
 	discardOutput = gentest.DiscardOutput
 	captureOutput = gentest.CaptureOutput
-	goExecInDir   = gentest.GoExecInDir
 )
 
 // testing utilities for codegen assertions
@@ -27,46 +26,41 @@ func reqOri(str string) *regexp.Regexp {
 	return regexp.MustCompile(str)
 }
 
-func assertInCode(t testing.TB, expr, code string) bool {
-	t.Helper()
-	return assert.Regexp(t, reqm(expr), code)
+func assertInCode(tb testing.TB, expr, code string) bool {
+	tb.Helper()
+	return assert.Regexp(tb, reqm(expr), code)
 }
 
-func assertRegexpInCode(t testing.TB, expr, code string) bool {
-	t.Helper()
-	return assert.Regexp(t, reqOri(expr), code)
+func assertRegexpInCode(tb testing.TB, expr, code string) bool {
+	tb.Helper()
+	return assert.Regexp(tb, reqOri(expr), code)
 }
 
-func assertNotInCode(t testing.TB, expr, code string) bool {
-	t.Helper()
-	return assert.NotRegexp(t, reqm(expr), code)
+func assertNotInCode(tb testing.TB, expr, code string) bool {
+	tb.Helper()
+	return assert.NotRegexp(tb, reqm(expr), code)
 }
 
-func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
-	t.Helper()
-	return assert.NotRegexp(t, reqOri(expr), code)
+func assertRegexpNotInCode(tb testing.TB, expr, code string) bool {
+	tb.Helper()
+	return assert.NotRegexp(tb, reqOri(expr), code)
 }
 
-// Unused
-// func assertRegexpNotInCode(t testing.TB, expr, code string) bool {
-// 	return assert.NotRegexp(t, reqOri(expr), code)
-// }
-
-func requireValidation(t testing.TB, pth, expr string, gm GenSchema) {
-	if !assertValidation(t, pth, expr, gm) {
-		t.FailNow()
+func requireValidation(tb testing.TB, pth, expr string, gm GenSchema) {
+	if !assertValidation(tb, pth, expr, gm) {
+		tb.FailNow()
 	}
 }
 
-func assertValidation(t testing.TB, pth, expr string, gm GenSchema) bool {
-	t.Helper()
-	if !assert.True(t, gm.HasValidations, "expected the schema to have validations") {
+func assertValidation(tb testing.TB, pth, expr string, gm GenSchema) bool {
+	tb.Helper()
+	if !assert.True(tb, gm.HasValidations, "expected the schema to have validations") {
 		return false
 	}
-	if !assert.Equal(t, pth, gm.Path, "paths don't match") {
+	if !assert.Equal(tb, pth, gm.Path, "paths don't match") {
 		return false
 	}
-	if !assert.Equal(t, expr, gm.ValueExpression, "expressions don't match") {
+	if !assert.Equal(tb, expr, gm.ValueExpression, "expressions don't match") {
 		return false
 	}
 	return true
@@ -86,9 +80,9 @@ func funcBody(code string, signature string) string {
 
 // testing utilities for codegen build
 
-func testCwd(t testing.TB) string {
-	t.Helper()
+func testCwd(tb testing.TB) string {
+	tb.Helper()
 	cwd, err := os.Getwd()
-	require.NoError(t, err)
+	require.NoError(tb, err)
 	return cwd
 }

@@ -2,6 +2,7 @@ package generator
 
 import (
 	"errors"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -184,86 +185,97 @@ func TestShared_TargetPath(t *testing.T) {
 
 // NOTE: file://url is not supported.
 func TestShared_SpecPath(t *testing.T) {
+	t.Parallel()
+
 	defer discardOutput()()
-
 	cwd, _ := os.Getwd()
+	const fullPackage = "y/z"
 
-	// http URL spec
-	opts := new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = "http://a/b/c"
-	opts.ServerPackage = "y"
-	expected := opts.Spec
-	result := opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// https URL spec
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = "https://a/b/c"
-	opts.ServerPackage = "y"
-	expected = opts.Spec
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// relative spec
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = filepath.Join(".", "a", "b", "c")
-	opts.Target = "d"
-	opts.ServerPackage = "y"
-	expected = filepath.Join("..", "..", "a", "b", "c")
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// relative spec, server path
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = filepath.Join(".", "a", "b", "c")
-	opts.Target = filepath.Join("d", "e")
-	opts.ServerPackage = "y/z"
-	expected = filepath.Join("..", "..", "..", "..", "a", "b", "c")
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// relative spec, server path
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = filepath.Join(".", "a", "b", "c")
-	opts.Target = filepath.Join(".", "a", "b")
-	opts.ServerPackage = "y/z"
-	expected = filepath.Join("..", "..", "c")
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// absolute spec
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = filepath.Join(cwd, "a", "b", "c")
-	opts.ServerPackage = "y"
-	expected = filepath.Join("..", "a", "b", "c")
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	// absolute spec, server path
-	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
-	opts.Spec = filepath.Join("..", "a", "b", "c")
-	opts.Target = ""
-	opts.ServerPackage = path.Join("y", "z")
-	expected = filepath.Join("..", "..", "..", "a", "b", "c")
-	result = opts.SpecPath()
-	assert.Equal(t, expected, result)
-
-	if runtime.GOOS == "windows" {
-		opts = new(GenOpts)
+	t.Run("with http URL spec", func(t *testing.T) {
+		opts := new(GenOpts)
 		_ = opts.EnsureDefaults()
-		opts.Spec = filepath.Join("a", "b", "c")
-		opts.Target = filepath.Join("Z:", "e", "f", "f")
-		opts.ServerPackage = "y/z"
-		expected, _ = filepath.Abs(opts.Spec)
-		result = opts.SpecPath()
+		opts.Spec = "http://a/b/c"
+		opts.ServerPackage = "y"
+		expected := opts.Spec
+		result := opts.SpecPath()
 		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with https URL spec", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = "https://a/b/c"
+		opts.ServerPackage = "y"
+		expected := opts.Spec
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with relative spec", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join(".", "a", "b", "c")
+		opts.Target = "d"
+		opts.ServerPackage = "y"
+		expected := filepath.Join("..", "..", "a", "b", "c")
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with relative spec, server path", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join(".", "a", "b", "c")
+		opts.Target = filepath.Join("d", "e")
+		opts.ServerPackage = fullPackage
+		expected := filepath.Join("..", "..", "..", "..", "a", "b", "c")
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with relative spec, server path", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join(".", "a", "b", "c")
+		opts.Target = filepath.Join(".", "a", "b")
+		opts.ServerPackage = fullPackage
+		expected := filepath.Join("..", "..", "c")
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with absolute spec", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join(cwd, "a", "b", "c")
+		opts.ServerPackage = "y"
+		expected := filepath.Join("..", "a", "b", "c")
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("with absolute spec, server path", func(t *testing.T) {
+		opts := new(GenOpts)
+		_ = opts.EnsureDefaults()
+		opts.Spec = filepath.Join("..", "a", "b", "c")
+		opts.Target = ""
+		opts.ServerPackage = path.Join("y", "z")
+		expected := filepath.Join("..", "..", "..", "a", "b", "c")
+		result := opts.SpecPath()
+		assert.Equal(t, expected, result)
+	})
+
+	if runtime.GOOS == winOS {
+		t.Run("with windows drive letter", func(t *testing.T) {
+			opts := new(GenOpts)
+			_ = opts.EnsureDefaults()
+			opts.Spec = filepath.Join("a", "b", "c")
+			opts.Target = filepath.Join("Z:", "e", "f", "f")
+			opts.ServerPackage = fullPackage
+			expected, _ := filepath.Abs(opts.Spec)
+			result := opts.SpecPath()
+			assert.Equal(t, expected, result)
+		})
 	}
 }
 
@@ -361,72 +373,66 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 // Test correctly parsed templates, with bad formatting.
 func TestShared_BadFormatTemplate(t *testing.T) {
-	// TODO: fred refact
 	defer discardOutput()()
+	tmp := t.TempDir()
 
-	t.Cleanup(func() {
-		_ = os.Remove("test_badformat.gol")
-		_ = os.Remove("test_badformat2.gol")
-		Debug = false
+	t.Run("should add template producing bad formatted go", func(t *testing.T) {
+		badFormat := "func x {;;; garbled"
+		require.NoError(t, templates.AddFile("badformat", badFormat))
 	})
 
-	// Not skipping format
-	badFormat := "func x {;;; garbled"
+	t.Run("with Not skipping format option", func(t *testing.T) {
+		t.Run("should write file with bad formatting", func(t *testing.T) {
+			opts := testGenOpts()
+			opts.LanguageOpts = GolangOpts()
+			tplOpts := TemplateOpts{
+				Name:       "badformat",
+				Source:     "asset:badformat",
+				Target:     tmp,
+				FileName:   "test_badformat.go",
+				SkipExists: false,
+				SkipFormat: false,
+			}
 
-	Debug = true
-	_ = templates.AddFile("badformat", badFormat)
+			data := appGenerator{
+				Name:    "badtest",
+				Package: "wrongpkg",
+			}
+			err := opts.write(&tplOpts, data)
+			require.Errorf(t, err, "with formatting, write should error ont bad formatting but got: %v", err)
 
-	opts := testGenOpts()
-	opts.LanguageOpts = GoLangOpts()
-	tplOpts := TemplateOpts{
-		Name:   "badformat",
-		Source: "asset:badformat",
-		Target: ".",
-		// Extension ".gol" won't mess with go if cleanup is not performed
-		FileName:   "test_badformat.gol",
-		SkipExists: false,
-		SkipFormat: false,
-	}
+			require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
+				"the badly formatted file should have been dumped for debugging purposes, but couldn't find it",
+			)
+			assert.Contains(t, err.Error(), "source formatting on generated source")
+		})
+	})
 
-	data := appGenerator{
-		Name:    "badtest",
-		Package: "wrongpkg",
-	}
+	t.Run("with Skipping format option", func(t *testing.T) {
+		opts := testGenOpts()
+		opts.LanguageOpts = GolangOpts()
+		tplOpts := TemplateOpts{
+			Name:       "badformat2",
+			Source:     "asset:badformat",
+			Target:     tmp,
+			FileName:   "test_badformat2.go",
+			SkipExists: false,
+			SkipFormat: true,
+		}
 
-	err := opts.write(&tplOpts, data)
-	defer func() {
-		_ = os.Remove(tplOpts.FileName)
-	}()
+		t.Run("should write file with bad formatting", func(t *testing.T) {
+			data := appGenerator{
+				Name:    "badtest",
+				Package: "wrongpkg",
+			}
+			err := opts.write(&tplOpts, data)
+			require.NoErrorf(t, err, "without formatting, write shouldn't care about bad formatting but got: %v", err)
 
-	// The badly formatted file has been dumped for debugging purposes
-	_, exists := os.Stat(tplOpts.FileName)
-	assert.False(t, os.IsNotExist(exists), "The template file has not been generated as expected")
-
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "source formatting on generated source")
-
-	// Skipping format
-	opts = testGenOpts()
-	opts.LanguageOpts = GoLangOpts()
-	tplOpts2 := TemplateOpts{
-		Name:       "badformat2",
-		Source:     "asset:badformat",
-		Target:     ".",
-		FileName:   "test_badformat2.gol",
-		SkipExists: false,
-		SkipFormat: true,
-	}
-
-	err2 := opts.write(&tplOpts2, data)
-
-	// The unformatted file has been dumped without format checks
-	_, exists2 := os.Stat(tplOpts2.FileName)
-	assert.False(t, os.IsNotExist(exists2), "The template file has not been generated as expected")
-	_ = os.Remove(tplOpts2.FileName)
-
-	require.NoError(t, err2)
-
-	// os.RemoveAll(filepath.Join(filepath.FromSlash(dr),"restapi"))
+			require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
+				"The unformatted file should have been dumped without format checks, but couldn't find it",
+			)
+		})
+	})
 }
 
 // Test dir creation.
@@ -443,7 +449,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	_ = templates.AddFile("gendir", content)
 
 	opts := testGenOpts()
-	opts.LanguageOpts = GoLangOpts()
+	opts.LanguageOpts = GolangOpts()
 	tplOpts := TemplateOpts{
 		Name:   "gendir",
 		Source: "asset:gendir",
@@ -556,10 +562,10 @@ func TestShared_GatherModel(t *testing.T) {
 }
 
 func TestShared_DumpWrongData(t *testing.T) {
-	defer discardOutput()()
+	w := io.Discard
 
 	t.Run("should not be able to dump things that don't marshal as JSON", func(t *testing.T) {
-		require.Error(t, dumpData(struct {
+		require.Error(t, dumpData(w, struct {
 			A func() string
 			B string
 		}{
@@ -569,7 +575,7 @@ func TestShared_DumpWrongData(t *testing.T) {
 	})
 
 	t.Run("should dump any data, with unmarshallable fields exlicitly excluded", func(t *testing.T) {
-		require.NoError(t, dumpData(struct {
+		require.NoError(t, dumpData(w, struct {
 			A func() string `json:"-"`
 			B string
 		}{
@@ -577,7 +583,7 @@ func TestShared_DumpWrongData(t *testing.T) {
 			B: "xyz",
 		}))
 
-		require.NoError(t, dumpData(struct {
+		require.NoError(t, dumpData(w, struct {
 			a func() string
 			B string
 		}{

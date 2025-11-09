@@ -15,77 +15,106 @@
 package generator
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // mutex for -race because this test alters a global.
 var logMutex = &sync.Mutex{}
 
 func TestDebugLog(t *testing.T) {
-	tmpFile, _ := os.CreateTemp(t.TempDir(), "debug-test")
-	tmpName := tmpFile.Name()
+	// mutex for -race: we don't want several instances of this test to collide with each other
 	logMutex.Lock()
+	original := Debug
+
 	defer func() {
-		Debug = false
-		// mutex for -race
+		Debug = original
 		logMutex.Unlock()
 	}()
 
-	// mutex for -race
+	tmp := t.TempDir()
 	Debug = true
-	debugOptions()
-	defer func() {
-		generatorLogger.SetOutput(os.Stdout)
-	}()
-	generatorLogger.SetOutput(tmpFile)
 
-	debugLog("A debug")
-	_ = tmpFile.Close()
+	t.Run("with debug log capture", func(t *testing.T) {
+		tmpFile, _ := os.CreateTemp(tmp, "debug-test")
+		tmpName := tmpFile.Name()
 
-	flushed, _ := os.Open(tmpName)
-	buf := make([]byte, 500)
-	_, _ = flushed.Read(buf)
-	assert.Contains(t, string(buf), "A debug")
-	_ = flushed.Close()
+		debugOptions()
+		defer func() {
+			generatorLogger.SetOutput(os.Stdout)
+		}()
+		generatorLogger.SetOutput(tmpFile)
 
-	// test debugLogAsJSON()
-	tmpJSONFile, _ := os.CreateTemp(t.TempDir(), "debug-test")
-	tmpJSONName := tmpJSONFile.Name()
-	generatorLogger.SetOutput(tmpJSONFile)
-	debugLogAsJSON("A short debug")
+		t.Run("debug output with formatted args", func(t *testing.T) {
+			debugLogf("A debug %v", map[string]any{"with arg": "arg", "token": "123"})
+			err := tmpFile.Close()
+			require.NoErrorf(t, err, "should flush the captured log, but got: %v", err)
 
-	sch := struct {
-		FieldOne string `json:"fieldOne"`
-	}{
-		FieldOne: "content",
-	}
-	debugLogAsJSON("A long debug:%t", true, sch)
-	_ = tmpJSONFile.Close()
+			flushed, err := os.Open(tmpName)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = flushed.Close()
+			})
 
-	flushed, _ = os.Open(tmpJSONName)
-	buf2 := make([]byte, 500)
-	_, _ = flushed.Read(buf2)
-	_ = flushed.Close()
-	assert.Contains(t, string(buf2), "A short debug")
-	assert.Contains(t, string(buf2), "A long debug:true")
-	assert.Contains(t, string(buf2), `"fieldOne":`)
-	assert.Contains(t, string(buf2), `"content"`)
-}
+			var buf bytes.Buffer
+			_, err = io.Copy(&buf, flushed)
+			require.NoError(t, err)
+			str := buf.String()
 
-func TestDebugLogAsJSON(t *testing.T) {
-	t.SkipNow()
+			t.Run("log should contain format message", func(t *testing.T) {
+				assert.Contains(t, str, "A debug")
+			})
+			t.Run("log should contain string argument", func(t *testing.T) {
+				assert.Contains(t, str, "with arg")
+			})
+			t.Run("log should sanitize stuff like token, password...", func(t *testing.T) {
+				assert.Contains(t, str, "***REDACTED**")
+				assert.NotContains(t, str, "123")
+			})
+		})
 
-	var body struct {
-		A string `json:"a"`
-		B int    `json:"b"`
-	}
-	Debug = true
-	body.A = "abc"
-	body.B = 123
-	debugLogAsJSON("No arg")
-	debugLogAsJSON("With arg:%t", true, body)
+		t.Run("debugAsJSON output with struct args", func(t *testing.T) {
+			tmpJSONFile, _ := os.CreateTemp(tmp, "debug-as-json-test")
+			tmpJSONName := tmpJSONFile.Name()
+			generatorLogger.SetOutput(tmpJSONFile)
+			debugLogAsJSONf("A short debug")
+
+			sch := struct {
+				FieldOne string `json:"fieldOne"`
+			}{
+				FieldOne: "content",
+			}
+			debugLogAsJSONf("A long debug:%t", true, sch)
+			err := tmpJSONFile.Close()
+			require.NoErrorf(t, err, "should flush the captured log, but got: %v", err)
+
+			flushed, err := os.Open(tmpJSONName)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				_ = flushed.Close()
+			})
+
+			var buf bytes.Buffer
+			_, err = io.Copy(&buf, flushed)
+			require.NoError(t, err)
+			str := buf.String()
+
+			t.Run("log should contain short message", func(t *testing.T) {
+				assert.Contains(t, str, "A short debug")
+			})
+			t.Run("log should contain long message with args", func(t *testing.T) {
+				assert.Contains(t, str, "A long debug:true")
+			})
+			t.Run("log should contain struct fields as JSON", func(t *testing.T) {
+				assert.Contains(t, str, `"fieldOne":`)
+				assert.Contains(t, str, `"content"`)
+			})
+		})
+	})
 }

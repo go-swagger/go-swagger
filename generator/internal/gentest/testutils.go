@@ -16,6 +16,7 @@ package gentest
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"os/exec"
@@ -66,6 +67,8 @@ func setOutput(w io.Writer) func() {
 	}
 }
 
+const minute = 60 * time.Second
+
 // GoExecInDir executes a go commands from a target current directory.
 //
 // It returns a test runner func(*testing.T).
@@ -74,22 +77,102 @@ func setOutput(w io.Writer) func() {
 //
 //	t.Run("should execute mycommand", gentest.GoExecInDir(folder, args))
 func GoExecInDir(target string, args ...string) func(*testing.T) {
+	return ExecInDir(target, "go", args...)
+}
+
+func ExecInDir(target string, command string, args ...string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
-		const minute = 60 * time.Second
 		ctx, cancel := context.WithTimeout(t.Context(), minute)
 		defer cancel()
 
-		cmd := exec.CommandContext(ctx, "go", args...)
+		cmd := exec.CommandContext(ctx, command, args...)
 		cmd.Dir = target
 		p, err := cmd.CombinedOutput()
 		require.NoErrorf(t, err, "unexpected error: %s: %v\n%s", cmd.String(), err, string(p))
 	}
 }
 
-var sanitizer = strings.NewReplacer("(", "-", ")", "-", ".", "-", "_", "-", "\\", "/", ":", "-", " ", "x")
+var sanitizer = strings.NewReplacer(
+	"(", "-",
+	")", "-",
+	".", "-",
+	"_", "-",
+	"\\", "/",
+	":", "-",
+	" ", "-",
+)
 
 func SanitizeGoModPath(pth string) string {
 	return path.Clean(sanitizer.Replace(filepath.Base(pth)))
+}
+
+type GoModOption func(o *goModOptions)
+
+type goModOptions struct {
+	moduleName string
+}
+
+func WithGoModuleName(name string) GoModOption {
+	return func(o *goModOptions) {
+		o.moduleName = name
+	}
+}
+
+func GoModInit(pth string, opts ...GoModOption) func(*testing.T) {
+	var o goModOptions
+	for _, apply := range opts {
+		apply(&o)
+	}
+
+	if o.moduleName == "" {
+		o.moduleName = SanitizeGoModPath(pth)
+	}
+
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run(fmt.Sprintf("should initialize go.mod for %q", o.moduleName), func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			mod := exec.CommandContext(ctx, "go", "mod", "init", o.moduleName) //nolint:gosec // "tainted" args exec is actually okay
+			mod.Dir = pth
+			output, err := mod.CombinedOutput()
+			require.NoErrorf(t, err, "go mod init returned: %s", string(output))
+		})
+	}
+}
+
+func GoModTidy(pth string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run("should tidy go.mod", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			vet := exec.CommandContext(ctx, "go", "mod", "tidy")
+			vet.Dir = pth
+			output, err := vet.CombinedOutput()
+			require.NoError(t, err, string(output))
+		})
+	}
+}
+
+func GoBuild(pth string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run("should build go", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			mod := exec.CommandContext(ctx, "go", "build")
+			mod.Dir = pth
+			output, err := mod.CombinedOutput()
+			require.NoErrorf(t, err, "go build returned: %s", string(output))
+		})
+	}
 }

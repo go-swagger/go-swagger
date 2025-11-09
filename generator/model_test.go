@@ -17,8 +17,6 @@ package generator
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -82,17 +80,21 @@ func TestGenerateModel_DocString(t *testing.T) {
 	funcMap := FuncMapFunc(DefaultLanguageFunc())
 	templ := template.Must(template.New("docstring").Funcs(funcMap).Parse(string(assets["docstring.gotmpl"])))
 	tt := templateTest{t, templ}
+	const (
+		title = "The title of the property"
+		desc  = "The description of the property"
+	)
 
 	var gmp GenSchema
-	gmp.Title = "The title of the property"
-	gmp.Description = "The description of the property"
-	expected := `The title of the property
+	gmp.Title = title
+	gmp.Description = desc
+	expected := fmt.Sprintf(`%s
 //
-// The description of the property`
+// %s`, title, desc)
 	tt.assertRender(gmp, expected)
 
 	gmp.Title = ""
-	expected = `The description of the property`
+	expected = desc
 	tt.assertRender(gmp, expected)
 
 	gmp.Description = ""
@@ -225,7 +227,7 @@ var schTypeGenDataSimple = []struct {
 	{GenSchema{resolvedType: resolvedType{GoType: "int32", IsPrimitive: true}}, "int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "int64", IsPrimitive: true}}, "int64"},
 	{GenSchema{resolvedType: resolvedType{GoType: "float32", IsPrimitive: true}}, "float32"},
-	{GenSchema{resolvedType: resolvedType{GoType: "float64", IsPrimitive: true}}, "float64"},
+	{GenSchema{resolvedType: resolvedType{GoType: float64String, IsPrimitive: true}}, float64String},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Base64", IsPrimitive: true}}, "strfmt.Base64"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Date", IsPrimitive: true}}, "strfmt.Date"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.DateTime", IsPrimitive: true}}, "strfmt.DateTime"},
@@ -283,6 +285,8 @@ func TestGenerateModel_Primitives(t *testing.T) {
 }
 
 func TestGenerateModel_Zeroes(t *testing.T) {
+	const myAliasedType = "myAliasedType"
+
 	for _, v := range schTypeGenDataSimple {
 		switch v.Value.GoType {
 		// verifying Zero for primitive
@@ -290,7 +294,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			assert.Equal(t, `""`, v.Value.Zero())
 		case "bool":
 			assert.Equal(t, `false`, v.Value.Zero())
-		case "int32", "int64", "float32", "float64":
+		case "int32", "int64", "float32", float64String:
 			assert.Equal(t, `0`, v.Value.Zero())
 		// verifying Zero for primitive formatters
 		case "strfmt.Date", "strfmt.DateTime", "strfmt.OjbectId": // akin to structs
@@ -299,7 +303,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
-			k.GoType = "myAliasedType"
+			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `{}` + `\)`)
 			assert.True(t, rex.MatchString(k.Zero()))
 		case "strfmt.Duration": // akin to integer
@@ -308,7 +312,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
-			k.GoType = "myAliasedType"
+			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\d*\)` + `\)`)
 			assert.True(t, rex.MatchString(k.Zero()))
 		case "strfmt.Base64": // akin to []byte
@@ -317,7 +321,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
-			k.GoType = "myAliasedType"
+			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
 			assert.True(t, rex.MatchString(k.Zero()))
 		case "any":
@@ -338,7 +342,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 				k := v.Value
 				k.IsAliased = true
 				k.AliasedType = k.GoType
-				k.GoType = "myAliasedType"
+				k.GoType = myAliasedType
 				rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(".*"\)` + `\)`)
 				assert.True(t, rex.MatchString(k.Zero()))
 			}
@@ -369,7 +373,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "NotaWithRef"
+	const k = "NotaWithRef"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -390,7 +394,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "NotaWithMeta"
+	const k = "NotaWithMeta"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -414,7 +418,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "RunParameters"
+	const k = "RunParameters"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -439,7 +443,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "NotaWithName"
+	const k = "NotaWithName"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -476,7 +480,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "NotaWithRefRegistry"
+	const k = "NotaWithRefRegistry"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -496,7 +500,7 @@ func TestGenerateModel_WithCustomTag(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithCustomTag"
+	const k = "WithCustomTag"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -513,7 +517,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "NotaWithMetaRegistry"
+	const k = "NotaWithMetaRegistry"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -587,7 +591,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithMapRef"
+	const k = "WithMapRef"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -611,7 +615,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithMapComplex"
+	const k = "WithMapComplex"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -658,7 +662,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithMapRegistryRef"
+	const k = "WithMapRegistryRef"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -682,7 +686,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithMapComplexRegistry"
+	const k = "WithMapComplexRegistry"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -706,7 +710,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "WithAdditional"
+	const k = "WithAdditional"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -2073,13 +2077,15 @@ func TestGenModel_Issue1341(t *testing.T) {
 
 // This tests to check that format validation is performed on non required schema properties.
 func TestGenModel_Issue1347(t *testing.T) {
+	const k = "ContainerConfig"
+
 	specDoc, err := loads.Spec("../fixtures/bugs/1347/fixture-1347.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	schema := definitions["ContainerConfig"]
+	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition("ContainerConfig", "models", schema, specDoc, opts)
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2099,7 +2105,7 @@ func TestGenModel_Issue1348(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "ContainerConfig"
+	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -2145,7 +2151,7 @@ func TestGenModel_Issue1397a(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "ContainerConfig"
+	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -2168,7 +2174,7 @@ func TestGenModel_Issue1397b(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	k := "ContainerConfig"
+	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -2252,23 +2258,24 @@ func TestGenModel_Issue866(t *testing.T) {
 	op := p.Get
 	responses := op.Responses.StatusCodeResponses
 	for k, r := range responses {
-		t.Logf("Response: %d", k)
-		schema := *r.Schema
-		opts := opts()
-		genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
-		require.NoError(t, err)
+		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
+			schema := *r.Schema
+			opts := opts()
+			genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
+			require.NoError(t, err)
 
-		buf := bytes.NewBuffer(nil)
-		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
-		ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-		require.NoError(t, err)
+			ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+			require.NoError(t, err)
 
-		res := string(ct)
-		assertInCode(t, `if err := validate.Required(`, res)
-		assertInCode(t, `if err := validate.MaxLength(`, res)
-		assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
-		assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
+			res := string(ct)
+			assertInCode(t, `if err := validate.Required(`, res)
+			assertInCode(t, `if err := validate.MaxLength(`, res)
+			assertInCode(t, `if err := m.validateAccessToken(formats); err != nil {`, res)
+			assertInCode(t, `if err := m.validateAccountID(formats); err != nil {`, res)
+		})
 	}
 }
 
@@ -2310,28 +2317,29 @@ func TestGenModel_Issue910(t *testing.T) {
 	op := p.Get
 	responses := op.Responses.StatusCodeResponses
 	for k, r := range responses {
-		t.Logf("Response: %d", k)
-		schema := *r.Schema
-		opts := opts()
-		genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
-		require.NoError(t, err)
+		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
+			schema := *r.Schema
+			opts := opts()
+			genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
+			require.NoError(t, err)
 
-		buf := bytes.NewBuffer(nil)
-		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
-		ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-		require.NoError(t, err)
+			ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+			require.NoError(t, err)
 
-		res := string(ct)
-		assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
-		assertInCode(t, "// foo\n	// Required: true\n	Foo any `json:\"foo\"`", res)
-		assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
-		assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
-		assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
-		assertInCode(t, `if m.Foo == nil {`, res) // any now checked against nil (validate.Required fails on any zero value)
-		assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
-		assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
-		// NOTE(fredbi); fixed Required in slices. This property has actually no validation
+			res := string(ct)
+			assertInCode(t, "// bar\n	// Required: true\n	Bar *int64 `json:\"bar\"`", res)
+			assertInCode(t, "// foo\n	// Required: true\n	Foo any `json:\"foo\"`", res)
+			assertInCode(t, "// baz\n	Baz int64 `json:\"baz,omitempty\"`", res)
+			assertInCode(t, "// quux\n	Quux []string `json:\"quux\"`", res)
+			assertInCode(t, `if err := validate.Required("bar", "body", m.Bar); err != nil {`, res)
+			assertInCode(t, `if m.Foo == nil {`, res) // any now checked against nil (validate.Required fails on any zero value)
+			assertNotInCode(t, `if err := validate.Required("baz", "body", m.Baz); err != nil {`, res)
+			assertNotInCode(t, `if err := validate.Required("quux", "body", m.Quux); err != nil {`, res)
+			// NOTE(fredbi); fixed Required in slices. This property has actually no validation
+		})
 	}
 }
 
@@ -2626,88 +2634,6 @@ func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
 	assertInCode(t, "IsPublished *bool `json:\"isPublished\" xml:\"published,attr\"`", res)
 	assertInCode(t, "SingleChild *XMLChild `json:\"singleChild,omitempty\"`", res)
 	assertInCode(t, "Title string `json:\"title,omitempty\" xml:\"xml-title,omitempty\"`", res)
-}
-
-func TestGenerateModels(t *testing.T) {
-	t.Parallel()
-	defer discardOutput()()
-
-	cwd := testCwd(t)
-	const root = "generated_models"
-	defer func() {
-		_ = os.RemoveAll(filepath.Join(cwd, root))
-	}()
-
-	t.Run("generate models", func(t *testing.T) {
-		cases := map[string]generateFixture{
-			"allDefinitions": {
-				spec:   "../fixtures/bugs/1042/fixture-1042.yaml",
-				target: "../fixtures/bugs/1042",
-				verify: func(t *testing.T, target string) {
-					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, ""))
-					assert.True(t, fileExists(target, "a.go"))
-					assert.True(t, fileExists(target, "b.go"))
-				},
-			},
-			"acceptDefinitions": {
-				spec:   "../fixtures/enhancements/2333/fixture-definitions.yaml",
-				target: "../fixtures/enhancements/2333",
-				prepare: func(_ *testing.T, opts *GenOpts) {
-					opts.AcceptDefinitionsOnly = true
-				},
-				verify: func(t *testing.T, target string) {
-					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, ""))
-					assert.True(t, fileExists(target, "model_interface.go"))
-					assert.True(t, fileExists(target, "records_model.go"))
-					assert.True(t, fileExists(target, "records_model_with_max.go"))
-					assert.False(t, fileExists(target, "restapi"))
-				},
-			},
-			"mangleNames": {
-				spec:   "../fixtures/bugs/2821/ServiceManagementBody.json",
-				target: "../fixtures/bugs/2821",
-				verify: func(t *testing.T, target string) {
-					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, "schema.go"))
-					content, err := os.ReadFile(filepath.Join(target, "schema.go"))
-					require.NoError(t, err)
-					assert.Contains(t, string(content), "getDollarRefField string")
-				},
-			},
-		}
-		for k, cas := range cases {
-			name := k
-			thisCas := cas
-
-			t.Run(name, func(t *testing.T) {
-				t.Parallel()
-
-				defer thisCas.warnFailed(t)
-
-				opts := testGenOpts()
-				defer thisCas.prepareTarget(t, name, "model_test", root, opts)()
-
-				if thisCas.prepare != nil {
-					thisCas.prepare(t, opts)
-				}
-
-				t.Run("generating test models from: "+opts.Spec, func(t *testing.T) {
-					err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
-					if thisCas.wantError {
-						require.Errorf(t, err, "expected an error for models build fixture: %s", opts.Spec)
-					} else {
-						require.NoError(t, err, "unexpected error for models build fixture: %s", opts.Spec)
-					}
-
-					if thisCas.verify != nil {
-						thisCas.verify(t, opts.Target)
-					}
-				})
-			})
-		}
-	})
 }
 
 func Test_PointerConversions(t *testing.T) {

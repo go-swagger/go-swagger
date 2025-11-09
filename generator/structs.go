@@ -105,30 +105,11 @@ type GenSchema struct {
 	WantsRootedErrorPath       bool
 }
 
-func (g GenSchema) renderMarshalTag() string {
-	if g.HasBaseType {
-		return "-"
-	}
-
-	var result strings.Builder
-
-	result.WriteString(g.OriginalName)
-
-	if !g.Required && g.IsEmptyOmitted {
-		result.WriteString(",omitempty")
-	}
-
-	if g.IsJSONString {
-		result.WriteString(",string")
-	}
-
-	return result.String()
-}
-
 // PrintTags takes care of rendering tags for a struct field.
 func (g GenSchema) PrintTags() string {
-	tags := make(map[string]string, 3)
-	orderedTags := make([]string, 0, 3)
+	const sensibleDefaultTagsAlloc = 3
+	tags := make(map[string]string, sensibleDefaultTagsAlloc)
+	orderedTags := make([]string, 0, sensibleDefaultTagsAlloc)
 
 	tags["json"] = g.renderMarshalTag()
 	orderedTags = append(orderedTags, "json")
@@ -205,6 +186,26 @@ func (g GenSchema) UnderlyingType() string {
 // ToString returns a string conversion expression for the schema.
 func (g GenSchema) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
+}
+
+func (g GenSchema) renderMarshalTag() string {
+	if g.HasBaseType {
+		return "-"
+	}
+
+	var result strings.Builder
+
+	result.WriteString(g.OriginalName)
+
+	if !g.Required && g.IsEmptyOmitted {
+		result.WriteString(",omitempty")
+	}
+
+	if g.IsJSONString {
+		result.WriteString(",string")
+	}
+
+	return result.String()
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }
@@ -422,12 +423,12 @@ func (g *GenParameter) IsHeaderParam() bool {
 
 // IsBodyParam returns true when this parameter is a body param.
 func (g *GenParameter) IsBodyParam() bool {
-	return g.Location == "body"
+	return g.Location == body
 }
 
 // IsFileParam returns true when this parameter is a file param.
 func (g *GenParameter) IsFileParam() bool {
-	return g.SwaggerType == "file"
+	return g.SwaggerType == file
 }
 
 // ItemsDepth returns a string "items.items..." with as many items as the level of nesting of the array.
@@ -558,7 +559,7 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteRune('{')
 	for i, v := range responses {
-		rb, err := json.Marshal(v)
+		rb, err := json.Marshal(v) //nolint:musttag // OK: we leave json fields identical to go fields. Dumpdata is used for debug.
 		if err != nil {
 			return nil, err
 		}
@@ -575,10 +576,10 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals this GenStatusCodeResponses from json.
 func (g *GenStatusCodeResponses) UnmarshalJSON(data []byte) error {
 	var dd map[string]GenResponse
-	if err := json.Unmarshal(data, &dd); err != nil {
+	if err := json.Unmarshal(data, &dd); err != nil { //nolint:musttag // OK: we leave json fields identical to go fields. Dumpdata is used for debug.
 		return err
 	}
-	var gg GenStatusCodeResponses
+	gg := make(GenStatusCodeResponses, 0, len(dd))
 	for _, v := range dd {
 		gg = append(gg, v)
 	}

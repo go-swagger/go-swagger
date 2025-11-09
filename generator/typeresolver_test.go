@@ -15,6 +15,7 @@
 package generator
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -38,8 +39,8 @@ func schTypeVals() []struct{ Type, Format, Expected string } {
 		{"integer", "uint32", "uint32"},
 		{"integer", "uint64", "uint64"},
 		{"number", "float", "float32"},
-		{"number", "double", "float64"},
-		{"number", "", "float64"},
+		{"number", "double", float64String},
+		{"number", "", float64String},
 		{"string", "byte", "strfmt.Base64"},
 		{"string", "date", "strfmt.Date"},
 		{"string", "date-time", "strfmt.DateTime"},
@@ -71,7 +72,7 @@ func schTypeVals() []struct{ Type, Format, Expected string } {
 		{"string", "int16", "string"},
 		{"string", "int32", "string"},
 		{"string", "int64", "string"},
-		{"file", "", "io.ReadCloser"},
+		{file, "", "io.ReadCloser"},
 	}
 }
 
@@ -161,7 +162,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, true, false)
 		require.NoError(t, err)
 
-		if val.Type == "file" {
+		if val.Type == file {
 			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
 			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
@@ -174,7 +175,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err = resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		if val.Type == "file" {
+		if val.Type == file {
 			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
 			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
@@ -187,7 +188,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err = resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		if val.Type == "file" {
+		if val.Type == file {
 			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
 			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
@@ -436,7 +437,11 @@ func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error)
 	for k, sch := range swsp.Definitions {
 		resolver.KnownDefs[k] = struct{}{}
 		if nm, ok := sch.Extensions[xGoName]; ok {
-			resolver.KnownDefs[nm.(string)] = struct{}{}
+			str, ok := nm.(string)
+			if !ok {
+				return nil, nil, fmt.Errorf("expected x-go-name extension to be a string, but got %T", nm)
+			}
+			resolver.KnownDefs[str] = struct{}{}
 		}
 	}
 	return tlb, resolver, nil
@@ -596,7 +601,9 @@ func TestTypeResolver_AliasTypes(t *testing.T) {
 	assert.Equal(t, "string", rt.AliasedType)
 }
 
-func assertPrimitiveResolve(t testing.TB, tpe, tfmt, exp string, tr resolvedType) {
+func assertPrimitiveResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType) {
+	t.Helper()
+
 	assert.Equal(t, tpe, tr.SwaggerType, "expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType)
 	assert.Equal(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat)
 	assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType)

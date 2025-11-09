@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -198,7 +200,7 @@ func (o *operationGenerator) Generate() error {
 	for _, pp := range operations {
 		op := pp
 		if o.GenOpts.DumpData {
-			_ = dumpData(swag.ToDynamicJSON(op))
+			_ = dumpData(os.Stdout, swag.ToDynamicJSON(op))
 			continue
 		}
 		if err := o.GenOpts.renderOperation(&op); err != nil {
@@ -247,13 +249,13 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		"header":   make(map[string]string, len(params)),
 		"body":     make(map[string]string, len(params)),
 	}
-	debugLog("paramMappings: map=%v", params)
+	debugLogf("paramMappings: map=%v", params)
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
 	seenIDs := make(map[string]any, len(params))
 	for id, p := range params {
-		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
+		debugLogf("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
 		if _, found := idMapping[p.In]; !found {
 			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In)
@@ -265,7 +267,11 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		}
 
 		if val, ok := seenIDs[p.Name]; ok {
-			previous := val.(struct{ id, in string })
+			previous, ok := val.(struct{ id, in string })
+			if !ok {
+				panic(fmt.Errorf("internal error: invalid paramMapping: got %T", val))
+			}
+
 			idMapping[p.In][p.Name] = swag.ToGoName(id)
 			// rewrite the previously found one
 			idMapping[previous.in][p.Name] = swag.ToGoName(previous.id)
@@ -314,8 +320,9 @@ func renameTimeout(seenIDs map[string]any, timeoutName string) string {
 	return renameTimeout(seenIDs, next)
 }
 
+//nolint:gocognit,gocyclo,cyclop,maintidx // TODO(fredbi): refactor
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
-	debugLog("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
+	debugLogf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
 	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
 	//
@@ -394,7 +401,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 				}
 			}
 			name = swag.ToJSONName(b.Name + " " + name)
-			isSuccess := v.Code/100 == 2
+			const (
+				httpStatusCodeDivider = 100
+				httpStatusCodeSuccess = 2
+			)
+			isSuccess := v.Code/httpStatusCodeDivider == httpStatusCodeSuccess
 			gr, err := b.MakeResponse(receiver, name, isSuccess, resolver, v.Code, v.Response)
 			if err != nil {
 				return GenOperation{}, err
@@ -542,7 +553,7 @@ func schemeOrDefault(schemes []string, defaultScheme string) []string {
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
-	debugLog("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
+	debugLogf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
 
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 	examples := make(GenResponseExamples, 0, len(resp.Examples))
@@ -679,7 +690,7 @@ func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolved
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, _ *spec.Items) (GenItems, error) {
-	debugLog("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
+	debugLogf("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
 
@@ -718,7 +729,7 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 }
 
 func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter, idMapping map[string]map[string]string) (GenParameter, error) {
-	debugLog("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
+	debugLogf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
 
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
@@ -847,6 +858,8 @@ func (b *codeGenOpBuilder) MakeBodyParameter(res *GenParameter, resolver *typeRe
 // for compatibility with simple param templates.
 //
 // Constructed children assume simple structures: any complex object is assumed to be resolved by a model or extra schema definition.
+//
+//nolint:gocognit // TODO(fredbi): refactor
 func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *GenSchema) *GenItems {
 	items := new(GenItems)
 	if it != nil {
@@ -1140,9 +1153,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 	if err := sc.makeGenSchema(); err != nil {
 		return GenSchema{}, err
 	}
-	for alias, pkg := range findImports(&sc.GenSchema) {
-		b.Imports[alias] = pkg
-	}
+	maps.Copy(b.Imports, findImports(&sc.GenSchema))
 
 	if sch.Ref.String() == "" && len(sc.ExtraSchemas) > 0 {
 		newSchema, err := b.liftExtraSchemas(resolver, br, bs, &sc)
@@ -1259,7 +1270,8 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 		tag = renameOperationPackage(intersected, tag)
 	}
 
-	if matches := versionedPkgRex.FindStringSubmatch(tag); len(matches) > 2 {
+	const boundMatchSubExpressions = 2
+	if matches := versionedPkgRex.FindStringSubmatch(tag); len(matches) > boundMatchSubExpressions {
 		// rename packages like "v1", "v2" ... as they hold a special meaning for go
 		tag = "version" + matches[2]
 	}

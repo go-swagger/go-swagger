@@ -2,6 +2,7 @@ package generator
 
 import (
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -69,8 +70,10 @@ func wellKnownMime(tn string) (string, bool) {
 	return "", false
 }
 
+const mimeParamParts = 2
+
 func mediaMime(orig string) string {
-	return strings.SplitN(orig, ";", 2)[0]
+	return strings.SplitN(orig, ";", mimeParamParts)[0]
 }
 
 func mediaGoName(media string) string {
@@ -78,8 +81,8 @@ func mediaGoName(media string) string {
 }
 
 func mediaParameters(orig string) string {
-	parts := strings.SplitN(orig, ";", 2)
-	if len(parts) < 2 {
+	parts := strings.SplitN(orig, ";", mimeParamParts)
+	if len(parts) < mimeParamParts {
 		return ""
 	}
 	return parts[1]
@@ -115,14 +118,7 @@ func (a *appGenerator) makeSerializers(mediaTypes []string, known func(string) (
 		}
 		// provide all known parameters (currently unused by codegen templates)
 		if params := strings.TrimSpace(mediaParameters(media)); params != "" {
-			found := false
-			for _, p := range ser.Parameters {
-				if params == p {
-					found = true
-					break
-				}
-			}
-			if !found {
+			if !slices.Contains(ser.Parameters, params) {
 				ser.Parameters = append(ser.Parameters, params)
 			}
 		}

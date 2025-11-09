@@ -336,7 +336,10 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 		} else {
 			title = fixture.title
 		}
+
 		t.Run(title, func(t *testing.T) {
+			t.Parallel()
+
 			jazonDoc := fixture.schema
 			doc, err := loads.Embedded([]byte(jazonDoc), []byte(jazonDoc))
 			require.NoErrorf(t, err, "fixture %d", i)
@@ -372,9 +375,9 @@ type guardValidationsFixture struct {
 	ResolvedType string
 	Type         interface {
 		Validations() spec.SchemaValidations
-		SetValidations(spec.SchemaValidations)
+		SetValidations(validations spec.SchemaValidations)
 	}
-	Asserter func(testing.TB, spec.SchemaValidations)
+	Asserter func(*testing.T, spec.SchemaValidations)
 }
 
 func makeGuardValidationFixtures() []guardValidationsFixture {
@@ -386,7 +389,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 				Typed("number", "int64").
 				WithValidations(spec.CommonValidations{MinLength: swag.Int64(15), Maximum: swag.Float64(12.00)}).
 				UniqueValues(),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
 				require.False(t, val.HasStringValidations(), "expected no string validations, got: %#v", val)
 				require.True(t, val.HasArrayValidations(), "expected array validations, got: %#v", val)
@@ -399,7 +402,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 				Typed("string", "uuid").
 				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), Maximum: swag.Float64(12.00)}).
 				WithMinLength(12),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
 				require.False(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
 				require.True(t, val.HasStringValidations(), "expected string validations, got: %#v", val)
@@ -411,7 +414,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			Type: spec.FileParam("p1").
 				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), Maximum: swag.Float64(12.00)}).
 				WithMinLength(12),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
 				require.False(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
 				require.True(t, val.HasStringValidations(), "expected string validations, got: %#v", val)
@@ -427,7 +430,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 					Pattern:  "xyz",
 					Enum:     []any{"x", 34},
 				}),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
 				require.False(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
 				require.False(t, val.HasStringValidations(), "expected no string validations, got: %#v", val)
@@ -446,7 +449,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 					MinProperties: swag.Int64(10),
 				}).
 				WithMinLength(12),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
 				require.False(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
 				require.False(t, val.HasStringValidations(), "expected no string validations, got: %#v", val)
@@ -460,7 +463,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 				Typed("number", "double").
 				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), MultipleOf: swag.Float64(12.00), Pattern: "xyz"}).
 				WithMinLength(12),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
 				require.False(t, val.HasStringValidations(), "expected no string validations, got: %#v", val)
 				require.True(t, val.HasNumberValidations(), "expected number validations, got: %#v", val)
@@ -498,7 +501,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 						Enum:      []any{"x", 34},
 					},
 				}),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.True(t, val.HasStringValidations(), "expected string validations, got: %#v", val)
 				require.True(t, val.HasEnum())
 			},
@@ -514,7 +517,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 						Enum:      []any{"x", 34},
 					},
 				}),
-			Asserter: func(t testing.TB, val spec.SchemaValidations) {
+			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.False(t, val.HasStringValidations(), "expected no string validations, got: %#v", val)
 				require.False(t, val.HasEnum())
 			},

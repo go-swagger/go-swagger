@@ -11,9 +11,11 @@ import (
 )
 
 func TestMediaWellKnownMime(t *testing.T) {
+	const expectedMime = jsonSerializer
+
 	w, ok := wellKnownMime(runtime.JSONMime)
 	assert.True(t, ok)
-	assert.Equal(t, jsonSerializer, w) //nolint:testifylint // This is not a json value, this is a mime type
+	assert.Equal(t, expectedMime, w)
 
 	w, ok = wellKnownMime(runtime.YAMLMime)
 	assert.True(t, ok)
@@ -21,7 +23,7 @@ func TestMediaWellKnownMime(t *testing.T) {
 
 	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1")
 	assert.True(t, ok)
-	assert.Equal(t, jsonSerializer, w) //nolint:testifylint
+	assert.Equal(t, expectedMime, w)
 
 	w, ok = wellKnownMime("unknown")
 	assert.False(t, ok)
@@ -162,9 +164,10 @@ func TestMediaMakeSerializers(t *testing.T) {
 	}
 
 	// empty: defaults as json
+	const expectedMime = jsonSerializer
 	res, supportsJSON = app.makeSerializers([]string{}, func(_ string) (string, bool) { return "fake", true })
 	assert.True(t, supportsJSON)
 	assert.True(t, sort.IsSorted(res))
 	require.Len(t, res, 1)
-	assert.Equal(t, jsonSerializer, res[0].Name) //nolint:testifylint
+	assert.Equal(t, expectedMime, res[0].Name)
 }

@@ -24,9 +24,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
 )
 
 func TestBodyParams(t *testing.T) {
@@ -44,7 +41,7 @@ func TestBodyParams(t *testing.T) {
 	}
 
 	for _, param := range op.Parameters {
-		if param.Name == "body" {
+		if param.Name == body {
 			gp, perr := b.MakeParameter("a", resolver, param, nil)
 			require.NoError(t, perr)
 			assert.True(t, gp.IsBodyParam())
@@ -70,7 +67,7 @@ func TestBodyParams(t *testing.T) {
 	}
 
 	for _, param := range op.Parameters {
-		if param.Name != "body" {
+		if param.Name != body {
 			continue
 		}
 
@@ -221,209 +218,6 @@ func TestSimpleQueryParamsAST(t *testing.T) {
 	}
 }
 
-type paramItemsTestContext struct {
-	Formatter string
-	Converter string
-	Items     *paramItemsTestContext
-}
-
-type paramTestContext struct {
-	Name      string
-	OpID      string
-	Formatter string
-	Converter string
-	B         codeGenOpBuilder
-	Items     *paramItemsTestContext
-}
-
-func (ctx *paramTestContext) assertParameter(t testing.TB) (result bool) {
-	defer func() {
-		result = !t.Failed()
-	}()
-
-	_, _, op, err := ctx.B.Analyzed.OperationForName(ctx.OpID)
-
-	require.True(t, err)
-	require.NotNil(t, op)
-
-	resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
-	resolver.KnownDefs = make(map[string]struct{})
-
-	for k := range ctx.B.Doc.Spec().Definitions {
-		resolver.KnownDefs[k] = struct{}{}
-	}
-	for _, param := range op.Parameters {
-		if param.Name != ctx.Name {
-			continue
-		}
-
-		gp, err := ctx.B.MakeParameter("a", resolver, param, nil)
-		require.NoError(t, err)
-
-		assert.True(t, ctx.assertGenParam(t, param, gp))
-	}
-
-	return !t.Failed()
-}
-
-func (ctx *paramTestContext) assertGenParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
-	// went with the verbose option here, easier to debug
-	if !assert.Equal(t, param.In, gp.Location) {
-		return false
-	}
-	if !assert.Equal(t, param.Name, gp.Name) {
-		return false
-	}
-	if !assert.Equal(t, fmt.Sprintf("%q", param.Name), gp.Path) {
-		return false
-	}
-	if !assert.Equal(t, "i", gp.IndexVar) {
-		return false
-	}
-	if !assert.Equal(t, "a", gp.ReceiverName) {
-		return false
-	}
-	if !assert.Equal(t, "a."+swag.ToGoName(param.Name), gp.ValueExpression) {
-		return false
-	}
-	if !assert.Equal(t, ctx.Formatter, gp.Formatter) {
-		return false
-	}
-	if !assert.Equal(t, ctx.Converter, gp.Converter) {
-		return false
-	}
-	if !assert.Equal(t, param.Description, gp.Description) {
-		return false
-	}
-	if !assert.Equal(t, param.CollectionFormat, gp.CollectionFormat) {
-		return false
-	}
-	if !assert.Equal(t, param.Required, gp.Required) {
-		return false
-	}
-	if !assert.Equal(t, param.Minimum, gp.Minimum) || !assert.Equal(t, param.ExclusiveMinimum, gp.ExclusiveMinimum) {
-		return false
-	}
-	if !assert.Equal(t, param.Maximum, gp.Maximum) || !assert.Equal(t, param.ExclusiveMaximum, gp.ExclusiveMaximum) {
-		return false
-	}
-	if !assert.Equal(t, param.MinLength, gp.MinLength) {
-		return false
-	}
-	if !assert.Equal(t, param.MaxLength, gp.MaxLength) {
-		return false
-	}
-	if !assert.Equal(t, param.Pattern, gp.Pattern) {
-		return false
-	}
-	if !assert.Equal(t, param.MaxItems, gp.MaxItems) {
-		return false
-	}
-	if !assert.Equal(t, param.MinItems, gp.MinItems) {
-		return false
-	}
-	if !assert.Equal(t, param.UniqueItems, gp.UniqueItems) {
-		return false
-	}
-	if !assert.Equal(t, param.MultipleOf, gp.MultipleOf) {
-		return false
-	}
-	if !assert.Equal(t, param.Enum, gp.Enum) {
-		return false
-	}
-	if !assert.Equal(t, param.Type, gp.SwaggerType) {
-		return false
-	}
-	if !assert.Equal(t, param.Format, gp.SwaggerFormat) {
-		return false
-	}
-	if _, ok := primitives[gp.GoType]; ok {
-		if !assert.True(t, gp.IsPrimitive) {
-			return false
-		}
-	} else {
-		if !assert.False(t, gp.IsPrimitive) {
-			return false
-		}
-	}
-	// verify rendered template
-	if param.In == "body" {
-		return assertBodyParam(t, param, gp)
-	}
-
-	if ctx.Items != nil {
-		return ctx.Items.Assert(t, param.Items, gp.Child)
-	}
-
-	return true
-}
-
-func assertBodyParam(t testing.TB, param spec.Parameter, gp GenParameter) bool {
-	if !assert.Equal(t, "body", param.In) || !assert.Equal(t, "body", gp.Location) {
-		return false
-	}
-	if !assert.NotNil(t, gp.Schema) {
-		return false
-	}
-	return true
-}
-
-func (ctx *paramItemsTestContext) Assert(t testing.TB, pItems *spec.Items, gpItems *GenItems) bool {
-	if !assert.NotNil(t, pItems) || !assert.NotNil(t, gpItems) {
-		return false
-	}
-	// went with the verbose option here, easier to debug
-	if !assert.Equal(t, ctx.Formatter, gpItems.Formatter) {
-		return false
-	}
-	if !assert.Equal(t, ctx.Converter, gpItems.Converter) {
-		return false
-	}
-	if !assert.Equal(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.Equal(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Maximum, gpItems.Maximum) || !assert.Equal(t, pItems.ExclusiveMaximum, gpItems.ExclusiveMaximum) {
-		return false
-	}
-	if !assert.Equal(t, pItems.MinLength, gpItems.MinLength) {
-		return false
-	}
-	if !assert.Equal(t, pItems.MaxLength, gpItems.MaxLength) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Pattern, gpItems.Pattern) {
-		return false
-	}
-	if !assert.Equal(t, pItems.MaxItems, gpItems.MaxItems) {
-		return false
-	}
-	if !assert.Equal(t, pItems.MinItems, gpItems.MinItems) {
-		return false
-	}
-	if !assert.Equal(t, pItems.UniqueItems, gpItems.UniqueItems) {
-		return false
-	}
-	if !assert.Equal(t, pItems.MultipleOf, gpItems.MultipleOf) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Enum, gpItems.Enum) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Type, gpItems.SwaggerType) {
-		return false
-	}
-	if !assert.Equal(t, pItems.Format, gpItems.SwaggerFormat) {
-		return false
-	}
-	if ctx.Items != nil {
-		return ctx.Items.Assert(t, pItems.Items, gpItems.Child)
-	}
-	return true
-}
-
 var bug163Properties = []paramTestContext{
 	{"stringTypeInQuery", "getSearch", "", "", codeGenOpBuilder{}, nil},
 	{"numberTypeInQuery", "getSearch", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
@@ -505,64 +299,98 @@ func TestGenParameter_Issue195(t *testing.T) {
 }
 
 func TestGenParameter_Issue196(t *testing.T) {
+	t.Parallel()
+
 	defer discardOutput()()
 
-	b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
-	require.NoError(t, err)
+	t.Run("should construct an operation builder", func(t *testing.T) {
+		b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
+		require.NoError(t, err)
 
-	op, err := b.MakeOperation()
-	require.NoError(t, err)
+		t.Run("should make an operation", func(t *testing.T) {
+			op, err := b.MakeOperation()
+			require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	opts := opts()
-	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
-	ff, err := opts.LanguageOpts.FormatContent("post_events.go", buf.Bytes())
-	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+			t.Run("should generate go code", func(t *testing.T) {
+				buf := bytes.NewBuffer(nil)
+				opts := opts()
+				require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
-	assertInCode(t, "body.Validate", string(ff))
+				t.Run("should format go code", func(t *testing.T) {
+					ff, err := opts.LanguageOpts.FormatContent("post_events.go", buf.Bytes())
+					require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+					t.Run("generated code should have a validation for body param", func(t *testing.T) {
+						assertInCode(t, "body.Validate", string(ff))
+					})
+				})
+			})
+		})
+	})
 }
 
 func TestGenParameter_Issue217(t *testing.T) {
-	// Check for string
+	t.Parallel()
 
+	// Check for string
 	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/string.yml")
 	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/interface.yml")
 	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/map.yml")
 	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/array.yml")
 }
 
-func assertNoValidator(t testing.TB, opName, path string) {
-	b, err := opBuilder(opName, path)
-	require.NoError(t, err)
+func assertNoValidator(t *testing.T, opName, path string) {
+	t.Run("should construct an operation builder", func(t *testing.T) {
+		b, err := opBuilder(opName, path)
+		require.NoError(t, err)
 
-	op, err := b.MakeOperation()
-	require.NoError(t, err)
+		t.Run("should make an operation", func(t *testing.T) {
+			op, err := b.MakeOperation()
+			require.NoError(t, err)
 
-	var buf bytes.Buffer
-	opts := opts()
-	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
+			t.Run("should generate go code", func(t *testing.T) {
+				var buf bytes.Buffer
+				opts := opts()
+				require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
 
-	ff, err := opts.LanguageOpts.FormatContent("post_echo.go", buf.Bytes())
-	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+				t.Run("should format go code", func(t *testing.T) {
+					ff, err := opts.LanguageOpts.FormatContent("post_echo.go", buf.Bytes())
+					require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
-	assertNotInCode(t, "body.Validate", string(ff))
+					t.Run("generated code should NOT have a validation for body param", func(t *testing.T) {
+						assertNotInCode(t, "body.Validate", string(ff))
+					})
+				})
+			})
+		})
+	})
 }
 
 func TestGenParameter_Issue249(t *testing.T) {
-	b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
-	require.NoError(t, err)
+	t.Run("should construct an operation builder", func(t *testing.T) {
+		b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
+		require.NoError(t, err)
 
-	op, err := b.MakeOperation()
-	require.NoError(t, err)
+		t.Run("should make an operation", func(t *testing.T) {
+			op, err := b.MakeOperation()
+			require.NoError(t, err)
 
-	buf := bytes.NewBuffer(nil)
-	opts := opts()
-	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+			t.Run("should generate go code", func(t *testing.T) {
+				buf := bytes.NewBuffer(nil)
+				opts := opts()
+				require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
-	ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
-	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+				t.Run("should format go code", func(t *testing.T) {
+					ff, err := opts.LanguageOpts.FormatContent("put_testing.go", buf.Bytes())
+					require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
-	assertNotInCode(t, "valuesTestingThis := o.TestingThis", string(ff))
+					t.Run("generated code should assign parameter", func(t *testing.T) {
+						assertNotInCode(t, "valuesTestingThis := o.TestingThis", string(ff))
+					})
+				})
+			})
+		})
+	})
 }
 
 func TestGenParameter_Issue248(t *testing.T) {
@@ -981,6 +809,7 @@ func TestGenParameter_Issue1325(t *testing.T) {
 	assertInCode(t, "runtime.NamedReadCloser", string(ff))
 }
 
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
@@ -1171,6 +1000,7 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 	}
 }
 
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_Issue909(t *testing.T) {
 	defer discardOutput()()
 
@@ -1715,6 +1545,8 @@ func TestGenParameter_Issue1513(t *testing.T) {
 }
 
 // Body param validation on empty objects.
+//
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_Issue1536(t *testing.T) {
 	defer discardOutput()()
 
@@ -2032,6 +1864,7 @@ func TestGenParameter_Issue1536(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536.yaml"), false, false)
 }
 
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_Issue15362(t *testing.T) {
 	defer discardOutput()()
 
@@ -2261,6 +2094,7 @@ func TestGenParameter_Issue15362(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), false, false)
 }
 
+//nolint:dupword,maintidx // OK: false positives on code assertions // the maintenance index is correct, but there is not much we can do at this moment
 func TestGenParameter_Issue1536_Maps(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
@@ -2888,6 +2722,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), false, false)
 }
 
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
@@ -3133,6 +2968,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
 }
 
+//nolint:dupword,maintidx // OK: false positives on code assertions
 func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
@@ -3870,6 +3706,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-4.yaml"), false, false)
 }
 
+//nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_Issue15362_WithExpand(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()

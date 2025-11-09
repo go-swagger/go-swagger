@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path"
@@ -46,6 +48,14 @@ const (
 	defaultServerName           = "swagger"
 	defaultScheme               = "http"
 	defaultImplementationTarget = "implementation"
+
+	winOS                    = "windows"
+	readAllFile  fs.FileMode = 0o644 & fs.ModePerm
+	readAllDir   fs.FileMode = 0o755 & fs.ModePerm
+	readableFile fs.FileMode = 0o600 & fs.ModePerm
+	readableDir  fs.FileMode = 0o700 & fs.ModePerm
+
+	sensibleDefaultMapAlloc = 50
 )
 
 func init() {
@@ -465,7 +475,7 @@ func (g *GenOpts) SpecPath() string {
 // PrincipalIsNullable indicates whether the principal type used for authentication
 // may be used as a pointer.
 func (g *GenOpts) PrincipalIsNullable() bool {
-	debugLog("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
+	debugLogf("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
 	return g.Principal != iface && !g.PrincipalCustomIface
 }
 
@@ -546,7 +556,11 @@ func (g *GenOpts) location(t *TemplateOpts, data any) (string, string, error) {
 	var useTags bool
 	useTagsF := v.FieldByName("UseTags")
 	if useTagsF.IsValid() {
-		useTags = useTagsF.Interface().(bool)
+		var ok bool
+		useTags, ok = useTagsF.Interface().(bool)
+		if !ok {
+			return "", "", fmt.Errorf("expected UseTags to be bool, but got %T", useTagsF.Interface())
+		}
 	}
 
 	funcMap := FuncMapFunc(g.LanguageOpts)
@@ -658,7 +672,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	}
 
 	if t.SkipExists && fileExists(dir, fname) {
-		debugLog("skipping generation of %s because it already exists and skip_exist directive is set for %s",
+		debugLogf("skipping generation of %s because it already exists and skip_exist directive is set for %s",
 			filepath.Join(dir, fname), t.Name)
 		return nil
 	}
@@ -672,10 +686,10 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	if dir != "" {
 		_, exists := os.Stat(dir)
 		if os.IsNotExist(exists) {
-			debugLog("creating directory %q for \"%s\"", dir, t.Name)
+			debugLogf("creating directory %q for \"%s\"", dir, t.Name)
 			// Directory settings consistent with file privileges.
 			// Environment's umask may alter this setup
-			if e := os.MkdirAll(dir, 0o755); e != nil {
+			if e := os.MkdirAll(dir, readAllDir); e != nil {
 				return e
 			}
 		}
@@ -695,7 +709,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 		)
 		if err != nil {
 			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
-			writeerr = os.WriteFile(filepath.Join(dir, fname), content, 0o644) // #nosec
+			writeerr = os.WriteFile(filepath.Join(dir, fname), content, readAllFile) // #nosec
 			if writeerr != nil {
 				return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
 			}
@@ -704,7 +718,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 		}
 	}
 
-	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, 0o644) // #nosec
+	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, readAllFile) // #nosec
 	if writeerr != nil {
 		return fmt.Errorf("failed to write file %q in %q: %w", fname, dir, writeerr)
 	}
@@ -826,7 +840,7 @@ func (g *GenOptsCommon) setTemplates() error {
 // defaultImports produces a default map for imports with models.
 func (g *GenOpts) defaultImports() map[string]string {
 	baseImport := g.LanguageOpts.baseImport(g.Target)
-	defaultImports := make(map[string]string, 50)
+	defaultImports := make(map[string]string, sensibleDefaultMapAlloc)
 
 	var modelsAlias, importPath string
 	if g.ExistingModels == "" {
@@ -863,7 +877,7 @@ func (g *GenOpts) defaultImports() map[string]string {
 func (g *GenOpts) initImports(operationsPackage string) map[string]string {
 	baseImport := g.LanguageOpts.baseImport(g.Target)
 
-	imports := make(map[string]string, 50)
+	imports := make(map[string]string, sensibleDefaultMapAlloc)
 	imports[g.LanguageOpts.ManglePackageName(operationsPackage, defaultOperationsTarget)] = path.Join(
 		baseImport,
 		g.LanguageOpts.ManglePackagePath(operationsPackage, defaultOperationsTarget))
@@ -1087,7 +1101,7 @@ func securityRequirements(orig []map[string][]string) (result []analysis.Securit
 //
 // ExtraSchemas are inlined types rendered in the same model file.
 func gatherExtraSchemas(extraMap map[string]GenSchema) (extras GenSchemaList) {
-	var extraKeys []string
+	extraKeys := make([]string, 0, len(extraMap))
 	for k := range extraMap {
 		extraKeys = append(extraKeys, k)
 	}
@@ -1120,12 +1134,13 @@ func gatherURISchemes(swsp *spec.Swagger, operation spec.Operation) ([]string, [
 	return schemes, extraSchemes
 }
 
-func dumpData(data any) error {
+func dumpData(w io.Writer, data any) error {
 	bb, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
 	}
-	_, _ = fmt.Fprintln(os.Stdout, string(bb)) // TODO(fred): not testable
+	_, _ = fmt.Fprintln(w, string(bb))
+
 	return nil
 }
 

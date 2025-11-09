@@ -37,34 +37,39 @@ func debugOptions() {
 }
 
 // debugLog wraps log.Printf with a debug-specific logger.
-func debugLog(frmt string, args ...any) {
-	if Debug {
-		_, file, pos, _ := runtime.Caller(1)
-		safeArgs := sanitizeDebugLogArgs(args...)
-		generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
-			fmt.Sprintf(frmt, safeArgs...))
+func debugLogf(format string, args ...any) {
+	if !Debug {
+		return
 	}
+
+	_, file, pos, _ := runtime.Caller(1)
+	safeArgs := sanitizeDebugLogArgs(args...)
+	generatorLogger.Printf("%s:%d: %s", filepath.Base(file), pos,
+		fmt.Sprintf(format, safeArgs...))
 }
 
 // debugLogAsJSON unmarshals its last arg as pretty JSON.
-func debugLogAsJSON(frmt string, args ...any) {
-	if Debug {
-		var dfrmt string
-		_, file, pos, _ := runtime.Caller(1)
-		dargs := make([]any, 0, len(args)+2)
-		dargs = append(dargs, filepath.Base(file), pos)
-
-		if len(args) > 0 {
-			dfrmt = "%s:%d: " + frmt + "\n%s"
-			bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ") //nolint:errchkjson // it's okay for debug
-			dargs = append(dargs, args[0:len(args)-1]...)
-			dargs = append(dargs, string(bbb))
-		} else {
-			dfrmt = "%s:%d: " + frmt
-		}
-
-		generatorLogger.Printf(dfrmt, dargs...)
+func debugLogAsJSONf(format string, args ...any) {
+	if !Debug {
+		return
 	}
+
+	var dfrmt string
+	const extraNumArgs = 2
+	_, file, pos, _ := runtime.Caller(1)
+	dargs := make([]any, 0, len(args)+extraNumArgs)
+	dargs = append(dargs, filepath.Base(file), pos)
+
+	if len(args) > 0 {
+		dfrmt = "%s:%d: " + format + "\n%s"
+		bbb, _ := json.MarshalIndent(args[len(args)-1], "", " ") //nolint:errchkjson // OK: it's okay for debug
+		dargs = append(dargs, args[0:len(args)-1]...)
+		dargs = append(dargs, string(bbb))
+	} else {
+		dfrmt = "%s:%d: " + format
+	}
+
+	generatorLogger.Printf(dfrmt, dargs...)
 }
 
 // sanitizeDebugLogArgs traverses arguments to debugLog and redacts fields
@@ -74,6 +79,7 @@ func sanitizeDebugLogArgs(args ...any) []any {
 	for i, arg := range args {
 		safeArgs[i] = sanitizeValue(arg)
 	}
+
 	return safeArgs
 }
 
@@ -82,12 +88,13 @@ func sanitizeDebugLogArgs(args ...any) []any {
 func sanitizeValue(val any) any {
 	switch v := val.(type) {
 	case map[string]any:
-		// Recursively sanitize map values
+		// recursively sanitize map values
 		res := make(map[string]any, len(v))
 		for k, subv := range v {
 			if k == "IsAPIKeyAuth" || k == "TokenURL" { // false positive: this is a bool indicator, not a sensitive value
 				continue
 			}
+
 			lower := strings.ToLower(k)
 			if lower == "apikey" || lower == "token" ||
 				lower == "secret" ||
@@ -102,12 +109,14 @@ func sanitizeValue(val any) any {
 			res[k] = sanitizeValue(subv)
 		}
 		return res
+
 	case []any:
 		res := make([]any, len(v))
 		for i, subv := range v {
 			res[i] = sanitizeValue(subv)
 		}
 		return res
+
 	case string:
 		// heuristic: redact if looks like a key/secret
 		lower := strings.ToLower(v)
@@ -116,8 +125,35 @@ func sanitizeValue(val any) any {
 			return "***REDACTED***"
 		}
 		return v
+
 	default:
 		// Optionally, process struct types for known sensitive fields
 		return v
 	}
+}
+
+// fatal wraps [log.Fatal] with extra context provided in debug mode.
+func fatal(v ...any) {
+	fatalln(v...)
+}
+
+// fatalln wraps [log.Fatalln] with extra context provided in debug mode.
+func fatalln(v ...any) {
+	if Debug {
+		b := fmt.Appendln([]byte{}, v...)
+		traceFatalf("%s", b)
+	}
+
+	log.Fatalln(v...)
+}
+
+// traceFatalf allows to capture more context about the caller of a fatalX function.
+//
+// This output is not disabled when muting the [log.Logger] (e.g. when running tests).
+func traceFatalf(format string, v ...any) {
+	const callstackOffset = 3
+
+	_, file, pos, _ := runtime.Caller(callstackOffset)
+	safeArgs := sanitizeDebugLogArgs(v...)
+	fmt.Fprintf(os.Stderr, "fatal error: %s:%d: %s\n", filepath.Base(file), pos, fmt.Sprintf(format, safeArgs...))
 }

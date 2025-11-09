@@ -14,24 +14,26 @@
 
 package generator
 
-// TODO: we may probably find a way to register most of this dynamically from strfmt
+// TODO: we should probably find a way to register most of this dynamically from strfmt.
+
+const float64String = "float64"
 
 // map of function calls to be generated to get the zero value of a given type.
 var zeroes = map[string]string{
-	"bool":    "false",
-	"float32": "0",
-	"float64": "0",
-	"int":     "0",
-	"int8":    "0",
-	"int16":   "0",
-	"int32":   "0",
-	"int64":   "0",
-	"string":  "\"\"",
-	"uint":    "0",
-	"uint8":   "0",
-	"uint16":  "0",
-	"uint32":  "0",
-	"uint64":  "0",
+	"bool":        "false",
+	"float32":     "0",
+	float64String: "0",
+	"int":         "0",
+	"int8":        "0",
+	"int16":       "0",
+	"int32":       "0",
+	"int64":       "0",
+	"string":      "\"\"",
+	"uint":        "0",
+	"uint8":       "0",
+	"uint16":      "0",
+	"uint32":      "0",
+	"uint64":      "0",
 	// Extended formats (23 formats corresponding to the Default registry
 	// provided by go-openapi/strfmt)
 	"strfmt.Base64":     "strfmt.Base64([]byte(nil))",
@@ -64,33 +66,33 @@ var zeroes = map[string]string{
 // conversion functions from string representation to a numerical or boolean
 // primitive type.
 var stringConverters = map[string]string{
-	"bool":    "swag.ConvertBool",
-	"float32": "swag.ConvertFloat32",
-	"float64": "swag.ConvertFloat64",
-	"int8":    "swag.ConvertInt8",
-	"int16":   "swag.ConvertInt16",
-	"int32":   "swag.ConvertInt32",
-	"int64":   "swag.ConvertInt64",
-	"uint8":   "swag.ConvertUint8",
-	"uint16":  "swag.ConvertUint16",
-	"uint32":  "swag.ConvertUint32",
-	"uint64":  "swag.ConvertUint64",
+	"bool":        "swag.ConvertBool",
+	"float32":     "swag.ConvertFloat32",
+	float64String: "swag.ConvertFloat64",
+	"int8":        "swag.ConvertInt8",
+	"int16":       "swag.ConvertInt16",
+	"int32":       "swag.ConvertInt32",
+	"int64":       "swag.ConvertInt64",
+	"uint8":       "swag.ConvertUint8",
+	"uint16":      "swag.ConvertUint16",
+	"uint32":      "swag.ConvertUint32",
+	"uint64":      "swag.ConvertUint64",
 }
 
 // formatting (string representation) functions from a native representation
 // of a numerical or boolean primitive type.
 var stringFormatters = map[string]string{
-	"bool":    "swag.FormatBool",
-	"float32": "swag.FormatFloat32",
-	"float64": "swag.FormatFloat64",
-	"int8":    "swag.FormatInt8",
-	"int16":   "swag.FormatInt16",
-	"int32":   "swag.FormatInt32",
-	"int64":   "swag.FormatInt64",
-	"uint8":   "swag.FormatUint8",
-	"uint16":  "swag.FormatUint16",
-	"uint32":  "swag.FormatUint32",
-	"uint64":  "swag.FormatUint64",
+	"bool":        "swag.FormatBool",
+	"float32":     "swag.FormatFloat32",
+	float64String: "swag.FormatFloat64",
+	"int8":        "swag.FormatInt8",
+	"int16":       "swag.FormatInt16",
+	"int32":       "swag.FormatInt32",
+	"int64":       "swag.FormatInt64",
+	"uint8":       "swag.FormatUint8",
+	"uint16":      "swag.FormatUint16",
+	"uint32":      "swag.FormatUint32",
+	"uint64":      "swag.FormatUint64",
 }
 
 // typeMapping contains a mapping of type name to go type.
@@ -99,7 +101,7 @@ var typeMapping = map[string]string{
 	"string":  "string",
 	"boolean": "bool",
 	"integer": "int64",
-	"number":  "float64",
+	"number":  float64String,
 	// For file producers
 	"file": "runtime.File",
 }
@@ -107,7 +109,7 @@ var typeMapping = map[string]string{
 // formatMapping contains a type-specific version of mapping of format to go type.
 var formatMapping = map[string]map[string]string{
 	"number": {
-		"double": "float64",
+		"double": float64String,
 		"float":  "float32",
 		"int":    "int64",
 		"int8":   "int8",
@@ -174,25 +176,25 @@ var formatMapping = map[string]map[string]string{
 
 // go primitive types.
 var primitives = map[string]struct{}{
-	"bool":       {},
-	"byte":       {},
-	"[]byte":     {},
-	"complex64":  {},
-	"complex128": {},
-	"float32":    {},
-	"float64":    {},
-	"int":        {},
-	"int8":       {},
-	"int16":      {},
-	"int32":      {},
-	"int64":      {},
-	"rune":       {},
-	"string":     {},
-	"uint":       {},
-	"uint8":      {},
-	"uint16":     {},
-	"uint32":     {},
-	"uint64":     {},
+	"bool":        {},
+	"byte":        {},
+	"[]byte":      {},
+	"complex64":   {},
+	"complex128":  {},
+	"float32":     {},
+	float64String: {},
+	"int":         {},
+	"int8":        {},
+	"int16":       {},
+	"int32":       {},
+	"int64":       {},
+	"rune":        {},
+	"string":      {},
+	"uint":        {},
+	"uint8":       {},
+	"uint16":      {},
+	"uint32":      {},
+	"uint64":      {},
 }
 
 // Formats with a custom formatter.
