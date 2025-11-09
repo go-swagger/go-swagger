@@ -14,10 +14,13 @@ import (
 
 var go118ClassificationCtx *scanCtx
 
-func loadGo118ClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
+func loadGo118ClassificationPkgsCtx(t *testing.T, extra ...string) *scanCtx {
+	t.Helper()
+
 	if go118ClassificationCtx != nil {
 		return go118ClassificationCtx
 	}
+
 	sctx, err := newScanCtx(&Options{
 		Packages: append([]string{
 			"github.com/go-swagger/go-swagger/fixtures/goparsing/go118",
@@ -25,6 +28,7 @@ func loadGo118ClassificationPkgsCtx(t testing.TB, extra ...string) *scanCtx {
 	})
 	require.NoError(t, err)
 	go118ClassificationCtx = sctx
+
 	return go118ClassificationCtx
 }
 

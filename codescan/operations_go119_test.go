@@ -19,6 +19,7 @@ func TestIndentedYAMLBlock(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
+
 	var ops spec.Paths
 	for _, apiPath := range sctx.app.Operations {
 		prs := &operationsBuilder{
@@ -32,8 +33,8 @@ func TestIndentedYAMLBlock(t *testing.T) {
 	assert.Len(t, ops.Paths, 2)
 
 	po, ok := ops.Paths["/api/v1/somefunc"]
-	assert.True(t, ok)
-	assert.NotNil(t, po.Post)
+	require.True(t, ok)
+	require.NotNil(t, po.Post)
 	op := po.Post
 	assert.Empty(t, op.Summary)
 	assert.Equal(t, "Do something", op.Description)
@@ -41,9 +42,11 @@ func TestIndentedYAMLBlock(t *testing.T) {
 
 	assert.Contains(t, op.Extensions, "x-codeSamples")
 
-	samples := op.Extensions["x-codeSamples"].([]interface{})
-	assert.Len(t, samples, 1)
-	sample := samples[0].(map[string]interface{})
+	samples, ok := op.Extensions["x-codeSamples"].([]any)
+	require.True(t, ok)
+	require.Len(t, samples, 1)
+	sample, ok := samples[0].(map[string]any)
+	require.True(t, ok)
 	assert.Contains(t, sample, "lang")
 	assert.Equal(t, "curl", sample["lang"])
 
@@ -54,8 +57,8 @@ curl -u "${LOGIN}:${PASSWORD}" -d '{"key2": "value2"}' -X POST   "https://{host}
 	assert.Equal(t, expectedSource, sample["source"])
 
 	po2, ok := ops.Paths["/api/v1/somefuncTabs"]
-	assert.True(t, ok)
-	assert.NotNil(t, po2.Post)
+	require.True(t, ok)
+	require.NotNil(t, po2.Post)
 	op2 := po2.Post
 	assert.Empty(t, op2.Summary)
 	assert.Equal(t, "Do something", op2.Description)
@@ -63,9 +66,11 @@ curl -u "${LOGIN}:${PASSWORD}" -d '{"key2": "value2"}' -X POST   "https://{host}
 
 	assert.Contains(t, op2.Extensions, "x-codeSamples")
 
-	samples2 := op2.Extensions["x-codeSamples"].([]interface{})
-	assert.Len(t, samples2, 1)
-	sample2 := samples2[0].(map[string]interface{})
+	samples2, ok := op2.Extensions["x-codeSamples"].([]any)
+	require.True(t, ok)
+	require.Len(t, samples2, 1)
+	sample2, ok := samples2[0].(map[string]any)
+	require.True(t, ok)
 	assert.Contains(t, sample2, "lang")
 	assert.Equal(t, "curl", sample2["lang"])
 

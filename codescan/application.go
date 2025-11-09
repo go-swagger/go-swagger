@@ -166,7 +166,7 @@ func (d *entityDecl) Names() (name, goName string) {
 
 DECLS:
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxModelOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasModelAnnotation = true
@@ -190,7 +190,7 @@ func (d *entityDecl) ResponseNames() (name, goName string) {
 
 DECLS:
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxResponseOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasResponseAnnotation = true
@@ -210,13 +210,13 @@ func (d *entityDecl) OperationIDs() (result []string) {
 	}
 
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxParametersOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasParameterAnnotation = true
 			}
 			if len(matches) > 1 && len(matches[1]) > 0 {
-				for _, pt := range strings.Split(matches[1], " ") {
+				for pt := range strings.SplitSeq(matches[1], " ") {
 					tr := strings.TrimSpace(pt)
 					if len(tr) > 0 {
 						result = append(result, tr)
@@ -236,7 +236,7 @@ func (d *entityDecl) HasModelAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxModelOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasModelAnnotation = true
@@ -255,7 +255,7 @@ func (d *entityDecl) HasResponseAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxResponseOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasResponseAnnotation = true
@@ -274,7 +274,7 @@ func (d *entityDecl) HasParameterAnnotation() bool {
 		return false
 	}
 	for _, cmt := range d.Comments.List {
-		for _, ln := range strings.Split(cmt.Text, "\n") {
+		for ln := range strings.SplitSeq(cmt.Text, "\n") {
 			matches := rxParametersOverride.FindStringSubmatch(ln)
 			if len(matches) > 0 {
 				d.hasParameterAnnotation = true
@@ -298,7 +298,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 					if ts, ok := sp.(*ast.TypeSpec); ok && ts.Name.Name == name {
 						def, ok := pkg.TypesInfo.Defs[ts.Name]
 						if !ok {
-							debugLog("couldn't find type info for %s", ts.Name)
+							debugLogf("couldn't find type info for %s", ts.Name)
 
 							continue
 						}
@@ -306,7 +306,7 @@ func (s *scanCtx) FindDecl(pkgPath, name string) (*entityDecl, bool) {
 						nt, isNamed := def.Type().(*types.Named)
 						at, isAliased := def.Type().(*types.Alias)
 						if !isNamed && !isAliased {
-							debugLog("%s is not a named or an aliased type but a %T", ts.Name, def.Type())
+							debugLogf("%s is not a named or an aliased type but a %T", ts.Name, def.Type())
 
 							continue
 						}
@@ -414,7 +414,7 @@ func (s *scanCtx) FindComments(pkg *packages.Package, name string) (*ast.Comment
 	return nil, false
 }
 
-func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []interface{}, descList []string, _ bool) {
+func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list []any, descList []string, _ bool) {
 	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			gd, ok := d.(*ast.GenDecl)
@@ -426,52 +426,81 @@ func (s *scanCtx) FindEnumValues(pkg *packages.Package, enumName string) (list [
 				continue
 			}
 
-			for _, s := range gd.Specs {
-				if vs, ok := s.(*ast.ValueSpec); ok {
-					if vsIdent, ok := vs.Type.(*ast.Ident); ok {
-						if vsIdent.Name == enumName {
-							if len(vs.Values) > 0 {
-								if bl, ok := vs.Values[0].(*ast.BasicLit); ok {
-									blValue := getEnumBasicLitValue(bl)
-									list = append(list, blValue)
+			for _, spec := range gd.Specs {
+				literalValue, description := s.findEnumValue(spec, enumName)
+				if literalValue == nil {
+					continue
+				}
 
-									// build the enum description
-									var (
-										desc     = &strings.Builder{}
-										namesLen = len(vs.Names)
-									)
-									fmt.Fprintf(desc, "%v ", blValue)
-									for i, name := range vs.Names {
-										desc.WriteString(name.Name)
-										if i < namesLen-1 {
-											desc.WriteString(" ")
-										}
-									}
-									if vs.Doc != nil {
-										docListLen := len(vs.Doc.List)
-										if docListLen > 0 {
-											desc.WriteString(" ")
-										}
-										for i, doc := range vs.Doc.List {
-											if doc.Text != "" {
-												text := strings.TrimPrefix(doc.Text, "//")
-												desc.WriteString(text)
-												if i < docListLen-1 {
-													desc.WriteString(" ")
-												}
-											}
-										}
-									}
-									descList = append(descList, desc.String())
-								}
-							}
-						}
-					}
+				list = append(list, literalValue)
+				descList = append(descList, description)
+			}
+		}
+	}
+
+	return list, descList, true
+}
+
+func (s *scanCtx) findEnumValue(spec ast.Spec, enumName string) (literalValue any, description string) {
+	vs, ok := spec.(*ast.ValueSpec)
+	if !ok {
+		return nil, ""
+	}
+
+	vsIdent, ok := vs.Type.(*ast.Ident)
+	if !ok {
+		return nil, ""
+	}
+
+	if vsIdent.Name != enumName {
+		return nil, ""
+	}
+
+	if len(vs.Values) == 0 {
+		return nil, ""
+	}
+
+	bl, ok := vs.Values[0].(*ast.BasicLit)
+	if !ok {
+		return nil, ""
+	}
+
+	literalValue = getEnumBasicLitValue(bl)
+
+	// build the enum description
+	var (
+		desc     = &strings.Builder{}
+		namesLen = len(vs.Names)
+	)
+
+	fmt.Fprintf(desc, "%v ", literalValue)
+	for i, name := range vs.Names {
+		desc.WriteString(name.Name)
+		if i < namesLen-1 {
+			desc.WriteString(" ")
+		}
+	}
+
+	if vs.Doc != nil {
+		docListLen := len(vs.Doc.List)
+		if docListLen > 0 {
+			desc.WriteString(" ")
+		}
+
+		for i, doc := range vs.Doc.List {
+			if doc.Text != "" {
+				text := strings.TrimPrefix(doc.Text, "//")
+				desc.WriteString(text)
+				if i < docListLen-1 {
+					desc.WriteString(" ")
 				}
 			}
 		}
 	}
-	return list, descList, true
+
+	description = desc.String()
+
+	return literalValue, description
 }
 
 type typeIndexOption func(*typeIndex)
@@ -578,7 +607,7 @@ func (a *typeIndex) build(pkgs []*packages.Package) error {
 
 func (a *typeIndex) processPackage(pkg *packages.Package) error {
 	if !shouldAcceptPkg(pkg.PkgPath, a.includePkgs, a.excludePkgs) {
-		debugLog("package %s is ignored due to rules", pkg.Name)
+		debugLogf("package %s is ignored due to rules", pkg.Name)
 		return nil
 	}
 
@@ -599,7 +628,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue // not a valid operation
 				}
 				if !shouldAcceptTag(pp.Tags, a.includeTags, a.excludeTags) {
-					debugLog("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
+					debugLogf("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
 					continue
 				}
 				a.Operations = append(a.Operations, pp)
@@ -613,7 +642,7 @@ func (a *typeIndex) processPackage(pkg *packages.Package) error {
 					continue // not a valid operation
 				}
 				if !shouldAcceptTag(pp.Tags, a.includeTags, a.excludeTags) {
-					debugLog("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
+					debugLogf("operation %s %s is ignored due to tag rules", pp.Method, pp.Path)
 					continue
 				}
 				a.Routes = append(a.Routes, pp)
@@ -647,21 +676,21 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 	for _, sp := range gd.Specs {
 		switch ts := sp.(type) {
 		case *ast.ValueSpec:
-			debugLog("saw value spec: %v", ts.Names)
+			debugLogf("saw value spec: %v", ts.Names)
 			return
 		case *ast.ImportSpec:
-			debugLog("saw import spec: %v", ts.Name)
+			debugLogf("saw import spec: %v", ts.Name)
 			return
 		case *ast.TypeSpec:
 			def, ok := pkg.TypesInfo.Defs[ts.Name]
 			if !ok {
-				debugLog("couldn't find type info for %s", ts.Name)
+				debugLogf("couldn't find type info for %s", ts.Name)
 				continue
 			}
 			nt, isNamed := def.Type().(*types.Named)
 			at, isAliased := def.Type().(*types.Alias)
 			if !isNamed && !isAliased {
-				debugLog("%s is not a named or aliased type but a %T", ts.Name, def.Type())
+				debugLogf("%s is not a named or aliased type but a %T", ts.Name, def.Type())
 
 				continue
 			}
@@ -689,7 +718,7 @@ func (a *typeIndex) processDecl(pkg *packages.Package, file *ast.File, n node, g
 			case n&responseNode != 0 && decl.HasResponseAnnotation():
 				a.Responses = append(a.Responses, decl)
 			default:
-				debugLog(
+				debugLogf(
 					"type %q skipped because it is not tagged as a model, a parameter or a response. %s",
 					decl.Obj().Name(),
 					"It may reenter the scope because it is a discovered dependency",
@@ -779,7 +808,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 	return n, nil
 }
 
-func debugLog(format string, args ...interface{}) {
+func debugLogf(format string, args ...any) {
 	if Debug {
 		_ = log.Output(2, fmt.Sprintf(format, args...))
 	}

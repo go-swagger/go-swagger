@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-func getEnumBasicLitValue(basicLit *ast.BasicLit) interface{} {
+func getEnumBasicLitValue(basicLit *ast.BasicLit) any {
 	switch basicLit.Kind.String() {
 	case "INT":
 		if result, err := strconv.ParseInt(basicLit.Value, 10, 64); err == nil {

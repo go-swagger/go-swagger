@@ -2206,7 +2206,9 @@ func getClassificationModel(sctx *scanCtx, nm string) *entityDecl {
 	return decl
 }
 
-func assertArrayProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertArrayProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
+	t.Helper()
+
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
 	assert.True(t, prop.Type.Contains("array"))
@@ -2218,13 +2220,17 @@ func assertArrayProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, 
 	assert.Equal(t, format, prop.Items.Schema.Format)
 }
 
-func assertArrayRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
+func assertArrayRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
+	t.Helper()
+
 	assertArrayProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].Items.Schema
 	assert.Equal(t, fragment, psch.Ref.String())
 }
 
-func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
+	t.Helper()
+
 	if typeName == "" {
 		assert.Empty(t, schema.Properties[jsonName].Type)
 	} else if assert.NotEmpty(t, schema.Properties[jsonName].Type) {
@@ -2238,7 +2244,7 @@ func assertProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, forma
 	assert.Equal(t, format, schema.Properties[jsonName].Format)
 }
 
-func assertRef(t testing.TB, schema *spec.Schema, jsonName, _, fragment string) {
+func assertRef(t *testing.T, schema *spec.Schema, jsonName, _, fragment string) {
 	t.Helper()
 
 	assert.Empty(t, schema.Properties[jsonName].Type)
@@ -2246,13 +2252,13 @@ func assertRef(t testing.TB, schema *spec.Schema, jsonName, _, fragment string) 
 	assert.Equal(t, fragment, psch.Ref.String())
 }
 
-func assertIsRef(t testing.TB, schema *spec.Schema, fragment string) {
+func assertIsRef(t *testing.T, schema *spec.Schema, fragment string) {
 	t.Helper()
 
 	assert.Equal(t, fragment, schema.Ref.String())
 }
 
-func assertDefinition(t testing.TB, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+func assertDefinition(t *testing.T, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
 	t.Helper()
 
 	schema, ok := defs[defName]
@@ -2269,87 +2275,85 @@ func assertDefinition(t testing.TB, defs map[string]spec.Schema, defName, typeNa
 	}
 }
 
-func assertMapDefinition(t testing.TB, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+func assertMapDefinition(t *testing.T, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+	t.Helper()
+
 	schema, ok := defs[defName]
-	if assert.True(t, ok) {
-		if assert.NotEmpty(t, schema.Type) {
-			assert.Equal(t, "object", schema.Type[0])
-			adl := schema.AdditionalProperties
-			if assert.NotNil(t, adl) && assert.NotNil(t, adl.Schema) {
-				if len(adl.Schema.Type) > 0 {
-					assert.Equal(t, typeName, adl.Schema.Type[0])
-				}
-				assert.Equal(t, formatName, adl.Schema.Format)
-			}
-			if goName != "" {
-				assert.Equal(t, goName, schema.Extensions["x-go-name"])
-			} else {
-				assert.Nil(t, schema.Extensions["x-go-name"])
-			}
-		}
+	require.True(t, ok)
+	require.NotEmpty(t, schema.Type)
+
+	assert.Equal(t, "object", schema.Type[0])
+	adl := schema.AdditionalProperties
+
+	require.NotNil(t, adl)
+	require.NotNil(t, adl.Schema)
+
+	if len(adl.Schema.Type) > 0 {
+		assert.Equal(t, typeName, adl.Schema.Type[0])
 	}
+	assert.Equal(t, formatName, adl.Schema.Format)
+
+	assertExtension(t, schema, goName)
 }
 
-func assertMapWithRefDefinition(t testing.TB, defs map[string]spec.Schema, defName, refURL, goName string) {
-	schema, ok := defs[defName]
-	if assert.True(t, ok) {
-		if assert.NotEmpty(t, schema.Type) {
-			assert.Equal(t, "object", schema.Type[0])
-			adl := schema.AdditionalProperties
-			if assert.NotNil(t, adl) && assert.NotNil(t, adl.Schema) {
-				if assert.NotZero(t, adl.Schema.Ref) {
-					assert.Equal(t, refURL, adl.Schema.Ref.String())
-				}
-			}
-			if goName != "" {
-				assert.Equal(t, goName, schema.Extensions["x-go-name"])
-			} else {
-				assert.Nil(t, schema.Extensions["x-go-name"])
-			}
-		}
+func assertExtension(t *testing.T, schema spec.Schema, goName string) {
+	t.Helper()
+
+	if goName != "" {
+		assert.Equal(t, goName, schema.Extensions["x-go-name"])
+
+		return
 	}
+
+	assert.Nil(t, schema.Extensions["x-go-name"])
 }
 
-func assertArrayDefinition(t testing.TB, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+func assertMapWithRefDefinition(t *testing.T, defs map[string]spec.Schema, defName, refURL, goName string) {
+	t.Helper()
+
 	schema, ok := defs[defName]
-	if assert.True(t, ok) {
-		if assert.NotEmpty(t, schema.Type) {
-			assert.Equal(t, "array", schema.Type[0])
-			adl := schema.Items
-			if assert.NotNil(t, adl) && assert.NotNil(t, adl.Schema) {
-				assert.Equal(t, typeName, adl.Schema.Type[0])
-				assert.Equal(t, formatName, adl.Schema.Format)
-			}
-			if goName != "" {
-				assert.Equal(t, goName, schema.Extensions["x-go-name"])
-			} else {
-				assert.Nil(t, schema.Extensions["x-go-name"])
-			}
-		}
-	}
+	require.True(t, ok)
+	require.NotEmpty(t, schema.Type)
+	assert.Equal(t, "object", schema.Type[0])
+	adl := schema.AdditionalProperties
+	require.NotNil(t, adl)
+	require.NotNil(t, adl.Schema)
+	require.NotZero(t, adl.Schema.Ref)
+	assert.Equal(t, refURL, adl.Schema.Ref.String())
+	assertExtension(t, schema, goName)
 }
 
-func assertArrayWithRefDefinition(t testing.TB, defs map[string]spec.Schema, defName, refURL, goName string) {
+func assertArrayDefinition(t *testing.T, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
+	t.Helper()
+
 	schema, ok := defs[defName]
-	if assert.True(t, ok) {
-		if assert.NotEmpty(t, schema.Type) {
-			assert.Equal(t, "array", schema.Type[0])
-			adl := schema.Items
-			if assert.NotNil(t, adl) && assert.NotNil(t, adl.Schema) {
-				if assert.NotZero(t, adl.Schema.Ref) {
-					assert.Equal(t, refURL, adl.Schema.Ref.String())
-				}
-			}
-			if goName != "" {
-				assert.Equal(t, goName, schema.Extensions["x-go-name"])
-			} else {
-				assert.Nil(t, schema.Extensions["x-go-name"])
-			}
-		}
-	}
+	require.True(t, ok)
+	require.NotEmpty(t, schema.Type)
+	assert.Equal(t, "array", schema.Type[0])
+	adl := schema.Items
+	require.NotNil(t, adl)
+	require.NotNil(t, adl.Schema)
+	assert.Equal(t, typeName, adl.Schema.Type[0])
+	assert.Equal(t, formatName, adl.Schema.Format)
+	assertExtension(t, schema, goName)
 }
 
-func assertRefDefinition(t testing.TB, defs map[string]spec.Schema, defName, refURL, goName string) {
+func assertArrayWithRefDefinition(t *testing.T, defs map[string]spec.Schema, defName, refURL, goName string) {
+	t.Helper()
+
+	schema, ok := defs[defName]
+	require.True(t, ok)
+	require.NotEmpty(t, schema.Type)
+	assert.Equal(t, "array", schema.Type[0])
+	adl := schema.Items
+	require.NotNil(t, adl)
+	require.NotNil(t, adl.Schema)
+	require.NotZero(t, adl.Schema.Ref)
+	assert.Equal(t, refURL, adl.Schema.Ref.String())
+	assertExtension(t, schema, goName)
+}
+
+func assertRefDefinition(t *testing.T, defs map[string]spec.Schema, defName, refURL, goName string) {
 	schema, ok := defs[defName]
 	if assert.True(t, ok) {
 		if assert.NotZero(t, schema.Ref) {
@@ -2364,7 +2368,7 @@ func assertRefDefinition(t testing.TB, defs map[string]spec.Schema, defName, ref
 	}
 }
 
-func assertMapProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, format, goName string) {
+func assertMapProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
 	assert.True(t, prop.Type.Contains("object"))
@@ -2376,7 +2380,7 @@ func assertMapProperty(t testing.TB, schema *spec.Schema, typeName, jsonName, fo
 	assert.Equal(t, format, prop.AdditionalProperties.Schema.Format)
 }
 
-func assertMapRef(t testing.TB, schema *spec.Schema, jsonName, goName, fragment string) {
+func assertMapRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
 	assertMapProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].AdditionalProperties.Schema
 	assert.Equal(t, fragment, psch.Ref.String())
