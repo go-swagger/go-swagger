@@ -86,7 +86,7 @@ var (
 	rxResponses       = regexp.MustCompile(`[Rr]esponses\p{Zs}*:`)
 	rxParameters      = regexp.MustCompile(`[Pp]arameters\p{Zs}*:`)
 	rxSchemes         = regexp.MustCompile(`[Ss]chemes\p{Zs}*:\p{Zs}*((?:(?:https?|HTTPS?|wss?|WSS?)[\p{Zs},]*)+)$`)
-	rxVersion         = regexp.MustCompile(`[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
+	rxVersion         = regexp.MustCompile(`^\s*[Vv]ersion\p{Zs}*:\p{Zs}*(.+)$`)
 	rxHost            = regexp.MustCompile(`[Hh]ost\p{Zs}*:\p{Zs}*(.+)$`)
 	rxBasePath        = regexp.MustCompile(`[Bb]ase\p{Zs}*-*[Pp]ath\p{Zs}*:\p{Zs}*` + rxPath + "$")
 	rxLicense         = regexp.MustCompile(`[Ll]icense\p{Zs}*:\p{Zs}*(.+)$`)
