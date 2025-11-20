@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/toqueteos/webbrowser v1.2.1
 	go.mongodb.org/mongo-driver v1.17.6 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/net v0.47.0
 	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sys v0.38.0 // indirect
