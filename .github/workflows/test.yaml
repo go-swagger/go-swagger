@@ -269,10 +269,8 @@ jobs:
           check-latest: true
           cache: true
 
-      - name: Install Tools
-        # TODO: pin version -> fork + update dedicated github action
-        run: |
-          go install gotest.tools/gotestsum@latest
+      - name: Install gotestsum
+        uses: go-openapi/gh-actions/install/gotestsum@b54cc4ecd2b7e4e255a89c1e8ae71eff84698e1c
 
       - name: Ensure TMP is created on windows runners
         # On windows, tests require testing.TempDir to reside on the same drive as the code.
@@ -350,10 +348,9 @@ jobs:
           cache: true
 
       - name: Install Tools
-        # TODO: pin this dependency
         run: |
           go mod download
-          go get gotest.tools/icmd@latest
+          go get gotest.tools/icmd@v3.5.2
           mkdir /tmp/cov
 
       - name: Build binary with test coverage instrumentation
@@ -514,6 +511,9 @@ jobs:
           pattern: "*.report.*"
           # artifacts resolve as folders
           path: reports/
+      -
+        name: Install go-junit-report
+        uses: go-openapi/gh-actions/install/go-junit-report@b54cc4ecd2b7e4e255a89c1e8ae71eff84698e1c
 
       - name: Convert test reports to a merged JUnit XML
         # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
@@ -521,12 +521,7 @@ jobs:
         #
         # As a contemplated alternative, we could use gotestsum above to produce the JUnit XML directly.
         # At this moment, we keep a json format to dispatch test reports to codecov as well as to CTRF reports.
-        #
-        # TODO(fredbi): sec compliance - pin go-junit-report
-        # TODO(fredbi): investigate - use mikepenz/action-junit-report@v5, that packages most of the following scripts
-        # in a single action. Alternative: for that action.
         run: |
-          go install github.com/jstemmer/go-junit-report/v2@latest
           go-junit-report -version
 
           find reports/ -name \*.json | xargs cat | go-junit-report -parser gojson -out=reports/junit_report.xml
@@ -540,14 +535,14 @@ jobs:
           fail_ci_if_error: false
           handle_no_reports_found: true
           verbose: true
+      -
+        name: Install go-ctrf-json-reporter
+        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@b54cc4ecd2b7e4e255a89c1e8ae71eff84698e1c
 
       - name: Convert test reports to CTRF JSON
         # description: |
         #   This step publishes CTRF test reports on github UI (actions)
-        # TODO: pin this dependency
         run: |
-          go install github.com/ctrf-io/go-ctrf-json-reporter/cmd/go-ctrf-json-reporter@v0.0.10
-
           appName="go-swagger"
           buildNumber="${{ github.run_id }}"
           appVersion="${{ github.event.pull_request.head.sha }}"
