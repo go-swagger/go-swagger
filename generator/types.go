@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/go-viper/mapstructure/v2"
-	"github.com/kr/pretty"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -97,7 +96,7 @@ func (t *typeResolver) NewWithModelName(name string) *typeResolver {
 func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequired bool) (result resolvedType, err error) {
 	debugLogf("resolving schema (anon: %t, req: %t) %s", isAnonymous, isRequired, t.ModelName)
 	defer func() {
-		debugLogf("returning after resolve schema: %s", pretty.Sprint(result))
+		debugLogAsJSONf("returning after resolve schema: ", result)
 	}()
 
 	if schema == nil {
