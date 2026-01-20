@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
+	"github.com/3idey/codescan/codescan"
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/codescan"
 )
 
 func TestSpecEmbeddedDescriptionAndTags_Issue3125(t *testing.T) {

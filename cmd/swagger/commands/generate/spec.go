@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/codescan"
+	"github.com/3idey/codescan/codescan"
 
 	"github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v3"

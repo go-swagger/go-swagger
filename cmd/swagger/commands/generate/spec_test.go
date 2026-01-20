@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/go-swagger/go-swagger/codescan"
+	"github.com/3idey/codescan/codescan"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/stretchr/testify/assert"
