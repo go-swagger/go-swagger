@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 )
@@ -309,7 +310,8 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 		break
 	}
 
-	genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts, di)
 	if err != nil {
 		return nil, err
 	}
