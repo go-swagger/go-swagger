@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
-FROM golang:alpine@sha256:660f0b83cf50091e3777e4730ccc0e63e83fea2c420c872af5c60cb357dcafb2 AS build
+FROM golang:alpine@sha256:f4622e3bed9b03190609db905ac4b02bba2368ba7e62a6ad4ac6868d2818d314 AS build
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 ARG TARGETOS TARGETARCH
