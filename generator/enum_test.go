@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 )
 
@@ -23,7 +24,8 @@ func TestEnum_StringThing(t *testing.T) {
 	k := "StringThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -47,7 +49,8 @@ func TestEnum_ComposedThing(t *testing.T) {
 	k := "ComposedThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -72,7 +75,8 @@ func TestEnum_IntThing(t *testing.T) {
 	k := "IntThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -96,7 +100,8 @@ func TestEnum_FloatThing(t *testing.T) {
 	k := "FloatThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -120,7 +125,8 @@ func TestEnum_SliceThing(t *testing.T) {
 	k := "SliceThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -144,7 +150,8 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 	k := "SliceAndItemsThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -171,7 +178,8 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 	k := "SliceAndAdditionalItemsThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -200,7 +208,8 @@ func TestEnum_MapThing(t *testing.T) {
 	k := "MapThing"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -240,7 +249,8 @@ func TestEnum_ObjectThing(t *testing.T) {
 			definitions := specDoc.Spec().Definitions
 			schema := definitions[k]
 			opts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -278,7 +288,8 @@ func TestEnum_ObjectThing(t *testing.T) {
 			if strings.Contains(fixture, "flattened") {
 				// when expanded, all defs are in the same template for AdditionalItems
 				schema := definitions["objectThingLions"]
-				genModel, err = makeGenDefinition("ObjectThingLions", "models", schema, specDoc, opts)
+				di := discriminatorInfo(analysis.New(specDoc.Spec()))
+				genModel, err = makeGenDefinition("ObjectThingLions", "models", schema, specDoc, opts, di)
 				require.NoError(t, err)
 
 				buf = bytes.NewBuffer(nil)
@@ -324,7 +335,8 @@ func TestEnum_ComputeInstance(t *testing.T) {
 	k := "ComputeInstance"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -352,7 +364,8 @@ func TestEnum_Cluster(t *testing.T) {
 	k := "Cluster"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -382,7 +395,8 @@ func TestEnum_NewPrototype(t *testing.T) {
 	k := "NewPrototype"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -413,7 +427,8 @@ func TestEnum_Issue265(t *testing.T) {
 	const k = "SodaBrand"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -435,7 +450,8 @@ func TestGenerateModel_Issue303(t *testing.T) {
 	tpl := templates.MustGet("model").Lookup("schema")
 	definitions := specDoc.Spec().Definitions
 	for name, schema := range definitions {
-		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
+		di := discriminatorInfo(analysis.New(specDoc.Spec()))
+		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts, di)
 		require.NoError(t, err)
 
 		assert.Equal(t, name, genModel.Name)
@@ -473,7 +489,8 @@ func TestEnum_Issue325(t *testing.T) {
 
 		t.Run("should generate model", func(t *testing.T) {
 			modelOpts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -498,7 +515,8 @@ func TestEnum_Issue325(t *testing.T) {
 
 		t.Run("should generate model", func(t *testing.T) {
 			modelOpts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -531,7 +549,8 @@ func TestEnum_Issue352(t *testing.T) {
 		t.Run("should generate model", func(t *testing.T) {
 			schema := definitions[k]
 			opts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 )
@@ -22,7 +23,8 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	assert.Len(t, gm.Properties, 6)
 
@@ -52,7 +54,8 @@ func TestSchemaValidation_Strings(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -80,7 +83,8 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -109,7 +113,8 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -137,7 +142,8 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -167,7 +173,8 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -197,7 +204,8 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -229,7 +237,8 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -266,7 +275,8 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -305,7 +315,8 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -355,7 +366,8 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -406,7 +418,8 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -441,7 +454,8 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -476,7 +490,8 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -512,7 +527,8 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -547,7 +563,8 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -576,7 +593,8 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -607,7 +625,8 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -639,7 +658,8 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 	k := "MapComplexValidations"
 	schema := specDoc.Spec().Definitions[k]
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -673,7 +693,8 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -704,7 +725,8 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -829,7 +851,8 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -866,7 +889,8 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -903,7 +927,8 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
@@ -945,7 +970,8 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	prop := gm.Properties[0]
@@ -981,7 +1007,8 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Len(t, gm.AllOf, 2)
 
@@ -1007,7 +1034,8 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1034,7 +1062,8 @@ func TestSchemaValidation_Pet(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1061,7 +1090,8 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
-	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)

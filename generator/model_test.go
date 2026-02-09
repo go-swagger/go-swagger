@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
 )
@@ -51,7 +52,8 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	t.Run("mode sanity check", func(t *testing.T) {
 		for k, schema := range definitions {
 			opts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			rendered := bytes.NewBuffer(nil)
@@ -347,7 +349,8 @@ func TestGenerateModel_Nota(t *testing.T) {
 	k := "Nota"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -365,7 +368,8 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 	const k = "NotaWithRef"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -386,7 +390,8 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	const k = "NotaWithMeta"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -410,7 +415,8 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	const k = "RunParameters"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.IsAdditionalProperties)
@@ -435,7 +441,8 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	const k = "NotaWithName"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.True(t, genModel.IsAdditionalProperties)
@@ -472,7 +479,8 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 	const k = "NotaWithRefRegistry"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -492,7 +500,8 @@ func TestGenerateModel_WithCustomTag(t *testing.T) {
 	const k = "WithCustomTag"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -509,7 +518,8 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 	const k = "NotaWithMetaRegistry"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -532,7 +542,8 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMap"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -555,7 +566,8 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMapInterface"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -583,7 +595,8 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	const k = "WithMapRef"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -607,7 +620,8 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	const k = "WithMapComplex"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -630,7 +644,8 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMapRegistry"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -654,7 +669,8 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 	const k = "WithMapRegistryRef"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -678,7 +694,8 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 	const k = "WithMapComplexRegistry"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.False(t, genModel.HasAdditionalProperties)
@@ -702,7 +719,8 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 	const k = "WithAdditional"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
 
@@ -757,7 +775,8 @@ func TestGenerateModel_JustRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["JustRef"]
 	opts := opts()
-	genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.NotEmpty(t, genModel.AllOf)
@@ -780,7 +799,8 @@ func TestGenerateModel_WithRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithRef"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.True(t, genModel.IsComplexObject)
@@ -802,7 +822,8 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithNullableRef"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.True(t, genModel.IsComplexObject)
@@ -827,7 +848,8 @@ func TestGenerateModel_Scores(t *testing.T) {
 	k := "Scores"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -847,7 +869,8 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 	k := "JaggedScores"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -867,7 +890,8 @@ func TestGenerateModel_Notables(t *testing.T) {
 	k := "Notables"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Equal(t, "[]*Notable", genModel.GoType)
 
@@ -890,7 +914,8 @@ func TestGenerateModel_Notablix(t *testing.T) {
 	k := "Notablix"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -911,7 +936,8 @@ func TestGenerateModel_Stats(t *testing.T) {
 	k := "Stats"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -934,7 +960,8 @@ func TestGenerateModel_Statix(t *testing.T) {
 	k := "Statix"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -958,7 +985,8 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	opts := opts()
 	tpl := opts.templates.MustGet("model").Lookup("schema")
 
-	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
@@ -985,7 +1013,8 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 	k := "WithComplexItems"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
@@ -1015,7 +1044,8 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	k := "WithItemsAndAdditional"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
@@ -1045,7 +1075,8 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 	k := "WithItemsAndAdditional2"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
@@ -1075,7 +1106,8 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 	k := "WithComplexAdditional"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
@@ -1106,7 +1138,8 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	opts := opts()
 
 	tpl := opts.templates.MustGet("model")
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Len(t, genModel.ExtraSchemas, 1)
 
@@ -1164,7 +1197,8 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 	k := "TupleWithExtra"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Empty(t, genModel.ExtraSchemas)
 
@@ -1229,7 +1263,8 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	k := "TupleWithComplex"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.True(t, genModel.IsTuple)
@@ -1293,7 +1328,8 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	k := "WithTuple"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
 	require.NotEmpty(t, genModel.Properties)
@@ -1361,7 +1397,8 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	schema := definitions[k]
 	opts := opts()
 	tpl := opts.templates.MustGet("model")
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
 	require.NotEmpty(t, genModel.Properties)
@@ -1437,7 +1474,8 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["Cat"]
 	opts := opts()
-	genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
 
@@ -1463,7 +1501,8 @@ func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["PetWithPets"]
 	opts := opts()
-	genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
 
@@ -1488,7 +1527,8 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithAllOf"]
 	opts := opts()
-	genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	assert.Len(t, genModel.AllOf, 7)
@@ -1543,7 +1583,8 @@ func TestNumericKeys(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["AvatarUrls"]
 	opts := opts()
-	genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1563,7 +1604,8 @@ func TestGenModel_Issue196(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["Event"]
 	opts := opts()
-	genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1583,7 +1625,8 @@ func TestGenModel_Issue222(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Price"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 	require.True(t, genModel.HasValidations)
 
@@ -1606,7 +1649,8 @@ func TestGenModel_Issue243(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "HasDynMeta"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1626,7 +1670,8 @@ func TestGenModel_Issue252(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SodaBrand"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 	require.False(t, genModel.IsNullable)
 
@@ -1649,7 +1694,8 @@ func TestGenModel_Issue251(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "example"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1675,7 +1721,8 @@ func TestGenModel_Issue257(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "HasSpecialCharProp"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1698,7 +1745,8 @@ func TestGenModel_Issue340(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ImageTar"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1720,7 +1768,8 @@ func TestGenModel_Issue381(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "flags_list"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1740,7 +1789,8 @@ func TestGenModel_Issue300(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ActionItem"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1760,7 +1810,8 @@ func TestGenModel_Issue398(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Property"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1783,7 +1834,8 @@ func TestGenModel_Issue454(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["genericResource"]
 	opts := opts()
-	genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1806,7 +1858,8 @@ func TestGenModel_Issue423(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["SRN"]
 	opts := opts()
-	genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1827,7 +1880,8 @@ func TestGenModel_Issue453(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "out_obj"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1847,7 +1901,8 @@ func TestGenModel_Issue455(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "out_obj"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1867,7 +1922,8 @@ func TestGenModel_Issue763(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "test_list"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1889,7 +1945,8 @@ func TestGenModel_Issue811_NullType(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "teamRepos"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1909,7 +1966,8 @@ func TestGenModel_Issue811_Emojis(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "emojis"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1930,7 +1988,8 @@ func TestGenModel_Issue752_EOFErr(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "OperationResult"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -1951,7 +2010,8 @@ func TestImports_ExistingModel(t *testing.T) {
 	opts := opts()
 
 	k := "JsonWebKeySet"
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	require.NotNil(t, genModel)
@@ -1959,7 +2019,7 @@ func TestImports_ExistingModel(t *testing.T) {
 	assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
 
 	k = "JsonWebKey"
-	genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	require.NotNil(t, genModel)
@@ -1974,7 +2034,8 @@ func TestGenModel_Issue786(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "MyFirstObject"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	require.False(t, genModel.Properties[0].AdditionalProperties.IsNullable)
@@ -1996,7 +2057,8 @@ func TestGenModel_Issue822(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Pet"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	ap := genModel.AdditionalProperties
@@ -2023,7 +2085,8 @@ func TestGenModel_Issue981(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "User"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2048,7 +2111,8 @@ func TestGenModel_Issue1341(t *testing.T) {
 	k := "ExecutableValueString"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2074,7 +2138,8 @@ func TestGenModel_Issue1347(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2097,7 +2162,8 @@ func TestGenModel_Issue1348(t *testing.T) {
 	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2120,7 +2186,8 @@ func TestGenModel_Issue1198(t *testing.T) {
 	k := "pet"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2143,7 +2210,8 @@ func TestGenModel_Issue1397a(t *testing.T) {
 	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2166,7 +2234,8 @@ func TestGenModel_Issue1397b(t *testing.T) {
 	const k = "ContainerConfig"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2189,7 +2258,8 @@ func TestGenModel_Issue1409(t *testing.T) {
 	k := "Graph"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2215,7 +2285,8 @@ func TestGenModel_Issue2911(t *testing.T) {
 	k := "animal"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2250,7 +2321,8 @@ func TestGenModel_Issue866(t *testing.T) {
 		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
 			schema := *r.Schema
 			opts := opts()
-			genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -2277,7 +2349,8 @@ func TestGenModel_Issue946(t *testing.T) {
 	k := "mydate"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2309,7 +2382,8 @@ func TestGenModel_Issue910(t *testing.T) {
 		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
 			schema := *r.Schema
 			opts := opts()
-			genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -2340,7 +2414,8 @@ func TestGenerateModel_Xorder(t *testing.T) {
 	k := "sessionData"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2381,7 +2456,8 @@ func TestGenModel_Issue1623(t *testing.T) {
 	schema := definitions[k]
 	opts := opts()
 
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2412,7 +2488,8 @@ func TestGenerateModel_Issue2457(t *testing.T) {
 	k := "ObjWithCustomTag"
 	schema := definitions[k]
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2460,7 +2537,8 @@ func TestGenModel_Pr2464(t *testing.T) {
 			k := spec.model
 			schema := definitions[k]
 			opts := opts()
-			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -2487,9 +2565,10 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	orderedDefinitions := orderedSpecDoc.Spec().Definitions
 
-	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(abcType, "models", definitions[abcType], specDoc, opts, di)
 	require.NoError(t, err)
-	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts)
+	orderGenModel, err := makeGenDefinition(abcType, "models", orderedDefinitions[abcType], orderedSpecDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2546,7 +2625,8 @@ func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 
 	opts.StrictAdditionalProperties = true
 
-	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2581,7 +2661,8 @@ func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
 	opts := opts()
 	opts.WithXML = true
 
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2607,7 +2688,8 @@ func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
 	k := "XmlWithAttribute"
 	opts := opts()
 
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
@@ -2633,7 +2715,8 @@ func Test_PointerConversions(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SodaBrand"
 	opts := opts()
-	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts, di)
 	require.NoError(t, err)
 	require.False(t, genModel.IsNullable)
 
@@ -2681,7 +2764,8 @@ func TestIssue2597(t *testing.T) {
 				"BlahComplexMap",
 			} {
 				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
-				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				di := discriminatorInfo(analysis.New(specDoc.Spec()))
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts, di)
 				require.NoError(t, err)
 
 				buf := bytes.NewBuffer(nil)
@@ -2700,7 +2784,8 @@ func TestIssue2597(t *testing.T) {
 			const model = "BlahStruct"
 			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
 
-			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
@@ -2726,7 +2811,8 @@ func TestIssue2597(t *testing.T) {
 				"BlahComplexMap",
 			} {
 				pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
-				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+				di := discriminatorInfo(analysis.New(specDoc.Spec()))
+				genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts, di)
 				require.NoError(t, err)
 
 				buf := bytes.NewBuffer(nil)
@@ -2745,7 +2831,8 @@ func TestIssue2597(t *testing.T) {
 			const model = "BlahStruct"
 			pattern := fmt.Sprintf(`(validate\.\w+\("\[%[1]s\]",\s+"body",.+?\))|(errors\.\w+\("\[%[1]s\]",\s+"body",.+?\))`, model)
 
-			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+			di := discriminatorInfo(analysis.New(specDoc.Spec()))
+			genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts, di)
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)

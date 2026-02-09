@@ -18,6 +18,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 
+	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
@@ -470,7 +471,8 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 	}
 
 	// generate the schema for this definition
-	genModel, err := makeGenDefinition(definitionName, "models", *schema, specDoc, opts)
+	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	genModel, err := makeGenDefinition(definitionName, "models", *schema, specDoc, opts, di)
 	if fixtureExpectations.ExpectLogs() {
 		msg = logCapture.String()
 	}
