@@ -6,7 +6,7 @@ package generator
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 
 	"github.com/go-openapi/spec"
 )
@@ -18,15 +18,15 @@ type responseTestContext struct {
 }
 
 func (ctx *responseTestContext) Assert(t *testing.T, response spec.Response, res GenResponse) bool {
-	if !assert.Equal(t, ctx.IsSuccess, res.IsSuccess) {
+	if !assert.EqualT(t, ctx.IsSuccess, res.IsSuccess) {
 		return false
 	}
 
-	if !assert.Equal(t, ctx.Name, res.Name) {
+	if !assert.EqualT(t, ctx.Name, res.Name) {
 		return false
 	}
 
-	if !assert.Equal(t, response.Description, res.Description) {
+	if !assert.EqualT(t, response.Description, res.Description) {
 		return false
 	}
 
@@ -87,7 +87,7 @@ func (ctx *responseTestContext) assertHeaders(t *testing.T, response spec.Respon
 			}
 		}
 
-		if !assert.True(t, found) {
+		if !assert.TrueT(t, found) {
 			return false
 		}
 	}
@@ -102,25 +102,25 @@ type respHeaderTestContext struct {
 }
 
 func (ctx *respHeaderTestContext) Assert(t *testing.T, header spec.Header, hdr GenHeader) bool {
-	if !assert.Equal(t, ctx.Name, hdr.Name) {
+	if !assert.EqualT(t, ctx.Name, hdr.Name) {
 		return false
 	}
-	if !assert.Equal(t, "a", hdr.ReceiverName) {
+	if !assert.EqualT(t, "a", hdr.ReceiverName) {
 		return false
 	}
-	if !assert.Equal(t, ctx.Formatter, hdr.Formatter) {
+	if !assert.EqualT(t, ctx.Formatter, hdr.Formatter) {
 		return false
 	}
-	if !assert.Equal(t, ctx.Converter, hdr.Converter) {
+	if !assert.EqualT(t, ctx.Converter, hdr.Converter) {
 		return false
 	}
-	if !assert.Equal(t, header.Description, hdr.Description) {
+	if !assert.EqualT(t, header.Description, hdr.Description) {
 		return false
 	}
-	if !assert.Equal(t, header.Minimum, hdr.Minimum) || !assert.Equal(t, header.ExclusiveMinimum, hdr.ExclusiveMinimum) {
+	if !assert.Equal(t, header.Minimum, hdr.Minimum) || !assert.EqualT(t, header.ExclusiveMinimum, hdr.ExclusiveMinimum) {
 		return false
 	}
-	if !assert.Equal(t, header.Maximum, hdr.Maximum) || !assert.Equal(t, header.ExclusiveMaximum, hdr.ExclusiveMaximum) {
+	if !assert.Equal(t, header.Maximum, hdr.Maximum) || !assert.EqualT(t, header.ExclusiveMaximum, hdr.ExclusiveMaximum) {
 		return false
 	}
 	if !assert.Equal(t, header.MinLength, hdr.MinLength) {
@@ -129,7 +129,7 @@ func (ctx *respHeaderTestContext) Assert(t *testing.T, header spec.Header, hdr G
 	if !assert.Equal(t, header.MaxLength, hdr.MaxLength) {
 		return false
 	}
-	if !assert.Equal(t, header.Pattern, hdr.Pattern) {
+	if !assert.EqualT(t, header.Pattern, hdr.Pattern) {
 		return false
 	}
 	if !assert.Equal(t, header.MaxItems, hdr.MaxItems) {
@@ -138,7 +138,7 @@ func (ctx *respHeaderTestContext) Assert(t *testing.T, header spec.Header, hdr G
 	if !assert.Equal(t, header.MinItems, hdr.MinItems) {
 		return false
 	}
-	if !assert.Equal(t, header.UniqueItems, hdr.UniqueItems) {
+	if !assert.EqualT(t, header.UniqueItems, hdr.UniqueItems) {
 		return false
 	}
 	if !assert.Equal(t, header.MultipleOf, hdr.MultipleOf) {
@@ -147,10 +147,10 @@ func (ctx *respHeaderTestContext) Assert(t *testing.T, header spec.Header, hdr G
 	if !assert.Equal(t, header.Enum, hdr.Enum) {
 		return false
 	}
-	if !assert.Equal(t, header.Type, hdr.SwaggerType) {
+	if !assert.EqualT(t, header.Type, hdr.SwaggerType) {
 		return false
 	}
-	if !assert.Equal(t, header.Format, hdr.SwaggerFormat) {
+	if !assert.EqualT(t, header.Format, hdr.SwaggerFormat) {
 		return false
 	}
 	return true

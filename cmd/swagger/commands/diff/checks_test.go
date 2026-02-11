@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 
 	"github.com/go-openapi/spec"
 )
@@ -166,17 +166,17 @@ func Test_isRef(t *testing.T) {
 	r := spec.RefSchema("#/definitions/Bob")
 	p := spec.Int16Property()
 
-	assert.True(t, isRefType(r))
-	assert.False(t, isRefType(p))
+	assert.TrueT(t, isRefType(r))
+	assert.FalseT(t, isRefType(p))
 
 	refb := spec.Refable{Ref: r.Ref}
-	assert.True(t, isRefType(refb))
+	assert.TrueT(t, isRefType(refb))
 
 	ss := spec.SimpleSchema{}
-	assert.False(t, isRefType(&ss))
+	assert.FalseT(t, isRefType(&ss))
 
 	ro := time.Timer{}
-	assert.False(t, isRefType(ro))
+	assert.FalseT(t, isRefType(ro))
 }
 
 func Test_compareEnums(t *testing.T) {

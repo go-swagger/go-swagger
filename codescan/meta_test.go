@@ -8,8 +8,8 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/spec"
 )
@@ -18,24 +18,24 @@ func TestSetInfoVersion(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoVersion(info, []string{"0.0.1"})
 	require.NoError(t, err)
-	assert.Equal(t, "0.0.1", info.Info.Version)
+	assert.EqualT(t, "0.0.1", info.Info.Version)
 }
 
 func TestSetInfoLicense(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoLicense(info, []string{"MIT http://license.org/MIT"})
 	require.NoError(t, err)
-	assert.Equal(t, "MIT", info.Info.License.Name)
-	assert.Equal(t, "http://license.org/MIT", info.Info.License.URL)
+	assert.EqualT(t, "MIT", info.Info.License.Name)
+	assert.EqualT(t, "http://license.org/MIT", info.Info.License.URL)
 }
 
 func TestSetInfoContact(t *testing.T) {
 	info := new(spec.Swagger)
 	err := setInfoContact(info, []string{"Homer J. Simpson <homer@simpsons.com> http://simpsons.com"})
 	require.NoError(t, err)
-	assert.Equal(t, "Homer J. Simpson", info.Info.Contact.Name)
-	assert.Equal(t, "homer@simpsons.com", info.Info.Contact.Email)
-	assert.Equal(t, "http://simpsons.com", info.Info.Contact.URL)
+	assert.EqualT(t, "Homer J. Simpson", info.Info.Contact.Name)
+	assert.EqualT(t, "homer@simpsons.com", info.Info.Contact.Email)
+	assert.EqualT(t, "http://simpsons.com", info.Info.Contact.URL)
 }
 
 func TestParseInfo(t *testing.T) {
@@ -128,32 +128,32 @@ func verifyMeta(t *testing.T, doc *spec.Swagger) {
 	assert.Equal(t, spec.SecurityDefinitions{"api_key": &expectedSecuritySchemaKey, "oauth2": &expectedSecuritySchemaOAuth}, doc.SecurityDefinitions)
 	assert.Equal(t, expectedExtensions, doc.Extensions)
 	assert.Equal(t, expectedInfoExtensions, doc.Info.Extensions)
-	assert.Equal(t, "localhost", doc.Host)
-	assert.Equal(t, "/v2", doc.BasePath)
+	assert.EqualT(t, "localhost", doc.Host)
+	assert.EqualT(t, "/v2", doc.BasePath)
 }
 
 func verifyInfo(t *testing.T, info *spec.Info) {
 	t.Helper()
 
 	assert.NotNil(t, info)
-	assert.Equal(t, "0.0.1", info.Version)
-	assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", info.TermsOfService)
-	assert.Equal(t, "Petstore API.", info.Title)
+	assert.EqualT(t, "0.0.1", info.Version)
+	assert.EqualT(t, "there are no TOS at this moment, use at your own risk we take no responsibility", info.TermsOfService)
+	assert.EqualT(t, "Petstore API.", info.Title)
 	descr := `the purpose of this application is to provide an application
 that is using plain go code to define an API
 
 This should demonstrate all the possible comment annotations
 that are available to turn go code into a fully compliant swagger 2.0 spec`
-	assert.Equal(t, descr, info.Description)
+	assert.EqualT(t, descr, info.Description)
 
 	require.NotNil(t, info.License)
-	assert.Equal(t, "MIT", info.License.Name)
-	assert.Equal(t, "http://opensource.org/licenses/MIT", info.License.URL)
+	assert.EqualT(t, "MIT", info.License.Name)
+	assert.EqualT(t, "http://opensource.org/licenses/MIT", info.License.URL)
 
 	require.NotNil(t, info.Contact)
-	assert.Equal(t, "John Doe", info.Contact.Name)
-	assert.Equal(t, "john.doe@example.com", info.Contact.Email)
-	assert.Equal(t, "http://john.doe.com", info.Contact.URL)
+	assert.EqualT(t, "John Doe", info.Contact.Name)
+	assert.EqualT(t, "john.doe@example.com", info.Contact.Email)
+	assert.EqualT(t, "http://john.doe.com", info.Contact.URL)
 }
 
 func TestMoreParseMeta(t *testing.T) {
@@ -173,7 +173,7 @@ func TestMoreParseMeta(t *testing.T) {
 
 		err = parser.Parse(fileTree.Doc)
 		require.NoError(t, err)
-		assert.Equal(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
+		assert.EqualT(t, "there are no TOS at this moment, use at your own risk we take no responsibility", swspec.Info.TermsOfService)
 		/*
 			jazon, err := json.MarshalIndent(swspec.Info, "", " ")
 			require.NoError(t, err)

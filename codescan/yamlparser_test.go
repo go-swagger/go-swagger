@@ -8,7 +8,7 @@ import (
 	"go/ast"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestYamlParser(t *testing.T) {
@@ -41,13 +41,13 @@ func TestYamlParser(t *testing.T) {
 				"      'read:pets': read your pets",
 			}
 
-			require.True(t, parser.Matches(lines[0]))
+			require.TrueT(t, parser.Matches(lines[0]))
 			require.NoError(t, parser.Parse(lines))
-			require.Equal(t, 1, setterCalled)
+			require.EqualT(t, 1, setterCalled)
 
 			const expectedJSON = `{"SecurityDefinitions":{"api_key":{"name":"X-API-KEY","type":"apiKey"},"petstore_auth":{"scopes":{"read:pets":"read your pets","write:pets":"modify pets in your account"},"type":"oauth2"}}}`
 
-			require.JSONEq(t, expectedJSON, actualJSON)
+			require.JSONEqT(t, expectedJSON, actualJSON)
 		})
 	})
 
@@ -57,7 +57,7 @@ func TestYamlParser(t *testing.T) {
 			var actualJSON string
 			parser := newYamlParser(rxSecurity, setter(&actualJSON, &setterCalled))
 
-			require.False(t, parser.Matches(""))
+			require.FalseT(t, parser.Matches(""))
 			require.NoError(t, parser.Parse([]string{}))
 			require.Zero(t, setterCalled)
 		})
@@ -81,10 +81,10 @@ func TestYamlParser(t *testing.T) {
 				"  type: apiKey",
 			}
 
-			require.True(t, parser.Matches(lines[0]))
+			require.TrueT(t, parser.Matches(lines[0]))
 			err := parser.Parse(lines)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "yaml: line 2:")
+			require.StringContainsT(t, err.Error(), "yaml: line 2:")
 			require.Zero(t, setterCalled)
 		})
 
@@ -98,10 +98,10 @@ func TestYamlParser(t *testing.T) {
 				"    type: apiKey",
 			}
 
-			require.True(t, parser.Matches(lines[0]))
+			require.TrueT(t, parser.Matches(lines[0]))
 			err := parser.Parse(lines)
 			require.Error(t, err)
-			require.Contains(t, err.Error(), "yaml: line 3: mapping value")
+			require.StringContainsT(t, err.Error(), "yaml: line 3: mapping value")
 			require.Zero(t, setterCalled)
 		})
 	})
@@ -178,7 +178,7 @@ func TestYamlSpecScanner(t *testing.T) {
 				}
 			}`
 
-			require.JSONEq(t, expectedJSON, receivedJSON)
+			require.JSONEqT(t, expectedJSON, receivedJSON)
 		})
 
 		t.Run("should stop yaml operation block when new tag is found", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestYamlSpecScanner(t *testing.T) {
 				"summary":"Adds a new configuration entry"
 			}`
 
-			require.JSONEq(t, expectedJSON, receivedJSON)
+			require.JSONEqT(t, expectedJSON, receivedJSON)
 		})
 
 		t.Run("should stop yaml operation block when new yaml document separator is found", func(t *testing.T) {
@@ -258,7 +258,7 @@ func TestYamlSpecScanner(t *testing.T) {
 				"summary":"Adds a new configuration entry"
 			}`
 
-			require.JSONEq(t, expectedJSON, receivedJSON)
+			require.JSONEqT(t, expectedJSON, receivedJSON)
 		})
 	})
 
@@ -308,7 +308,7 @@ func TestYamlSpecScanner(t *testing.T) {
 				return nil
 			}
 			require.NoError(t, parser.UnmarshalSpec(yamlReceiver))
-			require.JSONEq(t, `{}`, receivedJSON)
+			require.JSONEqT(t, `{}`, receivedJSON)
 		})
 	})
 }

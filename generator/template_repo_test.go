@@ -8,8 +8,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -23,7 +23,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
 	require.NotNil(t, buf)
-	assert.Equal(t, "\n", buf.String())
+	assert.EqualT(t, "\n", buf.String())
 
 	buf.Reset()
 	err = templates.AddFile("bindprimitiveparam", customHeader)
@@ -35,7 +35,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
-	assert.Equal(t, "custom header", buf.String())
+	assert.EqualT(t, "custom header", buf.String())
 }
 
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
@@ -50,7 +50,7 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "custom primitive", buf.String())
+	assert.EqualT(t, "custom primitive", buf.String())
 }
 
 func TestTemplates_CustomNewTemplates(t *testing.T) {
@@ -68,7 +68,7 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 	err = headerTempl.Execute(&buf, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "new template", buf.String())
+	assert.EqualT(t, "new template", buf.String())
 }
 
 func TestTemplates_RepoLoadingTemplates(t *testing.T) {
@@ -84,7 +84,7 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "test", b.String())
+	assert.EqualT(t, "test", b.String())
 }
 
 func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
@@ -109,7 +109,7 @@ func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "T1", b.String())
+	assert.EqualT(t, "T1", b.String())
 }
 
 type testData struct {
@@ -135,7 +135,7 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 	err = templ.Execute(&b, nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "T1D1", b.String())
+	assert.EqualT(t, "T1D1", b.String())
 }
 
 func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
@@ -161,7 +161,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	expected := `Root: Children`
 	err = templ.Execute(&b, data)
 	require.NoError(t, err)
-	assert.Equal(t, expected, b.String())
+	assert.EqualT(t, expected, b.String())
 
 	data = testData{
 		Name: "Root",
@@ -177,7 +177,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	err = templ.Execute(&b, data)
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, b.String())
+	assert.EqualT(t, expected, b.String())
 
 	data = testData{
 		Name: "Root",
@@ -193,7 +193,7 @@ func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	err = templ.Execute(&b, data)
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, b.String())
+	assert.EqualT(t, expected, b.String())
 }
 
 // Test that definitions are available to templates
@@ -226,7 +226,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	rendered := bytes.NewBuffer(nil)
 	err = templ.Execute(rendered, genModel)
 	require.NoError(t, err)
-	assert.Equal(t, expected, rendered.String())
+	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
 	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
@@ -238,7 +238,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	err = templ.Execute(rendered, genOperation)
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, rendered.String())
+	assert.EqualT(t, expected, rendered.String())
 }
 
 // Test TargetImportPath definition.
@@ -269,7 +269,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	err = templ.Execute(rendered, genModel)
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, rendered.String())
+	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
 	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
@@ -281,7 +281,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	err = templ.Execute(rendered, genOperation)
 	require.NoError(t, err)
 
-	assert.Equal(t, expected, rendered.String())
+	assert.EqualT(t, expected, rendered.String())
 }
 
 // Simulates a definition environment for model templates.
@@ -351,7 +351,7 @@ func TestTemplates_AddFile(t *testing.T) {
 	// protected
 	err = AddFile("schemabody", funcTpl)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot overwrite protected template")
+	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template")
 }
 
 // Test LoadDir.
@@ -361,12 +361,12 @@ func TestTemplates_LoadDir(t *testing.T) {
 	// Fails
 	err := templates.LoadDir("")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "could not complete")
+	assert.StringContainsT(t, err.Error(), "could not complete")
 
 	// Fails again (from any dir?)
 	err = templates.LoadDir("templates")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot overwrite protected template")
+	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template")
 
 	// TODO: success case
 	// To force a success, we need to empty the global list of protected
@@ -392,7 +392,7 @@ func TestTemplates_SetAllowOverride(t *testing.T) {
 	templates.SetAllowOverride(false)
 	err := templates.AddFile("schemabody", "some data")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "cannot overwrite protected template schemabody")
+	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template schemabody")
 
 	// adding protected file with allowOverride set to true should not fail
 	templates.SetAllowOverride(true)
@@ -440,7 +440,7 @@ func TestTemplates_DumpTemplates(t *testing.T) {
 	templates.DumpTemplates()
 	assert.NotEmpty(t, buf)
 	// Sample output
-	assert.Contains(t, buf.String(), "## tupleSerializer")
-	assert.Contains(t, buf.String(), "Defined in `tupleserializer.gotmpl`")
-	assert.Contains(t, buf.String(), "####requires \n - schemaType")
+	assert.StringContainsT(t, buf.String(), "## tupleSerializer")
+	assert.StringContainsT(t, buf.String(), "Defined in `tupleserializer.gotmpl`")
+	assert.StringContainsT(t, buf.String(), "####requires \n - schemaType")
 }

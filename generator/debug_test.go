@@ -10,8 +10,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // mutex for -race because this test alters a global.
@@ -57,14 +57,14 @@ func TestDebugLog(t *testing.T) {
 			str := buf.String()
 
 			t.Run("log should contain format message", func(t *testing.T) {
-				assert.Contains(t, str, "A debug")
+				assert.StringContainsT(t, str, "A debug")
 			})
 			t.Run("log should contain string argument", func(t *testing.T) {
-				assert.Contains(t, str, "with arg")
+				assert.StringContainsT(t, str, "with arg")
 			})
 			t.Run("log should sanitize stuff like token, password...", func(t *testing.T) {
-				assert.Contains(t, str, "***REDACTED**")
-				assert.NotContains(t, str, "123")
+				assert.StringContainsT(t, str, "***REDACTED**")
+				assert.StringNotContainsT(t, str, "123")
 			})
 		})
 
@@ -95,14 +95,14 @@ func TestDebugLog(t *testing.T) {
 			str := buf.String()
 
 			t.Run("log should contain short message", func(t *testing.T) {
-				assert.Contains(t, str, "A short debug")
+				assert.StringContainsT(t, str, "A short debug")
 			})
 			t.Run("log should contain long message with args", func(t *testing.T) {
-				assert.Contains(t, str, "A long debug:true")
+				assert.StringContainsT(t, str, "A long debug:true")
 			})
 			t.Run("log should contain struct fields as JSON", func(t *testing.T) {
-				assert.Contains(t, str, `"fieldOne":`)
-				assert.Contains(t, str, `"content"`)
+				assert.StringContainsT(t, str, `"fieldOne":`)
+				assert.StringContainsT(t, str, `"content"`)
 			})
 		})
 	})

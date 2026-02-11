@@ -22,7 +22,6 @@ import (
 )
 
 func main() {
-
 	n := int64(5)
 	if len(os.Args) > 1 {
 		var err error

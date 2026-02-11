@@ -14,7 +14,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/1571/gen-fixture-simple-tuple-minimal/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 )
 
 func Test_TupleThing(t *testing.T) {

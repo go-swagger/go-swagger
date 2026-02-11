@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
 )
@@ -162,7 +162,7 @@ other: abc
 			require.NotNil(t, v)
 			m := v.AllSettings()
 			for k, expectedValue := range testCase.Expected {
-				require.Contains(t, m, k)
+				require.MapContainsT(t, m, k)
 				assert.Equal(t, expectedValue, m[k])
 			}
 		})

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -91,10 +91,10 @@ func TestTypeResolver_AdditionalItems(t *testing.T) {
 
 		rt, err := resolver.ResolveSchema(&coll, true, true)
 		require.NoError(t, err)
-		require.True(t, rt.IsArray)
+		require.TrueT(t, rt.IsArray)
 
-		assert.True(t, rt.HasAdditionalItems)
-		assert.False(t, rt.IsNullable)
+		assert.TrueT(t, rt.HasAdditionalItems)
+		assert.FalseT(t, rt.IsNullable)
 	}
 }
 
@@ -110,7 +110,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, true, false)
 		require.NoError(t, err)
 
-		assert.False(t, rt.IsNullable, "expected %s with format %q to not be nullable", val.Type, val.Format)
+		assert.FalseT(t, rt.IsNullable, "expected %s with format %q to not be nullable", val.Type, val.Format)
 		assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 	}
 
@@ -121,24 +121,24 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
-		assert.False(t, rt.IsEmptyOmitted)
+		assert.TrueT(t, rt.IsArray)
+		assert.FalseT(t, rt.IsEmptyOmitted)
 
 		s := new(spec.Schema).CollectionOf(sch)
 		s.AddExtension(xOmitEmpty, false)
 		rt, err = resolver.ResolveSchema(s, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
-		assert.False(t, rt.IsEmptyOmitted)
+		assert.TrueT(t, rt.IsArray)
+		assert.FalseT(t, rt.IsEmptyOmitted)
 
 		s = new(spec.Schema).CollectionOf(sch)
 		s.AddExtension(xOmitEmpty, true)
 		rt, err = resolver.ResolveSchema(s, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
-		assert.True(t, rt.IsEmptyOmitted)
+		assert.TrueT(t, rt.IsArray)
+		assert.TrueT(t, rt.IsEmptyOmitted)
 	}
 
 	// primitives and string formats
@@ -152,9 +152,9 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		require.NoError(t, err)
 
 		if val.Type == file {
-			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
+			assert.FalseT(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
-			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+			assert.TrueT(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 		}
 		assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 
@@ -165,9 +165,9 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		require.NoError(t, err)
 
 		if val.Type == file {
-			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
+			assert.FalseT(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
-			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+			assert.TrueT(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 		}
 		assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 
@@ -178,9 +178,9 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		require.NoError(t, err)
 
 		if val.Type == file {
-			assert.False(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
+			assert.FalseT(t, rt.IsNullable, "expected %q (%q) to not be nullable", val.Type, val.Format)
 		} else {
-			assert.True(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
+			assert.TrueT(t, rt.IsNullable, "expected %q (%q) to be nullable", val.Type, val.Format)
 		}
 		assertPrimitiveResolve(t, val.Type, val.Format, val.Expected, rt)
 	}
@@ -194,7 +194,7 @@ func TestTypeResolver_BasicTypes(t *testing.T) {
 		rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(sch), true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
+		assert.TrueT(t, rt.IsArray)
 	}
 }
 
@@ -210,10 +210,10 @@ func TestTypeResolver_Refs(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		assert.Equal(t, val.Expected, rt.GoType)
-		assert.False(t, rt.IsAnonymous)
-		assert.True(t, rt.IsNullable)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.EqualT(t, val.Expected, rt.GoType)
+		assert.FalseT(t, rt.IsAnonymous)
+		assert.TrueT(t, rt.IsNullable)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// referenced array objects
@@ -224,10 +224,10 @@ func TestTypeResolver_Refs(t *testing.T) {
 		rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
+		assert.TrueT(t, rt.IsArray)
 		// now this behavior has moved down to the type resolver:
 		// * it used to be hidden to the type resolver, but rendered like that eventually
-		assert.Equal(t, "[]*"+val.Expected, rt.GoType)
+		assert.EqualT(t, "[]*"+val.Expected, rt.GoType)
 	}
 	// for named objects
 	// referenced objects
@@ -238,10 +238,10 @@ func TestTypeResolver_Refs(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, false, true)
 		require.NoError(t, err)
 
-		assert.Equal(t, val.Expected, rt.GoType)
-		assert.False(t, rt.IsAnonymous)
-		assert.True(t, rt.IsNullable)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.EqualT(t, val.Expected, rt.GoType)
+		assert.FalseT(t, rt.IsAnonymous)
+		assert.TrueT(t, rt.IsNullable)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// referenced array objects
@@ -252,10 +252,10 @@ func TestTypeResolver_Refs(t *testing.T) {
 		rt, err := resolver.ResolveSchema(new(spec.Schema).CollectionOf(*sch), false, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsArray)
+		assert.TrueT(t, rt.IsArray)
 		// now this behavior has moved down to the type resolver:
 		// * it used to be hidden to the type resolver, but rendered like that eventually
-		assert.Equal(t, "[]*"+val.Expected, rt.GoType)
+		assert.EqualT(t, "[]*"+val.Expected, rt.GoType)
 	}
 }
 
@@ -275,10 +275,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, false)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsMap)
-		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsMap)
+		assert.FalseT(t, rt.IsComplexObject)
+		assert.EqualT(t, "map[string]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// array of primitives as additional properties
@@ -293,10 +293,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, false)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsMap)
-		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsMap)
+		assert.FalseT(t, rt.IsComplexObject)
+		assert.EqualT(t, "map[string][]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// refs as additional properties
@@ -310,10 +310,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsMap)
-		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsMap)
+		assert.FalseT(t, rt.IsComplexObject)
+		assert.EqualT(t, "map[string]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// when additional properties and properties present, it's a complex object
@@ -332,10 +332,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "map[string]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// array of primitives as additional properties
@@ -352,10 +352,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "map[string][]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "map[string][]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 
 	// refs as additional properties
@@ -371,10 +371,10 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 		rt, err := resolver.ResolveSchema(parent, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "map[string]"+val.Expected, rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "map[string]"+val.Expected, rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 }
 
@@ -386,10 +386,10 @@ func TestTypeResolver_Notables(t *testing.T) {
 	rest, err := resolver.ResolveSchema(&def, false, true)
 	require.NoError(t, err)
 
-	assert.True(t, rest.IsArray)
-	assert.False(t, rest.IsAnonymous)
-	assert.False(t, rest.IsNullable)
-	assert.Equal(t, "[]*models.Notable", rest.GoType)
+	assert.TrueT(t, rest.IsArray)
+	assert.FalseT(t, rest.IsAnonymous)
+	assert.FalseT(t, rest.IsNullable)
+	assert.EqualT(t, "[]*models.Notable", rest.GoType)
 }
 
 func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, error) {
@@ -457,8 +457,8 @@ func TestTypeResolver_TupleTypes(t *testing.T) {
 	rt, err := resolver.ResolveSchema(parent, true, true)
 	require.NoError(t, err)
 
-	assert.False(t, rt.IsArray)
-	assert.True(t, rt.IsTuple)
+	assert.FalseT(t, rt.IsArray)
+	assert.TrueT(t, rt.IsTuple)
 }
 
 func TestTypeResolver_AnonymousStructs(t *testing.T) {
@@ -475,9 +475,9 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 	rt, err := resolver.ResolveSchema(parent, true, true)
 	require.NoError(t, err)
 
-	assert.True(t, rt.IsNullable)
-	assert.True(t, rt.IsAnonymous)
-	assert.True(t, rt.IsComplexObject)
+	assert.TrueT(t, rt.IsNullable)
+	assert.TrueT(t, rt.IsAnonymous)
+	assert.TrueT(t, rt.IsComplexObject)
 
 	parent.Extensions = make(spec.Extensions)
 	parent.Extensions[xIsNullable] = true
@@ -485,9 +485,9 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 	rt, err = resolver.ResolveSchema(parent, true, true)
 	require.NoError(t, err)
 
-	assert.True(t, rt.IsNullable)
-	assert.True(t, rt.IsAnonymous)
-	assert.True(t, rt.IsComplexObject)
+	assert.TrueT(t, rt.IsNullable)
+	assert.TrueT(t, rt.IsAnonymous)
+	assert.TrueT(t, rt.IsComplexObject)
 
 	// Also test that it's nullable with just x-nullable
 	parent.Extensions[xIsNullable] = false
@@ -496,9 +496,9 @@ func TestTypeResolver_AnonymousStructs(t *testing.T) {
 	rt, err = resolver.ResolveSchema(parent, true, true)
 	require.NoError(t, err)
 
-	assert.False(t, rt.IsNullable)
-	assert.True(t, rt.IsAnonymous)
-	assert.True(t, rt.IsComplexObject)
+	assert.FalseT(t, rt.IsNullable)
+	assert.TrueT(t, rt.IsAnonymous)
+	assert.TrueT(t, rt.IsComplexObject)
 }
 
 func TestTypeResolver_ObjectType(t *testing.T) {
@@ -517,10 +517,10 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err := resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsMap)
-		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "any", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsMap)
+		assert.FalseT(t, rt.IsComplexObject)
+		assert.EqualT(t, "any", rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 
 		sch.Properties = make(map[string]spec.Schema)
 		var ss spec.Schema
@@ -528,10 +528,10 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err = resolver.ResolveSchema(sch, false, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "models.TheModel", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "models.TheModel", rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 
 		sch.Properties = nil
 		nsch := new(spec.Schema)
@@ -540,19 +540,19 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err = resolver.ResolveSchema(nsch, false, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "models.TheModel", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "models.TheModel", rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 
 		sch = new(spec.Schema)
 		rt, err = resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsMap)
-		assert.False(t, rt.IsComplexObject)
-		assert.Equal(t, "any", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsMap)
+		assert.FalseT(t, rt.IsComplexObject)
+		assert.EqualT(t, "any", rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 
 		sch = new(spec.Schema)
 		var sp spec.Schema
@@ -561,10 +561,10 @@ func TestTypeResolver_ObjectType(t *testing.T) {
 		rt, err = resolver.ResolveSchema(sch, true, true)
 		require.NoError(t, err)
 
-		assert.True(t, rt.IsComplexObject)
-		assert.False(t, rt.IsMap)
-		assert.Equal(t, "models.TheModel", rt.GoType)
-		assert.Equal(t, "object", rt.SwaggerType)
+		assert.TrueT(t, rt.IsComplexObject)
+		assert.FalseT(t, rt.IsMap)
+		assert.EqualT(t, "models.TheModel", rt.GoType)
+		assert.EqualT(t, "object", rt.SwaggerType)
 	}
 }
 
@@ -583,19 +583,19 @@ func TestTypeResolver_AliasTypes(t *testing.T) {
 	rt, err := resolver.ResolveSchema(&defs, false, true)
 	require.NoError(t, err)
 
-	assert.False(t, rt.IsAnonymous)
-	assert.True(t, rt.IsAliased)
-	assert.True(t, rt.IsPrimitive)
-	assert.Equal(t, "Currency", rt.GoType)
-	assert.Equal(t, "string", rt.AliasedType)
+	assert.FalseT(t, rt.IsAnonymous)
+	assert.TrueT(t, rt.IsAliased)
+	assert.TrueT(t, rt.IsPrimitive)
+	assert.EqualT(t, "Currency", rt.GoType)
+	assert.EqualT(t, "string", rt.AliasedType)
 }
 
 func assertPrimitiveResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType) {
 	t.Helper()
 
-	assert.Equal(t, tpe, tr.SwaggerType, "expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType)
-	assert.Equal(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat)
-	assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType)
+	assert.EqualT(t, tpe, tr.SwaggerType, "expected %q (%q, %q) to for the swagger type but got %q", tpe, tfmt, exp, tr.SwaggerType)
+	assert.EqualT(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) to for the swagger format but got %q", tfmt, tpe, exp, tr.SwaggerFormat)
+	assert.EqualT(t, exp, tr.GoType, "expected %q (%q, %q) to for the go type but got %q", exp, tpe, tfmt, tr.GoType)
 }
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
@@ -605,45 +605,45 @@ func TestTypeResolver_ExistingModel(t *testing.T) {
 
 	def := doc.Spec().Definitions["JsonWebKey"]
 	tpe, pkg, alias := resolver.knownDefGoType("JsonWebKey", def, nil)
-	assert.Equal(t, "jwk.Key", tpe)
-	assert.Equal(t, "github.com/user/package", pkg)
-	assert.Equal(t, "jwk", alias)
+	assert.EqualT(t, "jwk.Key", tpe)
+	assert.EqualT(t, "github.com/user/package", pkg)
+	assert.EqualT(t, "jwk", alias)
 	rest, err := resolver.ResolveSchema(&def, false, true)
 	require.NoError(t, err)
 
-	assert.False(t, rest.IsMap)
-	assert.False(t, rest.IsArray)
-	assert.False(t, rest.IsTuple)
-	assert.False(t, rest.IsStream)
-	assert.True(t, rest.IsAliased)
-	assert.False(t, rest.IsBaseType)
-	assert.False(t, rest.IsInterface)
-	assert.True(t, rest.IsNullable)
-	assert.False(t, rest.IsPrimitive)
-	assert.False(t, rest.IsAnonymous)
-	assert.True(t, rest.IsComplexObject)
-	assert.False(t, rest.IsCustomFormatter)
-	assert.Equal(t, "jwk.Key", rest.GoType)
-	assert.Equal(t, "github.com/user/package", rest.Pkg)
-	assert.Equal(t, "jwk", rest.PkgAlias)
+	assert.FalseT(t, rest.IsMap)
+	assert.FalseT(t, rest.IsArray)
+	assert.FalseT(t, rest.IsTuple)
+	assert.FalseT(t, rest.IsStream)
+	assert.TrueT(t, rest.IsAliased)
+	assert.FalseT(t, rest.IsBaseType)
+	assert.FalseT(t, rest.IsInterface)
+	assert.TrueT(t, rest.IsNullable)
+	assert.FalseT(t, rest.IsPrimitive)
+	assert.FalseT(t, rest.IsAnonymous)
+	assert.TrueT(t, rest.IsComplexObject)
+	assert.FalseT(t, rest.IsCustomFormatter)
+	assert.EqualT(t, "jwk.Key", rest.GoType)
+	assert.EqualT(t, "github.com/user/package", rest.Pkg)
+	assert.EqualT(t, "jwk", rest.PkgAlias)
 
 	def = doc.Spec().Definitions["JsonWebKeySet"].Properties["keys"]
 	rest, err = resolver.ResolveSchema(&def, false, true)
 	require.NoError(t, err)
 
-	assert.False(t, rest.IsMap)
-	assert.True(t, rest.IsArray)
-	assert.False(t, rest.IsTuple)
-	assert.False(t, rest.IsStream)
-	assert.False(t, rest.IsAliased)
-	assert.False(t, rest.IsBaseType)
-	assert.False(t, rest.IsInterface)
-	assert.False(t, rest.IsNullable)
-	assert.False(t, rest.IsPrimitive)
-	assert.False(t, rest.IsAnonymous)
-	assert.False(t, rest.IsComplexObject)
-	assert.False(t, rest.IsCustomFormatter)
-	assert.Equal(t, "[]*jwk.Key", rest.GoType)
+	assert.FalseT(t, rest.IsMap)
+	assert.TrueT(t, rest.IsArray)
+	assert.FalseT(t, rest.IsTuple)
+	assert.FalseT(t, rest.IsStream)
+	assert.FalseT(t, rest.IsAliased)
+	assert.FalseT(t, rest.IsBaseType)
+	assert.FalseT(t, rest.IsInterface)
+	assert.FalseT(t, rest.IsNullable)
+	assert.FalseT(t, rest.IsPrimitive)
+	assert.FalseT(t, rest.IsAnonymous)
+	assert.FalseT(t, rest.IsComplexObject)
+	assert.FalseT(t, rest.IsCustomFormatter)
+	assert.EqualT(t, "[]*jwk.Key", rest.GoType)
 	assert.Empty(t, rest.Pkg)
 	assert.Empty(t, rest.PkgAlias)
 }

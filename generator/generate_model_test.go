@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestGenerateModels(t *testing.T) {
@@ -64,9 +64,9 @@ func generateModelFixtures() map[string]generateFixture {
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
 					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, ""))
-					assert.True(t, fileExists(target, "a.go"))
-					assert.True(t, fileExists(target, "b.go"))
+					require.TrueT(t, fileExists(target, ""))
+					assert.TrueT(t, fileExists(target, "a.go"))
+					assert.TrueT(t, fileExists(target, "b.go"))
 				}
 			},
 		},
@@ -81,11 +81,11 @@ func generateModelFixtures() map[string]generateFixture {
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
 					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, ""))
-					assert.True(t, fileExists(target, "model_interface.go"))
-					assert.True(t, fileExists(target, "records_model.go"))
-					assert.True(t, fileExists(target, "records_model_with_max.go"))
-					assert.False(t, fileExists(target, "restapi"))
+					require.TrueT(t, fileExists(target, ""))
+					assert.TrueT(t, fileExists(target, "model_interface.go"))
+					assert.TrueT(t, fileExists(target, "records_model.go"))
+					assert.TrueT(t, fileExists(target, "records_model_with_max.go"))
+					assert.FalseT(t, fileExists(target, "restapi"))
 				}
 			},
 		},
@@ -95,10 +95,10 @@ func generateModelFixtures() map[string]generateFixture {
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
 					target = filepath.Join(target, defaultModelsTarget)
-					require.True(t, fileExists(target, "schema.go"))
+					require.TrueT(t, fileExists(target, "schema.go"))
 					content, err := os.ReadFile(filepath.Join(target, "schema.go"))
 					require.NoError(t, err)
-					assert.Contains(t, string(content), "getDollarRefField string")
+					assert.StringContainsT(t, string(content), "getDollarRefField string")
 				}
 			},
 		},

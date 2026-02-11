@@ -9,8 +9,9 @@ import (
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
@@ -72,9 +73,9 @@ func TestCmd_FlattenKeepNames_Issue2334(t *testing.T) {
 	require.NoError(t, err)
 	spec := string(buf)
 
-	require.Contains(t, spec, "$ref: '#/definitions/Bar'")
-	require.Contains(t, spec, "Bar:")
-	require.Contains(t, spec, "Baz:")
+	require.StringContainsT(t, spec, "$ref: '#/definitions/Bar'")
+	require.StringContainsT(t, spec, "Bar:")
+	require.StringContainsT(t, spec, "Baz:")
 }
 
 func testValidRefs(t *testing.T, v executable) {
@@ -100,5 +101,5 @@ func testProduceOutput(t *testing.T, v executable, specDoc, output string) {
 
 	require.NoError(t, v.Execute([]string{specDoc}))
 	_, exists := os.Stat(output)
-	assert.False(t, os.IsNotExist(exists))
+	assert.FalseT(t, os.IsNotExist(exists))
 }

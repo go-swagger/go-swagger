@@ -10,13 +10,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/codescan"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
+
+	"github.com/go-openapi/testify/v2/assert"
 )
 
 const (
@@ -91,11 +92,11 @@ func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 	require.Len(t, got["definitions"], 2)
 	require.Contains(t, got["definitions"], "Item")
 	itemDefinition, ok := got["definitions"].(map[string]any)["Item"].(map[string]any)
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.Contains(t, itemDefinition["properties"], "Value1")
 	value1Property, ok := itemDefinition["properties"].(map[string]any)["Value1"].(map[string]any)
-	require.True(t, ok)
-	require.Contains(t, value1Property, "x-nullable")
+	require.TrueT(t, ok)
+	require.MapContainsT(t, value1Property, "x-nullable")
 	assert.Equal(t, true, value1Property["x-nullable"])
 }
 

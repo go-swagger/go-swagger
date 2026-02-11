@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestURLBuilder_SimplePathParams(t *testing.T) {
@@ -348,7 +348,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 				t.Run("should NOT make an operation", func(t *testing.T) {
 					_, err = gen.MakeOperation()
 					require.Error(t, err)
-					assert.Contains(t, err.Error(), `GET /test/{test_name}, parameter "test_name": "x-go-name" field must be a string, not a []interface {}`)
+					assert.StringContainsT(t, err.Error(), `GET /test/{test_name}, parameter "test_name": "x-go-name" field must be a string, not a []interface {}`)
 				})
 			})
 		})

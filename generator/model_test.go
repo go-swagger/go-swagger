@@ -12,8 +12,8 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
@@ -34,7 +34,7 @@ func (tt *templateTest) assertRender(data any, expected string) (success bool) {
 
 	trimmed := strings.TrimLeft(buf.String(), "\n\t ")
 	exp := strings.TrimLeft(expected, "\n\t ")
-	assert.Equal(tt.t, exp, trimmed)
+	assert.EqualT(tt.t, exp, trimmed)
 
 	return !tt.t.Failed()
 }
@@ -280,60 +280,60 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 		switch v.Value.GoType {
 		// verifying Zero for primitive
 		case "string":
-			assert.Equal(t, `""`, v.Value.Zero())
+			assert.EqualT(t, `""`, v.Value.Zero())
 		case "bool":
-			assert.Equal(t, `false`, v.Value.Zero())
+			assert.EqualT(t, `false`, v.Value.Zero())
 		case "int32", "int64", "float32", float64String:
-			assert.Equal(t, `0`, v.Value.Zero())
+			assert.EqualT(t, `0`, v.Value.Zero())
 		// verifying Zero for primitive formatters
 		case "strfmt.Date", "strfmt.DateTime", "strfmt.OjbectId": // akin to structs
 			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `{}`)
-			assert.True(t, rex.MatchString(v.Value.Zero()))
+			assert.TrueT(t, rex.MatchString(v.Value.Zero()))
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
 			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `{}` + `\)`)
-			assert.True(t, rex.MatchString(k.Zero()))
+			assert.TrueT(t, rex.MatchString(k.Zero()))
 		case "strfmt.Duration": // akin to integer
 			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\d*\)`)
-			assert.True(t, rex.MatchString(v.Value.Zero()))
+			assert.TrueT(t, rex.MatchString(v.Value.Zero()))
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
 			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\d*\)` + `\)`)
-			assert.True(t, rex.MatchString(k.Zero()))
+			assert.TrueT(t, rex.MatchString(k.Zero()))
 		case "strfmt.Base64": // akin to []byte
 			rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(\[\]byte.*\)`)
-			assert.True(t, rex.MatchString(v.Value.Zero()))
+			assert.TrueT(t, rex.MatchString(v.Value.Zero()))
 			k := v.Value
 			k.IsAliased = true
 			k.AliasedType = k.GoType
 			k.GoType = myAliasedType
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
-			assert.True(t, rex.MatchString(k.Zero()))
+			assert.TrueT(t, rex.MatchString(k.Zero()))
 		case "any":
-			assert.Equal(t, `nil`, v.Value.Zero())
+			assert.EqualT(t, `nil`, v.Value.Zero())
 		case "io.ReadCloser":
 			continue
 		default:
 			switch {
 			case strings.HasPrefix(v.Value.GoType, "[]") || strings.HasPrefix(v.Value.GoType, "map["): // akin to slice or map
-				assert.True(t, strings.HasPrefix(v.Value.Zero(), "make("))
+				assert.TrueT(t, strings.HasPrefix(v.Value.Zero(), "make("))
 
 			case strings.HasPrefix(v.Value.GoType, "models."):
-				assert.True(t, strings.HasPrefix(v.Value.Zero(), "new("))
+				assert.TrueT(t, strings.HasPrefix(v.Value.Zero(), "new("))
 
 			default: // akin to string
 				rex := regexp.MustCompile(regexp.QuoteMeta(v.Value.GoType) + `\(".*"\)`)
-				assert.True(t, rex.MatchString(v.Value.Zero()))
+				assert.TrueT(t, rex.MatchString(v.Value.Zero()))
 				k := v.Value
 				k.IsAliased = true
 				k.AliasedType = k.GoType
 				k.GoType = myAliasedType
 				rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(".*"\)` + `\)`)
-				assert.True(t, rex.MatchString(k.Zero()))
+				assert.TrueT(t, rex.MatchString(k.Zero()))
 			}
 		}
 	}
@@ -413,10 +413,10 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.IsAdditionalProperties)
-	assert.True(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsMap)
-	assert.False(t, genModel.IsAnonymous)
+	assert.FalseT(t, genModel.IsAdditionalProperties)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsMap)
+	assert.FalseT(t, genModel.IsAnonymous)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -438,10 +438,10 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsAdditionalProperties)
-	assert.False(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsMap)
-	assert.False(t, genModel.IsAnonymous)
+	assert.TrueT(t, genModel.IsAdditionalProperties)
+	assert.FalseT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsMap)
+	assert.FalseT(t, genModel.IsAnonymous)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -535,11 +535,11 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, templates.MustGet("model").Execute(buf, genModel))
 
@@ -558,14 +558,14 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "extraInfo")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
-	assert.Equal(t, "map[string]any", prop.GoType)
-	assert.True(t, prop.Required)
-	assert.True(t, prop.HasValidations)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
+	assert.EqualT(t, "map[string]any", prop.GoType)
+	assert.TrueT(t, prop.Required)
+	assert.TrueT(t, prop.HasValidations)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -586,11 +586,11 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -610,11 +610,11 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -633,11 +633,11 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -657,11 +657,11 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -681,11 +681,11 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.False(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
 	prop := getDefinitionProperty(genModel, "data")
-	assert.True(t, prop.HasAdditionalProperties)
-	assert.True(t, prop.IsMap)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.HasAdditionalProperties)
+	assert.TrueT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -706,24 +706,24 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
 
-	assert.False(t, genModel.HasAdditionalProperties)
-	assert.False(t, genModel.IsMap)
-	assert.False(t, genModel.IsAdditionalProperties)
-	assert.True(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.HasAdditionalProperties)
+	assert.FalseT(t, genModel.IsMap)
+	assert.FalseT(t, genModel.IsAdditionalProperties)
+	assert.TrueT(t, genModel.IsComplexObject)
 
 	sch := genModel.ExtraSchemas[0]
-	assert.True(t, sch.HasAdditionalProperties)
-	assert.False(t, sch.IsMap)
-	assert.True(t, sch.IsAdditionalProperties)
-	assert.False(t, sch.IsComplexObject)
+	assert.TrueT(t, sch.HasAdditionalProperties)
+	assert.FalseT(t, sch.IsMap)
+	assert.TrueT(t, sch.IsAdditionalProperties)
+	assert.FalseT(t, sch.IsComplexObject)
 
 	require.NotNil(t, sch.AdditionalProperties)
 
 	prop := findProperty(genModel.Properties, "data")
-	assert.False(t, prop.HasAdditionalProperties)
-	assert.False(t, prop.IsMap)
-	assert.False(t, prop.IsAdditionalProperties)
-	assert.True(t, prop.IsComplexObject)
+	assert.FalseT(t, prop.HasAdditionalProperties)
+	assert.FalseT(t, prop.IsMap)
+	assert.FalseT(t, prop.IsAdditionalProperties)
+	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -761,9 +761,9 @@ func TestGenerateModel_JustRef(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.NotEmpty(t, genModel.AllOf)
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "JustRef", genModel.Name)
-	assert.Equal(t, "JustRef", genModel.GoType)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "JustRef", genModel.Name)
+	assert.EqualT(t, "JustRef", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
 
@@ -783,9 +783,9 @@ func TestGenerateModel_WithRef(t *testing.T) {
 	genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "WithRef", genModel.Name)
-	assert.Equal(t, "WithRef", genModel.GoType)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "WithRef", genModel.Name)
+	assert.EqualT(t, "WithRef", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
 
@@ -805,12 +805,12 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 	genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "WithNullableRef", genModel.Name)
-	assert.Equal(t, "WithNullableRef", genModel.GoType)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "WithNullableRef", genModel.Name)
+	assert.EqualT(t, "WithNullableRef", genModel.GoType)
 	prop := getDefinitionProperty(genModel, "notes")
-	assert.True(t, prop.IsNullable)
-	assert.True(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsNullable)
+	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
 
@@ -869,7 +869,7 @@ func TestGenerateModel_Notables(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
-	require.Equal(t, "[]*Notable", genModel.GoType)
+	require.EqualT(t, "[]*Notable", genModel.GoType)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -962,12 +962,12 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
-	assert.True(t, genModel.IsComplexObject)
+	assert.TrueT(t, genModel.IsComplexObject)
 	prop := getDefinitionProperty(genModel, "tags")
 
 	assert.NotNil(t, prop.Items)
-	assert.True(t, prop.IsArray)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsArray)
+	assert.FalseT(t, prop.IsComplexObject)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
@@ -989,11 +989,11 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
-	assert.True(t, genModel.IsComplexObject)
+	assert.TrueT(t, genModel.IsComplexObject)
 	prop := getDefinitionProperty(genModel, "tags")
 	assert.NotNil(t, prop.Items)
-	assert.True(t, prop.IsArray)
-	assert.False(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsArray)
+	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1019,9 +1019,9 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
-	assert.True(t, genModel.IsComplexObject)
+	assert.TrueT(t, genModel.IsComplexObject)
 	prop := getDefinitionProperty(genModel, "tags")
-	assert.True(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1049,9 +1049,9 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
-	assert.True(t, genModel.IsComplexObject)
+	assert.TrueT(t, genModel.IsComplexObject)
 	prop := getDefinitionProperty(genModel, "tags")
-	assert.True(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1079,9 +1079,9 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Nil(t, genModel.Items)
-	assert.True(t, genModel.IsComplexObject)
+	assert.TrueT(t, genModel.IsComplexObject)
 	prop := getDefinitionProperty(genModel, "tags")
-	assert.True(t, prop.IsComplexObject)
+	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1113,12 +1113,12 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	// NOTE: with PR#1592, an extra schema is added here because of the allOf tuple element.
 	// This uncovers another issue with special AllOfs (e.g. allOf [ ..., x-nullable:true ])
 	// TODO(fredbi): fix liftSpecialAllOf() to revert to: assert.Empty(t, genModel.ExtraSchemas)
-	assert.True(t, genModel.IsTuple)
-	assert.False(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsArray)
-	assert.False(t, genModel.IsAnonymous)
-	assert.Equal(t, k, genModel.Name)
-	assert.Equal(t, k, genModel.GoType)
+	assert.TrueT(t, genModel.IsTuple)
+	assert.FalseT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsArray)
+	assert.FalseT(t, genModel.IsAnonymous)
+	assert.EqualT(t, k, genModel.Name)
+	assert.EqualT(t, k, genModel.GoType)
 	assert.Len(t, genModel.Properties, 5)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
@@ -1138,7 +1138,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	assertInCode(t, k+") UnmarshalJSON", res)
 	assertInCode(t, k+") MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotContains(t, res, "lastIndex")
+	assert.StringNotContainsT(t, res, "lastIndex")
 
 	for i, p := range genModel.Properties {
 		m := "m.P" + strconv.Itoa(i)
@@ -1168,14 +1168,14 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, genModel.ExtraSchemas)
 
-	assert.True(t, genModel.IsTuple)
-	assert.False(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsArray)
-	assert.False(t, genModel.IsAnonymous)
-	assert.True(t, genModel.HasAdditionalItems)
+	assert.TrueT(t, genModel.IsTuple)
+	assert.FalseT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsArray)
+	assert.FalseT(t, genModel.IsAnonymous)
+	assert.TrueT(t, genModel.HasAdditionalItems)
 	assert.NotNil(t, genModel.AdditionalItems)
-	assert.Equal(t, k, genModel.Name)
-	assert.Equal(t, k, genModel.GoType)
+	assert.EqualT(t, k, genModel.Name)
+	assert.EqualT(t, k, genModel.GoType)
 	assert.Len(t, genModel.Properties, 4)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1232,14 +1232,14 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsTuple)
-	assert.False(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsArray)
-	assert.False(t, genModel.IsAnonymous)
-	assert.True(t, genModel.HasAdditionalItems)
+	assert.TrueT(t, genModel.IsTuple)
+	assert.FalseT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsArray)
+	assert.FalseT(t, genModel.IsAnonymous)
+	assert.TrueT(t, genModel.HasAdditionalItems)
 	assert.NotNil(t, genModel.AdditionalItems)
-	assert.Equal(t, k, genModel.Name)
-	assert.Equal(t, k, genModel.GoType)
+	assert.EqualT(t, k, genModel.Name)
+	assert.EqualT(t, k, genModel.GoType)
 	assert.Len(t, genModel.Properties, 4)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1298,27 +1298,27 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	require.NotEmpty(t, genModel.ExtraSchemas)
 	require.NotEmpty(t, genModel.Properties)
 
-	assert.False(t, genModel.IsTuple)
-	assert.True(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsArray)
-	assert.False(t, genModel.IsAnonymous)
+	assert.FalseT(t, genModel.IsTuple)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsArray)
+	assert.FalseT(t, genModel.IsAnonymous)
 
 	sch := genModel.ExtraSchemas[0]
-	assert.True(t, sch.IsTuple)
-	assert.False(t, sch.IsComplexObject)
-	assert.False(t, sch.IsArray)
-	assert.False(t, sch.IsAnonymous)
-	assert.Equal(t, k+"FlagsTuple0", sch.Name)
-	assert.False(t, sch.HasAdditionalItems)
+	assert.TrueT(t, sch.IsTuple)
+	assert.FalseT(t, sch.IsComplexObject)
+	assert.FalseT(t, sch.IsArray)
+	assert.FalseT(t, sch.IsAnonymous)
+	assert.EqualT(t, k+"FlagsTuple0", sch.Name)
+	assert.FalseT(t, sch.HasAdditionalItems)
 	assert.Nil(t, sch.AdditionalItems)
 
 	prop := genModel.Properties[0]
-	assert.False(t, genModel.IsTuple)
-	assert.True(t, genModel.IsComplexObject)
-	assert.False(t, prop.IsArray)
-	assert.False(t, prop.IsAnonymous)
-	assert.Equal(t, k+"FlagsTuple0", prop.GoType)
-	assert.Equal(t, "flags", prop.Name)
+	assert.FalseT(t, genModel.IsTuple)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.FalseT(t, prop.IsArray)
+	assert.FalseT(t, prop.IsAnonymous)
+	assert.EqualT(t, k+"FlagsTuple0", prop.GoType)
+	assert.EqualT(t, "flags", prop.Name)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1333,7 +1333,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	assertInCode(t, k+"FlagsTuple0) UnmarshalJSON", res)
 	assertInCode(t, k+"FlagsTuple0) MarshalJSON", res)
 	assertInCode(t, "json.Marshal(data)", res)
-	assert.NotContains(t, res, "lastIndex")
+	assert.StringNotContainsT(t, res, "lastIndex")
 
 	for i, p := range sch.Properties {
 		m := "m.P" + strconv.Itoa(i)
@@ -1366,27 +1366,27 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	require.NotEmpty(t, genModel.ExtraSchemas)
 	require.NotEmpty(t, genModel.Properties)
 
-	assert.False(t, genModel.IsTuple)
-	assert.True(t, genModel.IsComplexObject)
-	assert.False(t, genModel.IsArray)
-	assert.False(t, genModel.IsAnonymous)
+	assert.FalseT(t, genModel.IsTuple)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.FalseT(t, genModel.IsArray)
+	assert.FalseT(t, genModel.IsAnonymous)
 
 	sch := genModel.ExtraSchemas[0]
-	assert.True(t, sch.IsTuple)
-	assert.False(t, sch.IsComplexObject)
-	assert.False(t, sch.IsArray)
-	assert.False(t, sch.IsAnonymous)
-	assert.Equal(t, k+"FlagsTuple0", sch.Name)
-	assert.True(t, sch.HasAdditionalItems)
+	assert.TrueT(t, sch.IsTuple)
+	assert.FalseT(t, sch.IsComplexObject)
+	assert.FalseT(t, sch.IsArray)
+	assert.FalseT(t, sch.IsAnonymous)
+	assert.EqualT(t, k+"FlagsTuple0", sch.Name)
+	assert.TrueT(t, sch.HasAdditionalItems)
 	assert.NotEmpty(t, sch.AdditionalItems)
 
 	prop := genModel.Properties[0]
-	assert.False(t, genModel.IsTuple)
-	assert.True(t, genModel.IsComplexObject)
-	assert.False(t, prop.IsArray)
-	assert.False(t, prop.IsAnonymous)
-	assert.Equal(t, k+"FlagsTuple0", prop.GoType)
-	assert.Equal(t, "flags", prop.Name)
+	assert.FalseT(t, genModel.IsTuple)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.FalseT(t, prop.IsArray)
+	assert.FalseT(t, prop.IsAnonymous)
+	assert.EqualT(t, k+"FlagsTuple0", prop.GoType)
+	assert.EqualT(t, "flags", prop.Name)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, tpl.Execute(buf, genModel))
 
@@ -1441,9 +1441,9 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
 
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "Cat", genModel.Name)
-	assert.Equal(t, "Cat", genModel.GoType)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "Cat", genModel.Name)
+	assert.EqualT(t, "Cat", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1467,9 +1467,9 @@ func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
 
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "PetWithPets", genModel.Name)
-	assert.Equal(t, "PetWithPets", genModel.GoType)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "PetWithPets", genModel.Name)
+	assert.EqualT(t, "PetWithPets", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1492,10 +1492,10 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Len(t, genModel.AllOf, 7)
-	assert.True(t, genModel.AllOf[1].HasAdditionalProperties)
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "WithAllOf", genModel.Name)
-	assert.Equal(t, "WithAllOf", genModel.GoType)
+	assert.TrueT(t, genModel.AllOf[1].HasAdditionalProperties)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "WithAllOf", genModel.Name)
+	assert.EqualT(t, "WithAllOf", genModel.GoType)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
@@ -1585,7 +1585,7 @@ func TestGenModel_Issue222(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
-	require.True(t, genModel.HasValidations)
+	require.TrueT(t, genModel.HasValidations)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1628,7 +1628,7 @@ func TestGenModel_Issue252(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
-	require.False(t, genModel.IsNullable)
+	require.FalseT(t, genModel.IsNullable)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1956,7 +1956,7 @@ func TestImports_ExistingModel(t *testing.T) {
 
 	require.NotNil(t, genModel)
 	require.NotNil(t, genModel.Imports)
-	assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
+	assert.EqualT(t, "github.com/user/package", genModel.Imports["jwk"])
 
 	k = "JsonWebKey"
 	genModel, err = makeGenDefinition(k, "models", definitions[k], specDoc, opts)
@@ -1964,7 +1964,7 @@ func TestImports_ExistingModel(t *testing.T) {
 
 	require.NotNil(t, genModel)
 	require.NotNil(t, genModel.Imports)
-	assert.Equal(t, "github.com/user/package", genModel.Imports["jwk"])
+	assert.EqualT(t, "github.com/user/package", genModel.Imports["jwk"])
 }
 
 func TestGenModel_Issue786(t *testing.T) {
@@ -1977,7 +1977,7 @@ func TestGenModel_Issue786(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
-	require.False(t, genModel.Properties[0].AdditionalProperties.IsNullable)
+	require.FalseT(t, genModel.Properties[0].AdditionalProperties.IsNullable)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -2000,9 +2000,9 @@ func TestGenModel_Issue822(t *testing.T) {
 	require.NoError(t, err)
 
 	ap := genModel.AdditionalProperties
-	require.True(t, genModel.HasAdditionalProperties)
+	require.TrueT(t, genModel.HasAdditionalProperties)
 	require.NotNil(t, ap)
-	require.False(t, ap.IsNullable)
+	require.FalseT(t, ap.IsNullable)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -2242,7 +2242,7 @@ func TestGenModel_Issue866(t *testing.T) {
 	require.NoError(t, err)
 
 	p, ok := specDoc.Spec().Paths.Paths["/"]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 
 	op := p.Get
 	responses := op.Responses.StatusCodeResponses
@@ -2301,7 +2301,7 @@ func TestGenModel_Issue910(t *testing.T) {
 	require.NoError(t, err)
 
 	p, ok := specDoc.Spec().Paths.Paths["/mytest"]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 
 	op := p.Get
 	responses := op.Responses.StatusCodeResponses
@@ -2365,11 +2365,11 @@ func TestGenerateModel_Xorder(t *testing.T) {
 	foundAaa := strings.Index(res, "Aaa")
 	foundBbb := strings.Index(res, "Bbb")
 	foundZzz := strings.Index(res, "Zzz")
-	assert.Less(t, foundSessionID, foundDeviceID)
-	assert.Less(t, foundSessionID, foundUMain)
-	assert.Less(t, foundUMain, foundAaa)
-	assert.Less(t, foundAaa, foundBbb)
-	assert.Less(t, foundBbb, foundZzz)
+	assert.LessT(t, foundSessionID, foundDeviceID)
+	assert.LessT(t, foundSessionID, foundUMain)
+	assert.LessT(t, foundUMain, foundAaa)
+	assert.LessT(t, foundAaa, foundBbb)
+	assert.LessT(t, foundBbb, foundZzz)
 }
 
 func TestGenModel_Issue1623(t *testing.T) {
@@ -2511,28 +2511,28 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	foundA := strings.Index(modelCode, "Aaa")
 	foundB := strings.Index(modelCode, "Bbb")
 	foundC := strings.Index(modelCode, "Ccc")
-	assert.Less(t, foundA, foundB)
-	assert.Less(t, foundB, foundC)
+	assert.LessT(t, foundA, foundB)
+	assert.LessT(t, foundB, foundC)
 
 	foundOrderA := strings.Index(orderModelCode, "Aaa")
 	foundOrderB := strings.Index(orderModelCode, "Bbb")
 	foundOrderC := strings.Index(orderModelCode, "Ccc")
 
-	assert.Less(t, foundOrderC, foundOrderB)
-	assert.Less(t, foundOrderB, foundOrderA)
+	assert.LessT(t, foundOrderC, foundOrderB)
+	assert.LessT(t, foundOrderB, foundOrderA)
 
 	foundInnerA := strings.Index(modelCode, "InnerAaa")
 	foundInnerB := strings.Index(modelCode, "InnerBbb")
 	foundInnerC := strings.Index(modelCode, "InnerCcc")
-	assert.Less(t, foundInnerA, foundInnerB)
-	assert.Less(t, foundInnerB, foundInnerC)
+	assert.LessT(t, foundInnerA, foundInnerB)
+	assert.LessT(t, foundInnerB, foundInnerC)
 
 	foundOrderInnerA := strings.Index(orderModelCode, "InnerAaa")
 	foundOrderInnerB := strings.Index(orderModelCode, "InnerBbb")
 	foundOrderInnerC := strings.Index(orderModelCode, "InnerCcc")
 
-	assert.Less(t, foundOrderInnerC, foundOrderInnerB)
-	assert.Less(t, foundOrderInnerB, foundOrderInnerA)
+	assert.LessT(t, foundOrderInnerC, foundOrderInnerB)
+	assert.LessT(t, foundOrderInnerB, foundOrderInnerA)
 }
 
 func TestGenModel_StrictAdditionalProperties(t *testing.T) {
@@ -2635,7 +2635,7 @@ func Test_PointerConversions(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
-	require.False(t, genModel.IsNullable)
+	require.FalseT(t, genModel.IsNullable)
 
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -2658,7 +2658,7 @@ func Test_PointerConversions(t *testing.T) {
 	}
 	for _, f := range funcLines {
 		joined := strings.Join(f, "\n")
-		assert.Contains(t, res, joined)
+		assert.StringContainsT(t, res, joined)
 	}
 }
 

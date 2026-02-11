@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/spec"
 )
@@ -149,9 +149,9 @@ maximum: 20
 	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok := st.matched["Maximum"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	_, ok = st.matched["Minimum"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 
 	st = &sectionedParser{}
 	st.setTitle = func(_ []string) {}
@@ -167,9 +167,9 @@ maximum: 20
 	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok = st.matched["Maximum"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	_, ok = st.matched["Minimum"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 }
 
 func TestSectionedParser_Empty(t *testing.T) {
@@ -188,8 +188,8 @@ func TestSectionedParser_Empty(t *testing.T) {
 	assert.Empty(t, st.Title())
 	assert.Empty(t, st.Description())
 	assert.Empty(t, st.taggers)
-	assert.Equal(t, "SomeResponse", ap.GoName)
-	assert.Equal(t, "someResponse", ap.Name)
+	assert.EqualT(t, "SomeResponse", ap.GoName)
+	assert.EqualT(t, "someResponse", ap.Name)
 }
 
 func TestSectionedParser_SkipSectionAnnotation(t *testing.T) {
@@ -219,11 +219,11 @@ maximum: 20
 	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 2)
 	_, ok := st.matched["Maximum"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	_, ok = st.matched["Minimum"]
-	assert.True(t, ok)
-	assert.Equal(t, "SomeModel", ap.GoName)
-	assert.Equal(t, "someModel", ap.Name)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "SomeModel", ap.GoName)
+	assert.EqualT(t, "someModel", ap.Name)
 }
 
 func TestSectionedParser_TerminateOnNewAnnotation(t *testing.T) {
@@ -254,11 +254,11 @@ maximum: 20
 	assert.Equal(t, []string{"The punctuation here does indeed matter. But it won't for go."}, st.Description())
 	assert.Len(t, st.matched, 1)
 	_, ok := st.matched["Maximum"]
-	assert.False(t, ok)
+	assert.FalseT(t, ok)
 	_, ok = st.matched["Minimum"]
-	assert.True(t, ok)
-	assert.Equal(t, "SomeModel", ap.GoName)
-	assert.Equal(t, "someModel", ap.Name)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "SomeModel", ap.GoName)
+	assert.EqualT(t, "someModel", ap.Name)
 }
 
 func ascg(txt string) *ast.CommentGroup {
@@ -284,7 +284,7 @@ func TestShouldAcceptTag(t *testing.T) {
 	}
 	for _, tt := range tagTests {
 		actual := shouldAcceptTag(tt.tags, tt.includeTags, tt.excludeTags)
-		assert.Equal(t, tt.expected, actual)
+		assert.EqualT(t, tt.expected, actual)
 	}
 }
 
@@ -305,6 +305,6 @@ func TestShouldAcceptPkg(t *testing.T) {
 	}
 	for _, tt := range pkgTests {
 		actual := shouldAcceptPkg(tt.path, tt.includePkgs, tt.excludePkgs)
-		assert.Equal(t, tt.expected, actual)
+		assert.EqualT(t, tt.expected, actual)
 	}
 }

@@ -15,19 +15,20 @@
 //   - Matches pre-#3227 behavior
 //
 // To see the difference:
-//   swagger generate spec -m -o without-flag.json
-//   swagger generate spec -m --transparent-aliases -o with-flag.json
-//   diff <(jq . without-flag.json) <(jq . with-flag.json)
 //
-//	Schemes: https
-//	Host: localhost
-//	Version: 1.0.0
+//	  swagger generate spec -m -o without-flag.json
+//	  swagger generate spec -m --transparent-aliases -o with-flag.json
+//	  diff <(jq . without-flag.json) <(jq . with-flag.json)
 //
-//	Consumes:
-//	- application/json
+//		Schemes: https
+//		Host: localhost
+//		Version: 1.0.0
 //
-//	Produces:
-//	- application/json
+//		Consumes:
+//		- application/json
+//
+//		Produces:
+//		- application/json
 //
 // swagger:meta
 package demo
@@ -54,8 +55,9 @@ type UserResponse struct {
 
 // swagger:route GET /users/{id} getUser
 //
-// Get a user by ID
+// # Get a user by ID
 //
 // Responses:
-//   200: UserResponse
+//
+//	200: UserResponse
 func getUser() {}

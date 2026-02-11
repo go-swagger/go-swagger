@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
@@ -31,22 +31,22 @@ func reqOri(str string) *regexp.Regexp {
 
 func assertInCode(tb testing.TB, expr, code string) bool {
 	tb.Helper()
-	return assert.Regexp(tb, reqm(expr), code)
+	return assert.RegexpT(tb, reqm(expr), code)
 }
 
 func assertRegexpInCode(tb testing.TB, expr, code string) bool {
 	tb.Helper()
-	return assert.Regexp(tb, reqOri(expr), code)
+	return assert.RegexpT(tb, reqOri(expr), code)
 }
 
 func assertNotInCode(tb testing.TB, expr, code string) bool {
 	tb.Helper()
-	return assert.NotRegexp(tb, reqm(expr), code)
+	return assert.NotRegexpT(tb, reqm(expr), code)
 }
 
 func assertRegexpNotInCode(tb testing.TB, expr, code string) bool {
 	tb.Helper()
-	return assert.NotRegexp(tb, reqOri(expr), code)
+	return assert.NotRegexpT(tb, reqOri(expr), code)
 }
 
 func requireValidation(tb testing.TB, pth, expr string, gm GenSchema) {
@@ -57,13 +57,13 @@ func requireValidation(tb testing.TB, pth, expr string, gm GenSchema) {
 
 func assertValidation(tb testing.TB, pth, expr string, gm GenSchema) bool {
 	tb.Helper()
-	if !assert.True(tb, gm.HasValidations, "expected the schema to have validations") {
+	if !assert.TrueT(tb, gm.HasValidations, "expected the schema to have validations") {
 		return false
 	}
-	if !assert.Equal(tb, pth, gm.Path, "paths don't match") {
+	if !assert.EqualT(tb, pth, gm.Path, "paths don't match") {
 		return false
 	}
-	if !assert.Equal(tb, expr, gm.ValueExpression, "expressions don't match") {
+	if !assert.EqualT(tb, expr, gm.ValueExpression, "expressions don't match") {
 		return false
 	}
 	return true

@@ -6,7 +6,7 @@ package diff_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 )
@@ -16,8 +16,8 @@ func TestMatches(t *testing.T) {
 	urlOnlyDiff := diff.SpecDifference{DifferenceLocation: diff.DifferenceLocation{URL: "notbob"}}
 	urlOnlySame := diff.SpecDifference{DifferenceLocation: diff.DifferenceLocation{URL: "bob"}}
 
-	require.True(t, urlOnly.Matches(urlOnlySame))
-	require.False(t, urlOnly.Matches(urlOnlyDiff))
+	require.TrueT(t, urlOnly.Matches(urlOnlySame))
+	require.FalseT(t, urlOnly.Matches(urlOnlyDiff))
 
 	withMethod := urlOnly
 	withMethod.DifferenceLocation.Method = "PUT"
@@ -25,8 +25,8 @@ func TestMatches(t *testing.T) {
 	withMethodDiff := withMethod
 	withMethodDiff.DifferenceLocation.Method = "GET"
 
-	require.True(t, withMethod.Matches(withMethodSame))
-	require.False(t, withMethod.Matches(withMethodDiff))
+	require.TrueT(t, withMethod.Matches(withMethodSame))
+	require.FalseT(t, withMethod.Matches(withMethodDiff))
 
 	withResponse := urlOnly
 	withResponse.DifferenceLocation.Response = 0
@@ -34,8 +34,8 @@ func TestMatches(t *testing.T) {
 	withResponseDiff := withResponse
 	withResponseDiff.DifferenceLocation.Response = 2
 
-	require.True(t, withResponse.Matches(withResponseSame))
-	require.False(t, withResponse.Matches(withResponseDiff))
+	require.TrueT(t, withResponse.Matches(withResponseSame))
+	require.FalseT(t, withResponse.Matches(withResponseDiff))
 
 	withNode := urlOnly
 	withNode.DifferenceLocation.Node = &diff.Node{Field: "FieldA", TypeName: "TypeA"}
@@ -45,13 +45,13 @@ func TestMatches(t *testing.T) {
 	withNodeDiff := withNode
 	withNodeDiff.DifferenceLocation.Node = &diff.Node{Field: "FieldA", TypeName: "TypeB"}
 
-	require.True(t, withNode.Matches(withNodeSame))
-	require.False(t, withNode.Matches(withNodeDiff))
+	require.TrueT(t, withNode.Matches(withNodeSame))
+	require.FalseT(t, withNode.Matches(withNodeDiff))
 
 	withNodeDiff.DifferenceLocation.Node = &diff.Node{Field: "FieldB", TypeName: "TypeA"}
 
-	require.True(t, withNode.Matches(withNodeSame))
-	require.False(t, withNode.Matches(withNodeDiff))
+	require.TrueT(t, withNode.Matches(withNodeSame))
+	require.FalseT(t, withNode.Matches(withNodeDiff))
 
 	withNestedNode := withNode
 	withNestedNode.DifferenceLocation = withNestedNode.DifferenceLocation.AddNode(&diff.Node{Field: "ChildA", TypeName: "ChildA"})
@@ -60,6 +60,6 @@ func TestMatches(t *testing.T) {
 	withNestedNodeDiff := withNode
 	withNestedNodeDiff.DifferenceLocation = withNestedNodeDiff.DifferenceLocation.AddNode(&diff.Node{Field: "ChildB", TypeName: "ChildA"})
 
-	require.True(t, withNestedNode.Matches(withNestedNodeSame))
-	require.False(t, withNestedNode.Matches(withNestedNodeDiff))
+	require.TrueT(t, withNestedNode.Matches(withNestedNodeSame))
+	require.FalseT(t, withNestedNode.Matches(withNestedNodeDiff))
 }

@@ -6,8 +6,8 @@ package codescan
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/spec"
 )
@@ -33,47 +33,47 @@ func TestIndentedYAMLBlock(t *testing.T) {
 	assert.Len(t, ops.Paths, 2)
 
 	po, ok := ops.Paths["/api/v1/somefunc"]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, po.Post)
 	op := po.Post
 	assert.Empty(t, op.Summary)
-	assert.Equal(t, "Do something", op.Description)
-	assert.Equal(t, "someFunc", op.ID)
+	assert.EqualT(t, "Do something", op.Description)
+	assert.EqualT(t, "someFunc", op.ID)
 
-	assert.Contains(t, op.Extensions, "x-codeSamples")
+	assert.MapContainsT(t, op.Extensions, "x-codeSamples")
 
 	samples, ok := op.Extensions["x-codeSamples"].([]any)
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.Len(t, samples, 1)
 	sample, ok := samples[0].(map[string]any)
-	require.True(t, ok)
-	assert.Contains(t, sample, "lang")
+	require.TrueT(t, ok)
+	assert.MapContainsT(t, sample, "lang")
 	assert.Equal(t, "curl", sample["lang"])
 
-	assert.Contains(t, sample, "source")
+	assert.MapContainsT(t, sample, "source")
 	const expectedSource = `curl -u "${LOGIN}:${PASSWORD}" -d '{"key": "value"}' -X POST   "https://{host}/api/v1/somefunc"
 curl -u "${LOGIN}:${PASSWORD}" -d '{"key2": "value2"}' -X POST   "https://{host}/api/v1/somefunc"
 `
 	assert.Equal(t, expectedSource, sample["source"])
 
 	po2, ok := ops.Paths["/api/v1/somefuncTabs"]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, po2.Post)
 	op2 := po2.Post
 	assert.Empty(t, op2.Summary)
-	assert.Equal(t, "Do something", op2.Description)
-	assert.Equal(t, "someFuncTabs", op2.ID)
+	assert.EqualT(t, "Do something", op2.Description)
+	assert.EqualT(t, "someFuncTabs", op2.ID)
 
-	assert.Contains(t, op2.Extensions, "x-codeSamples")
+	assert.MapContainsT(t, op2.Extensions, "x-codeSamples")
 
 	samples2, ok := op2.Extensions["x-codeSamples"].([]any)
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.Len(t, samples2, 1)
 	sample2, ok := samples2[0].(map[string]any)
-	require.True(t, ok)
-	assert.Contains(t, sample2, "lang")
+	require.TrueT(t, ok)
+	assert.MapContainsT(t, sample2, "lang")
 	assert.Equal(t, "curl", sample2["lang"])
 
-	assert.Contains(t, sample2, "source")
+	assert.MapContainsT(t, sample2, "source")
 	assert.Equal(t, expectedSource, sample2["source"])
 }

@@ -21,7 +21,7 @@ import (
 	"github.com/go-swagger/go-swagger/fixtures/bugs/1083/codegen/client"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/1083/codegen/client/pet_operations"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/1083/codegen/models"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 type operationHandler struct{}

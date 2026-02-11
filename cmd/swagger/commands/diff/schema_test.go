@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 
 	"github.com/go-openapi/spec"
 )
@@ -15,42 +15,42 @@ import (
 func TestGetTypeFromSimpleSchema(t *testing.T) {
 	s := spec.SimpleSchema{Type: "string"}
 	ty, a := getTypeFromSimpleSchema(&s)
-	assert.Equal(t, "string", ty)
-	assert.False(t, a)
+	assert.EqualT(t, "string", ty)
+	assert.FalseT(t, a)
 
 	arr := spec.SimpleSchema{Type: "array", Items: spec.NewItems().Typed("integer", "int32")}
 	ty, a = getTypeFromSimpleSchema(&arr)
-	assert.Equal(t, "integer.int32", ty)
-	assert.True(t, a)
+	assert.EqualT(t, "integer.int32", ty)
+	assert.TrueT(t, a)
 }
 
 func TestIsArray(t *testing.T) {
 	arr := spec.SimpleSchema{Type: "array", Items: spec.NewItems().Typed("integer", "int32")}
-	assert.True(t, isArray(&arr))
-	assert.False(t, isArray(&time.Time{}))
+	assert.TrueT(t, isArray(&arr))
+	assert.FalseT(t, isArray(&time.Time{}))
 }
 
 func TestIsPrimitive(t *testing.T) {
 	sa := spec.StringOrArray{"string"}
-	assert.True(t, isPrimitive(sa))
+	assert.TrueT(t, isPrimitive(sa))
 
 	s := spec.Schema{SchemaProps: spec.SchemaProps{Type: sa}}
-	assert.True(t, isPrimitive(&s))
-	assert.False(t, isPrimitive(&time.Time{}))
+	assert.TrueT(t, isPrimitive(&s))
+	assert.FalseT(t, isPrimitive(&time.Time{}))
 
 	sc := spec.Schema{}
-	assert.False(t, isPrimitive(&sc))
+	assert.FalseT(t, isPrimitive(&sc))
 }
 
 func TestGetSchemaType(t *testing.T) {
 	tt, a := getSchemaType(time.Time{})
-	assert.False(t, a)
-	assert.Equal(t, "unknown", tt)
+	assert.FalseT(t, a)
+	assert.EqualT(t, "unknown", tt)
 
 	s := spec.SimpleSchema{Type: "string"}
 	tt, a = getSchemaType(s)
-	assert.False(t, a)
-	assert.Equal(t, "string", tt)
+	assert.FalseT(t, a)
+	assert.EqualT(t, "string", tt)
 }
 
 func TestDefinitionFromRef(t *testing.T) {

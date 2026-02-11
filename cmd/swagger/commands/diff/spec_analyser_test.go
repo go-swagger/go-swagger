@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 
@@ -127,7 +127,7 @@ func TestIssue2962(t *testing.T) {
 
 		t.Run(fmt.Sprintf("should find %d breaking changes", expectedBreaking), func(t *testing.T) {
 			require.Len(t, diffs, expectedChanges)
-			require.Equal(t, expectedBreaking, diffs.BreakingChangeCount())
+			require.EqualT(t, expectedBreaking, diffs.BreakingChangeCount())
 		})
 	})
 }

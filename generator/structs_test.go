@@ -6,7 +6,7 @@ package generator
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestPrintTags(t *testing.T) {
@@ -175,7 +175,7 @@ func TestPrintTags(t *testing.T) {
 	for _, toPin := range fixtures {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {
-			require.Equal(t, fixture.ExpectedTags, fixture.Schema.PrintTags())
+			require.EqualT(t, fixture.ExpectedTags, fixture.Schema.PrintTags())
 		})
 	}
 }
