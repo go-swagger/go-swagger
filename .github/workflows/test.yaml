@@ -350,7 +350,7 @@ jobs:
       - name: Install Tools
         run: |
           go mod download
-          go get gotest.tools/icmd@v3.5.2
+          go get gotest.tools/v3/icmd@v3.5.2
           mkdir /tmp/cov
 
       - name: Build binary with test coverage instrumentation
