@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // Commands requires at least one arg.

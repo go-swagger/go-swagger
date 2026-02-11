@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 )
@@ -424,7 +424,7 @@ func TestEnum_Issue265(t *testing.T) {
 	require.NoErrorf(t, err, buf.String())
 
 	res := string(ff)
-	assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+	assert.EqualT(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
 }
 
 func TestGenerateModel_Issue303(t *testing.T) {
@@ -438,16 +438,16 @@ func TestGenerateModel_Issue303(t *testing.T) {
 		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
 		require.NoError(t, err)
 
-		assert.Equal(t, name, genModel.Name)
-		assert.Equal(t, name, genModel.GoType)
-		assert.True(t, genModel.IsEnumCI)
+		assert.EqualT(t, name, genModel.Name)
+		assert.EqualT(t, name, genModel.GoType)
+		assert.TrueT(t, genModel.IsEnumCI)
 
 		extension := genModel.Extensions["x-go-enum-ci"]
 		require.NotNil(t, extension)
 
 		xGoEnumCI, ok := extension.(bool)
-		assert.True(t, ok)
-		assert.True(t, xGoEnumCI)
+		assert.TrueT(t, ok)
+		assert.TrueT(t, xGoEnumCI)
 
 		buf := bytes.NewBuffer(nil)
 		require.NoError(t, tpl.Execute(buf, genModel))
@@ -487,7 +487,7 @@ func TestEnum_Issue325(t *testing.T) {
 				res := string(ff)
 				assertInCode(t, "var sodaBrandEnum []any", res)
 				assertInCode(t, "err := validate.EnumCase(path, location, value, sodaBrandEnum, true)", res)
-				assert.Equal(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
+				assert.EqualT(t, 1, strings.Count(res, "m.validateSodaBrandEnum"))
 			})
 		})
 	})
@@ -512,7 +512,7 @@ func TestEnum_Issue325(t *testing.T) {
 				res := string(ff)
 				assertInCode(t, "var sodaTypeBrandPropEnum []any", res)
 				assertInCode(t, "err := validate.EnumCase(path, location, value, sodaTypeBrandPropEnum, true)", res)
-				assert.Equal(t, 1, strings.Count(res, "m.validateBrandEnum"))
+				assert.EqualT(t, 1, strings.Count(res, "m.validateBrandEnum"))
 			})
 		})
 	})

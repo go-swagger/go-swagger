@@ -16,11 +16,12 @@ import (
 	"testing"
 	"time"
 
-	//color "github.com/logrusorgru/aurora"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	// color "github.com/logrusorgru/aurora"
 	"gopkg.in/yaml.v3"
 	"gotest.tools/v3/icmd"
+
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 const (
@@ -233,22 +234,22 @@ func buildCLI(t *testing.T, target string) {
 }
 
 func warn(t *testing.T, msg string, args ...interface{}) {
-	//t.Log(color.Yellow(fmt.Sprintf(msg, args...)))
+	// t.Log(color.Yellow(fmt.Sprintf(msg, args...)))
 	t.Log(fmt.Sprintf("WARN: "+msg, args...))
 }
 
 func failure(t *testing.T, msg string, args ...interface{}) {
-	//t.Log(color.Red(fmt.Sprintf(msg, args...)))
+	// t.Log(color.Red(fmt.Sprintf(msg, args...)))
 	t.Log(fmt.Sprintf("ERROR: "+msg, args...))
 }
 
 func info(t *testing.T, msg string, args ...interface{}) {
-	//t.Log(color.Blue(fmt.Sprintf(msg, args...)))
+	// t.Log(color.Blue(fmt.Sprintf(msg, args...)))
 	t.Log(fmt.Sprintf("INFO: "+msg, args...))
 }
 
 func good(t *testing.T, msg string, args ...interface{}) {
-	//t.Log(color.Green(fmt.Sprintf(msg, args...)))
+	// t.Log(color.Green(fmt.Sprintf(msg, args...)))
 	t.Log(fmt.Sprintf("SUCCESS: "+msg, args...))
 }
 
@@ -377,19 +378,17 @@ func buildRuns(t *testing.T, spec string, skip, globalOpts skipT) []runT {
 	return runs
 }
 
-var (
-	args struct {
-		skipModels      bool
-		skipClients     bool
-		skipServers     bool
-		skipFlatten     bool
-		skipExpand      bool
-		fixtureFile     string
-		runPattern      string
-		excludePattern  string
-		customFormatter bool
-	}
-)
+var args struct {
+	skipModels      bool
+	skipClients     bool
+	skipServers     bool
+	skipFlatten     bool
+	skipExpand      bool
+	fixtureFile     string
+	runPattern      string
+	excludePattern  string
+	customFormatter bool
+}
 
 func TestMain(m *testing.M) {
 	flag.BoolVar(&args.skipModels, "skip-models", false, "skips standalone model generation")
@@ -405,7 +404,7 @@ func TestMain(m *testing.M) {
 	status := m.Run()
 	if status == 0 {
 		_ = os.RemoveAll(genDir)
-		//log.Println(color.Green("end of codegen runs. OK"))
+		// log.Println(color.Green("end of codegen runs. OK"))
 		log.Println("SUCCESS: end of codegen runs. OK")
 	}
 	os.Exit(status)

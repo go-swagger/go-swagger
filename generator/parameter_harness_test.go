@@ -10,8 +10,8 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 type paramItemsTestContext struct {
@@ -38,7 +38,7 @@ func (ctx *paramTestContext) assertParameter(t *testing.T) (result bool) {
 
 	_, _, op, err := ctx.B.Analyzed.OperationForName(ctx.OpID)
 
-	require.True(t, err)
+	require.TrueT(t, err)
 	require.NotNil(t, op)
 
 	resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
@@ -55,7 +55,7 @@ func (ctx *paramTestContext) assertParameter(t *testing.T) (result bool) {
 		gp, err := ctx.B.MakeParameter("a", resolver, param, nil)
 		require.NoError(t, err)
 
-		assert.True(t, ctx.assertGenParam(t, param, gp))
+		assert.TrueT(t, ctx.assertGenParam(t, param, gp))
 	}
 
 	return !t.Failed()
@@ -80,19 +80,19 @@ func (ctx *paramTestContext) assertGenParam(t *testing.T, param spec.Parameter, 
 func (ctx *paramTestContext) assertGenParamDefinitions(t *testing.T, param spec.Parameter, gp GenParameter) bool {
 	t.Helper()
 
-	if !assert.Equal(t, param.In, gp.Location) {
+	if !assert.EqualT(t, param.In, gp.Location) {
 		return false
 	}
-	if !assert.Equal(t, param.Name, gp.Name) {
+	if !assert.EqualT(t, param.Name, gp.Name) {
 		return false
 	}
-	if !assert.Equal(t, fmt.Sprintf("%q", param.Name), gp.Path) {
+	if !assert.EqualT(t, fmt.Sprintf("%q", param.Name), gp.Path) {
 		return false
 	}
-	if !assert.Equal(t, param.Description, gp.Description) {
+	if !assert.EqualT(t, param.Description, gp.Description) {
 		return false
 	}
-	if !assert.Equal(t, param.CollectionFormat, gp.CollectionFormat) {
+	if !assert.EqualT(t, param.CollectionFormat, gp.CollectionFormat) {
 		return false
 	}
 
@@ -110,13 +110,13 @@ func (ctx *paramTestContext) assertGenParamDefinitions(t *testing.T, param spec.
 func (ctx *paramTestContext) assertGenParamValidations(t *testing.T, param spec.Parameter, gp GenParameter) bool {
 	t.Helper()
 
-	if !assert.Equal(t, param.Required, gp.Required) {
+	if !assert.EqualT(t, param.Required, gp.Required) {
 		return false
 	}
-	if !assert.Equal(t, param.Minimum, gp.Minimum) || !assert.Equal(t, param.ExclusiveMinimum, gp.ExclusiveMinimum) {
+	if !assert.Equal(t, param.Minimum, gp.Minimum) || !assert.EqualT(t, param.ExclusiveMinimum, gp.ExclusiveMinimum) {
 		return false
 	}
-	if !assert.Equal(t, param.Maximum, gp.Maximum) || !assert.Equal(t, param.ExclusiveMaximum, gp.ExclusiveMaximum) {
+	if !assert.Equal(t, param.Maximum, gp.Maximum) || !assert.EqualT(t, param.ExclusiveMaximum, gp.ExclusiveMaximum) {
 		return false
 	}
 	if !assert.Equal(t, param.MinLength, gp.MinLength) {
@@ -125,7 +125,7 @@ func (ctx *paramTestContext) assertGenParamValidations(t *testing.T, param spec.
 	if !assert.Equal(t, param.MaxLength, gp.MaxLength) {
 		return false
 	}
-	if !assert.Equal(t, param.Pattern, gp.Pattern) {
+	if !assert.EqualT(t, param.Pattern, gp.Pattern) {
 		return false
 	}
 	if !assert.Equal(t, param.MaxItems, gp.MaxItems) {
@@ -134,7 +134,7 @@ func (ctx *paramTestContext) assertGenParamValidations(t *testing.T, param spec.
 	if !assert.Equal(t, param.MinItems, gp.MinItems) {
 		return false
 	}
-	if !assert.Equal(t, param.UniqueItems, gp.UniqueItems) {
+	if !assert.EqualT(t, param.UniqueItems, gp.UniqueItems) {
 		return false
 	}
 	if !assert.Equal(t, param.MultipleOf, gp.MultipleOf) {
@@ -143,10 +143,10 @@ func (ctx *paramTestContext) assertGenParamValidations(t *testing.T, param spec.
 	if !assert.Equal(t, param.Enum, gp.Enum) {
 		return false
 	}
-	if !assert.Equal(t, param.Type, gp.SwaggerType) {
+	if !assert.EqualT(t, param.Type, gp.SwaggerType) {
 		return false
 	}
-	if !assert.Equal(t, param.Format, gp.SwaggerFormat) {
+	if !assert.EqualT(t, param.Format, gp.SwaggerFormat) {
 		return false
 	}
 
@@ -156,28 +156,28 @@ func (ctx *paramTestContext) assertGenParamValidations(t *testing.T, param spec.
 func (ctx *paramTestContext) assertGenParamInternals(t *testing.T, param spec.Parameter, gp GenParameter) bool {
 	t.Helper()
 
-	if !assert.Equal(t, "i", gp.IndexVar) {
+	if !assert.EqualT(t, "i", gp.IndexVar) {
 		return false
 	}
-	if !assert.Equal(t, "a", gp.ReceiverName) {
+	if !assert.EqualT(t, "a", gp.ReceiverName) {
 		return false
 	}
-	if !assert.Equal(t, "a."+swag.ToGoName(param.Name), gp.ValueExpression) {
+	if !assert.EqualT(t, "a."+swag.ToGoName(param.Name), gp.ValueExpression) { //nolint:staticcheck // have to migrate to the new swag API
 		return false
 	}
-	if !assert.Equal(t, ctx.Formatter, gp.Formatter) {
+	if !assert.EqualT(t, ctx.Formatter, gp.Formatter) {
 		return false
 	}
-	if !assert.Equal(t, ctx.Converter, gp.Converter) {
+	if !assert.EqualT(t, ctx.Converter, gp.Converter) {
 		return false
 	}
 
 	if _, ok := primitives[gp.GoType]; ok {
-		if !assert.True(t, gp.IsPrimitive) {
+		if !assert.TrueT(t, gp.IsPrimitive) {
 			return false
 		}
 	} else {
-		if !assert.False(t, gp.IsPrimitive) {
+		if !assert.FalseT(t, gp.IsPrimitive) {
 			return false
 		}
 	}
@@ -192,19 +192,19 @@ func (ctx *paramItemsTestContext) Assert(t *testing.T, pItems *spec.Items, gpIte
 		return false
 	}
 	// went with the verbose option here, easier to debug
-	if !assert.Equal(t, ctx.Formatter, gpItems.Formatter) {
+	if !assert.EqualT(t, ctx.Formatter, gpItems.Formatter) {
 		return false
 	}
-	if !assert.Equal(t, ctx.Converter, gpItems.Converter) {
+	if !assert.EqualT(t, ctx.Converter, gpItems.Converter) {
 		return false
 	}
-	if !assert.Equal(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
+	if !assert.EqualT(t, pItems.CollectionFormat, gpItems.CollectionFormat) {
 		return false
 	}
-	if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.Equal(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
+	if !assert.Equal(t, pItems.Minimum, gpItems.Minimum) || !assert.EqualT(t, pItems.ExclusiveMinimum, gpItems.ExclusiveMinimum) {
 		return false
 	}
-	if !assert.Equal(t, pItems.Maximum, gpItems.Maximum) || !assert.Equal(t, pItems.ExclusiveMaximum, gpItems.ExclusiveMaximum) {
+	if !assert.Equal(t, pItems.Maximum, gpItems.Maximum) || !assert.EqualT(t, pItems.ExclusiveMaximum, gpItems.ExclusiveMaximum) {
 		return false
 	}
 	if !assert.Equal(t, pItems.MinLength, gpItems.MinLength) {
@@ -213,7 +213,7 @@ func (ctx *paramItemsTestContext) Assert(t *testing.T, pItems *spec.Items, gpIte
 	if !assert.Equal(t, pItems.MaxLength, gpItems.MaxLength) {
 		return false
 	}
-	if !assert.Equal(t, pItems.Pattern, gpItems.Pattern) {
+	if !assert.EqualT(t, pItems.Pattern, gpItems.Pattern) {
 		return false
 	}
 	if !assert.Equal(t, pItems.MaxItems, gpItems.MaxItems) {
@@ -222,7 +222,7 @@ func (ctx *paramItemsTestContext) Assert(t *testing.T, pItems *spec.Items, gpIte
 	if !assert.Equal(t, pItems.MinItems, gpItems.MinItems) {
 		return false
 	}
-	if !assert.Equal(t, pItems.UniqueItems, gpItems.UniqueItems) {
+	if !assert.EqualT(t, pItems.UniqueItems, gpItems.UniqueItems) {
 		return false
 	}
 	if !assert.Equal(t, pItems.MultipleOf, gpItems.MultipleOf) {
@@ -231,10 +231,10 @@ func (ctx *paramItemsTestContext) Assert(t *testing.T, pItems *spec.Items, gpIte
 	if !assert.Equal(t, pItems.Enum, gpItems.Enum) {
 		return false
 	}
-	if !assert.Equal(t, pItems.Type, gpItems.SwaggerType) {
+	if !assert.EqualT(t, pItems.Type, gpItems.SwaggerType) {
 		return false
 	}
-	if !assert.Equal(t, pItems.Format, gpItems.SwaggerFormat) {
+	if !assert.EqualT(t, pItems.Format, gpItems.SwaggerFormat) {
 		return false
 	}
 	if ctx.Items != nil {
@@ -246,7 +246,7 @@ func (ctx *paramItemsTestContext) Assert(t *testing.T, pItems *spec.Items, gpIte
 func assertBodyParam(t *testing.T, param spec.Parameter, gp GenParameter) bool {
 	t.Helper()
 
-	if !assert.Equal(t, body, param.In) || !assert.Equal(t, body, gp.Location) {
+	if !assert.EqualT(t, body, param.In) || !assert.EqualT(t, body, gp.Location) {
 		return false
 	}
 	if !assert.NotNil(t, gp.Schema) {

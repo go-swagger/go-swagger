@@ -7,23 +7,23 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestGolang_MangleFileName(t *testing.T) {
 	o := &LanguageOpts{}
 	o.Init()
 	res := o.MangleFileName("aFileEndingInOsNameWindows")
-	assert.True(t, strings.HasSuffix(res, "_windows"))
+	assert.TrueT(t, strings.HasSuffix(res, "_windows"))
 
 	o = GolangOpts()
 	res = o.MangleFileName("aFileEndingInOsNameWindows")
-	assert.True(t, strings.HasSuffix(res, "_windows_swagger"))
+	assert.TrueT(t, strings.HasSuffix(res, "_windows_swagger"))
 	res = o.MangleFileName("aFileEndingInOsNameWindowsAmd64")
-	assert.True(t, strings.HasSuffix(res, "_windows_amd64_swagger"))
+	assert.TrueT(t, strings.HasSuffix(res, "_windows_amd64_swagger"))
 	res = o.MangleFileName("aFileEndingInTest")
-	assert.True(t, strings.HasSuffix(res, "_test_swagger"))
+	assert.TrueT(t, strings.HasSuffix(res, "_test_swagger"))
 }
 
 func TestGolang_ManglePackage(t *testing.T) {
@@ -46,9 +46,9 @@ func TestGolang_ManglePackage(t *testing.T) {
 		{tested: "internal", expectedPath: "internal_swagger", expectedName: "internal_swagger"},
 	} {
 		res := o.ManglePackagePath(v.tested, "default")
-		assert.Equal(t, v.expectedPath, res)
+		assert.EqualT(t, v.expectedPath, res)
 		res = o.ManglePackageName(v.tested, "default")
-		assert.Equal(t, v.expectedName, res)
+		assert.EqualT(t, v.expectedName, res)
 	}
 }
 
@@ -60,17 +60,17 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	a0 := []any{"a", "b"}
 	res, err := goSliceInitializer(a0)
 	require.NoError(t, err)
-	assert.Equal(t, `{"a","b",}`, res)
+	assert.EqualT(t, `{"a","b",}`, res)
 
 	a1 := []any{[]any{"a", "b"}, []any{"c", "d"}}
 	res, err = goSliceInitializer(a1)
 	require.NoError(t, err)
-	assert.Equal(t, `{{"a","b",},{"c","d",},}`, res)
+	assert.EqualT(t, `{{"a","b",},{"c","d",},}`, res)
 
 	a2 := map[string]any{"a": "y", "b": "z"}
 	res, err = goSliceInitializer(a2)
 	require.NoError(t, err)
-	assert.Equal(t, `{"a":"y","b":"z",}`, res) //nolint:testifylint // OK: we're testing the ArrayInitializer behavior, this is not really JSON
+	assert.EqualT(t, `{"a":"y","b":"z",}`, res)
 
 	_, err = goSliceInitializer(struct {
 		A string `json:"a"`
@@ -81,7 +81,7 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	a3 := []any{}
 	res, err = goSliceInitializer(a3)
 	require.NoError(t, err)
-	assert.Equal(t, `{}`, res)
+	assert.EqualT(t, `{}`, res)
 }
 
 func TestGolangInit(t *testing.T) {

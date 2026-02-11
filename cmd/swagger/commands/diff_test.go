@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/diff"
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/internal/cmdtest"
@@ -104,7 +104,7 @@ func TestDiffReadIgnores(t *testing.T) {
 	}
 	_, err = cmd.readIgnores()
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "/someplace/wrong")
+	assert.StringContainsT(t, err.Error(), "/someplace/wrong")
 }
 
 func TestDiffProcessIgnores(t *testing.T) {
@@ -168,7 +168,7 @@ func TestDiffCannotReport(t *testing.T) {
 	cmd.Args.NewSpec = fixtureDiffPath(namePart, ".v2.json")
 	err := cmd.Execute(nil)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "/someplace/wrong")
+	assert.StringContainsT(t, err.Error(), "/someplace/wrong")
 }
 
 func TestDiffOnlyBreaking(t *testing.T) {
@@ -188,7 +188,7 @@ func TestDiffOnlyBreaking(t *testing.T) {
 		cmd.Args.NewSpec = fixtureDiffPath(namePart, ".v2.json")
 		err := cmd.Execute(nil)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "compatibility test FAILED")
+		assert.StringContainsT(t, err.Error(), "compatibility test FAILED")
 	})
 
 	t.Run("diff should correctly identify breaking changes", func(t *testing.T) {
@@ -211,7 +211,7 @@ func TestDiffOnlyBreaking(t *testing.T) {
 			cmd.Destination = "stdout"
 			output, err := cmdtest.CatchStdOut(t, func() error { return cmd.Execute(nil) })
 			require.Error(t, err)
-			assert.Contains(t, err.Error(), "compatibility test FAILED")
+			assert.StringContainsT(t, err.Error(), "compatibility test FAILED")
 
 			_, _ = expected.Seek(0, io.SeekStart)
 			result := bytes.NewBuffer(output)

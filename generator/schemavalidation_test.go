@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/swag"
@@ -27,7 +27,7 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 	assert.Len(t, gm.Properties, 6)
 
 	for _, p := range gm.Properties {
-		require.True(t, p.Required)
+		require.TrueT(t, p.Required)
 
 		buf := bytes.NewBuffer(nil)
 		err := templates.MustGet("model").Execute(buf, gm)
@@ -764,7 +764,7 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 	assert.NotNil(t, fsm.Type.AdditionalProperties.Schema)
 	assert.NotNil(t, fsm.NewObj)
 	assert.Nil(t, fsm.Next)
-	assert.Equal(t, "#/definitions/NamedMapComplexAnon", fsm.Type.AdditionalProperties.Schema.Ref.GetURL().String())
+	assert.EqualT(t, "#/definitions/NamedMapComplexAnon", fsm.Type.AdditionalProperties.Schema.Ref.GetURL().String())
 
 	require.NoError(t, lsm.Build())
 }
@@ -833,8 +833,8 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	require.NoError(t, err)
 
 	requireValidation(t, "", "m", gm.GenSchema)
-	require.True(t, gm.AdditionalProperties.HasValidations)
-	require.True(t, gm.AdditionalProperties.AdditionalProperties.HasValidations)
+	require.TrueT(t, gm.AdditionalProperties.HasValidations)
+	require.TrueT(t, gm.AdditionalProperties.AdditionalProperties.HasValidations)
 
 	buf := bytes.NewBuffer(nil)
 	err = templates.MustGet("model").Execute(buf, gm)

@@ -7,8 +7,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/runtime"
 )
@@ -17,34 +17,34 @@ func TestMediaWellKnownMime(t *testing.T) {
 	const expectedMime = jsonSerializer
 
 	w, ok := wellKnownMime(runtime.JSONMime)
-	assert.True(t, ok)
-	assert.Equal(t, expectedMime, w)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, expectedMime, w)
 
 	w, ok = wellKnownMime(runtime.YAMLMime)
-	assert.True(t, ok)
-	assert.Equal(t, "yaml", w)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "yaml", w)
 
 	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1")
-	assert.True(t, ok)
-	assert.Equal(t, expectedMime, w)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, expectedMime, w)
 
 	w, ok = wellKnownMime("unknown")
-	assert.False(t, ok)
+	assert.FalseT(t, ok)
 	assert.Empty(t, w)
 }
 
 func TestMediaMime(t *testing.T) {
 	params := "param=1;param=2"
 	withParams := runtime.JSONMime + ";" + params
-	assert.Equal(t, runtime.JSONMime, mediaMime(runtime.JSONMime))
-	assert.Equal(t, runtime.JSONMime, mediaMime(withParams))
+	assert.EqualT(t, runtime.JSONMime, mediaMime(runtime.JSONMime))
+	assert.EqualT(t, runtime.JSONMime, mediaMime(withParams))
 
-	assert.Equal(t, params, mediaParameters(withParams))
+	assert.EqualT(t, params, mediaParameters(withParams))
 	assert.Empty(t, mediaParameters(runtime.JSONMime))
 }
 
 func TestMediaGoName(t *testing.T) {
-	assert.Equal(t, "StarStar", mediaGoName("*/*"))
+	assert.EqualT(t, "StarStar", mediaGoName("*/*"))
 }
 
 func TestMediaMakeSerializers(t *testing.T) {
@@ -71,8 +71,8 @@ func TestMediaMakeSerializers(t *testing.T) {
 		}
 		return w, true
 	})
-	assert.True(t, supportsJSON)
-	assert.True(t, sort.IsSorted(res))
+	assert.TrueT(t, supportsJSON)
+	assert.TrueT(t, sort.IsSorted(res))
 	assert.Len(t, res, 3)
 
 	for _, ser := range res {
@@ -84,9 +84,9 @@ func TestMediaMakeSerializers(t *testing.T) {
 		case jsonSerializer:
 			assert.Len(t, ser.AllSerializers, 2)
 			for _, media := range ser.AllSerializers {
-				assert.Equal(t, ser.AppName, media.AppName)
-				assert.Equal(t, ser.ReceiverName, media.ReceiverName)
-				assert.Equal(t, ser.Implementation, media.Implementation)
+				assert.EqualT(t, ser.AppName, media.AppName)
+				assert.EqualT(t, ser.ReceiverName, media.ReceiverName)
+				assert.EqualT(t, ser.Implementation, media.Implementation)
 				switch media.MediaType {
 				case "application/json":
 					assert.Len(t, media.Parameters, 2)
@@ -101,9 +101,9 @@ func TestMediaMakeSerializers(t *testing.T) {
 		case "yaml":
 			assert.Len(t, ser.AllSerializers, 2)
 			for _, media := range ser.AllSerializers {
-				assert.Equal(t, ser.AppName, media.AppName)
-				assert.Equal(t, ser.ReceiverName, media.ReceiverName)
-				assert.Equal(t, ser.Implementation, media.Implementation)
+				assert.EqualT(t, ser.AppName, media.AppName)
+				assert.EqualT(t, ser.ReceiverName, media.ReceiverName)
+				assert.EqualT(t, ser.Implementation, media.Implementation)
 				switch media.MediaType {
 				case runtime.YAMLMime:
 					assert.Len(t, media.Parameters, 1)
@@ -118,9 +118,9 @@ func TestMediaMakeSerializers(t *testing.T) {
 		case "applicationFunny":
 			assert.Len(t, ser.AllSerializers, 1)
 			for _, media := range ser.AllSerializers {
-				assert.Equal(t, ser.AppName, media.AppName)
-				assert.Equal(t, ser.ReceiverName, media.ReceiverName)
-				assert.Equal(t, ser.Implementation, media.Implementation)
+				assert.EqualT(t, ser.AppName, media.AppName)
+				assert.EqualT(t, ser.ReceiverName, media.ReceiverName)
+				assert.EqualT(t, ser.Implementation, media.Implementation)
 				switch media.MediaType {
 				case "application/funny":
 					assert.Len(t, media.Parameters, 1)
@@ -144,8 +144,8 @@ func TestMediaMakeSerializers(t *testing.T) {
 		w, ok := knownConsumers[media]
 		return w, ok
 	})
-	assert.False(t, supportsJSON)
-	assert.True(t, sort.IsSorted(res))
+	assert.FalseT(t, supportsJSON)
+	assert.TrueT(t, sort.IsSorted(res))
 	assert.Len(t, res, 3)
 	for _, ser := range res {
 		assert.NotEmpty(t, ser.AppName)
@@ -169,8 +169,8 @@ func TestMediaMakeSerializers(t *testing.T) {
 	// empty: defaults as json
 	const expectedMime = jsonSerializer
 	res, supportsJSON = app.makeSerializers([]string{}, func(_ string) (string, bool) { return "fake", true })
-	assert.True(t, supportsJSON)
-	assert.True(t, sort.IsSorted(res))
+	assert.TrueT(t, supportsJSON)
+	assert.TrueT(t, sort.IsSorted(res))
 	require.Len(t, res, 1)
-	assert.Equal(t, expectedMime, res[0].Name)
+	assert.EqualT(t, expectedMime, res[0].Name)
 }

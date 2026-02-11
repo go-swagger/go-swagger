@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -43,7 +43,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 	require.NoErrorf(t, err, buf.String())
 
 	res := string(formatted)
-	assert.Regexp(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
+	assert.RegexpT(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
 
 	buf = bytes.NewBuffer(nil)
 	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
@@ -69,7 +69,7 @@ func TestServer_MultipartForm(t *testing.T) {
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	assert.Regexp(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", string(formatted))
+	assert.RegexpT(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", string(formatted))
 
 	buf = bytes.NewBuffer(nil)
 	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
@@ -216,7 +216,7 @@ func TestServer_OperationGroups(t *testing.T) {
 
 	err = gen.Generate()
 	require.Error(t, err)
-	assert.Contains(t, strings.ToLower(err.Error()), "template doesn't exist") // Tolerates case variations on error message
+	assert.StringContainsT(t, strings.ToLower(err.Error()), "template doesn't exist") // Tolerates case variations on error message
 
 	opGroupTpl := `
 // OperationGroupName={{.Name}}
@@ -230,19 +230,19 @@ func TestServer_OperationGroups(t *testing.T) {
 	genContent, err := os.ReadFile("./search/search_opgroup_test.gol")
 	require.NoError(t, err, "Generator should have written a file")
 
-	assert.Contains(t, string(genContent), "// OperationGroupName=search")
-	assert.Contains(t, string(genContent), "// RootPackage=operations")
-	assert.Contains(t, string(genContent), "// OperationName=search")
+	assert.StringContainsT(t, string(genContent), "// OperationGroupName=search")
+	assert.StringContainsT(t, string(genContent), "// RootPackage=operations")
+	assert.StringContainsT(t, string(genContent), "// OperationName=search")
 
 	genContent, err = os.ReadFile("./tasks/tasks_opgroup_test.gol")
 	require.NoError(t, err, "Generator should have written a file")
 
-	assert.Contains(t, string(genContent), "// OperationGroupName=tasks")
-	assert.Contains(t, string(genContent), "// RootPackage=operations")
-	assert.Contains(t, string(genContent), "// OperationName=createTask")
-	assert.Contains(t, string(genContent), "// OperationName=deleteTask")
-	assert.Contains(t, string(genContent), "// OperationName=getTasks")
-	assert.Contains(t, string(genContent), "// OperationName=updateTask")
+	assert.StringContainsT(t, string(genContent), "// OperationGroupName=tasks")
+	assert.StringContainsT(t, string(genContent), "// RootPackage=operations")
+	assert.StringContainsT(t, string(genContent), "// OperationName=createTask")
+	assert.StringContainsT(t, string(genContent), "// OperationName=deleteTask")
+	assert.StringContainsT(t, string(genContent), "// OperationName=getTasks")
+	assert.StringContainsT(t, string(genContent), "// OperationName=updateTask")
 }
 
 func TestServer_Issue1301(t *testing.T) {

@@ -6,7 +6,7 @@ package generate
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -17,6 +17,6 @@ func TestDeprecatedFlag(t *testing.T) {
 			WithContext: true,
 		}
 		s.apply(new(generator.GenOpts))
-		assert.False(t, s.WithContext)
+		assert.FalseT(t, s.WithContext)
 	})
 }

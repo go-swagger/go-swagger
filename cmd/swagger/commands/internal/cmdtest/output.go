@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // AssertReadersContent compares the contents from io.Readers, optionally stripping blanks.
@@ -31,9 +31,9 @@ func AssertReadersContent(t testing.TB, noBlanks bool, expected, actual io.Reade
 
 	if noBlanks {
 		r := strings.NewReplacer(" ", "", "\t", "", "\n", "", "\r", "")
-		return assert.Equalf(t, r.Replace(wants.String()), r.Replace(got.String()), "expected:\n%s\ngot:\n%s", wants.String(), got.String())
+		return assert.EqualTf(t, r.Replace(wants.String()), r.Replace(got.String()), "expected:\n%s\ngot:\n%s", wants.String(), got.String())
 	}
-	return assert.Equal(t, wants.String(), got.String())
+	return assert.EqualT(t, wants.String(), got.String())
 }
 
 // CatchStdOut captures the standard output from a runnable function.

@@ -14,8 +14,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
@@ -218,10 +218,10 @@ func fixtureServerPackageFlattening() generateFixture {
 					"override",
 					"operationsops",
 				} {
-					assert.Falsef(t, fileExists(opsTarget, fileOrDir), "did not expect %s in %s", fileOrDir, opsTarget)
+					assert.FalseTf(t, fileExists(opsTarget, fileOrDir), "did not expect %s in %s", fileOrDir, opsTarget)
 				}
 
-				assert.Truef(t, fileExists(opsTarget, "get_notag.go"), "expected %s in %s", "get_notag.go", opsTarget)
+				assert.TrueTf(t, fileExists(opsTarget, "get_notag.go"), "expected %s in %s", "get_notag.go", opsTarget)
 
 				buf, err := os.ReadFile(filepath.Join(srvTarget, "configure_unsafe_tag_names.go"))
 				require.NoError(t, err)

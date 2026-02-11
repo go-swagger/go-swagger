@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/spec"
 )
@@ -58,7 +58,7 @@ func TestSimpleResponses(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, op)
 	require.NotNil(t, op.Responses)
 
@@ -94,7 +94,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("getTasks")
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, op)
 	require.NotNil(t, op.Responses)
 
@@ -122,7 +122,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 		sucCtx.Require(t, response, res)
 		assert.Len(t, b.ExtraSchemas, 1)
 		// ExtraSchema is not a definition: it is rendered in current operations package
-		assert.Equal(t, "[]*SuccessBodyItems0", res.Schema.GoType)
+		assert.EqualT(t, "[]*SuccessBodyItems0", res.Schema.GoType)
 	}
 }
 
@@ -251,12 +251,12 @@ func TestIssue846(t *testing.T) {
 		}
 		require.NoError(t, err)
 		// sorted by code
-		assert.Regexp(t, "(?s)"+
+		assert.RegexpT(t, "(?s)"+
 			"GetFooOK struct.+"+
 			"GetFooNotFound struct.+"+
 			"GetFooInternalServerError struct", string(ff))
 		// sorted by name
-		assert.Regexp(t, "(?s)"+
+		assert.RegexpT(t, "(?s)"+
 			"GetFooInternalServerErrorBody struct.+"+
 			"GetFooNotFoundBody struct.+"+
 			"GetFooOKBody struct", string(ff))

@@ -13,8 +13,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -134,10 +134,10 @@ func TestShared_CheckOpts(t *testing.T) {
 func TestShared_EnsureDefaults(t *testing.T) {
 	opts := &GenOpts{}
 	require.NoError(t, opts.EnsureDefaults())
-	assert.True(t, opts.defaultsEnsured)
+	assert.TrueT(t, opts.defaultsEnsured)
 	opts.DefaultConsumes = "https"
 	_ = opts.EnsureDefaults()
-	assert.Equal(t, "https", opts.DefaultConsumes)
+	assert.EqualT(t, "https", opts.DefaultConsumes)
 }
 
 // TargetPath and SpecPath are used in server.gotmpl
@@ -156,7 +156,7 @@ func TestShared_TargetPath(t *testing.T) {
 	opts.ServerPackage = "y"
 	expected := filepath.Join("..", "..", "c")
 	result := opts.TargetPath()
-	assert.Equal(t, expected, result)
+	assert.EqualT(t, expected, result)
 
 	// relative target, server path
 	opts = new(GenOpts)
@@ -165,7 +165,7 @@ func TestShared_TargetPath(t *testing.T) {
 	opts.ServerPackage = "y/z"
 	expected = filepath.Join("..", "..", "..", "c")
 	result = opts.TargetPath()
-	assert.Equal(t, expected, result)
+	assert.EqualT(t, expected, result)
 
 	// absolute target
 	opts = new(GenOpts)
@@ -174,7 +174,7 @@ func TestShared_TargetPath(t *testing.T) {
 	opts.ServerPackage = "y"
 	expected = filepath.Join("..", "..", "c")
 	result = opts.TargetPath()
-	assert.Equal(t, expected, result)
+	assert.EqualT(t, expected, result)
 
 	// absolute target, server path
 	opts = new(GenOpts)
@@ -183,7 +183,7 @@ func TestShared_TargetPath(t *testing.T) {
 	opts.ServerPackage = path.Join("y", "z")
 	expected = filepath.Join("..", "..", "..", "c")
 	result = opts.TargetPath()
-	assert.Equal(t, expected, result)
+	assert.EqualT(t, expected, result)
 }
 
 // NOTE: file://url is not supported.
@@ -201,7 +201,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = "y"
 		expected := opts.Spec
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with https URL spec", func(t *testing.T) {
@@ -211,7 +211,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = "y"
 		expected := opts.Spec
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with relative spec", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = "y"
 		expected := filepath.Join("..", "..", "a", "b", "c")
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
@@ -233,7 +233,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = fullPackage
 		expected := filepath.Join("..", "..", "..", "..", "a", "b", "c")
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
@@ -244,7 +244,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = fullPackage
 		expected := filepath.Join("..", "..", "c")
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with absolute spec", func(t *testing.T) {
@@ -254,7 +254,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = "y"
 		expected := filepath.Join("..", "a", "b", "c")
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	t.Run("with absolute spec, server path", func(t *testing.T) {
@@ -265,7 +265,7 @@ func TestShared_SpecPath(t *testing.T) {
 		opts.ServerPackage = path.Join("y", "z")
 		expected := filepath.Join("..", "..", "..", "a", "b", "c")
 		result := opts.SpecPath()
-		assert.Equal(t, expected, result)
+		assert.EqualT(t, expected, result)
 	})
 
 	if runtime.GOOS == winOS {
@@ -277,7 +277,7 @@ func TestShared_SpecPath(t *testing.T) {
 			opts.ServerPackage = fullPackage
 			expected, _ := filepath.Abs(opts.Spec)
 			result := opts.SpecPath()
-			assert.Equal(t, expected, result)
+			assert.EqualT(t, expected, result)
 		})
 	}
 }
@@ -352,7 +352,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 	buf1, err := opts.render(&tplOpts, nil)
 	require.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
-	assert.Equal(t, "func x <no value>", string(buf1))
+	assert.EqualT(t, "func x <no value>", string(buf1))
 
 	execfailure2 := "func {{ .MyFaultyMethod }}"
 
@@ -370,7 +370,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	data := new(myTemplateData)
 	buf2, err := opts.render(&tplOpts2, data)
 	require.Error(t, err, "Error should be handled here: missing func in template yields an error")
-	assert.Contains(t, err.Error(), "template execution failed")
+	assert.StringContainsT(t, err.Error(), "template execution failed")
 	assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
 }
 
@@ -407,7 +407,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 			require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
 				"the badly formatted file should have been dumped for debugging purposes, but couldn't find it",
 			)
-			assert.Contains(t, err.Error(), "source formatting on generated source")
+			assert.StringContainsT(t, err.Error(), "source formatting on generated source")
 		})
 	})
 
@@ -472,7 +472,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(filepath.Join(tplOpts.Target, tplOpts.FileName))
-	assert.False(t, os.IsNotExist(exists), "The template file has not been generated as expected")
+	assert.FalseT(t, os.IsNotExist(exists), "The template file has not been generated as expected")
 	_ = os.RemoveAll(tplOpts.Target)
 
 	require.NoError(t, err)
@@ -495,15 +495,15 @@ func TestShared_LoadTemplate(t *testing.T) {
 
 	buf, err := opts.render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
-	assert.Contains(t, err.Error(), "open File")
-	assert.Contains(t, err.Error(), "error while opening")
+	assert.StringContainsT(t, err.Error(), "open File")
+	assert.StringContainsT(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
 	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
 	buf, err = opts.render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
-	assert.Contains(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
-	assert.Contains(t, err.Error(), "error while opening")
+	assert.StringContainsT(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
+	assert.StringContainsT(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 
@@ -514,9 +514,9 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 
 	require.NotNil(t, specDoc.Spec().Info)
 	specDoc.Spec().Info.Title = "    "
-	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
+	assert.EqualT(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 	specDoc.Spec().Info.Title = "test"
-	assert.Equal(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
+	assert.EqualT(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 
 	opts := testGenOpts()
 	opts.Spec = specPath
@@ -630,9 +630,9 @@ func TestResolvePrincipal(t *testing.T) {
 			err := opts.EnsureDefaults()
 			require.NoError(t, err)
 			alias, principal, target := opts.resolvePrincipal()
-			require.Equal(t, fixture.Expected[0], alias)
-			require.Equal(t, fixture.Expected[1], principal)
-			require.Equal(t, fixture.Expected[2], target)
+			require.EqualT(t, fixture.Expected[0], alias)
+			require.EqualT(t, fixture.Expected[1], principal)
+			require.EqualT(t, fixture.Expected[2], target)
 		})
 	}
 }

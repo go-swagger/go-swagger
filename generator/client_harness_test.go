@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 type clientGenerateFixture struct {
@@ -55,25 +55,25 @@ func clientFixtures() []clientGenerateFixture {
 			wantError: false,
 			spec:      filepath.Join("..", "fixtures", "bugs", "2111", "fixture-2111.yaml"),
 			verify: func(t *testing.T, target string) {
-				require.True(t, fileExists(target, "client"))
+				require.TrueT(t, fileExists(target, "client"))
 
 				// assert package generation based on mangled tags
 				target = filepath.Join(target, "client")
-				assert.True(t, fileExists(target, "abc_linux"))
-				assert.True(t, fileExists(target, "abc_test"))
-				assert.True(t, fileExists(target, apiPkg))
-				assert.True(t, fileExists(target, "custom"))
-				assert.True(t, fileExists(target, "hash_tag_donuts"))
-				assert.True(t, fileExists(target, "nr123abc"))
-				assert.True(t, fileExists(target, "nr_at_donuts"))
-				assert.True(t, fileExists(target, "operations"))
-				assert.True(t, fileExists(target, "plus_donuts"))
-				assert.True(t, fileExists(target, "strfmt"))
-				assert.True(t, fileExists(target, "forced"))
-				assert.True(t, fileExists(target, "gtl"))
-				assert.True(t, fileExists(target, "nr12nasty"))
-				assert.True(t, fileExists(target, "override"))
-				assert.True(t, fileExists(target, "operationsops"))
+				assert.TrueT(t, fileExists(target, "abc_linux"))
+				assert.TrueT(t, fileExists(target, "abc_test"))
+				assert.TrueT(t, fileExists(target, apiPkg))
+				assert.TrueT(t, fileExists(target, "custom"))
+				assert.TrueT(t, fileExists(target, "hash_tag_donuts"))
+				assert.TrueT(t, fileExists(target, "nr123abc"))
+				assert.TrueT(t, fileExists(target, "nr_at_donuts"))
+				assert.TrueT(t, fileExists(target, "operations"))
+				assert.TrueT(t, fileExists(target, "plus_donuts"))
+				assert.TrueT(t, fileExists(target, "strfmt"))
+				assert.TrueT(t, fileExists(target, "forced"))
+				assert.TrueT(t, fileExists(target, "gtl"))
+				assert.TrueT(t, fileExists(target, "nr12nasty"))
+				assert.TrueT(t, fileExists(target, "override"))
+				assert.TrueT(t, fileExists(target, "operationsops"))
 
 				buf, err := os.ReadFile(filepath.Join(target, "foo_client.go"))
 				require.NoError(t, err)
@@ -97,26 +97,26 @@ func clientFixtures() []clientGenerateFixture {
 				opts.SkipTagPackages = true
 			},
 			verify: func(t *testing.T, target string) {
-				require.True(t, fileExists(target, "client"))
+				require.TrueT(t, fileExists(target, "client"))
 
 				// packages are not created here
 				target = filepath.Join(target, "client")
-				assert.False(t, fileExists(target, "abc_linux"))
-				assert.False(t, fileExists(target, "abc_test"))
-				assert.False(t, fileExists(target, apiPkg))
-				assert.False(t, fileExists(target, "custom"))
-				assert.False(t, fileExists(target, "hash_tag_donuts"))
-				assert.False(t, fileExists(target, "nr123abc"))
-				assert.False(t, fileExists(target, "nr_at_donuts"))
-				assert.False(t, fileExists(target, "plus_donuts"))
-				assert.False(t, fileExists(target, "strfmt"))
-				assert.False(t, fileExists(target, "forced"))
-				assert.False(t, fileExists(target, "gtl"))
-				assert.False(t, fileExists(target, "nr12nasty"))
-				assert.False(t, fileExists(target, "override"))
-				assert.False(t, fileExists(target, "operationsops"))
+				assert.FalseT(t, fileExists(target, "abc_linux"))
+				assert.FalseT(t, fileExists(target, "abc_test"))
+				assert.FalseT(t, fileExists(target, apiPkg))
+				assert.FalseT(t, fileExists(target, "custom"))
+				assert.FalseT(t, fileExists(target, "hash_tag_donuts"))
+				assert.FalseT(t, fileExists(target, "nr123abc"))
+				assert.FalseT(t, fileExists(target, "nr_at_donuts"))
+				assert.FalseT(t, fileExists(target, "plus_donuts"))
+				assert.FalseT(t, fileExists(target, "strfmt"))
+				assert.FalseT(t, fileExists(target, "forced"))
+				assert.FalseT(t, fileExists(target, "gtl"))
+				assert.FalseT(t, fileExists(target, "nr12nasty"))
+				assert.FalseT(t, fileExists(target, "override"))
+				assert.FalseT(t, fileExists(target, "operationsops"))
 
-				assert.True(t, fileExists(target, "operations"))
+				assert.TrueT(t, fileExists(target, "operations"))
 			},
 		},
 		{

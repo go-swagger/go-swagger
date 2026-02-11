@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // Commands requires at least one arg.
@@ -28,8 +28,8 @@ func TestCmd_Validate_Issue1238(t *testing.T) {
 		The swagger spec at "../../../fixtures/bugs/1238/swagger.yaml" is invalid against swagger specification 2.0. see errors :
 			- definitions.RRSets in body must be of type array
 	*/
-	assert.Contains(t, result.Error(), "is invalid against swagger specification 2.0")
-	assert.Contains(t, result.Error(), "definitions.RRSets in body must be of type array")
+	assert.StringContainsT(t, result.Error(), "is invalid against swagger specification 2.0")
+	assert.StringContainsT(t, result.Error(), "definitions.RRSets in body must be of type array")
 }
 
 // Test proper validation: missing items in array error.
@@ -63,8 +63,8 @@ func TestCmd_Validate_Issue342_CannotUnmarshal(t *testing.T) {
 	result := v.Execute([]string{specDoc})
 	require.Error(t, result, "This spec should not pass validation")
 	// assert.Contains(t, result.Error(), "is invalid against swagger specification 2.0")
-	assert.Contains(t, result.Error(), "json: cannot unmarshal object into Go struct field")
-	assert.Contains(t, result.Error(), "of type []spec.Parameter")
+	assert.StringContainsT(t, result.Error(), "json: cannot unmarshal object into Go struct field")
+	assert.StringContainsT(t, result.Error(), "of type []spec.Parameter")
 }
 
 // This one is a correct version of issue#342 and it validates.

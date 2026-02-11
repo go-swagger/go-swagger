@@ -6,7 +6,7 @@ package diff
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestArrayDiff(t *testing.T) {
@@ -14,13 +14,13 @@ func TestArrayDiff(t *testing.T) {
 	added, deleted, common := fromStringArray(listA).DiffsTo(listA)
 	require.Equal(t, []string{}, added)
 	require.Equal(t, []string{}, deleted)
-	require.ElementsMatch(t, listA, common)
+	require.ElementsMatchT(t, listA, common)
 
 	listB := []string{"abc", "ghi", "jkl", "xyz", "fgh"}
 	added, deleted, common = fromStringArray(listA).DiffsTo(listB)
-	require.ElementsMatch(t, []string{"xyz", "fgh"}, added)
-	require.ElementsMatch(t, []string{"def"}, deleted)
-	require.ElementsMatch(t, []string{"abc", "ghi", "jkl"}, common)
+	require.ElementsMatchT(t, []string{"xyz", "fgh"}, added)
+	require.ElementsMatchT(t, []string{"def"}, deleted)
+	require.ElementsMatchT(t, []string{"abc", "ghi", "jkl"}, common)
 }
 
 func TestMapDiff(t *testing.T) {

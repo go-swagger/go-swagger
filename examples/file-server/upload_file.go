@@ -31,7 +31,6 @@ func main() {
 }
 
 func upload(reader runtime.NamedReadCloser) error {
-
 	config := client.DefaultTransportConfig().WithHost("localhost:8000")
 
 	uploader := client.NewHTTPClientWithConfig(nil, config)

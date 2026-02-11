@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestBodyParams(t *testing.T) {
@@ -21,7 +21,7 @@ func TestBodyParams(t *testing.T) {
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
 
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, op)
 	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
 	resolver.KnownDefs = make(map[string]struct{})
@@ -33,11 +33,11 @@ func TestBodyParams(t *testing.T) {
 		if param.Name == body {
 			gp, perr := b.MakeParameter("a", resolver, param, nil)
 			require.NoError(t, perr)
-			assert.True(t, gp.IsBodyParam())
+			assert.TrueT(t, gp.IsBodyParam())
 			require.NotNil(t, gp.Schema)
-			assert.True(t, gp.Schema.IsComplexObject)
-			assert.False(t, gp.Schema.IsAnonymous)
-			assert.Equal(t, "models.Task", gp.Schema.GoType)
+			assert.TrueT(t, gp.Schema.IsComplexObject)
+			assert.FalseT(t, gp.Schema.IsAnonymous)
+			assert.EqualT(t, "models.Task", gp.Schema.GoType)
 		}
 	}
 
@@ -45,7 +45,7 @@ func TestBodyParams(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, op, ok = b.Analyzed.OperationForName("createTask")
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotNil(t, op)
 
 	resolver = &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
@@ -62,17 +62,17 @@ func TestBodyParams(t *testing.T) {
 
 		gp, err := b.MakeParameter("a", resolver, param, nil)
 		require.NoError(t, err)
-		assert.True(t, gp.IsBodyParam())
+		assert.TrueT(t, gp.IsBodyParam())
 		require.NotNil(t, gp.Schema)
-		assert.True(t, gp.Schema.IsComplexObject)
-		assert.False(t, gp.Schema.IsAnonymous)
-		assert.Equal(t, "CreateTaskBody", gp.Schema.GoType)
+		assert.TrueT(t, gp.Schema.IsComplexObject)
+		assert.FalseT(t, gp.Schema.IsAnonymous)
+		assert.EqualT(t, "CreateTaskBody", gp.Schema.GoType)
 
 		gpe, ok := b.ExtraSchemas["CreateTaskBody"]
-		assert.True(t, ok)
-		assert.True(t, gpe.IsComplexObject)
-		assert.False(t, gpe.IsAnonymous)
-		assert.Equal(t, "CreateTaskBody", gpe.GoType)
+		assert.TrueT(t, ok)
+		assert.TrueT(t, gpe.IsComplexObject)
+		assert.FalseT(t, gpe.IsAnonymous)
+		assert.EqualT(t, "CreateTaskBody", gpe.GoType)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestFormArrayParams(t *testing.T) {
 
 	for _, v := range arrayFormParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -116,7 +116,7 @@ func TestQueryArrayParams(t *testing.T) {
 
 	for _, v := range arrayQueryParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -137,7 +137,7 @@ func TestSimplePathParams(t *testing.T) {
 
 	for _, v := range simplePathParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -159,7 +159,7 @@ func TestSimpleHeaderParams(t *testing.T) {
 
 	for _, v := range simpleHeaderParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -181,7 +181,7 @@ func TestSimpleFormParams(t *testing.T) {
 
 	for _, v := range simpleFormParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -203,7 +203,7 @@ func TestSimpleQueryParamsAST(t *testing.T) {
 
 	for _, v := range simpleQueryParams {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -222,7 +222,7 @@ func TestGenParameters_Simple(t *testing.T) {
 
 	for _, v := range bug163Properties {
 		v.B = b
-		require.True(t, v.assertParameter(t))
+		require.TrueT(t, v.assertParameter(t))
 	}
 }
 
@@ -425,15 +425,15 @@ func TestGenParameter_Issue303(t *testing.T) {
 			require.NoError(t, err)
 
 			param := op.Params[0]
-			assert.Equal(t, "fruit", param.Name)
-			assert.True(t, param.IsEnumCI)
+			assert.EqualT(t, "fruit", param.Name)
+			assert.TrueT(t, param.IsEnumCI)
 
 			extension := param.Extensions["x-go-enum-ci"]
 			assert.NotNil(t, extension)
 
 			xGoEnumCI, ok := extension.(bool)
-			assert.True(t, ok)
-			assert.True(t, xGoEnumCI)
+			assert.TrueT(t, ok)
+			assert.TrueT(t, xGoEnumCI)
 
 			buf := bytes.NewBuffer(nil)
 			opts := opts()

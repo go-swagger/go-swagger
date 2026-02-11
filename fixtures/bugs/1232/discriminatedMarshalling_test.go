@@ -12,7 +12,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/go-swagger/go-swagger/fixtures/bugs/1232/gen-fixture-1232/models"
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 )
 
 func Test_Pet(t *testing.T) {

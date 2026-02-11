@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 type relativePathTest struct {
@@ -118,8 +118,8 @@ func TestCheckPrefixFetchRelPath(t *testing.T) {
 
 		item.path = filepath.FromSlash(item.path)
 
-		assert.Equalf(t, item.ok, actualok, "checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
-		assert.Equal(t, item.path, actualpath, "checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
+		assert.EqualTf(t, item.ok, actualok, "checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
+		assert.EqualT(t, item.path, actualpath, "checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
 	}
 }
 
@@ -172,7 +172,7 @@ func TestBaseImport(t *testing.T) {
 
 				// Test (baseImport always with /)
 				actualpath := golang.baseImport(item.targetpath)
-				require.Equalf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
+				require.EqualTf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 			})
 		})
 	}

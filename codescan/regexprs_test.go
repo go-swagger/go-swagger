@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-openapi/testify/v2/assert"
 )
 
 func TestSchemaValueExtractors(t *testing.T) {
@@ -108,7 +108,7 @@ func TestSchemaValueExtractors(t *testing.T) {
 							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, arg}, "")
 							matches := rxf(rxPatternFmt, "").FindStringSubmatch(line)
 							assert.Len(t, matches, 2)
-							assert.Equal(t, arg, matches[1])
+							assert.EqualT(t, arg, matches[1])
 						}
 					}
 				}
@@ -171,7 +171,7 @@ func verifyBoolean(t *testing.T, matcher *regexp.Regexp, names, names2 []string)
 							line := strings.Join([]string{pref, es1, nm, es2, ":", es3, vv}, "")
 							matches := matcher.FindStringSubmatch(line)
 							assert.Len(t, matches, 2)
-							assert.Equal(t, vv, matches[1])
+							assert.EqualT(t, vv, matches[1])
 							cnt++
 						}
 						for _, iv := range invalidArgs {
@@ -219,7 +219,7 @@ func verifyIntegerMinMaxManyWords(t *testing.T, matcher *regexp.Regexp, name1 st
 									line := strings.Join([]string{pref, es1, nm1, es2, nm2, es3, ":", es4, vv}, "")
 									matches := matcher.FindStringSubmatch(line)
 									assert.Len(t, matches, 2)
-									assert.Equal(t, vv, matches[1])
+									assert.EqualT(t, vv, matches[1])
 									cnt++
 								}
 								for _, iv := range invalidNumericArgs {
@@ -267,7 +267,7 @@ func verifyNumeric2Words(t *testing.T, matcher *regexp.Regexp, name1, name2 stri
 							for _, line := range lines {
 								matches := matcher.FindStringSubmatch(line)
 								assert.Len(t, matches, 2)
-								assert.Equal(t, vv, matches[1])
+								assert.EqualT(t, vv, matches[1])
 								cnt++
 							}
 						}
@@ -314,7 +314,7 @@ func verifyMinMax(t *testing.T, matcher *regexp.Regexp, name string, operators [
 									matches := matcher.FindStringSubmatch(line)
 									// fmt.Printf("matching %q with %q, matches (%d): %v\n", line, matcher, len(matches), matches)
 									assert.Len(t, matches, 3)
-									assert.Equal(t, vv, matches[2])
+									assert.EqualT(t, vv, matches[2])
 									cnt++
 								}
 								for _, iv := range invalidNumericArgs {
@@ -342,7 +342,7 @@ func verifySwaggerOneArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefixe
 			line := pref + param
 			matches := matcher.FindStringSubmatch(line)
 			if assert.Len(t, matches, 2) {
-				assert.Equal(t, strings.TrimSpace(param), matches[1])
+				assert.EqualT(t, strings.TrimSpace(param), matches[1])
 			}
 		}
 	}
@@ -376,7 +376,7 @@ func verifySwaggerMultiArgSwaggerTag(t *testing.T, matcher *regexp.Regexp, prefi
 			line := pref + param
 			matches := matcher.FindStringSubmatch(line)
 			assert.Len(t, matches, 2)
-			assert.Equal(t, strings.TrimSpace(param), matches[1])
+			assert.EqualT(t, strings.TrimSpace(param), matches[1])
 		}
 	}
 

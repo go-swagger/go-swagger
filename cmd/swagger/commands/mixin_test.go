@@ -9,8 +9,9 @@ import (
 	"testing"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // Commands requires at least one arg.
@@ -53,7 +54,7 @@ func TestCmd_Mixin_BothConflictsAndIgnoreConflictsSpecified(t *testing.T) {
 
 	err := v.Execute([]string{"test.json", "test2.json"})
 	require.Error(t, err)
-	assert.Equal(t, ignoreConflictsAndCollisionsSpecified, err.Error())
+	assert.EqualT(t, ignoreConflictsAndCollisionsSpecified, err.Error())
 }
 
 func TestCmd_Mixin_IgnoreConflicts(t *testing.T) {
@@ -70,5 +71,5 @@ func TestCmd_Mixin_IgnoreConflicts(t *testing.T) {
 	result := v.Execute([]string{specDoc1, specDoc2})
 	require.NoError(t, result)
 	_, exists := os.Stat(output)
-	assert.False(t, os.IsNotExist(exists))
+	assert.FalseT(t, os.IsNotExist(exists))
 }

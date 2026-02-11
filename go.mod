@@ -29,7 +29,6 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
-	github.com/stretchr/testify v1.11.1
 	github.com/toqueteos/webbrowser v1.2.1
 	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
@@ -64,6 +63,7 @@ require (
 	github.com/go-openapi/swag/netutils v0.25.4 // indirect
 	github.com/go-openapi/swag/stringutils v0.25.4 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.4 // indirect
+	github.com/go-openapi/testify/v2 v2.3.0
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -89,3 +89,5 @@ require (
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 )
+
+require github.com/go-openapi/testify/enable/yaml/v2 v2.3.0 // indirect

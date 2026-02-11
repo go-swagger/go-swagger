@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -24,8 +24,8 @@ func TestUniqueOperationNameMangling(t *testing.T) {
 	require.NoError(t, err)
 	analyzed := analysis.New(doc.Spec())
 	ops := gatherOperations(analyzed, nil)
-	assert.Contains(t, ops, "GetFoo")
-	assert.Contains(t, ops, "GetAFoo")
+	assert.MapContainsT(t, ops, "GetFoo")
+	assert.MapContainsT(t, ops, "GetAFoo")
 }
 
 func TestUniqueOperationNames(t *testing.T) {
@@ -42,9 +42,9 @@ func TestUniqueOperationNames(t *testing.T) {
 	ops := gatherOperations(analyzed, nil)
 	assert.Len(t, ops, 6)
 	_, exists := ops["saveTask"]
-	assert.True(t, exists)
+	assert.TrueT(t, exists)
 	_, exists = ops["PutTasksID"]
-	assert.True(t, exists)
+	assert.TrueT(t, exists)
 }
 
 func TestEmptyOperationNames(t *testing.T) {
@@ -61,9 +61,9 @@ func TestEmptyOperationNames(t *testing.T) {
 	ops := gatherOperations(analyzed, nil)
 	assert.Len(t, ops, 6)
 	_, exists := ops["PostTasks"]
-	assert.True(t, exists)
+	assert.TrueT(t, exists)
 	_, exists = ops["PutTasksID"]
-	assert.True(t, exists)
+	assert.TrueT(t, exists)
 }
 
 func TestMakeResponseHeader(t *testing.T) {
@@ -74,9 +74,9 @@ func TestMakeResponseHeader(t *testing.T) {
 	gh, er := b.MakeHeader("a", "X-Rate-Limit", *hdr)
 	require.NoError(t, er)
 
-	assert.True(t, gh.IsPrimitive)
-	assert.Equal(t, "int32", gh.GoType)
-	assert.Equal(t, "X-Rate-Limit", gh.Name)
+	assert.TrueT(t, gh.IsPrimitive)
+	assert.EqualT(t, "int32", gh.GoType)
+	assert.EqualT(t, "X-Rate-Limit", gh.Name)
 }
 
 func TestMakeResponseHeaderDefaultValues(t *testing.T) {
@@ -103,9 +103,9 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 		gh, er := b.MakeHeader("a", tc.name, *hdr)
 		require.NoError(t, er)
 
-		assert.True(t, gh.IsPrimitive)
-		assert.Equal(t, tc.typeStr, gh.GoType)
-		assert.Equal(t, tc.name, gh.Name)
+		assert.TrueT(t, gh.IsPrimitive)
+		assert.EqualT(t, tc.typeStr, gh.GoType)
+		assert.EqualT(t, tc.name, gh.Name)
 		assert.Exactly(t, tc.defaultValue, gh.Default)
 	}
 }
@@ -124,10 +124,10 @@ func TestMakeResponse(t *testing.T) {
 
 	assert.Len(t, gO.Headers, 6)
 	assert.NotNil(t, gO.Schema)
-	assert.True(t, gO.Schema.IsArray)
+	assert.TrueT(t, gO.Schema.IsArray)
 	assert.NotNil(t, gO.Schema.Items)
-	assert.False(t, gO.Schema.IsAnonymous)
-	assert.Equal(t, "[]*models.Task", gO.Schema.GoType)
+	assert.FalseT(t, gO.Schema.IsAnonymous)
+	assert.EqualT(t, "[]*models.Task", gO.Schema.GoType)
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
@@ -143,23 +143,23 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NotNil(t, gO.Schema)
-	assert.Equal(t, "GetMediaSearchBody", gO.Schema.GoType)
+	assert.EqualT(t, "GetMediaSearchBody", gO.Schema.GoType)
 
 	require.NotEmpty(t, b.ExtraSchemas)
 	body := b.ExtraSchemas["GetMediaSearchBody"]
 	require.NotEmpty(t, body.Properties)
 
 	prop := body.Properties[0]
-	assert.Equal(t, "data", prop.Name)
+	assert.EqualT(t, "data", prop.Name)
 	// is in models only when definition is flattened: otherwise, ExtraSchema is rendered in operations package
-	assert.Equal(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
+	assert.EqualT(t, "[]*GetMediaSearchBodyDataItems0", prop.GoType)
 
 	items := b.ExtraSchemas["GetMediaSearchBodyDataItems0"]
 	require.NotEmpty(t, items.AllOf)
 
 	media := items.AllOf[0]
 	// expect #definitions/media to be captured and reused by ExtraSchema
-	assert.Equal(t, "models.Media", media.GoType)
+	assert.EqualT(t, "models.Media", media.GoType)
 }
 
 func TestMakeOperationParam(t *testing.T) {
@@ -170,8 +170,8 @@ func TestMakeOperationParam(t *testing.T) {
 	gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
 	require.NoError(t, err)
 
-	assert.Equal(t, "size", gO.Name)
-	assert.True(t, gO.IsPrimitive)
+	assert.EqualT(t, "size", gO.Name)
+	assert.TrueT(t, gO.IsPrimitive)
 }
 
 func TestMakeOperationParamItem(t *testing.T) {
@@ -181,7 +181,7 @@ func TestMakeOperationParamItem(t *testing.T) {
 	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
 	require.NoError(t, err)
 	assert.Nil(t, gO.Parent)
-	assert.True(t, gO.IsPrimitive)
+	assert.TrueT(t, gO.IsPrimitive)
 }
 
 func TestMakeOperation(t *testing.T) {
@@ -189,9 +189,9 @@ func TestMakeOperation(t *testing.T) {
 	require.NoError(t, err)
 	gO, err := b.MakeOperation()
 	require.NoError(t, err)
-	assert.Equal(t, "getTasks", gO.Name)
-	assert.Equal(t, "GET", gO.Method)
-	assert.Equal(t, "/tasks", gO.Path)
+	assert.EqualT(t, "getTasks", gO.Name)
+	assert.EqualT(t, "GET", gO.Method)
+	assert.EqualT(t, "/tasks", gO.Path)
 	assert.Len(t, gO.Params, 2)
 	assert.Len(t, gO.Responses, 1)
 	assert.NotNil(t, gO.DefaultResponse)
@@ -1259,7 +1259,7 @@ func TestGenerateServerOperation(t *testing.T) {
 		f, err := os.Stat(filepath.Join(tgt, capture))
 		require.NoError(t, err)
 
-		require.Positive(t, f.Size()) // i.e. StrictlyPositive
+		require.PositiveT(t, f.Size()) // i.e. StrictlyPositive
 	})
 }
 
@@ -1292,15 +1292,15 @@ func TestBuilder_Issue1646(t *testing.T) {
 
 	preCons, preConj := appGen.makeConsumes()
 	preProds, preProdj := appGen.makeProduces()
-	assert.True(t, preConj)
-	assert.True(t, preProdj)
+	assert.TrueT(t, preConj)
+	assert.TrueT(t, preProdj)
 	for range 5 {
 		cons, conj := appGen.makeConsumes()
 		prods, prodj := appGen.makeProduces()
-		assert.True(t, conj)
-		assert.True(t, prodj)
-		assert.Equal(t, preConj, conj)
-		assert.Equal(t, preProdj, prodj)
+		assert.TrueT(t, conj)
+		assert.TrueT(t, prodj)
+		assert.EqualT(t, preConj, conj)
+		assert.EqualT(t, preProdj, prodj)
 		assert.Equal(t, preCons, cons)
 		assert.Equal(t, preProds, prods)
 	}
@@ -1426,7 +1426,7 @@ func TestRenameTimeout(t *testing.T) {
 		testCase := toPin
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equalf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name), "unexpected deconflicting value [%d]", i)
+			assert.EqualTf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name), "unexpected deconflicting value [%d]", i)
 		})
 	}
 }
@@ -1442,32 +1442,32 @@ func testInvalidParams() map[string]spec.Parameter {
 func TestParamMappings(t *testing.T) {
 	// Test deconfliction of duplicate param names across param locations
 	mappings, _ := paramMappings(testInvalidParams())
-	require.Contains(t, mappings, "query")
-	require.Contains(t, mappings, "path")
-	require.Contains(t, mappings, "body")
+	require.MapContainsT(t, mappings, "query")
+	require.MapContainsT(t, mappings, "path")
+	require.MapContainsT(t, mappings, "body")
 	q := mappings["query"]
 	p := mappings["path"]
 	b := mappings["body"]
 	require.Len(t, q, 1)
 	require.Len(t, p, 1)
 	require.Len(t, b, 1)
-	require.Containsf(t, q, "param1", "unexpected content of %#v", q)
-	require.Containsf(t, p, "param1", "unexpected content of %#v", p)
-	require.Containsf(t, b, "param1", "unexpected content of %#v", b)
-	assert.Equalf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
-	assert.Equalf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
-	assert.Equalf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
+	require.MapContainsTf(t, q, "param1", "unexpected content of %#v", q)
+	require.MapContainsTf(t, p, "param1", "unexpected content of %#v", p)
+	require.MapContainsTf(t, b, "param1", "unexpected content of %#v", b)
+	assert.EqualTf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
+	assert.EqualTf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
+	assert.EqualTf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
 }
 
 func TestDeconflictTag(t *testing.T) {
-	assert.Equal(t, "runtimeops", deconflictTag(nil, "runtime"))
-	assert.Equal(t, "apiops", deconflictTag([]string{"tag1"}, apiPkg))
-	assert.Equal(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, apiPkg))
-	assert.Equal(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
-	assert.Equal(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
+	assert.EqualT(t, "runtimeops", deconflictTag(nil, "runtime"))
+	assert.EqualT(t, "apiops", deconflictTag([]string{"tag1"}, apiPkg))
+	assert.EqualT(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, apiPkg))
+	assert.EqualT(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
+	assert.EqualT(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
 
-	assert.Equal(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
-	assert.Equal(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
+	assert.EqualT(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
+	assert.EqualT(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
 }
 
 func TestGenServer_2161_panic(t *testing.T) {

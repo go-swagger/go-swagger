@@ -6,8 +6,8 @@ package generator
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
@@ -35,7 +35,7 @@ func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	rt, err := tr.ResolveSchema(&schema, false, false)
 	require.NoError(t, err)
 
-	assert.Equal(t, "[][][]*models.StatixItems0", rt.AliasedType)
+	assert.EqualT(t, "[][][]*models.StatixItems0", rt.AliasedType)
 }
 
 func TestTypeResolver_PointerLifting(t *testing.T) {
@@ -556,23 +556,23 @@ func assertBuiltinVal(t *testing.T, resolver *typeResolver, aliased bool, i int,
 	rt, err := resolver.ResolveSchema(sch, !aliased, val.Required)
 	require.NoError(t, err)
 	if val.Nullable {
-		if !assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i) {
+		if !assert.TrueT(t, rt.IsNullable, "expected nullable for item at: %d", i) {
 			// fmt.Println("isRequired:", val.Required)
 			// pretty.Println(sch)
 			return false
 		}
 	} else {
-		if !assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
+		if !assert.FalseT(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
 			// fmt.Println("isRequired:", val.Required)
 			// pretty.Println(sch)
 			return false
 		}
 	}
-	if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type", val.Type, val.Format) {
+	if !assert.EqualT(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type", val.Type, val.Format) {
 		return false
 	}
 	if val.Aliased {
-		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType) {
+		if !assert.EqualT(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType) {
 			return false
 		}
 	}
@@ -618,20 +618,20 @@ func assertBuiltinSliceElem(t *testing.T, resolver *typeResolver, aliased bool, 
 	require.NoError(t, err)
 
 	if val.Nullable {
-		if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
+		if !assert.TrueT(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
 			return false
 		}
 	} else {
-		if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
+		if !assert.FalseT(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
 			return false
 		}
 	}
 
 	if val.Aliased {
-		if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at: %d", val.Type, val.Format, i) {
+		if !assert.EqualT(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at: %d", val.Type, val.Format, i) {
 			return false
 		}
-		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
+		if !assert.EqualT(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
 			return false
 		}
 	}
@@ -678,21 +678,21 @@ func assertBuiltinAdditionalPropertiesElem(t *testing.T, resolver *typeResolver,
 	require.NoError(t, err)
 
 	if val.Nullable {
-		if !assert.True(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
+		if !assert.TrueT(t, rt.ElemType.IsNullable, "expected nullable for item at: %d", i) {
 			return false
 		}
 	} else {
-		if !assert.False(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
+		if !assert.FalseT(t, rt.ElemType != nil && rt.ElemType.IsNullable, "expected not nullable for item at: %d", i) {
 			return false
 		}
 	}
 
-	if !assert.Equal(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at %d", val.Type, val.Format, i) {
+	if !assert.EqualT(t, val.Aliased, rt.IsAliased, "expected (%q, %q) to be an aliased type at %d", val.Type, val.Format, i) {
 		return false
 	}
 
 	if val.Aliased {
-		if !assert.Equal(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
+		if !assert.EqualT(t, val.AliasedType, rt.AliasedType, "expected %q (%q, %q) to be aliased as %q, but got %q at %d", val.Expected, val.Type, val.Format, val.AliasedType, rt.AliasedType, i) {
 			return false
 		}
 	}
@@ -706,15 +706,15 @@ func assertBuiltinAdditionalPropertiesElem(t *testing.T, resolver *typeResolver,
 func assertBuiltinResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType, i int) bool {
 	t.Helper()
 
-	return assert.Equal(t, tpe, tr.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
-		assert.Equal(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
-		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
+	return assert.EqualT(t, tpe, tr.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
+		assert.EqualT(t, tfmt, tr.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
+		assert.EqualT(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
 }
 
 func assertBuiltinSliceElemnResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType, i int) bool {
 	t.Helper()
 
-	return assert.Equal(t, tpe, tr.ElemType.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
-		assert.Equal(t, tfmt, tr.ElemType.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
-		assert.Equal(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
+	return assert.EqualT(t, tpe, tr.ElemType.SwaggerType, "expected %q (%q, %q) at %d for the swagger type but got %q", tpe, tfmt, exp, i, tr.SwaggerType) &&
+		assert.EqualT(t, tfmt, tr.ElemType.SwaggerFormat, "expected %q (%q, %q) at %d for the swagger format but got %q", tfmt, tpe, exp, i, tr.SwaggerFormat) &&
+		assert.EqualT(t, exp, tr.GoType, "expected %q (%q, %q) at %d for the go type but got %q", exp, tpe, tfmt, i, tr.GoType)
 }

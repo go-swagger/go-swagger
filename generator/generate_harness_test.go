@@ -13,7 +13,7 @@ import (
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 // testHarnessBuildServers iterates over a map of [generateFixture] s to prepare the code generation layout,

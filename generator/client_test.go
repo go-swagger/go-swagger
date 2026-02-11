@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
@@ -150,7 +150,7 @@ func TestGenClient(t *testing.T) {
 				t.Run("make sure this did not fail and we have some output", func(t *testing.T) {
 					stat, err := os.Stat(capture)
 					require.NoError(t, err)
-					require.Positive(t, stat.Size()) // i.e. StrictlyPositive
+					require.PositiveT(t, stat.Size()) // i.e. StrictlyPositive
 				})
 			})
 		})

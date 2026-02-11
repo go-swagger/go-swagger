@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -35,7 +35,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
-	assert.True(t, genModel.HasBaseType)
+	assert.TrueT(t, genModel.HasBaseType)
 
 	buf := bytes.NewBuffer(nil)
 	err = opts.templates.MustGet("model").Execute(buf, genModel)
@@ -66,9 +66,9 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		require.NoError(t, err)
 
-		assert.True(t, genModel.IsComplexObject)
-		assert.Equal(t, "petType", genModel.DiscriminatorField)
-		assert.Equal(t, k, genModel.DiscriminatorValue)
+		assert.TrueT(t, genModel.IsComplexObject)
+		assert.EqualT(t, "petType", genModel.DiscriminatorField)
+		assert.EqualT(t, k, genModel.DiscriminatorValue)
 
 		buf := bytes.NewBuffer(nil)
 		err = opts.templates.MustGet("model").Execute(buf, genModel)
@@ -114,13 +114,13 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsComplexObject)
-	assert.Equal(t, "petType", genModel.DiscriminatorField)
+	assert.TrueT(t, genModel.IsComplexObject)
+	assert.EqualT(t, "petType", genModel.DiscriminatorField)
 	assert.Len(t, genModel.Discriminates, 3)
 	assert.Empty(t, genModel.ExtraSchemas)
-	assert.Equal(t, "Pet", genModel.Discriminates["Pet"])
-	assert.Equal(t, "Cat", genModel.Discriminates["cat"])
-	assert.Equal(t, "Dog", genModel.Discriminates["Dog"])
+	assert.EqualT(t, "Pet", genModel.Discriminates["Pet"])
+	assert.EqualT(t, "Cat", genModel.Discriminates["cat"])
+	assert.EqualT(t, "Dog", genModel.Discriminates["Dog"])
 
 	buf := bytes.NewBuffer(nil)
 	err = opts.templates.MustGet("model").Execute(buf, genModel)
@@ -159,7 +159,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	require.True(t, genModel.HasBaseType)
+	require.TrueT(t, genModel.HasBaseType)
 
 	buf := bytes.NewBuffer(nil)
 	err = opts.templates.MustGet("model").Execute(buf, genModel)
@@ -182,7 +182,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	require.NoError(t, err)
 
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
-	require.True(t, ok)
+	require.TrueT(t, ok)
 
 	opts := opts()
 	bldr := codeGenOpBuilder{
@@ -206,7 +206,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	genOp, err := bldr.MakeOperation()
 	require.NoError(t, err)
 
-	assert.True(t, genOp.Responses[0].Schema.IsBaseType)
+	assert.TrueT(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
 	err = opts.templates.MustGet("clientResponse").Execute(&buf, genOp)
 	require.NoError(t, err)
@@ -224,7 +224,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 	require.NoError(t, err)
 
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
-	require.True(t, ok)
+	require.TrueT(t, ok)
 
 	opts := opts()
 	bldr := codeGenOpBuilder{
@@ -246,7 +246,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 	genOp, err := bldr.MakeOperation()
 	require.NoError(t, err)
 
-	assert.True(t, genOp.Responses[0].Schema.IsBaseType)
+	assert.TrueT(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
 	err = opts.templates.MustGet("serverParameter").Execute(&buf, genOp)
 	require.NoErrorf(t, err, buf.String())
@@ -269,7 +269,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
-	require.True(t, genModel.IsSubType)
+	require.TrueT(t, genModel.IsSubType)
 
 	buf := bytes.NewBuffer(nil)
 	err = opts.templates.MustGet("model").Execute(buf, genModel)
@@ -295,11 +295,11 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.True(t, genModel.IsNullable)
+	assert.TrueT(t, genModel.IsNullable)
 	for _, gm := range genModel.AllOf {
 		for _, p := range gm.Properties {
 			if p.Name == "parent" {
-				assert.True(t, p.IsNullable)
+				assert.TrueT(t, p.IsNullable)
 			}
 		}
 	}
@@ -353,7 +353,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
-	require.Equal(t, "map[string]Base", genModel.Properties[0].GoType)
+	require.EqualT(t, "map[string]Base", genModel.Properties[0].GoType)
 
 	buf := bytes.NewBuffer(nil)
 	err = opts.templates.MustGet("model").Execute(buf, genModel)

@@ -10,8 +10,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 )
 
 func TestSpecChangeCode(t *testing.T) {
@@ -21,28 +21,28 @@ func TestSpecChangeCode(t *testing.T) {
 	}()
 
 	c := NoChangeDetected
-	assert.Equal(t, toLongStringSpecChangeCode[NoChangeDetected], c.Description())
-	assert.Equal(t, "UNDEFINED", SpecChangeCode(9999999999999).Description())
+	assert.EqualT(t, toLongStringSpecChangeCode[NoChangeDetected], c.Description())
+	assert.EqualT(t, "UNDEFINED", SpecChangeCode(9999999999999).Description())
 
 	res, err := json.Marshal(c)
 	require.NoError(t, err)
-	assert.JSONEq(t, `"NoChangeDetected"`, string(res))
+	assert.JSONEqT(t, `"NoChangeDetected"`, string(res))
 
 	var d SpecChangeCode
 	in := []byte(`"NoChangeDetected"`)
 	err = json.Unmarshal(in, &d)
 	require.NoError(t, err)
-	assert.Equal(t, NoChangeDetected, d)
+	assert.EqualT(t, NoChangeDetected, d)
 
 	in = []byte(`"dummy"`) // invalid enum
 	err = json.Unmarshal(in, &d)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown enum value")
+	assert.StringContainsT(t, err.Error(), "unknown enum value")
 
 	in = []byte(`{"dummy"`) // invalid json
 	err = json.Unmarshal(in, &d)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "JSON")
+	assert.StringContainsT(t, err.Error(), "JSON")
 }
 
 func TestCompatibiliyCode(t *testing.T) {
@@ -52,25 +52,25 @@ func TestCompatibiliyCode(t *testing.T) {
 	}()
 
 	c := Breaking
-	assert.Equal(t, toStringCompatibility[Breaking], c.String())
+	assert.EqualT(t, toStringCompatibility[Breaking], c.String())
 
 	res, err := json.Marshal(c)
 	require.NoError(t, err)
-	assert.JSONEq(t, `"Breaking"`, string(res))
+	assert.JSONEqT(t, `"Breaking"`, string(res))
 
 	var d Compatibility
 	in := []byte(`"Breaking"`)
 	err = json.Unmarshal(in, &d)
 	require.NoError(t, err)
-	assert.Equal(t, Breaking, d)
+	assert.EqualT(t, Breaking, d)
 
 	in = []byte(`"dummy"`) // invalid enum
 	err = json.Unmarshal(in, &d)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown enum value")
+	assert.StringContainsT(t, err.Error(), "unknown enum value")
 
 	in = []byte(`{"dummy"`) // invalid json
 	err = json.Unmarshal(in, &d)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "JSON")
+	assert.StringContainsT(t, err.Error(), "JSON")
 }

@@ -39,7 +39,6 @@ func NewBuffer() *Buffer {
 }
 
 func main() {
-
 	blockingMode := true
 	chunkingMode := true
 
@@ -86,7 +85,6 @@ func customTransport(withChunks bool) *httptransport.Runtime {
 
 // chunkedBlocking consumes some text/plain resource, blocking for the response to be completely sent
 func chunkedBlocking(withChunks bool) error {
-
 	c := client.New(customTransport(withChunks), nil).Operations
 
 	// we just need to specify a buffer that knows how to UnmarshalText()

@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
+
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/spec"
 )
@@ -97,41 +98,41 @@ func TestSchemaBuilder(t *testing.T) {
 	schema := models["NoModel"]
 
 	assert.Equal(t, spec.StringOrArray([]string{"object"}), schema.Type)
-	assert.Equal(t, "NoModel is a struct without an annotation.", schema.Title)
-	assert.Equal(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
+	assert.EqualT(t, "NoModel is a struct without an annotation.", schema.Title)
+	assert.EqualT(t, "NoModel exists in a package\nbut is not annotated with the swagger model annotations\nso it should now show up in a test.", schema.Description)
 	assert.Len(t, schema.Required, 3)
 	assert.Len(t, schema.Properties, 12)
 
 	assertProperty(t, &schema, "integer", "id", "int64", "ID")
 	prop, ok := schema.Properties["id"]
-	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", prop.Description)
-	assert.True(t, ok, "should have had an 'id' property")
-	assert.InDelta(t, 1000.00, *prop.Maximum, epsilon)
-	assert.True(t, prop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
+	assert.EqualT(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", prop.Description)
+	assert.TrueT(t, ok, "should have had an 'id' property")
+	assert.InDeltaT(t, 1000.00, *prop.Maximum, epsilon)
+	assert.TrueT(t, prop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
 	assert.NotNil(t, prop.Minimum)
-	assert.InDelta(t, 10.00, *prop.Minimum, epsilon)
-	assert.True(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+	assert.InDeltaT(t, 10.00, *prop.Minimum, epsilon)
+	assert.TrueT(t, prop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 	assert.Equal(t, 11, prop.Default, "ID default value is incorrect")
 
 	assertProperty(t, &schema, "string", "NoNameOmitEmpty", "", "")
 	prop, ok = schema.Properties["NoNameOmitEmpty"]
-	assert.Equal(t, "A field which has omitempty set but no name", prop.Description)
-	assert.True(t, ok, "should have had an 'NoNameOmitEmpty' property")
+	assert.EqualT(t, "A field which has omitempty set but no name", prop.Description)
+	assert.TrueT(t, ok, "should have had an 'NoNameOmitEmpty' property")
 
 	assertProperty(t, &schema, "string", "noteb64", "byte", "Note")
 	prop, ok = schema.Properties["noteb64"]
-	assert.True(t, ok, "should have a 'noteb64' property")
+	assert.TrueT(t, ok, "should have a 'noteb64' property")
 	assert.Nil(t, prop.Items)
 
 	assertProperty(t, &schema, "integer", "score", "int32", "Score")
 	prop, ok = schema.Properties["score"]
-	assert.Equal(t, "The Score of this model", prop.Description)
-	assert.True(t, ok, "should have had a 'score' property")
-	assert.InDelta(t, 45.00, *prop.Maximum, epsilon)
-	assert.False(t, prop.ExclusiveMaximum, "'score' should not have had an exclusive maximum")
+	assert.EqualT(t, "The Score of this model", prop.Description)
+	assert.TrueT(t, ok, "should have had a 'score' property")
+	assert.InDeltaT(t, 45.00, *prop.Maximum, epsilon)
+	assert.FalseT(t, prop.ExclusiveMaximum, "'score' should not have had an exclusive maximum")
 	assert.NotNil(t, prop.Minimum)
-	assert.InDelta(t, 3.00, *prop.Minimum, epsilon)
-	assert.False(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
+	assert.InDeltaT(t, 3.00, *prop.Minimum, epsilon)
+	assert.FalseT(t, prop.ExclusiveMinimum, "'score' should not have had an exclusive minimum")
 	assert.EqualValues(t, 27, prop.Example)
 
 	expectedNameExtensions := spec.Extensions{
@@ -151,101 +152,101 @@ func TestSchemaBuilder(t *testing.T) {
 
 	assertProperty(t, &schema, "string", "name", "", "Name")
 	prop, ok = schema.Properties["name"]
-	assert.True(t, ok)
-	assert.Equal(t, "Name of this no model instance", prop.Description)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "Name of this no model instance", prop.Description)
 	require.NotNil(t, prop.MinLength)
 	require.NotNil(t, prop.MaxLength)
-	assert.Equal(t, int64(4), *prop.MinLength)
-	assert.Equal(t, int64(50), *prop.MaxLength)
-	assert.Equal(t, "[A-Za-z0-9-.]*", prop.Pattern)
+	assert.EqualT(t, int64(4), *prop.MinLength)
+	assert.EqualT(t, int64(50), *prop.MaxLength)
+	assert.EqualT(t, "[A-Za-z0-9-.]*", prop.Pattern)
 	assert.Equal(t, expectedNameExtensions, prop.Extensions)
 
 	assertProperty(t, &schema, "string", "created", "date-time", "Created")
 	prop, ok = schema.Properties["created"]
-	assert.Equal(t, "Created holds the time when this entry was created", prop.Description)
-	assert.True(t, ok, "should have a 'created' property")
-	assert.True(t, prop.ReadOnly, "'created' should be read only")
+	assert.EqualT(t, "Created holds the time when this entry was created", prop.Description)
+	assert.TrueT(t, ok, "should have a 'created' property")
+	assert.TrueT(t, prop.ReadOnly, "'created' should be read only")
 
 	assertProperty(t, &schema, "string", "gocreated", "date-time", "GoTimeCreated")
 	prop, ok = schema.Properties["gocreated"]
-	assert.Equal(t, "GoTimeCreated holds the time when this entry was created in go time.Time", prop.Description)
-	assert.True(t, ok, "should have a 'gocreated' property")
+	assert.EqualT(t, "GoTimeCreated holds the time when this entry was created in go time.Time", prop.Description)
+	assert.TrueT(t, ok, "should have a 'gocreated' property")
 
 	assertArrayProperty(t, &schema, "string", "foo_slice", "", "FooSlice")
 	prop, ok = schema.Properties["foo_slice"]
-	assert.Equal(t, "a FooSlice has foos which are strings", prop.Description)
-	assert.True(t, ok, "should have a 'foo_slice' property")
+	assert.EqualT(t, "a FooSlice has foos which are strings", prop.Description)
+	assert.TrueT(t, ok, "should have a 'foo_slice' property")
 	require.NotNil(t, prop.Items, "foo_slice should have had an items property")
 	require.NotNil(t, prop.Items.Schema, "foo_slice.items should have had a schema property")
-	assert.True(t, prop.UniqueItems, "'foo_slice' should have unique items")
-	assert.Equal(t, int64(3), *prop.MinItems, "'foo_slice' should have had 3 min items")
-	assert.Equal(t, int64(10), *prop.MaxItems, "'foo_slice' should have had 10 max items")
+	assert.TrueT(t, prop.UniqueItems, "'foo_slice' should have unique items")
+	assert.EqualT(t, int64(3), *prop.MinItems, "'foo_slice' should have had 3 min items")
+	assert.EqualT(t, int64(10), *prop.MaxItems, "'foo_slice' should have had 10 max items")
 	itprop := prop.Items.Schema
-	assert.Equal(t, int64(3), *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
-	assert.Equal(t, int64(10), *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
-	assert.Equal(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
+	assert.EqualT(t, int64(3), *itprop.MinLength, "'foo_slice.items.minLength' should have been 3")
+	assert.EqualT(t, int64(10), *itprop.MaxLength, "'foo_slice.items.maxLength' should have been 10")
+	assert.EqualT(t, "\\w+", itprop.Pattern, "'foo_slice.items.pattern' should have \\w+")
 
 	assertArrayProperty(t, &schema, "string", "time_slice", "date-time", "TimeSlice")
 	prop, ok = schema.Properties["time_slice"]
-	assert.Equal(t, "a TimeSlice is a slice of times", prop.Description)
-	assert.True(t, ok, "should have a 'time_slice' property")
+	assert.EqualT(t, "a TimeSlice is a slice of times", prop.Description)
+	assert.TrueT(t, ok, "should have a 'time_slice' property")
 	require.NotNil(t, prop.Items, "time_slice should have had an items property")
 	require.NotNil(t, prop.Items.Schema, "time_slice.items should have had a schema property")
-	assert.True(t, prop.UniqueItems, "'time_slice' should have unique items")
-	assert.Equal(t, int64(3), *prop.MinItems, "'time_slice' should have had 3 min items")
-	assert.Equal(t, int64(10), *prop.MaxItems, "'time_slice' should have had 10 max items")
+	assert.TrueT(t, prop.UniqueItems, "'time_slice' should have unique items")
+	assert.EqualT(t, int64(3), *prop.MinItems, "'time_slice' should have had 3 min items")
+	assert.EqualT(t, int64(10), *prop.MaxItems, "'time_slice' should have had 10 max items")
 
 	assertArrayProperty(t, &schema, "array", "bar_slice", "", "BarSlice")
 	prop, ok = schema.Properties["bar_slice"]
-	assert.Equal(t, "a BarSlice has bars which are strings", prop.Description)
-	assert.True(t, ok, "should have a 'bar_slice' property")
+	assert.EqualT(t, "a BarSlice has bars which are strings", prop.Description)
+	assert.TrueT(t, ok, "should have a 'bar_slice' property")
 	require.NotNil(t, prop.Items, "bar_slice should have had an items property")
 	require.NotNil(t, prop.Items.Schema, "bar_slice.items should have had a schema property")
-	assert.True(t, prop.UniqueItems, "'bar_slice' should have unique items")
-	assert.Equal(t, int64(3), *prop.MinItems, "'bar_slice' should have had 3 min items")
-	assert.Equal(t, int64(10), *prop.MaxItems, "'bar_slice' should have had 10 max items")
+	assert.TrueT(t, prop.UniqueItems, "'bar_slice' should have unique items")
+	assert.EqualT(t, int64(3), *prop.MinItems, "'bar_slice' should have had 3 min items")
+	assert.EqualT(t, int64(10), *prop.MaxItems, "'bar_slice' should have had 10 max items")
 
 	itprop = prop.Items.Schema
 	require.NotNil(t, itprop)
-	assert.Equal(t, int64(4), *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
-	assert.Equal(t, int64(9), *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
+	assert.EqualT(t, int64(4), *itprop.MinItems, "'bar_slice.items.minItems' should have been 4")
+	assert.EqualT(t, int64(9), *itprop.MaxItems, "'bar_slice.items.maxItems' should have been 9")
 
 	itprop2 := itprop.Items.Schema
 	require.NotNil(t, itprop2)
-	assert.Equal(t, int64(5), *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
-	assert.Equal(t, int64(8), *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
+	assert.EqualT(t, int64(5), *itprop2.MinItems, "'bar_slice.items.items.minItems' should have been 5")
+	assert.EqualT(t, int64(8), *itprop2.MaxItems, "'bar_slice.items.items.maxItems' should have been 8")
 
 	itprop3 := itprop2.Items.Schema
 	require.NotNil(t, itprop3)
-	assert.Equal(t, int64(3), *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
-	assert.Equal(t, int64(10), *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
-	assert.Equal(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
+	assert.EqualT(t, int64(3), *itprop3.MinLength, "'bar_slice.items.items.items.minLength' should have been 3")
+	assert.EqualT(t, int64(10), *itprop3.MaxLength, "'bar_slice.items.items.items.maxLength' should have been 10")
+	assert.EqualT(t, "\\w+", itprop3.Pattern, "'bar_slice.items.items.items.pattern' should have \\w+")
 
 	assertArrayProperty(t, &schema, "array", "deep_time_slice", "", "DeepTimeSlice")
 	prop, ok = schema.Properties["deep_time_slice"]
-	assert.Equal(t, "a DeepSlice has bars which are time", prop.Description)
-	assert.True(t, ok, "should have a 'deep_time_slice' property")
+	assert.EqualT(t, "a DeepSlice has bars which are time", prop.Description)
+	assert.TrueT(t, ok, "should have a 'deep_time_slice' property")
 	require.NotNil(t, prop.Items, "deep_time_slice should have had an items property")
 	require.NotNil(t, prop.Items.Schema, "deep_time_slice.items should have had a schema property")
-	assert.True(t, prop.UniqueItems, "'deep_time_slice' should have unique items")
-	assert.Equal(t, int64(3), *prop.MinItems, "'deep_time_slice' should have had 3 min items")
-	assert.Equal(t, int64(10), *prop.MaxItems, "'deep_time_slice' should have had 10 max items")
+	assert.TrueT(t, prop.UniqueItems, "'deep_time_slice' should have unique items")
+	assert.EqualT(t, int64(3), *prop.MinItems, "'deep_time_slice' should have had 3 min items")
+	assert.EqualT(t, int64(10), *prop.MaxItems, "'deep_time_slice' should have had 10 max items")
 	itprop = prop.Items.Schema
 	require.NotNil(t, itprop)
-	assert.Equal(t, int64(4), *itprop.MinItems, "'deep_time_slice.items.minItems' should have been 4")
-	assert.Equal(t, int64(9), *itprop.MaxItems, "'deep_time_slice.items.maxItems' should have been 9")
+	assert.EqualT(t, int64(4), *itprop.MinItems, "'deep_time_slice.items.minItems' should have been 4")
+	assert.EqualT(t, int64(9), *itprop.MaxItems, "'deep_time_slice.items.maxItems' should have been 9")
 
 	itprop2 = itprop.Items.Schema
 	require.NotNil(t, itprop2)
-	assert.Equal(t, int64(5), *itprop2.MinItems, "'deep_time_slice.items.items.minItems' should have been 5")
-	assert.Equal(t, int64(8), *itprop2.MaxItems, "'deep_time_slice.items.items.maxItems' should have been 8")
+	assert.EqualT(t, int64(5), *itprop2.MinItems, "'deep_time_slice.items.items.minItems' should have been 5")
+	assert.EqualT(t, int64(8), *itprop2.MaxItems, "'deep_time_slice.items.items.maxItems' should have been 8")
 
 	itprop3 = itprop2.Items.Schema
 	require.NotNil(t, itprop3)
 
 	assertArrayProperty(t, &schema, "object", "items", "", "Items")
 	prop, ok = schema.Properties["items"]
-	assert.True(t, ok, "should have an 'items' slice")
+	assert.TrueT(t, ok, "should have an 'items' slice")
 	assert.NotNil(t, prop.Items, "items should have had an items property")
 	assert.NotNil(t, prop.Items.Schema, "items.items should have had a schema property")
 	itprop = prop.Items.Schema
@@ -253,46 +254,46 @@ func TestSchemaBuilder(t *testing.T) {
 	assert.Len(t, itprop.Required, 4)
 	assertProperty(t, itprop, "integer", "id", "int32", "ID")
 	iprop, ok := itprop.Properties["id"]
-	assert.True(t, ok)
-	assert.Equal(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "ID of this no model instance.\nids in this application start at 11 and are smaller than 1000", iprop.Description)
 	require.NotNil(t, iprop.Maximum)
-	assert.InDelta(t, 1000.00, *iprop.Maximum, epsilon)
-	assert.True(t, iprop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
+	assert.InDeltaT(t, 1000.00, *iprop.Maximum, epsilon)
+	assert.TrueT(t, iprop.ExclusiveMaximum, "'id' should have had an exclusive maximum")
 	require.NotNil(t, iprop.Minimum)
-	assert.InDelta(t, 10.00, *iprop.Minimum, epsilon)
-	assert.True(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
+	assert.InDeltaT(t, 10.00, *iprop.Minimum, epsilon)
+	assert.TrueT(t, iprop.ExclusiveMinimum, "'id' should have had an exclusive minimum")
 	assert.Equal(t, 11, iprop.Default, "ID default value is incorrect")
 
 	assertRef(t, itprop, "pet", "Pet", "#/definitions/pet")
 	iprop, ok = itprop.Properties["pet"]
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	if itprop.Ref.String() != "" {
-		assert.Equal(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
+		assert.EqualT(t, "The Pet to add to this NoModel items bucket.\nPets can appear more than once in the bucket", iprop.Description)
 	}
 
 	assertProperty(t, itprop, "integer", "quantity", "int16", "Quantity")
 	iprop, ok = itprop.Properties["quantity"]
-	assert.True(t, ok)
-	assert.Equal(t, "The amount of pets to add to this bucket.", iprop.Description)
-	assert.InDelta(t, 1.00, *iprop.Minimum, epsilon)
-	assert.InDelta(t, 10.00, *iprop.Maximum, epsilon)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "The amount of pets to add to this bucket.", iprop.Description)
+	assert.InDeltaT(t, 1.00, *iprop.Minimum, epsilon)
+	assert.InDeltaT(t, 10.00, *iprop.Maximum, epsilon)
 
 	assertProperty(t, itprop, "string", "expiration", "date-time", "Expiration")
 	iprop, ok = itprop.Properties["expiration"]
-	assert.True(t, ok)
-	assert.Equal(t, "A dummy expiration date.", iprop.Description)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "A dummy expiration date.", iprop.Description)
 
 	assertProperty(t, itprop, "string", "notes", "", "Notes")
 	iprop, ok = itprop.Properties["notes"]
-	assert.True(t, ok)
-	assert.Equal(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "Notes to add to this item.\nThis can be used to add special instructions.", iprop.Description)
 
 	decl2 := getClassificationModel(sctx, "StoreOrder")
 	require.NotNil(t, decl2)
 	require.NoError(t, (&schemaBuilder{decl: decl2, ctx: sctx}).Build(models))
 	msch, ok := models["order"]
 	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
 }
@@ -306,10 +307,10 @@ func TestSchemaBuilder_AddExtensions(t *testing.T) {
 
 	msch, ok := models["order"]
 	pn := "github.com/go-swagger/go-swagger/fixtures/goparsing/classification/models"
-	assert.True(t, ok)
+	assert.TrueT(t, ok)
 	assert.Equal(t, pn, msch.Extensions["x-go-package"])
 	assert.Equal(t, "StoreOrder", msch.Extensions["x-go-name"])
-	assert.Equal(t, "StoreOrder represents an order in this application.", msch.Title)
+	assert.EqualT(t, "StoreOrder represents an order in this application.", msch.Title)
 }
 
 func TestTextMarhalCustomType(t *testing.T) {
@@ -448,7 +449,7 @@ func TestStringStructTag(t *testing.T) {
 	assertProperty(t, &sch, "string", "SomeDefaultInt", "int64", "")
 
 	prop, ok := sch.Properties["somethingElse"]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		assert.NotEqual(t, "string", prop.Type)
 	}
 }
@@ -480,7 +481,7 @@ func TestPtrFieldStringStructTag(t *testing.T) {
 	assertProperty(t, &sch, "string", "someBool", "", "SomeBool")
 
 	prop, ok := sch.Properties["somethingElse"]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		assert.NotEqual(t, "string", prop.Type)
 	}
 }
@@ -832,14 +833,14 @@ func TestAliasedTopLevelModels(t *testing.T) {
 
 			t.Run("should find User definition in source", func(t *testing.T) {
 				_, hasUser := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "User")
-				require.True(t, hasUser)
+				require.TrueT(t, hasUser)
 			})
 
 			var decl *entityDecl
 			t.Run("should find Customer definition in source", func(t *testing.T) {
 				var hasCustomer bool
 				decl, hasCustomer = sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "Customer")
-				require.True(t, hasCustomer)
+				require.TrueT(t, hasCustomer)
 			})
 
 			t.Run("with schema builder", func(t *testing.T) {
@@ -869,8 +870,8 @@ func TestAliasedTopLevelModels(t *testing.T) {
 							foundCustomerIndex = i
 						}
 					}
-					require.GreaterOrEqual(t, foundUserIndex, 0)
-					require.GreaterOrEqual(t, foundCustomerIndex, 0)
+					require.GreaterOrEqualT(t, foundUserIndex, 0)
+					require.GreaterOrEqualT(t, foundCustomerIndex, 0)
 
 					userBuilder := &schemaBuilder{
 						ctx:  sctx,
@@ -881,13 +882,13 @@ func TestAliasedTopLevelModels(t *testing.T) {
 						models := make(map[string]spec.Schema)
 						require.NoError(t, userBuilder.Build(models))
 
-						require.Contains(t, models, "User")
+						require.MapContainsT(t, models, "User")
 
 						user := models["User"]
-						assert.True(t, user.Type.Contains("object"))
+						assert.TrueT(t, user.Type.Contains("object"))
 
 						userProperties := user.Properties
-						require.Contains(t, userProperties, "name")
+						require.MapContainsT(t, userProperties, "name")
 					})
 				})
 			})
@@ -907,14 +908,14 @@ func TestAliasedTopLevelModels(t *testing.T) {
 
 			t.Run("should find User definition in source", func(t *testing.T) {
 				_, hasUser := sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "User")
-				require.True(t, hasUser)
+				require.TrueT(t, hasUser)
 			})
 
 			var decl *entityDecl
 			t.Run("should find Customer definition in source", func(t *testing.T) {
 				var hasCustomer bool
 				decl, hasCustomer = sctx.FindDecl("github.com/go-swagger/go-swagger/fixtures/goparsing/spec", "Customer")
-				require.True(t, hasCustomer)
+				require.TrueT(t, hasCustomer)
 			})
 
 			t.Run("with schema builder", func(t *testing.T) {
@@ -928,21 +929,21 @@ func TestAliasedTopLevelModels(t *testing.T) {
 					models := make(map[string]spec.Schema)
 					require.NoError(t, builder.Build(models))
 
-					require.Contains(t, models, "Customer")
+					require.MapContainsT(t, models, "Customer")
 					customer := models["Customer"]
-					require.NotContains(t, models, "User")
+					require.MapNotContainsT(t, models, "User")
 
-					assert.True(t, customer.Type.Contains("object"))
+					assert.TrueT(t, customer.Type.Contains("object"))
 
 					customerProperties := customer.Properties
-					assert.Contains(t, customerProperties, "name")
+					assert.MapContainsT(t, customerProperties, "name")
 					assert.NotEmpty(t, customer.Title)
 				})
 
 				t.Run("should have discovered only Customer", func(t *testing.T) {
 					require.Len(t, builder.postDecls, 1)
 					discovered := builder.postDecls[0]
-					assert.Equal(t, "Customer", discovered.Obj().Name())
+					assert.EqualT(t, "Customer", discovered.Obj().Name())
 				})
 			})
 		})
@@ -976,7 +977,7 @@ func TestAliasedSchemas(t *testing.T) {
 	shouldHaveExt := func(t *testing.T, sch spec.Schema, ext string) {
 		t.Helper()
 		pkg, hasExt := sch.Extensions.GetString(ext)
-		assert.True(t, hasExt)
+		assert.TrueT(t, hasExt)
 		assert.NotEmpty(t, pkg)
 	}
 	shouldHaveGoPackageExt := func(t *testing.T, sch spec.Schema) {
@@ -994,7 +995,7 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("type aliased to any should yield an empty schema", func(t *testing.T) {
 		anything, ok := sp.Definitions["Anything"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		shouldHaveGoPackageExt(t, anything)
 		shouldHaveTitle(t, anything)
@@ -1007,7 +1008,7 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("type aliased to an empty struct should yield an empty object", func(t *testing.T) {
 		empty, ok := sp.Definitions["Empty"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		shouldHaveGoPackageExt(t, empty)
 		shouldHaveTitle(t, empty)
@@ -1022,7 +1023,7 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("struct fields defined as any or interface{} should yield properties with an empty schema", func(t *testing.T) {
 		extended, ok := sp.Definitions["ExtendedID"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		t.Run("struct with an embedded alias should render as allOf", func(t *testing.T) {
 			require.Len(t, extended.AllOf, 2)
@@ -1039,19 +1040,19 @@ func TestAliasedSchemas(t *testing.T) {
 					props := member
 					t.Run("with property of type any", func(t *testing.T) {
 						evenMore, ok := props.Properties["EvenMore"]
-						require.True(t, ok)
+						require.TrueT(t, ok)
 						assert.Equal(t, spec.Schema{}, evenMore)
 					})
 
 					t.Run("with property of type interface{}", func(t *testing.T) {
 						evenMore, ok := props.Properties["StillMore"]
-						require.True(t, ok)
+						require.TrueT(t, ok)
 						assert.Equal(t, spec.Schema{}, evenMore)
 					})
 
 					t.Run("non-aliased properties remain unaffected", func(t *testing.T) {
 						more, ok := props.Properties["more"]
-						require.True(t, ok)
+						require.TrueT(t, ok)
 
 						shouldHaveExt(t, more, "x-go-name") // because we have a struct tag
 						shouldNotHaveTitle(t, more)
@@ -1071,14 +1072,14 @@ func TestAliasedSchemas(t *testing.T) {
 					assert.Failf(t, "embedded members in struct are not as expected", "unexpected member in allOf: %d", idx)
 				}
 			}
-			require.True(t, foundProps)
-			require.True(t, foundAliased)
+			require.TrueT(t, foundProps)
+			require.TrueT(t, foundAliased)
 		})
 	})
 
 	t.Run("aliased primitive types remain unaffected", func(t *testing.T) {
 		uuid, ok := sp.Definitions["UUID"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		shouldHaveGoPackageExt(t, uuid)
 		shouldHaveTitle(t, uuid)
@@ -1093,41 +1094,41 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("with struct having fields aliased to any or interface{}", func(t *testing.T) {
 		order, ok := sp.Definitions["order"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		t.Run("field defined on an alias should produce a ref", func(t *testing.T) {
 			t.Run("with alias to any", func(t *testing.T) {
 				_, ok = order.Properties["DeliveryOption"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 				assertRef(t, &order, "DeliveryOption", "", "#/definitions/Anything") // points to an alias to any
 			})
 
 			t.Run("with alias to primitive type", func(t *testing.T) {
 				_, ok = order.Properties["id"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 				assertRef(t, &order, "id", "", "#/definitions/UUID") // points to an alias to any
 			})
 
 			t.Run("with alias to struct type", func(t *testing.T) {
 				_, ok = order.Properties["extended_id"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 				assertRef(t, &order, "extended_id", "", "#/definitions/ExtendedID") // points to an alias to any
 			})
 
 			t.Run("inside anonymous array", func(t *testing.T) {
 				items, ok := order.Properties["items"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 
 				require.NotNil(t, items)
 				require.NotNil(t, items.Items)
 
-				assert.True(t, items.Type.Contains("array"))
+				assert.TrueT(t, items.Type.Contains("array"))
 				t.Run("field as any should render as empty object", func(t *testing.T) {
 					require.NotNil(t, items.Items.Schema)
 					itemsSchema := items.Items.Schema
-					assert.True(t, itemsSchema.Type.Contains("object"))
+					assert.TrueT(t, itemsSchema.Type.Contains("object"))
 
-					require.Contains(t, itemsSchema.Properties, "extra_options")
+					require.MapContainsT(t, itemsSchema.Properties, "extra_options")
 					extraOptions := itemsSchema.Properties["extra_options"]
 					shouldHaveExt(t, extraOptions, "x-go-name")
 
@@ -1140,38 +1141,38 @@ func TestAliasedSchemas(t *testing.T) {
 
 		t.Run("struct field defined as any should produce an empty schema", func(t *testing.T) {
 			extras, ok := order.Properties["Extras"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			assert.Equal(t, spec.Schema{}, extras)
 		})
 
 		t.Run("struct field defined as interface{} should produce an empty schema", func(t *testing.T) {
 			extras, ok := order.Properties["MoreExtras"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			assert.Equal(t, spec.Schema{}, extras)
 		})
 	})
 
 	t.Run("type redefinitions and syntactic aliases to any should render the same", func(t *testing.T) {
 		whatnot, ok := sp.Definitions["whatnot"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		// after strip extension, should be empty
 		whatnot.VendorExtensible = spec.VendorExtensible{}
 		assert.Equal(t, spec.Schema{}, whatnot)
 
 		whatnotAlias, ok := sp.Definitions["whatnot_alias"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		// after strip extension, should be empty
 		whatnotAlias.VendorExtensible = spec.VendorExtensible{}
 		assert.Equal(t, spec.Schema{}, whatnotAlias)
 
 		whatnot2, ok := sp.Definitions["whatnot2"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		// after strip extension, should be empty
 		whatnot2.VendorExtensible = spec.VendorExtensible{}
 		assert.Equal(t, spec.Schema{}, whatnot2)
 
 		whatnot2Alias, ok := sp.Definitions["whatnot2_alias"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		// after strip extension, should be empty
 		whatnot2Alias.VendorExtensible = spec.VendorExtensible{}
 		assert.Equal(t, spec.Schema{}, whatnot2Alias)
@@ -1179,14 +1180,14 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("alias to another alias is resolved as a ref", func(t *testing.T) {
 		void, ok := sp.Definitions["void"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		assertIsRef(t, &void, "#/definitions/Empty") // points to another alias
 	})
 
 	t.Run("type redefinition to anonymous is not an alias and is resolved as an object", func(t *testing.T) {
 		empty, ok := sp.Definitions["empty_redefinition"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		shouldHaveGoPackageExt(t, empty)
 		shouldNotHaveTitle(t, empty)
@@ -1200,63 +1201,63 @@ func TestAliasedSchemas(t *testing.T) {
 
 	t.Run("alias to a named interface should render as a $ref", func(t *testing.T) {
 		iface, ok := sp.Definitions["iface_alias"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		assertIsRef(t, &iface, "#/definitions/iface") // points to an interface
 	})
 
 	t.Run("interface redefinition is not an alias and should render as a $ref", func(t *testing.T) {
 		iface, ok := sp.Definitions["iface_redefinition"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		assertIsRef(t, &iface, "#/definitions/iface") // points to an interface
 	})
 
 	t.Run("anonymous interface should render a schema", func(t *testing.T) {
 		iface, ok := sp.Definitions["anonymous_iface"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		require.NotEmpty(t, iface.Properties)
-		require.Contains(t, iface.Properties, "String")
+		require.MapContainsT(t, iface.Properties, "String")
 	})
 
 	t.Run("anonymous struct should render as an anonymous schema", func(t *testing.T) {
 		obj, ok := sp.Definitions["anonymous_struct"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
 		require.NotEmpty(t, obj.Properties)
-		require.Contains(t, obj.Properties, "A")
+		require.MapContainsT(t, obj.Properties, "A")
 
 		a := obj.Properties["A"]
-		assert.True(t, a.Type.Contains("object"))
-		require.Contains(t, a.Properties, "B")
+		assert.TrueT(t, a.Type.Contains("object"))
+		require.MapContainsT(t, a.Properties, "B")
 		b := a.Properties["B"]
-		assert.True(t, b.Type.Contains("integer"))
+		assert.TrueT(t, b.Type.Contains("integer"))
 	})
 
 	t.Run("standalone model with a tag should be rendered", func(t *testing.T) {
 		shouldSee, ok := sp.Definitions["ShouldSee"]
-		require.True(t, ok)
-		assert.True(t, shouldSee.Type.Contains("boolean"))
+		require.TrueT(t, ok)
+		assert.TrueT(t, shouldSee.Type.Contains("boolean"))
 	})
 
 	t.Run("standalone model without a tag should not be rendered", func(t *testing.T) {
 		_, ok := sp.Definitions["ShouldNotSee"]
-		require.False(t, ok)
+		require.FalseT(t, ok)
 
 		_, ok = sp.Definitions["ShouldNotSeeSlice"]
-		require.False(t, ok)
+		require.FalseT(t, ok)
 
 		_, ok = sp.Definitions["ShouldNotSeeMap"]
-		require.False(t, ok)
+		require.FalseT(t, ok)
 	})
 
 	t.Run("with aliases in slices and arrays", func(t *testing.T) {
 		t.Run("slice redefinition should render as schema", func(t *testing.T) {
 			t.Run("with anonymous slice", func(t *testing.T) {
 				slice, ok := sp.Definitions["slice_type"] // []any
-				require.True(t, ok)
-				assert.True(t, slice.Type.Contains("array"))
+				require.TrueT(t, ok)
+				assert.TrueT(t, slice.Type.Contains("array"))
 				require.NotNil(t, slice.Items)
 				require.NotNil(t, slice.Items.Schema)
 
@@ -1265,8 +1266,8 @@ func TestAliasedSchemas(t *testing.T) {
 
 			t.Run("with anonymous struct", func(t *testing.T) {
 				slice, ok := sp.Definitions["slice_of_structs"] // type X = []struct{}
-				require.True(t, ok)
-				assert.True(t, slice.Type.Contains("array"))
+				require.TrueT(t, ok)
+				assert.TrueT(t, slice.Type.Contains("array"))
 
 				require.NotNil(t, slice.Items)
 				require.NotNil(t, slice.Items.Schema)
@@ -1280,8 +1281,8 @@ func TestAliasedSchemas(t *testing.T) {
 		t.Run("alias to anonymous slice should render as schema", func(t *testing.T) {
 			t.Run("with anonymous slice", func(t *testing.T) {
 				slice, ok := sp.Definitions["slice_alias"] // type X = []any
-				require.True(t, ok)
-				assert.True(t, slice.Type.Contains("array"))
+				require.TrueT(t, ok)
+				assert.TrueT(t, slice.Type.Contains("array"))
 
 				require.NotNil(t, slice.Items)
 				require.NotNil(t, slice.Items.Schema)
@@ -1291,8 +1292,8 @@ func TestAliasedSchemas(t *testing.T) {
 
 			t.Run("with anonymous struct", func(t *testing.T) {
 				slice, ok := sp.Definitions["slice_of_structs_alias"] // type X = []struct{}
-				require.True(t, ok)
-				assert.True(t, slice.Type.Contains("array"))
+				require.TrueT(t, ok)
+				assert.TrueT(t, slice.Type.Contains("array"))
 				require.NotNil(t, slice.Items)
 				require.NotNil(t, slice.Items.Schema)
 
@@ -1304,7 +1305,7 @@ func TestAliasedSchemas(t *testing.T) {
 
 		t.Run("alias to named alias to anonymous slice should render as ref", func(t *testing.T) {
 			slice, ok := sp.Definitions["slice_to_slice"] // type X = Slice
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			assertIsRef(t, &slice, "#/definitions/slice_type") // points to a named alias
 		})
 	})
@@ -1312,42 +1313,42 @@ func TestAliasedSchemas(t *testing.T) {
 	t.Run("with aliases in interfaces", func(t *testing.T) {
 		t.Run("should render anonymous interface as a schema", func(t *testing.T) {
 			iface, ok := sp.Definitions["anonymous_iface"] // e.g. type X interface{ String() string}
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
-			require.True(t, iface.Type.Contains("object"))
-			require.Contains(t, iface.Properties, "String")
+			require.TrueT(t, iface.Type.Contains("object"))
+			require.MapContainsT(t, iface.Properties, "String")
 			prop := iface.Properties["String"]
-			require.True(t, prop.Type.Contains("string"))
+			require.TrueT(t, prop.Type.Contains("string"))
 			assert.Len(t, iface.Properties, 1)
 		})
 
 		t.Run("alias to an anonymous interface should render as a $ref", func(t *testing.T) {
 			iface, ok := sp.Definitions["anonymous_iface_alias"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			assertIsRef(t, &iface, "#/definitions/anonymous_iface") // points to an anonymous interface
 		})
 
 		t.Run("named interface should render as a schema", func(t *testing.T) {
 			iface, ok := sp.Definitions["iface"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
-			require.True(t, iface.Type.Contains("object"))
-			require.Contains(t, iface.Properties, "Get")
+			require.TrueT(t, iface.Type.Contains("object"))
+			require.MapContainsT(t, iface.Properties, "Get")
 			prop := iface.Properties["Get"]
-			require.True(t, prop.Type.Contains("string"))
+			require.TrueT(t, prop.Type.Contains("string"))
 			assert.Len(t, iface.Properties, 1)
 		})
 
 		t.Run("named interface with embedded types should render as allOf", func(t *testing.T) {
 			iface, ok := sp.Definitions["iface_embedded"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			require.Len(t, iface.AllOf, 2)
 			foundEmbedded := false
 			foundMethod := false
 			for idx, member := range iface.AllOf {
-				require.True(t, member.Type.Contains("object"))
+				require.TrueT(t, member.Type.Contains("object"))
 				require.NotEmpty(t, member.Properties)
 				require.Len(t, member.Properties, 1)
 				propGet, isEmbedded := member.Properties["Get"]
@@ -1355,28 +1356,28 @@ func TestAliasedSchemas(t *testing.T) {
 
 				switch {
 				case isEmbedded:
-					assert.True(t, propGet.Type.Contains("string"))
+					assert.TrueT(t, propGet.Type.Contains("string"))
 					foundEmbedded = true
 				case isMethod:
-					assert.True(t, propMethod.Type.Contains("array"))
+					assert.TrueT(t, propMethod.Type.Contains("array"))
 					foundMethod = true
 				default:
 					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
 				}
 			}
-			require.True(t, foundEmbedded)
-			require.True(t, foundMethod)
+			require.TrueT(t, foundEmbedded)
+			require.TrueT(t, foundMethod)
 		})
 
 		t.Run("named interface with embedded anonymous interface should render as allOf", func(t *testing.T) {
 			iface, ok := sp.Definitions["iface_embedded_anonymous"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			require.Len(t, iface.AllOf, 2)
 			foundEmbedded := false
 			foundAnonymous := false
 			for idx, member := range iface.AllOf {
-				require.True(t, member.Type.Contains("object"))
+				require.TrueT(t, member.Type.Contains("object"))
 				require.NotEmpty(t, member.Properties)
 				require.Len(t, member.Properties, 1)
 				propGet, isEmbedded := member.Properties["String"]
@@ -1384,22 +1385,22 @@ func TestAliasedSchemas(t *testing.T) {
 
 				switch {
 				case isEmbedded:
-					assert.True(t, propGet.Type.Contains("string"))
+					assert.TrueT(t, propGet.Type.Contains("string"))
 					foundEmbedded = true
 				case isAnonymous:
-					assert.True(t, propAnonymous.Type.Contains("string"))
+					assert.TrueT(t, propAnonymous.Type.Contains("string"))
 					foundAnonymous = true
 				default:
 					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
 				}
 			}
-			require.True(t, foundEmbedded)
-			require.True(t, foundAnonymous)
+			require.TrueT(t, foundEmbedded)
+			require.TrueT(t, foundAnonymous)
 		})
 
 		t.Run("composition of empty interfaces is rendered as an empty schema", func(t *testing.T) {
 			iface, ok := sp.Definitions["iface_embedded_empty"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			iface.VendorExtensible = spec.VendorExtensible{}
 			assert.Equal(t, spec.Schema{}, iface)
@@ -1407,7 +1408,7 @@ func TestAliasedSchemas(t *testing.T) {
 
 		t.Run("interface embedded with an alias should be rendered as allOf, with a ref", func(t *testing.T) {
 			iface, ok := sp.Definitions["iface_embedded_with_alias"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			require.Len(t, iface.AllOf, 3)
 			foundEmbedded := false
@@ -1420,14 +1421,14 @@ func TestAliasedSchemas(t *testing.T) {
 
 				switch {
 				case isEmbedded:
-					require.True(t, member.Type.Contains("object"))
+					require.TrueT(t, member.Type.Contains("object"))
 					require.Len(t, member.Properties, 1)
-					assert.True(t, propGet.Type.Contains("string"))
+					assert.TrueT(t, propGet.Type.Contains("string"))
 					foundEmbedded = true
 				case isAnonymous:
-					require.True(t, member.Type.Contains("object"))
+					require.TrueT(t, member.Type.Contains("object"))
 					require.Len(t, member.Properties, 1)
-					assert.True(t, propAnonymous.Type.Contains("array"))
+					assert.TrueT(t, propAnonymous.Type.Contains("array"))
 					foundEmbeddedAnon = true
 				case isRef:
 					require.Empty(t, member.Properties)
@@ -1437,16 +1438,16 @@ func TestAliasedSchemas(t *testing.T) {
 					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
 				}
 			}
-			require.True(t, foundEmbedded)
-			require.True(t, foundEmbeddedAnon)
-			require.True(t, foundRef)
+			require.TrueT(t, foundEmbedded)
+			require.TrueT(t, foundEmbeddedAnon)
+			require.TrueT(t, foundRef)
 		})
 	})
 
 	t.Run("with aliases in embedded types", func(t *testing.T) {
 		t.Run("embedded alias should render as a $ref", func(t *testing.T) {
 			iface, ok := sp.Definitions["embedded_with_alias"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 
 			require.Len(t, iface.AllOf, 3)
 			foundAnything := false
@@ -1458,9 +1459,9 @@ func TestAliasedSchemas(t *testing.T) {
 
 				switch {
 				case isProps:
-					require.True(t, member.Type.Contains("object"))
+					require.TrueT(t, member.Type.Contains("object"))
 					require.Len(t, member.Properties, 3)
-					assert.Contains(t, member.Properties, "EvenMore")
+					assert.MapContainsT(t, member.Properties, "EvenMore")
 					foundProps = true
 				case isRef:
 					switch member.Ref.String() {
@@ -1478,9 +1479,9 @@ func TestAliasedSchemas(t *testing.T) {
 					assert.Failf(t, "embedded members in interface are not as expected", "unexpected member in allOf: %d", idx)
 				}
 			}
-			require.True(t, foundAnything)
-			require.True(t, foundUUID)
-			require.True(t, foundProps)
+			require.TrueT(t, foundAnything)
+			require.TrueT(t, foundUUID)
+			require.TrueT(t, foundProps)
 		})
 	})
 }
@@ -1512,14 +1513,14 @@ func TestSpecialSchemas(t *testing.T) {
 
 	t.Run("top-level primitive declaration should render just fine", func(t *testing.T) {
 		primitive, ok := sp.Definitions["primitive"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 
-		require.True(t, primitive.Type.Contains("string"))
+		require.TrueT(t, primitive.Type.Contains("string"))
 	})
 
 	t.Run("alias to unsafe pointer at top level should render empty", func(t *testing.T) {
 		uptr, ok := sp.Definitions["unsafe_pointer_alias"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		var empty spec.Schema
 		uptr.VendorExtensible = spec.VendorExtensible{}
 		require.Equal(t, empty, uptr)
@@ -1527,40 +1528,40 @@ func TestSpecialSchemas(t *testing.T) {
 
 	t.Run("alias to uintptr at top level should render as integer", func(t *testing.T) {
 		uptr, ok := sp.Definitions["upointer_alias"]
-		require.True(t, ok)
-		require.True(t, uptr.Type.Contains("integer"))
-		require.Equal(t, "uint64", uptr.Format)
+		require.TrueT(t, ok)
+		require.TrueT(t, uptr.Type.Contains("integer"))
+		require.EqualT(t, "uint64", uptr.Format)
 	})
 
 	t.Run("top-level map[string]... should render just fine", func(t *testing.T) {
 		gomap, ok := sp.Definitions["go_map"]
-		require.True(t, ok)
-		require.True(t, gomap.Type.Contains("object"))
+		require.TrueT(t, ok)
+		require.TrueT(t, gomap.Type.Contains("object"))
 		require.NotNil(t, gomap.AdditionalProperties)
 
 		mapSchema := gomap.AdditionalProperties.Schema
 		require.NotNil(t, mapSchema)
-		require.True(t, mapSchema.Type.Contains("integer"))
-		require.Equal(t, "uint16", mapSchema.Format)
+		require.TrueT(t, mapSchema.Type.Contains("integer"))
+		require.EqualT(t, "uint16", mapSchema.Format)
 	})
 
 	t.Run("untagged struct referenced by a tagged model should be discovered", func(t *testing.T) {
 		gostruct, ok := sp.Definitions["GoStruct"]
-		require.True(t, ok)
-		require.True(t, gostruct.Type.Contains("object"))
+		require.TrueT(t, ok)
+		require.TrueT(t, gostruct.Type.Contains("object"))
 		require.NotEmpty(t, gostruct.Properties)
 
 		t.Run("pointer property should render just fine", func(t *testing.T) {
 			a, ok := gostruct.Properties["A"]
-			require.True(t, ok)
-			require.True(t, a.Type.Contains("number"))
-			require.Equal(t, "float", a.Format)
+			require.TrueT(t, ok)
+			require.TrueT(t, a.Type.Contains("number"))
+			require.EqualT(t, "float", a.Format)
 		})
 	})
 
 	t.Run("tagged unsupported map type should render empty", func(t *testing.T) {
 		idx, ok := sp.Definitions["index_map"]
-		require.True(t, ok)
+		require.TrueT(t, ok)
 		var empty spec.Schema
 		idx.VendorExtensible = spec.VendorExtensible{}
 		require.Equal(t, empty, idx)
@@ -1568,90 +1569,90 @@ func TestSpecialSchemas(t *testing.T) {
 
 	t.Run("redefinition of the builtin error type should render as a string", func(t *testing.T) {
 		goerror, ok := sp.Definitions["go_error"]
-		require.True(t, ok)
-		require.True(t, goerror.Type.Contains("string"))
+		require.TrueT(t, ok)
+		require.TrueT(t, goerror.Type.Contains("string"))
 
 		t.Run("a type based on the error builtin should be decorated with a x-go-type: error extension", func(t *testing.T) {
 			val, hasExt := goerror.Extensions.GetString("x-go-type")
-			assert.True(t, hasExt)
-			assert.Equal(t, "error", val)
+			assert.TrueT(t, hasExt)
+			assert.EqualT(t, "error", val)
 		})
 	})
 
 	t.Run("with SpecialTypes struct", func(t *testing.T) {
 		t.Run("in spite of all the pitfalls, the struct should be rendered", func(t *testing.T) {
 			special, ok := sp.Definitions["special_types"]
-			require.True(t, ok)
-			require.True(t, special.Type.Contains("object"))
+			require.TrueT(t, ok)
+			require.TrueT(t, special.Type.Contains("object"))
 			props := special.Properties
 			require.NotEmpty(t, props)
 			require.Empty(t, special.AllOf)
 
 			t.Run("property pointer to struct should render as a ref", func(t *testing.T) {
 				ptr, ok := props["PtrStruct"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 				assertIsRef(t, &ptr, "#/definitions/GoStruct")
 			})
 
 			t.Run("property as time.Time should render as a formatted string", func(t *testing.T) {
 				str, ok := props["ShouldBeStringTime"]
-				require.True(t, ok)
-				require.True(t, str.Type.Contains("string"))
-				require.Equal(t, "date-time", str.Format)
+				require.TrueT(t, ok)
+				require.TrueT(t, str.Type.Contains("string"))
+				require.EqualT(t, "date-time", str.Format)
 			})
 
 			t.Run("property as *time.Time should also render as a formatted string", func(t *testing.T) {
 				str, ok := props["ShouldAlsoBeStringTime"]
-				require.True(t, ok)
-				require.True(t, str.Type.Contains("string"))
-				require.Equal(t, "date-time", str.Format)
+				require.TrueT(t, ok)
+				require.TrueT(t, str.Type.Contains("string"))
+				require.EqualT(t, "date-time", str.Format)
 			})
 
 			t.Run("property as builtin error should render as a string", func(t *testing.T) {
 				goerror, ok := props["Err"]
-				require.True(t, ok)
-				require.True(t, goerror.Type.Contains("string"))
+				require.TrueT(t, ok)
+				require.TrueT(t, goerror.Type.Contains("string"))
 
 				t.Run("a type based on the error builtin should be decorated with a x-go-type: error extension", func(t *testing.T) {
 					val, hasExt := goerror.Extensions.GetString("x-go-type")
-					assert.True(t, hasExt)
-					assert.Equal(t, "error", val)
+					assert.TrueT(t, hasExt)
+					assert.EqualT(t, "error", val)
 				})
 			})
 
 			t.Run("type recognized as a text marshaler should render as a string", func(t *testing.T) {
 				m, ok := props["Marshaler"]
-				require.True(t, ok)
-				require.True(t, m.Type.Contains("string"))
+				require.TrueT(t, ok)
+				require.TrueT(t, m.Type.Contains("string"))
 
 				t.Run("a type based on the encoding.TextMarshaler decorated with a x-go-type extension", func(t *testing.T) {
 					val, hasExt := m.Extensions.GetString("x-go-type")
-					assert.True(t, hasExt)
-					assert.Equal(t, "github.com/go-swagger/go-swagger/fixtures/goparsing/go123/special.IsATextMarshaler", val)
+					assert.TrueT(t, hasExt)
+					assert.EqualT(t, "github.com/go-swagger/go-swagger/fixtures/goparsing/go123/special.IsATextMarshaler", val)
 				})
 			})
 
 			t.Run("a json.RawMessage should be recognized and render as an object (yes this is wrong)", func(t *testing.T) {
 				m, ok := props["Message"]
-				require.True(t, ok)
-				require.True(t, m.Type.Contains("object"))
+				require.TrueT(t, ok)
+				require.TrueT(t, m.Type.Contains("object"))
 			})
 
 			t.Run("type time.Duration is not recognized as a special type and should just render as a ref", func(t *testing.T) {
 				d, ok := props["Duration"]
-				require.True(t, ok)
+				require.TrueT(t, ok)
 				assertIsRef(t, &d, "#/definitions/Duration")
 
 				t.Run("discovered definition should be an integer", func(t *testing.T) {
 					duration, ok := sp.Definitions["Duration"]
-					require.True(t, ok)
-					require.True(t, duration.Type.Contains("integer"))
-					require.Equal(t, "int64", duration.Format)
+					require.TrueT(t, ok)
+					require.TrueT(t, duration.Type.Contains("integer"))
+					require.EqualT(t, "int64", duration.Format)
 
 					t.Run("time.Duration schema should be decorated with a x-go-package: time", func(t *testing.T) {
 						val, hasExt := duration.Extensions.GetString("x-go-package")
-						assert.True(t, hasExt)
-						assert.Equal(t, "time", val)
+						assert.TrueT(t, hasExt)
+						assert.EqualT(t, "time", val)
 					})
 				})
 			})
@@ -1659,37 +1660,37 @@ func TestSpecialSchemas(t *testing.T) {
 			t.Run("with strfmt types", func(t *testing.T) {
 				t.Run("a strfmt.Date should be recognized and render as a formatted string", func(t *testing.T) {
 					d, ok := props["FormatDate"]
-					require.True(t, ok)
-					require.True(t, d.Type.Contains("string"))
-					require.Equal(t, "date", d.Format)
+					require.TrueT(t, ok)
+					require.TrueT(t, d.Type.Contains("string"))
+					require.EqualT(t, "date", d.Format)
 				})
 
 				t.Run("a strfmt.DateTime should be recognized and render as a formatted string", func(t *testing.T) {
 					d, ok := props["FormatTime"]
-					require.True(t, ok)
-					require.True(t, d.Type.Contains("string"))
-					require.Equal(t, "date-time", d.Format)
+					require.TrueT(t, ok)
+					require.TrueT(t, d.Type.Contains("string"))
+					require.EqualT(t, "date-time", d.Format)
 				})
 
 				t.Run("a strfmt.UUID should be recognized and render as a formatted string", func(t *testing.T) {
 					u, ok := props["FormatUUID"]
-					require.True(t, ok)
-					require.True(t, u.Type.Contains("string"))
-					require.Equal(t, "uuid", u.Format)
+					require.TrueT(t, ok)
+					require.TrueT(t, u.Type.Contains("string"))
+					require.EqualT(t, "uuid", u.Format)
 				})
 
 				t.Run("a pointer to strfmt.UUID should be recognized and render as a formatted string", func(t *testing.T) {
 					u, ok := props["PtrFormatUUID"]
-					require.True(t, ok)
-					require.True(t, u.Type.Contains("string"))
-					require.Equal(t, "uuid", u.Format)
+					require.TrueT(t, ok)
+					require.TrueT(t, u.Type.Contains("string"))
+					require.EqualT(t, "uuid", u.Format)
 				})
 			})
 
 			t.Run("a property which is a map should render just fine, with a ref", func(t *testing.T) {
 				mm, ok := props["Map"]
-				require.True(t, ok)
-				require.True(t, mm.Type.Contains("object"))
+				require.TrueT(t, ok)
+				require.TrueT(t, mm.Type.Contains("object"))
 				require.NotNil(t, mm.AdditionalProperties)
 				mapSchema := mm.AdditionalProperties.Schema
 				require.NotNil(t, mapSchema)
@@ -1699,8 +1700,8 @@ func TestSpecialSchemas(t *testing.T) {
 			t.Run(`with the "WhatNot" anonymous inner struct`, func(t *testing.T) {
 				t.Run("should render as an anonymous schema, in spite of all the unsupported things", func(t *testing.T) {
 					wn, ok := props["WhatNot"]
-					require.True(t, ok)
-					require.True(t, wn.Type.Contains("object"))
+					require.TrueT(t, ok)
+					require.TrueT(t, wn.Type.Contains("object"))
 					require.NotEmpty(t, wn.Properties)
 
 					markedProps := make([]string, 0)
@@ -1715,7 +1716,7 @@ func TestSpecialSchemas(t *testing.T) {
 					} {
 						t.Run("with property "+unsupportedProp, func(t *testing.T) {
 							prop, ok := wn.Properties[unsupportedProp]
-							require.True(t, ok)
+							require.TrueT(t, ok)
 							markedProps = append(markedProps, unsupportedProp)
 
 							t.Run("unsupported type in property should render as an empty schema", func(t *testing.T) {
@@ -1735,32 +1736,32 @@ func TestSpecialSchemas(t *testing.T) {
 					} {
 						t.Run("with property "+supportedProp, func(t *testing.T) {
 							prop, ok := wn.Properties[supportedProp]
-							require.True(t, ok)
+							require.TrueT(t, ok)
 							markedProps = append(markedProps, supportedProp)
 
 							switch supportedProp {
 							case "F":
 								t.Run("uintptr should render as integer", func(t *testing.T) {
-									require.True(t, prop.Type.Contains("integer"))
-									require.Equal(t, "uint64", prop.Format)
+									require.TrueT(t, prop.Type.Contains("integer"))
+									require.EqualT(t, "uint64", prop.Format)
 								})
 							case "G", "H":
 								t.Run(
 									"math/big types are not recognized as special types and as TextMarshalers they render as string",
 									func(t *testing.T) {
-										require.True(t, prop.Type.Contains("string"))
+										require.TrueT(t, prop.Type.Contains("string"))
 									})
 							case "I":
 								t.Run("go array should render as a json array", func(t *testing.T) {
-									require.True(t, prop.Type.Contains("array"))
+									require.TrueT(t, prop.Type.Contains("array"))
 									require.NotNil(t, prop.Items)
 									itemsSchema := prop.Items.Schema
 									require.NotNil(t, itemsSchema)
 
-									require.True(t, itemsSchema.Type.Contains("integer"))
+									require.TrueT(t, itemsSchema.Type.Contains("integer"))
 									// [5]byte is not recognized an array of bytes, but of uint8
 									// (internally this is the same for go)
-									require.Equal(t, "uint8", itemsSchema.Format)
+									require.EqualT(t, "uint8", itemsSchema.Format)
 								})
 							case "J", "K":
 								t.Run("reflect types should render just fine", func(t *testing.T) {
@@ -1774,10 +1775,10 @@ func TestSpecialSchemas(t *testing.T) {
 
 									t.Run("the $ref should exist", func(t *testing.T) {
 										deref, ok := sp.Definitions[dest]
-										require.True(t, ok)
+										require.TrueT(t, ok)
 										val, hasExt := deref.Extensions.GetString("x-go-package")
-										assert.True(t, hasExt)
-										assert.Equal(t, "reflect", val)
+										assert.TrueT(t, hasExt)
+										assert.EqualT(t, "reflect", val)
 									})
 								})
 							}
@@ -1794,25 +1795,25 @@ func TestSpecialSchemas(t *testing.T) {
 
 					t.Run("surprisingly, a tagged unexported top-level definition can be rendered", func(t *testing.T) {
 						unexported, ok := sp.Definitions["unexported"]
-						require.True(t, ok)
-						require.True(t, unexported.Type.Contains("object"))
+						require.TrueT(t, ok)
+						require.TrueT(t, unexported.Type.Contains("object"))
 					})
 
 					t.Run("the IsATextMarshaler type is not identified as a discovered type and is not rendered", func(t *testing.T) {
 						_, ok := sp.Definitions["IsATextMarshaler"]
-						require.False(t, ok)
+						require.FalseT(t, ok)
 					})
 
 					t.Run("a top-level go array should render just fine", func(t *testing.T) {
 						// Notice that the semantics of fixed length are lost in this mapping
 						goarray, ok := sp.Definitions["go_array"]
-						require.True(t, ok)
-						require.True(t, goarray.Type.Contains("array"))
+						require.TrueT(t, ok)
+						require.TrueT(t, goarray.Type.Contains("array"))
 						require.NotNil(t, goarray.Items)
 						itemsSchema := goarray.Items.Schema
 						require.NotNil(t, itemsSchema)
-						require.True(t, itemsSchema.Type.Contains("integer"))
-						require.Equal(t, "int64", itemsSchema.Format)
+						require.TrueT(t, itemsSchema.Type.Contains("integer"))
+						require.EqualT(t, "int64", itemsSchema.Format)
 					})
 				})
 			})
@@ -1829,21 +1830,21 @@ func TestSpecialSchemas(t *testing.T) {
 		// generic_constraint
 		t.Run("generic type constraint should render like an interface", func(t *testing.T) {
 			generic, ok := sp.Definitions["generic_constraint"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			require.Len(t, generic.AllOf, 1) // scanner only understood one member, and skipped the ~uint16 member is doesn't understand
 			member := generic.AllOf[0]
-			require.True(t, member.Type.Contains("object"))
+			require.TrueT(t, member.Type.Contains("object"))
 			require.Len(t, member.Properties, 1)
 			prop, ok := member.Properties["Uint"]
-			require.True(t, ok)
-			require.True(t, prop.Type.Contains("integer"))
-			require.Equal(t, "uint16", prop.Format)
+			require.TrueT(t, ok)
+			require.TrueT(t, prop.Type.Contains("integer"))
+			require.EqualT(t, "uint16", prop.Format)
 		})
 
 		// numerical_constraint
 		t.Run("generic type constraint with union type should render an empty schema", func(t *testing.T) {
 			generic, ok := sp.Definitions["numerical_constraint"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			var empty spec.Schema
 			generic.VendorExtensible = spec.VendorExtensible{}
 			require.Equal(t, empty, generic)
@@ -1852,7 +1853,7 @@ func TestSpecialSchemas(t *testing.T) {
 		// generic_map
 		t.Run("generic map should render an empty schema", func(t *testing.T) {
 			generic, ok := sp.Definitions["generic_map"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			var empty spec.Schema
 			generic.VendorExtensible = spec.VendorExtensible{}
 			require.Equal(t, empty, generic)
@@ -1861,7 +1862,7 @@ func TestSpecialSchemas(t *testing.T) {
 		// generic_map_alias
 		t.Run("generic map alias to an anonymous generic type should render an empty schema", func(t *testing.T) {
 			generic, ok := sp.Definitions["generic_map_alias"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			var empty spec.Schema
 			generic.VendorExtensible = spec.VendorExtensible{}
 			require.Equal(t, empty, generic)
@@ -1870,15 +1871,15 @@ func TestSpecialSchemas(t *testing.T) {
 		// generic_indirect
 		t.Run("generic map alias to a named generic type should render a ref", func(t *testing.T) {
 			generic, ok := sp.Definitions["generic_indirect"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			assertIsRef(t, &generic, "#/definitions/generic_map_alias")
 		})
 
 		// generic_slice
 		t.Run("generic slice should render as an array of empty schemas", func(t *testing.T) {
 			generic, ok := sp.Definitions["generic_slice"]
-			require.True(t, ok)
-			require.True(t, generic.Type.Contains("array"))
+			require.TrueT(t, ok)
+			require.TrueT(t, generic.Type.Contains("array"))
 			require.NotNil(t, generic.Items)
 			itemsSchema := generic.Items.Schema
 			require.NotNil(t, itemsSchema)
@@ -1889,7 +1890,7 @@ func TestSpecialSchemas(t *testing.T) {
 		// union_alias:
 		t.Run("alias to type constraint should render a ref", func(t *testing.T) {
 			generic, ok := sp.Definitions["union_alias"]
-			require.True(t, ok)
+			require.TrueT(t, ok)
 			assertIsRef(t, &generic, "#/definitions/numerical_constraint")
 		})
 	})
@@ -1914,7 +1915,7 @@ func TestEmbeddedAllOf(t *testing.T) {
 	assertProperty(t, &asch, "string", "name", "", "Name")
 
 	asch = schema.AllOf[1]
-	assert.Equal(t, "#/definitions/withNotes", asch.Ref.String())
+	assert.EqualT(t, "#/definitions/withNotes", asch.Ref.String())
 
 	asch = schema.AllOf[2]
 	assertProperty(t, &asch, "string", "createdAt", "date-time", "CreatedAt")
@@ -1936,17 +1937,17 @@ func TestPointersAreNullableByDefaultWhenSetXNullableForPointersIsSet(t *testing
 		schema := models[modelName]
 		require.Len(t, schema.Properties, 5)
 
-		require.Contains(t, schema.Properties, "Value1")
+		require.MapContainsT(t, schema.Properties, "Value1")
 		assert.Equal(t, true, schema.Properties["Value1"].Extensions["x-nullable"])
-		require.Contains(t, schema.Properties, "Value2")
-		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
-		require.Contains(t, schema.Properties, "Value3")
+		require.MapContainsT(t, schema.Properties, "Value2")
+		assert.MapNotContainsT(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value3")
 		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
-		require.Contains(t, schema.Properties, "Value4")
-		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value4")
+		assert.MapNotContainsT(t, schema.Properties["Value4"].Extensions, "x-nullable")
 		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
-		require.Contains(t, schema.Properties, "Value5")
-		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value5")
+		assert.MapNotContainsT(t, schema.Properties["Value5"].Extensions, "x-nullable")
 	}
 
 	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
@@ -1971,17 +1972,17 @@ func TestPointersAreNotNullableByDefaultWhenSetXNullableForPointersIsNotSet(t *t
 		schema := models[modelName]
 		require.Len(t, schema.Properties, 5)
 
-		require.Contains(t, schema.Properties, "Value1")
-		assert.NotContains(t, schema.Properties["Value1"].Extensions, "x-nullable")
-		require.Contains(t, schema.Properties, "Value2")
-		assert.NotContains(t, schema.Properties["Value2"].Extensions, "x-nullable")
-		require.Contains(t, schema.Properties, "Value3")
+		require.MapContainsT(t, schema.Properties, "Value1")
+		assert.MapNotContainsT(t, schema.Properties["Value1"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value2")
+		assert.MapNotContainsT(t, schema.Properties["Value2"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value3")
 		assert.Equal(t, false, schema.Properties["Value3"].Extensions["x-nullable"])
-		require.Contains(t, schema.Properties, "Value4")
-		assert.NotContains(t, schema.Properties["Value4"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value4")
+		assert.MapNotContainsT(t, schema.Properties["Value4"].Extensions, "x-nullable")
 		assert.Equal(t, false, schema.Properties["Value4"].Extensions["x-isnullable"])
-		require.Contains(t, schema.Properties, "Value5")
-		assert.NotContains(t, schema.Properties["Value5"].Extensions, "x-nullable")
+		require.MapContainsT(t, schema.Properties, "Value5")
+		assert.MapNotContainsT(t, schema.Properties["Value5"].Extensions, "x-nullable")
 	}
 
 	packagePath := "github.com/go-swagger/go-swagger/fixtures/enhancements/pointers-nullable-by-default"
@@ -2066,7 +2067,7 @@ func TestSwaggerTypeStruct(t *testing.T) {
 	require.NoError(t, prs.Build(models))
 	schema := models["NullString"]
 
-	assert.True(t, schema.Type.Contains("string"))
+	assert.TrueT(t, schema.Type.Contains("string"))
 }
 
 func TestStructDiscriminators(t *testing.T) {
@@ -2086,21 +2087,21 @@ func TestStructDiscriminators(t *testing.T) {
 	schema := models["animal"]
 
 	assert.Equal(t, "BaseStruct", schema.Extensions["x-go-name"])
-	assert.Equal(t, "jsonClass", schema.Discriminator)
+	assert.EqualT(t, "jsonClass", schema.Discriminator)
 
 	sch := models["gazelle"]
 	assert.Len(t, sch.AllOf, 2)
 	cl, _ := sch.Extensions.GetString("x-class")
-	assert.Equal(t, "a.b.c.d.E", cl)
+	assert.EqualT(t, "a.b.c.d.E", cl)
 	cl, _ = sch.Extensions.GetString("x-go-name")
-	assert.Equal(t, "Gazelle", cl)
+	assert.EqualT(t, "Gazelle", cl)
 
 	sch = models["giraffe"]
 	assert.Len(t, sch.AllOf, 2)
 	cl, _ = sch.Extensions.GetString("x-class")
 	assert.Empty(t, cl)
 	cl, _ = sch.Extensions.GetString("x-go-name")
-	assert.Equal(t, "Giraffe", cl)
+	assert.EqualT(t, "Giraffe", cl)
 
 	// sch = noModelDefs["lion"]
 
@@ -2124,51 +2125,51 @@ func TestInterfaceDiscriminators(t *testing.T) {
 
 	schema, ok := models["fish"]
 
-	if assert.True(t, ok) && assert.Len(t, schema.AllOf, 5) {
+	if assert.TrueT(t, ok) && assert.Len(t, schema.AllOf, 5) {
 		sch := schema.AllOf[3]
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "string", "colorName", "", "ColorName")
 
 		sch = schema.AllOf[2]
-		assert.Equal(t, "#/definitions/extra", sch.Ref.String())
+		assert.EqualT(t, "#/definitions/extra", sch.Ref.String())
 
 		sch = schema.AllOf[0]
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "integer", "id", "int64", "ID")
 
 		sch = schema.AllOf[1]
-		assert.Equal(t, "#/definitions/water", sch.Ref.String())
+		assert.EqualT(t, "#/definitions/water", sch.Ref.String())
 
 		sch = schema.AllOf[4]
 		assert.Len(t, sch.Properties, 2)
 		assertProperty(t, &sch, "string", "name", "", "Name")
 		assertProperty(t, &sch, "string", "jsonClass", "", "StructType")
-		assert.Equal(t, "jsonClass", sch.Discriminator)
+		assert.EqualT(t, "jsonClass", sch.Discriminator)
 	}
 
 	schema, ok = models["modelS"]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		assert.Len(t, schema.AllOf, 2)
 		cl, _ := schema.Extensions.GetString("x-class")
-		assert.Equal(t, "com.tesla.models.ModelS", cl)
+		assert.EqualT(t, "com.tesla.models.ModelS", cl)
 		cl, _ = schema.Extensions.GetString("x-go-name")
-		assert.Equal(t, "ModelS", cl)
+		assert.EqualT(t, "ModelS", cl)
 
 		sch := schema.AllOf[0]
-		assert.Equal(t, "#/definitions/TeslaCar", sch.Ref.String())
+		assert.EqualT(t, "#/definitions/TeslaCar", sch.Ref.String())
 		sch = schema.AllOf[1]
 		assert.Len(t, sch.Properties, 1)
 		assertProperty(t, &sch, "string", "edition", "", "Edition")
 	}
 
 	schema, ok = models["modelA"]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		cl, _ := schema.Extensions.GetString("x-go-name")
-		assert.Equal(t, "ModelA", cl)
+		assert.EqualT(t, "ModelA", cl)
 
 		sch, ok := schema.Properties["Tesla"]
-		if assert.True(t, ok) {
-			assert.Equal(t, "#/definitions/TeslaCar", sch.Ref.String())
+		if assert.TrueT(t, ok) {
+			assert.EqualT(t, "#/definitions/TeslaCar", sch.Ref.String())
 		}
 
 		assertProperty(t, &schema, "integer", "doors", "int64", "Doors")
@@ -2183,13 +2184,17 @@ func TestAddExtension(t *testing.T) {
 	key := "x-go-name"
 	value := "Name"
 	addExtension(ve, key, value)
-	assert.Equal(t, value, ve.Extensions[key].(string))
+	veStr, ok := ve.Extensions[key].(string)
+	require.TrueT(t, ok)
+	assert.EqualT(t, value, veStr)
 
 	key2 := "x-go-package"
 	value2 := "schema"
 	t.Setenv("SWAGGER_GENERATE_EXTENSION", "true")
 	addExtension(ve, key2, value2)
-	assert.Equal(t, value2, ve.Extensions[key2].(string))
+	veStr2, ok := ve.Extensions[key2].(string)
+	require.TrueT(t, ok)
+	assert.EqualT(t, value2, veStr2)
 
 	key3 := "x-go-class"
 	value3 := "Spec"
@@ -2211,13 +2216,13 @@ func assertArrayProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, 
 
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
-	assert.True(t, prop.Type.Contains("array"))
+	assert.TrueT(t, prop.Type.Contains("array"))
 	assert.NotNil(t, prop.Items)
 	if typeName != "" {
-		assert.Equal(t, typeName, prop.Items.Schema.Type[0])
+		assert.EqualT(t, typeName, prop.Items.Schema.Type[0])
 	}
 	assert.Equal(t, goName, prop.Extensions["x-go-name"])
-	assert.Equal(t, format, prop.Items.Schema.Format)
+	assert.EqualT(t, format, prop.Items.Schema.Format)
 }
 
 func assertArrayRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
@@ -2225,7 +2230,7 @@ func assertArrayRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragmen
 
 	assertArrayProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].Items.Schema
-	assert.Equal(t, fragment, psch.Ref.String())
+	assert.EqualT(t, fragment, psch.Ref.String())
 }
 
 func assertProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
@@ -2234,14 +2239,14 @@ func assertProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, forma
 	if typeName == "" {
 		assert.Empty(t, schema.Properties[jsonName].Type)
 	} else if assert.NotEmpty(t, schema.Properties[jsonName].Type) {
-		assert.Equal(t, typeName, schema.Properties[jsonName].Type[0])
+		assert.EqualT(t, typeName, schema.Properties[jsonName].Type[0])
 	}
 	if goName == "" {
 		assert.Nil(t, schema.Properties[jsonName].Extensions["x-go-name"])
 	} else {
 		assert.Equal(t, goName, schema.Properties[jsonName].Extensions["x-go-name"])
 	}
-	assert.Equal(t, format, schema.Properties[jsonName].Format)
+	assert.EqualT(t, format, schema.Properties[jsonName].Format)
 }
 
 func assertRef(t *testing.T, schema *spec.Schema, jsonName, _, fragment string) {
@@ -2249,28 +2254,28 @@ func assertRef(t *testing.T, schema *spec.Schema, jsonName, _, fragment string) 
 
 	assert.Empty(t, schema.Properties[jsonName].Type)
 	psch := schema.Properties[jsonName]
-	assert.Equal(t, fragment, psch.Ref.String())
+	assert.EqualT(t, fragment, psch.Ref.String())
 }
 
 func assertIsRef(t *testing.T, schema *spec.Schema, fragment string) {
 	t.Helper()
 
-	assert.Equal(t, fragment, schema.Ref.String())
+	assert.EqualT(t, fragment, schema.Ref.String())
 }
 
 func assertDefinition(t *testing.T, defs map[string]spec.Schema, defName, typeName, formatName, goName string) {
 	t.Helper()
 
 	schema, ok := defs[defName]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		if assert.NotEmpty(t, schema.Type) {
-			assert.Equal(t, typeName, schema.Type[0])
+			assert.EqualT(t, typeName, schema.Type[0])
 			if goName != "" {
 				assert.Equal(t, goName, schema.Extensions["x-go-name"])
 			} else {
 				assert.Nil(t, schema.Extensions["x-go-name"])
 			}
-			assert.Equal(t, formatName, schema.Format)
+			assert.EqualT(t, formatName, schema.Format)
 		}
 	}
 }
@@ -2279,19 +2284,19 @@ func assertMapDefinition(t *testing.T, defs map[string]spec.Schema, defName, typ
 	t.Helper()
 
 	schema, ok := defs[defName]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotEmpty(t, schema.Type)
 
-	assert.Equal(t, "object", schema.Type[0])
+	assert.EqualT(t, "object", schema.Type[0])
 	adl := schema.AdditionalProperties
 
 	require.NotNil(t, adl)
 	require.NotNil(t, adl.Schema)
 
 	if len(adl.Schema.Type) > 0 {
-		assert.Equal(t, typeName, adl.Schema.Type[0])
+		assert.EqualT(t, typeName, adl.Schema.Type[0])
 	}
-	assert.Equal(t, formatName, adl.Schema.Format)
+	assert.EqualT(t, formatName, adl.Schema.Format)
 
 	assertExtension(t, schema, goName)
 }
@@ -2312,14 +2317,14 @@ func assertMapWithRefDefinition(t *testing.T, defs map[string]spec.Schema, defNa
 	t.Helper()
 
 	schema, ok := defs[defName]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotEmpty(t, schema.Type)
-	assert.Equal(t, "object", schema.Type[0])
+	assert.EqualT(t, "object", schema.Type[0])
 	adl := schema.AdditionalProperties
 	require.NotNil(t, adl)
 	require.NotNil(t, adl.Schema)
 	require.NotZero(t, adl.Schema.Ref)
-	assert.Equal(t, refURL, adl.Schema.Ref.String())
+	assert.EqualT(t, refURL, adl.Schema.Ref.String())
 	assertExtension(t, schema, goName)
 }
 
@@ -2327,14 +2332,14 @@ func assertArrayDefinition(t *testing.T, defs map[string]spec.Schema, defName, t
 	t.Helper()
 
 	schema, ok := defs[defName]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotEmpty(t, schema.Type)
-	assert.Equal(t, "array", schema.Type[0])
+	assert.EqualT(t, "array", schema.Type[0])
 	adl := schema.Items
 	require.NotNil(t, adl)
 	require.NotNil(t, adl.Schema)
-	assert.Equal(t, typeName, adl.Schema.Type[0])
-	assert.Equal(t, formatName, adl.Schema.Format)
+	assert.EqualT(t, typeName, adl.Schema.Type[0])
+	assert.EqualT(t, formatName, adl.Schema.Format)
 	assertExtension(t, schema, goName)
 }
 
@@ -2342,23 +2347,23 @@ func assertArrayWithRefDefinition(t *testing.T, defs map[string]spec.Schema, def
 	t.Helper()
 
 	schema, ok := defs[defName]
-	require.True(t, ok)
+	require.TrueT(t, ok)
 	require.NotEmpty(t, schema.Type)
-	assert.Equal(t, "array", schema.Type[0])
+	assert.EqualT(t, "array", schema.Type[0])
 	adl := schema.Items
 	require.NotNil(t, adl)
 	require.NotNil(t, adl.Schema)
 	require.NotZero(t, adl.Schema.Ref)
-	assert.Equal(t, refURL, adl.Schema.Ref.String())
+	assert.EqualT(t, refURL, adl.Schema.Ref.String())
 	assertExtension(t, schema, goName)
 }
 
 func assertRefDefinition(t *testing.T, defs map[string]spec.Schema, defName, refURL, goName string) {
 	schema, ok := defs[defName]
-	if assert.True(t, ok) {
+	if assert.TrueT(t, ok) {
 		if assert.NotZero(t, schema.Ref) {
 			url := schema.Ref.String()
-			assert.Equal(t, refURL, url)
+			assert.EqualT(t, refURL, url)
 			if goName != "" {
 				assert.Equal(t, goName, schema.Extensions["x-go-name"])
 			} else {
@@ -2371,19 +2376,19 @@ func assertRefDefinition(t *testing.T, defs map[string]spec.Schema, defName, ref
 func assertMapProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, format, goName string) {
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
-	assert.True(t, prop.Type.Contains("object"))
+	assert.TrueT(t, prop.Type.Contains("object"))
 	assert.NotNil(t, prop.AdditionalProperties)
 	if typeName != "" {
-		assert.Equal(t, typeName, prop.AdditionalProperties.Schema.Type[0])
+		assert.EqualT(t, typeName, prop.AdditionalProperties.Schema.Type[0])
 	}
 	assert.Equal(t, goName, prop.Extensions["x-go-name"])
-	assert.Equal(t, format, prop.AdditionalProperties.Schema.Format)
+	assert.EqualT(t, format, prop.AdditionalProperties.Schema.Format)
 }
 
 func assertMapRef(t *testing.T, schema *spec.Schema, jsonName, goName, fragment string) {
 	assertMapProperty(t, schema, "", jsonName, "", goName)
 	psch := schema.Properties[jsonName].AdditionalProperties.Schema
-	assert.Equal(t, fragment, psch.Ref.String())
+	assert.EqualT(t, fragment, psch.Ref.String())
 }
 
 func marshalToYAMLFormat(swspec any) ([]byte, error) {
@@ -2420,13 +2425,13 @@ func TestEmbeddedDescriptionAndTags(t *testing.T) {
 	assert.Equal(t, []string{"value1", "value2"}, schema.Required)
 	require.Len(t, schema.Properties, 2)
 
-	require.Contains(t, schema.Properties, "value1")
-	assert.Equal(t, "Nullable value", schema.Properties["value1"].Description)
+	require.MapContainsT(t, schema.Properties, "value1")
+	assert.EqualT(t, "Nullable value", schema.Properties["value1"].Description)
 	assert.Equal(t, true, schema.Properties["value1"].Extensions["x-nullable"])
 
-	require.Contains(t, schema.Properties, "value2")
-	assert.Equal(t, "Non-nullable value", schema.Properties["value2"].Description)
-	assert.NotContains(t, schema.Properties["value2"].Extensions, "x-nullable")
+	require.MapContainsT(t, schema.Properties, "value2")
+	assert.EqualT(t, "Non-nullable value", schema.Properties["value2"].Description)
+	assert.MapNotContainsT(t, schema.Properties["value2"].Extensions, "x-nullable")
 	assert.Equal(t, `{"value": 42}`, schema.Properties["value2"].Example)
 }
 
@@ -2500,6 +2505,6 @@ func testIssue2540(descWithRef bool, expectedJSON string) func(*testing.T) {
 
 		b, err := json.Marshal(models)
 		require.NoError(t, err)
-		assert.JSONEq(t, expectedJSON, string(b))
+		assert.JSONEqT(t, expectedJSON, string(b))
 	}
 }
