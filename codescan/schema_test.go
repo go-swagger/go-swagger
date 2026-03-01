@@ -2508,3 +2508,38 @@ func testIssue2540(descWithRef bool, expectedJSON string) func(*testing.T) {
 		assert.JSONEqT(t, expectedJSON, string(b))
 	}
 }
+
+func TestSetEnumDoesNotPanic(t *testing.T) {
+	dir := t.TempDir()
+
+	src := `
+package failure
+
+// swagger:model Order
+type Order struct {
+	State State ` + "`json:\"state\"`" + `
+}
+
+// State represents the state of an order.
+// enum: ["created","processed"]
+type State string
+`
+
+	err := os.WriteFile(filepath.Join(dir, "model.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	goMod := `
+module failure
+
+go 1.23
+`
+	err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0644)
+	require.NoError(t, err)
+
+	_, err = Run(&Options{
+		WorkDir:    dir,
+		ScanModels: true,
+	})
+
+	require.NoError(t, err)
+}
