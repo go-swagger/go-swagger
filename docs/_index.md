@@ -61,7 +61,7 @@ Most features and building blocks are now in a stable state, with a rich set of 
 
 The go-openapi community actively continues bringing fixes and enhancements to this code base.
 
-There is still much room for improvement: contributors and PR's are welcome. You may also get in touch with maintainers on [our slack channel](https://slackin.goswagger.io).
+There is still much room for improvement: contributors and PR's are welcome. You may also get in touch with maintainers on [our slack channel](https://gophers.slack.com/archives/C02909BST).
 
 ## How is this different from go generator in swagger-codegen?
 **tl;dr** The main difference at this moment is that this one actually works...
@@ -322,8 +322,8 @@ Because 0.5.0 and master have diverged significantly, you should checkout the ta
 [doc-url]: https://goswagger.io/go-swagger
 [godoc-badge]: https://godoc.org/github.com/go-swagger/go-swagger?status.svg
 [godoc-url]: http://godoc.org/github.com/go-swagger/go-swagger
-[slack-badge]: https://slackin.goswagger.io/badge.svg
-[slack-url]: https://slackin.goswagger.io
+[slack-badge]: https://img.shields.io/badge/slack-goswagger-blue.svg?logo=slack
+[slack-url]: https://gophers.slack.com/archives/C02909BST
 <!-- Badges: license & compliance -->
 [license-badge]: http://img.shields.io/badge/license-Apache%20v2-orange.svg
 [license-url]: https://github.com/go-swagger/go-swagger/?tab=Apache-2.0-1-ov-file#readme
