@@ -640,7 +640,7 @@
     // at https://github.com/go-swagger/go-swagger/issues
     {{- if .ReadOnly }}
 
-  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}; err != nil {
+  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
     {{- end }}
