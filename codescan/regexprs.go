@@ -31,7 +31,7 @@ const (
 )
 
 var (
-	rxSwaggerAnnotation  = regexp.MustCompile(`swagger:([\p{L}\p{N}\p{Pd}\p{Pc}]+)`)
+	rxSwaggerAnnotation  = regexp.MustCompile(`(?:^|[\s/])swagger:([\p{L}\p{N}\p{Pd}\p{Pc}]+)`)
 	rxFileUpload         = regexp.MustCompile(`swagger:file`)
 	rxStrFmt             = regexp.MustCompile(`swagger:strfmt\p{Zs}*(\p{L}[\p{L}\p{N}\p{Pd}\p{Pc}]+)$`)
 	rxAlias              = regexp.MustCompile(`swagger:alias`)
