@@ -581,7 +581,7 @@
   // .IsMapNullOverride: {{ .IsMapNullOverride }}
   */}}
   {{- if not .IsAnonymous }}
-    {{- if and .Required (or .IsNullable .IsBaseType .IsMap) }}
+    {{- if and .Required (or .IsNullable .IsBaseType .IsMap) (not .IsPrimitive) }}
       if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
@@ -640,7 +640,7 @@
     // at https://github.com/go-swagger/go-swagger/issues
     {{- if .ReadOnly }}
 
-  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}; err != nil {
+  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
     {{- end }}
