@@ -2513,27 +2513,27 @@ func TestSetEnumDoesNotPanic(t *testing.T) {
 	dir := t.TempDir()
 
 	src := `
-package failure
+	package failure
 
-// swagger:model Order
-type Order struct {
-	State State ` + "`json:\"state\"`" + `
-}
+	// swagger:model Order
+	type Order struct {
+		State State ` + "`json:\"state\"`" + `
+	}
 
-// State represents the state of an order.
-// enum: ["created","processed"]
-type State string
-`
+	// State represents the state of an order.
+	// enum: ["created","processed"]
+	type State string
+	`
 
-	err := os.WriteFile(filepath.Join(dir, "model.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(dir, "model.go"), []byte(src), 0600)
 	require.NoError(t, err)
 
 	goMod := `
-module failure
+	module failure
 
-go 1.23
-`
-	err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0644)
+	go 1.23
+	`
+	err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0600)
 	require.NoError(t, err)
 
 	_, err = Run(&Options{
