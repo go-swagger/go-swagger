@@ -581,7 +581,7 @@
   // .IsMapNullOverride: {{ .IsMapNullOverride }}
   */}}
   {{- if not .IsAnonymous }}
-    {{- if and .Required (or .IsNullable .IsBaseType .IsMap) }}
+    {{- if and .Required (or .IsNullable .IsBaseType .IsMap) (not .IsPrimitive) }}
       if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
