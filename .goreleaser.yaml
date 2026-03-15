@@ -178,7 +178,11 @@ nfpms:
         Bugs: https://github.com/go-swagger/go-swagger/issues
 
 changelog:
-  disable: true
+  # Do not auto-generate changelog — release notes are provided by git-cliff via --release-notes.
+  # NOTE: changelog.disable: true would also suppress --release-notes, so we filter instead.
+  filters:
+    exclude:
+      - ".*"
 
 signs:
   - id: sign-artifacts

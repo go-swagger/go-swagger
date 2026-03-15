@@ -101,12 +101,23 @@ jobs:
         name: Extract tag message
         id: tag-message
         run: |
-          TAG_MESSAGE="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          set -x
+
+          git fetch --unshallow origin 2>/dev/null || true
+          git fetch origin +refs/tags/*:refs/tags/*
+          MESSAGE=$(git tag -l "${GITHUB_REF_NAME}" --format='%(contents:subject)
+
+          %(contents:body)
+          ')
+          export MESSAGE
           {
-            echo 'message<<TAGEOF'
-            echo "${TAG_MESSAGE}"
-            echo 'TAGEOF'
+            echo "message<<EOF"
+            printenv MESSAGE
+            echo 'EOF'
           } >> "${GITHUB_OUTPUT}"
+
+          echo "Message in git tag ${GITHUB_REF_NAME}"
+          echo "$MESSAGE"
       -
         name: Generate release notes
         run: |
@@ -148,8 +159,8 @@ jobs:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         run: >
           cloudsmith push rpm --verbose
-            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
-            dist/swagger-*.x86_64*.rpm
+          ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+          dist/swagger-*.x86_64*.rpm
       -
         name: Push Deb package to CloudSmith
         if: ${{ env.CLOUDSMITH_API_KEY != '' }}
@@ -157,5 +168,5 @@ jobs:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         run: >
           cloudsmith push deb --verbose
-            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
-            dist/swagger-*.x86_64*.deb
+          ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+          dist/swagger-*.x86_64*.deb
