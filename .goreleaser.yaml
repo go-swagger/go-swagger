@@ -1,0 +1,225 @@
+# go-swagger release pipeline
+#
+# This pipeline produces:
+# a github release with the following content:
+#
+# * signed binaries (linux, windows, macos)
+# * signed packages for linux distros
+# * signed source archive
+# * signed checksum files
+# * released documentation site
+# * ~announcement message on slack channel~ (temporarily disabled)
+#
+# The following artifacts are produced outside goreleaser:
+#
+# * docker images (waiting for a stable docker_v2 pipe in goreleaser)
+# * uploads to cloudsmith (currently part of goreleaser pro)
+# * discarded: release notes & changelog
+# * discarded: ~sboms for binary and source archives~ (doesn't meet quality expectations)
+#
+# Check the documentation at https://goreleaser.com
+
+version: 2
+project_name: go-swagger
+
+env: # these env are useful to allow usage from a fork
+  - GIT_OWNER={{ if index .Env "GITHUB_REPOSITORY_OWNER" }}{{ .Env.GITHUB_REPOSITORY_OWNER }}{{ else }}go-swagger{{ end }}
+  - GIT_REPO=go-swagger
+  - MODULE_NAME=github.com/go-swagger/go-swagger
+  - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}  # being explicit about this requirement, fails if not defined
+  - NFPM_PASSPHRASE={{ .Env.GPG_PASSPHRASE }}  # being explicit about this requirement
+  - GPG_NFPM_KEY_FILE={{ .Env.GPG_NFPM_KEY_FILE }}  # being explicit about this requirement
+  - GPG_FINGERPRINT={{ .Env.GPG_FINGERPRINT }}  # being explicit about this requirement
+
+builds:
+  - id: swagger
+    main: ./cmd/swagger
+    binary: swagger
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - >-
+        -s -w
+        -X {{ .Env.MODULE_NAME }}/cmd/swagger/commands.Commit={{ .FullCommit }}
+        -X {{ .Env.MODULE_NAME }}/cmd/swagger/commands.Version={{ if .Tag }}{{ .Tag }}{{ else }}{{ .Summary }}{{ end }}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - ppc64le
+      - s390x
+    ignore:
+      - goos: darwin
+        goarch: ppc64le
+      - goos: darwin
+        goarch: arm
+      - goos: darwin
+        goarch: s390x
+      - goos: windows
+        goarch: ppc64le
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: s390x
+    mod_timestamp: '{{ .CommitTimestamp }}'
+
+gomod:
+  #proxy: true
+  proxy: false
+  env:
+  - GOPRIVATE=github.com/go-swagger
+
+upx:
+  - enabled: true
+    compress: best
+    lzma: false
+    brute: false
+    goos: [linux]
+    goarch: [arm,arm64,amd64]
+  - enabled: true
+    compress: best
+    lzma: false
+    brute: false
+    goos: [windows]
+    goarch: [amd64]
+  - enabled: false
+    compress: best
+    lzma: false
+    brute: false
+    goos: [darwin]
+    goarch: [amd64]
+
+archives:
+  -
+    id: release-binary-bundles
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      swagger_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- with .Arm }}v{{ . }}{{ end }}
+    strip_binary_directory: true
+    builds_info:
+      owner: root
+      group: root
+      mtime: "{{ .CommitDate }}"
+      mode: 0644
+    files:
+      - LICENSE
+  -
+    id: release-single-binary
+    formats: [binary]
+    # this keeps compatibility with older releases
+    name_template: swagger_{{ .Os }}_{{ .Arch }}{{ if eq .Os "windows" }}.exe{{ end }}
+
+    strip_binary_directory: true
+    builds_info:
+      owner: root
+      group: root
+      mtime: "{{ .CommitDate }}"
+      mode: 0644
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-source"
+  format: "tar.gz"
+  prefix_template: "{{ .ProjectName }}-{{ .Version }}/"
+
+checksum:
+  name_template: "{{ .ProjectName }}-checksums.txt"
+  algorithm: sha256
+  split: false
+
+nfpms:
+  - id: linux-distros
+    package_name: "{{ .ProjectName }}"
+    # Cloudsmith expects: PACKAGE_NAME-PACKAGE_VERSION.PACKAGE_ARCH.deb
+    file_name_template: >-
+      swagger-
+      {{- .Version }}.
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- with .Arm }}v{{ . }}{{ end }}
+    vendor: go-swagger
+    homepage: https://goswagger.io
+    maintainer: Frédéric BIDON <fredbi@yahoo.com>
+    description: |
+      An implementation of OpenAPI 2.0 (aka swagger) for golang.
+
+      Generates an API from a swagger spec or a swagger spec from go source.
+    license: Apache 2.0
+    formats: [ deb, rpm ]
+    recommends: [ go, git ]
+    bindir: /usr/bin
+    mtime: "{{ .CommitDate }}"
+
+    rpm:
+      signature:
+        key_file: "{{ .Env.GPG_NFPM_KEY_FILE }}"
+    deb:
+      signature:
+        key_file: "{{ .Env.GPG_NFPM_KEY_FILE }}"
+        type: origin
+      fields:
+        Bugs: https://github.com/go-swagger/go-swagger/issues
+
+changelog:
+  disable: true
+
+signs:
+  - id: sign-artifacts
+    cmd: gpg
+    args:
+    - '--detach-sign'
+    - '--local-user'
+    - '{{ .Env.GPG_FINGERPRINT }}'
+    - '--output'
+    - '${signature}'
+    artifacts: all
+    stdin: "{{ .Env.GPG_PASSPHRASE }}"
+    output: true
+
+release:
+  github:
+    owner: '{{ .Env.GIT_OWNER }}'
+    name: '{{ .Env.GIT_REPO }}'
+
+  replace_existing_draft: true
+  make_latest: true
+  mode: replace
+  header: |
+    {{ .ProjectName }} release {{ .Version }}
+
+    ---
+
+    Released on {{ .Now.Format "2006 Jan 02" }}
+
+  footer: |
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
+
+announce:
+  discord:
+    enabled: true
+    message_template: |
+      Released go-swagger {{ .Tag }}
+      - [CI Workflow](https://github.com/go-swagger/go-swagger/actions/workflows/release.yaml)
+      - [Release notes](https://github.com/go-swagger/go-swagger/releases/tag/{{ .Tag }})
+      - [Compare with previous version](https://github.com/go-swagger/go-swagger/compare/{{ .PreviousTag }}...{{ .Tag }})
+    author: go-swagger

@@ -1,0 +1,28 @@
+name: "Update latest documentation"
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      -  master
+    paths:
+    - docs/**
+    - hack/doc-site/**
+    - .github/workflows/update-doc.yaml
+
+  pull_request:
+    paths:
+    - docs/**
+    - hack/doc-site/**
+    - .github/workflows/update-doc.yaml
+
+jobs:
+  update-doc:
+    name: Update latest documentation
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/update-doc.yaml

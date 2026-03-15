@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Vulnerability scan by trivy
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: repo
           format: sarif

@@ -25,7 +25,6 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/kr/pretty v0.3.1
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
@@ -63,6 +62,7 @@ require (
 	github.com/go-openapi/swag/netutils v0.25.4 // indirect
 	github.com/go-openapi/swag/stringutils v0.25.4 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.4 // indirect
+	github.com/go-openapi/testify/enable/yaml/v2 v2.3.0 // indirect
 	github.com/go-openapi/testify/v2 v2.3.0
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
@@ -74,6 +74,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.10.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -89,5 +90,3 @@ require (
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 )
-
-require github.com/go-openapi/testify/enable/yaml/v2 v2.3.0 // indirect
