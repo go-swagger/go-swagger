@@ -22,7 +22,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: '1'
           submodules: recursive
@@ -72,7 +72,7 @@ jobs:
           "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
       -
         name: Build site with Hugo
-        uses: crazy-max/ghaction-hugo@58bd8ea36dbac3f6155d275a04e0b55604a93c48 # v3.2.0
+        uses: crazy-max/ghaction-hugo@d629f74d3e4a9da53050610da35a59863ab9b26c # v3.3.0
         with:
           version: v0.123.8  # <- pin the HUGO version, as they often break things
           extended: true
