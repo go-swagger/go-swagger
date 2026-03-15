@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"

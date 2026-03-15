@@ -2217,8 +2217,10 @@ func assertArrayProperty(t *testing.T, schema *spec.Schema, typeName, jsonName, 
 	prop := schema.Properties[jsonName]
 	assert.NotEmpty(t, prop.Type)
 	assert.TrueT(t, prop.Type.Contains("array"))
-	assert.NotNil(t, prop.Items)
+	require.NotNil(t, prop.Items)
 	if typeName != "" {
+		require.NotNil(t, prop.Items.Schema)
+		require.NotEmpty(t, prop.Items.Schema.Type)
 		assert.EqualT(t, typeName, prop.Items.Schema.Type[0])
 	}
 	assert.Equal(t, goName, prop.Extensions["x-go-name"])

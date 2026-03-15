@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 
 	"github.com/go-openapi/loads/fmts"
 	"github.com/go-openapi/spec"
