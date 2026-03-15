@@ -2524,13 +2524,13 @@ func TestSetEnumDoesNotPanic(t *testing.T) {
 	// enum: ["created","processed"]
 	type State string
 	`
-	err := os.WriteFile(filepath.Join(dir, "model.go"), []byte(src), 0600)
+	err := os.WriteFile(filepath.Join(dir, "model.go"), []byte(src), 0o600)
 	require.NoError(t, err)
 
 	goMod := `
 	module failure
 	go 1.23`
-	err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0600)
+	err = os.WriteFile(filepath.Join(dir, "go.mod"), []byte(goMod), 0o600)
 	require.NoError(t, err)
 
 	_, err = Run(&Options{
