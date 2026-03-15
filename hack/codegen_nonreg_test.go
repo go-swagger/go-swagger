@@ -17,7 +17,7 @@ import (
 	"time"
 
 	// color "github.com/logrusorgru/aurora"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 	"gotest.tools/v3/icmd"
 
 	"github.com/go-openapi/testify/v2/assert"

@@ -65,11 +65,9 @@ func TestAppScanner_NewSpec(t *testing.T) {
 		Packages: []string{"github.com/go-swagger/go-swagger/fixtures/goparsing/petstore/..."},
 	})
 	require.NoError(t, err)
-	if assert.NotNil(t, doc) {
-		// b, _ := json.MarshalIndent(doc.Responses, "", "  ")
-		// log.Println(string(b))
-		verifyParsedPetStore(t, doc)
-	}
+	require.NotNil(t, doc)
+
+	verifyParsedPetStore(t, doc)
 }
 
 func TestAppScanner_Definitions(t *testing.T) {
