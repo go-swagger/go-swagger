@@ -1692,11 +1692,15 @@ func isTextMarshaler(tpe types.Type) bool {
 	if err != nil {
 		return false
 	}
+	// Proposal for enhancement: there should be a better way to check this than hardcoding the TextMarshaler iface.
 	obj := encodingPkg.Scope().Lookup("TextMarshaler")
 	if obj == nil {
 		return false
 	}
-	ifc := obj.Type().Underlying().(*types.Interface) // TODO: there is a better way to check this
+	ifc, ok := obj.Type().Underlying().(*types.Interface)
+	if !ok {
+		return false
+	}
 
 	return types.Implements(tpe, ifc)
 }
