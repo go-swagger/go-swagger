@@ -1169,6 +1169,8 @@ func concatUnique(collections ...[]string) []string {
 
 // setAnalyzedSpec stores the analyzed spec in the cache with thread safety.
 // This should be called once during generation initialization.
+// The spec is deep-cloned before analysis to prevent mutations to the original spec
+// from affecting future generations.
 func (g *GenOptsCommon) setAnalyzedSpec(analyzed *analysis.Spec) {
 	if g.analyzedSpecMu == nil {
 		g.analyzedSpecMu = &sync.RWMutex{}

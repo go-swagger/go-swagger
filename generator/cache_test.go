@@ -177,3 +177,38 @@ func TestDeepCloneSpec_IndependentMutations(t *testing.T) {
 	assert.Equal(t, "Simple Search API", specDoc.Spec().Info.Title)
 	assert.Equal(t, "1.0.0", specDoc.Spec().Info.Version)
 }
+
+// TestAnalyzedSpecCache_WithEmptyCache verifies fallback behavior when cache is empty.
+func TestAnalyzedSpecCache_WithEmptyCache(t *testing.T) {
+	opts := testGenOpts()
+
+	// Initially, getAnalyzedSpec should return nil
+	analyzed := opts.getAnalyzedSpec()
+	assert.Nil(t, analyzed)
+}
+
+// TestDeepCloneSpec_PreservesJSONRoundtrip verifies that deep cloning
+// preserves the spec through JSON round-trips.
+func TestDeepCloneSpec_PreservesJSONRoundtrip(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	require.NoError(t, err)
+
+	original := specDoc.Spec()
+	require.NotNil(t, original)
+
+	// Deep clone
+	cloned, err := deepCloneSpec(original)
+	require.NoError(t, err)
+	require.NotNil(t, cloned)
+
+	// Deep clone again (second roundtrip)
+	cloned2, err := deepCloneSpec(cloned)
+	require.NoError(t, err)
+	require.NotNil(t, cloned2)
+
+	// Verifying the structure remains consistent through multiple clones
+	assert.Equal(t, original.Swagger, cloned2.Swagger)
+	assert.Equal(t, original.Info.Title, cloned2.Info.Title)
+	assert.Equal(t, original.Info.Version, cloned2.Info.Version)
+	assert.Len(t, cloned2.Definitions, len(original.Definitions))
+}
