@@ -50,7 +50,7 @@ _Use-case_: logger
 
 You can configure it with any logger that exposes the signature.
 
-eg.: https://github.com/go-swagger/go-swagger/blob/master/examples/authentication/restapi/configure_auth_sample.go#L33
+e.g.: <https://github.com/go-swagger/examples/blob/master/authentication/restapi/configure_auth_sample.go#L33>
 
 _Use-case_: logger flags
 >Still having a problem with how and where to initialize glog so that both sets of flags are honored:

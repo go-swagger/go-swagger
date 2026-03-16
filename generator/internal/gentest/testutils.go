@@ -150,6 +150,22 @@ func GoModTidy(pth string) func(*testing.T) {
 	}
 }
 
+func GoModReplace(pth, src, dst string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run("should replace in go.mod", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			vet := exec.CommandContext(ctx, "go", "mod", "edit", fmt.Sprintf("-replace=%s=%s", src, dst)) //nolint:gosec // G204: is okay for tests
+			vet.Dir = pth
+			output, err := vet.CombinedOutput()
+			require.NoError(t, err, string(output))
+		})
+	}
+}
+
 func GoBuild(pth string) func(*testing.T) {
 	return func(t *testing.T) {
 		t.Helper()

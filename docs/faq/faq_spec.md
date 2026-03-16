@@ -11,7 +11,7 @@ _Use-Case_: I have read the swagger.json generation and feel confused. Could you
 
 **Answer**: this folder uses most of the annotations
 
-https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/petstore
+<https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/petstore>
 
 >This begs for 3 questions :
 > - Q1: Does a struct for Parameter model have to be declared in the SAME .go file where the swagger:route is declared for a router function?
@@ -228,14 +228,14 @@ Originally from issue [#561](https://github.com/go-swagger/go-swagger/issues/561
 _Use-Case_: documentation is scant on how to generate swagger files from annotations.
 Is it really all there in http://goswagger.io/generate/spec/?
 
-**Answer**: yes, it's all in there (or directly in the repo: https://github.com/go-swagger/go-swagger/tree/master/docs/generate/spec)
+**Answer**: yes, it's all in there (or directly in the repo: <https://github.com/go-swagger/go-swagger/tree/master/docs/generate/spec>)
 
 *How about some code examples that show annotations being used?*
 
 **Answer**: there is an "examples" folder in the repo.
 All generated code also uses all the annotations that are applicable for it.
 
-https://github.com/go-swagger/go-swagger/tree/master/examples/todo-list
+<https://github.com/go-swagger/examples/tree/master/todo-list>
 
 And also: https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification
 (this is the code used to test parsing the annotations).

@@ -144,7 +144,7 @@ func TestVariousCli(t *testing.T) {
 		},
 		{
 			name: "multi-auth",
-			spec: "examples/composed-auth/swagger.yml",
+			spec: "fixtures/cli/composed-auth-example.yml",
 		},
 		// not working because of model generation order.
 		// {

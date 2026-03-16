@@ -761,7 +761,7 @@ Models may also be generated once, customized manually, then reused in spec as e
 
 The extension annotation to declare an external type is `x-go-type`.
 
-A complete example is provided [here](https://github.com/go-swagger/go-swagger/tree/master/examples/external-types)
+A complete example is provided [here](https://github.com/go-swagger/examples/tree/master/external-types)
 to illustrate the different capabilities to inject custom types.
 
 
@@ -1337,8 +1337,8 @@ type ObjectWithDescription struct {
 [File]: https://github.com/go-openapi/runtime/blob/master/file.go#L20
 [Validatable]: https://github.com/go-openapi/runtime/blob/master/interfaces.go#L101
 [validate]: https://github.com/go-openapi/validate
-[validate-json]: https://godoc.org/github.com/go-openapi/validate#ex-AgainstSchema
-[go-doc-model]: https://godoc.org/github.com/go-swagger/go-swagger/examples/generated/models
+[validate-json]: https://pkg.go.dev/github.com/go-openapi/validate#ex-AgainstSchema
+[go-doc-model]: https://pkg.go.dev/github.com/go-swagger/examples/generated/models
 [read-only]: https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md#fixed-fields-13
 [all-formats]:  https://github.com/go-openapi/strfmt/blob/master/README.md
 [easy-json]: https://github.com/mailru/easyjson

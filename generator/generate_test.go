@@ -361,7 +361,7 @@ func fixtureServerExternalModelsHints() generateFixture {
 
 func fixtureServerNameConflict2405_1() generateFixture {
 	return generateFixture{
-		spec: "../examples/todo-list/swagger.yml",
+		spec: "../fixtures/codegen/todolist.example.yml",
 		prepare: func(opts *GenOpts) func(*testing.T) {
 			return func(_ *testing.T) {
 				opts.ServerPackage = apiPkg
@@ -381,7 +381,7 @@ func fixtureServerNameConflict2405_1() generateFixture {
 
 func fixtureServerNameConflict2405_2() generateFixture {
 	return generateFixture{
-		spec: "../examples/todo-list/swagger.yml",
+		spec: "../fixtures/codegen/todolist.example.yml",
 		prepare: func(opts *GenOpts) func(*testing.T) {
 			return func(_ *testing.T) {
 				opts.ServerPackage = "loads"
@@ -450,7 +450,7 @@ func fixtureServerExternalTypes2385() generateFixture {
 
 func fixtureServerExternalTypesFull() generateFixture {
 	return generateFixture{
-		spec: "../examples/external-types/example-external-types.yaml",
+		spec: "../fixtures/codegen/external-types/example-external-types.yaml",
 		prepare: func(opts *GenOpts) func(*testing.T) {
 			return func(t *testing.T) {
 				opts.MainPackage = testServerPkg
@@ -466,7 +466,9 @@ func fixtureServerExternalTypesFull() generateFixture {
 			return func(t *testing.T) {
 				location := filepath.Join(target, "cmd", testServerPkg)
 				require.DirExists(t, location)
-
+				here, err := os.Getwd()
+				require.NoError(t, err)
+				t.Run("should replace go-swagger in go.mod", gentest.GoModReplace(target, "github.com/go-swagger/go-swagger", filepath.Dir(here)))
 				t.Run("should tidy go mod", gentest.GoModTidy(target))
 				t.Run("building generated server", gentest.GoBuild(location))
 				location = filepath.Join(target, "models")

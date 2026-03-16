@@ -79,7 +79,7 @@ Help Options:
 ```
 
 ### Build a CLI
-There is an example cli and tutorial provided at: https://github.com/go-swagger/go-swagger/tree/master/examples/cli
+There is an example cli and tutorial provided at: https://github.com/go-swagger/examples/tree/master/cli
 
 To generate a CLI:
 ```
