@@ -17,9 +17,11 @@ Enabled CI engines and bots and apps:
 - WIP (blocks PRs with title WIP/do not merge, etc...)
 
 ### Build
+
 The CI pipeline builds the `swagger` binary and runs a few spec validation commands: this is a smoke test.
 
 ### Test
+
 Codecov results are not blocking.
 
 We run unit tests on the two most recent go versions of the 3 platforms above.
@@ -36,9 +38,11 @@ The go test program `codegen_nonreg_test.go` runs on CI with various generation 
 You may alos run it manually on your local environment to explore more generation options (expand spec, flatten, etc...).
 
 ### Releases
+
 Releases are cut with a separate workflow to build artifacts and bake docker images.
 
 ### Documentation update
+
 A github action takes care of generating this web site. It builds a github pages artifact that is deployed.
 
 ## `go-openapi/...`

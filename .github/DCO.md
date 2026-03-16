@@ -1,3 +1,6 @@
+# Developer Certificate of Origin
+
+```
 Developer Certificate of Origin
 Version 1.1
 
@@ -34,3 +37,4 @@ By making a contribution to this project, I certify that:
     personal information I submit with it, including my sign-off) is
     maintained indefinitely and may be redistributed consistent with
     this project or the open source license(s) involved.
+```

@@ -33,11 +33,13 @@ linters:
     - recvcheck  # disagree
     - tagliatelle # false positives, want to impose camel case everywhere => should be disabled sparingly only
     - testpackage # disagree: we like test packages, just not for everything like the linter suggests
+    - thelper
     - tparallel
     - varnamelen
+    - whitespace
     - wrapcheck
-    - wsl # unclear added value
-    - wsl_v5 # unclear added value
+    - wsl
+    - wsl_v5
   settings:
     depguard:
       rules:
@@ -51,39 +53,24 @@ linters:
     goconst:
       min-len: 2
       min-occurrences: 3
-    gocognit:
-      min-complexity: 32
-    gocyclo:
-      min-complexity: 32
     cyclop:
       max-complexity: 32
+    gocyclo:
+      min-complexity: 32
+    gocognit:
+      min-complexity: 32
     govet:
       enable-all: true
       disable:
         - fieldalignment
-    thelper:
-      tb:
-        #name: false  # dont' want issue "parameter testing.TB should have name tb"
-        begin: false
-      test:
-        begin: false # don't want issue "test helper function should start from tb.Helper()"
-    testifylint:
-      enable:
-        - bool-compare
-        - compares
-        - empty
-        - error-is-as
-        - error-nil
-        - expected-actual
-        - len
-        - require-error
-        - suite-dont-use-pkg
-        - suite-extra-assert-call
-        - float-compare
-        - go-require
+    exhaustive:
+      default-signifies-exhaustive: true
+      default-case-required: true
+    lll:
+      line-length: 180
   exclusions:
     warn-unused: false
-    generated: disable  # enable linting on generated code (in examples, in generated code under test)
+    generated: lax  # enable linting on generated code (in examples, in generated code under test)
     presets:
       - comments
       - common-false-positives
@@ -103,14 +90,11 @@ linters:
       - path: _test.go
         linters:
           - unparam
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  new: false
 formatters:
   enable:
-    - gofumpt
+    - gofmt
     - goimports
+    - gofumpt
   settings:
     # local prefixes regroup imports from these packages
     goimports:
@@ -118,6 +102,16 @@ formatters:
         - github.com/go-openapi
         - github.com/go-swagger/go-swagger # this is for imports in generated examples
   exclusions:
-    # do not exclude examples from linting
+    generated: lax
     paths:
       - fixtures/
+issues:
+  # Maximum issues count per one linter.
+  # Set to 0 to disable.
+  # Default: 50
+  max-issues-per-linter: 0
+  # Maximum count of issues with the same text.
+  # Set to 0 to disable.
+  # Default: 3
+  max-same-issues: 0
+  new: false
