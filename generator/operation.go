@@ -63,6 +63,13 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
+	// Cache the analyzed spec for reuse in makeGenDefinitionHierarchy.
+	// Use a deep clone to avoid mutation issues during processing.
+	clonedSpec, err := deepCloneSpec(specDoc.Spec())
+	if err != nil {
+		return err
+	}
+	opts.setAnalyzedSpec(analysis.New(clonedSpec))
 
 	ops := gatherOperations(analyzed, operationNames)
 

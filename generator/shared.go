@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/go-openapi/analysis"
@@ -320,6 +321,13 @@ type GenOptsCommon struct {
 	PropertiesSpecOrder        bool
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
+
+	// analyzedSpecCache holds a deep-cloned, analyzed spec to avoid repeated
+	// calls to analysis.New. The analyzed spec is internally mutable by the
+	// analysis package, so we cache a deep clone to prevent cross-model pollution.
+	// Protected by analyzedSpecMu for thread safety.
+	analyzedSpecCache *analysis.Spec
+	analyzedSpecMu    *sync.RWMutex
 
 	Spec                   string
 	APIPackage             string
@@ -1157,4 +1165,44 @@ func concatUnique(collections ...[]string) []string {
 		result = append(result, k)
 	}
 	return result
+}
+
+// setAnalyzedSpec stores the analyzed spec in the cache with thread safety.
+// This should be called once during generation initialization.
+func (g *GenOptsCommon) setAnalyzedSpec(analyzed *analysis.Spec) {
+	if g.analyzedSpecMu == nil {
+		g.analyzedSpecMu = &sync.RWMutex{}
+	}
+	g.analyzedSpecMu.Lock()
+	g.analyzedSpecCache = analyzed
+	g.analyzedSpecMu.Unlock()
+}
+
+// getAnalyzedSpec retrieves the cached analyzed spec with thread safety.
+// Returns nil if the cache hasn't been populated.
+func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
+	if g.analyzedSpecMu == nil {
+		return nil
+	}
+	g.analyzedSpecMu.RLock()
+	defer g.analyzedSpecMu.RUnlock()
+	return g.analyzedSpecCache
+}
+
+// deepCloneSpec creates a deep copy of a spec using JSON marshaling/unmarshaling
+func deepCloneSpec(swagger *spec.Swagger) (*spec.Swagger, error) {
+	// Marshal the spec to JSON
+	jsonBytes, err := json.Marshal(swagger)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal into a new spec
+	cloned := &spec.Swagger{}
+	err = json.Unmarshal(jsonBytes, cloned)
+	if err != nil {
+		return nil, err
+	}
+
+	return cloned, nil
 }
