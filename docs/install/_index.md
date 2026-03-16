@@ -16,7 +16,7 @@ Each release is published as a [github release](https://github.com/go-swagger/go
 with source tarballs, RPM and DEB packages, a docker image and a `brew` recipe.
 
 {{<hint info>}}
-go-swagger works on *nix as well as Windows OS.
+`go-swagger` works on all unix platforms as well as Windows OS.
 {{</hint>}}
 
 {{<hint warning>}}

@@ -10,7 +10,7 @@ golangci-lint run
 ```
 
 Config: `.golangci.yml` — posture is `default: all` with explicit disables.
-See `docs/STYLE.md` for the rationale behind each disabled linter.
+See `.github/STYLE.md` for the rationale behind each disabled linter.
 
 Key rules:
 - Every `//nolint` directive **must** have an inline comment explaining why.

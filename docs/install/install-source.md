@@ -14,12 +14,11 @@ If you have `go` version `{{< param goswagger.goVersion >}}` or greater installe
 go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 ```
 
-You may need to CGO disabled, see [#3171](https://github.com/go-swagger/go-swagger/issues/3171).
+You may need to set CGO disabled, see [#3171](https://github.com/go-swagger/go-swagger/issues/3171).
 
 ```sh
 CGO_ENABLED=0 go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 ```
-
 
 ## Alternative methods
 
