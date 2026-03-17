@@ -11,11 +11,10 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
+	"github.com/go-openapi/codescan"
+	"github.com/go-openapi/spec"
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-
-	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/codescan"
 )
 
 func TestSpecEmbeddedDescriptionAndTags_Issue3125(t *testing.T) {
