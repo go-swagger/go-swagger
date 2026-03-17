@@ -1,0 +1,228 @@
+# SPDX-FileCopyrightText: Copyright 2015-2026 go-swagger maintainers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Regenerate examples in go-swagger/examples from the PR branch,
+# then create/update a PR in examples with the diff.
+#
+# Uses pull_request_target so secrets are available even for PRs from public forks.
+# IMPORTANT: only the workflow file from the base branch is used — the PR code is
+# checked out explicitly at the PR ref so it cannot tamper with this workflow.
+
+name: Regen examples
+
+permissions:
+  contents: read
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+jobs:
+  code-changed:
+    name: check codegen changes
+    if: ${{ github.event.action != 'closed' }}
+    runs-on: ubuntu-latest
+    outputs:
+      proceed_with_codegen: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
+    steps:
+      -
+        name: Checkout PR head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      -
+        name: Get changed source files
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v4.7.0
+        id: changed-source-files
+        with:
+          files_yaml: |
+            should_run_codegen:
+              - '**/go.(mod,sum)'
+              - 'cmd/**/*.go'
+              - '!cmd/swagger/commands/generate/spec*.go'
+              - '!cmd/swagger/commands/diff/*.go'
+              - 'generator/**'
+              - 'hack/codegen*.go'
+              - 'hack/*.yaml'
+              - 'fixtures/**/*.(yaml,yml,json)'
+              - '!fixtures/goparsing/**'
+              - '!**/*.md'
+
+  regen-examples:
+    # description: |
+    #   Build swagger from the PR, regenerate examples in go-swagger/examples,
+    #   and create a PR in examples with the diff. Reviewer checks both PRs together.
+    name: regen examples
+    needs: [code-changed]
+    if: ${{ needs.code-changed.outputs.proceed_with_codegen == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      -
+        name: Checkout go-swagger at PR ref
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      -
+        name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: true
+      -
+        name: Build swagger binary
+        run: |
+          go build -o "${GITHUB_WORKSPACE}/bin/swagger" ./cmd/swagger
+          echo "${GITHUB_WORKSPACE}/bin" >> "${GITHUB_PATH}"
+      -
+        name: Configure bot credentials
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354 # v1.4.11
+        id: bot-credentials
+        with:
+          enable-github-app: "true"
+          github-app-id: ${{ secrets.CI_BOT_APP_ID }}
+          github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          github-app-owner: go-swagger
+          github-app-repositories: examples
+          enable-gpg-signing: "true"
+          gpg-private-key: ${{ secrets.CI_BOT_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.CI_BOT_GPG_PASSPHRASE }}
+          gpg-fingerprint: ${{ secrets.CI_BOT_SIGNING_KEY }}
+          enable-commit-signing: "true"
+          enable-tag-signing: "false"
+      -
+        name: Checkout examples
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: go-swagger/examples
+          token: ${{ steps.bot-credentials.outputs.app-token }}
+          path: _examples
+      -
+        name: Regenerate examples
+        run: |
+          cd _examples
+          hack/regen-samples.sh
+      -
+        name: Build check
+        run: |
+          cd _examples
+          go build ./...
+      -
+        name: Detect changes and create examples PR
+        id: regen
+        env:
+          GH_TOKEN: ${{ steps.bot-credentials.outputs.app-token }}
+        run: |
+          cd _examples
+
+          # Stage everything first so we catch new/deleted files too
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "has_changes=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "has_changes=true" >> "${GITHUB_OUTPUT}"
+
+          # Collect diffstat for the comment
+          git diff --cached --stat > /tmp/diffstat.txt
+
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BRANCH="regen/pr-${PR_NUMBER}"
+
+          git checkout -b "${BRANCH}"
+          git commit -s \
+            -m "chore: regenerate examples from go-swagger PR #${PR_NUMBER}" \
+            -m "Origin: go-swagger/go-swagger#${PR_NUMBER}"
+
+          git push --force origin "${BRANCH}"
+
+          # Create or update PR
+          EXISTING=$(gh pr list --repo go-swagger/examples --head "${BRANCH}" --json number --jq '.[0].number // empty')
+
+          # Build PR body
+          BODY=$(cat <<PREOF
+          Regenerated examples from go-swagger/go-swagger#${PR_NUMBER}
+
+          Triggering PR: https://github.com/go-swagger/go-swagger/pull/${PR_NUMBER}
+
+          ---
+
+          ${{ github.event.pull_request.body }}
+          PREOF
+          )
+
+          if [ -n "${EXISTING}" ]; then
+            gh pr edit "${EXISTING}" --repo go-swagger/examples --body "${BODY}"
+          else
+            gh pr create --repo go-swagger/examples \
+              --head "${BRANCH}" --base master \
+              --title "chore: regen examples (go-swagger PR #${PR_NUMBER})" \
+              --body "${BODY}"
+          fi
+      -
+        name: Comment on go-swagger PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if [ "${{ steps.regen.outputs.has_changes }}" == "true" ]; then
+            EXAMPLES_PR=$(GH_TOKEN="${{ steps.bot-credentials.outputs.app-token }}" \
+              gh pr list --repo go-swagger/examples \
+              --head "regen/pr-${PR_NUMBER}" \
+              --json url --jq '.[0].url')
+            DIFFSTAT=$(cat /tmp/diffstat.txt)
+            COMMENT=$(cat <<CMTEOF
+          **Examples regeneration:** changes detected.
+
+          Examples PR: ${EXAMPLES_PR}
+
+          <details>
+          <summary>Diffstat</summary>
+
+          \`\`\`
+          ${DIFFSTAT}
+          \`\`\`
+
+          </details>
+          CMTEOF
+            )
+          else
+            COMMENT="**Examples regeneration:** no changes detected in generated examples."
+          fi
+          gh pr comment "${PR_NUMBER}" --body "${COMMENT}"
+
+  close-examples-pr:
+    name: close examples PR
+    if: ${{ github.event.action == 'closed' && !github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Configure bot credentials
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354 # v1.4.11
+        id: bot-credentials
+        with:
+          enable-github-app: "true"
+          github-app-id: ${{ secrets.CI_BOT_APP_ID }}
+          github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          github-app-owner: go-swagger
+          github-app-repositories: examples
+      -
+        name: Close corresponding examples PR
+        env:
+          GH_TOKEN: ${{ steps.bot-credentials.outputs.app-token }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BRANCH="regen/pr-${PR_NUMBER}"
+          EXISTING=$(gh pr list --repo go-swagger/examples --head "${BRANCH}" --json number --jq '.[0].number // empty')
+          if [ -n "${EXISTING}" ]; then
+            gh pr close "${EXISTING}" --repo go-swagger/examples --delete-branch \
+              --comment "Closing: triggering go-swagger PR #${PR_NUMBER} was closed without merge."
+          fi
