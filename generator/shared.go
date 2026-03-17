@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"text/template"
 
 	"github.com/go-openapi/analysis"
@@ -327,8 +328,8 @@ type GenOptsCommon struct {
 	// When retrieving the analyzed spec, a deep clone is made before analysis
 	// to ensure each model generation works with a pristine copy.
 	// Protected by analyzedSpecMu for thread safety.
-	cachedRawSpec *spec.Swagger
-	analyzedSpecMu *sync.RWMutex
+	cachedRawSpec atomic.Pointer[spec.Swagger]
+	cachedSpecMu  sync.RWMutex
 
 	Spec                   string
 	APIPackage             string
@@ -1173,12 +1174,9 @@ func concatUnique(collections ...[]string) []string {
 // The spec is stored without analysis to ensure we can create fresh analyzed
 // copies on each retrieval, preventing cross-model pollution.
 func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
-	if g.analyzedSpecMu == nil {
-		g.analyzedSpecMu = &sync.RWMutex{}
-	}
-	g.analyzedSpecMu.Lock()
-	g.cachedRawSpec = raw
-	g.analyzedSpecMu.Unlock()
+	g.cachedSpecMu.Lock()
+	g.cachedRawSpec.Store(raw)
+	g.cachedSpecMu.Unlock()
 }
 
 // getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
@@ -1186,12 +1184,9 @@ func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
 // preventing any mutations from affecting subsequent retrievals.
 // Returns nil if the cache hasn't been populated.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
-	if g.analyzedSpecMu == nil {
-		return nil
-	}
-	g.analyzedSpecMu.RLock()
-	cachedRaw := g.cachedRawSpec
-	g.analyzedSpecMu.RUnlock()
+	g.cachedSpecMu.RLock()
+	cachedRaw := g.cachedRawSpec.Load()
+	g.cachedSpecMu.RUnlock()
 
 	if cachedRaw == nil {
 		return nil
