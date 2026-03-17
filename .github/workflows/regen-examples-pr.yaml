@@ -1,0 +1,161 @@
+# SPDX-FileCopyrightText: Copyright 2015-2026 go-swagger maintainers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Phase 2 of the examples regeneration pipeline.
+#
+# Triggered by workflow_run after the "Regen examples" workflow completes.
+# Downloads the diff artifact produced by the untrusted phase 1,
+# applies it to the examples repo, and creates/updates a PR with
+# proper credentials (GitHub App token + GPG-signed commits).
+#
+#
+# Security model: this workflow never checks out or executes PR code.
+# It only applies a patch file (data, not code) produced by phase 1.
+
+name: Regen examples PR
+
+permissions:
+  contents: read
+
+on:
+  workflow_run:
+    workflows: ["Regen examples"]
+    types:
+      - completed
+
+jobs:
+  on-success:
+    name: Ensure triggering workflow was successful
+    if: >-
+      ${{
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'pull_request'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        run: |
+          echo "The triggering workflow was successful"
+
+  on-failure:
+    name: Triggering workflow was unsuccessful
+    if: >-
+      ${{
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'failure'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        run: |
+          echo "The triggering workflow failed. Stopping here"
+          exit 1
+
+  create-examples-pr:
+    # description: |
+    #   Download the regen diff from the completed workflow run,
+    #   apply it to the examples repo, and create/update a PR.
+    name: create examples PR
+    needs: [on-success]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      -
+        name: Download regen artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        id: download
+        with:
+          name: regen-examples
+          path: /tmp/regen-metadata
+          run-id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+      -
+        name: Check for artifacts
+        id: check
+        run: |
+          if [ ! -f /tmp/regen-metadata/regen.patch ]; then
+            echo "No regen artifacts found — examples are up to date."
+            echo "has_artifacts=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "has_artifacts=true" >> "${GITHUB_OUTPUT}"
+            PR_NUMBER=$(cat /tmp/regen-metadata/pr_number.txt)
+            echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
+          fi
+      -
+        name: Configure bot credentials
+        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354 # v1.4.11
+        id: bot-credentials
+        with:
+          enable-github-app: "true"
+          github-app-id: ${{ secrets.CI_BOT_APP_ID }}
+          github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          github-app-owner: go-swagger
+          github-app-repositories: examples
+          enable-gpg-signing: "true"
+          gpg-private-key: ${{ secrets.CI_BOT_GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.CI_BOT_GPG_PASSPHRASE }}
+          gpg-fingerprint: ${{ secrets.CI_BOT_SIGNING_KEY }}
+          enable-commit-signing: "true"
+          enable-tag-signing: "false"
+      -
+        name: Checkout examples
+        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: go-swagger/examples
+          token: ${{ steps.bot-credentials.outputs.app-token }}
+      -
+        name: Apply patch
+        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        run: |
+          git apply /tmp/regen-metadata/regen.patch
+      -
+        name: Create or update examples PR
+        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        id: examples-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.bot-credentials.outputs.app-token }}
+          commit-message: |
+            chore: regenerate examples from go-swagger PR #${{ steps.check.outputs.pr_number }}
+
+            Origin: go-swagger/go-swagger#${{ steps.check.outputs.pr_number }}
+          branch: regen/pr-${{ steps.check.outputs.pr_number }}
+          delete-branch: true
+          title: "chore: regen examples (go-swagger PR #${{ steps.check.outputs.pr_number }})"
+          body: |
+            Regenerated examples from go-swagger/go-swagger#${{ steps.check.outputs.pr_number }}
+
+            Triggering PR: https://github.com/go-swagger/go-swagger/pull/${{ steps.check.outputs.pr_number }}
+          signoff: true
+          sign-commits: true
+      -
+        name: Comment on go-swagger PR
+        if: ${{ steps.examples-pr.outputs.pull-request-url != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ steps.check.outputs.pr_number }}"
+          DIFFSTAT=$(cat /tmp/regen-metadata/diffstat.txt)
+          COMMENT=$(cat <<CMTEOF
+          **Examples regeneration:** changes detected.
+
+          Examples PR: ${{ steps.examples-pr.outputs.pull-request-url }}
+
+          <details>
+          <summary>Diffstat</summary>
+
+          \`\`\`
+          ${DIFFSTAT}
+          \`\`\`
+
+          </details>
+          CMTEOF
+          )
+          gh pr comment "${PR_NUMBER}" --body "${COMMENT}"
+
