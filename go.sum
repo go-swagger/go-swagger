@@ -15,8 +15,8 @@ github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHk
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
-github.com/go-openapi/analysis v0.24.3 h1:a1hrvMr8X0Xt69KP5uVTu5jH62DscmDifrLzNglAayk=
-github.com/go-openapi/analysis v0.24.3/go.mod h1:Nc+dWJ/FxZbhSow5Yh3ozg5CLJioB+XXT6MdLvJUsUw=
+github.com/go-openapi/analysis v0.25.0 h1:EnjAq1yO8wEO9HbPmY8vLPEIkdZuuFhCAKBPvCB7bCs=
+github.com/go-openapi/analysis v0.25.0/go.mod h1:5WFTRE43WLkPG9r9OtlMfqkkvUTYLVVCIxLlEpyF8kE=
 github.com/go-openapi/codescan v0.33.3 h1:1ybUbjR+uHi89WKpAc0jguloPdROcWldG2Ktk7Buqa4=
 github.com/go-openapi/codescan v0.33.3/go.mod h1:x55SpO1imFaDexCfFbVDyQtxV+mq6PY+UX8Hen8yIUk=
 github.com/go-openapi/errors v0.22.7 h1:JLFBGC0Apwdzw3484MmBqspjPbwa2SHvpDm0u5aGhUA=

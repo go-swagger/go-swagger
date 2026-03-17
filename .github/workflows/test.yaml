@@ -70,7 +70,6 @@ jobs:
             - '**/go.(mod,sum)'
             - 'cmd/**/*.go'
             - '!cmd/swagger/commands/generate/spec*.go'
-            - '!cmd/swagger/commands/diff/*.go'
             - 'generator/**'
             # codegen test program and configuration
             - 'hack/codegen*.go'
