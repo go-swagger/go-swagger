@@ -101,13 +101,13 @@ func TestAnalyzedSpecCache_ThreadSafety(t *testing.T) {
 	// Set thread 1
 	go func() {
 		defer func() { done <- true }()
-		opts.setAnalyzedSpec(nil)
+		opts.setCachedRawSpec(nil)
 	}()
 
 	// Set thread 2
 	go func() {
 		defer func() { done <- true }()
-		opts.setAnalyzedSpec(nil)
+		opts.setCachedRawSpec(nil)
 	}()
 
 	// Get thread 1
@@ -136,13 +136,13 @@ func TestAnalyzedSpecCache_BasicOperations(t *testing.T) {
 	assert.Nil(t, opts.getAnalyzedSpec())
 
 	// Set the cache
-	opts.setAnalyzedSpec(nil)
+	opts.setCachedRawSpec(nil)
 
 	// Retrieve the cache
 	assert.Nil(t, opts.getAnalyzedSpec())
 
 	// Set again
-	opts.setAnalyzedSpec(nil)
+	opts.setCachedRawSpec(nil)
 
 	// Retrieve again
 	assert.Nil(t, opts.getAnalyzedSpec())
@@ -211,4 +211,38 @@ func TestDeepCloneSpec_PreservesJSONRoundtrip(t *testing.T) {
 	assert.Equal(t, original.Info.Title, cloned2.Info.Title)
 	assert.Equal(t, original.Info.Version, cloned2.Info.Version)
 	assert.Len(t, cloned2.Definitions, len(original.Definitions))
+}
+
+// TestAnalyzedSpecCache_FreshAnalysis verifies that getAnalyzedSpec()
+// returns a freshly analyzed spec on each call, preventing internal state
+// mutations from affecting subsequent retrievals.
+func TestAnalyzedSpecCache_FreshAnalysis(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/simplesearch.yml")
+	require.NoError(t, err)
+
+	opts := testGenOpts()
+	opts.setCachedRawSpec(specDoc.Spec())
+
+	// Get analyzed spec twice
+	analyzed1 := opts.getAnalyzedSpec()
+	analyzed2 := opts.getAnalyzedSpec()
+
+	require.NotNil(t, analyzed1)
+	require.NotNil(t, analyzed2)
+
+	// Verify they are different objects (fresh analysis each time)
+	assert.NotSame(t, analyzed1, analyzed2,
+		"getAnalyzedSpec() should return a fresh analyzed spec on each call")
+
+	// Verify both have the same number of definition references
+	defs1 := analyzed1.AllDefinitions()
+	defs2 := analyzed2.AllDefinitions()
+	assert.Equal(t, len(defs1), len(defs2),
+		"Both analyzed specs should have the same number of definitions")
+
+	// Verify both have the same operation IDs
+	ops1 := analyzed1.OperationIDs()
+	ops2 := analyzed2.OperationIDs()
+	assert.ElementsMatch(t, ops1, ops2,
+		"Both analyzed specs should have the same operation IDs")
 }

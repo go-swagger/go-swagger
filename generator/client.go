@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/swag"
 )
 
@@ -26,13 +25,9 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	if err != nil {
 		return err
 	}
-	// Cache the analyzed spec for reuse in makeGenDefinitionHierarchy.
-	// Use a deep clone to avoid mutation issues during processing.
-	clonedSpec, err := deepCloneSpec(specDoc.Spec())
-	if err != nil {
-		return err
-	}
-	opts.setAnalyzedSpec(analysis.New(clonedSpec))
+	// Cache the raw, unanalyzed spec for reuse in makeGenDefinitionHierarchy.
+	// getAnalyzedSpec() will create a deep clone before analysis on each retrieval.
+	opts.setCachedRawSpec(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {

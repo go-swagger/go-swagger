@@ -69,19 +69,14 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	if err != nil {
 		return err
 	}
-	// Cache a deep-cloned analyzed spec for reuse in makeGenDefinitionHierarchy.
-	// Use a deep clone to avoid mutation issues during processing.
+	// Cache the raw, unanalyzed spec for reuse in makeGenDefinitionHierarchy.
+	// This avoids redundant analysis.New() calls per model while ensuring each
+	// model generation works with a fresh analyzed spec.
 	//
-	// NOTE: The analysis.New() function creates internal state that can be
-	// mutated during spec processing. By caching a deep-cloned version, we
-	// avoid redundant analysis.New() calls per model while ensuring each model
-	// generation works with a pristine copy.
-	clonedSpec, err := deepCloneSpec(specDoc.Spec())
-	if err != nil {
-		return err
-	}
-
-	opts.setAnalyzedSpec(analysis.New(clonedSpec))
+	// NOTE: getAnalyzedSpec() will create a deep clone of this cached spec
+	// before calling analysis.New(), preventing internal state mutations from
+	// affecting subsequent retrievals.
+	opts.setCachedRawSpec(specDoc.Spec())
 
 	modelNames = pruneEmpty(modelNames)
 	if len(modelNames) == 0 {
@@ -244,12 +239,12 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	// However, as a fallback, we analyze on-demand to maintain compatibility with
 	// any code paths that might call makeGenDefinitionHierarchy directly.
 	if analyzed == nil {
+		// Direct deep clone and analysis (bypassing cache for this fallback case)
 		clonedSpec, err := deepCloneSpec(specDoc.Spec())
 		if err != nil {
 			return nil, err
 		}
 		analyzed = analysis.New(clonedSpec)
-		opts.setAnalyzedSpec(analyzed)
 	}
 
 	di := discriminatorInfo(analyzed)

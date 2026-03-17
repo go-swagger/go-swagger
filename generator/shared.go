@@ -322,12 +322,13 @@ type GenOptsCommon struct {
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
 
-	// analyzedSpecCache holds a deep-cloned, analyzed spec to avoid repeated
-	// calls to analysis.New. The analyzed spec is internally mutable by the
-	// analysis package, so we cache a deep clone to prevent cross-model pollution.
+	// cachedRawSpec holds the raw, unanalyzed Swagger spec to avoid repeated
+	// loads.Document creation during generation.
+	// When retrieving the analyzed spec, a deep clone is made before analysis
+	// to ensure each model generation works with a pristine copy.
 	// Protected by analyzedSpecMu for thread safety.
-	analyzedSpecCache *analysis.Spec
-	analyzedSpecMu    *sync.RWMutex
+	cachedRawSpec *spec.Swagger
+	analyzedSpecMu *sync.RWMutex
 
 	Spec                   string
 	APIPackage             string
@@ -1167,28 +1168,45 @@ func concatUnique(collections ...[]string) []string {
 	return result
 }
 
-// setAnalyzedSpec stores the analyzed spec in the cache with thread safety.
+// setCachedRawSpec stores the raw, unanalyzed Swagger spec in the cache.
 // This should be called once during generation initialization.
-// The spec is deep-cloned before analysis to prevent mutations to the original spec
-// from affecting future generations.
-func (g *GenOptsCommon) setAnalyzedSpec(analyzed *analysis.Spec) {
+// The spec is stored without analysis to ensure we can create fresh analyzed
+// copies on each retrieval, preventing cross-model pollution.
+func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
 	if g.analyzedSpecMu == nil {
 		g.analyzedSpecMu = &sync.RWMutex{}
 	}
 	g.analyzedSpecMu.Lock()
-	g.analyzedSpecCache = analyzed
+	g.cachedRawSpec = raw
 	g.analyzedSpecMu.Unlock()
 }
 
-// getAnalyzedSpec retrieves the cached analyzed spec with thread safety.
+// getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
+// It creates a deep clone before analysis to ensure internal state is pristine,
+// preventing any mutations from affecting subsequent retrievals.
 // Returns nil if the cache hasn't been populated.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
 	if g.analyzedSpecMu == nil {
 		return nil
 	}
 	g.analyzedSpecMu.RLock()
-	defer g.analyzedSpecMu.RUnlock()
-	return g.analyzedSpecCache
+	cachedRaw := g.cachedRawSpec
+	g.analyzedSpecMu.RUnlock()
+
+	if cachedRaw == nil {
+		return nil
+	}
+
+	// Deep clone the raw spec before analysis to ensure we get a pristine
+	// analyzed spec each time, preventing internal state mutations from
+	// affecting other model generations.
+	cloned, err := deepCloneSpec(cachedRaw)
+	if err != nil {
+		// If deep cloning fails, return nil to fall back to the original behavior
+		return nil
+	}
+
+	return analysis.New(cloned)
 }
 
 // deepCloneSpec creates a deep copy of a spec using JSON marshaling/unmarshaling
