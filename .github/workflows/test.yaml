@@ -170,14 +170,13 @@ jobs:
           go-version: stable
           check-latest: true
           cache: true
-      # Temporarily disabled: check fails because the diff is too large
-      #- name: golangci-lint
-      #  uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
-      #  with:
-      #    args: --verbose
-      #    only-new-issues: true
-      #    skip-cache: true
-      #    version: latest
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
+        with:
+          args: --verbose
+          only-new-issues: true
+          skip-cache: true
+          version: latest
 
   skip-test:
     # description: |
