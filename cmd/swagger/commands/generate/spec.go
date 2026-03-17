@@ -10,13 +10,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-swagger/go-swagger/codescan"
+	"github.com/go-openapi/codescan"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 
 	"github.com/jessevdk/go-flags"
 	"go.yaml.in/yaml/v3"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
 )
 
 // SpecFile command to generate a swagger spec from a go application.

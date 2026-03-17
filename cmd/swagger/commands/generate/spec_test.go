@@ -10,14 +10,12 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-openapi/codescan"
+	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-
-	"github.com/go-swagger/go-swagger/codescan"
 
 	"github.com/jessevdk/go-flags"
 	"go.yaml.in/yaml/v3"
-
-	"github.com/go-openapi/testify/v2/assert"
 )
 
 const (
