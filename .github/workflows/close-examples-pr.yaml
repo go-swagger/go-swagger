@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: Copyright 2015-2026 go-swagger maintainers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Clean up orphaned examples PRs when a go-swagger PR is closed without merge.
+#
+# Uses pull_request_target for access to secrets. No PR code is checked out.
+
+name: Close examples PR
+
+permissions:
+  contents: read
+
+on:
+  pull_request_target:
+    types:
+      - closed
+
+jobs:
+  close-examples-pr:
+    name: close examples PR
+    if: ${{ !github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Configure bot credentials
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354 # v1.4.11
+        id: bot-credentials
+        with:
+          enable-github-app: "true"
+          github-app-id: ${{ secrets.CI_BOT_APP_ID }}
+          github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+          github-app-owner: go-swagger
+          github-app-repositories: examples
+      -
+        name: Close corresponding examples PR
+        env:
+          GH_TOKEN: ${{ steps.bot-credentials.outputs.app-token }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          BRANCH="regen/pr-${PR_NUMBER}"
+          EXISTING=$(gh pr list --repo go-swagger/examples --head "${BRANCH}" --json number --jq '.[0].number // empty')
+          if [ -n "${EXISTING}" ]; then
+            gh pr close "${EXISTING}" --repo go-swagger/examples --delete-branch \
+              --comment "Closing: triggering go-swagger PR #${PR_NUMBER} was closed without merge."
+          fi
