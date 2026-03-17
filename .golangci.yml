@@ -78,12 +78,7 @@ linters:
       - std-error-handling
     paths:
       - fixtures/
-      - examples/
     rules:
-      # do not exclude examples from linting, but apply slightly different rules
-      - path: examples/
-        linters:
-          - gofumpt # we don't run gofumpt on generated examples, only goimports
       - path: 'generator/generated/'
         linters:
           - gofumpt # we don't run gofumpt on generated code (used during testing)

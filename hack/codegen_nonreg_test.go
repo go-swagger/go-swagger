@@ -6,10 +6,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -301,6 +304,7 @@ func makeBuildDir(t *testing.T, spec string) string {
 		failure(t, "cannot create temporary codegen dir for %s", base)
 		t.FailNow()
 	}
+
 	return target
 }
 
@@ -438,6 +442,9 @@ func TestCodegen(t *testing.T) {
 	require.NoError(t, err)
 	info(t, "target generation in %s", genDir)
 
+	info(t, "creating module %q in %s", SanitizeGoModPath("gen"), genDir)
+	GoModInit(genDir, WithGoModuleName("gen"))(t)
+
 	globalOpts := skipT{
 		SkipFullFlatten: args.skipFlatten,
 		SkipExpand:      args.skipExpand,
@@ -510,14 +517,12 @@ func TestCodegen(t *testing.T) {
 					if run.GenModel {
 						t.Run("swagger generate model", func(t *testing.T) {
 							generateModel(t, spec, cmdOpts, run.Opts()...)
-							buildModel(t, run.Target)
 						})
 					}
 
 					if run.GenServer {
 						t.Run("swagger generate server", func(t *testing.T) {
 							generateServer(t, spec, cmdOpts, run.Opts()...)
-							buildServer(t, run.Target)
 						})
 					}
 
@@ -525,17 +530,105 @@ func TestCodegen(t *testing.T) {
 						if skip.IncludeCLI {
 							t.Run("swagger generate cli", func(t *testing.T) {
 								generateCLI(t, spec, cmdOpts, run.Opts()...)
-								buildCLI(t, run.Target)
 							})
 						} else {
 							t.Run("swagger generate client", func(t *testing.T) {
 								generateClient(t, spec, cmdOpts, run.Opts()...)
-								buildClient(t, run.Target)
 							})
+						}
+					}
+
+					if run.GenModel || run.GenServer || run.GenClient {
+						info(t, "tidy module in %s", run.Target)
+						GoModTidy(run.Target)(t)
+					}
+
+					if run.GenModel {
+						buildModel(t, run.Target)
+					}
+
+					if run.GenServer {
+						buildServer(t, run.Target)
+					}
+
+					if run.GenClient {
+						if skip.IncludeCLI {
+							buildCLI(t, run.Target)
+						} else {
+							buildClient(t, run.Target)
 						}
 					}
 				})
 			}
+		})
+	}
+}
+
+type GoModOption func(o *goModOptions)
+
+type goModOptions struct {
+	moduleName string
+}
+
+func WithGoModuleName(name string) GoModOption {
+	return func(o *goModOptions) {
+		o.moduleName = name
+	}
+}
+
+var sanitizer = strings.NewReplacer(
+	"(", "-",
+	")", "-",
+	".", "-",
+	"_", "-",
+	"\\", "/",
+	":", "-",
+	" ", "-",
+)
+
+func SanitizeGoModPath(pth string) string {
+	return path.Clean(sanitizer.Replace(filepath.Base(pth)))
+}
+
+const minute = 60 * time.Second
+
+func GoModInit(pth string, opts ...GoModOption) func(*testing.T) {
+	var o goModOptions
+	for _, apply := range opts {
+		apply(&o)
+	}
+
+	if o.moduleName == "" {
+		o.moduleName = SanitizeGoModPath(pth)
+	}
+
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run(fmt.Sprintf("should initialize go.mod for %q", o.moduleName), func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			mod := exec.CommandContext(ctx, "go", "mod", "init", o.moduleName) //nolint:gosec // "tainted" args exec is actually okay
+			mod.Dir = pth
+			output, err := mod.CombinedOutput()
+			require.NoErrorf(t, err, "go mod init returned: %s", string(output))
+		})
+	}
+}
+
+func GoModTidy(pth string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Helper()
+
+		t.Run("should tidy go.mod", func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), minute)
+			defer cancel()
+
+			vet := exec.CommandContext(ctx, "go", "mod", "tidy")
+			vet.Dir = pth
+			output, err := vet.CombinedOutput()
+			require.NoError(t, err, string(output))
 		})
 	}
 }

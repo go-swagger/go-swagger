@@ -370,4 +370,4 @@ Content-Length: 51
 "operation .AddOrder has not yet been implemented"
 ```
 
-[example_code]: https://github.com/go-swagger/go-swagger/blob/master/examples/composed-auth/
+[example_code]: https://github.com/go-swagger/examples/blob/master/composed-auth/

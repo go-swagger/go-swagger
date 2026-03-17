@@ -45,6 +45,7 @@ This will start a server with CORS enabled so that sites on other domains can lo
 
 Example:
 ```sh
+git clone https://github.com/go-swagger/examples
 cd examples/cli
 swagger serve swagger.yml
 ```

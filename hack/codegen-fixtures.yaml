@@ -238,7 +238,7 @@
     skipFullFlatten: true
     includeCLI: true
 - spec: swagger.yml
-  dir: examples/cli
+  dir: fixtures/cli
   skipped:
     skipExpand: true
     skipModel: true

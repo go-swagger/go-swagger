@@ -182,8 +182,8 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/go-openapi/examples/todo-list/restapi/operations"
-	"github.com/go-openapi/examples/todo-list/restapi/operations/todos"
+	"github.com/go-swagger/examples/todo-list/restapi/operations"
+	"github.com/go-swagger/examples/todo-list/restapi/operations/todos"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten

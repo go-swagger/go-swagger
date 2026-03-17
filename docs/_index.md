@@ -158,7 +158,7 @@ swagger generate client [-f ./swagger.json] -A [application-name [--principal [p
 
 ### Generate an CLI (Command line tool)
 
-To generate a [CLI for a swagger spec](https://github.com/go-swagger/go-swagger/tree/master/examples/cli) document:
+To generate a [CLI for a swagger spec](https://github.com/go-swagger/examples/tree/master/cli) document:
 
 ```sh
 swagger generate cli [-f ./swagger.json] -A [application-name [--principal [principal-name]]
