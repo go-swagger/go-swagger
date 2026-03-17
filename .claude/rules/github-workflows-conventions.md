@@ -14,7 +14,7 @@ This rule captures YAML and bash formatting rules to provide a consistent mainta
 
 > GitHub does not support a hierarchical organization for workflows yet.
 
-**REQUIRED**:  YAML files are conventionally named `{workflow}.yml`, with the `.yml` extension.
+**REQUIRED**:  YAML files are conventionally named `{workflow}.yaml`, with the `.yaml` extension.
 
 ## Code Style & Formatting
 
