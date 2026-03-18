@@ -1167,18 +1167,27 @@ func concatUnique(collections ...[]string) []string {
 	return result
 }
 
-// setCachedRawSpec stores the raw, unanalyzed Swagger spec in the cache.
+// setCachedRawSpec stores a deep-copied version of the raw, unanalyzed Swagger spec in the cache.
+// Deep cloning before storage ensures the cached spec is independent of the original,
+// preventing any mutations to the original spec from affecting the cache.
 // This should be called once during generation initialization.
-// The spec is stored without analysis to ensure we can create fresh analyzed
-// copies on each retrieval, preventing cross-model pollution.
 // Thread-safe: uses atomic.Pointer.Store which provides lock-free atomic store.
 func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
-	g.cachedRawSpec.Store(raw)
+	// Deep clone the spec before storing to ensure independence from the original.
+	// This prevents mutations to the original spec (e.g., during spec expansion or flattening)
+	// from affecting cached copies used in subsequent model generations.
+	cloned, err := deepCloneSpec(raw)
+	if err != nil {
+		// If deep cloning fails, store nil to fall back to the original behavior
+		g.cachedRawSpec.Store(nil)
+		return
+	}
+	g.cachedRawSpec.Store(cloned)
 }
 
 // getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
-// It creates a deep clone before analysis to ensure internal state is pristine,
-// preventing any mutations from affecting subsequent retrievals.
+// It creates a deep clone before analysis to ensure each call returns an independent
+// analyzed spec with pristine internal state, preventing cross-model contamination.
 // Returns nil if the cache hasn't been populated.
 // Thread-safe: uses atomic.Pointer.Load which provides lock-free atomic load.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
@@ -1188,8 +1197,10 @@ func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
 	}
 
 	// Deep clone the raw spec before analysis to ensure we get a pristine
-	// analyzed spec each time, preventing internal state mutations from
-	// affecting other model generations.
+	// analyzed spec each time. While the cached spec is already a deep clone,
+	// this additional clone ensures each analysis.New() call operates on an
+	// independent copy, preventing any internal state mutations in the analyzed
+	// spec from affecting subsequent retrievals.
 	cloned, err := deepCloneSpec(cachedRaw)
 	if err != nil {
 		// If deep cloning fails, return nil to fall back to the original behavior

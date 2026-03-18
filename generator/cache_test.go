@@ -247,3 +247,47 @@ func TestAnalyzedSpecCache_FreshAnalysis(t *testing.T) {
 	assert.ElementsMatch(t, ops1, ops2,
 		"Both analyzed specs should have the same operation IDs")
 }
+
+// TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache verifies that
+// mutating the original spec after caching does not affect the cached copy.
+// This ensures setCachedRawSpec properly deep clones before storage.
+func TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/codegen/simplesearch.yml")
+	require.NoError(t, err)
+
+	originalSpec := specDoc.Spec()
+	require.NotNil(t, originalSpec)
+
+	// Remember the original title
+	originalTitle := originalSpec.Info.Title
+
+	// Set the cache
+	opts := testGenOpts()
+	opts.setCachedRawSpec(originalSpec)
+
+	// Mutate the original spec after caching
+	originalSpec.Info.Title = "MODIFIED_AFTER_CACHE"
+	originalSpec.Info.Version = "999.0.0"
+
+	// Retrieve from cache multiple times
+	for i := 0; i < 3; i++ {
+		analyzed := opts.getAnalyzedSpec()
+		require.NotNil(t, analyzed, "Cache should return valid spec on iteration %d", i)
+
+		// The cached spec should still have the original title, not the mutated one
+		assert.Equal(t, originalTitle, analyzed.Spec().Info.Title,
+			"Cached spec should not be affected by mutations to original (iteration %d)", i)
+	}
+}
+
+// TestAnalyzedSpecCache_NilInputHandling verifies proper handling when
+// setCachedRawSpec is called with nil input.
+func TestAnalyzedSpecCache_NilInputHandling(t *testing.T) {
+	opts := testGenOpts()
+
+	// Setting nil should result in cache returning nil
+	opts.setCachedRawSpec(nil)
+	analyzed := opts.getAnalyzedSpec()
+	assert.Nil(t, analyzed, "Cache should return nil when set with nil spec")
+}
+

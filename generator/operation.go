@@ -64,7 +64,9 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 		return err
 	}
 	// Cache the raw, unanalyzed spec for reuse in makeGenDefinitionHierarchy.
-	// getAnalyzedSpec() will create a deep clone before analysis on each retrieval.
+	// setCachedRawSpec() deep clones the spec before caching to prevent subsequent
+	// mutations to the original spec from affecting the cache.
+	// getAnalyzedSpec() creates another deep clone before analysis on each retrieval.
 	opts.setCachedRawSpec(specDoc.Spec())
 
 	ops := gatherOperations(analyzed, operationNames)

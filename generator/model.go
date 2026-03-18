@@ -73,9 +73,10 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	// This avoids redundant analysis.New() calls per model while ensuring each
 	// model generation works with a fresh analyzed spec.
 	//
-	// NOTE: getAnalyzedSpec() will create a deep clone of this cached spec
-	// before calling analysis.New(), preventing internal state mutations from
-	// affecting subsequent retrievals.
+	// NOTE: setCachedRawSpec() deep clones the spec before caching to prevent
+	// subsequent mutations to the original spec from affecting the cache.
+	// getAnalyzedSpec() creates another deep clone before analysis.New() to ensure
+	// each call returns an independent analyzed spec.
 	opts.setCachedRawSpec(specDoc.Spec())
 
 	modelNames = pruneEmpty(modelNames)
