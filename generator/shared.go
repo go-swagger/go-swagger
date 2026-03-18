@@ -327,7 +327,7 @@ type GenOptsCommon struct {
 	// loads.Document creation during generation.
 	// When retrieving the analyzed spec, a deep clone is made before analysis
 	// to ensure each model generation works with a pristine copy.
-	// Protected by analyzedSpecMu for thread safety.
+	// Protected by cachedSpecMu for thread safety.
 	cachedRawSpec atomic.Pointer[spec.Swagger]
 	cachedSpecMu  sync.RWMutex
 
