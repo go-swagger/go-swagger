@@ -94,7 +94,8 @@ func TestDeepCloneSpec_PathsAndOperations(t *testing.T) {
 }
 
 func TestAnalyzedSpecCache_ThreadSafety(t *testing.T) {
-	// Test that read/write operations on the cache are thread-safe
+	// Test that concurrent read/write operations on the cache are thread-safe.
+	// Uses atomic.Pointer for lock-free concurrent access.
 	opts := testGenOpts()
 	done := make(chan bool)
 
@@ -126,7 +127,7 @@ func TestAnalyzedSpecCache_ThreadSafety(t *testing.T) {
 	<-done
 	<-done
 	<-done
-	// If we got here without deadlock, thread safety works
+	// If we got here without panic or data race, thread safety works
 }
 
 func TestAnalyzedSpecCache_BasicOperations(t *testing.T) {

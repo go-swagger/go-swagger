@@ -18,7 +18,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"text/template"
 
@@ -327,9 +326,8 @@ type GenOptsCommon struct {
 	// loads.Document creation during generation.
 	// When retrieving the analyzed spec, a deep clone is made before analysis
 	// to ensure each model generation works with a pristine copy.
-	// Protected by cachedSpecMu for thread safety.
+	// Thread-safe: uses atomic.Pointer for lock-free concurrent access.
 	cachedRawSpec atomic.Pointer[spec.Swagger]
-	cachedSpecMu  sync.RWMutex
 
 	Spec                   string
 	APIPackage             string
@@ -1173,21 +1171,18 @@ func concatUnique(collections ...[]string) []string {
 // This should be called once during generation initialization.
 // The spec is stored without analysis to ensure we can create fresh analyzed
 // copies on each retrieval, preventing cross-model pollution.
+// Thread-safe: uses atomic.Pointer.Store which provides lock-free atomic store.
 func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
-	g.cachedSpecMu.Lock()
 	g.cachedRawSpec.Store(raw)
-	g.cachedSpecMu.Unlock()
 }
 
 // getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
 // It creates a deep clone before analysis to ensure internal state is pristine,
 // preventing any mutations from affecting subsequent retrievals.
 // Returns nil if the cache hasn't been populated.
+// Thread-safe: uses atomic.Pointer.Load which provides lock-free atomic load.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
-	g.cachedSpecMu.RLock()
 	cachedRaw := g.cachedRawSpec.Load()
-	g.cachedSpecMu.RUnlock()
-
 	if cachedRaw == nil {
 		return nil
 	}
