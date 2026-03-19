@@ -40,8 +40,8 @@ func TestDeepCloneSpec_SimpleSpec(t *testing.T) {
 func TestDeepCloneSpec_NilInput(t *testing.T) {
 	cloned, err := deepCloneSpec(nil)
 	require.NoError(t, err)
-	// deepCloneSpec returns an empty Swagger spec for nil input (from JSON unmarshaling nil)
-	require.NotNil(t, cloned)
+	// deepCloneSpec returns nil for nil input now (changed from previous behavior)
+	require.Nil(t, cloned)
 }
 
 func TestDeepCloneSpec_ComplexSpec(t *testing.T) {

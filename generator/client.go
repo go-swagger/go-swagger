@@ -26,9 +26,9 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		return err
 	}
 	// Cache the raw, unanalyzed spec for reuse in makeGenDefinitionHierarchy.
-	// setCachedRawSpec() will deep clone the spec to ensure cache independence
-	// from any subsequent mutations to the original spec.
-	// getAnalyzedSpec() will create another deep clone before analysis on each retrieval.
+	// setCachedRawSpec() stores the spec as JSON bytes, enabling efficient deep cloning
+	// on each retrieval without the overhead of marshal-unmarshal cycles.
+	// getAnalyzedSpec() creates fresh instances via unmarshaling, ensuring isolation.
 	opts.setCachedRawSpec(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)

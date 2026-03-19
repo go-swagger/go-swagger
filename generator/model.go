@@ -70,13 +70,9 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		return err
 	}
 	// Cache the raw, unanalyzed spec for reuse in makeGenDefinitionHierarchy.
-	// This avoids redundant analysis.New() calls per model while ensuring each
-	// model generation works with a fresh analyzed spec.
-	//
-	// NOTE: setCachedRawSpec() deep clones the spec before caching to prevent
-	// subsequent mutations to the original spec from affecting the cache.
-	// getAnalyzedSpec() creates another deep clone before analysis.New() to ensure
-	// each call returns an independent analyzed spec.
+	// setCachedRawSpec() stores the spec as JSON bytes, enabling efficient deep cloning
+	// on each retrieval without the overhead of marshal-unmarshal cycles.
+	// getAnalyzedSpec() creates fresh instances via unmarshaling, ensuring isolation.
 	opts.setCachedRawSpec(specDoc.Spec())
 
 	modelNames = pruneEmpty(modelNames)
@@ -235,17 +231,13 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
 	resolver := newTypeResolver("", "", specDoc).withDefinitionPackage(modelPkg)
 	resolver.ModelName = name
+	// Get analyzed spec from cache - provides a fresh cloned analyzed spec
+	// to prevent cross-model contamination during generation.
 	analyzed := opts.getAnalyzedSpec()
-	// The spec should be analyzed before reaching this point for optimal performance.
-	// However, as a fallback, we analyze on-demand to maintain compatibility with
-	// any code paths that might call makeGenDefinitionHierarchy directly.
 	if analyzed == nil {
-		// Direct deep clone and analysis (bypassing cache for this fallback case)
-		clonedSpec, err := deepCloneSpec(specDoc.Spec())
-		if err != nil {
-			return nil, err
-		}
-		analyzed = analysis.New(clonedSpec)
+		// This should not happen with proper initialization, but fail gracefully
+		// rather than using a potentially polluted spec doc directly.
+		return nil, fmt.Errorf("spec cache not initialized for model %s", name)
 	}
 
 	di := discriminatorInfo(analyzed)

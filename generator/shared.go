@@ -322,12 +322,13 @@ type GenOptsCommon struct {
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
 
-	// cachedRawSpec holds the raw, unanalyzed Swagger spec to avoid repeated
-	// loads.Document creation during generation.
-	// When retrieving the analyzed spec, a deep clone is made before analysis
-	// to ensure each model generation works with a pristine copy.
+<arg_value>	// cachedRawSpecBytes holds the raw JSON bytes of the unanalyzed Swagger spec.
+	// This is stored as JSON bytes rather than the unmarshaled struct to enable
+	// efficient deep cloning on each access: unmarshaling creates new struct instances.
+	// This approach provides isolation between model generations without the overhead
+	// of marshal-unmarshal cycles that would occur if storing the unmarshaled struct.
 	// Thread-safe: uses atomic.Pointer for lock-free concurrent access.
-	cachedRawSpec atomic.Pointer[spec.Swagger]
+	cachedRawSpecBytes atomic.Pointer[[]byte]
 
 	Spec                   string
 	APIPackage             string
@@ -1167,51 +1168,57 @@ func concatUnique(collections ...[]string) []string {
 	return result
 }
 
-// setCachedRawSpec stores a deep-copied version of the raw, unanalyzed Swagger spec in the cache.
-// Deep cloning before storage ensures the cached spec is independent of the original,
-// preventing any mutations to the original spec from affecting the cache.
+// setCachedRawSpec stores the raw JSON bytes of the unanalyzed Swagger spec in the cache.
+// Storing JSON bytes (rather than the unmarshaled struct) enables efficient deep cloning:
+// unmarshaling creates new struct instances, providing isolation between model generations.
 // This should be called once during generation initialization.
 // Thread-safe: uses atomic.Pointer.Store which provides lock-free atomic store.
 func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
-	// Deep clone the spec before storing to ensure independence from the original.
-	// This prevents mutations to the original spec (e.g., during spec expansion or flattening)
-	// from affecting cached copies used in subsequent model generations.
-	cloned, err := deepCloneSpec(raw)
-	if err != nil {
-		// If deep cloning fails, store nil to fall back to the original behavior
-		g.cachedRawSpec.Store(nil)
+	if raw == nil {
+		g.cachedRawSpecBytes.Store(nil)
 		return
 	}
-	g.cachedRawSpec.Store(cloned)
+	// Marshal to JSON bytes for storage. Unmarshaling will create fresh instances
+	// on each access, providing the deep cloning needed for isolation.
+	jsonBytes, err := json.Marshal(raw)
+	if err != nil {
+		// If marshaling fails, store nil to fall back to the original behavior
+		g.cachedRawSpecBytes.Store(nil)
+		return
+	}
+	g.cachedRawSpecBytes.Store(&jsonBytes)
 }
 
 // getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
-// It creates a deep clone before analysis to ensure each call returns an independent
-// analyzed spec with pristine internal state, preventing cross-model contamination.
+// It unmarshals the JSON bytes to create a new spec instance, providing
+// isolation from other retrievals to prevent cross-model contamination.
 // Returns nil if the cache hasn't been populated.
 // Thread-safe: uses atomic.Pointer.Load which provides lock-free atomic load.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
-	cachedRaw := g.cachedRawSpec.Load()
-	if cachedRaw == nil {
+	jsonBytesPtr := g.cachedRawSpecBytes.Load()
+	if jsonBytesPtr == nil {
 		return nil
 	}
 
-	// Deep clone the raw spec before analysis to ensure we get a pristine
-	// analyzed spec each time. While the cached spec is already a deep clone,
-	// this additional clone ensures each analysis.New() call operates on an
-	// independent copy, preventing any internal state mutations in the analyzed
-	// spec from affecting subsequent retrievals.
-	cloned, err := deepCloneSpec(cachedRaw)
-	if err != nil {
-		// If deep cloning fails, return nil to fall back to the original behavior
+	// Unmarshal into a new spec. This creates fresh instances of all nested
+	// structures, providing the deep cloning needed for isolation between
+	// each call without the overhead of marshal-unmarshal cycles.
+	var cloned spec.Swagger
+	if err := json.Unmarshal(*jsonBytesPtr, &cloned); err != nil {
+		// If unmarshaling fails, return nil to fall back to the original behavior
 		return nil
 	}
 
-	return analysis.New(cloned)
+	return analysis.New(&cloned)
 }
 
-// deepCloneSpec creates a deep copy of a spec using JSON marshaling/unmarshaling
+// deepCloneSpec creates a deep copy of a spec using JSON marshaling/unmarshaling.
+// Returns nil if the input spec is nil.
 func deepCloneSpec(swagger *spec.Swagger) (*spec.Swagger, error) {
+	if swagger == nil {
+		return nil, nil
+	}
+
 	// Marshal the spec to JSON
 	jsonBytes, err := json.Marshal(swagger)
 	if err != nil {
