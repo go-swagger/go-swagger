@@ -1,0 +1,92 @@
+name: Add sub-issues to #3312
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'copilot/add-sub-issues-for-3312'
+    paths:
+      - '.github/workflows/add-sub-issues-3312.yml'
+
+permissions:
+  issues: write
+
+jobs:
+  add-sub-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issues tagged "generate spec" or "scanner" as sub-issues of #3312
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // All open issues tagged with "generate spec" or "scanner" (excluding #3312 itself)
+            const issueNumbers = [
+              3275, 3214, 3213, 3211, 3138, 3134, 3119, 3117, 3107, 3100, 3069, 3035, 3013,
+              3007, 3005, 2985, 2980, 2963, 2961, 2959, 2942, 2924, 2922, 2917, 2912, 2909,
+              2907, 2899, 2898, 2897, 2888, 2886, 2875, 2874, 2872, 2871, 2860, 2846, 2838,
+              2837, 2804, 2802, 2801, 2799, 2791, 2783, 2778, 2777, 2762, 2761, 2746, 2701,
+              2687, 2663, 2662, 2655, 2652, 2651, 2639, 2638, 2637, 2633, 2632, 2626, 2625,
+              2618, 2611, 2599, 2596, 2592, 2588, 2575, 2549, 2547, 2539, 2528, 2520, 2503,
+              2483, 2479, 2441, 2419, 2417, 2412, 2409, 2407, 2403, 2398, 2396, 2384, 2383,
+              2379, 2371, 2353, 2317, 2311, 2305, 2299, 2296, 2294, 2286, 2266, 2251, 2248,
+              2246, 2245, 2233, 2232, 2230, 2228, 2218, 2210, 2208, 2202, 2184, 2183, 2172,
+              2160, 2133, 2131, 2127, 2126, 2125, 2119, 2106, 2064, 2062, 2053, 2038, 2027,
+              2020, 2014, 2013, 2002, 2000, 1992, 1974, 1960, 1958, 1955, 1934, 1931, 1925,
+              1913, 1891, 1887, 1881, 1867, 1865, 1860, 1852, 1828, 1815, 1795, 1777, 1772,
+              1761, 1758, 1742, 1737, 1735, 1734, 1727, 1726, 1725, 1713, 1712, 1711, 1708,
+              1670, 1665, 1635, 1613, 1609, 1595, 1587, 1560, 1542, 1520, 1512, 1499, 1483,
+              1459, 1436, 1416, 1415, 1408, 1402, 1401, 1398, 1395, 1391, 1350, 1335, 1279,
+              1268, 1267, 1228, 1174, 1133, 1121, 1118, 1117, 1115, 1109, 1096, 1092, 1088,
+              1079, 1078, 1064, 1063, 1026, 989, 977, 958, 874, 864, 834, 796, 791, 779,
+              706, 624, 622, 619, 618, 613, 610, 559, 452, 439, 422, 413, 361, 334, 301, 91
+            ];
+
+            const owner = 'go-swagger';
+            const repo = 'go-swagger';
+            const parentIssueNumber = 3312;
+
+            let added = 0;
+            let skipped = 0;
+            let failed = 0;
+
+            for (const num of issueNumbers) {
+              try {
+                // Fetch the issue to get its numeric database ID
+                const { data: issue } = await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number: num,
+                });
+
+                // Add as sub-issue using the REST API
+                await github.request(
+                  'POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues',
+                  {
+                    owner,
+                    repo,
+                    issue_number: parentIssueNumber,
+                    sub_issue_id: issue.id,
+                    headers: {
+                      'X-GitHub-Api-Version': '2022-11-28',
+                    },
+                  }
+                );
+
+                console.log(`✓ Added #${num} as sub-issue`);
+                added++;
+              } catch (error) {
+                if (error.status === 422) {
+                  // Already a sub-issue or other validation error
+                  console.log(`- Skipped #${num}: ${error.message}`);
+                  skipped++;
+                } else {
+                  console.log(`✗ Failed to add #${num}: ${error.status} ${error.message}`);
+                  failed++;
+                }
+              }
+
+              // Small delay to avoid rate limiting
+              await new Promise(r => setTimeout(r, 100));
+            }
+
+            console.log(`\nSummary: ${added} added, ${skipped} skipped, ${failed} failed`);
