@@ -322,7 +322,7 @@ type GenOptsCommon struct {
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
 
-<arg_value>	// cachedRawSpecBytes holds the raw JSON bytes of the unanalyzed Swagger spec.
+	// cachedRawSpecBytes holds the raw JSON bytes of the unanalyzed Swagger spec.
 	// This is stored as JSON bytes rather than the unmarshaled struct to enable
 	// efficient deep cloning on each access: unmarshaling creates new struct instances.
 	// This approach provides isolation between model generations without the overhead
