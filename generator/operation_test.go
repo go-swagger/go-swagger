@@ -276,6 +276,8 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
+	// Set the cache before using getAnalyzedSpec()
+	o.setCachedRawSpec(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -313,6 +315,8 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
+	// Set the cache before using getAnalyzedSpec()
+	o.setCachedRawSpec(specDoc.Spec())
 	op, ok := analyzed.OperationFor(method, path)
 	if !ok {
 		return codeGenOpBuilder{}, errors.New("No operation could be found for " + method + " " + path)
@@ -349,6 +353,8 @@ func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error)
 	if err != nil {
 		return codeGenOpBuilder{}, err
 	}
+	// Set the cache before using getAnalyzedSpec()
+	o.setCachedRawSpec(specDoc.Spec())
 
 	method, path, op, ok := analyzed.OperationForName(name)
 	if !ok {
