@@ -44,7 +44,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	generator := appGenerator{
 		Name:              appNameOrDefault(specDoc, name, defaultClientName),
 		SpecDoc:           specDoc,
-		Analyzed:          analyzed,
+		Analyzed:          opts.getAnalyzedSpec(),
 		Models:            models,
 		Operations:        operations,
 		Target:            opts.Target,

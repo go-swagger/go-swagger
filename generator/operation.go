@@ -104,7 +104,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			DefaultProduces:      opts.DefaultProduces,
 			DefaultConsumes:      opts.DefaultConsumes,
 			Doc:                  specDoc,
-			Analyzed:             analyzed,
+			Analyzed:             opts.getAnalyzedSpec(),
 			GenOpts:              opts,
 		}
 		if err := generator.Generate(); err != nil {

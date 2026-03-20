@@ -101,7 +101,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		Name:              opts.Name,
 		Receiver:          "o",
 		SpecDoc:           specDoc,
-		Analyzed:          analyzed,
+		Analyzed:          opts.getAnalyzedSpec(),
 		Models:            models,
 		Operations:        operations,
 		Target:            opts.Target,

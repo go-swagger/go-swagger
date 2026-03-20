@@ -452,7 +452,7 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 		Name:            appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:        "o",
 		SpecDoc:         specDoc,
-		Analyzed:        analyzed,
+		Analyzed:        opts.getAnalyzedSpec(),
 		Models:          models,
 		Operations:      operations,
 		Target:          ".",
