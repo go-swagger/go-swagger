@@ -1211,17 +1211,20 @@ func TestGenerateServerOperation(t *testing.T) {
 		})
 
 		t.Run("with invalid templates directory", func(t *testing.T) {
-			oo := *o
+			oo := testGenOpts()
+			oo.Spec = o.Spec
+			oo.Target = o.Target
 			oo.TemplateDir = "./nowhere"
 
-			require.Error(t, GenerateServerOperation([]string{"notFound"}, &oo))
+			require.Error(t, GenerateServerOperation([]string{"notFound"}, oo))
 		})
 
 		t.Run("with unreachable input spec file", func(t *testing.T) {
-			oo := *o
+			oo := testGenOpts()
 			oo.Spec = "nowhere.yaml"
+			oo.Target = o.Target
 
-			require.Error(t, GenerateServerOperation([]string{"notFound"}, &oo))
+			require.Error(t, GenerateServerOperation([]string{"notFound"}, oo))
 		})
 
 		t.Run("with operation not in spec", func(t *testing.T) {

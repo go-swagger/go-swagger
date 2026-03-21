@@ -704,11 +704,16 @@ type MyStreamer io.Reader
 func generateExternalModel(opts *GenOpts, modelSpecPath string, modelsPackage string) func(t *testing.T) {
 	return func(t *testing.T) {
 		// we first generate an external model from model.yaml, as its own module
-		modelOpts := *opts
-		modelOpts.AcceptDefinitionsOnly = true
-		// the location of the spec for external models
+		// Note: We create a new GenOpts instance to avoid copying the atomic pointer field
+		modelOpts := testGenOpts()
+		// Copy necessary fields from opts (avoiding the atomic pointer)
+		modelOpts.Target = opts.Target
 		modelOpts.Spec = modelSpecPath
 		modelOpts.ModelPackage = "external"
+		modelOpts.AcceptDefinitionsOnly = true
+		if opts.LanguageOpts != nil {
+			modelOpts.LanguageOpts = opts.LanguageOpts
+		}
 		targetPackageLocation := filepath.Join(modelOpts.Target, modelOpts.ModelPackage)
 		require.NoError(t, os.MkdirAll(targetPackageLocation, readableDir))
 
@@ -716,7 +721,7 @@ func generateExternalModel(opts *GenOpts, modelSpecPath string, modelsPackage st
 		t.Run("models mod init", gentest.GoModInit(targetPackageLocation, gentest.WithGoModuleName(modelsPackage)))
 
 		// generate the external models package in package "external/models"
-		require.NoError(t, GenerateModels(nil, &modelOpts))
+		require.NoError(t, GenerateModels(nil, modelOpts))
 
 		t.Run("should replace external package by test module",
 			// in the module of the target server, replace the reference to the external module by its actual generated location
