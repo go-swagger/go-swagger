@@ -322,13 +322,13 @@ type GenOptsCommon struct {
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
 
-	// cachedRawSpecBytes holds the raw JSON bytes of the unanalyzed Swagger spec.
-	// This is stored as JSON bytes rather than the unmarshaled struct to enable
-	// efficient deep cloning on each access: unmarshaling creates new struct instances.
-	// This approach provides isolation between model generations without the overhead
-	// of marshal-unmarshal cycles that would occur if storing the unmarshaled struct.
+	// cachedAnalyzedSpecBytes holds the JSON bytes of a pre-analyzed spec.
+	// This is created by: (1) deep cloning the original spec, (2) analyzing it with
+	// analysis.New() which mutates the spec (adds extensions, builds internal caches), (3) marshaling
+	// the analyzed spec to JSON. Storing JSON bytes enables efficient deep cloning on each access:
+	// unmarshaling creates fresh instances, providing complete isolation between retrievals.
 	// Thread-safe: uses atomic.Pointer for lock-free concurrent access.
-	cachedRawSpecBytes atomic.Pointer[[]byte]
+	cachedAnalyzedSpecBytes atomic.Pointer[[]byte]
 
 	Spec                   string
 	APIPackage             string
@@ -1168,47 +1168,72 @@ func concatUnique(collections ...[]string) []string {
 	return result
 }
 
-// setCachedRawSpec stores the raw JSON bytes of the unanalyzed Swagger spec in the cache.
-// Storing JSON bytes (rather than the unmarshaled struct) enables efficient deep cloning:
-// unmarshaling creates new struct instances, providing isolation between model generations.
-// This should be called once during generation initialization.
-// Thread-safe: uses atomic.Pointer.Store which provides lock-free atomic store.
-func (g *GenOptsCommon) setCachedRawSpec(raw *spec.Swagger) {
+// setCachedAnalyzedSpec creates a deep cloned, pre-analyzed spec and caches it as JSON bytes.
+// The process:
+// 1. Deep clone the original spec to prevent external mutations
+// 2. Analyze the cloned spec with analysis.New() (which mutates the spec by adding extensions, building caches)
+// 3. Marshal the analyzed spec to JSON bytes for efficient retrieval
+//
+// This ensures:
+// - The original spec is never modified by caching
+// - Each getAnalyzedSpec() call returns a fresh, isolated copy of the analyzed spec
+// - Thread-safe: uses atomic.Pointer.Store for lock-free atomic store
+func (g *GenOptsCommon) setCachedAnalyzedSpec(raw *spec.Swagger) {
 	if raw == nil {
-		g.cachedRawSpecBytes.Store(nil)
+		g.cachedAnalyzedSpecBytes.Store(nil)
 		return
 	}
-	// Marshal to JSON bytes for storage. Unmarshaling will create fresh instances
-	// on each access, providing the deep cloning needed for isolation.
-	jsonBytes, err := json.Marshal(raw)
+
+	// Deep clone the original spec first
+	cloned, err := deepCloneSpec(raw)
+	if err != nil {
+		// If deep cloning fails, store nil to fall back to the original behavior
+		g.cachedAnalyzedSpecBytes.Store(nil)
+		return
+	}
+
+	// Analyze the cloned spec. This mutates the spec (adds extensions, builds caches).
+	// We need this analysis to be preserved in the cache.
+	_ = analysis.New(cloned)
+
+	// Marshal the analyzed spec to JSON bytes for storage
+	jsonBytes, err := json.Marshal(cloned)
 	if err != nil {
 		// If marshaling fails, store nil to fall back to the original behavior
-		g.cachedRawSpecBytes.Store(nil)
+		g.cachedAnalyzedSpecBytes.Store(nil)
 		return
 	}
-	g.cachedRawSpecBytes.Store(&jsonBytes)
+
+	g.cachedAnalyzedSpecBytes.Store(&jsonBytes)
 }
 
-// getAnalyzedSpec retrieves a freshly analyzed spec from the cached raw spec.
-// It unmarshals the JSON bytes to create a new spec instance, providing
-// isolation from other retrievals to prevent cross-model contamination.
+// getAnalyzedSpec retrieves a freshly analyzed spec from the cached analyzed spec bytes.
+// It unmarshals the JSON bytes to create a new spec instance that already contains
+// all the analysis mutations (extensions, caches, etc.), providing complete isolation
+// from other retrievals to prevent cross-model contamination.
+//
 // Returns nil if the cache hasn't been populated.
 // Thread-safe: uses atomic.Pointer.Load which provides lock-free atomic load.
 func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
-	jsonBytesPtr := g.cachedRawSpecBytes.Load()
+	jsonBytesPtr := g.cachedAnalyzedSpecBytes.Load()
 	if jsonBytesPtr == nil {
 		return nil
 	}
 
 	// Unmarshal into a new spec. This creates fresh instances of all nested
 	// structures, providing the deep cloning needed for isolation between
-	// each call without the overhead of marshal-unmarshal cycles.
+	// each call.
 	var cloned spec.Swagger
 	if err := json.Unmarshal(*jsonBytesPtr, &cloned); err != nil {
 		// If unmarshaling fails, return nil to fall back to the original behavior
 		return nil
 	}
 
+	// The cached spec is already analyzed, so we don't need to call analysis.New again.
+	// The analysis mutations (extensions, caches) are preserved in the JSON bytes.
+	// However, to get a fresh analysis.Spec wrapper with proper isolation, we recreate
+	// it from the unmarshaled spec. This ensures each call returns a completely isolated
+	// analysis.Spec instance.
 	return analysis.New(&cloned)
 }
 

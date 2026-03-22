@@ -419,6 +419,9 @@ func TestMoreModelValidations(t *testing.T) {
 				newSpecDoc, err := opts.validateAndFlattenSpec()
 				require.NoErrorf(t, err, "could not expand/flatten fixture %s: %v", fixtureSpec, err)
 
+				// Initialize the spec cache before calling makeGenDefinition
+				opts.setCachedAnalyzedSpec(newSpecDoc.Spec())
+
 				definitions := newSpecDoc.Spec().Definitions
 				for k, fixtureExpectations := range fixtureRun.Definitions {
 					// pick definition to test

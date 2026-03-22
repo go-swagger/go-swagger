@@ -51,6 +51,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	t.Run("mode sanity check", func(t *testing.T) {
 		for k, schema := range definitions {
 			opts := opts()
+			opts.setCachedAnalyzedSpec(specDoc.Spec())
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -347,6 +348,7 @@ func TestGenerateModel_Nota(t *testing.T) {
 	k := "Nota"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -365,6 +367,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 	const k = "NotaWithRef"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -386,6 +389,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	const k = "NotaWithMeta"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -410,6 +414,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	const k = "RunParameters"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -435,6 +440,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	const k = "NotaWithName"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -472,6 +478,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 	const k = "NotaWithRefRegistry"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -492,6 +499,7 @@ func TestGenerateModel_WithCustomTag(t *testing.T) {
 	const k = "WithCustomTag"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -509,6 +517,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 	const k = "NotaWithMetaRegistry"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -532,6 +541,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMap"]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -555,6 +565,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMapInterface"]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -583,6 +594,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	const k = "WithMapRef"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -607,6 +619,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	const k = "WithMapComplex"
 	schema := definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 

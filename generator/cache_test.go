@@ -102,13 +102,13 @@ func TestAnalyzedSpecCache_ThreadSafety(t *testing.T) {
 	// Set thread 1
 	go func() {
 		defer func() { done <- true }()
-		opts.setCachedRawSpec(nil)
+		opts.setCachedAnalyzedSpec(nil)
 	}()
 
 	// Set thread 2
 	go func() {
 		defer func() { done <- true }()
-		opts.setCachedRawSpec(nil)
+		opts.setCachedAnalyzedSpec(nil)
 	}()
 
 	// Get thread 1
@@ -137,13 +137,13 @@ func TestAnalyzedSpecCache_BasicOperations(t *testing.T) {
 	assert.Nil(t, opts.getAnalyzedSpec())
 
 	// Set the cache
-	opts.setCachedRawSpec(nil)
+	opts.setCachedAnalyzedSpec(nil)
 
 	// Retrieve the cache
 	assert.Nil(t, opts.getAnalyzedSpec())
 
 	// Set again
-	opts.setCachedRawSpec(nil)
+	opts.setCachedAnalyzedSpec(nil)
 
 	// Retrieve again
 	assert.Nil(t, opts.getAnalyzedSpec())
@@ -222,7 +222,7 @@ func TestAnalyzedSpecCache_FreshAnalysis(t *testing.T) {
 	require.NoError(t, err)
 
 	opts := testGenOpts()
-	opts.setCachedRawSpec(specDoc.Spec())
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 
 	// Get analyzed spec twice
 	analyzed1 := opts.getAnalyzedSpec()
@@ -250,7 +250,7 @@ func TestAnalyzedSpecCache_FreshAnalysis(t *testing.T) {
 
 // TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache verifies that
 // mutating the original spec after caching does not affect the cached copy.
-// This ensures setCachedRawSpec properly deep clones before storage.
+// This ensures setCachedAnalyzedSpec properly deep clones before storage.
 func TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/simplesearch.yml")
 	require.NoError(t, err)
@@ -260,7 +260,7 @@ func TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache(t *testing.T) {
 
 	// Set the cache
 	opts := testGenOpts()
-	opts.setCachedRawSpec(originalSpec)
+	opts.setCachedAnalyzedSpec(originalSpec)
 
 	// Remember the original operation IDs from the first cache retrieval
 	analyzed1 := opts.getAnalyzedSpec()
@@ -286,13 +286,12 @@ func TestAnalyzedSpecCache_OriginalMutationDoesNotAffectCache(t *testing.T) {
 }
 
 // TestAnalyzedSpecCache_NilInputHandling verifies proper handling when
-// setCachedRawSpec is called with nil input.
+// setCachedAnalyzedSpec is called with nil input.
 func TestAnalyzedSpecCache_NilInputHandling(t *testing.T) {
 	opts := testGenOpts()
 
 	// Setting nil should result in cache returning nil
-	opts.setCachedRawSpec(nil)
+	opts.setCachedAnalyzedSpec(nil)
 	analyzed := opts.getAnalyzedSpec()
 	assert.Nil(t, analyzed, "Cache should return nil when set with nil spec")
 }
-

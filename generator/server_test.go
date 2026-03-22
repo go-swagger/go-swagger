@@ -447,7 +447,7 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 	opts := testGenOpts()
 	opts.Spec = specPath
 	// Set the cache before using getAnalyzedSpec()
-	opts.setCachedRawSpec(specDoc.Spec())
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), apiPkg)
 
 	return &appGenerator{

@@ -22,6 +22,7 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	assert.Len(t, gm.Properties, 6)
@@ -52,6 +53,7 @@ func TestSchemaValidation_Strings(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -80,6 +82,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -109,6 +112,7 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -137,6 +141,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -167,6 +172,7 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -197,6 +203,7 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -229,6 +236,7 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -266,6 +274,7 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -305,6 +314,7 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -355,6 +365,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -406,6 +417,7 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -441,6 +453,7 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -476,6 +489,7 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -512,6 +526,7 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -547,6 +562,7 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -576,6 +592,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -607,6 +624,7 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -639,6 +657,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 	k := "MapComplexValidations"
 	schema := specDoc.Spec().Definitions[k]
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -673,6 +692,7 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -704,6 +724,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -829,6 +850,7 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -866,6 +888,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -903,6 +926,7 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -945,6 +969,7 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -981,6 +1006,7 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.Len(t, gm.AllOf, 2)
@@ -1007,6 +1033,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1034,6 +1061,7 @@ func TestSchemaValidation_Pet(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1061,6 +1089,7 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 	schema := specDoc.Spec().Definitions[k]
 
 	opts := opts()
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 

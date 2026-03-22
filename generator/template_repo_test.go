@@ -295,6 +295,9 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 		return nil, err
 	}
 
+	// Initialize the spec cache before calling makeGenDefinition
+	opts.setCachedAnalyzedSpec(specDoc.Spec())
+
 	definitions := specDoc.Spec().Definitions
 	if len(definitions) == 0 {
 		return nil, errors.New("todolist.models.yml did not return any definition")
