@@ -13,6 +13,8 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+
+	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
 func TestTemplates_CustomTemplates(t *testing.T) {
@@ -72,7 +74,7 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 }
 
 func TestTemplates_RepoLoadingTemplates(t *testing.T) {
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("simple", singleTemplate)
 	require.NoError(t, err)
@@ -89,7 +91,7 @@ func TestTemplates_RepoLoadingTemplates(t *testing.T) {
 
 func TestTemplates_RepoLoadsAllTemplatesDefined(t *testing.T) {
 	var b bytes.Buffer
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("multiple", multipleDefinitions)
 	require.NoError(t, err)
@@ -120,7 +122,7 @@ type testData struct {
 
 func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 	var b bytes.Buffer
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("multiple", multipleDefinitions)
 	require.NoError(t, err)
@@ -140,7 +142,7 @@ func TestTemplates_RepoLoadsAllDependantTemplates(t *testing.T) {
 
 func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
 	var b bytes.Buffer
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("c1", cirularDeps1)
 	require.NoError(t, err)
@@ -205,7 +207,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 
 	const copyright = `{{ .Copyright }}`
 
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("copyright", copyright)
 	require.NoError(t, err)
@@ -246,7 +248,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	const targetImportPath = `{{ .TargetImportPath }}`
 	defer discardOutput()()
 
-	repo := NewRepository(nil)
+	repo := templatesrepo.NewRepository(nil)
 
 	err := repo.AddFile("targetimportpath", targetImportPath)
 	require.NoError(t, err)
@@ -333,71 +335,23 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 	return &g, nil
 }
 
-// AddFile() global package function (protected vs unprotected)
-// Mostly unused in tests, since the Repository.AddFile()
-// is generally preferred.
+// AddFile on the global repository (protected vs unprotected).
 func TestTemplates_AddFile(t *testing.T) {
 	defer discardOutput()()
 
-	funcTpl := testFuncTpl()
+	const funcTpl = `{{ pascalize "hello world" }}`
 
 	// unprotected
-	err := AddFile("functpl", funcTpl)
+	err := templates.AddFile("functpl", funcTpl)
 	require.NoError(t, err)
 
 	_, err = templates.Get("functpl")
 	require.NoError(t, err)
 
 	// protected
-	err = AddFile("schemabody", funcTpl)
+	err = templates.AddFile("schemabody", funcTpl)
 	require.Error(t, err)
 	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template")
-}
-
-// Test LoadDir.
-func TestTemplates_LoadDir(t *testing.T) {
-	defer discardOutput()()
-
-	// Fails
-	err := templates.LoadDir("")
-	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "could not complete")
-
-	// Fails again (from any dir?)
-	err = templates.LoadDir("templates")
-	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template")
-
-	// TODO: success case
-	// To force a success, we need to empty the global list of protected
-	// templates...
-	origProtectedTemplates := protectedTemplates
-
-	defer func() {
-		// Restore variable initialized with package
-		protectedTemplates = origProtectedTemplates
-	}()
-
-	protectedTemplates = make(map[string]bool)
-	repo := NewRepository(FuncMapFunc(DefaultLanguageFunc()))
-	err = repo.LoadDir("templates")
-	require.NoError(t, err)
-}
-
-// Test LoadDir.
-func TestTemplates_SetAllowOverride(t *testing.T) {
-	defer discardOutput()()
-
-	// adding protected file with allowOverride set to false fails
-	templates.SetAllowOverride(false)
-	err := templates.AddFile("schemabody", "some data")
-	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "cannot overwrite protected template schemabody")
-
-	// adding protected file with allowOverride set to true should not fail
-	templates.SetAllowOverride(true)
-	err = templates.AddFile("schemabody", "some data")
-	require.NoError(t, err)
 }
 
 // Test LoadContrib.
@@ -421,7 +375,7 @@ func TestTemplates_LoadContrib(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := templates.LoadContrib(tt.template)
+			err := templates.LoadContrib(tt.template, embeddedAssets{})
 			if tt.wantError {
 				require.Error(t, err)
 			} else {

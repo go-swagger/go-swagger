@@ -201,7 +201,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 
-	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
+	baseImport := a.GenOpts.LanguageOpts.BaseImport(a.Target)
 	serverPath := path.Join(baseImport,
 		a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, defaultServerTarget))
 
@@ -252,7 +252,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	log.Println("generation target", a.Target)
 
-	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
+	baseImport := a.GenOpts.LanguageOpts.BaseImport(a.Target)
 	defaultImports := a.GenOpts.defaultImports()
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)

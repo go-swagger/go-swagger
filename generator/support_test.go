@@ -14,6 +14,8 @@ import (
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
+
+	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
 type relativePathTest struct {
@@ -114,12 +116,12 @@ func baseImportTestFixtures(tempdir string) []baseImportTest {
 
 func TestCheckPrefixFetchRelPath(t *testing.T) {
 	for _, item := range prefixAndFetchRelativePathFixtures() {
-		actualok, actualpath := checkPrefixAndFetchRelativePath(item.childpath, item.parentpath)
+		actualok, actualpath := language.CheckPrefixAndFetchRelativePath(item.childpath, item.parentpath)
 
 		item.path = filepath.FromSlash(item.path)
 
-		assert.EqualTf(t, item.ok, actualok, "checkPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
-		assert.EqualT(t, item.path, actualpath, "checkPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
+		assert.EqualTf(t, item.ok, actualok, "language.CheckPrefixAndFetchRelativePath(%s, %s): expected %v, actual %v", item.childpath, item.parentpath, item.ok, actualok)
+		assert.EqualT(t, item.path, actualpath, "language.CheckPrefixAndFetchRelativePath(%s, %s): expected %s, actual %s", item.childpath, item.parentpath, item.path, actualpath)
 	}
 }
 
@@ -171,7 +173,7 @@ func TestBaseImport(t *testing.T) {
 				t.Setenv("GOPATH", item.gopath)
 
 				// Test (baseImport always with /)
-				actualpath := golang.baseImport(item.targetpath)
+				actualpath := golang.BaseImport(item.targetpath)
 				require.EqualTf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 			})
 		})

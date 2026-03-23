@@ -32,7 +32,9 @@ const (
 func TestMain(m *testing.M) {
 	// initializations to run tests in this package
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	templates.LoadDefaults()
+	if err := templates.LoadDefaults(assets); err != nil {
+		panic(err)
+	}
 	initSchemaValidationTest()
 	os.Exit(m.Run())
 }

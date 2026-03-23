@@ -357,7 +357,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
-			TargetImportPath: opts.LanguageOpts.baseImport(opts.Target),
+			TargetImportPath: opts.LanguageOpts.BaseImport(opts.Target),
 		},
 		Package:        modelPkg,
 		CliPackage:     opts.CliPackage,

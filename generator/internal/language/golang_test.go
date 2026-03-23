@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2015-2025 go-swagger maintainers
 // SPDX-License-Identifier: Apache-2.0
 
-package generator
+package language
 
 import (
 	"strings"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestGolang_MangleFileName(t *testing.T) {
-	o := &LanguageOpts{}
+	o := &Options{}
 	o.Init()
 	res := o.MangleFileName("aFileEndingInOsNameWindows")
 	assert.TrueT(t, strings.HasSuffix(res, "_windows"))
@@ -84,14 +84,42 @@ func TestGolang_SliceInitializer(t *testing.T) {
 	assert.EqualT(t, `{}`, res)
 }
 
-func TestGolangInit(t *testing.T) {
-	opts := &LanguageOpts{}
-	assert.Empty(t, opts.baseImport("x"))
-	res, err := opts.FormatContent("x", []byte("y"))
+func TestGolang_Imports(t *testing.T) {
+	o := GolangOpts()
+
+	// empty map: returns ""
+	assert.Empty(t, o.Imports(map[string]string{}))
+
+	// unaliased import (name matches last path component)
+	res := o.Imports(map[string]string{"fmt": "fmt"})
+	assert.StringContainsT(t, res, `"fmt"`)
+
+	// aliased import (name differs from last path component)
+	res = o.Imports(map[string]string{"myalias": "github.com/example/pkg"})
+	assert.StringContainsT(t, res, `myalias "github.com/example/pkg"`)
+}
+
+func TestDefaultGoFormatFunc(t *testing.T) {
+	o := GolangOpts()
+
+	src := []byte("package main\n\nimport \"fmt\"\n\nfunc main() { fmt.Println(\"hello\") }\n")
+	res, err := o.FormatContent("test.go", src)
 	require.NoError(t, err)
-	assert.Equal(t, []byte("y"), res)
-	opts = GolangOpts()
-	o := opts
-	o.Init()
-	assert.Equal(t, opts, o)
+	assert.StringContainsT(t, string(res), "package main")
+	assert.StringContainsT(t, string(res), `"fmt"`)
+}
+
+func TestRelPathToRelGoPath(t *testing.T) {
+	assert.EqualT(t, "", relPathToRelGoPath("/base", "."))
+	assert.EqualT(t, "/sub/pkg", relPathToRelGoPath("/base", "/base/sub/pkg"))
+	assert.EqualT(t, "/pkg", relPathToRelGoPath("/base", "/base/pkg"))
+}
+
+func TestCheckPrefixAndFetchRelativePath(t *testing.T) {
+	ok, rel := CheckPrefixAndFetchRelativePath("/home/user/go/src/mypackage", "/home/user/go/src")
+	assert.TrueT(t, ok)
+	assert.EqualT(t, "mypackage", rel)
+
+	ok, _ = CheckPrefixAndFetchRelativePath("/other/path", "/home/user/go/src")
+	assert.FalseT(t, ok)
 }

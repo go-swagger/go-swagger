@@ -68,3 +68,4 @@ hack/deploy.env
 dist/
 .circleci/*.sh
 .mcp.json
+.env
