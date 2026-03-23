@@ -25,6 +25,9 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+
+	"github.com/go-swagger/go-swagger/generator/internal/language"
+	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
 const (
@@ -50,7 +53,6 @@ const (
 func init() {
 	// all initializations for the generator package
 	debugOptions()
-	initLanguage()
 	initTemplateRepo()
 	initTypes()
 }
@@ -360,7 +362,7 @@ type GenOptsCommon struct {
 	ReturnErrors           bool
 	WithCustomFormatter    bool
 
-	templates *Repository // a shallow clone of the global template repository
+	templates *templatesrepo.Repository // a shallow clone of the global template repository
 }
 
 // CheckOpts carries out some global consistency checks on options.
@@ -398,7 +400,7 @@ func (g *GenOpts) CheckOpts() error {
 		// whenever opting for the custom formatter, we leave the basic formatting to the standard
 		// imports.Process and focus on a custom handling of imports.
 		g.LanguageOpts.FormatOnly = true
-		g.LanguageOpts.formatFunc = formatGo
+		g.LanguageOpts.SetFormatFunc(language.FormatLite)
 	}
 
 	return nil
@@ -476,7 +478,9 @@ func (g *GenOpts) EnsureDefaults() error {
 
 	g.templates = templates.ShallowClone()
 
-	g.templates.LoadDefaults()
+	if err := g.templates.LoadDefaults(assets); err != nil {
+		fatal(err)
+	}
 
 	if g.LanguageOpts == nil {
 		g.LanguageOpts = DefaultLanguageFunc()
@@ -689,7 +693,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	var writeerr error
 
 	if !t.SkipFormat {
-		baseImport := g.LanguageOpts.baseImport(g.Target)
+		baseImport := g.LanguageOpts.BaseImport(g.Target)
 
 		formatted, err = g.LanguageOpts.FormatContent(
 			filepath.Join(dir, fname), content,
@@ -810,7 +814,7 @@ func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
 func (g *GenOptsCommon) setTemplates() error {
 	if g.Template != "" {
 		// set contrib templates
-		if err := g.templates.LoadContrib(g.Template); err != nil {
+		if err := g.templates.LoadContrib(g.Template, embeddedAssets{}); err != nil {
 			return err
 		}
 	}
@@ -828,7 +832,7 @@ func (g *GenOptsCommon) setTemplates() error {
 
 // defaultImports produces a default map for imports with models.
 func (g *GenOpts) defaultImports() map[string]string {
-	baseImport := g.LanguageOpts.baseImport(g.Target)
+	baseImport := g.LanguageOpts.BaseImport(g.Target)
 	defaultImports := make(map[string]string, sensibleDefaultMapAlloc)
 
 	var modelsAlias, importPath string
@@ -864,7 +868,7 @@ func (g *GenOpts) defaultImports() map[string]string {
 
 // initImports produces a default map for import with the specified root for operations.
 func (g *GenOpts) initImports(operationsPackage string) map[string]string {
-	baseImport := g.LanguageOpts.baseImport(g.Target)
+	baseImport := g.LanguageOpts.BaseImport(g.Target)
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)
 	imports[g.LanguageOpts.ManglePackageName(operationsPackage, defaultOperationsTarget)] = path.Join(

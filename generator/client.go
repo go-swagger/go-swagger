@@ -70,15 +70,15 @@ func (c *clientGenerator) Generate() error {
 		return err
 	}
 	app.DefaultImports["cli"] = path.Join(
-		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		c.GenOpts.LanguageOpts.BaseImport(c.Target),
 		"cli",
 	)
 	app.DefaultImports["client"] = path.Join(
-		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		c.GenOpts.LanguageOpts.BaseImport(c.Target),
 		"client",
 	)
 	app.DefaultImports["operations"] = path.Join(
-		c.GenOpts.LanguageOpts.baseImport(c.Target),
+		c.GenOpts.LanguageOpts.BaseImport(c.Target),
 		"client",
 		"operations",
 	)
@@ -86,11 +86,11 @@ func (c *clientGenerator) Generate() error {
 	for i := range app.Models {
 		di := app.Models[i].DefaultImports
 		di["models"] = path.Join(
-			c.GenOpts.LanguageOpts.baseImport(c.Target),
+			c.GenOpts.LanguageOpts.BaseImport(c.Target),
 			"models",
 		)
 		di["client"] = path.Join(
-			c.GenOpts.LanguageOpts.baseImport(c.Target),
+			c.GenOpts.LanguageOpts.BaseImport(c.Target),
 			"client",
 		)
 	}

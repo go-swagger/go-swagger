@@ -75,14 +75,6 @@ func wellKnownMime(tn string) (string, bool) {
 
 const mimeParamParts = 2
 
-func mediaMime(orig string) string {
-	return strings.SplitN(orig, ";", mimeParamParts)[0]
-}
-
-func mediaGoName(media string) string {
-	return pascalize(strings.ReplaceAll(media, "*", "Star"))
-}
-
 func mediaParameters(orig string) string {
 	parts := strings.SplitN(orig, ";", mimeParamParts)
 	if len(parts) < mimeParamParts {

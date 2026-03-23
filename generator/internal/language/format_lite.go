@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2015-2025 go-swagger maintainers
 // SPDX-License-Identifier: Apache-2.0
 
-package generator
+package language
 
 import (
 	"bytes"
@@ -22,7 +22,13 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, error) {
+// FormatLite is a fast, AST-based Go formatter that fixes imports (remove unused,
+// add well-known ones) and normalises blank lines in import blocks before handing
+// off to [golang.org/x/tools/imports.Process] for final sorting.
+//
+// It is less thorough than a full goimports pass but significantly faster, which
+// makes it a good fit for formatting generated code.
+func FormatLite(filename string, content []byte, opts ...FormatOption) ([]byte, error) {
 	fset, file, clean, err := parseGoOrFragment(filename, content)
 	if err != nil {
 		return nil, err
@@ -34,7 +40,7 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 
 	printConfig := &printer.Config{
 		Mode:     printer.UseSpaces | printer.TabIndent,
-		Tabwidth: defaultIndent,
+		Tabwidth: DefaultIndent,
 	}
 	var buf bytes.Buffer
 	err = printConfig.Fprint(&buf, fset, file)
@@ -47,7 +53,7 @@ func formatGo(filename string, content []byte, opts ...FormatOption) ([]byte, er
 		tmp = clean(tmp)
 	}
 
-	out, err := formatByImports(filename, tmp, formatOptionsWithDefault(opts))
+	out, err := formatByImports(filename, tmp, FormatOptsWithDefault(opts))
 	if err != nil {
 		return nil, err
 	}
@@ -326,12 +332,12 @@ func init() {
 	}
 }
 
-// mutex for imports.LocalPrfix global variable.
+// mutex for imports.LocalPrefix global variable.
 var localPrefixMutex sync.RWMutex
 
-// run import.Process to sort imports.
-func formatByImports(filename string, content []byte, opts formatOptions) ([]byte, error) {
-	lp := strings.Join(opts.localPrefixes, ",")
+// formatByImports runs imports.Process to sort imports.
+func formatByImports(filename string, content []byte, opts FormatOpts) ([]byte, error) {
+	lp := strings.Join(opts.LocalPrefixes, ",")
 	localPrefixMutex.RLock()
 	if lp == imports.LocalPrefix {
 		defer localPrefixMutex.RUnlock()
