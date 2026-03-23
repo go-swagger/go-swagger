@@ -16,6 +16,8 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
+	"github.com/go-openapi/swag/typeutils"
 )
 
 const (
@@ -131,7 +133,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 			result.IsAliased = true
 			result.IsNullable = isRequired
 			if extType.Hints.Nullable != nil {
-				result.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+				result.IsNullable = conv.Value(extType.Hints.Nullable)
 			}
 
 			result.IsMap = false
@@ -144,7 +146,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 					IsInterface:            false,
 					Pkg:                    extType.Import.Package,
 					PkgAlias:               extType.Import.Alias,
-					SkipExternalValidation: swag.BoolValue(extType.Hints.NoValidation),
+					SkipExternalValidation: conv.Value(extType.Hints.NoValidation),
 				}
 				if extType.Import.Alias != "" {
 					result.ElemType.GoType = extType.Import.Alias + "." + extType.Type
@@ -156,20 +158,20 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 					result.ElemType.IsNullable = false
 				}
 				if extType.Hints.Nullable != nil {
-					result.ElemType.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+					result.ElemType.IsNullable = conv.Value(extType.Hints.Nullable)
 				}
 				// embedded external: by default consider validation is skipped for the external type
 				//
 				// NOTE: at this moment the template generates a type assertion, so this setting does not really matter
 				// for embedded types.
 				if extType.Hints.NoValidation != nil {
-					result.ElemType.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+					result.ElemType.SkipExternalValidation = conv.Value(extType.Hints.NoValidation)
 				} else {
 					result.ElemType.SkipExternalValidation = true
 				}
 			} else {
 				// non-embedded external type: by default consider that validation is enabled (SkipExternalValidation: false)
-				result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+				result.SkipExternalValidation = conv.Value(extType.Hints.NoValidation)
 			}
 
 			if nullable, ok := t.isNullableOverride(schema); ok {
@@ -384,7 +386,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 	extType, isExternalType := t.resolveExternalType(schema.Extensions)
 	if isExternalType {
 		// deal with validations for an aliased external type
-		result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+		result.SkipExternalValidation = conv.Value(extType.Hints.NoValidation)
 	}
 
 	res, er := t.ResolveSchema(ref, false, isRequired)
@@ -768,7 +770,7 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
 	}
-	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	hasDefault := schema.Default != nil && !typeutils.IsZero(schema.Default)
 
 	isMin := schema.Minimum != nil && (*schema.Minimum != 0 || schema.ExclusiveMinimum)
 	bcMin := schema.Minimum != nil && *schema.Minimum == 0 && !schema.ExclusiveMinimum
@@ -792,7 +794,7 @@ func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extTy
 	result.PkgAlias = alias
 	result.IsInterface = false
 	// by default consider that we have a type with validations. Use hint "interface" or "noValidation" to disable validations
-	result.SkipExternalValidation = swag.BoolValue(extType.Hints.NoValidation)
+	result.SkipExternalValidation = conv.Value(extType.Hints.NoValidation)
 	result.IsNullable = isRequired
 
 	result.setKind(extType.Hints.Kind)
@@ -800,7 +802,7 @@ func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extTy
 		result.IsNullable = false
 	}
 	if extType.Hints.Nullable != nil {
-		result.IsNullable = swag.BoolValue(extType.Hints.Nullable)
+		result.IsNullable = conv.Value(extType.Hints.Nullable)
 	}
 
 	if nullable, ok := t.isNullableOverride(schema); ok {
@@ -828,7 +830,7 @@ func nullableString(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
 	}
-	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	hasDefault := schema.Default != nil && !typeutils.IsZero(schema.Default)
 
 	isMin := schema.MinLength != nil && *schema.MinLength != 0
 	bcMin := schema.MinLength != nil && *schema.MinLength == 0
@@ -842,7 +844,7 @@ func nullableStrfmt(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil && notBinary {
 		return *nullable
 	}
-	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	hasDefault := schema.Default != nil && !typeutils.IsZero(schema.Default)
 
 	nullable := !schema.ReadOnly && (isRequired || hasDefault)
 	return notBinary && nullable

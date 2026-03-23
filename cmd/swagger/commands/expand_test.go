@@ -24,7 +24,7 @@ func TestCmd_Expand_NoError(t *testing.T) {
 	specDoc := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
 	output := filepath.Join(t.TempDir(), "fixture-1536-flat-expand.json")
 	v := &ExpandSpec{
-		Format:  "json",
+		Format:  JSONFormat,
 		Compact: false,
 		Output:  flags.Filename(output),
 	}
@@ -38,7 +38,7 @@ func TestCmd_Expand_NoOutputFile(t *testing.T) {
 	})
 	specDoc := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
 	v := &ExpandSpec{
-		Format:  "json",
+		Format:  JSONFormat,
 		Compact: false,
 		Output:  "",
 	}

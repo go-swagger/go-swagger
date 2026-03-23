@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/jsonutils"
 )
 
 const asMethod = "()"
@@ -118,7 +119,12 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.DumpData {
-		return dumpData(os.Stdout, swag.ToDynamicJSON(mod))
+		var dynamicMod any
+		if err := jsonutils.FromDynamicJSON(mod, &dynamicMod); err != nil {
+			return err
+		}
+
+		return dumpData(os.Stdout, dynamicMod)
 	}
 
 	if m.opts.IncludeModel {
@@ -680,7 +686,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		vv := v
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
-		tpe, err := sg.TypeResolver.ResolveSchema(&vv, true, sg.IsTuple || swag.ContainsStrings(sg.Schema.Required, k))
+		tpe, err := sg.TypeResolver.ResolveSchema(&vv, true, sg.IsTuple || slices.Contains(sg.Schema.Required, k))
 		if err != nil {
 			return err
 		}
@@ -1392,7 +1398,7 @@ func (sg *schemaGenContext) buildXMLNameWithTags() error {
 	// - consumes/produces in spec contains xml
 	// - struct tags CLI option contains xml
 	// - XML object present in spec for this schema
-	if sg.WithXML || swag.ContainsStrings(sg.StructTags, "xml") || sg.Schema.XML != nil {
+	if sg.WithXML || slices.Contains(sg.StructTags, "xml") || sg.Schema.XML != nil {
 		sg.GenSchema.XMLName = sg.Name
 
 		if sg.Schema.XML != nil {

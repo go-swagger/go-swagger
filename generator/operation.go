@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -20,6 +21,8 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/jsonutils"
+	"github.com/go-openapi/swag/stringutils"
 )
 
 type respSort struct {
@@ -189,7 +192,13 @@ func (o *operationGenerator) Generate() error {
 	for _, pp := range operations {
 		op := pp
 		if o.GenOpts.DumpData {
-			_ = dumpData(os.Stdout, swag.ToDynamicJSON(op))
+			var dynamicOp any
+			if err := jsonutils.FromDynamicJSON(op, &dynamicOp); err != nil {
+				return err
+			}
+
+			_ = dumpData(os.Stdout, dynamicOp)
+
 			continue
 		}
 		if err := o.GenOpts.renderOperation(&op); err != nil {
@@ -1203,7 +1212,7 @@ func intersectTags(left, right []string) []string {
 	// dedupe
 	uniqueTags := make(map[string]struct{}, maxInt(len(left), len(right)))
 	for _, l := range left {
-		if len(right) == 0 || swag.ContainsStrings(right, l) {
+		if len(right) == 0 || slices.Contains(right, l) {
 			uniqueTags[l] = struct{}{}
 		}
 	}
@@ -1318,7 +1327,7 @@ func renameOperationPackage(seenTags []string, pkg string) string {
 	if len(seenTags) == 0 {
 		return current
 	}
-	for swag.ContainsStringsCI(seenTags, current) {
+	for stringutils.ContainsStringsCI(seenTags, current) {
 		current += "1"
 	}
 	return current

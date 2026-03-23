@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -1006,7 +1007,7 @@ func gatherOperations(specDoc *analysis.Spec, operationIDs []string) map[string]
 		if found && oo.Method != opr.Method && oo.Path != opr.Path {
 			nm = opr.Key
 		}
-		if len(operationIDs) == 0 || swag.ContainsStrings(operationIDs, opr.ID) || swag.ContainsStrings(operationIDs, nm) {
+		if len(operationIDs) == 0 || slices.Contains(operationIDs, opr.ID) || slices.Contains(operationIDs, nm) {
 			opr.ID = nm
 			opr.Op.ID = nm
 			operations[nm] = opr

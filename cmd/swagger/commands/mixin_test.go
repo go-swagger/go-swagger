@@ -4,7 +4,6 @@
 package commands
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -14,62 +13,76 @@ import (
 	"github.com/go-openapi/testify/v2/require"
 )
 
+const nonExistingSpec = "nowhere.json"
+
 // Commands requires at least one arg.
 func TestCmd_Mixin(t *testing.T) {
-	var v MixinSpec
-	result := v.Execute([]string{})
-	require.Error(t, result)
+	const (
+		yamlFormat           = "yaml"
+		otherNonExistingSpec = "notThere.json"
+	)
 
-	result = v.Execute([]string{"nowhere.json"})
-	require.Error(t, result)
+	t.Run("should require an argument", func(t *testing.T) {
+		var v MixinSpec
+		result := v.Execute([]string{})
+		require.Error(t, result)
+	})
 
-	result = v.Execute([]string{"nowhere.json", "notThere.json"})
-	require.Error(t, result)
+	t.Run("first spec file must exists", func(t *testing.T) {
+		var v MixinSpec
+		result := v.Execute([]string{nonExistingSpec})
+		require.Error(t, result)
+	})
+
+	t.Run("both spec files must exists", func(t *testing.T) {
+		var v MixinSpec
+		result := v.Execute([]string{nonExistingSpec, otherNonExistingSpec})
+		require.Error(t, result)
+	})
 
 	specDoc1 := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
-	result = v.Execute([]string{specDoc1, "notThere.json"})
-	require.Error(t, result)
-}
+	t.Run("second spec file must exists", func(t *testing.T) {
+		var v MixinSpec
+		result := v.Execute([]string{specDoc1, otherNonExistingSpec})
+		require.Error(t, result)
+	})
 
-func TestCmd_Mixin_NoError(t *testing.T) {
-	specDoc1 := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
 	specDoc2 := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536-2.yaml")
-	output := filepath.Join(t.TempDir(), "fixture-1536-mixed.yaml")
+	t.Run("should merge specs", func(t *testing.T) {
+		output := filepath.Join(t.TempDir(), "fixture-1536-mixed.yaml")
 
-	v := MixinSpec{
-		ExpectedCollisionCount: 3,
-		Format:                 "yaml",
-		Output:                 flags.Filename(output),
-	}
+		v := MixinSpec{
+			ExpectedCollisionCount: 3,
+			Format:                 yamlFormat,
+			Output:                 flags.Filename(output),
+		}
 
-	require.NoError(t, v.Execute([]string{specDoc1, specDoc2}))
-	require.FileExists(t, output)
-}
+		require.NoError(t, v.Execute([]string{specDoc1, specDoc2}))
+		require.FileExists(t, output)
+	})
 
-func TestCmd_Mixin_BothConflictsAndIgnoreConflictsSpecified(t *testing.T) {
-	v := MixinSpec{
-		ExpectedCollisionCount: 1,
-		IgnoreConflicts:        true,
-	}
+	t.Run("should error on inconsistent flags - ignore conflicts and count collisions are incompatible", func(t *testing.T) {
+		v := MixinSpec{
+			ExpectedCollisionCount: 1,
+			IgnoreConflicts:        true,
+		}
 
-	err := v.Execute([]string{"test.json", "test2.json"})
-	require.Error(t, err)
-	assert.EqualT(t, ignoreConflictsAndCollisionsSpecified, err.Error())
-}
+		err := v.Execute([]string{"test.json", "test2.json"})
+		require.Error(t, err)
+		assert.EqualT(t, ignoreConflictsAndCollisionsSpecified, err.Error())
+	})
 
-func TestCmd_Mixin_IgnoreConflicts(t *testing.T) {
-	specDoc1 := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536.yaml")
-	specDoc2 := filepath.Join(fixtureBase(), "bugs", "1536", "fixture-1536-2.yaml")
-	output := filepath.Join(t.TempDir(), "fixture-1536-mixed.yaml")
+	t.Run("should ignore conflicts when specified", func(t *testing.T) {
+		output := filepath.Join(t.TempDir(), "fixture-1536-mixed.yaml")
 
-	v := MixinSpec{
-		IgnoreConflicts: true,
-		Format:          "yaml",
-		Output:          flags.Filename(output),
-	}
+		v := MixinSpec{
+			IgnoreConflicts: true,
+			Format:          yamlFormat,
+			Output:          flags.Filename(output),
+		}
 
-	result := v.Execute([]string{specDoc1, specDoc2})
-	require.NoError(t, result)
-	_, exists := os.Stat(output)
-	assert.FalseT(t, os.IsNotExist(exists))
+		result := v.Execute([]string{specDoc1, specDoc2})
+		require.NoError(t, result)
+		assert.FileExists(t, output)
+	})
 }

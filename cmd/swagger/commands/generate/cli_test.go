@@ -17,6 +17,11 @@ import (
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
+const (
+	specTask = "tasklist.basic.yml"
+	specTodo = "todolist.simplequery.yml"
+)
+
 type cliTestCase struct {
 	name         string
 	spec         string
@@ -30,7 +35,7 @@ func TestGenerateCLI(t *testing.T) {
 	testcases := []cliTestCase{
 		{
 			name:      "tasklist_basic",
-			spec:      "tasklist.basic.yml",
+			spec:      specTask,
 			wantError: false,
 		},
 		{
@@ -55,7 +60,7 @@ func TestGenerateCLI(t *testing.T) {
 		},
 		{
 			name:      "tasklist_simplequery",
-			spec:      "todolist.simplequery.yml",
+			spec:      specTodo,
 			wantError: false,
 		},
 		{

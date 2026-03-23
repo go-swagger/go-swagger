@@ -18,6 +18,10 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
+const (
+	allFromCurrent = "./..."
+)
+
 // SpecFile command to generate a swagger spec from a go application.
 type SpecFile struct {
 	WorkDir                 string         `default:"."                                                                                                  description:"the base path to use" long:"work-dir" short:"w"`
@@ -41,7 +45,7 @@ type SpecFile struct {
 // Execute runs this command.
 func (s *SpecFile) Execute(args []string) error {
 	if len(args) == 0 { // by default consider all the paths under the working directory
-		args = []string{"./..."}
+		args = []string{allFromCurrent}
 	}
 
 	var input *spec.Swagger

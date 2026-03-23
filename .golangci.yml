@@ -23,6 +23,8 @@ linters:
     - gochecknoglobals  # agree, but breaking
     - gochecknoinits # agree, but breaking
     - godox # temporary
+    - gomodguard
+    - gomodguard_v2
     - ireturn # temporary
     - lll # unclear added value
     - nestif # temporary

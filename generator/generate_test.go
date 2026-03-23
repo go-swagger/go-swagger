@@ -80,7 +80,7 @@ func fixtureServer1943() generateFixture {
 				)
 
 				rebasedContent = removeBuildTags(rebasedContent)
-				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebasedContent, 0o600))
+				require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "datarace_test.go"), rebasedContent, 0o600)) //nolint:gosec // G703 false positive: opts.Target is a test temp directory
 				opts.ExcludeSpec = false
 			}
 		},
@@ -571,7 +571,7 @@ func fixtureClientRoundTrip1083() generateFixture {
 						[]byte(targetImport),
 					)
 					rebasedContent = removeBuildTags(rebasedContent)
-					require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "pathparam_test.go"), rebasedContent, 0o600))
+					require.NoError(t, os.WriteFile(filepath.Join(opts.Target, "pathparam_test.go"), rebasedContent, 0o600)) //nolint:gosec // G703 false positive: opts.Target is a test temp directory
 				})
 
 				opts.ExcludeSpec = false
