@@ -624,7 +624,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err := g.templates.Get(name)
+		tt, err = g.templates.Get(name)
 		if err == nil {
 			templ = tt
 		}
@@ -643,7 +643,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
-		tt, err := template.New(t.Source).Funcs(FuncMapFunc(g.LanguageOpts)).Parse(string(content))
+		tt, err = template.New(t.Source).Funcs(FuncMapFunc(g.LanguageOpts)).Parse(string(content))
 		if err != nil {
 			return nil, fmt.Errorf("template parsing failed on template %s: %w", t.Name, err)
 		}
@@ -1202,7 +1202,7 @@ func (g *GenOptsCommon) setCachedAnalyzedSpec(raw *spec.Swagger) {
 
 	// Marshal the analyzed spec (which now contains all analysis mutations)
 	// to JSON bytes for storage.
-	jsonBytes, err = json.Marshal(cloned)
+	jsonBytes, err := json.Marshal(cloned)
 	if err != nil {
 		// If marshaling fails, store nil to fall back to the original behavior
 		g.cachedAnalyzedSpecBytes.Store(nil)
