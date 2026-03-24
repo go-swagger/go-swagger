@@ -1194,14 +1194,14 @@ func (g *GenOptsCommon) setCachedAnalyzedSpec(raw *spec.Swagger) {
 
 	// Analyze the cloned spec. This mutates the spec (adds extensions, builds caches).
 	// We need this analysis to be preserved in the cache.
-	analyzed := analysis.New(cloned)
-	if analyzed == nil {
+	if analysis.New(cloned) == nil {
 		// If analysis fails, store nil to fall back to the original behavior
 		g.cachedAnalyzedSpecBytes.Store(nil)
 		return
 	}
 
-	// Marshal the analyzed spec to JSON bytes for storage
+	// Marshal the analyzed spec (which now contains all analysis mutations)
+	// to JSON bytes for storage.
 	jsonBytes, err := json.Marshal(cloned)
 	if err != nil {
 		// If marshaling fails, store nil to fall back to the original behavior
