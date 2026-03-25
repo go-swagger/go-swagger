@@ -272,7 +272,7 @@ func BytesToYAMLv2Doc(data []byte) (any, error) {
 	}
 
 	var document yamlv2.MapSlice // preserve order that is present in the document
-	if err = yamlv2.Unmarshal(data, &document); err != nil {
+	if err := yamlv2.Unmarshal(data, &document); err != nil {
 		return nil, err
 	}
 	return document, nil
