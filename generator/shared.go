@@ -639,7 +639,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 		} else {
 			templateFile = t.Source
 		}
-		content, err := os.ReadFile(templateFile)
+		content, err = os.ReadFile(templateFile)
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
@@ -680,7 +680,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	}
 
 	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
-	content, err := g.render(t, data)
+	content, err = g.render(t, data)
 	if err != nil {
 		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
 	}
@@ -1202,7 +1202,7 @@ func (g *GenOptsCommon) setCachedAnalyzedSpec(raw *spec.Swagger) {
 
 	// Marshal the analyzed spec (which now contains all analysis mutations)
 	// to JSON bytes for storage.
-	jsonBytes, err := json.Marshal(cloned)
+	jsonBytes, err = json.Marshal(cloned)
 	if err != nil {
 		// If marshaling fails, store nil to fall back to the original behavior
 		g.cachedAnalyzedSpecBytes.Store(nil)
