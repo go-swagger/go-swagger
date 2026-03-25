@@ -625,7 +625,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err = g.templates.Get(name)
+		tt, err := g.templates.Get(name)
 		if err == nil {
 			templ = tt
 		}
