@@ -62,7 +62,10 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 
 		// TODO(fredbi): due to uncontrolled $ref state in spec, we need to reload the spec atm, or flatten won't
 		// work properly (validate expansion alters the $ref cache in go-openapi/spec)
-		specDoc, _ = loads.Spec(g.Spec)
+		specDoc, err = loads.Spec(g.Spec)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Flatten spec
@@ -269,7 +272,7 @@ func BytesToYAMLv2Doc(data []byte) (any, error) {
 	}
 
 	var document yamlv2.MapSlice // preserve order that is present in the document
-	if err := yamlv2.Unmarshal(data, &document); err != nil {
+	if err = yamlv2.Unmarshal(data, &document); err != nil {
 		return nil, err
 	}
 	return document, nil
