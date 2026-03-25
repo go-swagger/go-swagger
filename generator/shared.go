@@ -1247,15 +1247,13 @@ func deepCloneSpec(swagger *spec.Swagger) (*spec.Swagger, error) {
 		return nil, nil
 	}
 
-	// Marshal the spec to JSON
+	// Unmarshal into a new spec
+	cloned := &spec.Swagger{}
 	jsonBytes, err := json.Marshal(swagger)
 	if err != nil {
 		return nil, err
 	}
-
-	// Unmarshal into a new spec
-	cloned := &spec.Swagger{}
-	if err = json.Unmarshal(jsonBytes, cloned); err != nil {
+	if err := json.Unmarshal(jsonBytes, cloned); err != nil {
 		return nil, err
 	}
 
