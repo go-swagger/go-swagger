@@ -1202,7 +1202,7 @@ func (g *GenOptsCommon) setCachedAnalyzedSpec(raw *spec.Swagger) {
 
 	// Marshal the analyzed spec (which now contains all analysis mutations)
 	// to JSON bytes for storage.
-	jsonBytes, err = json.Marshal(cloned)
+	jsonBytes, err := json.Marshal(cloned)
 	if err != nil {
 		// If marshaling fails, store nil to fall back to the original behavior
 		g.cachedAnalyzedSpecBytes.Store(nil)
@@ -1257,8 +1257,7 @@ func deepCloneSpec(swagger *spec.Swagger) (*spec.Swagger, error) {
 
 	// Unmarshal into a new spec
 	cloned := &spec.Swagger{}
-	err = json.Unmarshal(jsonBytes, cloned)
-	if err != nil {
+	if err = json.Unmarshal(jsonBytes, cloned); err != nil {
 		return nil, err
 	}
 
