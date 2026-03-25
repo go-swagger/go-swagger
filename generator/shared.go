@@ -705,7 +705,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	if !t.SkipFormat {
 		baseImport := g.LanguageOpts.BaseImport(g.Target)
 
-		formatted, err := g.LanguageOpts.FormatContent(
+		formatted, err = g.LanguageOpts.FormatContent(
 			filepath.Join(dir, fname), content,
 			WithFormatOnly(g.LanguageOpts.FormatOnly),
 			WithFormatLocalPrefixes(baseImport),
