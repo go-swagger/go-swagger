@@ -624,7 +624,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err = g.templates.Get(name)
+		tt, err := g.templates.Get(name)
 		if err == nil {
 			templ = tt
 		}
@@ -639,11 +639,11 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 		} else {
 			templateFile = t.Source
 		}
-		content, err = os.ReadFile(templateFile)
+		content, err := os.ReadFile(templateFile)
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
-		tt, err = template.New(t.Source).Funcs(FuncMapFunc(g.LanguageOpts)).Parse(string(content))
+		tt, err := template.New(t.Source).Funcs(FuncMapFunc(g.LanguageOpts)).Parse(string(content))
 		if err != nil {
 			return nil, fmt.Errorf("template parsing failed on template %s: %w", t.Name, err)
 		}
@@ -680,7 +680,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	}
 
 	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
-	content, err = g.render(t, data)
+	content, err := g.render(t, data)
 	if err != nil {
 		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
 	}
@@ -704,7 +704,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	if !t.SkipFormat {
 		baseImport := g.LanguageOpts.BaseImport(g.Target)
 
-		formatted, err = g.LanguageOpts.FormatContent(
+		formatted, err := g.LanguageOpts.FormatContent(
 			filepath.Join(dir, fname), content,
 			WithFormatOnly(g.LanguageOpts.FormatOnly),
 			WithFormatLocalPrefixes(baseImport),
