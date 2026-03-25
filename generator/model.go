@@ -70,9 +70,8 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		return err
 	}
 	// Cache the pre-analyzed spec for reuse in makeGenDefinitionHierarchy.
-	// setCachedAnalyzedSpec() deep clones the spec, analyzes it (which mutates the spec to add
-	// extensions and build internal caches), then stores it as JSON bytes for efficient retrieval.
-	// Each getAnalyzedSpec() call returns a fresh, isolated copy of the analyzed spec.
+	// setCachedAnalyzedSpec() deep clones the original spec and stores it as JSON bytes.
+	// Each getAnalyzedSpec() call returns a fresh, independently-analyzed copy of the spec.
 	opts.setCachedAnalyzedSpec(specDoc.Spec())
 
 	modelNames = pruneEmpty(modelNames)
