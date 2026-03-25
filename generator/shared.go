@@ -1152,7 +1152,7 @@ func importAlias(pkg string) string {
 	return k
 }
 
-// concatUnique concatenate collections of strings with deduplication.
+// concatUnique concatenates collections of strings with deduplication.
 func concatUnique(collections ...[]string) []string {
 	resultSet := make(map[string]struct{})
 	for _, c := range collections {
@@ -1241,10 +1241,10 @@ func (g *GenOptsCommon) getAnalyzedSpec() *analysis.Spec {
 }
 
 // deepCloneSpec creates a deep copy of a spec using JSON marshaling/unmarshaling.
-// Returns nil if the input spec is nil.
+// Returns an error if the input spec is nil.
 func deepCloneSpec(swagger *spec.Swagger) (*spec.Swagger, error) {
 	if swagger == nil {
-		return nil, nil
+		return nil, errors.New("spec cannot be nil")
 	}
 
 	// Unmarshal into a new spec

@@ -39,9 +39,10 @@ func TestDeepCloneSpec_SimpleSpec(t *testing.T) {
 
 func TestDeepCloneSpec_NilInput(t *testing.T) {
 	cloned, err := deepCloneSpec(nil)
-	require.NoError(t, err)
-	// deepCloneSpec returns nil for nil input now (changed from previous behavior)
+	require.Error(t, err)
+	// deepCloneSpec returns an error for nil input
 	require.Nil(t, cloned)
+	assert.Equal(t, "spec cannot be nil", err.Error())
 }
 
 func TestDeepCloneSpec_ComplexSpec(t *testing.T) {
