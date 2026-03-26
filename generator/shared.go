@@ -615,19 +615,18 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	var templ *template.Template
 
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
-		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
+		templ, err = g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
 		if err != nil {
 			return nil, err
 		}
-		templ = tt
 	}
 
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err = g.templates.Get(name)
-		if err == nil {
-			templ = tt
+		templ, err = g.templates.Get(name)
+		if err != nil {
+			return nil, err
 		}
 	}
 
