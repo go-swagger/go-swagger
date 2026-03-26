@@ -613,21 +613,22 @@ func (g *GenOpts) location(t *TemplateOpts, data any) (string, string, error) {
 
 func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	var templ *template.Template
-	var err error
 
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
-		templ, err = g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
+		// Try to load from assets first for asset: prefixed sources
+		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
 		if err != nil {
 			return nil, err
 		}
+		templ = tt
 	}
 
 	if templ == nil {
 		// try to load from repository (and enable dependencies)
 		name := swag.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		templ, err = g.templates.Get(name)
-		if err != nil {
-			return nil, err
+		tt, err := g.templates.Get(name)
+		if err == nil {
+			templ = tt
 		}
 	}
 
@@ -641,7 +642,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 			templateFile = t.Source
 		}
 		var content []byte
-		content, err = os.ReadFile(templateFile)
+		content, err := os.ReadFile(templateFile)
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
@@ -656,7 +657,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	}
 
 	var tBuf bytes.Buffer
-	if err = templ.Execute(&tBuf, data); err != nil {
+	if err := templ.Execute(&tBuf, data); err != nil {
 		return nil, fmt.Errorf("template execution failed for template %s: %w", t.Name, err)
 	}
 	log.Printf("executed template %s", t.Source)
@@ -669,6 +670,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 // additional level of checking. If this step fails, the generated
 // code is still dumped, for template debugging purposes.
 func (g *GenOpts) write(t *TemplateOpts, data any) error {
+	var content []byte // Declare content variable for later use
 	dir, fname, err := g.location(t, data)
 	if err != nil {
 		return fmt.Errorf("failed to resolve template location for template %s: %w", t.Name, err)

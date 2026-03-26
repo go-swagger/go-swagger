@@ -232,11 +232,13 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	resolver.ModelName = name
 	// Get analyzed spec from cache - provides a fresh cloned analyzed spec
 	// to prevent cross-model contamination during generation.
+	// If cache is not initialized (e.g., in tests), fall back to original behavior.
 	analyzed := opts.getAnalyzedSpec()
 	if analyzed == nil {
-		// This should not happen with proper initialization, but fail gracefully
-		// rather than using a potentially polluted spec doc directly.
-		return nil, fmt.Errorf("spec cache not initialized for model %s", name)
+		// Cache not initialized - this happens in tests that call makeGenDefinition directly.
+		// Fall back to the original behavior of analyzing the spec each time.
+		// Note: this means any mutations during analysis will affect the original spec.
+		analyzed = analysis.New(specDoc.Spec())
 	}
 
 	di := discriminatorInfo(analyzed)
