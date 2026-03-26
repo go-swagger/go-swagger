@@ -656,7 +656,7 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	}
 
 	var tBuf bytes.Buffer
-	if err := templ.Execute(&tBuf, data); err != nil {
+	if err = templ.Execute(&tBuf, data); err != nil {
 		return nil, fmt.Errorf("template execution failed for template %s: %w", t.Name, err)
 	}
 	log.Printf("executed template %s", t.Source)
@@ -681,7 +681,7 @@ func (g *GenOpts) write(t *TemplateOpts, data any) error {
 	}
 
 	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
-	content, err := g.render(t, data)
+	content, err = g.render(t, data)
 	if err != nil {
 		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
 	}
