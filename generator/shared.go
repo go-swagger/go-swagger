@@ -642,7 +642,8 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 			templateFile = t.Source
 		}
 		var content []byte
-		content, err := os.ReadFile(templateFile)
+		var err error
+		content, err = os.ReadFile(templateFile)
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
