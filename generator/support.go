@@ -69,14 +69,17 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		return nil, err
 	}
 
-	specDoc, analyzed, err := opts.analyzeSpec()
+	// Cache the original spec BEFORE analysis to ensure we cache the pristine version
+	// setCachedAnalyzedSpec() deep clones the original spec and stores it as JSON bytes.
+	// Each getAnalyzedSpec() call returns a fresh, independently-analyzed copy of the spec.
+	specDoc, err := opts.validateAndFlattenSpec()
 	if err != nil {
 		return nil, err
 	}
-	// Cache the pre-analyzed spec for reuse in makeGenDefinitionHierarchy.
-	// setCachedAnalyzedSpec() deep clones the original spec and stores it as JSON bytes.
-	// Each getAnalyzedSpec() call returns a fresh, independently-analyzed copy of the spec.
 	opts.setCachedAnalyzedSpec(specDoc.Spec())
+
+	// Now analyze the spec (this may mutate it, but we've already cached the original)
+	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, modelNames)
 	if err != nil {
