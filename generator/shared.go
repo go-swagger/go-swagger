@@ -613,6 +613,7 @@ func (g *GenOpts) location(t *TemplateOpts, data any) (string, string, error) {
 
 func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 	var templ *template.Template
+	var err error
 
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
 		templ, err = g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
@@ -639,7 +640,8 @@ func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
 		} else {
 			templateFile = t.Source
 		}
-		content, err := os.ReadFile(templateFile)
+		var content []byte
+		content, err = os.ReadFile(templateFile)
 		if err != nil {
 			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
 		}
