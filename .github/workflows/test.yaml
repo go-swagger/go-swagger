@@ -470,7 +470,7 @@ jobs:
           path: coverage/
 
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5.5.3
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           name: Aggregated coverage
           # All *.coverage.*.out files uploaded should be detected by the codecov action.
@@ -521,7 +521,7 @@ jobs:
 
       - name: Upload test results to Codecov
         # This allows for using the test results UI on codecov
-        uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # v5.5.3
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           files: '**/junit_report.xml'
           report_type: 'test_results'
@@ -577,7 +577,7 @@ jobs:
       #
       # They also handle the storage of past test reports, so as to assess flaky tests.
       - name: Publish Test Summary Results
-        uses: ctrf-io/github-test-reporter@024bc4b64d997ca9da86833c6b9548c55c620e40 # v1.0.26
+        uses: ctrf-io/github-test-reporter@31e2a2735dd4641c65c2f49eb07e93ce8ec37fff # v1.0.27
         with:
           report-path: 'reports/ctrf_report_*.json'
           use-suite-name: true
