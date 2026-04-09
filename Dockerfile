@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
-FROM golang:alpine@sha256:2389ebfa5b7f43eeafbd6be0c3700cc46690ef842ad962f6c5bd6be49ed82039 AS base
+FROM golang:alpine@sha256:c2a1f7b2095d046ae14b286b18413a05bb82c9bca9b25fe7ff5efef0f0826166 AS base
 RUN apk update && \
     apk upgrade && \
     apk --no-cache add ca-certificates shared-mime-info mailcap git build-base binutils-gold
