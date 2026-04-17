@@ -88,7 +88,7 @@ jobs:
       -
         name: Configure bot credentials
         if: ${{ steps.check.outputs.has_artifacts == 'true' }}
-        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354 # v1.4.11
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@1ade8c4f9415b844bec4a7545967157c5bace961 # v1.4.12
         id: bot-credentials
         with:
           enable-github-app: "true"
@@ -118,7 +118,7 @@ jobs:
         name: Create or update examples PR
         if: ${{ steps.check.outputs.has_artifacts == 'true' }}
         id: examples-pr
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.bot-credentials.outputs.app-token }}
           commit-message: |
