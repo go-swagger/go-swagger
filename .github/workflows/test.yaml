@@ -263,7 +263,7 @@ jobs:
           cache: true
 
       - name: Install gotestsum
-        uses: go-openapi/gh-actions/install/gotestsum@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354
+        uses: go-openapi/gh-actions/install/gotestsum@1ade8c4f9415b844bec4a7545967157c5bace961
 
       - name: Ensure TMP is created on windows runners
         # On windows, tests require testing.TempDir to reside on the same drive as the code.
@@ -292,7 +292,7 @@ jobs:
           ./...
 
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           # *.coverage.* pattern is automatically detected by codecov
           path: '**/*.coverage.*.out'
@@ -302,7 +302,7 @@ jobs:
       - name: Upload test report artifacts
         # upload report even if test fail. BTW, this is when they are valuable.
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: '**/unit.report.*.json'
           name: 'unit.report.${{ matrix.os }}-${{ matrix.go }}'
@@ -368,7 +368,7 @@ jobs:
           -o "codegen.coverage.${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.out"
 
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           path: '**/codegen.coverage.*.out'
           name: 'codegen.coverage.${{ matrix.os }}-${{ matrix.go }}'
@@ -506,7 +506,7 @@ jobs:
           path: reports/
       -
         name: Install go-junit-report
-        uses: go-openapi/gh-actions/install/go-junit-report@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354
+        uses: go-openapi/gh-actions/install/go-junit-report@1ade8c4f9415b844bec4a7545967157c5bace961
 
       - name: Convert test reports to a merged JUnit XML
         # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
@@ -530,7 +530,7 @@ jobs:
           verbose: true
       -
         name: Install go-ctrf-json-reporter
-        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@22f6d5e0e1d13b8e835ea0ffe69ed5589f7cc354
+        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@1ade8c4f9415b844bec4a7545967157c5bace961
 
       - name: Convert test reports to CTRF JSON
         # description: |
