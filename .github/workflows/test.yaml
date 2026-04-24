@@ -49,7 +49,7 @@ jobs:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
 
     - name: Get changed source files
-      uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v4.7.0
+      uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v4.7.0
       id: changed-source-files
       with:
         files_yaml: |
