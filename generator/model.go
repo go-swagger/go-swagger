@@ -112,7 +112,8 @@ type definitionGenerator struct {
 }
 
 func (m *definitionGenerator) Generate() error {
-	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
+	di := discriminatorInfo(analysis.New(m.SpecDoc.Spec()))
+	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts, di)
 	if err != nil {
 		return fmt.Errorf("could not generate definitions for model %s on target %s: %w", m.Name, m.Target, err)
 	}
@@ -137,8 +138,8 @@ func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	return m.opts.renderDefinition(g)
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
-	gd, err := makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
+func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts, di *discInfo) (*GenDefinition, error) {
+	gd, err := makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts, di)
 
 	if err == nil && gd != nil {
 		// before yielding the schema to the renderer, we check if the top-level Validate method gets some content
@@ -219,16 +220,13 @@ func isExternal(schema spec.Schema) bool {
 }
 
 //nolint:gocognit // TODO(fredbi): refactor
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts, di *discInfo) (*GenDefinition, error) {
 	// Check if model is imported from external package using x-go-type
 	receiver := "m"
 	// models are resolved in the current package
 	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
 	resolver := newTypeResolver("", "", specDoc).withDefinitionPackage(modelPkg)
 	resolver.ModelName = name
-	analyzed := analysis.New(specDoc.Spec())
-
-	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
 		Path:                       "",
@@ -308,7 +306,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts, di)
 					if err != nil {
 						return nil, err
 					}
