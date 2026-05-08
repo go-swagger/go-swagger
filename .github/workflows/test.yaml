@@ -263,7 +263,7 @@ jobs:
           cache: true
 
       - name: Install gotestsum
-        uses: go-openapi/gh-actions/install/gotestsum@1ade8c4f9415b844bec4a7545967157c5bace961
+        uses: go-openapi/gh-actions/install/gotestsum@21fde93224f7f4c39a622fbe7eb50e4a620eb899
 
       - name: Ensure TMP is created on windows runners
         # On windows, tests require testing.TempDir to reside on the same drive as the code.
@@ -506,7 +506,7 @@ jobs:
           path: reports/
       -
         name: Install go-junit-report
-        uses: go-openapi/gh-actions/install/go-junit-report@1ade8c4f9415b844bec4a7545967157c5bace961
+        uses: go-openapi/gh-actions/install/go-junit-report@21fde93224f7f4c39a622fbe7eb50e4a620eb899
 
       - name: Convert test reports to a merged JUnit XML
         # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
@@ -530,7 +530,7 @@ jobs:
           verbose: true
       -
         name: Install go-ctrf-json-reporter
-        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@1ade8c4f9415b844bec4a7545967157c5bace961
+        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@21fde93224f7f4c39a622fbe7eb50e4a620eb899
 
       - name: Convert test reports to CTRF JSON
         # description: |
