@@ -104,15 +104,15 @@ func TestMediaMakeSerializers(t *testing.T) {
 			}
 
 		case "yaml":
-			assert.Len(t, ser.AllSerializers, 2)
+			assert.Len(t, ser.AllSerializers, 1)
 			for _, media := range ser.AllSerializers {
 				assert.EqualT(t, ser.AppName, media.AppName)
 				assert.EqualT(t, ser.ReceiverName, media.ReceiverName)
 				assert.EqualT(t, ser.Implementation, media.Implementation)
 				switch media.MediaType {
 				case runtime.YAMLMime:
-					assert.Len(t, media.Parameters, 1)
-				case "application/yaml":
+					assert.Len(t, media.Parameters, 2)
+				case "application/x-yaml":
 					assert.Len(t, media.Parameters, 1)
 				default:
 					t.Logf("unexpected media type: %s in %v", media.MediaType, ser.AllSerializers)
