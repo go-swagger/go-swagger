@@ -272,6 +272,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Printf("planning definitions (found: %d)", len(a.Models))
 
 	genModels := make(GenDefinitions, 0, len(a.Models))
+	di := discriminatorInfo(a.Analyzed)
 	for mn, m := range a.Models {
 		model, err := makeGenDefinition(
 			mn,
@@ -279,6 +280,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			m,
 			a.SpecDoc,
 			a.GenOpts,
+			di,
 		)
 		if err != nil {
 			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %w", mn, err)
