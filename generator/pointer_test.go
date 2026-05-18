@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 const (
@@ -168,108 +168,108 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
 		// minimum validation
-		{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 23
+		{Type: t, Format: v, Expected: vv, Minimum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 23
 
 		// minimum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 31
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Minimum: conv.Pointer(float64(2)), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 31
 
 		// required, minimum validation
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Extensions: isNullableExt()}, // 35
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 35
 
 		// required, minimum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), ReadOnly: true},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: conv.Pointer(float64(2)), ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Minimum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 
 		// maximum validation
-		{Type: t, Format: v, Expected: vv, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 46
+		{Type: t, Format: v, Expected: vv, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 46
 
 		// maximum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 54
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, ReadOnly: true, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 54
 
 		// required, maximum validation
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 58
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 58
 
 		// required, maximum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), ReadOnly: true},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), ReadOnly: true, Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: swag.Float64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: conv.Pointer(float64(2)), ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), ReadOnly: true, Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), Default: 3},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Maximum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Maximum: conv.Pointer(float64(2)), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 65
 
 		// minimum and maximum validation
-		{Type: t, Format: v, Expected: vv, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 72
+		{Type: t, Format: v, Expected: vv, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(5))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(0)), Maximum: conv.Pointer(float64(1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(6)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(6)), Extensions: isNullableExt()}, // 72
 
 		// minimum and maximum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 83
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: conv.Pointer(float64(0)), Maximum: conv.Pointer(float64(3))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: conv.Pointer(float64(-1)), ReadOnly: true, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(6))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: conv.Pointer(float64(1)), Maximum: conv.Pointer(float64(6))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Default: 3, Minimum: conv.Pointer(float64(-6)), Maximum: conv.Pointer(float64(-1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 83
 
 		// required, minimum and maximum validation
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(5)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(0), Maximum: swag.Float64(1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: swag.Float64(2), Maximum: swag.Float64(6), Extensions: isNullableExt()}, // 89
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(5))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(0)), Maximum: conv.Pointer(float64(1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(6)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Minimum: conv.Pointer(float64(2)), Maximum: conv.Pointer(float64(6)), Extensions: isNullableExt()}, // 89
 
 		// required, minimum and maximum validation, readonly and defaults
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(0), Maximum: swag.Float64(3)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(0)},
-		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: swag.Float64(-1), ReadOnly: true, Maximum: swag.Float64(2)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: swag.Float64(2), Extensions: isNullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-1), Maximum: swag.Float64(6)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(1), Maximum: swag.Float64(6)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: swag.Float64(-6), Maximum: swag.Float64(-1)},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: nullableExt()},
-		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: swag.Float64(-1), Maximum: swag.Float64(2), Extensions: isNullableExt()}, // 99
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: conv.Pointer(float64(0)), Maximum: conv.Pointer(float64(3))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(0))},
+		{Type: t, Format: v, Expected: vv, Nullable: false, Required: true, Default: 3, Minimum: conv.Pointer(float64(-1)), ReadOnly: true, Maximum: conv.Pointer(float64(2))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, ReadOnly: true, Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(6))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: conv.Pointer(float64(1)), Maximum: conv.Pointer(float64(6))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, Minimum: conv.Pointer(float64(-6)), Maximum: conv.Pointer(float64(-1))},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2)), Extensions: nullableExt()},
+		{Type: t, Format: v, Expected: vv, Nullable: true, Required: true, Default: 3, ReadOnly: true, Minimum: conv.Pointer(float64(-1)), Maximum: conv.Pointer(float64(2)), Extensions: isNullableExt()}, // 99
 	}
 }
 
@@ -302,35 +302,35 @@ var stringPointerVals = []builtinVal{
 	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 19
 
 	// minLength validation
-	{Type: "string", Format: "", Expected: "string", Nullable: false, MinLength: swag.Int64(2)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(0)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 23
+	{Type: "string", Format: "", Expected: "string", Nullable: false, MinLength: conv.Pointer[int64](2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: conv.Pointer[int64](0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: conv.Pointer[int64](2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, MinLength: conv.Pointer[int64](2), Extensions: isNullableExt()}, // 23
 
 	// minLength validation, readonly and defaults
-	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(2)},
-	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: swag.Int64(0)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, MinLength: swag.Int64(2)},
-	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true, MinLength: swag.Int64(2)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 31
+	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: conv.Pointer[int64](2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, ReadOnly: true, MinLength: conv.Pointer[int64](0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: conv.Pointer[int64](2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, ReadOnly: true, MinLength: conv.Pointer[int64](2), Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, MinLength: conv.Pointer[int64](2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Default: 3, ReadOnly: true, MinLength: conv.Pointer[int64](2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: conv.Pointer[int64](2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Default: 3, ReadOnly: true, MinLength: conv.Pointer[int64](2), Extensions: isNullableExt()}, // 31
 
 	// required, minLength validation
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(0)},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Extensions: isNullableExt()}, // 35
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](0)},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), Extensions: isNullableExt()}, // 35
 
 	// required, minLength validation, readonly and defaults
-	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), ReadOnly: true},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), ReadOnly: true, Extensions: isNullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3},
-	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
-	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: swag.Int64(2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: conv.Pointer[int64](2), ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), ReadOnly: true, Extensions: isNullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), Default: 3},
+	{Type: "string", Format: "", Expected: "string", Nullable: false, Required: true, MinLength: conv.Pointer[int64](2), Default: 3, ReadOnly: true},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), Default: 3, ReadOnly: true, Extensions: nullableExt()},
+	{Type: "string", Format: "", Expected: "string", Nullable: true, Required: true, MinLength: conv.Pointer[int64](2), Default: 3, ReadOnly: true, Extensions: isNullableExt()}, // 42
 }
 
 var strfmtValues = []builtinVal{

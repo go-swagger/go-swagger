@@ -14,6 +14,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -25,6 +26,7 @@ import (
 	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/stringutils"
 )
 
 // FuncMap returns a template.FuncMap containing all Go-specific template
@@ -43,14 +45,14 @@ func FuncMap() template.FuncMap {
 		"json":               AsJSON,
 		"prettyjson":         AsPrettyJSON,
 		"hasInsecure": func(arg []string) bool {
-			return swag.ContainsStringsCI(arg, "http") || swag.ContainsStringsCI(arg, "ws") //nolint:staticcheck // tracked for migration
+			return stringutils.ContainsStringsCI(arg, "http") || stringutils.ContainsStringsCI(arg, "ws")
 		},
 		"hasSecure": func(arg []string) bool {
-			return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss") //nolint:staticcheck // tracked for migration
+			return stringutils.ContainsStringsCI(arg, "https") || stringutils.ContainsStringsCI(arg, "wss")
 		},
 		"dropPackage":        DropPackage,
 		"containsPkgStr":     ContainsPkgStr,
-		"contains":           swag.ContainsStrings, //nolint:staticcheck // tracked for migration
+		"contains":           slices.Contains[[]string, string],
 		"padSurround":        padSurround,
 		"joinFilePath":       filepath.Join,
 		"joinPath":           path.Join,

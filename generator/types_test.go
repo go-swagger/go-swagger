@@ -12,7 +12,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 type externalTypeFixture struct {
@@ -149,7 +149,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					NoValidation *bool
 				}{
 					Kind:     "array",
-					Nullable: swag.Bool(true),
+					Nullable: conv.Pointer(true),
 				},
 				Embedded: false,
 			},
@@ -390,7 +390,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "array",
 			Type: spec.NewItems().
 				Typed("number", "int64").
-				WithValidations(spec.CommonValidations{MinLength: swag.Int64(15), Maximum: swag.Float64(12.00)}).
+				WithValidations(spec.CommonValidations{MinLength: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
 				UniqueValues(),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -403,7 +403,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "string",
 			Type: spec.QueryParam("p1").
 				Typed("string", "uuid").
-				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), Maximum: swag.Float64(12.00)}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -415,7 +415,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			Title:        "simple schema: guard file (1/3)",
 			ResolvedType: "file",
 			Type: spec.FileParam("p1").
-				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), Maximum: swag.Float64(12.00)}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -428,8 +428,8 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "file",
 			Type: spec.FileParam("p1").
 				WithValidations(spec.CommonValidations{
-					MinItems: swag.Int64(15),
-					Maximum:  swag.Float64(12.00),
+					MinItems: conv.Pointer[int64](15),
+					Maximum:  conv.Pointer(12.00),
 					Pattern:  "xyz",
 					Enum:     []any{"x", 34},
 				}),
@@ -446,10 +446,10 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			Type: spec.RefSchema("#/definitions/nowhere").
 				WithValidations(spec.SchemaValidations{
 					CommonValidations: spec.CommonValidations{
-						MinItems: swag.Int64(15),
-						Maximum:  swag.Float64(12.00),
+						MinItems: conv.Pointer[int64](15),
+						Maximum:  conv.Pointer(12.00),
 					},
-					MinProperties: swag.Int64(10),
+					MinProperties: conv.Pointer[int64](10),
 				}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
@@ -464,7 +464,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "number",
 			Type: spec.QueryParam("p1").
 				Typed("number", "double").
-				WithValidations(spec.CommonValidations{MinItems: swag.Int64(15), MultipleOf: swag.Float64(12.00), Pattern: "xyz"}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), MultipleOf: conv.Pointer(12.00), Pattern: "xyz"}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)
@@ -499,7 +499,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 			Type: spec.StringProperty().
 				WithValidations(spec.SchemaValidations{
 					CommonValidations: spec.CommonValidations{
-						MinLength: swag.Int64(15),
+						MinLength: conv.Pointer[int64](15),
 						Pattern:   "xyz",
 						Enum:      []any{"x", 34},
 					},
@@ -515,7 +515,7 @@ func makeGuardFormatFixtures() []guardValidationsFixture {
 			Type: spec.StringProperty().
 				WithValidations(spec.SchemaValidations{
 					CommonValidations: spec.CommonValidations{
-						MinLength: swag.Int64(15),
+						MinLength: conv.Pointer[int64](15),
 						Pattern:   "xyz",
 						Enum:      []any{"x", 34},
 					},

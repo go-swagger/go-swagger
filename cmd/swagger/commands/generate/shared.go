@@ -19,6 +19,13 @@ import (
 	"github.com/go-swagger/go-swagger/generator"
 )
 
+const (
+	verboseFlag   = "verbose"
+	noverboseFlag = "noverbose"
+	minimalFlag   = "minimal"
+	fullFlag      = "full"
+)
+
 // FlattenCmdOptions determines options to the flatten spec preprocessing.
 type FlattenCmdOptions struct {
 	WithExpand          bool     `description:"expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)" group:"shared" long:"with-expand"`
@@ -44,10 +51,10 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 	}
 	for _, opt := range f.WithFlatten {
 		switch opt {
-		case "verbose":
+		case verboseFlag:
 			res.Verbose = true
 			verboseIsSet = true
-		case "noverbose":
+		case noverboseFlag:
 			if !verboseIsSet {
 				// verbose flag takes precedence
 				res.Verbose = false
@@ -58,13 +65,13 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 		case "expand":
 			res.Expand = true
 			expandIsSet = true
-		case "full":
+		case fullFlag:
 			if !minimalIsSet && !expandIsSet {
 				// minimal flag takes precedence
 				res.Minimal = false
 				minimalIsSet = true
 			}
-		case "minimal":
+		case minimalFlag:
 			if !expandIsSet {
 				// expand flag takes precedence
 				res.Minimal = true
@@ -150,7 +157,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.ReturnErrors = s.ReturnErrors
 	opts.WithCustomFormatter = s.WithCustomFormatter
 
-	swag.AddInitialisms(s.AdditionalInitialisms...)
+	swag.AddInitialisms(s.AdditionalInitialisms...) //nolint:staticcheck // tracked for migration to mangling.WithAdditionalInitialisms
 }
 
 func setCopyright(copyrightFile string) (string, error) {

@@ -41,7 +41,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  false,
-		WithFlatten: []string{"noverbose"},
+		WithFlatten: []string{noverboseFlag},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{
@@ -53,7 +53,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  false,
-		WithFlatten: []string{"noverbose", "full"},
+		WithFlatten: []string{noverboseFlag, fullFlag},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{
@@ -65,7 +65,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  false,
-		WithFlatten: []string{"verbose", "noverbose", "full"},
+		WithFlatten: []string{verboseFlag, noverboseFlag, fullFlag},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{
@@ -77,7 +77,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  false,
-		WithFlatten: []string{"verbose", "noverbose", "full", "expand", "remove-unused"},
+		WithFlatten: []string{verboseFlag, noverboseFlag, fullFlag, "expand", "remove-unused"},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{
@@ -89,7 +89,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  false,
-		WithFlatten: []string{"minimal", "verbose", "noverbose", "full"},
+		WithFlatten: []string{minimalFlag, verboseFlag, noverboseFlag, fullFlag},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{
@@ -101,7 +101,7 @@ func Test_Shared_SetFlattenOptions(t *testing.T) {
 
 	fixt = &FlattenCmdOptions{
 		WithExpand:  true,
-		WithFlatten: []string{"minimal", "noverbose", "full"},
+		WithFlatten: []string{minimalFlag, noverboseFlag, fullFlag},
 	}
 	res = fixt.SetFlattenOptions(defaultOpts)
 	assert.Equal(t, analysis.FlattenOpts{

@@ -27,12 +27,12 @@ func TestGenerateClient(t *testing.T) {
 	}{
 		{
 			name:      "tasklist_basic",
-			spec:      "tasklist.basic.yml",
+			spec:      specTask,
 			wantError: false,
 		},
 		{
 			name:      "tasklist_simplequery",
-			spec:      "todolist.simplequery.yml",
+			spec:      specTodo,
 			wantError: false,
 			prepare: func(c *generate.Client) {
 				c.Shared.CopyrightFile = flags.Filename(filepath.Join(testBase(), "LICENSE"))

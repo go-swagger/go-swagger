@@ -125,7 +125,7 @@ func TestDiffProcessIgnores(t *testing.T) {
 	}()
 
 	cmd := DiffCommand{
-		Format:      "json",
+		Format:      JSONFormat,
 		IgnoreFile:  fixtureDiffPath("ignoreFile.json"),
 		Destination: reportFile.Name(),
 	}
@@ -147,7 +147,7 @@ func TestDiffProcessIgnores(t *testing.T) {
 
 func TestDiffNoArgs(t *testing.T) {
 	cmd := DiffCommand{
-		Format:     "json",
+		Format:     JSONFormat,
 		IgnoreFile: "",
 	}
 	require.Error(t, cmd.Execute(nil))
@@ -257,14 +257,14 @@ func makeTestCases(t testing.TB, matches []string) []testCaseData {
 	// edge cases with errors
 	testCases = append(testCases, testCaseData{
 		name:          "failure to load old spec",
-		oldSpec:       "nowhere.json",
+		oldSpec:       nonExistingSpec,
 		newSpec:       fixtureDiffPath("enum", ".v2.json"),
 		expectedError: true,
 	},
 		testCaseData{
 			name:          "failure to load new spec",
 			oldSpec:       fixtureDiffPath("enum", ".v1.json"),
-			newSpec:       "nowhere.json",
+			newSpec:       nonExistingSpec,
 			expectedError: true,
 		},
 	)

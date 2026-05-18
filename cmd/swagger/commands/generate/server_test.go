@@ -73,8 +73,8 @@ func testGenerateServer(strict bool) func(*testing.T) {
 	return func(t *testing.T) {
 		specs := []string{
 			"billforward.discriminators.yml",
-			"todolist.simplequery.yml",
-			"todolist.simplequery.yml",
+			specTodo,
+			"impl.yml",
 		}
 
 		for i, spec := range specs {

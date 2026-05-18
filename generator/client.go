@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/jsonutils"
 )
 
 // GenerateClient generates a client library for a swagger spec document.
@@ -96,7 +96,12 @@ func (c *clientGenerator) Generate() error {
 	}
 
 	if c.DumpData {
-		return dumpData(os.Stdout, swag.ToDynamicJSON(app))
+		var dynamicApp any
+		if err := jsonutils.FromDynamicJSON(app, &dynamicApp); err != nil {
+			return err
+		}
+
+		return dumpData(os.Stdout, dynamicApp)
 	}
 
 	if c.GenOpts.IncludeModel {

@@ -8,7 +8,7 @@ package generator
 const float64String = "float64"
 
 // map of function calls to be generated to get the zero value of a given type.
-var zeroes = map[string]string{
+var zeroes = map[string]string{ //nolint:gosec // G101 false positive: not credentials, these are zero-value literals for code generation
 	"bool":        "false",
 	"float32":     "0",
 	float64String: "0",
@@ -123,7 +123,7 @@ var formatMapping = map[string]map[string]string{
 		"uint32": "uint32",
 		"uint64": "uint64",
 	},
-	"string": {
+	"string": { //nolint:gosec // G101 false positive: not credentials, this maps OpenAPI string formats to Go types
 		"char": "rune",
 		// Extended format registry from go-openapi/strfmt.
 		// Currently, 23 such formats are supported (default strftm registry),

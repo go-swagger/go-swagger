@@ -569,7 +569,7 @@ func (g GenStatusCodeResponses) MarshalJSON() ([]byte, error) {
 		if i > 0 {
 			buf.WriteRune(',')
 		}
-		buf.WriteString(fmt.Sprintf("%q:", strconv.Itoa(v.Code)))
+		fmt.Fprintf(&buf, "%q:", strconv.Itoa(v.Code))
 		buf.Write(rb)
 	}
 	buf.WriteRune('}')

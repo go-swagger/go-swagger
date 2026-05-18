@@ -24,10 +24,10 @@ func TestGenerateModel(t *testing.T) {
 		"instagram.yml",
 		"shipyard.yml",
 		"sodabooth.json",
-		"tasklist.basic.yml",
+		specTask,
 		"todolist.simpleform.yml",
 		"todolist.simpleheader.yml",
-		"todolist.simplequery.yml",
+		specTodo,
 	}
 
 	base := t.TempDir()

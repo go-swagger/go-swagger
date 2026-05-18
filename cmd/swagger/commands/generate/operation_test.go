@@ -27,9 +27,7 @@ func TestGenerateOperationStrict(t *testing.T) {
 
 func testGenerateOperation(strict bool) func(*testing.T) {
 	return func(t *testing.T) {
-		specs := []string{
-			"tasklist.basic.yml",
-		}
+		specs := []string{specTask}
 
 		base := t.TempDir()
 

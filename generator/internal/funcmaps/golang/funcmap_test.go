@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
 )
 
 func TestMain(m *testing.M) {
@@ -129,18 +130,18 @@ func TestIsInteger(t *testing.T) {
 		int32(4),
 		int64(4),
 		int(4),
-		swag.Int(4),    //nolint:staticcheck // have to migrate to the new swag API
-		swag.Int32(4),  //nolint:staticcheck // have to migrate to the new swag API
-		swag.Int64(4),  //nolint:staticcheck // have to migrate to the new swag API
-		swag.Uint(4),   //nolint:staticcheck // have to migrate to the new swag API
-		swag.Uint32(4), //nolint:staticcheck // have to migrate to the new swag API
-		swag.Uint64(4), //nolint:staticcheck // have to migrate to the new swag API
+		conv.Pointer(int(4)),
+		conv.Pointer(int32(4)),
+		conv.Pointer(int64(4)),
+		conv.Pointer(uint(4)),
+		conv.Pointer(uint32(4)),
+		conv.Pointer(uint64(4)),
 		float32(12),
 		float64(12),
-		swag.Float32(12), //nolint:staticcheck // have to migrate to the new swag API
-		swag.Float64(12), //nolint:staticcheck // have to migrate to the new swag API
+		conv.Pointer(float32(12)),
+		conv.Pointer(float64(12)),
 		"12",
-		swag.String("12"), //nolint:staticcheck // have to migrate to the new swag API
+		conv.Pointer("12"),
 	} {
 		val := anInteger
 		require.Truef(t, isInteger(val), "expected %#v to be detected an integer value", val)
@@ -149,15 +150,15 @@ func TestIsInteger(t *testing.T) {
 	for _, notAnInteger := range []any{
 		float32(12.5),
 		float64(12.5),
-		swag.Float32(12.5), //nolint:staticcheck // have to migrate to the new swag API
-		swag.Float64(12.5), //nolint:staticcheck // have to migrate to the new swag API
+		conv.Pointer(float32(12.5)),
+		conv.Pointer(float64(12.5)),
 		[]string{"a"},
 		struct{}{},
 		nil,
 		map[string]int{"a": 1},
 		"abc",
 		"2.34",
-		swag.String("2.34"), //nolint:staticcheck // have to migrate to the new swag API
+		conv.Pointer("2.34"),
 		nilString,
 		nilInt,
 		nilFloat,
@@ -168,8 +169,8 @@ func TestIsInteger(t *testing.T) {
 }
 
 func TestGt0(t *testing.T) {
-	require.TrueT(t, gt0(swag.Int64(1)))  //nolint:staticcheck // have to migrate to the new swag API
-	require.FalseT(t, gt0(swag.Int64(0))) //nolint:staticcheck // have to migrate to the new swag API
+	require.TrueT(t, gt0(conv.Pointer(int64(1))))
+	require.FalseT(t, gt0(conv.Pointer(int64(0))))
 	require.FalseT(t, gt0(nil))
 }
 

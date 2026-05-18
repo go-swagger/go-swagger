@@ -19,7 +19,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/netutils"
 )
 
 // ServeCmd to serve a swagger spec with docs ui.
@@ -71,7 +71,7 @@ func (s *ServeCmd) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
-	sh, sp, err := swag.SplitHostPort(listener.Addr().String())
+	sh, sp, err := netutils.SplitHostPort(listener.Addr().String())
 	if err != nil {
 		return err
 	}

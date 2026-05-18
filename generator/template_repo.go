@@ -264,4 +264,3 @@ func defaultProtectedTemplates() map[string]bool {
 		"discriminatedSerializer":        true,
 	}
 }
-
