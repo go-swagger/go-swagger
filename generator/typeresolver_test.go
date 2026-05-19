@@ -393,22 +393,22 @@ func TestTypeResolver_Notables(t *testing.T) {
 }
 
 func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, error) {
+	opts := opts()
 	tlb, err := loads.Spec(path)
 	if err != nil {
 		return nil, nil, err
 	}
-	resolver := &typeResolver{
-		Doc:           tlb,
-		ModelsPackage: "models",
-	}
+	resolver := newTypeResolver("models", tlb, opts)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k := range tlb.Spec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
 	}
+
 	return tlb, resolver, nil
 }
 
 func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error) {
+	opts := opts()
 	tlb, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
 	if err != nil {
 		return nil, nil, err
@@ -417,11 +417,7 @@ func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error)
 	uc := swsp.Definitions["UserCard"]
 	uc.AddExtension(xGoName, "UserItem")
 	swsp.Definitions["UserCard"] = uc
-	resolver := &typeResolver{
-		Doc:           tlb,
-		ModelsPackage: "models",
-	}
-
+	resolver := newTypeResolver("models", tlb, opts)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k, sch := range swsp.Definitions {
 		resolver.KnownDefs[k] = struct{}{}
@@ -599,9 +595,10 @@ func assertPrimitiveResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType
 }
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
+	opts := opts()
 	doc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
-	resolver := newTypeResolver("model", "", doc)
 	require.NoError(t, err)
+	resolver := newTypeResolver("model", doc, opts)
 
 	def := doc.Spec().Definitions["JsonWebKey"]
 	tpe, pkg, alias := resolver.knownDefGoType("JsonWebKey", def, nil)

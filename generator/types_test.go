@@ -347,7 +347,8 @@ func TestShortCircuitResolveExternal(t *testing.T) {
 			doc, err := loads.Embedded([]byte(jazonDoc), []byte(jazonDoc))
 			require.NoErrorf(t, err, "fixture %d", i)
 
-			r := newTypeResolver("models", "github.com/example/custom", doc)
+			opts := opts()
+			r := newTypeResolver("models", doc, opts)
 			var schema spec.Schema
 			err = json.Unmarshal([]byte(jazonDoc), &schema)
 			require.NoErrorf(t, err, "fixture %d", i)

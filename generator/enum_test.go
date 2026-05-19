@@ -27,8 +27,7 @@ func TestEnum_StringThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("string_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -51,8 +50,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("composed_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -76,8 +74,7 @@ func TestEnum_IntThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("int_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -100,8 +97,7 @@ func TestEnum_FloatThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("float_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -124,8 +120,7 @@ func TestEnum_SliceThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("slice_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -148,8 +143,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("slice_and_items_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -175,8 +169,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("slice_and_additional_items_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -204,8 +197,7 @@ func TestEnum_MapThing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("map_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -244,8 +236,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
-			err = templates.MustGet("model").Execute(buf, genModel)
-			require.NoError(t, err)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 			ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 			require.NoErrorf(t, err, buf.String())
@@ -282,8 +273,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 				require.NoError(t, err)
 
 				buf = bytes.NewBuffer(nil)
-				err := templates.MustGet("model").Execute(buf, genModel)
-				require.NoError(t, err)
+				require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 				ff, err := opts.LanguageOpts.FormatContent("object_thing_lions.go", buf.Bytes())
 				require.NoErrorf(t, err, buf.String())
@@ -328,8 +318,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -356,8 +345,7 @@ func TestEnum_Cluster(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -386,8 +374,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("object_thing.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -417,8 +404,7 @@ func TestEnum_Issue265(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	ff, err := opts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -432,7 +418,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 	require.NoError(t, e)
 
 	opts := opts()
-	tpl := templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("model").Lookup("schema")
 	definitions := specDoc.Spec().Definitions
 	for name, schema := range definitions {
 		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)
@@ -477,8 +463,7 @@ func TestEnum_Issue325(t *testing.T) {
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
-			err = templates.MustGet("model").Execute(buf, genModel)
-			require.NoError(t, err)
+			require.NoError(t, modelOpts.templates.MustGet("model").Execute(buf, genModel))
 
 			ff, err := modelOpts.LanguageOpts.FormatContent("soda_brand.go", buf.Bytes())
 			require.NoErrorf(t, err, buf.String())
@@ -502,8 +487,7 @@ func TestEnum_Issue325(t *testing.T) {
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
-			err = templates.MustGet("model").Execute(buf, genModel)
-			require.NoError(t, err)
+			require.NoError(t, modelOpts.templates.MustGet("model").Execute(buf, genModel))
 
 			ff, err := modelOpts.LanguageOpts.FormatContent("soda.go", buf.Bytes())
 			require.NoErrorf(t, err, buf.String())
@@ -535,8 +519,7 @@ func TestEnum_Issue352(t *testing.T) {
 			require.NoError(t, err)
 
 			buf := bytes.NewBuffer(nil)
-			err = templates.MustGet("model").Execute(buf, genModel)
-			require.NoError(t, err)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 			ff, err := opts.LanguageOpts.FormatContent("slp_action_enum.go", buf.Bytes())
 			require.NoErrorf(t, err, buf.String())

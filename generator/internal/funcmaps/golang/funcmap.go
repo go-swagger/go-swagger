@@ -25,7 +25,7 @@ import (
 
 	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/mangling"
 	"github.com/go-openapi/swag/stringutils"
 )
 
@@ -33,25 +33,27 @@ import (
 // functions that are independent of generator types. Callers typically
 // merge additional entries (e.g. LanguageOpts-dependent or type-dependent
 // functions) on top.
-func FuncMap() template.FuncMap {
+func FuncMap(mangler mangling.NameMangler) template.FuncMap {
 	f := sprig.TxtFuncMap()
+	pascalize := pascalize(mangler)
+	mediaGoName := mediaGoName(mangler)
 
 	extra := template.FuncMap{
-		"pascalize":          Pascalize,
-		"camelize":           swag.ToJSONName,       //nolint:staticcheck // tracked for migration to mangling.NameMangler
-		"humanize":           swag.ToHumanNameLower, //nolint:staticcheck // tracked for migration to mangling.NameMangler
-		"dasherize":          swag.ToCommandName,    //nolint:staticcheck // tracked for migration to mangling.NameMangler
+		"pascalize":          pascalize,
+		"camelize":           mangler.ToJSONName,
+		"humanize":           mangler.ToHumanNameLower,
+		"dasherize":          mangler.ToCommandName,
 		"pluralizeFirstWord": pluralizeFirstWord,
-		"json":               AsJSON,
-		"prettyjson":         AsPrettyJSON,
+		"json":               asJSON,
+		"prettyjson":         asPrettyJSON,
 		"hasInsecure": func(arg []string) bool {
 			return stringutils.ContainsStringsCI(arg, "http") || stringutils.ContainsStringsCI(arg, "ws")
 		},
 		"hasSecure": func(arg []string) bool {
 			return stringutils.ContainsStringsCI(arg, "https") || stringutils.ContainsStringsCI(arg, "wss")
 		},
-		"dropPackage":        DropPackage,
-		"containsPkgStr":     ContainsPkgStr,
+		"dropPackage":        dropPackage,
+		"containsPkgStr":     containsPkgStr,
 		"contains":           slices.Contains[[]string, string],
 		"padSurround":        padSurround,
 		"joinFilePath":       filepath.Join,
@@ -60,8 +62,8 @@ func FuncMap() template.FuncMap {
 		"blockcomment":       blockComment,
 		"inspect":            pretty.Sprint,
 		"cleanPath":          path.Clean,
-		"mediaTypeName":      MediaMime,
-		"mediaGoName":        MediaGoName,
+		"mediaTypeName":      mediaMime,
+		"mediaGoName":        mediaGoName,
 		"dict":               dict,
 		"isInteger":          isInteger,
 		"hasPrefix":          strings.HasPrefix,
@@ -75,19 +77,19 @@ func FuncMap() template.FuncMap {
 			return strings.ReplaceAll(arg, "`", "`+\"`\"+`")
 		},
 		"flagNameVar": func(in string) string {
-			return fmt.Sprintf("flag%sName", Pascalize(in))
+			return fmt.Sprintf("flag%sName", pascalize(in))
 		},
 		"flagValueVar": func(in string) string {
-			return fmt.Sprintf("flag%sValue", Pascalize(in))
+			return fmt.Sprintf("flag%sValue", pascalize(in))
 		},
 		"flagDefaultVar": func(in string) string {
-			return fmt.Sprintf("flag%sDefault", Pascalize(in))
+			return fmt.Sprintf("flag%sDefault", pascalize(in))
 		},
 		"flagModelVar": func(in string) string {
-			return fmt.Sprintf("flag%sModel", Pascalize(in))
+			return fmt.Sprintf("flag%sModel", pascalize(in))
 		},
 		"flagDescriptionVar": func(in string) string {
-			return fmt.Sprintf("flag%sDescription", Pascalize(in))
+			return fmt.Sprintf("flag%sDescription", pascalize(in))
 		},
 		"printGoLiteral": func(in any) string {
 			return interfaceReplacer.Replace(fmt.Sprintf("%#v", in))
@@ -99,24 +101,26 @@ func FuncMap() template.FuncMap {
 	return f
 }
 
-// Pascalize converts a name to Go PascalCase, handling special prefix characters.
-func Pascalize(arg string) string {
-	runes := []rune(arg)
-	switch len(runes) {
-	case 0:
-		return "Empty"
-	case 1:
-		switch runes[0] {
-		case '+', '-', '#', '_', '*', '/', '=':
-			return PrefixForName(arg)
+// pascalize converts a name to Go PascalCase, handling special prefix characters.
+func pascalize(mangler mangling.NameMangler) func(string) string {
+	return func(arg string) string {
+		runes := []rune(arg)
+		switch len(runes) {
+		case 0:
+			return "Empty"
+		case 1:
+			switch runes[0] {
+			case '+', '-', '#', '_', '*', '/', '=':
+				return PrefixForName(arg)
+			}
 		}
-	}
 
-	return swag.ToGoName(swag.ToGoName(arg)) //nolint:staticcheck // tracked for migration to mangling.NameMangler
+		return mangler.ToGoName(mangler.ToGoName(arg))
+	}
 }
 
 // PrefixForName returns a human-readable prefix for names starting with
-// special characters. It is used as [swag.GoNamePrefixFunc].
+// special characters. It is used as [mangling.PrefixFunc].
 func PrefixForName(arg string) string {
 	first := []rune(arg)[0]
 	if len(arg) == 0 || unicode.IsLetter(first) {
@@ -166,8 +170,8 @@ func cleanupEnumVariant(in string) string {
 	return replaced.String()
 }
 
-// AsJSON marshals data to a compact JSON string.
-func AsJSON(data any) (string, error) {
+// asJSON marshals data to a compact JSON string.
+func asJSON(data any) (string, error) {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
@@ -176,8 +180,8 @@ func AsJSON(data any) (string, error) {
 	return string(b), nil
 }
 
-// AsPrettyJSON marshals data to an indented JSON string.
-func AsPrettyJSON(data any) (string, error) {
+// asPrettyJSON marshals data to an indented JSON string.
+func asPrettyJSON(data any) (string, error) {
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return "", err
@@ -195,15 +199,15 @@ func pluralizeFirstWord(arg string) string {
 	return inflect.Pluralize(sentence[0]) + " " + strings.Join(sentence[1:], " ")
 }
 
-// DropPackage returns the last component of a dot-separated name.
-func DropPackage(str string) string {
+// dropPackage returns the last component of a dot-separated name.
+func dropPackage(str string) string {
 	parts := strings.Split(str, ".")
 	return parts[len(parts)-1]
 }
 
-// ContainsPkgStr returns true if str contains a package qualifier (e.g. "model.MyType").
-func ContainsPkgStr(str string) bool {
-	dropped := DropPackage(str)
+// containsPkgStr returns true if str contains a package qualifier (e.g. "model.MyType").
+func containsPkgStr(str string) bool {
+	dropped := dropPackage(str)
 	return dropped != str
 }
 
@@ -255,7 +259,7 @@ func dict(values ...any) (map[string]any, error) {
 		if !ok {
 			return nil, fmt.Errorf("expected string key, got %+v", values[i])
 		}
-		dict[key] = values[i+1] //nolint:gosec // bounds checked by modulo guard above
+		dict[key] = values[i+1] // bounds checked by the modulo guard above
 	}
 
 	return dict, nil
@@ -318,13 +322,15 @@ func markdownBlock(in string) string {
 	return mdNewLineReplacer.Replace(in)
 }
 
-// MediaMime extracts the MIME type from a media type string, stripping
+// mediaMime extracts the MIME type from a media type string, stripping
 // any parameters after the first semicolon.
-func MediaMime(orig string) string {
+func mediaMime(orig string) string {
 	return strings.SplitN(orig, ";", mimeParamParts)[0]
 }
 
-// MediaGoName converts a MIME media type string to a Go-style PascalCase name.
-func MediaGoName(media string) string {
-	return Pascalize(strings.ReplaceAll(media, "*", "Star"))
+// mediaGoName converts a MIME media type string to a Go-style PascalCase name.
+func mediaGoName(mangler mangling.NameMangler) func(string) string {
+	return func(media string) string {
+		return pascalize(mangler)(strings.ReplaceAll(media, "*", "Star"))
+	}
 }

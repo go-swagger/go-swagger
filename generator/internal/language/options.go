@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/tools/imports"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/mangling"
 
 	golangfuncs "github.com/go-swagger/go-swagger/generator/internal/funcmaps/golang"
 )
@@ -82,11 +82,14 @@ type Options struct {
 	ImportsFunc          func(map[string]string) string `json:"-"`
 	ArrayInitializerFunc func(any) (string, error)      `json:"-"`
 	FormatOnly           bool
-	reservedWordsSet     map[string]struct{}
-	initialized          bool
-	formatFunc           FormatterFunc
-	fileNameFunc         MangleFunc // language specific source file naming rules
-	dirNameFunc          MangleFunc // language specific directory naming rules
+	ExtraInitialisms     []string
+	Mangler              mangling.NameMangler
+
+	reservedWordsSet map[string]struct{}
+	initialized      bool
+	formatFunc       FormatterFunc
+	fileNameFunc     MangleFunc // language specific source file naming rules
+	dirNameFunc      MangleFunc // language specific directory naming rules
 }
 
 // SetFormatFunc sets the formatting function for this language.
@@ -99,8 +102,15 @@ func (l *Options) Init() {
 	if l.initialized {
 		return
 	}
+
+	l.Mangler = mangling.NewNameMangler(
+		mangling.WithGoNamePrefixFunc(golangfuncs.PrefixForName),
+		mangling.WithAdditionalInitialisms(l.ExtraInitialisms...),
+	)
+
 	l.initialized = true
 	l.reservedWordsSet = make(map[string]struct{})
+
 	for _, rw := range l.ReservedWords {
 		l.reservedWordsSet[rw] = struct{}{}
 	}
@@ -108,7 +118,7 @@ func (l *Options) Init() {
 
 // MangleName makes sure a reserved word gets a safe name.
 func (l *Options) MangleName(name, suffix string) string {
-	if _, ok := l.reservedWordsSet[swag.ToFileName(name)]; !ok { //nolint:staticcheck // tracked for migration to mangling.NameMangler
+	if _, ok := l.reservedWordsSet[l.Mangler.ToFileName(name)]; !ok {
 		return name
 	}
 
@@ -117,7 +127,7 @@ func (l *Options) MangleName(name, suffix string) string {
 
 // MangleVarName makes sure a reserved word gets a safe name.
 func (l *Options) MangleVarName(name string) string {
-	nm := swag.ToVarName(name) //nolint:staticcheck // tracked for migration to mangling.NameMangler
+	nm := l.Mangler.ToVarName(name)
 	if _, ok := l.reservedWordsSet[nm]; !ok {
 		return nm
 	}
@@ -131,7 +141,7 @@ func (l *Options) MangleFileName(name string) string {
 		return l.fileNameFunc(name)
 	}
 
-	return swag.ToFileName(name) //nolint:staticcheck // tracked for migration to mangling.NameMangler
+	return l.Mangler.ToFileName(name)
 }
 
 // ManglePackageName makes sure a package gets a safe name.
@@ -143,9 +153,9 @@ func (l *Options) ManglePackageName(name, suffix string) string {
 	if l.dirNameFunc != nil {
 		name = l.dirNameFunc(name)
 	}
-	pth := filepath.ToSlash(filepath.Clean(name))                                    // preserve path
-	pkg := importAlias(pth)                                                          // drop path
-	return l.MangleName(swag.ToFileName(golangfuncs.PrefixForName(pkg)+pkg), suffix) //nolint:staticcheck // tracked for migration to mangling.NameMangler
+	pth := filepath.ToSlash(filepath.Clean(name)) // preserve path
+	pkg := importAlias(pth)                       // drop path
+	return l.MangleName(l.Mangler.ToFileName(golangfuncs.PrefixForName(pkg)+pkg), suffix)
 }
 
 // ManglePackagePath makes sure a full package path gets a safe name.

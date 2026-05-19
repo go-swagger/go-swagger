@@ -13,11 +13,7 @@ import (
 
 const (
 	// Test template environment.
-	singleTemplate        = `test`
-	multipleDefinitions   = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
-	dependantTemplate     = `{{ template "T1" }}D1`
-	cirularDeps1          = `{{ define "T1" }}{{ .Name }}: {{ range .Children }}{{ template "T2" . }}{{end}}{{end}}{{template "T1" . }}`
-	cirularDeps2          = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
+	// singleTemplate        = `test`.
 	customHeader          = `custom header`
 	customMultiple        = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
 	customNewTemplate     = `new template`
@@ -50,22 +46,20 @@ toPackageName={{ toPackageName "d-e/f-g" }}
 func TestTemplates_FuncMap_Model(t *testing.T) {
 	defer discardOutput()()
 
+	opts := opts()
 	modelTpl := testModelTpl()
 
-	err := templates.AddFile("modeltpl", modelTpl)
+	require.NoError(t, opts.templates.AddFile("modeltpl", modelTpl))
+
+	templ, err := opts.templates.Get("modeltpl")
 	require.NoError(t, err)
 
-	templ, err := templates.Get("modeltpl")
-	require.NoError(t, err)
-
-	opts := opts()
 	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
 	require.NoError(t, err)
 
 	genModel.DependsOn = []string{"x", "z"}
 	rendered := bytes.NewBuffer(nil)
-	err = templ.Execute(rendered, genModel)
-	require.NoError(t, err)
+	require.NoError(t, templ.Execute(rendered, genModel))
 
 	assert.StringContainsT(t, rendered.String(), "ContainsString=true\n")
 	assert.StringContainsT(t, rendered.String(), "DoesNotContainString=false\n")

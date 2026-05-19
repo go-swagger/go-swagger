@@ -7,11 +7,10 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/swag/mangling"
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 )
 
 func TestSchemaValidation_RequiredProps(t *testing.T) {
@@ -30,15 +29,14 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 		require.TrueT(t, p.Required)
 
 		buf := bytes.NewBuffer(nil)
-		err := templates.MustGet("model").Execute(buf, gm)
-		require.NoError(t, err)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 		formatted, err := opts.LanguageOpts.FormatContent("required_props.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())
 
 		res := string(formatted)
 		assertInCode(t, k+") Validate(formats", res)
-		assertInCode(t, "validate"+swag.ToGoName(p.Name), res)
+		assertInCode(t, "validate"+opts.LanguageOpts.Mangler.ToGoName(p.Name), res)
 		assertInCode(t, "err := validate.Required", res)
 		assertInCode(t, "errors.CompositeValidationError(res...)", res)
 	}
@@ -58,8 +56,7 @@ func TestSchemaValidation_Strings(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_string.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -87,8 +84,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 	requireValidation(t, "\"name\"", "m.Name", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("string_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -115,8 +111,7 @@ func TestSchemaValidation_NamedNumber(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_number.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -144,8 +139,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 	requireValidation(t, "\"age\"", "m.Age", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("number_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -173,8 +167,7 @@ func TestSchemaValidation_NamedArray(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_array.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -204,8 +197,7 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 	requireValidation(t, "\"tags\"", "m.Tags", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("array_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -235,8 +227,7 @@ func TestSchemaValidation_NamedNestedArray(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_nested_array.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -273,8 +264,7 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 	requireValidation(t, "\"tags\"", "m.Tags", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("nested_array_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -311,8 +301,7 @@ func TestSchemaValidation_NamedNestedObject(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_nested_object.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -362,8 +351,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 	requireValidation(t, "\"args\"", "m.Args", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("nested_object_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -412,8 +400,7 @@ func TestSchemaValidation_NamedArrayMulti(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_array_multi.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -448,8 +435,7 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 	requireValidation(t, "\"args\"", "m.Args", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("array_multi_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -482,8 +468,7 @@ func TestSchemaValidation_NamedArrayAdditional(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_array_additional.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -518,8 +503,7 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 	prop := gm.Properties[0]
 	requireValidation(t, "\"args\"", "m.Args", prop)
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("array_additional_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -553,8 +537,7 @@ func TestSchemaValidation_NamedMap(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_map.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -583,8 +566,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("map_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -613,8 +595,7 @@ func TestSchemaValidation_NamedMapComplex(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_map_complex.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -646,8 +627,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("map_complex_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -679,8 +659,7 @@ func TestSchemaValidation_NamedNestedMap(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_nested_map.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -711,8 +690,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("nested_map_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -730,16 +708,15 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 }
 
 func TestAdditionalProperties_Simple(t *testing.T) {
+	opts := opts()
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	require.NoError(t, err)
 
 	k := "NamedMapComplex"
 	schema := specDoc.Spec().Definitions[k]
-	tr := &typeResolver{
-		ModelsPackage: "",
-		ModelName:     k,
-		Doc:           specDoc,
-	}
+	tr := newTypeResolver("", specDoc, opts)
+	tr.ModelName = k
+	mangler, pascalize, jsonify := fromTestOpts(t, opts)
 
 	sg := schemaGenContext{
 		Path:         "",
@@ -752,6 +729,9 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 		TypeResolver: tr,
 		Named:        true,
 		ExtraSchemas: make(map[string]GenSchema),
+		mangler:      mangler,
+		pascalize:    pascalize,
+		jsonify:      jsonify,
 	}
 
 	fsm, lsm, err := newMapStack(&sg)
@@ -770,16 +750,15 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 }
 
 func TestAdditionalProperties_Nested(t *testing.T) {
+	opts := opts()
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.schemavalidation.yml")
 	require.NoError(t, err)
 
 	k := "NamedNestedMapComplex"
 	schema := specDoc.Spec().Definitions[k]
-	tr := &typeResolver{
-		ModelsPackage: "",
-		ModelName:     k,
-		Doc:           specDoc,
-	}
+	tr := newTypeResolver("", specDoc, opts)
+	tr.ModelName = k
+	mangler, pascalize, jsonify := fromTestOpts(t, opts)
 
 	sg := schemaGenContext{
 		Path:         "",
@@ -792,6 +771,9 @@ func TestAdditionalProperties_Nested(t *testing.T) {
 		TypeResolver: tr,
 		Named:        true,
 		ExtraSchemas: make(map[string]GenSchema),
+		mangler:      mangler,
+		pascalize:    pascalize,
+		jsonify:      jsonify,
 	}
 
 	fsm, lsm, err := newMapStack(&sg)
@@ -837,8 +819,7 @@ func TestSchemaValidation_NamedNestedMapComplex(t *testing.T) {
 	require.TrueT(t, gm.AdditionalProperties.AdditionalProperties.HasValidations)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_nested_map_complex.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -873,8 +854,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("nested_map_complex_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -909,8 +889,7 @@ func TestSchemaValidation_NamedAllOf(t *testing.T) {
 	requireValidation(t, "", "m", gm.GenSchema)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("named_all_of.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -951,8 +930,7 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("all_of_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -986,8 +964,7 @@ func TestSchemaValidation_RefedAllOf(t *testing.T) {
 	require.Len(t, gm.AllOf, 2)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("all_of_validations.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1011,8 +988,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("simple_zero_allowed.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1038,8 +1014,7 @@ func TestSchemaValidation_Pet(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1065,8 +1040,7 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, gm)
-	require.NoError(t, err)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, gm))
 
 	formatted, err := opts.LanguageOpts.FormatContent("pet.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1077,4 +1051,18 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 	assertInCode(t, "validate.MinimumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
 	assertInCode(t, "validate.MaximumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
+}
+
+func fromTestOpts(t *testing.T, opts *GenOpts) (mangler mangling.NameMangler, pascalize func(string) string, jsonify func(any) (string, error)) {
+	var ok bool
+
+	mangler = opts.LanguageOpts.Mangler
+
+	pascalize, ok = opts.funcMap["pascalize"].(func(string) string)
+	require.TrueTf(t, ok, "internal error: expected pascalize to be func(string) string")
+
+	jsonify, ok = opts.funcMap["json"].(func(any) (string, error))
+	require.TrueTf(t, ok, "internal error: expected json to be func(any) (string, error)")
+
+	return mangler, pascalize, jsonify
 }

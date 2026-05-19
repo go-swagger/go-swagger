@@ -61,6 +61,8 @@ func FormatLite(filename string, content []byte, opts ...FormatOption) ([]byte, 
 	return out, nil
 }
 
+const formatImport = "fmt"
+
 func parseGoOrFragment(filename string, content []byte) (*token.FileSet, *ast.File, func([]byte) []byte, error) {
 	fset, file, err := parseGo(filename, content)
 	if err == nil {
@@ -309,7 +311,7 @@ func init() {
 		"bytes",
 		"context",
 		"encoding/json",
-		"fmt",
+		formatImport,
 		"io",
 		"mime/multipart",
 		"os",

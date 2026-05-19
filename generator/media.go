@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/swag"
 )
 
 const jsonSerializer = "json"
@@ -90,13 +89,13 @@ func (a *appGenerator) makeSerializers(mediaTypes []string, known func(string) (
 
 	// build all required serializers
 	for _, media := range mediaTypes {
-		key := mediaMime(media)
+		key := a.mediaMime(media)
 		nm, ok := wellKnownMime(key)
 		if !ok {
 			// keep this serializer named, even though its implementation is empty (cf. #1557)
 			nm = key
 		}
-		name := swag.ToJSONName(nm)
+		name := a.mangler.ToJSONName(nm)
 		impl, _ := known(name)
 
 		ser, ok := uniqueSerializers[key]

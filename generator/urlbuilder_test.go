@@ -25,8 +25,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
 				opts := opts()
-				err = templates.MustGet("serverUrlbuilder").Execute(buf, op)
-				require.NoError(t, err)
+				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
 					ff, err := opts.LanguageOpts.FormatContent("simple_path_params.go", buf.Bytes())
@@ -90,8 +89,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
 				opts := opts()
-				err = templates.MustGet("serverUrlbuilder").Execute(buf, op)
-				require.NoError(t, err)
+				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
 					ff, err := opts.LanguageOpts.FormatContent("simple_query_params.go", buf.Bytes())
@@ -170,8 +168,7 @@ func testArrayQueryParams(t *testing.T, filePath, basePath string) {
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
 				opts := opts()
-				err = templates.MustGet("serverUrlbuilder").Execute(buf, op)
-				require.NoError(t, err)
+				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
 					ff, err := opts.LanguageOpts.FormatContent("array_query_params.go", buf.Bytes())
@@ -321,8 +318,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 				t.Run("should generate go code", func(t *testing.T) {
 					buf := bytes.NewBuffer(nil)
 					opts := opts()
-					err = templates.MustGet("serverUrlbuilder").Execute(buf, op)
-					require.NoError(t, err)
+					require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 					t.Run("should format go code", func(t *testing.T) {
 						ff, err := opts.LanguageOpts.FormatContent("get_test_test_name_urlbuilder.go", buf.Bytes())

@@ -36,6 +36,7 @@ func TestMediaWellKnownMime(t *testing.T) {
 func TestMediaMime(t *testing.T) {
 	params := "param=1;param=2"
 	withParams := runtime.JSONMime + ";" + params
+	mediaMime := mustGetMediaMime(t)
 	assert.EqualT(t, runtime.JSONMime, mediaMime(runtime.JSONMime))
 	assert.EqualT(t, runtime.JSONMime, mediaMime(withParams))
 
@@ -44,13 +45,17 @@ func TestMediaMime(t *testing.T) {
 }
 
 func TestMediaGoName(t *testing.T) {
+	mediaGoName := mustGetMediaGoName(t)
 	assert.EqualT(t, "StarStar", mediaGoName("*/*"))
 }
 
 func TestMediaMakeSerializers(t *testing.T) {
+	o := opts()
 	app := appGenerator{
-		Name:     "myapp",
-		Receiver: "myReceiver",
+		Name:      "myapp",
+		Receiver:  "myReceiver",
+		mangler:   o.LanguageOpts.Mangler,
+		mediaMime: mustGetMediaMime(t),
 	}
 
 	res, supportsJSON := app.makeSerializers([]string{
@@ -173,4 +178,28 @@ func TestMediaMakeSerializers(t *testing.T) {
 	assert.TrueT(t, sort.IsSorted(res))
 	require.Len(t, res, 1)
 	assert.EqualT(t, expectedMime, res[0].Name)
+}
+
+func mustGetMediaMime(tb testing.TB) func(string) string {
+	tb.Helper()
+
+	opts := opts()
+	funcMap := opts.funcMap
+	mediaMime, ok := funcMap["mediaTypeName"].(func(string) string)
+	require.TrueTf(tb, ok, "internal error: mediaTypeName function expected to be func(string) string, but got %T", mediaMime)
+	require.NotNil(tb, mediaMime)
+
+	return mediaMime
+}
+
+func mustGetMediaGoName(tb testing.TB) func(string) string {
+	tb.Helper()
+
+	opts := opts()
+	funcMap := opts.funcMap
+	mediaGoName, ok := funcMap["mediaGoName"].(func(string) string)
+	require.TrueTf(tb, ok, "internal error: mediaGoName function expected to be func(string) string, but got %T", mediaGoName)
+	require.NotNil(tb, mediaGoName)
+
+	return mediaGoName
 }

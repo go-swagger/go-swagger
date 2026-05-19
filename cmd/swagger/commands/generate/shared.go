@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/swag"
 
 	"github.com/go-swagger/go-swagger/generator"
 )
@@ -156,8 +155,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.StrictResponders = s.StrictResponders
 	opts.ReturnErrors = s.ReturnErrors
 	opts.WithCustomFormatter = s.WithCustomFormatter
-
-	swag.AddInitialisms(s.AdditionalInitialisms...) //nolint:staticcheck // tracked for migration to mangling.WithAdditionalInitialisms
+	opts.WithExtraInitialisms = s.AdditionalInitialisms
 }
 
 func setCopyright(copyrightFile string) (string, error) {

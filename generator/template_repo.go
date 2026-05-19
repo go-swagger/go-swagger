@@ -9,25 +9,16 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/go-openapi/swag"
-
 	golangfuncs "github.com/go-swagger/go-swagger/generator/internal/funcmaps/golang"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
+	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
-var (
-	assets             map[string][]byte
-	protectedTemplates map[string]bool
+var errInternal = errors.New("internal error detected in templates")
 
-	// FuncMapFunc yields a map with all functions for templates.
-	FuncMapFunc func(*LanguageOpts) template.FuncMap
-
-	templates *templatesrepo.Repository
-
-	docFormat map[string]string
-
-	errInternal = errors.New("internal error detected in templates")
-)
+var docFormat = map[string]string{
+	binary: "binary (byte stream)",
+	b64:    "byte (base64 string)",
+}
 
 // embeddedAssets adapts the package-level AssetNames/MustAsset functions
 // to the [templatesrepo.AssetProvider] interface.
@@ -36,28 +27,14 @@ type embeddedAssets struct{}
 func (embeddedAssets) AssetNames() []string         { return AssetNames() }
 func (embeddedAssets) MustAsset(name string) []byte { return MustAsset(name) }
 
-func initTemplateRepo() {
-	FuncMapFunc = DefaultFuncMap
-
-	// this makes the ToGoName func behave with the special
-	// prefixing rule above
-	swag.GoNamePrefixFunc = golangfuncs.PrefixForName //nolint:staticcheck // tracked for migration to mangling.WithGoNamePrefixFunc
-
-	assets = defaultAssets()
-	protectedTemplates = defaultProtectedTemplates()
-	templates = templatesrepo.NewRepository(FuncMapFunc(DefaultLanguageFunc()))
-	templates.SetProtectedTemplates(protectedTemplates)
-
-	docFormat = map[string]string{
-		"binary": "binary (byte stream)",
-		"byte":   "byte (base64 string)",
-	}
-}
-
 // DefaultFuncMap yields a map with default functions for use in the templates.
 // These are available in every template.
-func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
-	f := golangfuncs.FuncMap()
+func DefaultFuncMap(lang *language.Options) template.FuncMap {
+	f := golangfuncs.FuncMap(lang.Mangler)
+	pascalize, ok := f["pascalize"].(func(string) string)
+	if !ok {
+		panic("internal error: expected pascalize to be func(string) string")
+	}
 
 	// Language-specific entries that depend on *LanguageOpts.
 	f["varname"] = lang.MangleVarName
@@ -117,7 +94,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 			}
 			op = *ptr
 		}
-		name := "Operation" + golangfuncs.Pascalize(op.Package) + golangfuncs.Pascalize(op.Name) + "Cmd"
+		name := "Operation" + pascalize(op.Package) + pascalize(op.Name) + "Cmd"
 
 		return name, nil
 	}
@@ -126,7 +103,7 @@ func DefaultFuncMap(lang *LanguageOpts) template.FuncMap {
 		if !ok {
 			return "", fmt.Errorf("cmdGroupName should be called on a GenOperationGroup, but got: %T", in)
 		}
-		name := "GroupOfOperations" + golangfuncs.Pascalize(opGroup.Name) + "Cmd"
+		name := "GroupOfOperations" + pascalize(opGroup.Name) + "Cmd"
 
 		return name, nil
 	}

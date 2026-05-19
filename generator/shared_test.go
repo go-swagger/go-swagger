@@ -32,9 +32,6 @@ const (
 func TestMain(m *testing.M) {
 	// initializations to run tests in this package
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	if err := templates.LoadDefaults(assets); err != nil {
-		panic(err)
-	}
 	initSchemaValidationTest()
 	os.Exit(m.Run())
 }
@@ -304,27 +301,29 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 }
 
 // Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
-// TODO: better error discrimination between absent definition and non-parsing template.
 func TestShared_GarbledTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	garbled := "func x {{;;; garbled"
-
-	_ = templates.AddFile("garbled", garbled)
 	opts := testGenOpts()
+	t.Run("should fail on invalid template", func(t *testing.T) {
+		const garbled = "func x {{;;; garbled"
+		require.Error(t, opts.templates.AddFile("garbled", garbled))
+	})
 
-	tplOpts := TemplateOpts{
-		Name:       "Garbled",
-		Source:     "asset:garbled",
-		Target:     ".",
-		FileName:   "test_garbled.go",
-		SkipExists: false,
-		SkipFormat: false,
-	}
+	t.Run("should fail on template execution error", func(t *testing.T) {
+		tplOpts := TemplateOpts{
+			Name:       "Garbled",
+			Source:     "asset:garbled",
+			Target:     ".",
+			FileName:   "test_garbled.go",
+			SkipExists: false,
+			SkipFormat: false,
+		}
 
-	buf, err := opts.render(&tplOpts, nil)
-	require.Errorf(t, err, "Error should be handled here")
-	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+		buf, err := opts.render(&tplOpts, nil)
+		require.Errorf(t, err, "Error should be handled here")
+		assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
+	})
 }
 
 // Template execution failure.
@@ -337,43 +336,46 @@ func (*myTemplateData) MyFaultyMethod() (string, error) {
 func TestShared_ExecTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	// Not a failure: no value data
-	execfailure1 := "func x {{ .NotInData }}"
+	t.Run("should not fail: no value data", func(t *testing.T) {
+		const execfailure1 = "func x {{ .NotInData }}"
 
-	_ = templates.AddFile("execfailure1", execfailure1)
-	opts := testGenOpts()
+		opts := testGenOpts()
+		require.NoError(t, opts.templates.AddFile("execfailure1", execfailure1))
 
-	tplOpts := TemplateOpts{
-		Name:       "execFailure1",
-		Source:     "asset:execfailure1",
-		Target:     ".",
-		FileName:   "test_execfailure1.go",
-		SkipExists: false,
-		SkipFormat: false,
-	}
+		tplOpts := TemplateOpts{
+			Name:       "execFailure1",
+			Source:     "asset:execfailure1",
+			Target:     ".",
+			FileName:   "test_execfailure1.go",
+			SkipExists: false,
+			SkipFormat: false,
+		}
 
-	buf1, err := opts.render(&tplOpts, nil)
-	require.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
-	assert.EqualT(t, "func x <no value>", string(buf1))
+		buf1, err := opts.render(&tplOpts, nil)
+		require.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
+		assert.EqualT(t, "func x <no value>", string(buf1))
+	})
 
-	execfailure2 := "func {{ .MyFaultyMethod }}"
+	t.Run("should fail: execution error", func(t *testing.T) {
+		const execfailure2 = "func {{ .MyFaultyMethod }}"
 
-	_ = templates.AddFile("execfailure2", execfailure2)
-	opts = testGenOpts()
-	tplOpts2 := TemplateOpts{
-		Name:       "execFailure2",
-		Source:     "asset:execfailure2",
-		Target:     ".",
-		FileName:   "test_execfailure2.go",
-		SkipExists: false,
-		SkipFormat: false,
-	}
+		opts := testGenOpts()
+		require.NoError(t, opts.templates.AddFile("execfailure2", execfailure2))
+		tplOpts := TemplateOpts{
+			Name:       "execFailure2",
+			Source:     "asset:execfailure2",
+			Target:     ".",
+			FileName:   "test_execfailure2.go",
+			SkipExists: false,
+			SkipFormat: false,
+		}
 
-	data := new(myTemplateData)
-	buf2, err := opts.render(&tplOpts2, data)
-	require.Error(t, err, "Error should be handled here: missing func in template yields an error")
-	assert.StringContainsT(t, err.Error(), "template execution failed")
-	assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
+		data := new(myTemplateData)
+		buf2, err := opts.render(&tplOpts, data)
+		require.Error(t, err, "error should be handled here: missing func in template yields an error")
+		assert.ErrorContains(t, err, "template execution failed")
+		assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
+	})
 }
 
 // Test correctly parsed templates, with bad formatting.
@@ -382,60 +384,63 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	tmp := t.TempDir()
 
 	t.Run("should add template producing bad formatted go", func(t *testing.T) {
+		opts := testGenOpts()
 		badFormat := "func x {;;; garbled"
-		require.NoError(t, templates.AddFile("badformat", badFormat))
-	})
+		require.NoError(t, opts.templates.AddFile("badformat", badFormat))
 
-	t.Run("with Not skipping format option", func(t *testing.T) {
-		t.Run("should write file with bad formatting", func(t *testing.T) {
-			opts := testGenOpts()
-			opts.LanguageOpts = GolangOpts()
+		t.Run("with Not skipping format option", func(t *testing.T) {
+			t.Run("should write file with bad formatting", func(t *testing.T) {
+				tplOpts := TemplateOpts{
+					Name:       "badformat",
+					Source:     "asset:badformat",
+					Target:     tmp,
+					FileName:   "test_badformat.go",
+					SkipExists: false,
+					SkipFormat: false,
+				}
+
+				mangler := opts.LanguageOpts.Mangler
+				mediaMime := mustGetMediaMime(t)
+
+				data := appGenerator{
+					Name:      "badtest",
+					Package:   "wrongpkg",
+					mangler:   mangler,
+					mediaMime: mediaMime,
+				}
+				err := opts.write(&tplOpts, data)
+				require.Errorf(t, err, "with formatting, write should error on bad formatting but got: %v", err)
+				t.Logf("got error: %v", err)
+
+				require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
+					"the badly formatted file should have been dumped for debugging purposes, but couldn't find it",
+				)
+				assert.StringContainsT(t, err.Error(), "source formatting on generated source")
+			})
+		})
+
+		t.Run("with Skipping format option", func(t *testing.T) {
 			tplOpts := TemplateOpts{
-				Name:       "badformat",
+				Name:       "badformat2",
 				Source:     "asset:badformat",
 				Target:     tmp,
-				FileName:   "test_badformat.go",
+				FileName:   "test_badformat2.go",
 				SkipExists: false,
-				SkipFormat: false,
+				SkipFormat: true,
 			}
 
-			data := appGenerator{
-				Name:    "badtest",
-				Package: "wrongpkg",
-			}
-			err := opts.write(&tplOpts, data)
-			require.Errorf(t, err, "with formatting, write should error ont bad formatting but got: %v", err)
+			t.Run("should write file with bad formatting", func(t *testing.T) {
+				data := appGenerator{
+					Name:    "badtest",
+					Package: "wrongpkg",
+				}
+				err := opts.write(&tplOpts, data)
+				require.NoErrorf(t, err, "without formatting, write shouldn't care about bad formatting but got: %v", err)
 
-			require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
-				"the badly formatted file should have been dumped for debugging purposes, but couldn't find it",
-			)
-			assert.StringContainsT(t, err.Error(), "source formatting on generated source")
-		})
-	})
-
-	t.Run("with Skipping format option", func(t *testing.T) {
-		opts := testGenOpts()
-		opts.LanguageOpts = GolangOpts()
-		tplOpts := TemplateOpts{
-			Name:       "badformat2",
-			Source:     "asset:badformat",
-			Target:     tmp,
-			FileName:   "test_badformat2.go",
-			SkipExists: false,
-			SkipFormat: true,
-		}
-
-		t.Run("should write file with bad formatting", func(t *testing.T) {
-			data := appGenerator{
-				Name:    "badtest",
-				Package: "wrongpkg",
-			}
-			err := opts.write(&tplOpts, data)
-			require.NoErrorf(t, err, "without formatting, write shouldn't care about bad formatting but got: %v", err)
-
-			require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
-				"The unformatted file should have been dumped without format checks, but couldn't find it",
-			)
+				require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
+					"The unformatted file should have been dumped without format checks, but couldn't find it",
+				)
+			})
 		})
 	})
 }
@@ -451,10 +456,8 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	// Not skipping format
 	content := "func x {}"
 
-	_ = templates.AddFile("gendir", content)
-
 	opts := testGenOpts()
-	opts.LanguageOpts = GolangOpts()
+	require.NoError(t, opts.templates.AddFile("gendir", content))
 	tplOpts := TemplateOpts{
 		Name:   "gendir",
 		Source: "asset:gendir",
@@ -516,11 +519,12 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 
 	require.NotNil(t, specDoc.Spec().Info)
 	specDoc.Spec().Info.Title = "    "
-	assert.EqualT(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
-	specDoc.Spec().Info.Title = "test"
-	assert.EqualT(t, "Xyz", appNameOrDefault(specDoc, "  ", "xyz"))
 
 	opts := testGenOpts()
+	assert.EqualT(t, "Xyz", opts.appNameOrDefault(specDoc, "  ", "xyz"))
+	specDoc.Spec().Info.Title = "test"
+	assert.EqualT(t, "Xyz", opts.appNameOrDefault(specDoc, "  ", "xyz"))
+
 	opts.Spec = specPath
 	_, err = opts.validateAndFlattenSpec()
 	require.NoError(t, err)

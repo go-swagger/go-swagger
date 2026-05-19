@@ -138,7 +138,7 @@ func TestBaseImport(t *testing.T) {
 	// needed (inherited from old GOPATH shinenigans).
 
 	tempdir := t.TempDir()
-	golang := GolangOpts()
+	opts := opts()
 
 	for _, item := range baseImportTestFixtures(tempdir) {
 		t.Run(fmt.Sprintf("TestBaseImport(%q)", item.title), func(t *testing.T) {
@@ -173,7 +173,7 @@ func TestBaseImport(t *testing.T) {
 				t.Setenv("GOPATH", item.gopath)
 
 				// Test (baseImport always with /)
-				actualpath := golang.BaseImport(item.targetpath)
+				actualpath := opts.LanguageOpts.BaseImport(item.targetpath)
 				require.EqualTf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 			})
 		})

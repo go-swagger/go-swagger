@@ -15,8 +15,8 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/swag/conv"
+	"github.com/go-openapi/swag/mangling"
 	"github.com/go-openapi/swag/typeutils"
 )
 
@@ -51,47 +51,53 @@ const (
 	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )
 
-// swaggerTypeName contains a mapping from go type to swagger type or format.
-var swaggerTypeName map[string]string
-
-func initTypes() {
-	swaggerTypeName = make(map[string]string)
-	for k, v := range typeMapping {
-		swaggerTypeName[v] = k
-	}
-}
-
 type typeResolver struct {
 	Doc           *loads.Document
 	ModelsPackage string // package alias (e.g. "models")
 	ModelsFullPkg string // fully qualified package (e.g. "github.com/example/models")
 	ModelName     string
 	KnownDefs     map[string]struct{}
+
 	// unexported fields
 	keepDefinitionsPkg string
 	knownDefsKept      map[string]struct{}
 	definitionPkg      string // pkg alias to fill in GenSchema.Pkg
+	mangler            mangling.NameMangler
+	pkgMangler         func(string, string) string
 }
 
-func newTypeResolver(pkg, _ string, doc *loads.Document) *typeResolver {
-	resolver := typeResolver{ModelsPackage: pkg, Doc: doc}
-	resolver.KnownDefs = make(map[string]struct{}, len(doc.Spec().Definitions))
-	for k, sch := range doc.Spec().Definitions {
-		tpe, _, _ := resolver.knownDefGoType(k, sch, nil)
-		resolver.KnownDefs[tpe] = struct{}{}
+func newTypeResolver(pkg string, doc *loads.Document, opts *GenOpts) *typeResolver {
+	resolver := typeResolver{
+		ModelsPackage: pkg,
+		Doc:           doc,
+		KnownDefs:     make(map[string]struct{}, len(doc.Spec().Definitions)),
+		mangler:       opts.LanguageOpts.Mangler,
+		pkgMangler:    opts.LanguageOpts.ManglePackageName,
 	}
+
+	resolver.setDefs()
+
 	return &resolver
 }
 
 // NewWithModelName clones a type resolver and specifies a new model name.
 func (t *typeResolver) NewWithModelName(name string) *typeResolver {
-	tt := newTypeResolver(t.ModelsPackage, t.ModelsFullPkg, t.Doc)
+	tt := &typeResolver{
+		ModelsPackage: t.ModelsPackage,
+		Doc:           t.Doc,
+		KnownDefs:     make(map[string]struct{}, len(t.Doc.Spec().Definitions)),
+		mangler:       t.mangler,
+		pkgMangler:    t.pkgMangler,
+	}
+
+	tt.setDefs()
 	tt.ModelName = name
 
 	// propagates kept definitions
 	tt.keepDefinitionsPkg = t.keepDefinitionsPkg
 	tt.knownDefsKept = t.knownDefsKept
 	tt.definitionPkg = t.definitionPkg
+
 	return tt
 }
 
@@ -281,6 +287,13 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	return result, err
 }
 
+func (t *typeResolver) setDefs() {
+	for k, sch := range t.Doc.Spec().Definitions {
+		tpe, _, _ := t.knownDefGoType(k, sch, nil)
+		t.KnownDefs[tpe] = struct{}{}
+	}
+}
+
 func (t typeResolver) resolveExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 	extType, hasExt := hasExternalType(ext)
 	if !hasExt {
@@ -291,7 +304,7 @@ func (t typeResolver) resolveExternalType(ext spec.Extensions) (*externalTypeDef
 	// * basic deconfliction of the default alias
 	// * if no package is specified, defaults to models (as provided from CLI or defaut generation location for models)
 	toAlias := func(pkg string) string {
-		mangled := GolangOpts().ManglePackageName(pkg, "")
+		mangled := t.pkgMangler(pkg, "")
 		return deconflictPkg(mangled, func(in string) string {
 			return in + "ext"
 		})
@@ -354,6 +367,7 @@ func (t *typeResolver) withKeepDefinitionsPackage(definitionsPackage string) *ty
 	for k := range t.KnownDefs {
 		t.knownDefsKept[k] = struct{}{}
 	}
+
 	return t
 }
 
@@ -597,17 +611,17 @@ func (t *typeResolver) goTypeName(nm string) string {
 		// current package.
 		// This allows complex anonymous extra schemas to reuse known definitions generated in another package.
 		if _, ok := t.knownDefsKept[nm]; ok {
-			return strings.Join([]string{t.keepDefinitionsPkg, swag.ToGoName(nm)}, ".")
+			return strings.Join([]string{t.keepDefinitionsPkg, t.mangler.ToGoName(nm)}, ".")
 		}
 	}
 
 	if t.ModelsPackage == "" {
-		return swag.ToGoName(nm)
+		return t.mangler.ToGoName(nm)
 	}
 	if _, ok := t.KnownDefs[nm]; ok {
-		return strings.Join([]string{t.ModelsPackage, swag.ToGoName(nm)}, ".")
+		return strings.Join([]string{t.ModelsPackage, t.mangler.ToGoName(nm)}, ".")
 	}
-	return swag.ToGoName(nm)
+	return t.mangler.ToGoName(nm)
 }
 
 //nolint:gocognit // TODO(fredbi): refactor

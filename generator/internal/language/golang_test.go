@@ -27,6 +27,7 @@ func TestGolang_MangleFileName(t *testing.T) {
 }
 
 func TestGolang_ManglePackage(t *testing.T) {
+	const defaultPackage = "default"
 	o := GolangOpts()
 
 	for _, v := range []struct {
@@ -34,7 +35,7 @@ func TestGolang_ManglePackage(t *testing.T) {
 		expectedPath string
 		expectedName string
 	}{
-		{tested: "", expectedPath: "default", expectedName: "default"},
+		{tested: "", expectedPath: defaultPackage, expectedName: defaultPackage},
 		{tested: "select", expectedPath: "select_default", expectedName: "select_default"},
 		{tested: "x", expectedPath: "x", expectedName: "x"},
 		{tested: "a/b/c-d/e_f/g", expectedPath: "a/b/c-d/e_f/g", expectedName: "g"},
@@ -45,9 +46,9 @@ func TestGolang_ManglePackage(t *testing.T) {
 		{tested: "vendor", expectedPath: "vendor_swagger", expectedName: "vendor_swagger"},
 		{tested: "internal", expectedPath: "internal_swagger", expectedName: "internal_swagger"},
 	} {
-		res := o.ManglePackagePath(v.tested, "default")
+		res := o.ManglePackagePath(v.tested, defaultPackage)
 		assert.EqualT(t, v.expectedPath, res)
-		res = o.ManglePackageName(v.tested, "default")
+		res = o.ManglePackageName(v.tested, defaultPackage)
 		assert.EqualT(t, v.expectedName, res)
 	}
 }
@@ -91,8 +92,8 @@ func TestGolang_Imports(t *testing.T) {
 	assert.Empty(t, o.Imports(map[string]string{}))
 
 	// unaliased import (name matches last path component)
-	res := o.Imports(map[string]string{"fmt": "fmt"})
-	assert.StringContainsT(t, res, `"fmt"`)
+	res := o.Imports(map[string]string{formatImport: formatImport})
+	assert.StringContainsT(t, res, `"`+formatImport+`"`)
 
 	// aliased import (name differs from last path component)
 	res = o.Imports(map[string]string{"myalias": "github.com/example/pkg"})
@@ -106,7 +107,7 @@ func TestDefaultGoFormatFunc(t *testing.T) {
 	res, err := o.FormatContent("test.go", src)
 	require.NoError(t, err)
 	assert.StringContainsT(t, string(res), "package main")
-	assert.StringContainsT(t, string(res), `"fmt"`)
+	assert.StringContainsT(t, string(res), `"`+formatImport+`"`)
 }
 
 func TestRelPathToRelGoPath(t *testing.T) {
