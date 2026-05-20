@@ -12,7 +12,11 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-const jsonSerializer = "json"
+const (
+	jsonSerializer = "json"
+	formData       = "formData"
+	multipartForm  = "multipartform"
+)
 
 var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("application/.*json"):                jsonSerializer,
@@ -35,32 +39,32 @@ var mediaTypeNames = map[*regexp.Regexp]string{
 	regexp.MustCompile("application/.*raw-stream"):          "bin",
 	regexp.MustCompile("application/x-www-form-urlencoded"): "urlform",
 	regexp.MustCompile("application/javascript"):            "txt",
-	regexp.MustCompile("multipart/form-data"):               "multipartform",
+	regexp.MustCompile("multipart/form-data"):               multipartForm,
 	regexp.MustCompile("image/.*"):                          "bin",
 	regexp.MustCompile("audio/.*"):                          "bin",
 	regexp.MustCompile("application/pdf"):                   "bin",
 }
 
 var knownProducers = map[string]string{
-	jsonSerializer:  "runtime.JSONProducer()",
-	"yaml":          "yamlpc.YAMLProducer()",
-	"xml":           "runtime.XMLProducer()",
-	"txt":           "runtime.TextProducer()",
-	"bin":           "runtime.ByteStreamProducer()",
-	"csv":           "runtime.CSVProducer()",
-	"urlform":       "runtime.DiscardProducer",
-	"multipartform": "runtime.DiscardProducer",
+	jsonSerializer: "runtime.JSONProducer()",
+	"yaml":         "yamlpc.YAMLProducer()",
+	"xml":          "runtime.XMLProducer()",
+	"txt":          "runtime.TextProducer()",
+	"bin":          "runtime.ByteStreamProducer()",
+	"csv":          "runtime.CSVProducer()",
+	"urlform":      "runtime.DiscardProducer",
+	multipartForm:  "runtime.DiscardProducer",
 }
 
 var knownConsumers = map[string]string{
-	jsonSerializer:  "runtime.JSONConsumer()",
-	"yaml":          "yamlpc.YAMLConsumer()",
-	"xml":           "runtime.XMLConsumer()",
-	"txt":           "runtime.TextConsumer()",
-	"bin":           "runtime.ByteStreamConsumer()",
-	"csv":           "runtime.CSVConsumer()",
-	"urlform":       "runtime.DiscardConsumer",
-	"multipartform": "runtime.DiscardConsumer",
+	jsonSerializer: "runtime.JSONConsumer()",
+	"yaml":         "yamlpc.YAMLConsumer()",
+	"xml":          "runtime.XMLConsumer()",
+	"txt":          "runtime.TextConsumer()",
+	"bin":          "runtime.ByteStreamConsumer()",
+	"csv":          "runtime.CSVConsumer()",
+	"urlform":      "runtime.DiscardConsumer",
+	multipartForm:  "runtime.DiscardConsumer",
 }
 
 func wellKnownMime(tn string) (string, bool) {

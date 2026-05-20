@@ -300,7 +300,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 
-// Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above)
+// Low level testing: invalid template => Get() returns not found (higher level calls raise panic(), see above).
 func TestShared_GarbledTemplate(t *testing.T) {
 	defer discardOutput()()
 

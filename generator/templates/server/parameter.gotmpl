@@ -263,7 +263,7 @@ for {{ if .Child.NeedsIndex }}{{ .IndexVar }}{{ else }}_{{ end }}, {{ varname .C
     {{- if not .Child.SkipParse }}
     // {{ .Child.ItemsDepth }}CollectionFormat: {{ .Child.CollectionFormat }}
     {{- end }}
-    {{ .Child.Child.ValueExpression }}C := {{ if .Child.SkipParse }}{{ varname .Child.ValueExpression }}V{{ else }}swag.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }}){{ end }}
+    {{ .Child.Child.ValueExpression }}C := {{ if .Child.SkipParse }}{{ varname .Child.ValueExpression }}V{{ else }}stringutils.SplitByFormat({{ varname .Child.ValueExpression }}V, {{ printf "%q" .Child.CollectionFormat }}){{ end }}
     {{- if .Child.HasSliceValidations }}
       {{- template "sliceparamvalidator" .Child }}
     {{- end }}
@@ -309,9 +309,11 @@ import (
   "github.com/go-openapi/runtime/security"
   "github.com/go-openapi/runtime/middleware"
   "github.com/go-openapi/strfmt"
-  "github.com/go-openapi/swag"
+  "github.com/go-openapi/swag/conv"
+  "github.com/go-openapi/swag/jsonutils"
+  "github.com/go-openapi/swag/stringutils"
+  "github.com/go-openapi/swag/typeutils"
   "github.com/go-openapi/validate"
-
   {{ imports .DefaultImports }}
   {{ imports .Imports }}
 )
@@ -662,7 +664,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
   }
 
   // CollectionFormat: {{ .CollectionFormat }}
-  {{ varname .Child.ValueExpression }}C := swag.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }})
+  {{ varname .Child.ValueExpression }}C := stringutils.SplitByFormat(qv{{ pascalize .Name }}, {{ printf "%q" .CollectionFormat }})
       {{- end }}
       {{- if and .Required (not .AllowEmptyValue) }}
   if len({{ varname .Child.ValueExpression }}C) == 0 {

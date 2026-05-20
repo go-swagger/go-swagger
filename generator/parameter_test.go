@@ -81,15 +81,15 @@ func TestBodyParams(t *testing.T) {
 }
 
 var arrayFormParams = []paramTestContext{
-	{"siBool", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatBool", "swag.ConvertBool", nil}},
+	{"siBool", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"conv.FormatBool", "conv.ConvertBool", nil}},
 	{"siString", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", nil}},
 	{"siNested", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", nil}}}},
-	{"siInt", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
-	{"siInt32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt32", "swag.ConvertInt32", nil}},
-	{"siInt64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
-	{"siFloat", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
-	{"siFloat32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat32", "swag.ConvertFloat32", nil}},
-	{"siFloat64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+	{"siInt", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt64", nil}},
+	{"siInt32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt32", nil}},
+	{"siInt64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt64", nil}},
+	{"siFloat", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat64", nil}},
+	{"siFloat32", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat32", nil}},
+	{"siFloat64", "arrayFormParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat64", nil}},
 }
 
 func TestFormArrayParams(t *testing.T) {
@@ -103,15 +103,15 @@ func TestFormArrayParams(t *testing.T) {
 }
 
 var arrayQueryParams = []paramTestContext{
-	{"siBool", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatBool", "swag.ConvertBool", nil}},
+	{"siBool", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"conv.FormatBool", "conv.ConvertBool", nil}},
 	{"siString", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", nil}},
 	{"siNested", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", &paramItemsTestContext{"", "", nil}}}},
-	{"siInt", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
-	{"siInt32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt32", "swag.ConvertInt32", nil}},
-	{"siInt64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatInt64", "swag.ConvertInt64", nil}},
-	{"siFloat", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
-	{"siFloat32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat32", "swag.ConvertFloat32", nil}},
-	{"siFloat64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{"swag.FormatFloat64", "swag.ConvertFloat64", nil}},
+	{"siInt", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt64", nil}},
+	{"siInt32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt32", nil}},
+	{"siInt64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatInt, "conv.ConvertInt64", nil}},
+	{"siFloat", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat64", nil}},
+	{"siFloat32", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat32", nil}},
+	{"siFloat64", "arrayQueryParams", "", "", codeGenOpBuilder{}, &paramItemsTestContext{formatFloat, "conv.ConvertFloat64", nil}},
 }
 
 func TestQueryArrayParams(t *testing.T) {
@@ -125,14 +125,14 @@ func TestQueryArrayParams(t *testing.T) {
 }
 
 var simplePathParams = []paramTestContext{
-	{"siBool", "simplePathParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"siBool", "simplePathParams", "conv.FormatBool", "conv.ConvertBool", codeGenOpBuilder{}, nil},
 	{"siString", "simplePathParams", "", "", codeGenOpBuilder{}, nil},
-	{"siInt", "simplePathParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siInt32", "simplePathParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siInt64", "simplePathParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siFloat", "simplePathParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
-	{"siFloat32", "simplePathParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
-	{"siFloat64", "simplePathParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siInt", "simplePathParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simplePathParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simplePathParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simplePathParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simplePathParams", formatFloat, "conv.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simplePathParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimplePathParams(t *testing.T) {
@@ -146,15 +146,15 @@ func TestSimplePathParams(t *testing.T) {
 }
 
 var simpleHeaderParams = []paramTestContext{
-	{"id", "simpleHeaderParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siBool", "simpleHeaderParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"id", "simpleHeaderParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleHeaderParams", "conv.FormatBool", "conv.ConvertBool", codeGenOpBuilder{}, nil},
 	{"siString", "simpleHeaderParams", "", "", codeGenOpBuilder{}, nil},
-	{"siInt", "simpleHeaderParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siInt32", "simpleHeaderParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siInt64", "simpleHeaderParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siFloat", "simpleHeaderParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
-	{"siFloat32", "simpleHeaderParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
-	{"siFloat64", "simpleHeaderParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleHeaderParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleHeaderParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleHeaderParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleHeaderParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleHeaderParams", formatFloat, "conv.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleHeaderParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleHeaderParams(t *testing.T) {
@@ -168,15 +168,15 @@ func TestSimpleHeaderParams(t *testing.T) {
 }
 
 var simpleFormParams = []paramTestContext{
-	{"id", "simpleFormParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siBool", "simpleFormParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"id", "simpleFormParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleFormParams", "conv.FormatBool", "conv.ConvertBool", codeGenOpBuilder{}, nil},
 	{"siString", "simpleFormParams", "", "", codeGenOpBuilder{}, nil},
-	{"siInt", "simpleFormParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siInt32", "simpleFormParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siInt64", "simpleFormParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siFloat", "simpleFormParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
-	{"siFloat32", "simpleFormParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
-	{"siFloat64", "simpleFormParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleFormParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleFormParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleFormParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleFormParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleFormParams", formatFloat, "conv.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleFormParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleFormParams(t *testing.T) {
@@ -190,15 +190,15 @@ func TestSimpleFormParams(t *testing.T) {
 }
 
 var simpleQueryParams = []paramTestContext{
-	{"id", "simpleQueryParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siBool", "simpleQueryParams", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"id", "simpleQueryParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siBool", "simpleQueryParams", "conv.FormatBool", "conv.ConvertBool", codeGenOpBuilder{}, nil},
 	{"siString", "simpleQueryParams", "", "", codeGenOpBuilder{}, nil},
-	{"siInt", "simpleQueryParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siInt32", "simpleQueryParams", "swag.FormatInt32", "swag.ConvertInt32", codeGenOpBuilder{}, nil},
-	{"siInt64", "simpleQueryParams", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"siFloat", "simpleQueryParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
-	{"siFloat32", "simpleQueryParams", "swag.FormatFloat32", "swag.ConvertFloat32", codeGenOpBuilder{}, nil},
-	{"siFloat64", "simpleQueryParams", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siInt", "simpleQueryParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siInt32", "simpleQueryParams", formatInt, "conv.ConvertInt32", codeGenOpBuilder{}, nil},
+	{"siInt64", "simpleQueryParams", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"siFloat", "simpleQueryParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"siFloat32", "simpleQueryParams", formatFloat, "conv.ConvertFloat32", codeGenOpBuilder{}, nil},
+	{"siFloat64", "simpleQueryParams", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
 }
 
 func TestSimpleQueryParamsAST(t *testing.T) {
@@ -213,9 +213,9 @@ func TestSimpleQueryParamsAST(t *testing.T) {
 
 var bug163Properties = []paramTestContext{
 	{"stringTypeInQuery", "getSearch", "", "", codeGenOpBuilder{}, nil},
-	{"numberTypeInQuery", "getSearch", "swag.FormatFloat64", "swag.ConvertFloat64", codeGenOpBuilder{}, nil},
-	{"integerTypeInQuery", "getSearch", "swag.FormatInt64", "swag.ConvertInt64", codeGenOpBuilder{}, nil},
-	{"booleanTypeInQuery", "getSearch", "swag.FormatBool", "swag.ConvertBool", codeGenOpBuilder{}, nil},
+	{"numberTypeInQuery", "getSearch", formatFloat, "conv.ConvertFloat64", codeGenOpBuilder{}, nil},
+	{"integerTypeInQuery", "getSearch", formatInt, "conv.ConvertInt64", codeGenOpBuilder{}, nil},
+	{"booleanTypeInQuery", "getSearch", "conv.FormatBool", "conv.ConvertBool", codeGenOpBuilder{}, nil},
 }
 
 func TestGenParameters_Simple(t *testing.T) {
@@ -589,7 +589,7 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 	assertInCode(t, `for _, workspaceIDIIR := range workspaceIDIR { // explode []strfmt.UUID`, res)
 	assertInCode(t, `workspaceIDIIV := workspaceIDIIR.String()`, res)
 	assertInCode(t, `workspaceIDIC = append(workspaceIDIC, workspaceIDIIV)`, res)
-	assertInCode(t, `workspaceIDIS := swag.JoinByFormat(workspaceIDIC, "")`, res)
+	assertInCode(t, `workspaceIDIS := stringutils.JoinByFormat(workspaceIDIC, "")`, res)
 	assertInCode(t, `return workspaceIDIS`, res)
 }
 
@@ -649,7 +649,7 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 	assertInCode(t, `func (o *GetFooParams) bindParamGroups(formats strfmt.Registry) []string {`, res)
 	assertInCode(t, `for _, groupsIIR := range groupsIR`, res)
 	assertInCode(t, `groupsIC = append(groupsIC, groupsIIV)`, res)
-	assertInCode(t, `groupsIS := swag.JoinByFormat(groupsIC, "multi")`, res)
+	assertInCode(t, `groupsIS := stringutils.JoinByFormat(groupsIC, "multi")`, res)
 	assertInCode(t, `return groupsIS`, res)
 }
 
@@ -818,10 +818,10 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
 
 	res := string(ff)
-	assertInCode(t, `siBoolIC := swag.SplitByFormat(qvSiBool, "ssv")`, res)
+	assertInCode(t, `siBoolIC := stringutils.SplitByFormat(qvSiBool, "ssv")`, res)
 	assertInCode(t, `var siBoolIR []bool`, res)
 	assertInCode(t, `for i, siBoolIV := range siBoolIC`, res)
-	assertInCode(t, `siBoolI, err := swag.ConvertBool(siBoolIV)`, res)
+	assertInCode(t, `siBoolI, err := conv.ConvertBool(siBoolIV)`, res)
 	assertInCode(t, `siBoolIR = append(siBoolIR, siBoolI)`, res)
 	assertInCode(t, `o.SiBool = siBoolIR`, res)
 	assertInCode(t, `siBoolSize := int64(len(o.SiBool))`, res)
@@ -831,7 +831,7 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `siFloatIC := rawData`, res)
 	assertInCode(t, `var siFloatIR []float64`, res)
 	assertInCode(t, `for i, siFloatIV := range siFloatIC`, res)
-	assertInCode(t, `siFloatI, err := swag.ConvertFloat64(siFloatIV)`, res)
+	assertInCode(t, `siFloatI, err := conv.ConvertFloat64(siFloatIV)`, res)
 	assertInCode(t, `return errors.InvalidType(fmt.Sprintf("%s.%v", "siFloat", i), "query", "float64", siFloatI)`, res)
 	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat", i), "query", siFloatI, 3, true)`, res)
 	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat", i), "query", siFloatI, 100, true); err != nil`, res)
@@ -842,20 +842,20 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `err := validate.MinItems("siFloat", "query", siFloatSize, 5)`, res)
 	assertInCode(t, `err := validate.MaxItems("siFloat", "query", siFloatSize, 50)`, res)
 
-	assertInCode(t, `siFloat32IC := swag.SplitByFormat(qvSiFloat32, "")`, res)
+	assertInCode(t, `siFloat32IC := stringutils.SplitByFormat(qvSiFloat32, "")`, res)
 	assertInCode(t, `var siFloat32IR []float32`, res)
 	assertInCode(t, `for i, siFloat32IV := range siFloat32IC`, res)
-	assertInCode(t, `siFloat32I, err := swag.ConvertFloat32(siFloat32IV)`, res)
+	assertInCode(t, `siFloat32I, err := conv.ConvertFloat32(siFloat32IV)`, res)
 	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 3, true)`, res)
 	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 100, true)`, res)
 	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat32", i), "query", float64(siFloat32I), 1.5)`, res)
 	assertInCode(t, `siFloat32IR = append(siFloat32IR, siFloat32I)`, res)
 	assertInCode(t, `o.SiFloat32 = siFloat32IR`, res)
 
-	assertInCode(t, `siFloat64IC := swag.SplitByFormat(qvSiFloat64, "pipes")`, res)
+	assertInCode(t, `siFloat64IC := stringutils.SplitByFormat(qvSiFloat64, "pipes")`, res)
 	assertInCode(t, `var siFloat64IR []float64`, res)
 	assertInCode(t, `for i, siFloat64IV := range siFloat64IC`, res)
-	assertInCode(t, `siFloat64I, err := swag.ConvertFloat64(siFloat64IV)`, res)
+	assertInCode(t, `siFloat64I, err := conv.ConvertFloat64(siFloat64IV)`, res)
 	assertInCode(t, `err := validate.Minimum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 3, true)`, res)
 	assertInCode(t, `err := validate.Maximum(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 100, true)`, res)
 	assertInCode(t, `err := validate.MultipleOf(fmt.Sprintf("%s.%v", "siFloat64", i), "query", siFloat64I, 1.5)`, res)
@@ -865,10 +865,10 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `err := validate.MinItems("siFloat64", "query", siFloat64Size, 5)`, res)
 	assertInCode(t, `err := validate.MaxItems("siFloat64", "query", siFloat64Size, 50)`, res)
 
-	assertInCode(t, `siIntIC := swag.SplitByFormat(qvSiInt, "pipes")`, res)
+	assertInCode(t, `siIntIC := stringutils.SplitByFormat(qvSiInt, "pipes")`, res)
 	assertInCode(t, `var siIntIR []int64`, res)
 	assertInCode(t, `for i, siIntIV := range siIntIC`, res)
-	assertInCode(t, `siIntI, err := swag.ConvertInt64(siIntIV)`, res)
+	assertInCode(t, `siIntI, err := conv.ConvertInt64(siIntIV)`, res)
 	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 8, true)`, res)
 	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 100, true)`, res)
 	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt", i), "query", siIntI, 2)`, res)
@@ -878,10 +878,10 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `err := validate.MinItems("siInt", "query", siIntSize, 5)`, res)
 	assertInCode(t, `err := validate.MaxItems("siInt", "query", siIntSize, 50)`, res)
 
-	assertInCode(t, `siInt32IC := swag.SplitByFormat(qvSiInt32, "tsv")`, res)
+	assertInCode(t, `siInt32IC := stringutils.SplitByFormat(qvSiInt32, "tsv")`, res)
 	assertInCode(t, `var siInt32IR []int32`, res)
 	assertInCode(t, `for i, siInt32IV := range siInt32IC`, res)
-	assertInCode(t, `siInt32I, err := swag.ConvertInt32(siInt32IV)`, res)
+	assertInCode(t, `siInt32I, err := conv.ConvertInt32(siInt32IV)`, res)
 	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 8, true)`, res)
 	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 100, true)`, res)
 	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt32", i), "query", int64(siInt32I), 2)`, res)
@@ -894,10 +894,10 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `err := validate.MinItems("siInt32", "query", siInt32Size, 5)`, res)
 	assertInCode(t, `err := validate.MaxItems("siInt32", "query", siInt32Size, 50)`, res)
 
-	assertInCode(t, `siInt64IC := swag.SplitByFormat(qvSiInt64, "ssv")`, res)
+	assertInCode(t, `siInt64IC := stringutils.SplitByFormat(qvSiInt64, "ssv")`, res)
 	assertInCode(t, `var siInt64IR []int64`, res)
 	assertInCode(t, `for i, siInt64IV := range siInt64IC`, res)
-	assertInCode(t, `siInt64I, err := swag.ConvertInt64(siInt64IV)`, res)
+	assertInCode(t, `siInt64I, err := conv.ConvertInt64(siInt64IV)`, res)
 	assertInCode(t, `err := validate.MinimumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 8, true)`, res)
 	assertInCode(t, `err := validate.MaximumInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 100, true)`, res)
 	assertInCode(t, `err := validate.MultipleOfInt(fmt.Sprintf("%s.%v", "siInt64", i), "query", siInt64I, 2)`, res)
@@ -907,7 +907,7 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `err := validate.MinItems("siInt64", "query", siInt64Size, 5)`, res)
 	assertInCode(t, `err := validate.MaxItems("siInt64", "query", siInt64Size, 50)`, res)
 
-	assertInCode(t, `siStringIC := swag.SplitByFormat(qvSiString, "csv")`, res)
+	assertInCode(t, `siStringIC := stringutils.SplitByFormat(qvSiString, "csv")`, res)
 	assertInCode(t, `var siStringIR []string`, res)
 	assertInCode(t, `for i, siStringIV := range siStringIC`, res)
 	assertInCode(t, `siStringI := siStringIV`, res)
@@ -923,10 +923,10 @@ func TestGenParameter_ArrayQueryParameters(t *testing.T) {
 	assertInCode(t, `siNestedIC := rawData`, res)
 	assertInCode(t, `var siNestedIR [][][]string`, res)
 	assertInCode(t, `for i, siNestedIV := range siNestedIC`, res)
-	assertInCode(t, `siNestedIIC := swag.SplitByFormat(siNestedIV, "pipes")`, res)
+	assertInCode(t, `siNestedIIC := stringutils.SplitByFormat(siNestedIV, "pipes")`, res)
 	assertInCode(t, `var siNestedIIR [][]string`, res)
 	assertInCode(t, `for ii, siNestedIIV := range siNestedIIC {`, res)
-	assertInCode(t, `siNestedIIIC := swag.SplitByFormat(siNestedIIV, "csv")`, res)
+	assertInCode(t, `siNestedIIIC := stringutils.SplitByFormat(siNestedIIV, "csv")`, res)
 	assertInCode(t, `var siNestedIIIR []string`, res)
 	assertInCode(t, `for iii, siNestedIIIV := range siNestedIIIC`, res)
 	assertInCode(t, `siNestedIII := siNestedIIIV`, res)
@@ -1025,7 +1025,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`IsAnOption2 []strfmt.UUID`,
 				`NotAnOption1 []strfmt.DateTime`,
 				`NotAnOption3 *models.ContainerConfig`,
-				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "csv")`,
+				`isAnOption2IC := stringutils.SplitByFormat(qvIsAnOption2, "csv")`,
 				`var isAnOption2IR []strfmt.UUID`,
 				`for i, isAnOption2IV := range isAnOption2IC {`,
 				`value, err := formats.Parse("uuid", isAnOption2IV)`,
@@ -1034,7 +1034,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption2IR = append(isAnOption2IR, isAnOption2I)`,
 				`o.IsAnOption2 = isAnOption2IR`,
 				`return errors.Required("notAnOption1", "query", notAnOption1IC)`,
-				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "csv")`,
+				`notAnOption1IC := stringutils.SplitByFormat(qvNotAnOption1, "csv")`,
 				`var notAnOption1IR []strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
 				`value, err := formats.Parse("date-time", notAnOption1IV)`,
@@ -1055,10 +1055,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`IsAnOptionalHeader [][]strfmt.UUID`,
 				`NotAnOption1 [][]strfmt.DateTime`,
 				`NotAnOption3 *models.ContainerConfig`,
-				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "pipes")`,
+				`isAnOption2IC := stringutils.SplitByFormat(qvIsAnOption2, "pipes")`,
 				`var isAnOption2IR [][]strfmt.UUID`,
 				`for i, isAnOption2IV := range isAnOption2IC {`,
-				`isAnOption2IIC := swag.SplitByFormat(isAnOption2IV, "")`,
+				`isAnOption2IIC := stringutils.SplitByFormat(isAnOption2IV, "")`,
 				`if len(isAnOption2IIC) > 0 {`,
 				`var isAnOption2IIR []strfmt.UUID`,
 				`for ii, isAnOption2IIV := range isAnOption2IIC {`,
@@ -1068,14 +1068,14 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption2IIR = append(isAnOption2IIR, isAnOption2II)`,
 				`isAnOption2IR = append(isAnOption2IR, isAnOption2IIR)`,
 				`o.IsAnOption2 = isAnOption2IR`,
-				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "csv")`,
+				`isAnOption4IC := stringutils.SplitByFormat(qvIsAnOption4, "csv")`,
 				`var isAnOption4IR [][][]strfmt.UUID`,
 				`for i, isAnOption4IV := range isAnOption4IC {`,
-				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "tsv")`,
+				`isAnOption4IIC := stringutils.SplitByFormat(isAnOption4IV, "tsv")`,
 				`if len(isAnOption4IIC) > 0 {`,
 				`var isAnOption4IIR [][]strfmt.UUID`,
 				`for ii, isAnOption4IIV := range isAnOption4IIC {`,
-				`isAnOption4IIIC := swag.SplitByFormat(isAnOption4IIV, "pipes")`,
+				`isAnOption4IIIC := stringutils.SplitByFormat(isAnOption4IIV, "pipes")`,
 				`if len(isAnOption4IIIC) > 0 {`,
 				`var isAnOption4IIIR []strfmt.UUID`,
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
@@ -1093,10 +1093,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`o.IsAnOption4 = isAnOption4IR`,
 				`if err := o.validateIsAnOption4(formats); err != nil {`,
 				`if err := validate.MaxItems("isAnOption4", "query", isAnOption4Size, 4); err != nil {`,
-				`isAnOptionalHeaderIC := swag.SplitByFormat(qvIsAnOptionalHeader, "pipes")`,
+				`isAnOptionalHeaderIC := stringutils.SplitByFormat(qvIsAnOptionalHeader, "pipes")`,
 				`var isAnOptionalHeaderIR [][]strfmt.UUID`,
 				`for i, isAnOptionalHeaderIV := range isAnOptionalHeaderIC {`,
-				`isAnOptionalHeaderIIC := swag.SplitByFormat(isAnOptionalHeaderIV, "")`,
+				`isAnOptionalHeaderIIC := stringutils.SplitByFormat(isAnOptionalHeaderIV, "")`,
 				`if len(isAnOptionalHeaderIIC) > 0 {`,
 				`var isAnOptionalHeaderIIR []strfmt.UUID`,
 				`for ii, isAnOptionalHeaderIIV := range isAnOptionalHeaderIIC {`,
@@ -1108,10 +1108,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`o.IsAnOptionalHeader = isAnOptionalHeaderIR`,
 				`if err := o.validateIsAnOptionalHeader(formats); err != nil {`,
 				`if err := validate.UniqueItems("isAnOptionalHeader", "header", o.IsAnOptionalHeader); err != nil {`,
-				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "csv")`,
+				`notAnOption1IC := stringutils.SplitByFormat(qvNotAnOption1, "csv")`,
 				`var notAnOption1IR [][]strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
-				`notAnOption1IIC := swag.SplitByFormat(notAnOption1IV, "pipes")`,
+				`notAnOption1IIC := stringutils.SplitByFormat(notAnOption1IV, "pipes")`,
 				`if len(notAnOption1IIC) > 0 {`,
 				`var notAnOption1IIR []strfmt.DateTime`,
 				`for ii, notAnOption1IIV := range notAnOption1IIC {`,
@@ -1132,10 +1132,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`IsAnOption4 [][][]strfmt.UUID`,
 				`NotAnOption1 [][]strfmt.DateTime`,
 				`NotAnOption3 *models.ContainerConfig`,
-				`isAnOption2IC := swag.SplitByFormat(qvIsAnOption2, "")`,
+				`isAnOption2IC := stringutils.SplitByFormat(qvIsAnOption2, "")`,
 				`var isAnOption2IR [][]strfmt.UUID`,
 				`for i, isAnOption2IV := range isAnOption2IC {`,
-				`isAnOption2IIC := swag.SplitByFormat(isAnOption2IV, "pipes")`,
+				`isAnOption2IIC := stringutils.SplitByFormat(isAnOption2IV, "pipes")`,
 				`if len(isAnOption2IIC) > 0 {`,
 				`var isAnOption2IIR []strfmt.UUID`,
 				`for ii, isAnOption2IIV := range isAnOption2IIC {`,
@@ -1145,14 +1145,14 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption2IIR = append(isAnOption2IIR, isAnOption2II)`,
 				`isAnOption2IR = append(isAnOption2IR, isAnOption2IIR)`,
 				`o.IsAnOption2 = isAnOption2IR`,
-				`isAnOption4IC := swag.SplitByFormat(qvIsAnOption4, "")`,
+				`isAnOption4IC := stringutils.SplitByFormat(qvIsAnOption4, "")`,
 				`var isAnOption4IR [][][]strfmt.UUID`,
 				`for i, isAnOption4IV := range isAnOption4IC {`,
-				`isAnOption4IIC := swag.SplitByFormat(isAnOption4IV, "pipes")`,
+				`isAnOption4IIC := stringutils.SplitByFormat(isAnOption4IV, "pipes")`,
 				`if len(isAnOption4IIC) > 0 {`,
 				`var isAnOption4IIR [][]strfmt.UUID`,
 				`for ii, isAnOption4IIV := range isAnOption4IIC {`,
-				`isAnOption4IIIC := swag.SplitByFormat(isAnOption4IIV, "tsv")`,
+				`isAnOption4IIIC := stringutils.SplitByFormat(isAnOption4IIV, "tsv")`,
 				`if len(isAnOption4IIIC) > 0 {`,
 				`var isAnOption4IIIR []strfmt.UUID`,
 				`for iii, isAnOption4IIIV := range isAnOption4IIIC {`,
@@ -1172,10 +1172,10 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`isAnOption4Size := int64(len(o.IsAnOption4))`,
 				`if err := validate.MaxItems("isAnOption4", "query", isAnOption4Size, 4); err != nil {`,
 				`return errors.Required("notAnOption1", "query", notAnOption1IC)`,
-				`notAnOption1IC := swag.SplitByFormat(qvNotAnOption1, "")`,
+				`notAnOption1IC := stringutils.SplitByFormat(qvNotAnOption1, "")`,
 				`var notAnOption1IR [][]strfmt.DateTime`,
 				`for i, notAnOption1IV := range notAnOption1IC {`,
-				`notAnOption1IIC := swag.SplitByFormat(notAnOption1IV, "")`,
+				`notAnOption1IIC := stringutils.SplitByFormat(notAnOption1IV, "")`,
 				`if len(notAnOption1IIC) > 0 {`,
 				`var notAnOption1IIR []strfmt.DateTime`,
 				`for ii, notAnOption1IIV := range notAnOption1IIC {`,
@@ -1202,21 +1202,21 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`xIsAnOptionalHeader1IS := xIsAnOptionalHeader1I.String()`,
 				`if xIsAnOptionalHeader1IS != "" {`,
 				`xIsAnOptionalHeader1IR = append(xIsAnOptionalHeader1IR, xIsAnOptionalHeader1IS)`,
-				`xIsAnOptionalHeader1 := swag.JoinByFormat(xIsAnOptionalHeader1IR, "tsv")`,
+				`xIsAnOptionalHeader1 := stringutils.JoinByFormat(xIsAnOptionalHeader1IR, "tsv")`,
 				`hv := xIsAnOptionalHeader1[0]`,
 				`rw.Header().Set("x-isAnOptionalHeader1", hv)`,
 				`var xIsAnOptionalHeader2IR []string`,
 				`for _, xIsAnOptionalHeader2I := range o.XIsAnOptionalHeader2 {`,
 				`var xIsAnOptionalHeader2IIR []string`,
 				`for _, xIsAnOptionalHeader2II := range xIsAnOptionalHeader2I {`,
-				`xIsAnOptionalHeader2IIS := swag.FormatInt32(xIsAnOptionalHeader2II)`,
+				`xIsAnOptionalHeader2IIS := conv.FormatInteger(xIsAnOptionalHeader2II)`,
 				`if xIsAnOptionalHeader2IIS != "" {`,
 				`xIsAnOptionalHeader2IIR = append(xIsAnOptionalHeader2IIR, xIsAnOptionalHeader2IIS)`,
-				`xIsAnOptionalHeader2IS := swag.JoinByFormat(xIsAnOptionalHeader2IIR, "pipes")`,
+				`xIsAnOptionalHeader2IS := stringutils.JoinByFormat(xIsAnOptionalHeader2IIR, "pipes")`,
 				`xIsAnOptionalHeader2ISs := xIsAnOptionalHeader2IS[0]`,
 				`if xIsAnOptionalHeader2ISs != "" {`,
 				`xIsAnOptionalHeader2IR = append(xIsAnOptionalHeader2IR, xIsAnOptionalHeader2ISs)`,
-				`xIsAnOptionalHeader2 := swag.JoinByFormat(xIsAnOptionalHeader2IR, "")`,
+				`xIsAnOptionalHeader2 := stringutils.JoinByFormat(xIsAnOptionalHeader2IR, "")`,
 				`hv := xIsAnOptionalHeader2[0]`,
 				`rw.Header().Set("x-isAnOptionalHeader2", hv)`,
 				`var xIsAnOptionalHeader3IR []string`,
@@ -1228,15 +1228,15 @@ func TestGenParameter_Issue909(t *testing.T) {
 				`xIsAnOptionalHeader3IIIS := xIsAnOptionalHeader3III.String()`,
 				`if xIsAnOptionalHeader3IIIS != "" {`,
 				`xIsAnOptionalHeader3IIIR = append(xIsAnOptionalHeader3IIIR, xIsAnOptionalHeader3IIIS)`,
-				`xIsAnOptionalHeader3IIS := swag.JoinByFormat(xIsAnOptionalHeader3IIIR, "")`,
+				`xIsAnOptionalHeader3IIS := stringutils.JoinByFormat(xIsAnOptionalHeader3IIIR, "")`,
 				`xIsAnOptionalHeader3IISs := xIsAnOptionalHeader3IIS[0]`,
 				`if xIsAnOptionalHeader3IISs != "" {`,
 				`xIsAnOptionalHeader3IIR = append(xIsAnOptionalHeader3IIR, xIsAnOptionalHeader3IISs)`,
-				`xIsAnOptionalHeader3IS := swag.JoinByFormat(xIsAnOptionalHeader3IIR, "pipes")`,
+				`xIsAnOptionalHeader3IS := stringutils.JoinByFormat(xIsAnOptionalHeader3IIR, "pipes")`,
 				`xIsAnOptionalHeader3ISs := xIsAnOptionalHeader3IS[0]`,
 				`if xIsAnOptionalHeader3ISs != "" {`,
 				`xIsAnOptionalHeader3IR = append(xIsAnOptionalHeader3IR, xIsAnOptionalHeader3ISs)`,
-				`xIsAnOptionalHeader3 := swag.JoinByFormat(xIsAnOptionalHeader3IR, "")`,
+				`xIsAnOptionalHeader3 := stringutils.JoinByFormat(xIsAnOptionalHeader3IR, "")`,
 				`hv := xIsAnOptionalHeader3[0]`,
 				`rw.Header().Set("x-isAnOptionalHeader3", hv)`,
 			},

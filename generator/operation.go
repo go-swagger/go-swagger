@@ -1352,7 +1352,7 @@ func deconflictPkg(pkg string, renamer func(string) string) string {
 	case "api", "httptransport", "formats", "server":
 		fallthrough
 	// package conflict with go-openapi imports
-	case "errors", "runtime", "middleware", "security", "spec", "strfmt", "loads", "swag", "validate":
+	case "conv", "errors", "runtime", "middleware", "security", "spec", "strfmt", "jsonutils", "loads", "netutils", "stringutils", "typeutils", "validate":
 		fallthrough
 	// package conflict with stdlib/other lib imports
 	case "tls", "http", "fmt", "strings", "log", "flags", "pflag", "json", "time":

@@ -126,7 +126,7 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 		if t == "integer" {
 			vv = "int64"
 		} else {
-			vv = float64String
+			vv = "float64"
 		}
 	}
 	if vv == "uint" && t == "integer" {
@@ -136,7 +136,7 @@ func generateNumberPointerVals(t, v string) (result []builtinVal) {
 		if v == "float" {
 			vv = "float32"
 		} else {
-			vv = float64String
+			vv = "float64"
 		}
 	}
 	return []builtinVal{

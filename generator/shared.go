@@ -73,6 +73,16 @@ func DefaultSectionOpts(gen *GenOpts) {
 		sec.Models = opts
 	}
 
+	const (
+		cliTarget       = "{{ joinFilePath .Target (toPackagePath .CliPackage) }}"
+		serverTarget    = "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}"
+		operationTarget = "{{ if .UseTags }}" +
+			"{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}" +
+			"{{ else }}" +
+			"{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}" +
+			"{{ end }}"
+	)
+
 	if len(sec.PostModels) == 0 && gen.IncludeCLi {
 		// For CLI with default formatter (goimports), we needed to postpone the generation of model-supporting source,
 		// in order for go imports to run properly in all cases.
@@ -81,7 +91,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			{
 				Name:     "clidefinitionhook",
 				Source:   "asset:cliModelcli",
-				Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+				Target:   cliTarget,
 				FileName: "{{ (snakize (pascalize .Name)) }}_model.go",
 			},
 		}
@@ -108,7 +118,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				opts = append(opts, TemplateOpts{
 					Name:     "clioperation",
 					Source:   "asset:cliOperation",
-					Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+					Target:   cliTarget,
 					FileName: "{{ (snakize (pascalize .Name)) }}_operation.go",
 				})
 			}
@@ -119,7 +129,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "parameters",
 					Source:   "asset:serverParameter",
-					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package)  }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   operationTarget,
 					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
 				})
 			}
@@ -127,7 +137,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "urlbuilder",
 					Source:   "asset:serverUrlbuilder",
-					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   operationTarget,
 					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
 				})
 			}
@@ -135,7 +145,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "responses",
 					Source:   "asset:serverResponses",
-					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   operationTarget,
 					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
 				})
 			}
@@ -143,7 +153,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				ops = append(ops, TemplateOpts{
 					Name:     "handler",
 					Source:   "asset:serverOperation",
-					Target:   "{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}",
+					Target:   operationTarget,
 					FileName: "{{ (snakize (pascalize .Name)) }}.go",
 				})
 			}
@@ -181,7 +191,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				opts = append(opts, []TemplateOpts{{
 					Name:     "commandline",
 					Source:   "asset:cliCli",
-					Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+					Target:   cliTarget,
 					FileName: "cli.go",
 				}, {
 					Name:     "climain",
@@ -191,12 +201,12 @@ func DefaultSectionOpts(gen *GenOpts) {
 				}, {
 					Name:     "cliAutoComplete",
 					Source:   "asset:cliCompletion",
-					Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+					Target:   cliTarget,
 					FileName: "autocomplete.go",
 				}, {
 					Name:     "cliAutoDocument",
 					Source:   "asset:cliDocumentation",
-					Target:   "{{ joinFilePath .Target (toPackagePath .CliPackage) }}",
+					Target:   cliTarget,
 					FileName: "autodocument.go",
 				}}...)
 			}
@@ -212,13 +222,13 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "embedded_spec",
 					Source:   "asset:swaggerJsonEmbed",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					Target:   serverTarget,
 					FileName: "embedded_spec.go",
 				},
 				{
 					Name:     "server",
 					Source:   "asset:serverServer",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					Target:   serverTarget,
 					FileName: "server.go",
 				},
 				{
@@ -230,7 +240,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 				{
 					Name:     "doc",
 					Source:   "asset:serverDoc",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
+					Target:   serverTarget,
 					FileName: "doc.go",
 				},
 			}
@@ -578,10 +588,12 @@ func (g *GenOpts) location(t *TemplateOpts, data any) (string, string, error) {
 	}
 
 	d := struct {
-		Name, CliAppName, Package, APIPackage, ServerPackage, ClientPackage, CliPackage, ModelPackage, MainPackage, Target string
-		Tags                                                                                                               []string
-		UseTags                                                                                                            bool
-		Context                                                                                                            any
+		Name, CliAppName,
+		Package, APIPackage, ServerPackage, ClientPackage, CliPackage, ModelPackage, MainPackage,
+		Target string
+		Tags    []string
+		UseTags bool
+		Context any
 	}{
 		Name:          name,
 		CliAppName:    g.CliAppName,

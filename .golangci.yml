@@ -53,8 +53,14 @@ linters:
     dupl:
       threshold: 200
     goconst:
-      min-len: 2
+      # Relaxed the constraint here to catch only genuine text being repeated.
+      # We have hundreds of short identifiers such as "int", "int32", etc.
+      # Making them constant symbols does not make the code more readable or the compiled code more efficient.
+      min-len: 8
       min-occurrences: 3
+      ignore-tests: true
+      ignore-string-values:
+        - 'strfmt\..+'
     cyclop:
       max-complexity: 32
     gocyclo:

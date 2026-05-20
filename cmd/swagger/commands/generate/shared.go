@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
@@ -262,4 +263,46 @@ func setDebug(cfg *viper.Viper) {
 
 	// viper config debug
 	cfg.Debug()
+}
+
+func printImports(extras ...string) string {
+	const allImports = 11
+	imports := make([]string, 0, allImports+len(extras))
+	imports = append(imports,
+		"github.com/go-openapi/errors",
+		"github.com/go-openapi/loads",
+		"github.com/go-openapi/runtime",
+		"github.com/go-openapi/spec",
+		"github.com/go-openapi/strfmt",
+		"github.com/go-openapi/swag/cmdutils",
+		"github.com/go-openapi/swag/conv",
+		"github.com/go-openapi/swag/jsonutils",
+		"github.com/go-openapi/swag/netutils",
+		"github.com/go-openapi/swag/stringutils",
+		"github.com/go-openapi/swag/typeutils",
+	)
+	imports = append(imports, extras...)
+	sort.Strings(imports)
+
+	var w strings.Builder
+	for _, pkg := range imports {
+		if pkg == "" {
+			continue
+		}
+		fmt.Fprintf(&w, "\t* %s\n", pkg)
+	}
+
+	return w.String()
+}
+
+func noticeImports(extras ...string) {
+	log.Println(
+		"Generation completed!",
+		"\n",
+		"For this generation to compile you need to have some packages in your go.mod.",
+		"\n",
+		printImports(extras...),
+		"\n",
+		"You can get these now with: go mod tidy",
+	)
 }

@@ -86,7 +86,8 @@ jobs:
         name: Regenerate examples
         run: |
           cd _examples
-          hack/regen-samples.sh
+          cd hack/tools
+          exec go run . regen
       -
         name: Build check
         run: |

@@ -217,7 +217,7 @@ var schTypeGenDataSimple = []struct {
 	{GenSchema{resolvedType: resolvedType{GoType: "int32", IsPrimitive: true}}, "int32"},
 	{GenSchema{resolvedType: resolvedType{GoType: "int64", IsPrimitive: true}}, "int64"},
 	{GenSchema{resolvedType: resolvedType{GoType: "float32", IsPrimitive: true}}, "float32"},
-	{GenSchema{resolvedType: resolvedType{GoType: float64String, IsPrimitive: true}}, float64String},
+	{GenSchema{resolvedType: resolvedType{GoType: "float64", IsPrimitive: true}}, "float64"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Base64", IsPrimitive: true}}, "strfmt.Base64"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.Date", IsPrimitive: true}}, "strfmt.Date"},
 	{GenSchema{resolvedType: resolvedType{GoType: "strfmt.DateTime", IsPrimitive: true}}, "strfmt.DateTime"},
@@ -286,7 +286,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			assert.EqualT(t, `""`, v.Value.Zero())
 		case "bool":
 			assert.EqualT(t, `false`, v.Value.Zero())
-		case "int32", "int64", "float32", float64String:
+		case "int32", "int64", "float32", "float64":
 			assert.EqualT(t, `0`, v.Value.Zero())
 		// verifying Zero for primitive formatters
 		case "strfmt.Date", "strfmt.DateTime", "strfmt.OjbectId": // akin to structs
@@ -2041,7 +2041,7 @@ func TestGenModel_Issue981(t *testing.T) {
 	res := string(ct)
 	assertInCode(t, "FirstName string `json:\"first_name,omitempty\"`", res)
 	assertInCode(t, "LastName string `json:\"last_name,omitempty\"`", res)
-	assertInCode(t, "if swag.IsZero(m.Type)", res)
+	assertInCode(t, "if typeutils.IsZero(m.Type)", res)
 	assertInCode(t, `validate.MinimumInt("user_type", "body", m.Type, 1, false)`, res)
 	assertInCode(t, `validate.MaximumInt("user_type", "body", m.Type, 5, false)`, res)
 }
@@ -2160,7 +2160,7 @@ func TestGenModel_Issue1397a(t *testing.T) {
 
 	res := string(ct)
 	// Just verify that the validation call is generated with proper format
-	assertInCode(t, `if swag.IsZero(m[k]) { // not required`, res)
+	assertInCode(t, `if typeutils.IsZero(m[k]) { // not required`, res)
 }
 
 // This tests that an enum of object values validates properly.
@@ -2235,7 +2235,7 @@ func TestGenModel_Issue2911(t *testing.T) {
 	// Just verify that the validation call is generated with proper format
 	assertInCode(t, `func (m *Animal) contextValidateKind(ctx context.Context, formats strfmt.Registry) error {
 
-	if swag.IsZero(m.Kind()) { // not required
+	if typeutils.IsZero(m.Kind()) { // not required
 		return nil
 	}`, res)
 }

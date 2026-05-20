@@ -416,7 +416,7 @@ func (g *GenParameter) IsPathParam() bool {
 
 // IsFormParam returns true when this parameter is a form param.
 func (g *GenParameter) IsFormParam() bool {
-	return g.Location == "formData"
+	return g.Location == formData
 }
 
 // IsHeaderParam returns true when this parameter is a header param.

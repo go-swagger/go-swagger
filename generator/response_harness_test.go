@@ -70,7 +70,7 @@ func (ctx *responseTestContext) assertHeaders(t *testing.T, response spec.Respon
 			if h.Name == k {
 				found = true
 				if k == "X-Last-Task-Id" {
-					hctx := &respHeaderTestContext{k, "swag.FormatInt64", "swag.ConvertInt64"}
+					hctx := &respHeaderTestContext{k, "conv.FormatInteger", "conv.ConvertInt64"}
 					if !hctx.Assert(t, v, h) {
 						return false
 					}

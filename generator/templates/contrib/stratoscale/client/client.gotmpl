@@ -9,13 +9,11 @@ package {{ .Name }}
 import (
   "fmt"
   "net/http"
+
   "github.com/go-openapi/errors"
-  "github.com/go-openapi/swag"
   "github.com/go-openapi/runtime"
   "github.com/go-openapi/validate"
-
   strfmt "github.com/go-openapi/strfmt"
-
   {{ imports .DefaultImports }}
   {{ imports .Imports }}
 )

@@ -995,7 +995,7 @@ func TestSchemaValidation_SimpleZeroAllowed(t *testing.T) {
 
 	res := string(formatted)
 	assertInCode(t, k+") Validate(formats", res)
-	assertInCode(t, "swag.IsZero(m.ID)", res)
+	assertInCode(t, "typeutils.IsZero(m.ID)", res)
 	assertInCode(t, "validate.Required(\"name\", \"body\", m.Name)", res)
 	assertInCode(t, "validate.MinLength(\"id\", \"body\", m.ID, 2)", res)
 	assertInCode(t, "validate.Required(\"urls\", \"body\", m.Urls)", res)
@@ -1021,8 +1021,8 @@ func TestSchemaValidation_Pet(t *testing.T) {
 
 	res := string(formatted)
 	assertInCode(t, k+") Validate(formats", res)
-	assertInCode(t, "swag.IsZero(m.Status)", res)
-	assertInCode(t, "swag.IsZero(m.Tags)", res)
+	assertInCode(t, "typeutils.IsZero(m.Status)", res)
+	assertInCode(t, "typeutils.IsZero(m.Tags)", res)
 	assertInCode(t, "validate.Required(\"name\", \"body\", m.Name)", res)
 	assertInCode(t, "validate.Required(\"photoUrls\", \"body\", m.PhotoUrls)", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
@@ -1047,7 +1047,7 @@ func TestSchemaValidation_UpdateOrg(t *testing.T) {
 
 	res := string(formatted)
 	assertInCode(t, k+") Validate(formats", res)
-	assertInCode(t, "swag.IsZero(m.TagExpiration)", res)
+	assertInCode(t, "typeutils.IsZero(m.TagExpiration)", res)
 	assertInCode(t, "validate.MinimumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
 	assertInCode(t, "validate.MaximumInt(\"tag_expiration\", \"body\", *m.TagExpiration", res)
 	assertInCode(t, "errors.CompositeValidationError(res...)", res)
