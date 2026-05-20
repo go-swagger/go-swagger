@@ -369,11 +369,15 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	}
 
 	defaultImports := map[string]string{
-		"errors":   "github.com/go-openapi/errors",
-		"runtime":  "github.com/go-openapi/runtime",
-		"swag":     "github.com/go-openapi/swag",
-		"validate": "github.com/go-openapi/validate",
-		"strfmt":   "github.com/go-openapi/strfmt",
+		"errors":      "github.com/go-openapi/errors",
+		"runtime":     "github.com/go-openapi/runtime",
+		"strfmt":      "github.com/go-openapi/strfmt",
+		"conv":        "github.com/go-openapi/swag/conv",
+		"jsonutils":   "github.com/go-openapi/swag/jsonutils",
+		"netutils":    "github.com/go-openapi/swag/netutils",
+		"stringutils": "github.com/go-openapi/swag/stringutils",
+		"typeutils":   "github.com/go-openapi/swag/typeutils",
+		"validate":    "github.com/go-openapi/validate",
 	}
 
 	return &GenDefinition{

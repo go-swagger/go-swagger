@@ -16,7 +16,10 @@ import (
   "github.com/go-openapi/runtime/middleware"
   "github.com/go-openapi/runtime/security"
   "github.com/go-openapi/strfmt"
-  "github.com/go-openapi/swag"
+  "github.com/go-openapi/swag/conv"
+  "github.com/go-openapi/swag/jsonutils"
+  "github.com/go-openapi/swag/stringutils"
+  "github.com/go-openapi/swag/typeutils"
   "github.com/go-openapi/validate"
 
   {{ imports .DefaultImports }}

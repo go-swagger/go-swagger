@@ -63,7 +63,18 @@ func TestTemplates_FuncMap_Model(t *testing.T) {
 
 	assert.StringContainsT(t, rendered.String(), "ContainsString=true\n")
 	assert.StringContainsT(t, rendered.String(), "DoesNotContainString=false\n")
-	assert.StringContainsT(t, rendered.String(), `Json={"errors":"github.com/go-openapi/errors","runtime":"github.com/go-openapi/runtime","strfmt":"github.com/go-openapi/strfmt","swag":"github.com/go-openapi/swag","validate":"github.com/go-openapi/validate"}`)
+	assert.StringContainsT(t, rendered.String(), `Json={`+
+		`"conv":"github.com/go-openapi/swag/conv",`+
+		`"errors":"github.com/go-openapi/errors",`+
+		`"jsonutils":"github.com/go-openapi/swag/jsonutils",`+
+		`"netutils":"github.com/go-openapi/swag/netutils",`+
+		`"runtime":"github.com/go-openapi/runtime",`+
+		`"strfmt":"github.com/go-openapi/strfmt",`+
+		`"stringutils":"github.com/go-openapi/swag/stringutils",`+
+		`"typeutils":"github.com/go-openapi/swag/typeutils",`+
+		`"validate":"github.com/go-openapi/validate"`+
+		`}`,
+	)
 	assert.StringContainsT(t, rendered.String(), "\"TargetImportPath\": \"github.com/go-swagger/go-swagger/generator\"")
 
 	// LanguageOpts-dependent assertions

@@ -489,7 +489,7 @@ func TestDateFormat_Spec2(t *testing.T) {
 	assertInCode(t, "for _, testingThisIIR := range testingThisIR {", res)
 	assertInCode(t, "testingThisIIV := testingThisIIR.String()", res)
 	assertInCode(t, "testingThisIC = append(testingThisIC, testingThisIIV)", res)
-	assertInCode(t, `testingThisIS := swag.JoinByFormat(testingThisIC, "")`, res)
+	assertInCode(t, `testingThisIS := stringutils.JoinByFormat(testingThisIC, "")`, res)
 	assertInCode(t, "return testingThisIS", res)
 }
 
