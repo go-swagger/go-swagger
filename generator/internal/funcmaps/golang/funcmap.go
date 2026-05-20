@@ -155,6 +155,20 @@ func replaceSpecialChar(in rune) string {
 		return "-Dash-"
 	case '#':
 		return "-Hashtag-"
+	case '=':
+		return "-Equal-"
+	case '!':
+		return "-Bang-"
+	case '~':
+		return "-Tilde-"
+	case '>':
+		return "-GreaterThan-"
+	case '<':
+		return "-LessThan-"
+	case '*':
+		return "-Star-"
+	case '/':
+		return "-Slash-"
 	}
 
 	return string(in)
