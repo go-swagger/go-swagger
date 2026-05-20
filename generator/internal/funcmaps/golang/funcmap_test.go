@@ -330,6 +330,12 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 		assert.EqualT(t, "-Plus-1", cleanupEnumVariant("+1"))
 		assert.EqualT(t, "a-Dash-b-Hashtag-c", cleanupEnumVariant("a-b#c"))
 		assert.EqualT(t, "plain", cleanupEnumVariant("plain"))
+		assert.EqualT(t, "-Equal--Equal-", cleanupEnumVariant("=="))
+		assert.EqualT(t, "-Equal--Tilde-", cleanupEnumVariant("=~"))
+		assert.EqualT(t, "-GreaterThan--Equal-", cleanupEnumVariant(">="))
+		assert.EqualT(t, "-LessThan--Equal-", cleanupEnumVariant("<="))
+		assert.EqualT(t, "-Bang--Equal-", cleanupEnumVariant("!="))
+		assert.EqualT(t, "-Bang--Tilde-", cleanupEnumVariant("!~"))
 	})
 
 	t.Run("hasInsecure should detect the http scheme as insecure", func(t *testing.T) {
@@ -416,6 +422,13 @@ func TestReplaceSpecialChar(t *testing.T) {
 	assert.EqualT(t, "-Dash-", replaceSpecialChar('-'))
 	assert.EqualT(t, "-Hashtag-", replaceSpecialChar('#'))
 	assert.EqualT(t, "-Dot-", replaceSpecialChar('.'))
+	assert.EqualT(t, "-Equal-", replaceSpecialChar('='))
+	assert.EqualT(t, "-Bang-", replaceSpecialChar('!'))
+	assert.EqualT(t, "-Tilde-", replaceSpecialChar('~'))
+	assert.EqualT(t, "-GreaterThan-", replaceSpecialChar('>'))
+	assert.EqualT(t, "-LessThan-", replaceSpecialChar('<'))
+	assert.EqualT(t, "-Star-", replaceSpecialChar('*'))
+	assert.EqualT(t, "-Slash-", replaceSpecialChar('/'))
 	assert.EqualT(t, "x", replaceSpecialChar('x'))
 }
 
