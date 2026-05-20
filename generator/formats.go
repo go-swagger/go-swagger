@@ -95,6 +95,17 @@ var typeMapping = map[string]string{
 	"file": "runtime.File",
 }
 
+// swaggerTypeName contains a mapping from go type to swagger type or format.
+var swaggerTypeName map[string]string
+
+func init() {
+	// build the reverse-lookup index of typeMapping
+	swaggerTypeName = make(map[string]string)
+	for k, v := range typeMapping {
+		swaggerTypeName[v] = k
+	}
+}
+
 // formatMapping contains a type-specific version of mapping of format to go type.
 var formatMapping = map[string]map[string]string{
 	"number": {

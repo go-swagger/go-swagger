@@ -12,11 +12,9 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 )
 
 type templateTest struct {
@@ -66,8 +64,9 @@ func TestGenerateModel_Sanity(t *testing.T) {
 }
 
 func TestGenerateModel_DocString(t *testing.T) {
-	funcMap := FuncMapFunc(DefaultLanguageFunc())
-	templ := template.Must(template.New("docstring").Funcs(funcMap).Parse(string(assets["docstring.gotmpl"])))
+	opts := opts()
+	assets := defaultAssets()
+	templ := template.Must(template.New("docstring").Funcs(opts.funcMap).Parse(string(assets["docstring.gotmpl"])))
 	tt := templateTest{t, templ}
 	const (
 		title = "The title of the property"
@@ -93,8 +92,9 @@ func TestGenerateModel_DocString(t *testing.T) {
 }
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
-	funcMap := FuncMapFunc(DefaultLanguageFunc())
-	templ := template.Must(template.New("propertyValidationDocString").Funcs(funcMap).Parse(string(assets["validation/structfield.gotmpl"])))
+	opts := opts()
+	assets := defaultAssets()
+	templ := template.Must(template.New("propertyValidationDocString").Funcs(opts.funcMap).Parse(string(assets["validation/structfield.gotmpl"])))
 	tt := templateTest{t, templ}
 
 	var gmp GenSchema
@@ -141,7 +141,8 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("structfield")}
+	opts := opts()
+	tt := templateTest{t, opts.templates.MustGet("model").Lookup("structfield")}
 
 	var gmp GenSchema
 	gmp.Name = "some name"
@@ -247,14 +248,16 @@ var schTypeGenDataSimple = []struct {
 }
 
 func TestGenSchemaType(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schemaType")}
+	opts := opts()
+	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schemaType")}
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
 	}
 }
 
 func TestGenerateModel_Primitives(t *testing.T) {
-	tt := templateTest{t, templates.MustGet("model").Lookup("schema")}
+	opts := opts()
+	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schema")}
 	for _, v := range schTypeGenDataSimple {
 		v.Value.IncludeValidator = true
 		v.Value.IncludeModel = true
@@ -541,7 +544,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, templates.MustGet("model").Execute(buf, genModel))
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
 
 	res := buf.String()
 	assertInCode(t, "type WithMap struct {", res)
@@ -750,13 +753,13 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_JustRef(t *testing.T) {
-	tpl := templates.MustGet("model").Lookup("schema")
+	opts := opts()
+	tpl := opts.templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["JustRef"]
-	opts := opts()
 	genModel, err := makeGenDefinition("JustRef", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -773,13 +776,13 @@ func TestGenerateModel_JustRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithRef(t *testing.T) {
-	tpl := templates.MustGet("model").Lookup("schema")
+	opts := opts()
+	tpl := opts.templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithRef"]
-	opts := opts()
 	genModel, err := makeGenDefinition("WithRef", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -795,13 +798,13 @@ func TestGenerateModel_WithRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
-	tpl := templates.MustGet("model").Lookup("schema")
+	opts := opts()
+	tpl := opts.templates.MustGet("model").Lookup("schema")
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithNullableRef"]
-	opts := opts()
 	genModel, err := makeGenDefinition("WithNullableRef", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1649,6 +1652,7 @@ func TestGenModel_Issue251(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "example"
 	opts := opts()
+	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1660,12 +1664,12 @@ func TestGenModel_Issue251(t *testing.T) {
 
 	res := string(ct)
 
-	assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+	assertInCode(t, "type "+mangle(k)+" struct", res)
 	assertInCode(t, "Begin *strfmt.DateTime `json:\"begin\"`", res)
 	assertInCode(t, "End strfmt.DateTime `json:\"end,omitempty\"`", res)
 	assertInCode(t, "Name string `json:\"name,omitempty\"`", res)
-	assertInCode(t, "(m *"+swag.ToGoName(k)+") validateBegin", res)
-	assertInCode(t, "(m *"+swag.ToGoName(k)+") Validate", res)
+	assertInCode(t, "(m *"+mangle(k)+") validateBegin", res)
+	assertInCode(t, "(m *"+mangle(k)+") Validate", res)
 }
 
 func TestGenModel_Issue257(t *testing.T) {
@@ -1675,6 +1679,7 @@ func TestGenModel_Issue257(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "HasSpecialCharProp"
 	opts := opts()
+	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1686,7 +1691,7 @@ func TestGenModel_Issue257(t *testing.T) {
 
 	res := string(ct)
 
-	assertInCode(t, "type "+swag.ToGoName(k)+" struct", res)
+	assertInCode(t, "type "+mangle(k)+" struct", res)
 	assertInCode(t, "AtType string `json:\"@type,omitempty\"`", res)
 	assertInCode(t, "Type string `json:\"type,omitempty\"`", res)
 }
@@ -1698,6 +1703,7 @@ func TestGenModel_Issue340(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ImageTar"
 	opts := opts()
+	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1709,7 +1715,7 @@ func TestGenModel_Issue340(t *testing.T) {
 
 	res := string(ct)
 
-	assertInCode(t, "type "+swag.ToGoName(k)+" io.ReadCloser", res)
+	assertInCode(t, "type "+mangle(k)+" io.ReadCloser", res)
 	assertNotInCode(t, "func (m ImageTar) Validate(formats strfmt.Registry) error", res)
 }
 

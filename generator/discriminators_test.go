@@ -12,14 +12,14 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 )
 
 func TestBuildDiscriminatorMap(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
+	opts := opts()
 
-	di := discriminatorInfo(analysis.New(specDoc.Spec()))
+	di := discriminatorInfo(analysis.New(specDoc.Spec()), opts)
 	assert.Len(t, di.Discriminators, 1)
 	assert.Len(t, di.Discriminators["#/definitions/Pet"].Children, 2)
 	assert.Len(t, di.Discriminated, 2)
@@ -100,7 +100,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 		assertInCode(t, "if base.PetType != result.PetType() {", res)
 		assertInCode(t, "return errors.New(422, \"invalid petType value: %q\", base.PetType)", res)
 
-		kk := swag.ToGoName(k)
+		kk := opts.LanguageOpts.Mangler.ToGoName(k)
 		assertInCode(t, "func (m *"+kk+") Name() *string", res)
 		assertInCode(t, "func (m *"+kk+") SetName(val *string)", res)
 		assertInCode(t, "func (m *"+kk+") PetType() string", res)

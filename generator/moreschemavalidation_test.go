@@ -14,13 +14,11 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/spec"
 	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
-
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
 )
 
 // modelExpectations is a test structure to capture expected codegen lines of code.
@@ -88,7 +86,8 @@ type modelTestRun struct {
 
 // AddExpectations adds expected / not expected sets of lines of code to the current run.
 func (r *modelTestRun) AddExpectations(file string, expectedCode, notExpectedCode, expectedLogs, notExpectedLogs []string) {
-	k := strings.ToLower(swag.ToJSONName(strings.TrimSuffix(file, ".go")))
+	mangler := r.FixtureOpts.LanguageOpts.Mangler
+	k := strings.ToLower(mangler.ToJSONName(strings.TrimSuffix(file, ".go")))
 	if def, ok := r.Definitions[k]; ok {
 		def.ExpectedLines = append(def.ExpectedLines, expectedCode...)
 		def.NotExpectedLines = append(def.NotExpectedLines, notExpectedCode...)
@@ -422,7 +421,7 @@ func TestMoreModelValidations(t *testing.T) {
 				definitions := newSpecDoc.Spec().Definitions
 				for k, fixtureExpectations := range fixtureRun.Definitions {
 					// pick definition to test
-					definitionName, schema := findTestDefinition(k, definitions)
+					definitionName, schema := findTestDefinition(k, definitions, opts)
 					require.NotNilf(t, schema, "expected to find definition %q in model fixture %s", k, fixtureSpec)
 
 					checkDefinitionCodegen(t, definitionName, fixtureSpec, schema, newSpecDoc, opts, fixtureExpectations)
@@ -432,7 +431,7 @@ func TestMoreModelValidations(t *testing.T) {
 	}
 }
 
-func findTestDefinition(k string, definitions spec.Definitions) (string, *spec.Schema) {
+func findTestDefinition(k string, definitions spec.Definitions, opts *GenOpts) (string, *spec.Schema) {
 	var (
 		schema         *spec.Schema
 		definitionName string
@@ -442,7 +441,7 @@ func findTestDefinition(k string, definitions spec.Definitions) (string, *spec.S
 		// please do not inject fixtures with case conflicts on defs...
 		// this one is just easier to retrieve model back from file names when capturing
 		// the generated code.
-		mangled := swag.ToJSONName(def)
+		mangled := opts.LanguageOpts.Mangler.ToJSONName(def)
 		if strings.EqualFold(mangled, k) {
 			definition := s
 			schema = &definition
@@ -489,12 +488,13 @@ func checkDefinitionCodegen(t *testing.T, definitionName, fixtureSpec string, sc
 
 	// execute the model template with this schema
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("model").Execute(buf, genModel)
-	require.NoErrorf(t, err, "could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, err)
+	require.NoErrorf(t,
+		opts.templates.MustGet("model").Execute(buf, genModel),
+		"could not render model template for definition %q in spec fixture %s: %v", definitionName, fixtureSpec, err)
 
 	outputName := fixtureExpectations.GeneratedFile
 	if outputName == "" {
-		outputName = swag.ToFileName(definitionName) + ".go"
+		outputName = opts.LanguageOpts.Mangler.ToFileName(definitionName) + ".go"
 	}
 
 	// run goimport, gofmt on the generated code

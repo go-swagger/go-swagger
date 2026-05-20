@@ -15,8 +15,15 @@ require (
 	github.com/go-openapi/spec v0.22.4
 	github.com/go-openapi/strfmt v0.26.1
 	github.com/go-openapi/swag v0.25.5
+	github.com/go-openapi/swag/conv v0.25.5
+	github.com/go-openapi/swag/jsonutils v0.25.5
+	github.com/go-openapi/swag/loading v0.25.5
+	github.com/go-openapi/swag/mangling v0.25.5
+	github.com/go-openapi/swag/netutils v0.25.5
+	github.com/go-openapi/swag/stringutils v0.25.5
+	github.com/go-openapi/swag/typeutils v0.25.5
 	github.com/go-openapi/swag/yamlutils v0.25.5
-	github.com/go-openapi/testify/v2 v2.4.1
+	github.com/go-openapi/testify/v2 v2.5.1
 	github.com/go-openapi/validate v0.25.2
 	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
 	github.com/go-viper/mapstructure/v2 v2.5.0
@@ -40,15 +47,8 @@ require (
 	github.com/go-openapi/jsonpointer v0.22.5 // indirect
 	github.com/go-openapi/jsonreference v0.21.5 // indirect
 	github.com/go-openapi/swag/cmdutils v0.25.5 // indirect
-	github.com/go-openapi/swag/conv v0.25.5 // indirect
 	github.com/go-openapi/swag/fileutils v0.25.5 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.5 // indirect
-	github.com/go-openapi/swag/jsonutils v0.25.5 // indirect
-	github.com/go-openapi/swag/loading v0.25.5 // indirect
-	github.com/go-openapi/swag/mangling v0.25.5 // indirect
-	github.com/go-openapi/swag/netutils v0.25.5 // indirect
-	github.com/go-openapi/swag/stringutils v0.25.5 // indirect
-	github.com/go-openapi/swag/typeutils v0.25.5 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect

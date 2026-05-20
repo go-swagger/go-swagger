@@ -20,6 +20,7 @@ const (
 )
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
+	opts := opts()
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -27,7 +28,7 @@ func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	k := "Statix"
 	schema := definitions[k]
 
-	tr := newTypeResolver("models", "", specDoc)
+	tr := newTypeResolver("models", specDoc, opts)
 	specDoc.Spec().Definitions["StatixItems0"] = *schema.Items.Schema.Items.Schema.Items.Schema
 	schema.Items.Schema.Items.Schema.Items.Schema = spec.RefProperty("#/definitions/StatixItems0")
 	tr.KnownDefs["StatixItems0"] = struct{}{}

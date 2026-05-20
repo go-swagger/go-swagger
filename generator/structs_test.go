@@ -16,6 +16,7 @@ func TestPrintTags(t *testing.T) {
 		ExpectedTags string
 	}
 
+	asJSON := mustGetAsJSON(t)
 	mustJSON := func(in any) string {
 		b, _ := asJSON(in)
 		return b
@@ -178,4 +179,16 @@ func TestPrintTags(t *testing.T) {
 			require.EqualT(t, fixture.ExpectedTags, fixture.Schema.PrintTags())
 		})
 	}
+}
+
+func mustGetAsJSON(t *testing.T) func(any) (string, error) {
+	t.Helper()
+
+	opts := opts()
+	funcMap := opts.funcMap
+	asJSON, ok := funcMap["json"].(func(any) (string, error))
+	require.TrueTf(t, ok, "internal error: asJSON function expected to be func(any) (string,error), but got %T", asJSON)
+	require.NotNil(t, asJSON)
+
+	return asJSON
 }

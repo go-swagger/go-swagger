@@ -8,8 +8,6 @@ import (
 	"testing"
 
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
-
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
 )
@@ -41,7 +39,7 @@ func (ctx *paramTestContext) assertParameter(t *testing.T) (result bool) {
 	require.TrueT(t, err)
 	require.NotNil(t, op)
 
-	resolver := &typeResolver{ModelsPackage: ctx.B.ModelsPackage, Doc: ctx.B.Doc}
+	resolver := newTypeResolver(ctx.B.ModelsPackage, ctx.B.Doc, ctx.B.GenOpts)
 	resolver.KnownDefs = make(map[string]struct{})
 
 	for k := range ctx.B.Doc.Spec().Definitions {
@@ -162,7 +160,8 @@ func (ctx *paramTestContext) assertGenParamInternals(t *testing.T, param spec.Pa
 	if !assert.EqualT(t, "a", gp.ReceiverName) {
 		return false
 	}
-	if !assert.EqualT(t, "a."+swag.ToGoName(param.Name), gp.ValueExpression) { //nolint:staticcheck // have to migrate to the new swag API
+	mangle := ctx.B.GenOpts.LanguageOpts.Mangler.ToGoName
+	if !assert.EqualT(t, "a."+mangle(param.Name), gp.ValueExpression) {
 		return false
 	}
 	if !assert.EqualT(t, ctx.Formatter, gp.Formatter) {

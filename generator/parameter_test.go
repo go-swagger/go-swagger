@@ -16,64 +16,68 @@ import (
 )
 
 func TestBodyParams(t *testing.T) {
-	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
-	require.NoError(t, err)
+	t.Run("with updateTask", func(t *testing.T) {
+		b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
+		require.NoError(t, err)
 
-	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
+		_, _, op, ok := b.Analyzed.OperationForName("updateTask")
 
-	require.TrueT(t, ok)
-	require.NotNil(t, op)
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-	resolver.KnownDefs = make(map[string]struct{})
-	for k := range b.Doc.Spec().Definitions {
-		resolver.KnownDefs[k] = struct{}{}
-	}
+		require.TrueT(t, ok)
+		require.NotNil(t, op)
+		resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
+		resolver.KnownDefs = make(map[string]struct{})
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
 
-	for _, param := range op.Parameters {
-		if param.Name == body {
-			gp, perr := b.MakeParameter("a", resolver, param, nil)
-			require.NoError(t, perr)
+		for _, param := range op.Parameters {
+			if param.Name == body {
+				gp, perr := b.MakeParameter("a", resolver, param, nil)
+				require.NoError(t, perr)
+				assert.TrueT(t, gp.IsBodyParam())
+				require.NotNil(t, gp.Schema)
+				assert.TrueT(t, gp.Schema.IsComplexObject)
+				assert.FalseT(t, gp.Schema.IsAnonymous)
+				assert.EqualT(t, "models.Task", gp.Schema.GoType)
+			}
+		}
+	})
+
+	t.Run("with createTask", func(t *testing.T) {
+		b, err := opBuilder("createTask", "../fixtures/codegen/todolist.bodyparams.yml")
+		require.NoError(t, err)
+
+		_, _, op, ok := b.Analyzed.OperationForName("createTask")
+		require.TrueT(t, ok)
+		require.NotNil(t, op)
+
+		resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
+		resolver.KnownDefs = make(map[string]struct{})
+
+		for k := range b.Doc.Spec().Definitions {
+			resolver.KnownDefs[k] = struct{}{}
+		}
+
+		for _, param := range op.Parameters {
+			if param.Name != body {
+				continue
+			}
+
+			gp, err := b.MakeParameter("a", resolver, param, nil)
+			require.NoError(t, err)
 			assert.TrueT(t, gp.IsBodyParam())
 			require.NotNil(t, gp.Schema)
 			assert.TrueT(t, gp.Schema.IsComplexObject)
 			assert.FalseT(t, gp.Schema.IsAnonymous)
-			assert.EqualT(t, "models.Task", gp.Schema.GoType)
+			assert.EqualT(t, "CreateTaskBody", gp.Schema.GoType)
+
+			gpe, ok := b.ExtraSchemas["CreateTaskBody"]
+			assert.TrueT(t, ok)
+			assert.TrueT(t, gpe.IsComplexObject)
+			assert.FalseT(t, gpe.IsAnonymous)
+			assert.EqualT(t, "CreateTaskBody", gpe.GoType)
 		}
-	}
-
-	b, err = opBuilder("createTask", "../fixtures/codegen/todolist.bodyparams.yml")
-	require.NoError(t, err)
-
-	_, _, op, ok = b.Analyzed.OperationForName("createTask")
-	require.TrueT(t, ok)
-	require.NotNil(t, op)
-
-	resolver = &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
-	resolver.KnownDefs = make(map[string]struct{})
-
-	for k := range b.Doc.Spec().Definitions {
-		resolver.KnownDefs[k] = struct{}{}
-	}
-
-	for _, param := range op.Parameters {
-		if param.Name != body {
-			continue
-		}
-
-		gp, err := b.MakeParameter("a", resolver, param, nil)
-		require.NoError(t, err)
-		assert.TrueT(t, gp.IsBodyParam())
-		require.NotNil(t, gp.Schema)
-		assert.TrueT(t, gp.Schema.IsComplexObject)
-		assert.FalseT(t, gp.Schema.IsAnonymous)
-		assert.EqualT(t, "CreateTaskBody", gp.Schema.GoType)
-
-		gpe, ok := b.ExtraSchemas["CreateTaskBody"]
-		assert.TrueT(t, ok)
-		assert.TrueT(t, gpe.IsComplexObject)
-		assert.FalseT(t, gpe.IsAnonymous)
-		assert.EqualT(t, "CreateTaskBody", gpe.GoType)
-	}
+	})
 }
 
 var arrayFormParams = []paramTestContext{
@@ -981,7 +985,10 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 				res := string(ff)
 				for line, codeLine := range expectedCode {
 					if !assertInCode(t, strings.TrimSpace(codeLine), res) {
-						t.Logf("code expected did not match for fixture %s at line %d", fixtureSpec, line)
+						t.Logf("code expected did not match for fixture %s at line %d\nExpected:\n%s\n====\nGot:\n%s",
+							fixtureSpec, line,
+							strings.TrimSpace(codeLine), res,
+						)
 					}
 				}
 			}
@@ -1494,7 +1501,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 			opts := opts()
 			for fixtureTemplate, expectedCode := range fixtureContents {
 				buf := bytes.NewBuffer(nil)
-				require.NoError(t, templates.MustGet(fixtureTemplate).Execute(buf, op),
+				require.NoError(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
 					"expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
 
 				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())

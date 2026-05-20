@@ -394,3 +394,118 @@ func TestDependencies_WithElse(t *testing.T) {
 	require.NoError(t, err)
 	assert.StringContainsT(t, buf.String(), "nil")
 }
+
+const (
+// Test template environment.
+)
+
+func TestRepoLoadingTemplates(t *testing.T) {
+	const singleTemplate = `test`
+
+	repo := NewRepository(nil)
+	require.NoError(t, repo.AddFile("simple", singleTemplate))
+	templ, err := repo.Get("simple")
+	require.NoError(t, err)
+
+	var b bytes.Buffer
+	require.NoError(t, templ.Execute(&b, nil))
+	assert.EqualT(t, "test", b.String())
+}
+
+const (
+	multipleDefinitions = `{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
+	dependantTemplate   = `{{ template "T1" }}D1`
+)
+
+func TestRepoLoadsAllTemplatesDefined(t *testing.T) {
+	var b bytes.Buffer
+	repo := NewRepository(nil)
+	require.NoError(t, repo.AddFile("multiple", multipleDefinitions))
+	templ, err := repo.Get("multiple")
+	require.NoError(t, err)
+	require.NoError(t, templ.Execute(&b, nil))
+	assert.Empty(t, b.String())
+	templ, err = repo.Get("T1")
+	require.NoError(t, err)
+	require.NotNil(t, templ)
+	require.NoError(t, templ.Execute(&b, nil))
+	assert.EqualT(t, "T1", b.String())
+}
+
+type testData struct {
+	Children []testData
+	Name     string
+	Recurse  bool
+}
+
+func TestRepoLoadsAllDependantTemplates(t *testing.T) {
+	var b bytes.Buffer
+	repo := NewRepository(nil)
+	require.NoError(t, repo.AddFile("multiple", multipleDefinitions))
+	require.NoError(t, repo.AddFile("dependant", dependantTemplate))
+	templ, err := repo.Get("dependant")
+	require.NoError(t, err)
+	require.NotNil(t, templ)
+	require.NoError(t, templ.Execute(&b, nil))
+	assert.EqualT(t, "T1D1", b.String())
+}
+
+func TestTemplates_RepoRecursiveTemplates(t *testing.T) {
+	const (
+		cirularDeps1 = `{{ define "T1" }}{{ .Name }}: {{ range .Children }}{{ template "T2" . }}{{end}}{{end}}{{template "T1" . }}`
+		cirularDeps2 = `{{ define "T2" }}{{if .Recurse }}{{ template "T1" . }}{{ else }}Children{{end}}{{end}}`
+		root         = "Root"
+	)
+
+	repo := NewRepository(nil)
+	require.NoError(t, repo.AddFile("c1", cirularDeps1))
+	require.NoError(t, repo.AddFile("c2", cirularDeps2))
+	templ, err := repo.Get("c1")
+	require.NoError(t, err)
+	require.NotNil(t, templ)
+
+	t.Run("should not recurse", func(t *testing.T) {
+		var b bytes.Buffer
+		data := testData{
+			Name: root,
+			Children: []testData{
+				{Recurse: false},
+			},
+		}
+
+		require.NoError(t, templ.Execute(&b, data))
+
+		const expected = `Root: Children`
+		assert.EqualT(t, expected, b.String())
+	})
+
+	t.Run("should recurse", func(t *testing.T) {
+		var b bytes.Buffer
+		data := testData{
+			Name: root,
+			Children: []testData{
+				{Name: "Child1", Recurse: true, Children: []testData{{Name: "Child2"}}},
+			},
+		}
+
+		require.NoError(t, templ.Execute(&b, data))
+
+		const expected = `Root: Child1: Children`
+		assert.EqualT(t, expected, b.String())
+	})
+
+	t.Run("should not recurse", func(t *testing.T) {
+		var b bytes.Buffer
+		data := testData{
+			Name: root,
+			Children: []testData{
+				{Name: "Child1", Recurse: false, Children: []testData{{Name: "Child2"}}},
+			},
+		}
+
+		require.NoError(t, templ.Execute(&b, data))
+
+		const expected = `Root: Children`
+		assert.EqualT(t, expected, b.String())
+	})
+}

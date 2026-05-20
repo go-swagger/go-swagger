@@ -5,10 +5,9 @@ package generator
 
 import (
 	"fmt"
-
-	golangfuncs "github.com/go-swagger/go-swagger/generator/internal/funcmaps/golang"
 )
 
+/*
 // Package-level aliases for functions that moved to the golang funcmap package
 // but are still referenced from other files in the generator package.
 var (
@@ -17,6 +16,7 @@ var (
 	mediaGoName = golangfuncs.MediaGoName
 	asJSON      = golangfuncs.AsJSON
 )
+*/
 
 func resolvedDocCollectionFormat(cf string, child *GenItems) string {
 	if child == nil {

@@ -23,7 +23,7 @@ func TestSimpleResponseRender(t *testing.T) {
 
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("update_task_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -41,7 +41,7 @@ func TestDefaultResponseRender(t *testing.T) {
 
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -62,7 +62,7 @@ func TestSimpleResponses(t *testing.T) {
 	require.NotNil(t, op)
 	require.NotNil(t, op.Responses)
 
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	require.NotNil(t, op.Responses.Default)
 
 	resp, err := spec.ResolveResponse(b.Doc.Spec(), op.Responses.Default.Ref)
@@ -98,7 +98,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 	require.NotNil(t, op)
 	require.NotNil(t, op.Responses)
 
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	require.NotNil(t, op.Responses.Default)
 
 	resp := *op.Responses.Default
@@ -135,7 +135,7 @@ func TestGenResponses_Issue540(t *testing.T) {
 
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_pet_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -153,7 +153,7 @@ func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -174,7 +174,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 			t.Run("should generate response", func(t *testing.T) {
 				var buf bytes.Buffer
 				opts := opts()
-				require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+				require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 				t.Run("response code should be properly go-formatted", func(t *testing.T) {
 					ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
@@ -206,7 +206,7 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 	require.NoError(t, err)
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	if err != nil {
 		t.Logf("bad formatting: %v\n%s", err, buf.String())
@@ -226,7 +226,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 	require.NoError(t, err)
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	if err != nil {
 		t.Logf("bad formatting: %v\n%s", err, buf.String())
@@ -244,7 +244,7 @@ func TestIssue846(t *testing.T) {
 		require.NoError(t, err)
 		var buf bytes.Buffer
 		opts := opts()
-		require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+		require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 		ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 		if err != nil {
 			t.Logf("bad formatting: %v\n%s", err, buf.String())
@@ -269,7 +269,7 @@ func TestIssue881(t *testing.T) {
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 }
 
 func TestIssue881Deep(t *testing.T) {
@@ -278,7 +278,7 @@ func TestIssue881Deep(t *testing.T) {
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 }
 
 func TestGenResponses_XGoName(t *testing.T) {
@@ -288,7 +288,7 @@ func TestGenResponses_XGoName(t *testing.T) {
 	require.NoError(t, err)
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("put_testing_responses.go", buf.Bytes())
 	if err != nil {
 		t.Logf("bad formatting: %v\n%s", err, buf.String())
@@ -309,7 +309,7 @@ func TestGenResponses_Issue892(t *testing.T) {
 
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, templates.MustGet("clientResponse").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("clientResponse").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -326,7 +326,7 @@ func TestGenResponses_Issue1013(t *testing.T) {
 
 	var buf bytes.Buffer
 	opt := opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -340,7 +340,7 @@ func TestGenResponses_Issue1013(t *testing.T) {
 	require.NoError(t, err)
 
 	opt = opts()
-	require.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op))
+	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err = opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 	assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))

@@ -12,13 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-openapi/testify/v2/assert"
-	"github.com/go-openapi/testify/v2/require"
-
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/testify/v2/assert"
+	"github.com/go-openapi/testify/v2/require"
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
@@ -156,7 +154,7 @@ func TestServer_BadTemplate(t *testing.T) {
 
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -178,13 +176,13 @@ func TestServer_ErrorParsingTemplate(t *testing.T) {
 
 	badParse := `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 
-	gen, err := testAppGenerator(nil, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
 	require.Error(t, gen.GenOpts.templates.AddFile("badparse", badParse)) // template is not loaded
 
 	badParseCall := func() {
-		_ = templates.MustGet("badparse") // MustGet panics
+		_ = gen.GenOpts.templates.MustGet("badparse") // MustGet panics
 	}
 
 	assert.Panics(t, badParseCall, "templates.MustGet() did not panic() as currently expected")
@@ -286,7 +284,7 @@ func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
 
 	// check the serverBuilder output
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+	require.NoError(t, app.GenOpts.templates.MustGet("serverBuilder").Execute(buf, app))
 
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -296,7 +294,7 @@ func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
 	assertInCode(t, `PreServerShutdown func()`, res)
 
 	buf = bytes.NewBuffer(nil)
-	require.NoError(t, templates.MustGet("serverConfigureapi").Execute(buf, app))
+	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
 
 	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -316,7 +314,7 @@ func TestServer_Issue1557(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	require.NoError(t, templates.MustGet("serverBuilder").Execute(buf, app))
+	require.NoError(t, gen.GenOpts.templates.MustGet("serverBuilder").Execute(buf, app))
 
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -439,17 +437,19 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 	models, err := gatherModels(specDoc, nil)
 	require.NoError(tb, err)
 
-	operations := gatherOperations(analyzed, nil)
+	opts := testGenOpts()
+	mangler := opts.LanguageOpts.Mangler
+	operations := gatherOperations(opts, analyzed, nil)
 	if len(operations) == 0 {
 		return nil, errors.New("no operations were selected")
 	}
 
-	opts := testGenOpts()
 	opts.Spec = specPath
-	apiPackage := opts.LanguageOpts.MangleName(swag.ToFileName(opts.APIPackage), apiPkg)
+	apiPackage := opts.LanguageOpts.MangleName(mangler.ToFileName(opts.APIPackage), apiPkg)
+	mediaMime := mustGetMediaMime(tb)
 
 	return &appGenerator{
-		Name:            appNameOrDefault(specDoc, name, "swagger"),
+		Name:            opts.appNameOrDefault(specDoc, name, "swagger"),
 		Receiver:        "o",
 		SpecDoc:         specDoc,
 		Analyzed:        analyzed,
@@ -459,14 +459,16 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 		DumpData:        opts.DumpData,
 		Package:         apiPackage,
 		APIPackage:      apiPackage,
-		ModelsPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ModelPackage), "definitions"),
-		ServerPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ServerPackage), "server"),
-		ClientPackage:   opts.LanguageOpts.MangleName(swag.ToFileName(opts.ClientPackage), "client"),
+		ModelsPackage:   opts.LanguageOpts.MangleName(mangler.ToFileName(opts.ModelPackage), "definitions"),
+		ServerPackage:   opts.LanguageOpts.MangleName(mangler.ToFileName(opts.ServerPackage), "server"),
+		ClientPackage:   opts.LanguageOpts.MangleName(mangler.ToFileName(opts.ClientPackage), "client"),
 		Principal:       opts.Principal,
 		DefaultScheme:   "http",
 		DefaultProduces: runtime.JSONMime,
 		DefaultConsumes: runtime.JSONMime,
 		GenOpts:         opts,
+		mangler:         mangler,
+		mediaMime:       mediaMime,
 	}, nil
 }
 
@@ -480,7 +482,7 @@ func doGenAppTemplate(tb testing.TB, fixture, template string) string {
 	require.NoError(tb, err)
 
 	buf := bytes.NewBuffer(nil)
-	require.NoError(tb, templates.MustGet(template).Execute(buf, app))
+	require.NoError(tb, gen.GenOpts.templates.MustGet(template).Execute(buf, app))
 
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 	require.NoError(tb, err)

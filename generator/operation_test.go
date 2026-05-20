@@ -20,15 +20,17 @@ import (
 )
 
 func TestUniqueOperationNameMangling(t *testing.T) {
+	opts := opts()
 	doc, err := loads.Spec("../fixtures/bugs/2213/fixture-2213.yaml")
 	require.NoError(t, err)
 	analyzed := analysis.New(doc.Spec())
-	ops := gatherOperations(analyzed, nil)
+	ops := gatherOperations(opts, analyzed, nil)
 	assert.MapContainsT(t, ops, "GetFoo")
 	assert.MapContainsT(t, ops, "GetAFoo")
 }
 
 func TestUniqueOperationNames(t *testing.T) {
+	opts := opts()
 	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
@@ -39,7 +41,7 @@ func TestUniqueOperationNames(t *testing.T) {
 	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
 	analyzed := analysis.New(sp)
 
-	ops := gatherOperations(analyzed, nil)
+	ops := gatherOperations(opts, analyzed, nil)
 	assert.Len(t, ops, 6)
 	_, exists := ops["saveTask"]
 	assert.TrueT(t, exists)
@@ -48,6 +50,7 @@ func TestUniqueOperationNames(t *testing.T) {
 }
 
 func TestEmptyOperationNames(t *testing.T) {
+	opts := opts()
 	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
@@ -58,7 +61,7 @@ func TestEmptyOperationNames(t *testing.T) {
 	sp.Paths.Paths["/tasks/{id}"].Put.AddExtension("origName", "updateTask")
 	analyzed := analysis.New(sp)
 
-	ops := gatherOperations(analyzed, nil)
+	ops := gatherOperations(opts, analyzed, nil)
 	assert.Len(t, ops, 6)
 	_, exists := ops["PostTasks"]
 	assert.TrueT(t, exists)
@@ -114,7 +117,7 @@ func TestMakeResponse(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	require.NoError(t, err)
 
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k := range b.Doc.Spec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
@@ -134,7 +137,7 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
 	require.NoError(t, err)
 
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k := range b.Doc.Spec().Definitions {
 		resolver.KnownDefs[k] = struct{}{}
@@ -166,7 +169,7 @@ func TestMakeOperationParam(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	require.NoError(t, err)
 
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	gO, err := b.MakeParameter("a", resolver, b.Operation.Parameters[0], nil)
 	require.NoError(t, err)
 
@@ -177,7 +180,7 @@ func TestMakeOperationParam(t *testing.T) {
 func TestMakeOperationParamItem(t *testing.T) {
 	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
-	resolver := &typeResolver{ModelsPackage: b.ModelsPackage, Doc: b.Doc}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
 	require.NoError(t, err)
 	assert.Nil(t, gO.Parent)
@@ -1036,8 +1039,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 
 	for range 5 {
 		buf := bytes.NewBuffer(nil)
-		err := templates.MustGet("serverConfigureapi").Execute(buf, op)
-		require.NoError(t, err)
+		require.NoError(t, opts.templates.MustGet("serverConfigureapi").Execute(buf, op))
 
 		ff, err := appGen.GenOpts.LanguageOpts.FormatContent("fixture_1214_configure_api.go", buf.Bytes())
 		require.NoErrorf(t, err, buf.String())
@@ -1327,8 +1329,7 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 			IsClient:          false,
 		},
 	}
-	err := opts.EnsureDefaults()
-	require.NoError(t, err)
+	require.NoError(t, opts.EnsureDefaults())
 
 	opts.StrictAdditionalProperties = true
 
@@ -1339,8 +1340,9 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	err = templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
-	require.NoError(t, err)
+	require.NoError(t,
+		opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0]),
+	)
 
 	ff, err := appGen.GenOpts.LanguageOpts.FormatContent("strictAdditionalProperties.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
@@ -1426,7 +1428,7 @@ func TestRenameTimeout(t *testing.T) {
 		testCase := toPin
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			assert.EqualTf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name), "unexpected deconflicting value [%d]", i)
+			assert.EqualTf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name, 0), "unexpected deconflicting value [%d]", i)
 		})
 	}
 }
@@ -1440,8 +1442,10 @@ func testInvalidParams() map[string]spec.Parameter {
 }
 
 func TestParamMappings(t *testing.T) {
+	opts := opts()
+	builder := codeGenOpBuilder{GenOpts: opts}
 	// Test deconfliction of duplicate param names across param locations
-	mappings, _ := paramMappings(testInvalidParams())
+	mappings, _ := builder.paramMappings(testInvalidParams())
 	require.MapContainsT(t, mappings, "query")
 	require.MapContainsT(t, mappings, "path")
 	require.MapContainsT(t, mappings, "body")
