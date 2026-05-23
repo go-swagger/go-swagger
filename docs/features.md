@@ -41,7 +41,10 @@ weight: 30
     - basic auth
     - api key auth
     - oauth2 bearer auth
-  - [x] swagger docs UI (docUI and redoc flavors)
+  - [x] API Browser: interactive documentation with ReDoc and SwaggerUI
+      - Built-in on all generated servers at `/docs` endpoint
+      - Supports both ReDoc (default) and SwaggerUI flavors
+      - Serves OpenAPI 2.0 spec at `/swagger.json`
 
 - [x] Typed JSON Schema implementation
   - [x] JSON Pointer that knows about structs

@@ -471,3 +471,82 @@ todos.AddOneHandlerFunc(func(params todos.AddOneParams, principal interface{}) m
   return AddOneCreated{created}
 })
 ```
+
+### API Documentation (ReDoc/SwaggerUI)
+
+Every generated server includes built-in API documentation powered by ReDoc by default. This provides an interactive API browser that allows you to explore and test your API endpoints directly from the browser.
+
+#### Accessing the API Documentation
+
+When your server is running, the API documentation is available at:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/docs` | ReDoc UI (default) |
+| `/swagger.json` | Raw OpenAPI 2.0 specification |
+
+For example, if your server is running locally on port 8080:
+
+* Open `http://localhost:8080/docs` to view the API documentation in ReDoc
+* The raw specification is available at `http://localhost:8080/swagger.json`
+
+#### Switching to SwaggerUI
+
+If you prefer SwaggerUI over ReDoc, you can configure this in your `configure_<appname>.go` file by modifying the `setupMiddlewares` function:
+
+```go
+import (
+    "github.com/go-openapi/runtime/middleware"
+)
+
+func setupMiddlewares(handler http.Handler) http.Handler {
+    return middleware.SwaggerUI(middleware.SwaggerUIOpts{
+        BasePath: "/",
+        SpecURL:  "/swagger.json",
+        Path:     "swagger-ui",
+    }, handler)
+}
+```
+
+After restarting the server, access SwaggerUI at `http://localhost:8080/swagger-ui/`.
+
+#### Customizing Documentation Paths
+
+The default path `/docs` serves the ReDoc UI. You can customize this path by modifying the middleware configuration. For example, to serve at `/api-docs`:
+
+```go
+func setupMiddlewares(handler http.Handler) http.Handler {
+    return middleware.Redoc(middleware.RedocOpts{
+        BasePath: "/",
+        SpecURL:  "/swagger.json",
+        Path:     "api-docs",  // Change the path here
+    }, handler)
+}
+```
+
+Then access the API docs at `http://localhost:8080/api-docs`.
+
+#### Security Considerations
+
+By default, the API documentation is publicly accessible. To restrict access in production environments, add authentication middleware:
+
+```go
+func setupMiddlewares(handler http.Handler) http.Handler {
+    // Add your authentication middleware here
+    return authMiddleware(handler)
+}
+```
+
+For more advanced use cases, you can conditionally enable documentation based on environment variables or other criteria.
+
+#### Disabling the API Documentation
+
+If you need to disable the API documentation entirely, modify the `setupMiddlewares` function to return the handler without the documentation middleware:
+
+```go
+func setupMiddlewares(handler http.Handler) http.Handler {
+    return handler  // No documentation middleware
+}
+```
+
+For more information about the `swagger serve` command and its options, see the [serve UI documentation](../usage/serve_ui.md).

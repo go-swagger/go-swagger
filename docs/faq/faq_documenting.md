@@ -4,8 +4,88 @@ date: 2023-01-01T01:01:01-08:00
 draft: true
 ---
 <!-- Questions about the serve UI use-case -->
+
+### API Browser (SwaggerUI/ReDoc) on Generated Servers
+
+Every go-swagger generated server comes with an **API Browser** built-in, so you can easily explore and test your API without any additional configuration.
+
+#### Accessing the API Browser
+
+When you run a generated go-swagger server, the API documentation is automatically available at:
+
+| URL Path | Description |
+|----------|-------------|
+| `/docs` | ReDoc UI (default) |
+| `/swagger.json` | Raw OpenAPI 2.0 specification |
+
+For example, if your server is running on `http://localhost:8080`, you can access:
+
+* **ReDoc UI**: Visit `http://localhost:8080/docs`
+* **SwaggerUI**: Visit `http://localhost:8080/docs` (if configured) or `http://localhost:8080/swagger-ui/`
+* **Raw Spec**: `http://localhost:8080/swagger.json`
+
+#### Choosing Between ReDoc and SwaggerUI
+
+By default, generated servers use **ReDoc** for API documentation. ReDoc provides a clean, three-panel layout optimized for readability with support for dark mode.
+
+If you prefer SwaggerUI, you can configure it in your `configure_<appname>.go` file:
+
+```go
+func setupMiddlewares(handler http.Handler) http.Handler {
+    return middleware.SwaggerUI(middleware.SwaggerUIOpts{
+        BasePath: "/",
+        SpecURL:  "/swagger.json",
+        Path:     "swagger-ui",
+    }, handler)
+}
+```
+
+Then access SwaggerUI at `http://localhost:8080/swagger-ui/`.
+
+For more details on serving options, see the [`swagger serve` command](../usage/serve_ui.md).
+
+#### Customizing the API Browser Path
+
+If you need to serve the API documentation at a different path, you can modify the `Path` option in the middleware configuration. Note that changing the path requires updating both the middleware setup and any references in your documentation.
+
+#### How It Works
+
+The generated server embeds the OpenAPI 2.0 specification as an embedded asset. When you visit `/docs`:
+
+1. The server serves the embedded ReDoc or SwaggerUI assets
+2. The UI loads the swagger specification from `/swagger.json`
+3. The API documentation is rendered interactively
+
+This approach ensures that:
+- The API documentation is always in sync with the generated code
+- No additional servers or build steps are required
+- The documentation is available in any environment where the server runs
+
+#### Common Use Cases
+
+**Enable/disable API Browser in production:**
+```go
+func configureAPI(api *operations.MyAppAPI) http.Handler {
+    // ... other configuration ...
+    
+    // Conditionally serve docs based on environment
+    if os.Getenv("ENABLE_API_DOCS") != "false" {
+        return setupMiddlewares(api.Serve())
+    }
+    return api.Serve()
+}
+```
+
+**Require authentication for API docs:**
+```go
+func setupMiddlewares(handler http.Handler) http.Handler {
+    return authMiddleware(handler) // your auth middleware
+}
+```
+
+Originally from issue [#2401](https://github.com/go-swagger/go-swagger/issues/2401).
+
 ### Serving swagger-ui with the API Server
-Update: You can visit $API_BASE/docs and it should show the UI, as mentioned in [#comment](https://github.com/go-swagger/go-swagger/issues/2401#issuecomment-688962519) 
 
 _Use-Case_: I was trying to serve swagger-ui from the generated API Server and
 I didn't find a straightforward enough way in the docs,
@@ -117,7 +197,4 @@ That page also contains a link to a good explanation on how to create net/http m
 > An implementation example is provided by the go-swagger serve UI command. It constructs a server with a redoc middleware:
 > https://github.com/go-swagger/go-swagger/blob/f552963ac0dfdec0450f6749aeeeeb2d31cd5544/cmd/swagger/commands/serve.go#L35.
 
-Besides, every swagger generated server comes with the redoc UI baked in at `/{basepath}/docs`
-
 Originally from issue [#1375](https://github.com/go-swagger/go-swagger/issues/1375).
-
