@@ -228,3 +228,55 @@ https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md
 
 Originally from issue [#1143](https://github.com/go-swagger/go-swagger/issues/1143).
 
+### Does swagger mixin preserve YAML anchors?
+_Use-Case_: I have YAML anchors in multiple files and I want the merged output to keep them, or I
+want anchors to be resolvable across files passed to `swagger mixin`.
+
+**Answer:** no. YAML anchors (`&name` and `*name`) are resolved by the YAML parser into a fully
+expanded object tree **before** `swagger mixin` ever sees the document, so the merged spec has no
+anchor information left to preserve. Cross-file anchors are not legal YAML in the first place: an
+anchor declared in `file1.yaml` cannot be referenced from `file2.yaml`.
+
+For type re-use, use `$ref` (JSON Reference) instead — including across files:
+
+```yaml
+# common.yaml
+definitions:
+  Severity:
+    type: string
+    enum: [low, medium, high]
+```
+
+```yaml
+# main.yaml
+definitions:
+  Issue:
+    type: object
+    properties:
+      severity:
+        $ref: "./common.yaml#/definitions/Severity"
+```
+
+If you only want to literally concatenate files (no semantic merge, no conflict handling),
+`cat file1.yaml file2.yaml > merged.yaml` is the simpler tool.
+
+See also [swagger mixin](/usage/mixin/) for the full list of merge rules and limitations.
+
+Originally from issue [#1928](https://github.com/go-swagger/go-swagger/issues/1928).
+
+### Can I control the path or operation order in swagger mixin output?
+_Use-Case_: I'd like the merged spec to keep the source-file order, or to be sorted by tag.
+
+**Answer:** no. The merged spec stores paths and definitions in Go maps, which serialize with
+alphabetically sorted keys. Source-file order is not preserved, and there is no command-line option
+to reorder by tag or by source priority. This is an architectural constraint inherited from the
+underlying spec model (`spec.Paths.Paths` is a map keyed by path string).
+
+The `--keep-spec-order` flag applies only to **schema properties** order, not to paths or
+definitions.
+
+If you specifically need a non-alphabetical order, the only workaround today is a post-processing
+step on the YAML or JSON output.
+
+Originally from issue [#2130](https://github.com/go-swagger/go-swagger/issues/2130).
+
