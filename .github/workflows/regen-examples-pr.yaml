@@ -4,10 +4,9 @@
 # Phase 2 of the examples regeneration pipeline.
 #
 # Triggered by workflow_run after the "Regen examples" workflow completes.
-# Downloads the diff artifact produced by the untrusted phase 1,
-# applies it to the examples repo, and creates/updates a PR with
-# proper credentials (GitHub App token + GPG-signed commits).
-#
+# Downloads the regen-examples artifact produced by phase 1, reads its
+# status, comments on the triggering PR, and (when the status is
+# "has-changes") applies the patch and creates/updates the examples PR.
 #
 # Security model: this workflow never checks out or executes PR code.
 # It only applies a patch file (data, not code) produced by phase 1.
@@ -52,11 +51,12 @@ jobs:
           echo "The triggering workflow failed. Stopping here"
           exit 1
 
-  create-examples-pr:
+  process-regen-result:
     # description: |
-    #   Download the regen diff from the completed workflow run,
-    #   apply it to the examples repo, and create/update a PR.
-    name: create examples PR
+    #   Download the regen artifact, comment status on the triggering PR,
+    #   and (when changes are present) apply the patch and create/update
+    #   the examples PR.
+    name: process regen result
     needs: [on-success]
     runs-on: ubuntu-latest
     permissions:
@@ -74,20 +74,25 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
       -
-        name: Check for artifacts
-        id: check
+        name: Read regen status
+        id: status
         run: |
-          if [ ! -f /tmp/regen-metadata/regen.patch ]; then
-            echo "No regen artifacts found — examples are up to date."
-            echo "has_artifacts=false" >> "${GITHUB_OUTPUT}"
-          else
-            echo "has_artifacts=true" >> "${GITHUB_OUTPUT}"
+          PR_NUMBER=""
+          STATUS="unknown"
+
+          if [[ -f /tmp/regen-metadata/pr_number.txt ]]; then
             PR_NUMBER=$(cat /tmp/regen-metadata/pr_number.txt)
-            echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
           fi
+          if [[ -f /tmp/regen-metadata/status.txt ]]; then
+            STATUS=$(cat /tmp/regen-metadata/status.txt)
+          fi
+
+          echo "::notice title=regen status::PR ${PR_NUMBER:-unknown}: ${STATUS}"
+          echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
+          echo "status=${STATUS}" >> "${GITHUB_OUTPUT}"
       -
         name: Configure bot credentials
-        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        if: ${{ steps.status.outputs.status == 'has-changes' }}
         uses: go-openapi/gh-actions/ci-jobs/bot-credentials@70c5bbea429a7d10a082ac9efb83036da0c5b7d0 # v1.4.14
         id: bot-credentials
         with:
@@ -104,48 +109,60 @@ jobs:
           enable-tag-signing: "false"
       -
         name: Checkout examples
-        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        if: ${{ steps.status.outputs.status == 'has-changes' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: go-swagger/examples
           token: ${{ steps.bot-credentials.outputs.app-token }}
       -
         name: Apply patch
-        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        if: ${{ steps.status.outputs.status == 'has-changes' }}
         run: |
           git apply /tmp/regen-metadata/regen.patch
       -
         name: Create or update examples PR
-        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        if: ${{ steps.status.outputs.status == 'has-changes' }}
         id: examples-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.bot-credentials.outputs.app-token }}
           commit-message: |
-            chore: regenerate examples from go-swagger PR #${{ steps.check.outputs.pr_number }}
+            chore: regenerate examples from go-swagger PR #${{ steps.status.outputs.pr_number }}
 
-            Origin: go-swagger/go-swagger#${{ steps.check.outputs.pr_number }}
-          branch: regen/pr-${{ steps.check.outputs.pr_number }}
+            Origin: go-swagger/go-swagger#${{ steps.status.outputs.pr_number }}
+          branch: regen/pr-${{ steps.status.outputs.pr_number }}
           delete-branch: true
-          title: "chore: regen examples (go-swagger PR #${{ steps.check.outputs.pr_number }})"
+          title: "chore: regen examples (go-swagger PR #${{ steps.status.outputs.pr_number }})"
           body: |
-            Regenerated examples from go-swagger/go-swagger#${{ steps.check.outputs.pr_number }}
+            Regenerated examples from go-swagger/go-swagger#${{ steps.status.outputs.pr_number }}
 
-            Triggering PR: https://github.com/go-swagger/go-swagger/pull/${{ steps.check.outputs.pr_number }}
+            Triggering PR: https://github.com/go-swagger/go-swagger/pull/${{ steps.status.outputs.pr_number }}
           signoff: true
           sign-commits: true
       -
         name: Comment on go-swagger PR
-        if: ${{ steps.examples-pr.outputs.pull-request-url != '' }}
+        if: >-
+          ${{
+            steps.status.outputs.pr_number != '' &&
+            (steps.status.outputs.status == 'has-changes' ||
+             steps.status.outputs.status == 'no-changes')
+          }}
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.status.outputs.pr_number }}
+          STATUS: ${{ steps.status.outputs.status }}
+          EXAMPLES_PR_URL: ${{ steps.examples-pr.outputs.pull-request-url }}
         run: |
-          PR_NUMBER="${{ steps.check.outputs.pr_number }}"
-          DIFFSTAT=$(cat /tmp/regen-metadata/diffstat.txt)
-          COMMENT=$(cat <<CMTEOF
+          case "${STATUS}" in
+            no-changes)
+              COMMENT="**Examples regeneration:** ran, no changes detected in generated code."
+              ;;
+            has-changes)
+              DIFFSTAT=$(cat /tmp/regen-metadata/diffstat.txt)
+              COMMENT=$(cat <<CMTEOF
           **Examples regeneration:** changes detected.
 
-          Examples PR: ${{ steps.examples-pr.outputs.pull-request-url }}
+          Examples PR: ${EXAMPLES_PR_URL}
 
           <details>
           <summary>Diffstat</summary>
@@ -156,6 +173,9 @@ jobs:
 
           </details>
           CMTEOF
-          )
-          gh pr comment "${PR_NUMBER}" --body "${COMMENT}"
-
+              )
+              ;;
+          esac
+          gh pr comment "${PR_NUMBER}" \
+            --repo go-swagger/go-swagger \
+            --body "${COMMENT}"
