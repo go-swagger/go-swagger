@@ -41,7 +41,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 	require.NoErrorf(t, err, buf.String())
 
 	res := string(formatted)
-	assert.RegexpT(t, "UrlformConsumer:\\s+runtime\\.DiscardConsumer", res)
+	assert.RegexpT(t, `UrlformConsumer:\s+runtime\.ByteStreamConsumer\(\)`, res)
 
 	buf = bytes.NewBuffer(nil)
 	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
@@ -49,7 +49,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_search_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	assertInCode(t, "api.UrlformConsumer = runtime.DiscardConsumer", string(formatted))
+	assertInCode(t, "api.UrlformConsumer = runtime.ByteStreamConsumer()", string(formatted))
 }
 
 func TestServer_MultipartForm(t *testing.T) {
@@ -67,7 +67,7 @@ func TestServer_MultipartForm(t *testing.T) {
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	assert.RegexpT(t, "MultipartformConsumer:\\s+runtime\\.DiscardConsumer", string(formatted))
+	assert.RegexpT(t, `MultipartformConsumer:\s+runtime\.ByteStreamConsumer\(\)`, string(formatted))
 
 	buf = bytes.NewBuffer(nil)
 	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
@@ -75,7 +75,7 @@ func TestServer_MultipartForm(t *testing.T) {
 	formatted, err = app.GenOpts.LanguageOpts.FormatContent("configure_shipyard_api.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
-	assertInCode(t, "api.MultipartformConsumer = runtime.DiscardConsumer", string(formatted))
+	assertInCode(t, "api.MultipartformConsumer = runtime.ByteStreamConsumer()", string(formatted))
 }
 
 func TestServer_InvalidSpec(t *testing.T) {
