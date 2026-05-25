@@ -15,6 +15,7 @@ name: Regen examples PR
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_run:
@@ -72,6 +73,8 @@ jobs:
           name: regen-examples
           path: /tmp/regen-metadata
           run-id: ${{ github.event.workflow_run.id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
         continue-on-error: true
       -
         name: Read regen status
