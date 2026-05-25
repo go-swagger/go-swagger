@@ -94,6 +94,20 @@ jobs:
           echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
           echo "status=${STATUS}" >> "${GITHUB_OUTPUT}"
       -
+        name: Checkout examples
+        # NOTE: must run before "Configure bot credentials". The bot-credentials
+        # action delegates to crazy-max/ghaction-import-gpg, which runs
+        # `git config --local` for the signing key — that requires the working
+        # tree to already be a git repo. The default GITHUB_TOKEN is fine for
+        # the initial read (examples is public); the bot token is applied
+        # explicitly to `peter-evans/create-pull-request` below, which sets
+        # up its own push authentication.
+        if: ${{ steps.status.outputs.status == 'has-changes' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: go-swagger/examples
+          persist-credentials: false
+      -
         name: Configure bot credentials
         if: ${{ steps.status.outputs.status == 'has-changes' }}
         uses: go-openapi/gh-actions/ci-jobs/bot-credentials@70c5bbea429a7d10a082ac9efb83036da0c5b7d0 # v1.4.14
@@ -110,13 +124,6 @@ jobs:
           gpg-fingerprint: ${{ secrets.CI_BOT_SIGNING_KEY }}
           enable-commit-signing: "true"
           enable-tag-signing: "false"
-      -
-        name: Checkout examples
-        if: ${{ steps.status.outputs.status == 'has-changes' }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          repository: go-swagger/examples
-          token: ${{ steps.bot-credentials.outputs.app-token }}
       -
         name: Apply patch
         if: ${{ steps.status.outputs.status == 'has-changes' }}
