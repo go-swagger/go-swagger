@@ -63,8 +63,8 @@ var knownConsumers = map[string]string{
 	"txt":          "runtime.TextConsumer()",
 	"bin":          "runtime.ByteStreamConsumer()",
 	"csv":          "runtime.CSVConsumer()",
-	"urlform":      "runtime.DiscardConsumer",
-	multipartForm:  "runtime.DiscardConsumer",
+	"urlform":      "runtime.ByteStreamConsumer()",
+	multipartForm:  "runtime.ByteStreamConsumer()",
 }
 
 func wellKnownMime(tn string) (string, bool) {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /*
-Package swagger (2.0) provides a powerful interface to your API
+Package swagger (2.0) provides a powerful interface to your API.
 
 Contains an implementation of Swagger 2.0.
 It knows how to serialize, deserialize and validate swagger specifications.

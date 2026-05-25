@@ -69,3 +69,4 @@ dist/
 .circleci/*.sh
 .mcp.json
 .env
+.worktrees
