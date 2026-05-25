@@ -148,7 +148,6 @@ jobs:
 
             Triggering PR: https://github.com/go-swagger/go-swagger/pull/${{ steps.status.outputs.pr_number }}
           signoff: true
-          sign-commits: true
       -
         name: Comment on go-swagger PR
         if: >-
