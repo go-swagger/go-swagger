@@ -11,6 +11,7 @@ import (
   "fmt"
   "io"
   "net/http"
+  "time"
 
   "github.com/go-openapi/errors"
   "github.com/go-openapi/runtime"
@@ -149,8 +150,8 @@ type ClientService interface {
 */
 func (a *Client) {{ pascalize .Name }}(params *{{ pascalize .Name }}Params{{ if .Authorized }}, authInfo runtime.ClientAuthInfoWriter{{end}}{{ if .HasStreamingResponse }}, writer io.Writer{{ end }}, opts ...ClientOption) {{ if .SuccessResponse }}({{ range .SuccessResponses }}*{{ pascalize .Name }}, {{ end }}{{ end }}error{{ if .SuccessResponse }}){{ end }} {
   var ctx context.Context
-  if params.Context != nil {
-    ctx = params.Context
+  if params.inner.ctx != nil {
+    ctx = params.inner.ctx
   } else {
     ctx = context.Background()
   }
@@ -260,4 +261,12 @@ func (a *Client) {{ pascalize .Name }}Context(ctx context.Context, params *{{ pa
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport runtime.ContextualTransport) {
   a.transport = transport
+}
+
+// innerParams captures internal fields so they don't conflict with user-supplied parameters.
+type innerParams struct {
+  timeout time.Duration
+
+  // Deprecated: use the operation call with context to pass the context instead of [{{ pascalize .Name }}Params].
+  ctx context.Context
 }
