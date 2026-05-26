@@ -1426,6 +1426,7 @@ func TestRenameTimeout(t *testing.T) {
 	for idx, toPin := range makeClientTimeoutNameTest() {
 		i := idx
 		testCase := toPin
+		renameTimeout := rename(timeoutVarNamePreferences)
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			assert.EqualTf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name, 0), "unexpected deconflicting value [%d]", i)
@@ -1445,7 +1446,7 @@ func TestParamMappings(t *testing.T) {
 	opts := opts()
 	builder := codeGenOpBuilder{GenOpts: opts}
 	// Test deconfliction of duplicate param names across param locations
-	mappings, _ := builder.paramMappings(testInvalidParams())
+	mappings, _, _ := builder.paramMappings(testInvalidParams())
 	require.MapContainsT(t, mappings, "query")
 	require.MapContainsT(t, mappings, "path")
 	require.MapContainsT(t, mappings, "body")

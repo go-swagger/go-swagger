@@ -264,7 +264,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 
-	idMapping, timeoutName := b.paramMappings(paramsForOperation)
+	idMapping, timeoutName, ctxName := b.paramMappings(paramsForOperation)
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
@@ -447,7 +447,8 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Consumes:             operation.Consumes,   // for doc
 		ExtraSchemes:         extraSchemes,         // resolved schemes, for codegen
 		ExtraSchemeOverrides: originalExtraSchemes, // raw operation extra schemes, for doc
-		TimeoutName:          timeoutName,
+		TimeoutName:          timeoutName,          // deconflicted names for internal fields (and methods)
+		ContextName:          ctxName,
 		Extensions:           operation.Extensions,
 		StrictResponders:     b.GenOpts.StrictResponders,
 
@@ -877,7 +878,7 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 }
 
 // paramMappings yields a map of safe parameter names for an operation.
-func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string) {
+func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string, string) {
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(params)),
 		"path":     make(map[string]string, len(params)),
@@ -920,47 +921,65 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 	}
 
 	// pick a deconflicted private name for timeout for this operation
-	timeoutName := renameTimeout(seenIDs, timeoutVarNamePreferences[0], 0)
+	timeoutName := rename(timeoutVarNamePreferences)(seenIDs, timeoutVarNamePreferences[0], 0)
+	ctxName := rename(contextVarNamePreferences)(seenIDs, contextVarNamePreferences[0], 0)
 
-	return idMapping, timeoutName
+	return idMapping, timeoutName, ctxName
 }
 
-const timeoutName = "timeout"
+const (
+	timeoutName = "timeout"
+	contextName = "context"
+)
 
-var timeoutVarNamePreferences = []string{
-	timeoutName,
-	"requestTimeout",
-	"httpRequestTimeout",
-	"swaggerTimeout",
-	"operationTimeout",
-	"opTimeout",
-	"operTimeout",
-}
+var (
+	timeoutVarNamePreferences = []string{
+		timeoutName,
+		"requestTimeout",
+		"httpRequestTimeout",
+		"swaggerTimeout",
+		"operationTimeout",
+		"opTimeout",
+		"operTimeout",
+	}
 
-// renameTimeout renames the variable in use by client template to avoid conflicting
+	contextVarNamePreferences = []string{
+		contextName,
+		"requestContext",
+		"httpRequestContext",
+		"swaggerContext",
+		"operationContext",
+		"opContext",
+		"operContext",
+	}
+)
+
+// rename the variable in use by client template to avoid conflicting
 // with param names.
 //
 // NOTE: this merely protects the timeout field in the client parameter struct,
 // fields "Context" and "HTTPClient" remain exposed to name conflicts.
-func renameTimeout(seenIDs map[string]any, timeoutName string, index int) string {
-	if seenIDs == nil {
-		return timeoutName
-	}
+func rename(preferences []string) func(map[string]any, string, int) string {
+	return func(seenIDs map[string]any, previous string, index int) string {
+		if seenIDs == nil {
+			return previous
+		}
 
-	current := strings.ToLower(timeoutName)
-	if _, ok := seenIDs[current]; !ok {
-		return timeoutName
-	}
+		current := strings.ToLower(previous)
+		if _, ok := seenIDs[current]; !ok {
+			return previous
+		}
 
-	var next string
-	if index < len(timeoutVarNamePreferences)-1 {
-		index++
-		next = timeoutVarNamePreferences[index]
-	} else {
-		next = timeoutName + "1"
-	}
+		var next string
+		if index < len(preferences)-1 {
+			index++
+			next = preferences[index]
+		} else {
+			next = previous + "1"
+		}
 
-	return renameTimeout(seenIDs, next, index)
+		return rename(preferences)(seenIDs, next, index)
+	}
 }
 
 func producesOrDefault(produces []string, fallback []string, defaultProduces string) []string {

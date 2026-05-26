@@ -645,6 +645,7 @@ type GenOperation struct {
 	ProducesMediaTypes   []string
 	ConsumesMediaTypes   []string
 	TimeoutName          string
+	ContextName          string
 
 	Extensions map[string]any
 

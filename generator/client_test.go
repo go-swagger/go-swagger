@@ -304,7 +304,7 @@ func TestGenClient_2471(t *testing.T) {
 	fixtureConfig := map[string][]string{
 		"client/operations/example_post_parameters.go": { // generated file
 			`func (o *ExamplePostParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {`,
-			`	if err := r.SetTimeout(o.timeout); err != nil {`,
+			`	if err := r.SetTimeout(o.inner.timeout); err != nil {`,
 			`	joinedFoo := o.bindParamFoo(reg)`,
 			`	if len(joinedFoo) > 0 {`,
 			`		if err := r.SetHeaderParam("Foo", joinedFoo[0]); err != nil {`,
@@ -371,8 +371,8 @@ func TestGenClient_2096(t *testing.T) {
 			`		fieldsDefault = []string{"first", "second", "third"}`,
 			`	val := ListResourcesParams{`,
 			`		Fields: fieldsDefault,`,
-			`	val.timeout = o.timeout`,
-			`	val.Context = o.Context`,
+			`	val.inner.timeout = o.inner.timeout`,
+			`	val.inner.ctx = o.inner.ctx`,
 			`	val.HTTPClient = o.HTTPClient`,
 			`	*o = val`,
 			`	joinedFields := o.bindParamFields(reg)`,
@@ -405,7 +405,7 @@ func TestGenClient_909_3(t *testing.T) {
 	fixtureConfig := map[string][]string{
 		"client/operations/get_optional_parameters.go": { // generated file
 			`func (o *GetOptionalParams) WriteToRequest(r runtime.ClientRequest, reg strfmt.Registry) error {`,
-			`	if err := r.SetTimeout(o.timeout); err != nil {`,
+			`	if err := r.SetTimeout(o.inner.timeout); err != nil {`,
 			`	if o.IsAnOption2 != nil {`,
 			`		joinedIsAnOption2 := o.bindParamIsAnOption2(reg)`,
 			`		if err := r.SetQueryParam("isAnOption2", joinedIsAnOption2...); err != nil {`,
