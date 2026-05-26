@@ -282,6 +282,7 @@ jobs:
         run: >
           gotestsum
           --jsonfile 'unit.report.${{ matrix.os }}-${{ matrix.go }}.json'
+          --format-hide-empty-pkg
           --
           -p 2
           -count 1

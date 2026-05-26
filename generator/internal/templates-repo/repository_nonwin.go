@@ -3,7 +3,7 @@
 
 //go:build !windows
 
-package templatesrepo
+package repo
 
 import (
 	"fmt"

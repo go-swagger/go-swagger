@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2015-2025 go-swagger maintainers
 // SPDX-License-Identifier: Apache-2.0
 
-package templatesrepo
+package repo
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
 func TestLoadDir_EmptyPath(t *testing.T) {
@@ -18,7 +19,7 @@ func TestLoadDir_EmptyPath(t *testing.T) {
 
 	err := repo.LoadDir("")
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "could not complete")
+	assert.ErrorContains(t, err, "could not complete")
 }
 
 func TestLoadDir_ProtectedTemplateBlocks(t *testing.T) {
@@ -182,7 +183,7 @@ func TestLoadContrib_NoFiles(t *testing.T) {
 
 	err := repo.LoadContrib("nonexistent", provider)
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "no files added")
+	assert.ErrorContains(t, err, "no files added")
 }
 
 func TestMustGet(t *testing.T) {
@@ -204,25 +205,28 @@ func TestGet_NotFound(t *testing.T) {
 	repo := NewRepository(nil)
 	_, err := repo.Get("nonexistent")
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "template doesn't exist")
+	assert.ErrorContains(t, err, "template doesn't exist")
 }
 
 func TestAddFile_ParseError(t *testing.T) {
 	repo := NewRepository(nil)
 	err := repo.AddFile("bad", "{{ .Broken")
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "failed to load template")
+	assert.ErrorContains(t, err, "failed to load template")
 }
 
 func TestDumpTemplates(t *testing.T) {
 	repo := NewRepository(nil)
 	err := repo.AddFile("base", `base content {{ template "sub" }}`)
 	require.NoError(t, err)
+
 	err = repo.AddFile("sub", `sub content`)
 	require.NoError(t, err)
 
-	// should not panic
-	repo.DumpTemplates()
+	defer gentest.DiscardOutput()()
+	require.NotPanics(t, func() {
+		repo.DumpTemplates()
+	})
 }
 
 func TestFuncs(t *testing.T) {
@@ -264,7 +268,7 @@ func TestDependencies_MissingDep(t *testing.T) {
 
 	_, err = repo.Get("orphan")
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "could not find template missing")
+	assert.ErrorContains(t, err, "could not find template missing")
 }
 
 func TestDependencies_IfNode(t *testing.T) {
@@ -356,7 +360,7 @@ func TestLoadContrib_ParseError(t *testing.T) {
 
 	err := repo.LoadContrib("bad", provider)
 	require.Error(t, err)
-	assert.StringContainsT(t, err.Error(), "failed to load template")
+	assert.ErrorContains(t, err, "failed to load template")
 }
 
 func TestDependencies_RangeWithElse(t *testing.T) {
