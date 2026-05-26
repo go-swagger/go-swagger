@@ -14,6 +14,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
@@ -228,17 +229,18 @@ func TestTemplates_LoadContrib(t *testing.T) {
 	}
 }
 
-// test DumpTemplates().
+// test DumpTemplates() with actual templates.
 func TestTemplates_DumpTemplates(t *testing.T) {
 	var buf bytes.Buffer
-	defer captureOutput(&buf)()
+	defer gentest.CaptureOutput(&buf)()
 
 	opts := opts()
 	opts.templates.DumpTemplates()
 	assert.NotEmpty(t, buf)
 
 	// Sample output
-	assert.StringContainsT(t, buf.String(), "## tupleSerializer")
-	assert.StringContainsT(t, buf.String(), "Defined in `tupleserializer.gotmpl`")
-	assert.StringContainsT(t, buf.String(), "####requires \n - schemaType")
+	str := buf.String()
+	assert.StringContainsT(t, str, "## tupleSerializer")
+	assert.StringContainsT(t, str, "Defined in `tupleserializer.gotmpl`")
+	assert.StringContainsT(t, str, "####requires \n - schemaType")
 }

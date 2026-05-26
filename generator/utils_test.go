@@ -14,10 +14,7 @@ import (
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
-var (
-	discardOutput = gentest.DiscardOutput
-	captureOutput = gentest.CaptureOutput
-)
+var discardOutput = gentest.DiscardOutput
 
 // testing utilities for codegen assertions
 
