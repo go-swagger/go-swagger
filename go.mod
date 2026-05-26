@@ -7,7 +7,7 @@ toolchain go1.26.1
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/go-openapi/analysis v0.25.0
-	github.com/go-openapi/codescan v0.33.3
+	github.com/go-openapi/codescan v0.34.0
 	github.com/go-openapi/errors v0.22.7
 	github.com/go-openapi/inflect v0.21.5
 	github.com/go-openapi/loads v0.23.3

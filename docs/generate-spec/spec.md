@@ -64,8 +64,11 @@ swagger generate spec -o ./swagger.yml
 If you don't want to generate Go language specific extensions in the spec file, you can disable them by doing
 
 ```sh
-SWAGGER_GENERATE_EXTENSION=false && swagger generate spec -o ./swagger.yml
+swagger generate spec --skip-extensions -o ./swagger.yml
 ```
+
+> NOTE: the previous setting using env var is deprecated but still supported, using:
+> `SWAGGER_GENERATE_EXTENSION=false`
 
 ## Parsing rules
 

@@ -38,6 +38,7 @@ type SpecFile struct {
 	SetXNullableForPointers bool           `description:"set x-nullable extension to true automatically for fields of pointer types without 'omitempty'" long:"nullable-pointers"           short:"n"`
 	RefAliases              bool           `description:"transform aliased types into $ref rather than expanding their definition"                       long:"ref-aliases"                 short:"r"`
 	TransparentAliases      bool           `description:"treat type aliases as completely transparent, never creating definitions for them"              long:"transparent-aliases"         short:""`
+	SkipExtensions          bool           `description:"skip generation of x-go-* go-swagger extensions"                                                long:"skip-extensions"             short:""`
 	DescWithRef             bool           `description:"allow descriptions to flow alongside $ref"                                                      long:"allow-desc-with-ref"         short:""`
 	Format                  string         `choice:"yaml"                                                                                                choice:"json"                      default:"json"  description:"the format for the spec document" long:"format"`
 }
@@ -58,21 +59,27 @@ func (s *SpecFile) Execute(args []string) error {
 		input = swspec
 	}
 
-	var opts codescan.Options
-	opts.Packages = args
-	opts.WorkDir = s.WorkDir
-	opts.InputSpec = input
-	opts.ScanModels = s.ScanModels
-	opts.BuildTags = s.BuildTags
-	opts.Include = s.Include
-	opts.Exclude = s.Exclude
-	opts.IncludeTags = s.IncludeTags
-	opts.ExcludeTags = s.ExcludeTags
-	opts.ExcludeDeps = s.ExcludeDeps
-	opts.SetXNullableForPointers = s.SetXNullableForPointers
-	opts.RefAliases = s.RefAliases
-	opts.TransparentAliases = s.TransparentAliases
-	opts.DescWithRef = s.DescWithRef
+	skipExt := s.SkipExtensions || os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false"
+	debug := os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
+
+	opts := codescan.Options{
+		Packages:                args,
+		WorkDir:                 s.WorkDir,
+		InputSpec:               input,
+		ScanModels:              s.ScanModels,
+		BuildTags:               s.BuildTags,
+		Include:                 s.Include,
+		Exclude:                 s.Exclude,
+		IncludeTags:             s.IncludeTags,
+		ExcludeTags:             s.ExcludeTags,
+		ExcludeDeps:             s.ExcludeDeps,
+		SetXNullableForPointers: s.SetXNullableForPointers,
+		RefAliases:              s.RefAliases,
+		TransparentAliases:      s.TransparentAliases,
+		DescWithRef:             s.DescWithRef,
+		SkipExtensions:          skipExt,
+		Debug:                   debug,
+	}
 
 	swspec, err := codescan.Run(&opts)
 	if err != nil {
