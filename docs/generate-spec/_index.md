@@ -14,11 +14,11 @@ Usage:
 generate a swagger spec document from a go application
 
 Application Options:
-  -q, --quiet                  silence logs
-      --log-output=LOG-FILE    redirect logs to file
+  -q, --quiet                       silence logs
+      --log-output=LOG-FILE         redirect logs to file
 
 Help Options:
-  -h, --help                   Show this help message
+  -h, --help                        Show this help message
 
 [spec command options]
       -w, --work-dir=               the base path to use (default: .)
@@ -35,6 +35,7 @@ Help Options:
       -n, --nullable-pointers       set x-nullable extension to true automatically for fields of pointer types without 'omitempty'
       -r, --ref-aliases             transform aliased types into $ref rather than expanding their definition
           --transparent-aliases     treat type aliases as completely transparent, never creating definitions for them
+          --skip-extensions         skip generation of x-go-* go-swagger extensions
           --allow-desc-with-ref     allow descriptions to flow alongside $ref
           --format=[yaml|json]      the format for the spec document (default: json)
 ```

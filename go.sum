@@ -23,6 +23,8 @@ github.com/go-openapi/analysis v0.25.0 h1:EnjAq1yO8wEO9HbPmY8vLPEIkdZuuFhCAKBPvC
 github.com/go-openapi/analysis v0.25.0/go.mod h1:5WFTRE43WLkPG9r9OtlMfqkkvUTYLVVCIxLlEpyF8kE=
 github.com/go-openapi/codescan v0.33.3 h1:1ybUbjR+uHi89WKpAc0jguloPdROcWldG2Ktk7Buqa4=
 github.com/go-openapi/codescan v0.33.3/go.mod h1:x55SpO1imFaDexCfFbVDyQtxV+mq6PY+UX8Hen8yIUk=
+github.com/go-openapi/codescan v0.34.0 h1:OgnK5YLYFLlSsO6On797Wx01+owSE69Q4Ww2KAuFwJY=
+github.com/go-openapi/codescan v0.34.0/go.mod h1:elA/HAvSRUSXGZuyb8CBIXjLu04N2ZsIBKcUb5tRPPg=
 github.com/go-openapi/errors v0.22.7 h1:JLFBGC0Apwdzw3484MmBqspjPbwa2SHvpDm0u5aGhUA=
 github.com/go-openapi/errors v0.22.7/go.mod h1://QW6SD9OsWtH6gHllUCddOXDL0tk0ZGNYHwsw4sW3w=
 github.com/go-openapi/inflect v0.21.5 h1:M2RCq6PPS3YbIaL7CXosGL3BbzAcmfBAT0nC3YfesZA=
