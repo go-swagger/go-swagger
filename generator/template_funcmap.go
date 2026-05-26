@@ -7,17 +7,6 @@ import (
 	"fmt"
 )
 
-/*
-// Package-level aliases for functions that moved to the golang funcmap package
-// but are still referenced from other files in the generator package.
-var (
-	pascalize   = golangfuncs.Pascalize
-	mediaMime   = golangfuncs.MediaMime
-	mediaGoName = golangfuncs.MediaGoName
-	asJSON      = golangfuncs.AsJSON
-)
-*/
-
 func resolvedDocCollectionFormat(cf string, child *GenItems) string {
 	if child == nil {
 		return cf

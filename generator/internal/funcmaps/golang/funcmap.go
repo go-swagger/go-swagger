@@ -94,12 +94,17 @@ func FuncMap(mangler mangling.NameMangler) template.FuncMap {
 		"printGoLiteral": func(in any) string {
 			return interfaceReplacer.Replace(fmt.Sprintf("%#v", in))
 		},
+		"fold": func(in string) string {
+			return foldReplacer.Replace(in)
+		},
 	}
 
 	maps.Copy(f, extra)
 
 	return f
 }
+
+var foldReplacer = strings.NewReplacer("\n", " ", "\r", "")
 
 // pascalize converts a name to Go PascalCase, handling special prefix characters.
 func pascalize(mangler mangling.NameMangler) func(string) string {
