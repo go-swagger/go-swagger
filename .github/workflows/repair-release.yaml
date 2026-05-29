@@ -48,7 +48,7 @@ jobs:
         run: upx --version
       -
         name: Install git-cliff
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2.79.4
+        uses: taiki-e/install-action@873c7452cadb7c034694a1282227095d93fbdf92 # v2.79.14
         with:
           tool: git-cliff
       -
