@@ -123,8 +123,8 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.CI_BOT_GPG_PASSPHRASE }}
           GPG_NFPM_KEY_FILE: ${{ steps.gpg-key-file.outputs.path }}
           GPG_FINGERPRINT: ${{ steps.import-gpg.outputs.fingerprint }}
-          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_RELEASE_WEBHOOK_ID }}
-          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_RELEASE_WEBHOOK_TOKEN }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
       -
         name: Install CloudSmith CLI
         if: ${{ env.CLOUDSMITH_API_KEY != '' }}
