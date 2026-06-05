@@ -50,13 +50,6 @@ const (
 	sensibleDefaultMapAlloc = 50
 )
 
-func init() {
-	// all initializations for the generator package
-	debugOptions()
-	// initTemplateRepo() // ICI
-	// initTypes() // removed
-}
-
 // DefaultSectionOpts for a given opts, this is used when no config file is passed
 // and uses the embedded templates when no local override can be found.
 func DefaultSectionOpts(gen *GenOpts) {
@@ -494,7 +487,7 @@ func (g *GenOpts) EnsureDefaults() error {
 	}
 
 	if g.LanguageOpts == nil {
-		g.LanguageOpts = language.GolangOpts()
+		g.LanguageOpts = language.GolangOpts(g.WithExtraInitialisms...)
 	}
 
 	DefaultSectionOpts(g)

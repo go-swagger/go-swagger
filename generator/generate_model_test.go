@@ -102,5 +102,24 @@ func generateModelFixtures() map[string]generateFixture {
 				}
 			},
 		},
+		"with-initialisms": {
+			spec: "../fixtures/bugs/3358/swagger.yaml",
+			prepare: func(opts *GenOpts) func(*testing.T) {
+				return func(t *testing.T) {
+					// reset language opts for this test
+					opts.WithExtraInitialisms = []string{"xy"}
+					opts.LanguageOpts = nil
+					opts.defaultsEnsured = false
+					require.NoError(t, opts.EnsureDefaults())
+					require.SliceContainsT(t, opts.LanguageOpts.Mangler.Initialisms(), "XY")
+				}
+			},
+			verify: func(target string) func(*testing.T) {
+				return func(t *testing.T) {
+					target = filepath.Join(target, defaultModelsTarget)
+					assert.TrueT(t, fileExists(target, "xy.go"))
+				}
+			},
+		},
 	}
 }
