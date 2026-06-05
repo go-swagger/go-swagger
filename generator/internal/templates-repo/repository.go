@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"text/template/parse"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/mangling"
 )
 
 // AssetProvider provides access to embedded template assets.
@@ -32,6 +32,7 @@ type Repository struct {
 	protectedTemplates map[string]bool
 	allowOverride      bool
 	mux                sync.Mutex
+	mangler            mangling.NameMangler
 }
 
 // NewRepository creates a new template repository with the provided functions defined.
@@ -40,6 +41,7 @@ func NewRepository(funcs template.FuncMap) *Repository {
 		files:     make(map[string]string),
 		templates: make(map[string]*template.Template),
 		funcs:     funcs,
+		mangler:   mangling.NewNameMangler(), // default is good enough for template management
 	}
 
 	if repo.funcs == nil {
@@ -66,6 +68,7 @@ func (t *Repository) ShallowClone() *Repository {
 		funcs:              t.funcs,
 		protectedTemplates: t.protectedTemplates,
 		allowOverride:      t.allowOverride,
+		mangler:            t.mangler,
 	}
 
 	t.mux.Lock()
@@ -200,7 +203,7 @@ func (t *Repository) Funcs() template.FuncMap {
 
 func (t *Repository) addFile(name, data string, allowOverride bool) error {
 	fileName := name
-	name = swag.ToJSONName(strings.TrimSuffix(name, ".gotmpl")) //nolint:staticcheck // tracked for migration to mangling.NameMangler
+	name = t.mangler.ToJSONName(strings.TrimSuffix(name, ".gotmpl"))
 
 	templ, err := template.New(name).Funcs(t.funcs).Parse(data)
 	if err != nil {

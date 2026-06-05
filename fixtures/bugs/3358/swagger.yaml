@@ -1,0 +1,26 @@
+swagger: "2.0"
+info:
+  title: Initialism Test
+  version: "1.0"
+basePath: /
+paths:
+  /xy/{xyId}:
+    get:
+      operationId: getXyById
+      tags: [xy]
+      parameters:
+        - name: xyId
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/XY'
+definitions:
+  XY:
+    type: object
+    properties:
+      xy_id:
+        type: integer

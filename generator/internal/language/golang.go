@@ -17,14 +17,12 @@ import (
 	"strings"
 
 	"golang.org/x/tools/imports"
-
-	"github.com/go-openapi/swag"
 )
 
 var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
 
 // GolangOpts returns [Options] for rendering items as golang code.
-func GolangOpts() *Options {
+func GolangOpts(extraInitialisms ...string) *Options {
 	opts := new(Options)
 	opts.ReservedWords = []string{
 		"break", "default", "func", "interface", "select",
@@ -33,9 +31,9 @@ func GolangOpts() *Options {
 		"const", "fallthrough", "if", "range", "type",
 		"continue", "for", "import", "return", "var",
 	}
-
+	opts.ExtraInitialisms = extraInitialisms
 	opts.formatFunc = defaultGoFormatFunc() // this default may be overridden by [GenOptsCommon]
-	opts.fileNameFunc = defaultGoFilenameFunc(goOtherReservedSuffixes())
+	opts.fileNameFunc = opts.defaultGoFilenameFunc(goOtherReservedSuffixes())
 	opts.dirNameFunc = defaultGoDirnameFunc()
 	opts.ImportsFunc = defaultGoImportsFunc()
 	opts.ArrayInitializerFunc = defaultGoArrayInitializerFunc()
@@ -54,9 +52,9 @@ func defaultGoFormatFunc() FormatterFunc {
 	}
 }
 
-func defaultGoFilenameFunc(reservedSuffixes map[string]bool) MangleFunc {
+func (o *Options) defaultGoFilenameFunc(reservedSuffixes map[string]bool) MangleFunc {
 	return func(name string) string {
-		parts := strings.Split(swag.ToFileName(name), "_") //nolint:staticcheck // tracked for migration to mangling.NameMangler
+		parts := strings.Split(o.Mangler.ToFileName(name), "_")
 		if reservedSuffixes[parts[len(parts)-1]] {
 			parts = append(parts, "swagger")
 		}
