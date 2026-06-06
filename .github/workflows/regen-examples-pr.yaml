@@ -76,23 +76,39 @@ jobs:
           repository: ${{ github.repository }}
           github-token: ${{ github.token }}
         continue-on-error: true
+
+      - name: Sanitize artifacts
+        id: check
+        run: |
+          if [ ! -f /tmp/regen-metadata/regen.patch ]; then
+            echo "has_artifacts=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "has_artifacts=true" >> "${GITHUB_OUTPUT}"
+          PR_NUMBER=$(cat /tmp/regen-metadata/pr_number.txt)
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] ; then
+            echo "::error::Invalid PR number in artifact: ${PR_NUMBER}"
+            exit 1
+          fi
+
+          echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
       -
         name: Read regen status
         id: status
+        if: ${{ steps.check.outputs.has_artifacts == 'true' }}
+        env:
+          PR_NUMBER: ${{ steps.check.outputs.pr_number }}
         run: |
-          PR_NUMBER=""
           STATUS="unknown"
 
-          if [[ -f /tmp/regen-metadata/pr_number.txt ]]; then
-            PR_NUMBER=$(cat /tmp/regen-metadata/pr_number.txt)
-          fi
           if [[ -f /tmp/regen-metadata/status.txt ]]; then
             STATUS=$(cat /tmp/regen-metadata/status.txt)
           fi
 
           echo "::notice title=regen status::PR ${PR_NUMBER:-unknown}: ${STATUS}"
-          echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
           echo "status=${STATUS}" >> "${GITHUB_OUTPUT}"
+          echo "pr_number=${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
       -
         name: Checkout examples
         # NOTE: must run before "Configure bot credentials". The bot-credentials
@@ -185,6 +201,7 @@ jobs:
               )
               ;;
           esac
+          # PR_NUMBER sanitized to be only numbers
           gh pr comment "${PR_NUMBER}" \
             --repo go-swagger/go-swagger \
             --body "${COMMENT}"
