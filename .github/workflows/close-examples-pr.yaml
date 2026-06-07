@@ -35,8 +35,12 @@ jobs:
         name: Close corresponding examples PR
         env:
           GH_TOKEN: ${{ steps.bot-credentials.outputs.app-token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] ; then
+            echo "::error::Invalid PR number in artifact: ${PR_NUMBER}"
+            exit 1
+          fi
           BRANCH="regen/pr-${PR_NUMBER}"
           EXISTING=$(gh pr list --repo go-swagger/examples --head "${BRANCH}" --json number --jq '.[0].number // empty')
           if [ -n "${EXISTING}" ]; then
