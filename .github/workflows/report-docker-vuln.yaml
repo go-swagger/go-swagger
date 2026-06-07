@@ -1,7 +1,17 @@
+# Security model: this workflow runs in a privileged workflow_run context with
+# security-events:write. It only ever consumes the trivy SARIF artifact produced
+# by the "docker-dev" workflow, which builds trusted default-branch code (its
+# checkout has no PR head context). The SARIF is treated as data and handed
+# straight to code scanning — no PR code is checked out or executed here.
+#
+# docker-dev is itself gated (see master.yaml) to trusted same-repo triggers, so
+# the artifact consumed below cannot be produced from a fork PR.
+
 name: report-docker-vuln
 
 permissions:
   contents: read
+  actions: read
 
 on:
   workflow_run:
@@ -16,7 +26,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      -
+        run: |
           echo "The triggering workflow was successful"
 
   on-failure:
@@ -24,27 +35,46 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      -
+        run: |
           echo "The triggering workflow failed. Stopping here"
           exit 1
 
   upload-sarif:
+    name: Upload trivy SARIF to code scanning
+    # Only runs when docker-dev succeeded (on-success ran). A job that needs a
+    # skipped job is itself skipped, so a failed/cancelled docker-dev run never
+    # reaches the upload.
+    needs: [on-success]
     permissions:
       contents: read
+      # actions:read is required for download-artifact to fetch an artifact from
+      # a different workflow run via run-id.
+      actions: read
       security-events: write
     runs-on: ubuntu-latest
     steps:
-      - name: Download vulnerability report artifacts
+      -
+        name: Download vulnerability report artifact
+        id: download
+        # Cross-run download (run-id points at the docker-dev run) requires an
+        # explicit github-token and repository, otherwise it fails as
+        # "Artifact not found".
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          run-id: "${{ github.event.workflow_run.run_id }}"
-          pattern: 'trivy-image-report'
+          name: trivy-image-report
           path: sarif/
-      - name: Upload trivy result to GHAS
-        if: ${{ inputs.push }}
+          run-id: ${{ github.event.workflow_run.run_id }}
+          repository: ${{ github.repository }}
+          github-token: ${{ github.token }}
+        continue-on-error: true
+      -
+        name: Upload trivy result to GHAS
+        # Skip cleanly when no artifact was produced (e.g. docker-dev built but
+        # uploaded nothing) instead of failing the run.
+        if: ${{ steps.download.outcome == 'success' }}
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ github.token }}
           sarif_file: sarif/
           category: trivy-docker
-        continue-on-error: true
