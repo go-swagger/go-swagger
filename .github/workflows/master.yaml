@@ -21,7 +21,18 @@ on:
 jobs:
   on-success:
     name: Ensure triggering workflow was successful
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Trust gate: docker-dev builds and PUSHES signed images using registry
+    # secrets, so it must only run for trusted same-repo triggers. The
+    # workflow_run "branches" filter above matches head_branch, which a fork can
+    # spoof (e.g. a fork branch literally named "master"). Requiring
+    # head_repository to be this repo closes that bypass: a fork PR's
+    # head_repository is the fork, while same-repo pushes and same-repo
+    # prepare-release PRs still pass.
+    if: >-
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      }}
     runs-on: ubuntu-latest
     steps:
       - run: |

@@ -5,8 +5,6 @@ permissions: read-all
 # description: |
 #   A fast vulnerability scan on the repo that effectively supplements ossf scorecard and codesql
 #   and may run every day.
-#
-# TODO(fredbi): we may supplement this analysis with snyk (to be experimented with) (requires a token).
 
 on:
   branch_protection_rule:
