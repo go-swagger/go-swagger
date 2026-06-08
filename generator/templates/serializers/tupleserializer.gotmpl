@@ -1,6 +1,6 @@
 {{ define "tupleSerializer" }}
 // UnmarshalJSON unmarshals this tuple type from a JSON array
-func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
+func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
   // stage 1, get the array but just the array
   var stage1 []json.RawMessage
   buf := bytes.NewBuffer(raw)
@@ -16,14 +16,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   var lastIndex int
   {{ end }}
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
-    var data{{ pascalize .Name }} {{ template "dereffedSchemaType" . }}
+    var data{{ .GoName }} {{ template "dereffedSchemaType" . }}
     buf = bytes.NewBuffer(stage1[{{ $idx }}])
     dec := json.NewDecoder(buf)
     dec.UseNumber()
-    if err := dec.Decode(&data{{ pascalize .Name }}); err != nil {
+    if err := dec.Decode(&data{{ .GoName }}); err != nil {
       return err
     }
-    {{ .ReceiverName }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = {{ if .IsNullable }}&{{ end }}data{{ pascalize .Name }}
+    {{ .ReceiverName }}.{{ if .IsExported }}{{ .GoName }}{{ else }}{{ camelize .Name }}{{ end }} = {{ if .IsNullable }}&{{ end }}data{{ .GoName }}
     {{ if $.AdditionalItems }}
     lastIndex = {{ $idx }}
     {{ end }}
@@ -41,7 +41,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
         return err
       }
       {{- with .AdditionalItems }}
-        {{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = append({{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }}, toadd)
+        {{ $.ValueExpression }}.{{- if .IsExported }}{{ .GoName }}{{ else }}{{ camelize .Name }}{{ end }} = append({{ $.ValueExpression }}.{{- if .IsExported }}{{ .GoName }}{{ else }}{{ camelize .Name }}{{ end }}, toadd)
       {{- end }}
     }
   }
@@ -50,14 +50,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
 }
 
 // MarshalJSON marshals this tuple type into a JSON array
-func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) {
   data := []any{
   {{ range .Properties -}}
-    {{.ReceiverName}}.{{ pascalize .Name }},
+    {{.ReceiverName}}.{{ .GoName }},
   {{- end }}
   }
   {{ with .AdditionalItems }}
-  for _, v := range {{ $.ValueExpression }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} {
+  for _, v := range {{ $.ValueExpression }}.{{ if .IsExported }}{{ .GoName }}{{ else }}{{ camelize .Name }}{{ end }} {
     data = append(data, v)
   }
   {{- end }}

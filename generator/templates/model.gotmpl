@@ -1,7 +1,7 @@
 {{ template "header" . }}
 {{- if .IncludeModel }}
   {{- if .IsExported }}
-// {{ pascalize .Name }} {{ template "docstring" . }}
+// {{ .GoName }} {{ template "docstring" . }}
     {{- template "annotations" . }}
   {{- end }}
   {{- template "schema" . }}
@@ -10,7 +10,7 @@
 {{ range .ExtraSchemas }}
   {{- if .IncludeModel }}
     {{- if .IsExported }}
-// {{ pascalize .Name }} {{ template "docstring" . }}
+// {{ .GoName }} {{ template "docstring" . }}
       {{- template "annotations" . }}
     {{- end }}
     {{- template "schema" . }}

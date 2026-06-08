@@ -1,6 +1,6 @@
 {{ define "hasDiscriminatedSerializer" }}
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
-func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
+func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
   var data {{ template "withoutBaseTypeBody" . }}
   buf := bytes.NewBuffer(raw)
   dec := json.NewDecoder(buf)
@@ -25,16 +25,16 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
       {{ range .Properties }}
         {{- if or .IsBaseType (not .IsExported) }}
           {{- if not .Required }}
-  var allOf{{ pascalize .Name }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
-  if string(data.{{ pascalize .Name }}) != "null" {
-    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+  var allOf{{ .GoName }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
+  if string(data.{{ .GoName }}) != "null" {
+    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ .GoName }}), runtime.JSONConsumer())
     if err != nil && !stderrors.Is(err, io.EOF) {
       return err
     }
-    allOf{{ pascalize .Name }} = {{ camelize .Name }}
+    allOf{{ .GoName }} = {{ camelize .Name }}
   }
           {{- else }}
-  allOf{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+  allOf{{ .GoName }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ .GoName }}), runtime.JSONConsumer())
   if err != nil && !stderrors.Is(err, io.EOF) {
     return err
   }
@@ -46,16 +46,16 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ range .Properties }}
     {{- if or .IsBaseType (not .IsExported) }}
       {{- if not .Required }}
-  var prop{{ pascalize .Name }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
-  if string(data.{{ pascalize .Name }}) != "null" {
-    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+  var prop{{ .GoName }} {{ if .IsArray }}[]{{ pascalize .Items.GoType }}{{ else }}{{ pascalize .GoType }}{{ end }}
+  if string(data.{{ .GoName }}) != "null" {
+    {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ .GoName }}), runtime.JSONConsumer())
     if err != nil && !stderrors.Is(err, io.EOF) {
       return err
     }
-    prop{{ pascalize .Name }} = {{ camelize .Name }}
+    prop{{ .GoName }} = {{ camelize .Name }}
   }
       {{- else }}
-  prop{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+  prop{{ .GoName }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ .GoName }}), runtime.JSONConsumer())
   if err != nil && !stderrors.Is(err, io.EOF) {
     return err
   }
@@ -63,30 +63,30 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{- end }}
   {{- end }}
 
-  var result {{ pascalize .Name }}
+  var result {{ .GoName }}
   {{ range $_, $parent := .AllOf }}
     {{- if $parent.IsAnonymous }}
       {{- if $parent.IsBaseType }}
         {{ range $idx, $val := $parent.Properties }}
           {{- if ne $parent.DiscriminatorField $val.Name }}
             {{- if $val.IsExported }}
-  result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
+  result.{{ camelize $val.Name }}Field = base.{{ $val.GoName }}
             {{- else }}
-  result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+  result.{{ camelize $val.Name }}Field = allOf{{ $val.GoName }}
             {{- end }}
           {{- else }}
-  if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
+  if base.{{ $val.GoName }} != result.{{ $val.GoName }}() {
     /* Not the type we're looking for. */
-    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
+    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ $val.GoName }})
   }
           {{- end }}
         {{- end }}
       {{- else }}
         {{ range $idx, $val := $parent.Properties }}
           {{- if $val.IsBaseType }}
-  result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+  result.{{ camelize $val.Name }}Field = allOf{{ $val.GoName }}
           {{- else }}
-  result.{{ pascalize $val.Name }} = data.{{ pascalize $val.Name }}
+  result.{{ $val.GoName }} = data.{{ $val.GoName }}
           {{- end }}
         {{- end }}
       {{- end }}
@@ -95,14 +95,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
         {{ range $idx, $val := $parent.Properties }}
           {{- if ne $parent.DiscriminatorField $val.Name }}
             {{- if $val.IsExported }}
-  result.{{ camelize $val.Name }}Field = base.{{ pascalize $val.Name }}
+  result.{{ camelize $val.Name }}Field = base.{{ $val.GoName }}
             {{ else }}
-  result.{{ camelize $val.Name }}Field = allOf{{ pascalize $val.Name }}
+  result.{{ camelize $val.Name }}Field = allOf{{ $val.GoName }}
             {{- end }}
           {{- else }}
-  if base.{{ pascalize $val.Name }} != result.{{ pascalize $val.Name }}() {
+  if base.{{ $val.GoName }} != result.{{ $val.GoName }}() {
     /* Not the type we're looking for. */
-    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ pascalize $val.Name }})
+    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ $val.GoName }})
   }
           {{- end }}
         {{- end }}
@@ -113,7 +113,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{- end }}
   {{ range .Properties }}
   // {{ .Name }}
-  result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }} = {{ if .IsBaseType }}prop{{ pascalize .Name }}{{ else }}data.{{ pascalize .Name}}{{ end }}
+  result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ .GoName }}{{ end }} = {{ if .IsBaseType }}prop{{ .GoName }}{{ else }}data.{{ .GoName}}{{ end }}
   {{ end }}
   *{{ .ReceiverName }} = result
 
@@ -124,7 +124,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     return err
   }
     {{ range .Properties }}
-  delete(rawProps, {{ printf "%q" .Name }})
+  delete(rawProps, {{ printf "%q" .OriginalName }})
     {{- end }}
     {{ if .AdditionalProperties }}
   if len(rawProps) > 0 {
@@ -146,7 +146,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
 }
 
 // MarshalJSON marshals this object with a polymorphic type to a JSON structure
-func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) { {{ $receiverName := .ReceiverName }}
+func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) { {{ $receiverName := .ReceiverName }}
 	var b1, b2, b3 []byte
 	var err error
 	b1, err = json.Marshal({{ template "withoutBaseTypeBodyOrNonExported" . }})

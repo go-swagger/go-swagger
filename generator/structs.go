@@ -61,8 +61,9 @@ type GenSchema struct {
 	resolvedType
 	sharedValidations
 
-	Example                    string
-	OriginalName               string
+	Example                    string // OriginalName is the wire/JSON property key from the spec.
+	OriginalName               string // Name is the resolved logical name (may come from x-go-name via goName()).
+	GoName                     string // GoName is the final exported Go identifier used in generated code.
 	Name                       string
 	Suffix                     string
 	Path                       string
@@ -299,6 +300,7 @@ type GenHeader struct {
 	IndexVar     string
 
 	ID              string
+	GoName          string // GoName is the exported Go identifier used in generated code.
 	Name            string
 	Path            string
 	ValueExpression string
@@ -356,6 +358,7 @@ type GenParameter struct {
 	sharedValidations
 
 	ID              string
+	GoName          string // GoName is the exported Go identifier used in generated code.
 	Name            string
 	ModelsPackage   string
 	Path            string

@@ -146,6 +146,7 @@ func TestGenerateModel_SchemaField(t *testing.T) {
 
 	var gmp GenSchema
 	gmp.Name = "some name"
+	gmp.GoName = exportGoName("some name", false, opts.LanguageOpts.Mangler)
 	gmp.OriginalName = "some name"
 	gmp.resolvedType = resolvedType{GoType: "string", IsPrimitive: true, IsEmptyOmitted: true}
 	gmp.Title = "The title of the property"
@@ -267,6 +268,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 			continue
 		}
 		val.Name = "theType"
+		val.GoName = exportGoName("theType", false, opts.LanguageOpts.Mangler)
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
 			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
@@ -403,6 +405,80 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	assertInCode(t, "type NotaWithMetaAnon struct {", res)
 	assertInCode(t, "Comment *string `json:\"comment\"`", res)
 	assertInCode(t, "Count int32 `json:\"count,omitempty\"`", res)
+}
+
+func TestGenerateModel_XGoNamePreserveExplicitCasing(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/3319/3319.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	const k = "response"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ff, err := opts.LanguageOpts.FormatContent("response.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, `NoTls *bool`, res)
+	assertNotInCode(t, `NoTLS *bool`, res)
+	assertInCode(t, `json:"backendTlsSkipVerify`, res)
+	assertInCode(t, `VmId string`, res)
+	assertInCode(t, `json:"vmId`, res)
+	assertInCode(t, `ID int64`, res) // or int32, depending on format
+	assertNotInCode(t, `VMID string`, res)
+	assertInCode(t, `validateNoTls`, res)
+	assertNotInCode(t, `validateNoTLS`, res)
+	// implicit property without x-go-name still uses normal initialism mangling
+	assertInCode(t, `PlainTLSFlag bool`, res)
+	assertInCode(t, `json:"plain_tls_flag`, res)
+}
+
+func TestGenParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
+	b, err := methodPathOpBuilder("post", "/test", "../fixtures/bugs/3319/3319.yaml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_test_parameters.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, `NoTls *bool`, res)
+	assertNotInCode(t, `NoTLS *bool`, res)
+	assertInCode(t, `bindNoTls(`, res)
+	assertNotInCode(t, `bindNoTLS(`, res)
+}
+
+func TestGenClientParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
+	b, err := methodPathOpBuilder("post", "/test", "../fixtures/bugs/3319/3319.yaml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+	ff, err := opts.LanguageOpts.FormatContent("post_test_parameters.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ff)
+	assertInCode(t, `NoTls *bool`, res)
+	assertNotInCode(t, `NoTLS *bool`, res)
+	assertInCode(t, `WithNoTls(`, res)
+	assertNotInCode(t, `WithNoTLS(`, res)
 }
 
 func TestGenerateModel_RunParameters(t *testing.T) {

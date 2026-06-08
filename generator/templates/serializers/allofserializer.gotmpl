@@ -1,39 +1,39 @@
 {{ define "allOfSerializer" }}
   {{- $receiverName := .ReceiverName }}
 // UnmarshalJSON unmarshals this object from a JSON structure
-func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error {
+func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
   {{- range .AllOf }}
-    // {{ pascalize .Name }}
+    // {{ .GoName }}
     {{- if and .IsAnonymous .Properties }}{{/* unmarshalling properties in all of anonymous objects */}}
-      {{- $part :=  pascalize .Name }}
+      {{- $part :=  .GoName }}
       var data{{ $part }} struct {
       {{- range .Properties }}
         {{- if not .IsBaseType }}
           {{- if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{- else }}
-            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+            {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
           {{- end }}
         {{ else }}
           {{ if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{ else }}
-            {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+            {{ .GoName}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
           {{ end }}
         {{ end }}
       {{- end }}
       {{- if .HasAdditionalProperties }}
-        {{ pascalize .AdditionalProperties.Name }}{{ if not .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+        {{ .AdditionalProperties.GoName }}{{ if not .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
       {{- end }}
       {{- if .AdditionalItems }}
-        {{ pascalize .AdditionalItems.Name }}{{ if or (not .IsExported) .IsSubType }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+        {{ .AdditionalItems.GoName }}{{ if or (not .IsExported) .IsSubType }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
       {{- end }}
   }
   if err := jsonutils.ReadJSON(raw, &data{{ $part }}); err != nil {
     return err
   }
       {{ range .Properties }}
-  {{ $receiverName }}.{{ pascalize .Name }} = data{{ $part }}.{{ pascalize .Name }}
+  {{ $receiverName }}.{{ .GoName }} = data{{ $part }}.{{ .GoName }}
       {{ end }}
     {{- else if .IsAnonymous }}
   var {{ varname .Name }} {{ .GoType }}
@@ -52,20 +52,20 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ end }}
   {{- if .Properties }}
     // now for regular properties
-    {{- $part :=  pascalize .Name }}
+    {{- $part :=  .GoName }}
     var props{{ $part }} struct {
     {{- range .Properties }}
       {{- if not .IsBaseType }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+          {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
         {{- end }}
       {{- else }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+          {{ .GoName}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
         {{- end }}
       {{- end }}
     {{ end }}
@@ -74,7 +74,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
        return err
     }
     {{- range .Properties }}
-      {{ $receiverName }}.{{ pascalize .Name }} = props{{ $part }}.{{ pascalize .Name }}
+      {{ $receiverName }}.{{ .GoName }} = props{{ $part }}.{{ .GoName }}
     {{ end }}
   {{- end }}
   {{ if .HasAdditionalProperties }}
@@ -87,37 +87,37 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
 }
 
 // MarshalJSON marshals this object to a JSON structure
-func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
+func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) {
   _parts := make([][]byte, 0, {{ len .AllOf }})
   {{ range .AllOf }}
     {{- if and .IsAnonymous .Properties }}
-      {{- $part :=  pascalize .Name }}
+      {{- $part :=  .GoName }}
   var data{{ $part }} struct {
       {{- range .Properties }}
         {{- if not .IsBaseType }}
           {{- if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{- else }}
-            {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+            {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
           {{- end }}
         {{- else }}
           {{- if not $.IsExported }}
             {{ template "privstructfield" . }}
           {{- else }}
-            {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+            {{ .GoName}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
             {{- end }}
         {{- end }}
       {{ end }}
       {{- if .HasAdditionalProperties }}
-        {{ pascalize .AdditionalProperties.Name }}{{ if not .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+        {{ .AdditionalProperties.GoName }}{{ if not .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
       {{- end }}
       {{- if .AdditionalItems }}
-        {{ pascalize .AdditionalItems.Name }}{{ if or (not .IsExported) .IsSubType }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+        {{ .AdditionalItems.GoName }}{{ if or (not .IsExported) .IsSubType }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
       {{- end }}
   }
 
       {{ range .Properties }}
-  data{{ $part }}.{{ pascalize .Name }} = {{ $receiverName }}.{{ pascalize .Name }}
+  data{{ $part }}.{{ .GoName }} = {{ $receiverName }}.{{ .GoName }}
       {{ end }}
 
   jsonData{{ $part }}, err{{ $part }} := jsonutils.WriteJSON(data{{ $part }})
@@ -144,26 +144,26 @@ func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   {{- if .Properties }}
 
     // now for regular properties
-    {{- $part :=  pascalize .Name }}
+    {{- $part :=  .GoName }}
     var props{{ $part }} struct {
     {{- range .Properties }}
       {{- if not .IsBaseType }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+          {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
         {{- end }}
       {{- else }}
         {{- if not $.IsExported }}
           {{ template "privstructfield" . }}
         {{- else }}
-          {{ pascalize .Name}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+          {{ .GoName}} json.RawMessage `json:"{{ .OriginalName }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
         {{- end }}
       {{- end }}
     {{ end }}
     }
     {{- range .Properties }}
-    props{{ $part }}.{{ pascalize .Name }} = {{ $receiverName }}.{{ pascalize .Name }}
+    props{{ $part }}.{{ .GoName }} = {{ $receiverName }}.{{ .GoName }}
     {{ end }}
     jsonDataProps{{ $part }}, err{{ $part }} := jsonutils.WriteJSON(props{{ $part }})
     if err{{ $part }} != nil {

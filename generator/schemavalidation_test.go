@@ -36,7 +36,7 @@ func TestSchemaValidation_RequiredProps(t *testing.T) {
 
 		res := string(formatted)
 		assertInCode(t, k+") Validate(formats", res)
-		assertInCode(t, "validate"+opts.LanguageOpts.Mangler.ToGoName(p.Name), res)
+		assertInCode(t, "validate"+p.GoName, res)
 		assertInCode(t, "err := validate.Required", res)
 		assertInCode(t, "errors.CompositeValidationError(res...)", res)
 	}

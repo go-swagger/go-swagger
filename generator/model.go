@@ -546,7 +546,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + mod + ")"
 	}
 	pg.IndexVar = indexVar
-	pg.ValueExpr = sg.ValueExpr + "." + sg.pascalize(sg.GoName()) + "Items[" + indexVar + "]"
+	pg.ValueExpr = sg.ValueExpr + "." + sg.GenSchema.GoName + "Items[" + indexVar + "]"
 	pg.Schema = spec.Schema{}
 	if schema != nil {
 		pg.Schema = *schema
@@ -582,7 +582,7 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 		pg.Path = pg.Path + "+\".\"+" + fmt.Sprintf("%q", name)
 	}
 	pg.Name = name
-	pg.ValueExpr = pg.ValueExpr + "." + sg.pascalize(goName(&schema, name))
+	pg.ValueExpr = pg.ValueExpr + "." + schemaGoName(&schema, name, sg.mangler)
 	pg.Schema = schema
 	pg.IsProperty = true
 	if slices.Contains(sg.Schema.Required, name) {
@@ -957,7 +957,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 		}
 		if comprop.GenSchema.IsMap && comprop.GenSchema.HasAdditionalProperties && comprop.GenSchema.AdditionalProperties != nil && !comprop.GenSchema.IsInterface {
 			// the anonymous branch is a map for AdditionalProperties: rewrite value expression
-			comprop.GenSchema.ValueExpression = comprop.GenSchema.ValueExpression + "." + comprop.Name
+			comprop.GenSchema.ValueExpression = comprop.GenSchema.ValueExpression + "." + comprop.GenSchema.GoName
 			comprop.GenSchema.AdditionalProperties.ValueExpression = comprop.GenSchema.ValueExpression + "[" + comprop.GenSchema.AdditionalProperties.KeyVar + "]"
 		}
 
@@ -1068,11 +1068,11 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			comprop.GenSchema.Required = true
 			comprop.GenSchema.HasValidations = true
 
-			comprop.GenSchema.ValueExpression = sg.GenSchema.ValueExpression + "." + sg.mangler.ToGoName(sg.GenSchema.Name) + "[" + comprop.KeyVar + "]"
+			comprop.GenSchema.ValueExpression = sg.GenSchema.ValueExpression + "." + sg.GenSchema.GoName + "[" + comprop.KeyVar + "]"
 
 			sg.GenSchema.AdditionalProperties = &comprop.GenSchema
 			sg.GenSchema.HasAdditionalProperties = true
-			sg.GenSchema.ValueExpression += "." + sg.mangler.ToGoName(sg.GenSchema.Name)
+			sg.GenSchema.ValueExpression += "." + sg.GenSchema.GoName
 
 			sg.MergeResult(comprop, false)
 
@@ -1080,7 +1080,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 		}
 
 		// this is a regular named schema for AdditionalProperties
-		sg.GenSchema.ValueExpression += "." + sg.mangler.ToGoName(sg.GenSchema.Name)
+		sg.GenSchema.ValueExpression += "." + sg.GenSchema.GoName
 		comprop := sg.NewAdditionalProperty(*addp.Schema)
 		d := sg.TypeResolver.Doc
 		asch, err := analysis.Schema(analysis.SchemaOpts{
@@ -1337,6 +1337,7 @@ func (sg *schemaGenContext) buildItems() error {
 			sg.MergeResult(elProp, false)
 
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
+			elProp.GenSchema.GoName = exportGoName("P"+strconv.Itoa(i), false, sg.mangler)
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			sg.GenSchema.IsTuple = true
 		}
@@ -1735,7 +1736,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.Path = sg.Path
 	sg.GenSchema.IndexVar = sg.IndexVar
 	sg.GenSchema.Location = body
-	sg.GenSchema.ValueExpression = sg.ValueExpr
 	sg.GenSchema.KeyVar = sg.KeyVar
 	sg.GenSchema.OriginalName = sg.Name
 	sg.GenSchema.Name = sg.GoName()
@@ -1753,6 +1753,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.WantsRootedErrorPath = sg.WantsRootedErrorPath
 	sg.GenSchema.IsElem = sg.IsElem
 	sg.GenSchema.IsProperty = sg.IsProperty
+	sg.GenSchema.GoName = schemaGoName(&sg.Schema, sg.Name, sg.mangler)
+	sg.GenSchema.ValueExpression = sg.ValueExpr
 
 	var err error
 	returns, err := sg.shortCircuitNamedRef()

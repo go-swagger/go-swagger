@@ -22,7 +22,7 @@ func New{{ pascalize .Name }}({{ if eq .Code -1 }}code int{{ end }}{{ if .Schema
     {{- end }}
     {{ range .Headers }}
       {{- if .HasDefault }}
-    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
+    {{ .ID }}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
       {{- end }}
     {{- end }}
     {{- if .Schema }}
@@ -56,7 +56,7 @@ type {{ pascalize .Name }} struct {
      {{- end }}
   */
     {{- end }}
-  {{ pascalize .Name }} {{ .GoType }}
+  {{ .ID }} {{ .GoType }}
   {{- end }}
   {{- if .Schema }}
 
@@ -150,16 +150,16 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   if err != nil {
     return errors.InvalidType({{ .Path }}, "header", "{{ .GoType }}", hdr{{ pascalize .Name }})
   }
-  {{ .ReceiverName }}.{{ pascalize .Name }} = val{{ camelize .Name }}
+  {{ .ReceiverName }}.{{ .ID }} = val{{ camelize .Name }}
     {{- else if .Child }}
 
   // binding header items for {{ .Name }}
-  val{{ pascalize .Name }}, err := {{ .ReceiverName }}.bindHeader{{ pascalize .Name }}(hdr{{ pascalize .Name }}, formats)
+  val{{ pascalize .Name }}, err := {{ .ReceiverName }}.bindHeader{{ .ID }}(hdr{{ pascalize .Name }}, formats)
   if err != nil {
     return err
   }
 
-  {{ .ReceiverName }}.{{ pascalize .Name }} = val{{ pascalize .Name }}
+  {{ .ReceiverName }}.{{ .ID }} = val{{ pascalize .Name }}
     {{- else if .IsCustomFormatter }}
   val{{ camelize .Name }}, err := formats.Parse({{ printf "%q" .SwaggerFormat }}, hdr{{ pascalize .Name }})
   if err != nil {
@@ -167,15 +167,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   }
       {{- if .IsNullable }}
   v := (val{{ camelize .Name }}.({{ .GoType }}))
-  {{ .ReceiverName }}.{{ pascalize .Name }} = &v
+  {{ .ReceiverName }}.{{ .ID }} = &v
       {{- else }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = *(val{{ camelize .Name }}.(*{{ .GoType }}))
+  {{ .ReceiverName }}.{{ .ID }} = *(val{{ camelize .Name }}.(*{{ .GoType }}))
       {{- end }}
     {{- else }}
       {{- if eq .GoType "string" }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = hdr{{ pascalize .Name }}
+  {{ .ReceiverName }}.{{ .ID }} = hdr{{ pascalize .Name }}
       {{- else }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ .GoType }}(hdr{{ pascalize .Name }})
+  {{ .ReceiverName }}.{{ .ID }} = {{ .GoType }}(hdr{{ pascalize .Name }})
       {{- end }}
     {{- end }}
   }
@@ -209,7 +209,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
     {{- if .Child }}
 
 // bindHeader{{ pascalize $.Name }} binds the response header {{ .Name }}
-func ({{ .ReceiverName }} *{{ pascalize $.Name }}) bindHeader{{ pascalize .Name }}(hdr string, formats strfmt.Registry) ({{ .GoType }}, error) {
+func ({{ .ReceiverName }} *{{ pascalize $.Name }}) bindHeader{{ .ID }}(hdr string, formats strfmt.Registry) ({{ .GoType }}, error) {
   {{ varname .Child.ValueExpression }}V := hdr
 
   {{ template "sliceclientheaderbinder" . }}

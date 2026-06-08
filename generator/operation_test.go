@@ -82,6 +82,33 @@ func TestMakeResponseHeader(t *testing.T) {
 	assert.EqualT(t, "X-Rate-Limit", gh.Name)
 }
 
+func TestMakeHeader_XGoNamePreserveExplicitCasing(t *testing.T) {
+	b, err := opBuilder("getTasks", "")
+	require.NoError(t, err)
+
+	hdr := spec.Header{}
+	hdr.Typed("boolean", "")
+	hdr.AddExtension(xGoName, "NoTls")
+
+	gh, er := b.MakeHeader("o", "X-Tls-Skip-Verify", hdr)
+	require.NoError(t, er)
+	assert.EqualT(t, "NoTls", gh.ID)
+	assert.EqualT(t, "o.NoTls", gh.ValueExpression)
+}
+
+func TestMakeHeader_XGoNameInvalidTypeFallsBack(t *testing.T) {
+	b, err := opBuilder("getTasks", "")
+	require.NoError(t, err)
+
+	hdr := spec.Header{}
+	hdr.Typed("boolean", "")
+	hdr.AddExtension(xGoName, []any{"bad"})
+
+	gh, er := b.MakeHeader("o", "X-Tls-Skip-Verify", hdr)
+	require.NoError(t, er)
+	assert.EqualT(t, "XTLSSkipVerify", gh.ID)
+}
+
 func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	require.NoError(t, err)
@@ -1446,7 +1473,8 @@ func TestParamMappings(t *testing.T) {
 	opts := opts()
 	builder := codeGenOpBuilder{GenOpts: opts}
 	// Test deconfliction of duplicate param names across param locations
-	mappings, _, _ := builder.paramMappings(testInvalidParams())
+	mappings, _, _, err := builder.paramMappings(testInvalidParams())
+	require.NoError(t, err)
 	require.MapContainsT(t, mappings, "query")
 	require.MapContainsT(t, mappings, "path")
 	require.MapContainsT(t, mappings, "body")

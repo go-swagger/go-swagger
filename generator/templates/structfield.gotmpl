@@ -3,7 +3,7 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
   {{- end}}
-{{ pascalize .Name}} {{ template "schemaType" . }} {{ .PrintTags }}
+{{ .GoName }} {{ template "schemaType" . }} {{ .PrintTags }}
 {{ end }}
 
 {{- define "tuplefield" }}
@@ -11,7 +11,7 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
 {{ end }}
-{{- pascalize .Name}} {{ template "schemaType" . }} `json:"-"
+{{- .GoName }} {{ template "schemaType" . }} `json:"-"
 {{- if .CustomTag }} {{ .CustomTag }}{{ end }}` // custom serializer
 {{ end }}
 
@@ -20,16 +20,16 @@
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" .}}
   {{- end }}
-{{ pascalize .Name}}() {{ template "schemaType" . }}
-Set{{ pascalize .Name}}({{ template "schemaType" . }})
+{{ .GoName }}() {{ template "schemaType" . }}
+Set{{ .GoName }}({{ template "schemaType" . }})
 {{ end }}
 {{ define "tuplefieldIface" }}
   {{- if not $.IsBaseType -}}
     // {{ template "docstring" . }}
     {{- template "propertyValidationDocString" . }}
 {{ end }}
-{{- pascalize .Name}}() {{ template "schemaType" . }}
-Set{{ pascalize .Name}}({{ template "schemaType" . }})
+{{- .GoName }}() {{ template "schemaType" . }}
+Set{{ .GoName }}({{ template "schemaType" . }})
 {{ end }}
 
 {{- define "privstructfield" }}
