@@ -8,7 +8,7 @@
             return err, false
         }
         {{- /* reciever by convention is m for CLI */}}
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
+        m.{{ .GoName }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
     {{- else if or (eq .GoType "strfmt.DateTime") (eq .GoType "strfmt.ObjectId") (eq .GoType "strfmt.UUID" ) }} {{/*Get flag value as string, then parse it*/}}
         {{/*Many of the strfmt types can be added here*/}}
         {{ template "flagnamevar" . }}
@@ -20,7 +20,7 @@
 		if err := {{ flagValueVar .Name }}.UnmarshalText([]byte({{ flagValueVar .Name }}Str)); err != nil{
             return err, false
         }
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
+        m.{{ .GoName }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
     {{- else }}
         // warning: primitive {{.Name}} {{.GoType }} is not supported by go-swagger cli yet
     {{- end }}
@@ -34,7 +34,7 @@
             return err, false
         }
         {{- /* receiver by convention is m for CLI */}}
-        m.{{ pascalize .Name }} = {{ flagValueVar .Name }}
+        m.{{ .GoName }} = {{ flagValueVar .Name }}
     {{- else if or (eq .GoType "[]strfmt.DateTime") (eq .GoType "[]strfmt.ObjectId") (eq .GoType "[]strfmt.UUID") }} {{/*Get flag value as string, then parse it*/}}
         {{ template "flagnamevar" . }}
         {{ flagValueVar .Name }}Str, err := cmd.Flags().GetStringSlice({{ flagNameVar .Name }})
@@ -48,7 +48,7 @@
                 return err, false
             }
         }
-        m.{{ pascalize .Name }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
+        m.{{ .GoName }} = {{- if .IsNullable }}&{{- end }}{{ flagValueVar .Name }}
     {{- else }}
         // warning: array {{.Name}} {{.GoType }} is not supported by go-swagger cli yet
     {{- end }}

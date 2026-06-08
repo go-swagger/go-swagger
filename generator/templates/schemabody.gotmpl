@@ -23,7 +23,7 @@
           // {{ template "docstring" .AdditionalProperties }}
           {{- template "propertyValidationDocString" .AdditionalProperties}}
           {{- if and .IsExported (not .IsSubType) }}
-            {{ pascalize .AdditionalProperties.Name }}
+            {{ .AdditionalProperties.GoName }}
           {{- else if or (not .AdditionalProperties.IsExported) (.AdditionalProperties.IsBaseType) }}
             {{ camelize .AdditionalProperties.Name }}Field
           {{- else }}
@@ -35,7 +35,7 @@
         // {{ template "docstring" .AdditionalItems }}
         {{- template "propertyValidationDocString" .AdditionalItems}}
         {{- if and .IsExported (not $.IsSubType) }}{{/* TODO(fred): make sure inherited AdditionalItems are camelized */}}
-          {{ pascalize .AdditionalItems.Name }}
+          {{ .AdditionalItems.GoName }}
         {{- else }}
           {{ .AdditionalItems.Name }}
         {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
@@ -53,16 +53,16 @@
     // {{ template "docstring" .AdditionalProperties }}
     {{- template "propertyValidationDocString" .AdditionalProperties}}
       {{- if and .IsExported (not .IsSubType) }}
-        {{ pascalize .AdditionalProperties.Name }}
+        {{ .AdditionalProperties.GoName }}
       {{- else }}
-      {{ pascalize .AdditionalProperties.Name }}Field
+      {{ .AdditionalProperties.GoName }}Field
       {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
     {{ end }}
   {{- end }}
   {{- if .AdditionalItems }}
     // {{ template "docstring" .AdditionalItems }}
     {{- template "propertyValidationDocString" .AdditionalItems}}
-    {{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+    {{ if and .IsExported (not .IsSubType) }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.GoName }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }
 {{- end }}
@@ -88,7 +88,7 @@
       {{- if .HasAdditionalProperties }}
         {{- if .AdditionalProperties }}
           {{- if .IsExported }}
-            {{ pascalize .AdditionalProperties.Name }}
+            {{ .AdditionalProperties.GoName }}
           {{- else }}
             {{ .AdditionalProperties.Name }}
           {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
@@ -96,7 +96,7 @@
       {{- end }}
       {{- if .AdditionalItems }}
         {{- if .IsExported }}
-          {{ pascalize .AdditionalItems.Name }}
+          {{ .AdditionalItems.GoName }}
         {{- else }}
           {{ .AdditionalItems.Name }}
         {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
@@ -125,17 +125,17 @@
   {{- if .HasAdditionalProperties }}
     {{- if .AdditionalProperties }}
       {{- if and .IsExported }}
-        {{ pascalize .AdditionalProperties.Name }}
+        {{ .AdditionalProperties.GoName }}
       {{- else }}
-      {{ pascalize .AdditionalProperties.Name }}Field
+      {{ .AdditionalProperties.GoName }}Field
       {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
     {{- end }}
   {{- end }}
   {{- if .AdditionalItems }}
     {{- if and .IsExported (not .IsSubType) }}
-      {{ pascalize .AdditionalItems.Name }}
+      {{ .AdditionalItems.GoName }}
     {{- else }}
-      {{ pascalize .AdditionalItems.Name }}Field
+      {{ .AdditionalItems.GoName }}Field
     {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{- end }}
 }
@@ -145,18 +145,18 @@
   {{ range .AllOf }}
   {{ if or (and .IsBaseType .IsExported) .IsAnonymous }}{{ range .Properties }}
   {{ if not .IsExported }}{{ if .IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
-  {{ end }}{{ if .HasAdditionalProperties }}{{ if .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}
-  {{ if .AdditionalItems }}{{ if and .IsExported }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+  {{ end }}{{ if .HasAdditionalProperties }}{{ if .IsExported }}{{ .AdditionalProperties.GoName }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`  {{end}}
+  {{ if .AdditionalItems }}{{ if and .IsExported }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
   {{ else }}
   {{ if not (and .IsBaseType .IsExported) }}{{ .GoType }}{{ end }}{{ end }}
   {{ end }}
   {{range .Properties}}{{ if .IsBaseType }}
-  {{ if not $.IsExported }}{{ else }}{{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`{{ end}}
+  {{ if not $.IsExported }}{{ else }}{{ .GoName}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`{{ end}}
   {{end}}{{ end }}
-  {{ if .HasAdditionalProperties }}{{ if and .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ pascalize .AdditionalProperties.Name }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+  {{ if .HasAdditionalProperties }}{{ if and .IsExported }}{{ .AdditionalProperties.GoName }}{{ else }}{{ .AdditionalProperties.GoName }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}
-  {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ pascalize .AdditionalItems.Name }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+  {{ if .AdditionalItems }}{{ if and .IsExported (not .IsSubType) }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.GoName }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }
 {{- end }}
@@ -172,16 +172,16 @@
             {{template "structfield" . }}
           {{ end }}
         {{ else }}
-          {{ pascalize .Name }} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+          {{ .GoName }} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
         {{ end}}
       {{ end }}
       {{ if .HasAdditionalProperties }}
         {{ if .AdditionalProperties }}
-          {{ if .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+          {{ if .IsExported }}{{ .AdditionalProperties.GoName }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
         {{end}}
       {{ end }}
       {{ if .AdditionalItems }}
-        {{ if .IsExported }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+        {{ if .IsExported }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
       {{ end }}
     {{ else }}
       {{ if not (and .IsBaseType .IsExported) }}
@@ -194,14 +194,14 @@
       {{ if not $.IsExported }}
         {{template "privstructfield" . }}
       {{ else }}
-        {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+        {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
       {{ end}}
     {{ else }}
-      {{ pascalize .Name }} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+      {{ .GoName }} json.RawMessage `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
     {{end}}
   {{ end }}
   {{ if .HasAdditionalProperties }}
-    {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+    {{ .AdditionalProperties.GoName }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}
 }
 {{- end }}
@@ -220,11 +220,11 @@
       {{ end }}
       {{ if .HasAdditionalProperties }}
         {{ if .AdditionalProperties }}
-          {{ if .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+          {{ if .IsExported }}{{ .AdditionalProperties.GoName }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
         {{end}}
       {{ end }}
       {{ if .AdditionalItems }}
-        {{ if .IsExported }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+        {{ if .IsExported }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
       {{ end }}
       {{ else }}
         {{ if not (and .IsBaseType .IsExported) }}
@@ -237,18 +237,18 @@
       {{ if not .IsExported }}
         {{template "privstructfield" . }}
       {{ else }}
-        {{ pascalize .Name}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+        {{ .GoName}} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
       {{ end}}
     {{end}}
   {{ end }}
   {{ if .HasAdditionalProperties }}
-    {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+    {{ .AdditionalProperties.GoName }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
   {{ end }}}{
   {{ range .AllOf }}
     {{ if .IsAnonymous }}
       {{ range .Properties }}
         {{ if not .IsBaseType }}
-          {{ pascalize .Name }}: {{ .ReceiverName}}.{{ pascalize .Name }},
+          {{ .GoName }}: {{ .ReceiverName}}.{{ .GoName }},
         {{ end }}
       {{ end }}
     {{ else }}
@@ -259,7 +259,7 @@
   {{ end }}
   {{ range .Properties }}
     {{ if and (not .IsBaseType) .IsExported }}
-      {{ pascalize .Name }}: {{ .ReceiverName }}.{{ pascalize .Name }},
+      {{ .GoName }}: {{ .ReceiverName }}.{{ .GoName }},
     {{ end }}
   {{ end }}
   },
@@ -269,30 +269,30 @@
   {{ range .AllOf }}
     {{ range .Properties }}
       {{ if .IsBaseType }}
-        {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+        {{ .GoName }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
       {{ end }}
     {{ end }}
   {{ end }}
   {{ range .Properties }}
     {{ if or (not .IsExported) .IsBaseType }}
-      {{ pascalize .Name }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+      {{ .GoName }} {{ template "schemaType" . }} `json:"{{ .Name }}{{ if and (not .Required) .IsEmptyOmitted }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
     {{ end }}
   {{end}}} {
   {{ range .AllOf }}
     {{ range .Properties }}
      {{ if .IsBaseType }}
-       {{ pascalize .Name }}:
+       {{ .GoName }}:
        {{ if ne .DiscriminatorField .Name }}
-         {{ .ReceiverName }}.{{ if .IsSubType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}(){{ end }},
+         {{ .ReceiverName }}.{{ if .IsSubType}}{{ camelize .Name }}Field{{ else }}{{ .GoName }}(){{ end }},
        {{ else }}
-         {{ .ReceiverName }}.{{pascalize .Name}}(),
+         {{ .ReceiverName }}.{{.GoName}}(),
        {{ end }}
      {{ end }}
     {{ end }}
   {{ end }}
   {{ range .Properties }}
     {{ if or (not .IsExported) .IsBaseType }}
-      {{ pascalize .Name }}: {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end }},
+      {{ .GoName }}: {{ .ReceiverName }}.{{ if .IsBaseType}}{{ camelize .Name }}Field{{ else }}{{ .GoName }}{{ end }},
     {{ end }}
   {{ end }} },
 {{- end }}

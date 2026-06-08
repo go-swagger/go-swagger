@@ -1,5 +1,5 @@
 {{ define "schemaPolymorphic" }}
-  type {{ pascalize .Name }} interface {
+  type {{ .GoName }} interface {
   {{- if not (or .IsInterface .IsStream) }}{{/*
         A base type is always Validatable.
         Under normal conditions, we can't have a base type rendered a .IsStream or .IsInterface: this check is just for sanity check).
@@ -33,8 +33,8 @@
   type {{ camelize .Name }} {{ template "schemaBody" . }}{{/* unexported implementation of the interface (TODO(fred): atm, this is not used, issue #232) */}}
   {{- range .Properties }}
 
-    // {{ pascalize .Name}} gets the {{ humanize .Name }} of this polymorphic type
-    func ({{ $.ReceiverName}} *{{ camelize $.Name}}) {{ pascalize .Name}}() {{ template "schemaType" . }}{
+    // {{ .GoName}} gets the {{ humanize .Name }} of this polymorphic type
+    func ({{ $.ReceiverName}} *{{ camelize $.Name}}) {{ .GoName}}() {{ template "schemaType" . }}{
       {{- if eq $.DiscriminatorField .Name }}
         return {{ printf "%q" $.DiscriminatorValue }}
       {{- else }}
@@ -42,8 +42,8 @@
       {{- end }}
     }
 
-    // Set{{ pascalize .Name}} sets the {{ humanize .Name }} of this polymorphic type
-    func ({{ $.ReceiverName}} *{{ camelize $.Name}}) Set{{ pascalize .Name}}(val {{ template "schemaType" . }}) {
+    // Set{{ .GoName}} sets the {{ humanize .Name }} of this polymorphic type
+    func ({{ $.ReceiverName}} *{{ camelize $.Name}}) Set{{ .GoName}}(val {{ template "schemaType" . }}) {
       {{- if ne $.DiscriminatorField .Name }}
         {{ $.ReceiverName }}.{{camelize .Name}}Field = val
       {{- end }}

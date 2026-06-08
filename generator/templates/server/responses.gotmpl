@@ -4,10 +4,10 @@
 {{ define "simpleserverheaderbuilder" }}
 {{ if .IsNullable -}}
 var {{ varname .ID }} string
-if {{ .ReceiverName }}.{{ pascalize .ID }} != nil {
-  {{ varname .ID }} = {{ if .Formatter }}{{ .Formatter }}(*{{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ if not .IsCustomFormatter }}*{{ end }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+if {{ .ReceiverName }}.{{ .ID }} != nil {
+  {{ varname .ID }} = {{ if .Formatter }}{{ .Formatter }}(*{{ .ReceiverName }}.{{ .ID }}){{ else }}{{ if not .IsCustomFormatter }}*{{ end }}{{ .ReceiverName }}.{{ .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
 }
-{{ else }}{{ varname .ID }} := {{ if .Formatter }}{{ .Formatter }}({{ .ReceiverName }}.{{ pascalize .ID }}){{ else }}{{ .ReceiverName }}.{{ pascalize .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
+{{ else }}{{ varname .ID }} := {{ if .Formatter }}{{ .Formatter }}({{ .ReceiverName }}.{{ .ID }}){{ else }}{{ .ReceiverName }}.{{ .ID }}{{ if .IsCustomFormatter }}.String(){{end}}{{end}}
 {{ end -}}
 if {{ varname .ID }} != "" {
   rw.Header().Set({{ printf "%q" .Name }}, {{ varname .ID }})
@@ -73,7 +73,7 @@ type {{ pascalize .Name }} struct {
   Unique: true{{ end }}{{ if .HasDefault }}
   Default: {{ printGoLiteral .Default }}{{ end }}
   */
-  {{ pascalize .Name }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
+  {{ .ID }} {{ .GoType }} `json:"{{.Name}}{{ if not .Required }},omitempty{{ end }}{{ if .IsJSONString }},string{{ end }}"`
   {{ end }}
   {{ if .Schema }}{{ with .Schema }}
   /*{{if .Description }}{{ blockcomment .Description }}{{ end }}{{ if .Maximum }}
@@ -136,7 +136,7 @@ if code <= 0 {
   return &{{ pascalize .Name }}{
     {{ if eq .Code -1 }}_statusCode: code,{{ end }}
     {{ range .Headers }}{{ if .HasDefault }}
-    {{ pascalize .Name}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
+    {{ .ID }}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
     {{ end }}
   {{ end -}}
   }
@@ -154,15 +154,15 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) SetStatusCode(code int) {
   {{ .ReceiverName }}._statusCode = code
 }
 {{ end }}{{ range .Headers }}
-// With{{ pascalize .Name }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} response
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) With{{ pascalize .Name }}({{ varname .Name  }} {{ .GoType}}) *{{ pascalize $.Name }} {
-  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ varname .Name  }}
+// With{{ .ID }} adds the {{ camelize .Name  }} to the {{ humanize $.Name }} response
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) With{{ .ID }}({{ varname .Name  }} {{ .GoType}}) *{{ pascalize $.Name }} {
+  {{ $.ReceiverName }}.{{ .ID }} = {{ varname .Name  }}
   return {{ .ReceiverName }}
 }
 
-// Set{{ pascalize .Name }} sets the {{ camelize .Name  }} to the {{ humanize $.Name }} response
-func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Set{{ pascalize .Name }}({{ varname .Name  }} {{ .GoType}}) {
-  {{ $.ReceiverName }}.{{ pascalize .Name }} = {{ varname .Name  }}
+// Set{{ .ID }} sets the {{ camelize .Name  }} to the {{ humanize $.Name }} response
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}) Set{{ .ID }}({{ varname .Name  }} {{ .GoType}}) {
+  {{ $.ReceiverName }}.{{ .ID }} = {{ varname .Name  }}
 }
 {{ end }}{{ if .Schema }}
 // WithPayload adds the payload to the {{ humanize .Name }} response

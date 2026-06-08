@@ -264,7 +264,10 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 
-	idMapping, timeoutName, ctxName := b.paramMappings(paramsForOperation)
+	idMapping, timeoutName, ctxName, err := b.paramMappings(paramsForOperation)
+	if err != nil {
+		return GenOperation{}, err
+	}
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)
@@ -511,10 +514,9 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 }
 
 func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (GenHeader, error) {
-	mangle := b.GenOpts.LanguageOpts.Mangler.ToGoName
 	tpe := simpleResolvedType(hdr.Type, hdr.Format, hdr.Items, &hdr.CommonValidations)
 
-	id := mangle(name)
+	id := extensionGoName(hdr.Extensions, name, b.GenOpts.LanguageOpts.Mangler)
 	res := GenHeader{
 		sharedValidations: sharedValidations{
 			Required:          true,
@@ -524,6 +526,7 @@ func (b *codeGenOpBuilder) MakeHeader(receiver, name string, hdr spec.Header) (G
 		Package:          b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
 		ReceiverName:     receiver,
 		ID:               id,
+		GoName:           id,
 		Name:             name,
 		Path:             fmt.Sprintf("%q", name),
 		ValueExpression:  fmt.Sprintf("%s.%s", receiver, id),
@@ -641,29 +644,27 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 
 func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter, idMapping map[string]map[string]string) (GenParameter, error) {
 	debugLogf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
-	mangle := b.GenOpts.LanguageOpts.Mangler.ToGoName
-
-	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	var child *GenItems
-	id := mangle(param.Name)
-	if goName, ok := param.Extensions["x-go-name"]; ok {
-		id, ok = goName.(string)
-		if !ok {
-			return GenParameter{}, fmt.Errorf(`%s %s, parameter %q: "x-go-name" field must be a string, not a %T`,
-				b.Method, b.Path, param.Name, goName)
-		}
-	} else if len(idMapping) > 0 {
+	var id string
+	if len(idMapping) > 0 {
+		var ok bool
 		id, ok = idMapping[param.In][param.Name]
 		if !ok {
-			// skipped parameter
 			return GenParameter{}, fmt.Errorf(`%s %s, %q has an invalid parameter definition`,
 				b.Method, b.Path, param.Name)
+		}
+	} else {
+		var err error
+		id, err = extensionGoNameOrError(param.Extensions, param.Name, b.GenOpts.LanguageOpts.Mangler)
+		if err != nil {
+			return GenParameter{}, fmt.Errorf(`%s %s, parameter %q: %w`, b.Method, b.Path, param.Name, err)
 		}
 	}
 
 	res := GenParameter{
 		ID:               id,
+		GoName:           id,
 		Name:             param.Name,
 		ModelsPackage:    b.ModelsPackage,
 		Path:             fmt.Sprintf("%q", param.Name),
@@ -878,7 +879,7 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 }
 
 // paramMappings yields a map of safe parameter names for an operation.
-func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string, string) {
+func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string, string, error) {
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(params)),
 		"path":     make(map[string]string, len(params)),
@@ -890,7 +891,7 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
-	mangle := b.GenOpts.LanguageOpts.Mangler.ToGoName
+	mangler := b.GenOpts.LanguageOpts.Mangler
 
 	seenIDs := make(map[string]any, len(params))
 	for id, p := range params {
@@ -911,11 +912,26 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 				panic(fmt.Errorf("internal error: invalid paramMapping: got %T", val))
 			}
 
-			idMapping[p.In][p.Name] = mangle(id)
+			prevParam := params[previous.id]
+
+			goID, err := extensionGoNameOrError(p.Extensions, id, mangler)
+			if err != nil {
+				return nil, "", "", fmt.Errorf("%s %s, parameter %q: %w", b.Method, b.Path, p.Name, err)
+			}
+			prevGoID, err := extensionGoNameOrError(prevParam.Extensions, previous.id, mangler)
+			if err != nil {
+				return nil, "", "", fmt.Errorf("%s %s, parameter %q: %w", b.Method, b.Path, prevParam.Name, err)
+			}
+
+			idMapping[p.In][p.Name] = goID
 			// rewrite the previously found one
-			idMapping[previous.in][p.Name] = mangle(previous.id)
+			idMapping[previous.in][p.Name] = prevGoID
 		} else {
-			idMapping[p.In][p.Name] = mangle(p.Name)
+			goID, err := extensionGoNameOrError(p.Extensions, p.Name, mangler)
+			if err != nil {
+				return nil, "", "", fmt.Errorf("%s %s, parameter %q: %w", b.Method, b.Path, p.Name, err)
+			}
+			idMapping[p.In][p.Name] = goID
 		}
 		seenIDs[strings.ToLower(idMapping[p.In][p.Name])] = struct{ id, in string }{id: id, in: p.In}
 	}
@@ -924,7 +940,7 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 	timeoutName := rename(timeoutVarNamePreferences)(seenIDs, timeoutVarNamePreferences[0], 0)
 	ctxName := rename(contextVarNamePreferences)(seenIDs, contextVarNamePreferences[0], 0)
 
-	return idMapping, timeoutName, ctxName
+	return idMapping, timeoutName, ctxName, nil
 }
 
 const (
@@ -1242,6 +1258,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 				b.ExtraSchemas = make(map[string]GenSchema)
 			}
 			schema.Name = schemaName
+			schema.GoName = schemaName
 			schema.GoType = schemaName
 			schema.IsAnonymous = false
 			b.ExtraSchemas[schemaName] = schema

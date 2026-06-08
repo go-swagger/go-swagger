@@ -13,7 +13,7 @@
   }
 
   if len(res) == 0 {
-    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+    {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
   {{- else if and .HasSimpleBodyParams .HasModelBodyItems }}
 
@@ -23,7 +23,7 @@
     {{- end }}
 
     {{- if .Schema.HasSliceValidations }}
-      {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+      {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
       {{ template "sliceparamvalidator" . }}
     {{- end }}
 
@@ -48,12 +48,12 @@
       {{- if not .Schema.HasSliceValidations }}
 
   if len(res) == 0 {
-    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+    {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
       {{- end }}
     {{- else }}
   // no validation for items in this slice
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end }}
 
   {{- else if and .HasSimpleBodyParams .HasModelBodyMap }}
@@ -91,33 +91,33 @@
   }
 
   if len(res) == 0 {
-    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+    {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
   }
     {{- else }}
   // no validation for this map
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end }}
   {{- else if .HasSimpleBodyParams }}
     {{- if and (not .IsArray) (not .IsMap) .Schema.HasValidations }}
   // validate inline body
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(route.Formats); err != nil {
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  if err := {{ .ReceiverName }}.validate{{ .ID }}Body(route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if and (or .IsArray .IsMap) .Schema.HasValidations }}
   // validate inline body {{ if .IsArray }}array{{ else }}map{{ end }}
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}Body(route.Formats); err != nil {
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  if err := {{ .ReceiverName }}.validate{{ .ID }}Body(route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else  }}
   // no validation required on inline body
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end}}
   {{- else }}
     {{- if .IsInterface }}
   // no validation on generic interface
-  {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
+  {{ .ReceiverName }}.{{ .ID }} = {{ if and (not .Schema.IsBaseType) .IsNullable }}&{{ end }}body
     {{- end }}
   {{- end }}
 {{- end }}
@@ -378,7 +378,7 @@ func New{{ pascalize .Name }}Params() {{ pascalize .Name }}Params {
 {{- end }}
 {{ end }}
   return {{ pascalize .Name }}Params{ {{ range .Params }}{{ if .HasDefault }}
-    {{ pascalize .ID}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
+    {{ .ID}}: {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}&{{ end }}{{ varname .ID }}Default,
   {{ end }}{{ end }} }
 }
 
@@ -406,7 +406,7 @@ type {{ pascalize .Name }}Params struct {
   Collection Format: {{ .CollectionFormat }}{{ end }}{{ if .HasDefault }}
   Default: {{ printGoLiteral .Default }}{{ end }}
   */
-  {{ if not .Schema }}{{ pascalize .ID }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ pascalize .Name }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
+  {{ if not .Schema }}{{ .ID }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ .ID }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
   {{- end}}
 }
 
@@ -427,7 +427,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     runtime.BindFormMaxBody({{ pascalize .Name }}MaxBodySize),
   {{- range .Params }}
     {{- if .IsFileParam }}
-    runtime.BindFormFile({{ .Path }}, {{ or .Required (not .IsNullable) }}, {{ .ReceiverName }}.bind{{ pascalize .ID }}),
+    runtime.BindFormFile({{ .Path }}, {{ or .Required (not .IsNullable) }}, {{ .ReceiverName }}.bind{{ .ID }}),
     {{- end }}
   {{- end }}
   )
@@ -449,23 +449,23 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- if .IsQueryParam }}
 
   q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if .IsPathParam }}
 
   r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if .IsHeaderParam }}
 
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if and .IsFormParam (not .IsFileParam) }}
   fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- end }}
@@ -473,24 +473,24 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{- if .IsQueryParam }}
 
   q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, _ := qs.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(q{{ pascalize .Name }}, qhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if .IsPathParam }}
 
   r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, _ := route.Params.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(r{{ pascalize .Name }}, rhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if .IsHeaderParam }}
 
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(r.Header[http.CanonicalHeaderKey({{ .Path }})], true, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- else if and .IsFormParam }}
 
   fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, _ := fds.GetOK({{ .Path }})
-  if err := {{ .ReceiverName }}.bind{{ pascalize .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
+  if err := {{ .ReceiverName }}.bind{{ .ID }}(fd{{ pascalize .Name }}, fdhk{{ pascalize .Name }}, route.Formats); err != nil {
     res = append(res, err)
   }
     {{- end }}
@@ -500,7 +500,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 
   if runtime.HasBody(r) {
     {{- if .Schema.IsStream }}
-    {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
+    {{ .ReceiverName }}.{{ .ID }} = r.Body
     {{- else }}
     defer func() {
       _ = r.Body.Close()
@@ -547,10 +547,10 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
 {{- $className := (pascalize .Name) }}
 {{ range .Params }}
   {{- if .IsFileParam }}
-// bind{{ pascalize .ID }} validates file parameter File1 and assigns it as a *runtime.File on success.
+// bind{{ .ID }} validates file parameter File1 and assigns it as a *runtime.File on success.
 //
 // The only supported validations on files are MinLength and MaxLength
-func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file multipart.File, header *multipart.FileHeader) error {
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ .ID }}(file multipart.File, header *multipart.FileHeader) error {
     {{- if or .MinLength .MaxLength }}
     size, err := file.Seek(0, io.SeekEnd)
     if err != nil {
@@ -574,14 +574,14 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(file 
     }
     {{- end }}
 
-    {{ .ReceiverName }}.{{ pascalize .Name }} = &runtime.File{Data: file, Header: header}
+    {{ .ReceiverName }}.{{ .ID }} = &runtime.File{Data: file, Header: header}
     return nil
 }
   {{- else if not .IsBodyParam }}
     {{- if or .IsPrimitive .IsCustomFormatter }}
 
-// bind{{ pascalize .ID }} binds and validates parameter {{ .ID }} from {{ .Location }}.
-func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
+// bind{{ .ID }} binds and validates parameter {{ .ID }} from {{ .Location }}.
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{- if and (not .IsPathParam) .Required }}
     if !hasKey {
         return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
@@ -636,7 +636,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 
       {{- if .HasValidations }}
 
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
+  if err := {{ .ReceiverName }}.validate{{ .ID }}(formats); err != nil {
     return err
   }
       {{- end }}
@@ -645,10 +645,10 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 }
     {{- else if .IsArray }}
 
-// bind{{ pascalize .ID }} binds and validates array parameter {{ .ID }} from {{ .Location }}.
+// bind{{ .ID }} binds and validates array parameter {{ .ID }} from {{ .Location }}.
 //
 // Arrays are parsed according to CollectionFormat: "{{ .CollectionFormat }}" (defaults to "csv" when empty).
-func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ .ID }}(rawData []string, hasKey bool, formats strfmt.Registry) error {
       {{- if .Required }}
   if !hasKey {
     return errors.Required({{ .Path }}, {{ printf "%q" .Location }}, rawData)
@@ -680,7 +680,7 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
       {{ template "sliceparambinder" . }}
   {{ .ValueExpression }} = {{ varname .Child.ValueExpression }}R
       {{- if .HasSliceValidations }}
-  if err := {{ .ReceiverName }}.validate{{ pascalize .ID }}(formats); err != nil {
+  if err := {{ .ReceiverName }}.validate{{ .ID }}(formats); err != nil {
     return err
   }
       {{- end }}
@@ -691,8 +691,8 @@ func ({{ .ReceiverName }} *{{ $className }}Params) bind{{ pascalize .ID }}(rawDa
 
     {{- if or (and (not .IsArray) .HasValidations) (and .IsArray .HasSliceValidations) }}
 
-// validate{{ pascalize .ID }} carries out validations for parameter {{ .ID }}
-func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}(formats strfmt.Registry) error {
+// validate{{ .ID }} carries out validations for parameter {{ .ID }}
+func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ .ID }}(formats strfmt.Registry) error {
   {{ template "propertyparamvalidator" . }}
   return nil
 }
@@ -702,8 +702,8 @@ func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}(f
     {{- if and .HasSimpleBodyParams (not .HasModelBodyItems) (not .HasModelBodyMap) }}
       {{- if .Schema.HasValidations }}
 
-// validate{{ pascalize .ID }}Body validates an inline body parameter
-func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ pascalize .ID }}Body(formats strfmt.Registry) error {
+// validate{{ .ID }}Body validates an inline body parameter
+func ({{ .ReceiverName }} *{{ $className }}Params) validate{{ .ID }}Body(formats strfmt.Registry) error {
         {{- if .IsArray }}
           {{- if .HasSliceValidations }}
               {{- template "sliceparamvalidator" . }}

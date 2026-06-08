@@ -1,0 +1,38 @@
+swagger: "2.0"
+info:
+  title: Test x-go-name
+  version: 1.4.0
+paths:
+  /test:
+    get:
+      responses:
+        200:
+          description: bla bla
+          schema:
+            $ref: "#/definitions/response"
+    post:
+      parameters:
+        - name: backend_tls_skip_verify
+          in: query
+          type: boolean
+          x-go-name: NoTls
+      responses:
+        200:
+          description: ok
+definitions:
+  response:
+    type: object
+    required:
+      - backendTlsSkipVerify
+    properties:
+      backendTlsSkipVerify:
+        type: boolean
+        x-go-name: NoTls
+      vmId:
+        type: string
+        x-go-name: VmId
+      recordId:
+        type: integer
+        x-go-name: ID
+      plain_tls_flag:
+        type: boolean
