@@ -296,7 +296,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Reader) ReadResponse(response ru
 {{ end }}
 
 {{ range .ExtraSchemas }}
-{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " (pascalize .Name))) }}
+{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " .GoName)) }}
 //
 // swagger:model {{ .Name }}
   {{- template "schema" . }}

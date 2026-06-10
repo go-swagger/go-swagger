@@ -59,12 +59,12 @@ func TestIsGoQualifiedType(t *testing.T) {
 }
 
 func TestValidateGoExtensions(t *testing.T) {
-	require.NoError(t, validateGoIdentifierExtension(xGoName, "MyName"))
-	require.Error(t, validateGoIdentifierExtension(xGoName, "My Name"))
-	require.Error(t, validateGoIdentifierExtension(xGoName, "`; func init(){}"))
+	require.NoError(t, validateGoIdentifierExtension("MyName"))
+	require.Error(t, validateGoIdentifierExtension("My Name"))
+	require.Error(t, validateGoIdentifierExtension("`; func init(){}"))
 
-	require.NoError(t, validateGoTypeExtension(xGoType, "pkg.MyType"))
-	require.Error(t, validateGoTypeExtension(xGoType, "Type }; func init(){}"))
+	require.NoError(t, validateGoTypeExtension("pkg.MyType"))
+	require.Error(t, validateGoTypeExtension("Type }; func init(){}"))
 }
 
 func TestSanitizeGoNameOverride(t *testing.T) {

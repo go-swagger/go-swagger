@@ -45,7 +45,7 @@ func isGoQualifiedType(s string) bool {
 		return false
 	}
 
-	for _, part := range strings.Split(s, ".") {
+	for part := range strings.SplitSeq(s, ".") {
 		if !isGoIdentifier(part) {
 			return false
 		}
@@ -54,26 +54,26 @@ func isGoQualifiedType(s string) bool {
 	return true
 }
 
-// validateGoIdentifierExtension validates a spec-supplied value that is emitted
-// as a Go identifier (e.g. x-go-name, an x-go-type import alias). It returns a
-// descriptive error when the value is not a plain Go identifier.
-func validateGoIdentifierExtension(extension, value string) error {
+// validateGoIdentifierExtension validates an x-go-name value that is emitted as a
+// Go identifier. It returns a descriptive error when the value is not a plain Go
+// identifier.
+func validateGoIdentifierExtension(value string) error {
 	if isGoIdentifier(value) {
 		return nil
 	}
 
-	return fmt.Errorf("%s value %q is not a valid Go identifier: a spec-supplied Go name is emitted verbatim into generated source and must match the Go identifier syntax", extension, value)
+	return fmt.Errorf("%s value %q is not a valid Go identifier: a spec-supplied Go name is emitted verbatim into generated source and must match the Go identifier syntax", xGoName, value)
 }
 
-// validateGoTypeExtension validates a spec-supplied value that is emitted as a
-// Go type reference (x-go-type "type"). It accepts a qualified identifier and
-// returns a descriptive error otherwise.
-func validateGoTypeExtension(extension, value string) error {
+// validateGoTypeExtension validates an x-go-type "type" value that is emitted as a
+// Go type reference. It accepts a (possibly qualified) identifier and returns a
+// descriptive error otherwise.
+func validateGoTypeExtension(value string) error {
 	if isGoQualifiedType(value) {
 		return nil
 	}
 
-	return fmt.Errorf("%s value %q is not a valid Go type name: a spec-supplied type is emitted verbatim into generated source and must be a (possibly qualified) Go identifier", extension, value)
+	return fmt.Errorf("%s value %q is not a valid Go type name: a spec-supplied type is emitted verbatim into generated source and must be a (possibly qualified) Go identifier", xGoType, value)
 }
 
 // sanitizeGoNameOverride returns an x-go-name override when it is a valid Go

@@ -324,7 +324,7 @@ func derefArg(arg any) (any, bool) {
 	}
 
 	v := reflect.ValueOf(arg)
-	for v.Kind() == reflect.Ptr {
+	for v.Kind() == reflect.Pointer {
 		if v.IsNil() {
 			return nil, false
 		}

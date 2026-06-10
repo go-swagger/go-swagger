@@ -117,7 +117,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) ServeHTTP(rw http.ResponseWrit
 }
 
 {{ range .ExtraSchemas }}
-{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " .Name)) }}
+{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " .GoName)) }}
 //
 // swagger:model {{ .Name }}
   {{- template "schema" . }}

@@ -58,7 +58,7 @@ func extensionGoNameOrError(ext spec.Extensions, fallback string, mangler mangli
 		// does not yield a plain identifier so it cannot break out of its syntactic
 		// slot. Callers using extensionGoName fall back to the mangled name; callers
 		// using this function directly (e.g. parameters) surface the error.
-		if err := validateGoIdentifierExtension(xGoName, name); err != nil {
+		if err := validateGoIdentifierExtension(name); err != nil {
 			return "", err
 		}
 

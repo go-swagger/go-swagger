@@ -1299,7 +1299,7 @@ func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 	// Input sanitization: type and (explicit) import alias are emitted verbatim into
 	// generated source as a type reference and an import-block alias.
 	//
-	//A value that is not a plain Go identifier could break out of those positions and
+	// A value that is not a plain Go identifier could break out of those positions and
 	// inject declarations. Skip a malformed extension (consistent with the
 	// decode-error handling above) so the spec falls back to normal generation.
 	//
