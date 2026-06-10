@@ -51,7 +51,18 @@ func extensionGoNameOrError(ext spec.Extensions, fallback string, mangler mangli
 		if !ok {
 			return "", fmt.Errorf(`"x-go-name" field must be a string, not a %T`, raw)
 		}
-		return exportGoName(gn, true, mangler), nil
+		name := exportGoName(gn, true, mangler)
+		// Input sanitization (prevents invalid codegen and code injection from an
+		// untrusted spec). The explicit x-go-name only has its first rune upper-cased
+		// and is otherwise emitted verbatim as a Go identifier. Reject any value that
+		// does not yield a plain identifier so it cannot break out of its syntactic
+		// slot. Callers using extensionGoName fall back to the mangled name; callers
+		// using this function directly (e.g. parameters) surface the error.
+		if err := validateGoIdentifierExtension(xGoName, name); err != nil {
+			return "", err
+		}
+
+		return name, nil
 	}
 	return exportGoName(fallback, false, mangler), nil
 }

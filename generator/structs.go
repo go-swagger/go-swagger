@@ -171,6 +171,16 @@ func (g GenSchema) PrintTags() string {
 		}
 	}
 
+	// Input sanitization: g.CustomTag (the x-go-custom-tag extension) is appended raw and
+	// may either generate scrambled code or worse, be attacker-controllable from an untrusted spec.
+	//
+	// A backtick in the custom tag could close the raw literal and inject arbitrary Go declarations
+	// into the generated struct. strconv.Quote neutralises the breakout while leaving legitimate custom tags
+	// rendered as before.
+	if !valuesHaveBacktick && !strconv.CanBackquote(g.CustomTag) {
+		valuesHaveBacktick = true
+	}
+
 	if !valuesHaveBacktick {
 		return fmt.Sprintf("`%s`", completeTag)
 	}

@@ -1,0 +1,19 @@
+# Adversarial fixture: a hostile x-go-type tries to inject Go via the type name
+# and the import alias (both emitted verbatim). The extension must be rejected
+# (skipped) so the field falls back to normal generation with no injection.
+swagger: "2.0"
+info:
+  title: x-go-type injection
+  version: "1.0"
+paths: {}
+definitions:
+  Victim:
+    type: object
+    properties:
+      a:
+        type: string
+        x-go-type:
+          type: "string }; func init(){ println(\"PWNED_GO_TYPE\") }; type shadow struct { x "
+          import:
+            package: example.com/x
+            alias: "evil }; func init(){ println(\"PWNED_ALIAS\") }; type shadow2 struct { y "

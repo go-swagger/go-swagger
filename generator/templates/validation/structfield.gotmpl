@@ -29,7 +29,7 @@
 {{- end }}
 
 {{- if .Pattern }}
-// Pattern: {{ .Pattern }}
+{{ lineComment "Pattern: " .Pattern }}
 {{- end }}
 
 {{- if .MaxItems }}
@@ -45,7 +45,7 @@
 {{- end }}
 
 {{- if .IsCustomFormatter }}
-// Format: {{ .SwaggerFormat }}
+{{ lineComment "Format: " .SwaggerFormat }}
 {{- end }}
 
 {{- if .Enum }}

@@ -2,41 +2,50 @@
 
 
 {{- if .Copyright }}
-// {{ comment .Copyright }}
+{{ lineComment .Copyright }}
 {{- end }}
 
 
-// Package {{ .APIPackage }} {{ if .Info.Title }}{{ comment .Info.Title }}{{ else }}{{ comment (humanize .Name) }}{{end}}
+{{ $title := "" -}}
+{{ if .Info.Title }}{{ $title = .Info.Title }}{{ else }}{{ $title = humanize .Name }}{{ end -}}
+{{ lineComment "Package " .APIPackage " " $title }}
 //
 {{- if .Info.Description }}
-//  {{ comment .Info.Description "  " }}
+{{ linePadComment "  " .Info.Description }}
 {{- end }}
 {{- if .Info.TermsOfService }}
 //  Terms Of Service:
-//    {{ comment .Info.TermsOfService "    " }}
+{{ linePadComment "    " .Info.TermsOfService }}
 {{- end }}
 {{- if or .Schemes .Host .BasePath .Info }}
   {{- if .Schemes }}
 //  Schemes:
     {{- range .Schemes }}
-//    {{ . }}
+{{ linePadComment "    " . }}
     {{- end }}
   {{- end }}
   {{- if .Host }}
-//  Host: {{ .Host }}
+{{ linePadComment "  " "Host: " .Host }}
   {{- end }}
   {{- if .BasePath }}
-//  BasePath: {{ .BasePath }}
+{{ linePadComment "  " "BasePath: " .BasePath }}
   {{- end}}
   {{- with .Info }}
     {{- if .Version }}
-//  Version: {{ .Version }}
+{{ linePadComment "  " "Version: " .Version }}
     {{- end }}
     {{- if .License }}
-//  License: {{ if .License.Name }}{{ .License.Name}} {{ end }}{{ if .License.URL }}{{ .License.URL }}{{ end }}
+      {{- $lic := "" }}
+      {{- if .License.Name }}{{ $lic = printf "%s " .License.Name }}{{ end }}
+      {{- if .License.URL }}{{ $lic = printf "%s%s" $lic .License.URL }}{{ end }}
+{{ linePadComment "  " "License: " $lic }}
     {{- end }}
     {{- if .Contact }}
-//  Contact: {{ if .Contact.Name }}{{ .Contact.Name }}{{ end }}{{ if .Contact.Email }}<{{ .Contact.Email }}>{{ end }}{{ if .Contact.URL }} {{ .Contact.URL }}{{ end }}
+      {{- $contact := "" }}
+      {{- if .Contact.Name }}{{ $contact = .Contact.Name }}{{ end }}
+      {{- if .Contact.Email }}{{ $contact = printf "%s<%s>" $contact .Contact.Email }}{{ end }}
+      {{- if .Contact.URL }}{{ $contact = printf "%s %s" $contact .Contact.URL }}{{ end }}
+{{ linePadComment "  " "Contact: " $contact }}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -45,7 +54,7 @@
 //  Consumes:
   {{- range .Consumes }}
     {{- range .AllSerializers }}
-//    - {{ .MediaType -}}
+{{ linePadComment "    " "- " .MediaType -}}
     {{- end }}
   {{- end }}
 {{- end }}
@@ -54,7 +63,7 @@
 //  Produces:
   {{- range .Produces }}
     {{- range .AllSerializers }}
-//    - {{ .MediaType -}}
+{{ linePadComment "    " "- " .MediaType -}}
     {{- end }}
   {{- end }}
 {{- end }}

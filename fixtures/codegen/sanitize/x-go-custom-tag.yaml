@@ -1,0 +1,15 @@
+# Adversarial fixture: a hostile x-go-custom-tag tries to close the generated
+# raw struct-tag literal and inject a top-level func init().
+# PrintTags must keep the payload inside a single Go string literal.
+swagger: "2.0"
+info:
+  title: custom tag injection
+  version: "1.0"
+paths: {}
+definitions:
+  Victim:
+    type: object
+    properties:
+      a:
+        type: string
+        x-go-custom-tag: '`; }; func init(){ println("PWNED_CUSTOM_TAG") }; type _ struct { _ string `'

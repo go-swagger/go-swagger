@@ -336,9 +336,13 @@ func (t typeResolver) knownDefGoType(def string, schema spec.Schema, clearFunc f
 	ext := schema.Extensions
 	nm, hasGoName := ext.GetString(xGoName)
 
+	// x-go-name tells the Go identifier here, verbatim. Ignore a value that is not
+	// a plain identifier so it cannot break out and inject unwanted declarations downstream.
 	if hasGoName {
-		debugLogf("known def type %s named from %s as %q", def, xGoName, nm)
-		def = nm
+		if nm = sanitizeGoNameOverride(nm); nm != "" {
+			debugLogf("known def type %s named from %s as %q", def, xGoName, nm)
+			def = nm
+		}
 	}
 	extType, isExternalType := t.resolveExternalType(ext)
 	if !isExternalType || extType.Embedded {
@@ -1289,6 +1293,25 @@ func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 	err := mapstructure.Decode(v, &extType)
 	if err != nil {
 		log.Printf("warning: x-go-type extension could not be decoded (%v). Skipped", v)
+		return nil, false
+	}
+
+	// Input sanitization: type and (explicit) import alias are emitted verbatim into
+	// generated source as a type reference and an import-block alias.
+	//
+	//A value that is not a plain Go identifier could break out of those positions and
+	// inject declarations. Skip a malformed extension (consistent with the
+	// decode-error handling above) so the spec falls back to normal generation.
+	//
+	// The import package is rendered as a %q string literal and is left as-is —
+	// its capability (importing an arbitrary package) is documented, not a
+	// syntactic injection.
+	if extType.Type != "" && !isGoQualifiedType(extType.Type) {
+		log.Printf("warning: %s type %q is not a valid Go type name. Skipped for security reasons", xGoType, extType.Type)
+		return nil, false
+	}
+	if extType.Import.Alias != "" && !isGoIdentifier(extType.Import.Alias) {
+		log.Printf("warning: %s import alias %q is not a valid Go identifier. Skipped for security reasons", xGoType, extType.Import.Alias)
 		return nil, false
 	}
 

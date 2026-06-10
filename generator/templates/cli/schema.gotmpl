@@ -28,7 +28,7 @@
 {{ end }}
 
 {{ define "propertyretriever" }}
-    {{ flagNameVar .Name }} := fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
+    {{ flagNameVar .Name }} := fmt.Sprintf("%v.%s", cmdPrefix, {{ printf "%q" .Name }})
     if cmd.Flags().Changed({{ flagNameVar .Name }}) {
         {{- if .IsPrimitive }}
             {{ template "primitiveretriever" . }}

@@ -1,6 +1,6 @@
 // This file is safe to edit. Once it exists it will not be overwritten
 
-{{ if .Copyright -}}// {{ comment .Copyright -}}{{ end }}
+{{ if .Copyright -}}{{ lineComment .Copyright -}}{{ end }}
 
 
 package {{ .APIPackage }}

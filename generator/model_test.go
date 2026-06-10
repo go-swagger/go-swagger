@@ -76,19 +76,19 @@ func TestGenerateModel_DocString(t *testing.T) {
 	var gmp GenSchema
 	gmp.Title = title
 	gmp.Description = desc
-	expected := fmt.Sprintf(`%s
+	expected := fmt.Sprintf(`// %s
 //
 // %s`, title, desc)
-	tt.assertRender(gmp, expected)
+	tt.assertRender(map[string]any{"Ctx": gmp}, expected)
 
 	gmp.Title = ""
-	expected = desc
-	tt.assertRender(gmp, expected)
+	expected = "// " + desc
+	tt.assertRender(map[string]any{"Ctx": gmp}, expected)
 
 	gmp.Description = ""
 	gmp.Name = "theModel"
-	expected = `the model`
-	tt.assertRender(gmp, expected)
+	expected = `// the model`
+	tt.assertRender(map[string]any{"Ctx": gmp}, expected)
 }
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {

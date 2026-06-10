@@ -1,7 +1,7 @@
 {{ template "header" . }}
 {{- if .IncludeModel }}
   {{- if .IsExported }}
-// {{ .GoName }} {{ template "docstring" . }}
+{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " .GoName)) }}
     {{- template "annotations" . }}
   {{- end }}
   {{- template "schema" . }}
@@ -10,7 +10,7 @@
 {{ range .ExtraSchemas }}
   {{- if .IncludeModel }}
     {{- if .IsExported }}
-// {{ .GoName }} {{ template "docstring" . }}
+{{ template "docstring" (dict "Ctx" . "Lead" (printf "%s " .GoName)) }}
       {{- template "annotations" . }}
     {{- end }}
     {{- template "schema" . }}

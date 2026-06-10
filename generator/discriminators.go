@@ -36,6 +36,7 @@ func discriminatorInfo(doc *analysis.Spec, opts *GenOpts) *discInfo {
 	for _, sch := range doc.AllDefinitions() {
 		if sch.Schema.Discriminator != "" {
 			tpe, _ := sch.Schema.Extensions.GetString(xGoName)
+			tpe = sanitizeGoNameOverride(tpe) // x-go-name must be a valid identifier or be mangled
 			if tpe == "" {
 				tpe = mangle(sch.Name)
 			}
@@ -57,6 +58,7 @@ func discriminatorInfo(doc *analysis.Spec, opts *GenOpts) *discInfo {
 						name = sch.Name
 					}
 					tpe, _ := sch.Schema.Extensions.GetString(xGoName)
+					tpe = sanitizeGoNameOverride(tpe) // x-go-name must be a valid identifier or be mangled
 					if tpe == "" {
 						tpe = mangle(sch.Name)
 					}
