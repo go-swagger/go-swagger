@@ -383,8 +383,7 @@ func TestGenResponse_15362_WithExpand(t *testing.T) {
 func TestGenResponse_1572(t *testing.T) {
 	defer discardOutput()()
 
-	const genNullResponseDocComment = `/*
-GetNullRequestProcessed OK`
+	const genNullResponseDocComment = `// GetNullRequestProcessed OK`
 	// testing fixture-1572.yaml with minimal flatten
 	// edge cases for operations schemas
 
@@ -461,8 +460,7 @@ GetNullRequestProcessed OK`
 				`	if err := producer.Produce(rw, payload); err != nil {`,
 				`const GetNullRequestProcessedCode int = 203`,
 				genNullResponseDocComment,
-				`swagger:response getNullRequestProcessed`,
-				`*/`,
+				`// swagger:response getNullRequestProcessed`,
 				`type GetNullRequestProcessed struct {`,
 				`func NewGetNullRequestProcessed() *GetNullRequestProcessed {`,
 				`	return &GetNullRequestProcessed{`,

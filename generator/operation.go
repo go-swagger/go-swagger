@@ -1328,6 +1328,12 @@ func (b *codeGenOpBuilder) analyzeTags() (string, []string, bool) {
 				}
 				//  honor x-go-name in tag
 				if name, hasGoName := gtag.Extensions.GetString(xGoName); hasGoName {
+					// NOTE: the tag always run through ManglePackageName below
+					// (and the returned value likewise feeds package mangling), which neutralises any potential breakout
+					// from non-legit values.
+					//
+					// Tags legitimately carry non-identifier values (e.g. "nr!nasty" -> package "nr_bang_nasty"), so validating
+					// as a Go identifier would reject valid specs.
 					tag = name
 					break
 				}

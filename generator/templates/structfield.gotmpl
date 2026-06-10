@@ -1,6 +1,6 @@
 {{ define "structfield" }}
   {{- if not $.IsBaseType -}}
-    // {{ template "docstring" . }}
+    {{ template "docstring" (dict "Ctx" .) }}
     {{- template "propertyValidationDocString" .}}
   {{- end}}
 {{ .GoName }} {{ template "schemaType" . }} {{ .PrintTags }}
@@ -8,7 +8,7 @@
 
 {{- define "tuplefield" }}
   {{- if not $.IsBaseType -}}
-    // {{ template "docstring" . }}
+    {{ template "docstring" (dict "Ctx" .) }}
     {{- template "propertyValidationDocString" .}}
 {{ end }}
 {{- .GoName }} {{ template "schemaType" . }} `json:"-"
@@ -17,7 +17,7 @@
 
 {{- define "structfieldIface" }}
   {{- if not $.IsBaseType -}}
-    // {{ template "docstring" . }}
+    {{ template "docstring" (dict "Ctx" .) }}
     {{- template "propertyValidationDocString" .}}
   {{- end }}
 {{ .GoName }}() {{ template "schemaType" . }}
@@ -25,7 +25,7 @@ Set{{ .GoName }}({{ template "schemaType" . }})
 {{ end }}
 {{ define "tuplefieldIface" }}
   {{- if not $.IsBaseType -}}
-    // {{ template "docstring" . }}
+    {{ template "docstring" (dict "Ctx" .) }}
     {{- template "propertyValidationDocString" . }}
 {{ end }}
 {{- .GoName }}() {{ template "schemaType" . }}

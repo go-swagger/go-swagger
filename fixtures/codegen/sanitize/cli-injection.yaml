@@ -1,0 +1,29 @@
+# Adversarial fixture: hostile free-text in a security-definition name and
+# description, and in an operationId/summary, tries to break out of the Go
+# string literals emitted by the CLI generator (cli/cli.gotmpl, cli/operation.gotmpl).
+# Backtick raw-string sinks must use escapeBackticks; double-quoted sinks must use %q.
+swagger: "2.0"
+info:
+  title: cli injection
+  version: "1.0"
+securityDefinitions:
+  key:
+    type: apiKey
+    name: 'X"); func init(){ println("PWNED_APIKEY_NAME") }; var _ = fmt.Sprint("'
+    in: header
+    description: |-
+      backtick ` then newline
+      func init(){ println("PWNED_SEC_DESC") }
+paths:
+  /ping:
+    get:
+      operationId: ping
+      summary: |-
+        backtick ` then
+        func init(){ println("PWNED_SUMMARY") }
+      tags: [ping]
+      security:
+        - key: []
+      responses:
+        "200":
+          description: ok

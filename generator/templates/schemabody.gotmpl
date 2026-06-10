@@ -20,7 +20,7 @@
       {{ end }}
       {{- if .HasAdditionalProperties }}
         {{- if .AdditionalProperties }}
-          // {{ template "docstring" .AdditionalProperties }}
+          {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
           {{- template "propertyValidationDocString" .AdditionalProperties}}
           {{- if and .IsExported (not .IsSubType) }}
             {{ .AdditionalProperties.GoName }}
@@ -32,7 +32,7 @@
         {{- end }}
       {{- end }}
       {{- if .AdditionalItems }}
-        // {{ template "docstring" .AdditionalItems }}
+        {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
         {{- template "propertyValidationDocString" .AdditionalItems}}
         {{- if and .IsExported (not $.IsSubType) }}{{/* TODO(fred): make sure inherited AdditionalItems are camelized */}}
           {{ .AdditionalItems.GoName }}
@@ -50,7 +50,7 @@
   {{ end }}
   {{ if .HasAdditionalProperties }}
     {{- if .AdditionalProperties }}
-    // {{ template "docstring" .AdditionalProperties }}
+    {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
     {{- template "propertyValidationDocString" .AdditionalProperties}}
       {{- if and .IsExported (not .IsSubType) }}
         {{ .AdditionalProperties.GoName }}
@@ -60,7 +60,7 @@
     {{ end }}
   {{- end }}
   {{- if .AdditionalItems }}
-    // {{ template "docstring" .AdditionalItems }}
+    {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
     {{- template "propertyValidationDocString" .AdditionalItems}}
     {{ if and .IsExported (not .IsSubType) }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.GoName }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}

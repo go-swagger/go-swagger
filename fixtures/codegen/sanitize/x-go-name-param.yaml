@@ -1,0 +1,19 @@
+# Adversarial fixture: a hostile x-go-name on a parameter is emitted verbatim as
+# a Go identifier (and into a binder comment). Generation must reject it.
+swagger: "2.0"
+info:
+  title: x-go-name param injection
+  version: "1.0"
+basePath: /
+paths:
+  /ping:
+    get:
+      operationId: ping
+      parameters:
+        - name: q
+          in: query
+          type: string
+          x-go-name: "Q }; func init(){ println(\"PWNED_PARAM\") }; type _ struct { Z "
+      responses:
+        "200":
+          description: ok

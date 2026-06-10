@@ -29,7 +29,7 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 			"hasInsecure", "hasSecure",
 			"dropPackage", "containsPkgStr", "contains",
 			"padSurround", "joinFilePath", "joinPath",
-			"comment", "blockcomment", "inspect",
+			"lineComment", "linePadComment", "blockComment", "inspect",
 			"cleanPath", "mediaTypeName", "mediaGoName",
 			"dict", "isInteger", "hasPrefix", "stringContains",
 			"trimSpace", "mdBlock", "httpStatus",
@@ -246,29 +246,6 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 		assert.TrueT(t, containsPkgStr("models.MyType"))
 		assert.FalseT(t, containsPkgStr("MyType"))
 		assert.FalseT(t, containsPkgStr(""))
-	})
-
-	t.Run("padComment should produce comments with indented lines", func(t *testing.T) {
-		t.Parallel()
-
-		padComment, ok := fm["comment"].(func(string, ...string) string)
-		require.TrueT(t, ok)
-		require.NotNil(t, padComment)
-
-		assert.EqualT(t, "line1\n// line2\n// line3", padComment("line1\nline2\nline3"))
-		assert.EqualT(t, "line1\n//\tline2", padComment("line1\nline2", "\t"))
-		assert.EqualT(t, "single", padComment("single"))
-	})
-
-	t.Run("blockComment should handle inner * and /", func(t *testing.T) {
-		t.Parallel()
-
-		blockComment, ok := fm["blockcomment"].(func(string) string)
-		require.TrueT(t, ok)
-		require.NotNil(t, blockComment)
-
-		assert.EqualT(t, "before [*]/ after", blockComment("before */ after"))
-		assert.EqualT(t, "no end marker", blockComment("no end marker"))
 	})
 
 	t.Run("httpStatus should return the string of well-known codes", func(t *testing.T) {

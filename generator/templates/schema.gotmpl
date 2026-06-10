@@ -116,12 +116,12 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{- if not .IsBaseType }}
     {{- if .HasAdditionalProperties }}
       {{- with .AdditionalProperties }}
-        // {{- template "docstring" . }}{{- template "propertyValidationDocString" . }}
+        {{ template "docstring" (dict "Ctx" .) }}{{- template "propertyValidationDocString" . }}
         {{ .GoName }}() map[string]{{ template "schemaType" . }}
       {{- end }}
     {{- end }}
     {{- with .AdditionalItems }}
-      // {{- template "docstring" . }}{{- template "propertyValidationDocString" . }}
+      {{ template "docstring" (dict "Ctx" .) }}{{- template "propertyValidationDocString" . }}
       {{ .GoName }}() []{{ template "schemaType" . }}
     {{- end }}
   {{- else }}

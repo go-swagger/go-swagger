@@ -1,25 +1,26 @@
 {{ define "docstring" }}
-  {{- if .Title }}
-    {{- comment .Title }}
-    {{- if .Description }}
+  {{- $ctx := .Ctx }}
+  {{- if $ctx.Title }}
+    {{- lineComment .Lead $ctx.Title }}
+    {{- if $ctx.Description }}
 //
-// {{ comment .Description }}
+{{ lineComment $ctx.Description }}
     {{- end }}
-  {{- else if .Description}}
-    {{- comment .Description }}
+  {{- else if $ctx.Description }}
+    {{- lineComment .Lead $ctx.Description }}
   {{- else }}
-    {{- humanize .Name }}
+    {{- lineComment .Lead (humanize $ctx.Name) }}
   {{- end }}
-  {{- if or .MinProperties .MaxProperties }}
+  {{- if or $ctx.MinProperties $ctx.MaxProperties }}
 //
-    {{- if .MinProperties }}
-// MinProperties: {{ .MinProperties }}
+    {{- if $ctx.MinProperties }}
+{{ lineComment "MinProperties: " $ctx.MinProperties }}
     {{- end }}
-    {{- if .MaxProperties }}
-// MaxProperties: {{ .MaxProperties }}
+    {{- if $ctx.MaxProperties }}
+{{ lineComment "MaxProperties: " $ctx.MaxProperties }}
     {{- end }}
   {{- end }}
-  {{- if .Example }}
-// Example: {{ print .Example }}
+  {{- if $ctx.Example }}
+{{ lineComment "Example: " $ctx.Example }}
   {{- end }}
 {{- end }}

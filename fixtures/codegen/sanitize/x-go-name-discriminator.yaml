@@ -1,0 +1,26 @@
+# Adversarial fixture: a hostile x-go-name on a discriminator base type and on a
+# subtype is emitted verbatim as the GoType. The override must be skipped so the
+# type falls back to its mangled schema name with no injection.
+swagger: "2.0"
+info:
+  title: discriminator x-go-name injection
+  version: "1.0"
+paths: {}
+definitions:
+  Pet:
+    type: object
+    discriminator: petType
+    required:
+      - petType
+    x-go-name: "Pet }; func init(){ println(\"PWNED_DISC_BASE\") }; type _ struct { Z "
+    properties:
+      petType:
+        type: string
+  Cat:
+    allOf:
+      - $ref: "#/definitions/Pet"
+      - type: object
+        x-go-name: "Cat }; func init(){ println(\"PWNED_DISC_SUB\") }; type _ struct { Y "
+        properties:
+          meow:
+            type: string

@@ -14,9 +14,9 @@
 {{ define "flagnamevar" }}
     var {{ flagNameVar .Name }} string
     if cmdPrefix == "" {
-        {{ flagNameVar .Name }} = "{{ .Name }}"
+        {{ flagNameVar .Name }} = {{ printf "%q" .Name }}
     }else{
-        {{ flagNameVar .Name }} = fmt.Sprintf("%v.{{ .Name }}", cmdPrefix)
+        {{ flagNameVar .Name }} = fmt.Sprintf("%v.%s", cmdPrefix, {{ printf "%q" .Name }})
     }
 {{ end }}
 

@@ -1,0 +1,25 @@
+# Adversarial fixture: hostile free-text in info.description and operation
+# summary tries to break out of generated Go comments (block "*/" and line "//"
+# newline breakout, plus a //go: directive). Pending Phase 2 (comment-helper
+# unification) — referenced by the skipped harness subtest.
+swagger: "2.0"
+info:
+  title: comment injection
+  version: "1.0"
+  description: |-
+    safe */
+    var InjectedInfoDescription = "PWNED_INFO"
+    /*
+basePath: /
+paths:
+  /ping:
+    get:
+      operationId: ping
+      tags: [ping]
+      summary: |-
+        safe */
+        func init(){ println("PWNED_SUMMARY") }
+        /*
+      responses:
+        "200":
+          description: ok
