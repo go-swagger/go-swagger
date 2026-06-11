@@ -1,5 +1,4 @@
 gen-*
-!gen-fixtures.sh
 *.log
 fred/
 go-ext/
