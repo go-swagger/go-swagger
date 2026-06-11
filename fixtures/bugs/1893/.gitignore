@@ -1,3 +1,2 @@
 gen-*
-!gen-fixtures.sh
 *.log
