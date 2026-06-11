@@ -53,15 +53,11 @@ func sortedResponses(input map[int]spec.Response) responses {
 // It also generates an operation handler interface that uses the parameter model for handling a valid request.
 // Allows for specifying a list of tags to include only certain tags for the generation.
 func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
-	if err := opts.CheckOpts(); err != nil {
+	if err := opts.Prepare(); err != nil {
 		return err
 	}
 
-	if err := opts.setTemplates(); err != nil {
-		return err
-	}
-
-	specDoc, analyzed, err := opts.analyzeSpec()
+	specDoc, analyzed, err := newSpecAnalyzer(opts).analyzeSpec()
 	if err != nil {
 		return err
 	}
@@ -88,7 +84,7 @@ func GenerateServerOperation(operationNames []string, opts *GenOpts) error {
 			Operation:            *operation,
 			SecurityRequirements: analyzed.SecurityRequirementsFor(operation),
 			SecurityDefinitions:  analyzed.SecurityDefinitionsFor(operation),
-			Principal:            opts.PrincipalAlias(),
+			Principal:            principalAlias(opts.Principal),
 			Target:               filepath.Join(opts.Target, filepath.FromSlash(serverPackage)),
 			Base:                 opts.Target,
 			Tags:                 opts.Tags,
@@ -144,15 +140,15 @@ type operationGenerator struct {
 
 // Generate a single operation.
 func (o *operationGenerator) Generate() error {
-	defaultImports := o.GenOpts.defaultImports()
+	defaultImports := newImportsBuilder(o.GenOpts).defaultImports()
 
 	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
-	imports := o.GenOpts.initImports(
+	imports := newImportsBuilder(o.GenOpts).initImports(
 		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage))
 
 	bldr := codeGenOpBuilder{
 		ModelsPackage:       o.ModelsPackage,
-		Principal:           o.GenOpts.PrincipalAlias(),
+		Principal:           principalAlias(o.GenOpts.Principal),
 		Target:              o.Target,
 		DefaultImports:      defaultImports,
 		Imports:             imports,
@@ -200,7 +196,7 @@ func (o *operationGenerator) Generate() error {
 
 			continue
 		}
-		if err := o.GenOpts.renderOperation(&op); err != nil {
+		if err := newRenderer(o.GenOpts).renderOperation(&op); err != nil {
 			return err
 		}
 	}
@@ -455,7 +451,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		Extensions:           operation.Extensions,
 		StrictResponders:     b.GenOpts.StrictResponders,
 
-		PrincipalIsNullable: b.GenOpts.PrincipalIsNullable(),
+		PrincipalIsNullable: principalIsNullable(b.GenOpts.Principal, b.GenOpts.PrincipalCustomIface),
 		ExternalDocs:        trimExternalDoc(operation.ExternalDocs),
 		ReturnErrors:        b.GenOpts.ReturnErrors,
 	}, nil
@@ -1061,7 +1057,7 @@ func (b *codeGenOpBuilder) setBodyParamValidation(p *GenParameter) {
 
 // makeSecuritySchemes produces a sorted list of security schemes for this operation.
 func (b *codeGenOpBuilder) makeSecuritySchemes(receiver string) GenSecuritySchemes {
-	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver, b.GenOpts.PrincipalIsNullable())
+	return gatherSecuritySchemes(b.SecurityDefinitions, b.Name, b.Principal, receiver, principalIsNullable(b.GenOpts.Principal, b.GenOpts.PrincipalCustomIface))
 }
 
 // makeSecurityRequirements produces a sorted list of security requirements for this operation.

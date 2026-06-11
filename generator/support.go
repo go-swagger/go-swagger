@@ -44,7 +44,12 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 		output = "markdown.md"
 	}
 
-	if err := opts.EnsureDefaults(); err != nil {
+	// build the machinery and resolve the default sections up front, so the
+	// markdown-specific section layout below overrides a fully-defaulted plan.
+	// newAppGenerator's Prepare then keeps these (machinery/sections are built
+	// once) and only normalizes paths and loads templates.
+	opts.buildMachinery()
+	if err := opts.resolveSections(); err != nil {
 		return err
 	}
 	if opts.Target != "" && opts.Target != "." {
@@ -87,15 +92,11 @@ type appGenerator struct {
 }
 
 func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOpts) (*appGenerator, error) {
-	if err := opts.CheckOpts(); err != nil {
+	if err := opts.Prepare(); err != nil {
 		return nil, err
 	}
 
-	if err := opts.setTemplates(); err != nil {
-		return nil, err
-	}
-
-	specDoc, analyzed, err := opts.analyzeSpec()
+	specDoc, analyzed, err := newSpecAnalyzer(opts).analyzeSpec()
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +112,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		return nil, errors.New("no operations were selected")
 	}
 
-	opts.Name = opts.appNameOrDefault(specDoc, name, defaultServerName)
+	opts.Name = appNameOrDefault(opts.LanguageOpts, specDoc, name, defaultServerName)
 	mangler := opts.LanguageOpts.Mangler
 	funcMap := opts.funcMap
 	mediaMime, ok := funcMap["mediaTypeName"].(func(string) string)
@@ -121,7 +122,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 
 	if opts.IncludeMain && opts.MainPackage == "" {
 		// default target for the generated main
-		opts.MainPackage = mangler.ToCommandName(opts.mainNameOrDefault(specDoc, name, defaultServerName) + "-server")
+		opts.MainPackage = mangler.ToCommandName(mainNameOrDefault(opts.LanguageOpts, specDoc, name, defaultServerName) + "-server")
 	}
 
 	apiPackage := opts.LanguageOpts.ManglePackagePath(opts.APIPackage, defaultOperationsTarget)
@@ -141,7 +142,7 @@ func newAppGenerator(name string, modelNames, operationIDs []string, opts *GenOp
 		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget),
 		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
 		OperationsPackage: filepath.Join(opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget), apiPackage),
-		Principal:         opts.PrincipalAlias(),
+		Principal:         principalAlias(opts.Principal),
 		DefaultScheme:     opts.DefaultScheme,
 		DefaultProduces:   opts.DefaultProduces,
 		DefaultConsumes:   opts.DefaultConsumes,
@@ -170,7 +171,7 @@ func (a *appGenerator) Generate() error {
 			mod := md
 			mod.IncludeModel = true
 			mod.IncludeValidator = a.GenOpts.IncludeValidator
-			if err := a.GenOpts.renderDefinition(&mod); err != nil {
+			if err := newRenderer(a.GenOpts).renderDefinition(&mod); err != nil {
 				return err
 			}
 		}
@@ -183,12 +184,12 @@ func (a *appGenerator) Generate() error {
 			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
 			for _, p := range opg.Operations {
 				op := p
-				if err := a.GenOpts.renderOperation(&op); err != nil {
+				if err := newRenderer(a.GenOpts).renderOperation(&op); err != nil {
 					return err
 				}
 			}
 			// optional OperationGroups templates generation
-			if err := a.GenOpts.renderOperationGroup(&opg); err != nil {
+			if err := newRenderer(a.GenOpts).renderOperationGroup(&opg); err != nil {
 				return fmt.Errorf("error while rendering operation group: %w", err)
 			}
 		}
@@ -230,7 +231,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app.DefaultImports[clientPkgAlias] = clientPath
 	}
 
-	return a.GenOpts.renderApplication(app)
+	return newRenderer(a.GenOpts).renderApplication(app)
 }
 
 func (a *appGenerator) GenerateMarkdown() error {
@@ -239,7 +240,7 @@ func (a *appGenerator) GenerateMarkdown() error {
 		return err
 	}
 
-	return a.GenOpts.renderApplication(&app)
+	return newRenderer(a.GenOpts).renderApplication(&app)
 }
 
 func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
@@ -249,7 +250,7 @@ func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 			requiredSecuritySchemes[scheme] = *req
 		}
 	}
-	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver, a.GenOpts.PrincipalIsNullable())
+	return gatherSecuritySchemes(requiredSecuritySchemes, a.Name, a.Principal, a.Receiver, principalIsNullable(a.GenOpts.Principal, a.GenOpts.PrincipalCustomIface))
 }
 
 //nolint:gocognit,gocyclo,cyclop,maintidx // TODO(fredbi): refactor
@@ -266,7 +267,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	log.Println("generation target", a.Target)
 
 	baseImport := a.GenOpts.LanguageOpts.BaseImport(a.Target)
-	defaultImports := a.GenOpts.defaultImports()
+	defaultImports := newImportsBuilder(a.GenOpts).defaultImports()
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)
 	alias := deconflictPkg(a.GenOpts.LanguageOpts.ManglePackageName(a.OperationsPackage, defaultOperationsTarget), renameAPIPackage)
@@ -324,7 +325,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 		bldr := codeGenOpBuilder{
 			ModelsPackage:    a.ModelsPackage,
-			Principal:        a.GenOpts.PrincipalAlias(),
+			Principal:        principalAlias(a.GenOpts.Principal),
 			Target:           a.Target,
 			DefaultImports:   defaultImports,
 			Imports:          imports,
@@ -535,13 +536,13 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		Models:                     genModels,
 		Operations:                 genOps,
 		OperationGroups:            opGroups,
-		Principal:                  a.GenOpts.PrincipalAlias(),
+		Principal:                  principalAlias(a.GenOpts.Principal),
 		SwaggerJSON:                generateReadableSpec(jsonb),
 		FlatSwaggerJSON:            generateReadableSpec(flatjsonb),
 		ExcludeSpec:                a.GenOpts.ExcludeSpec,
 		GenOpts:                    a.GenOpts,
 
-		PrincipalIsNullable: a.GenOpts.PrincipalIsNullable(),
+		PrincipalIsNullable: principalIsNullable(a.GenOpts.Principal, a.GenOpts.PrincipalCustomIface),
 	}, nil
 }
 

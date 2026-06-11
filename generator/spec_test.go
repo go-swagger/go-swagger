@@ -23,7 +23,7 @@ func TestSpec_Issue1429(t *testing.T) {
 
 	opts := testGenOpts()
 	opts.Spec = specPath
-	_, err = opts.validateAndFlattenSpec()
+	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
 
 	// more aggressive fixture on $refs, with validation errors, but flatten ok
@@ -56,7 +56,7 @@ func TestSpec_Issue2527(t *testing.T) {
 		opts := testGenOpts()
 		opts.Spec = specPath
 		opts.ValidateSpec = true // test options skip validation by default
-		_, err = opts.validateAndFlattenSpec()
+		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 		require.Error(t, err)
 	})
 
@@ -68,7 +68,7 @@ func TestSpec_Issue2527(t *testing.T) {
 		opts := testGenOpts()
 		opts.Spec = specPath
 		opts.ValidateSpec = true
-		_, err = opts.validateAndFlattenSpec()
+		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 		require.NoError(t, err)
 	})
 }
@@ -92,7 +92,7 @@ func TestSpec_Issue1621(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = specPath
 	opts.ValidateSpec = true
-	_, err = opts.validateAndFlattenSpec()
+	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
 }
 
@@ -107,7 +107,7 @@ func TestShared_Issue1614(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = specPath
 	opts.ValidateSpec = true
-	_, err = opts.validateAndFlattenSpec()
+	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
 }
 
@@ -121,7 +121,7 @@ func Test_AnalyzeSpec_Issue2216(t *testing.T) {
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		opts.PropertiesSpecOrder = true
-		_, _, err := opts.analyzeSpec()
+		_, _, err := newSpecAnalyzer(opts).analyzeSpec()
 		require.NoError(t, err)
 	})
 
@@ -132,7 +132,7 @@ func Test_AnalyzeSpec_Issue2216(t *testing.T) {
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		opts.PropertiesSpecOrder = true
-		_, _, err := opts.analyzeSpec()
+		_, _, err := newSpecAnalyzer(opts).analyzeSpec()
 		require.NoError(t, err)
 	})
 }

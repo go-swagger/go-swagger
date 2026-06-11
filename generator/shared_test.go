@@ -36,40 +36,58 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// ensureMachinery builds the derived generation machinery (language options,
+// func map, templates repository and the default render plan) on g, without the
+// spec-dependent finalization performed by Prepare (validation, path
+// normalization, user-template loading).
+//
+// It is the test-only stand-in for the former GenOpts.EnsureDefaults: the
+// single, intentional backdoor that test helpers use to obtain a
+// machinery-ready options value they can tweak before handing it to a Generate*
+// function (which performs the actual Prepare). Production code never builds the
+// machinery on its own — it goes through NewGenOpts + Prepare.
+func ensureMachinery(g *GenOpts) error {
+	g.buildMachinery()
+
+	return g.resolveSections()
+}
+
+// validateOpts runs the pure validation and path-normalization phases on g.
+// It is the test stand-in for the former GenOpts.CheckOpts.
+func validateOpts(g *GenOpts) error {
+	if err := g.validate(); err != nil {
+		return err
+	}
+
+	return g.normalize()
+}
+
+// assertValidOpts asserts that g passes validation and path normalization.
+func assertValidOpts(t *testing.T, g *GenOpts) {
+	t.Helper()
+
+	require.NoError(t, validateOpts(g))
+}
+
 func opts() *GenOpts {
-	var opts GenOpts
-	opts.IncludeValidator = true
-	opts.IncludeModel = true
-	if err := opts.EnsureDefaults(); err != nil {
+	g := NewGenOpts()
+	g.IncludeValidator = true
+	g.IncludeModel = true
+	if err := ensureMachinery(g); err != nil {
 		panic(err)
 	}
-	return &opts
+
+	return g
 }
 
 func testGenOpts() *GenOpts {
-	g := &GenOpts{}
+	g := NewGenOpts(ForServer())
 	g.Target = "."
-	g.APIPackage = defaultAPIPackage
-	g.ModelPackage = defaultModelPackage
-	g.ServerPackage = defaultServerPackage
-	g.ClientPackage = defaultClientPackage
-	g.Principal = ""
-	g.DefaultScheme = "http"
-	g.IncludeModel = true
-	g.IncludeValidator = true
-	g.IncludeModel = true
-	g.IncludeHandler = true
-	g.IncludeParameters = true
-	g.IncludeResponses = true
-	g.IncludeMain = false
-	g.IncludeSupport = true
 	g.ExcludeSpec = true
-	g.TemplateDir = ""
-	g.DumpData = false
-
-	if err := g.EnsureDefaults(); err != nil {
+	if err := ensureMachinery(g); err != nil {
 		panic(err)
 	}
+
 	return g
 }
 
@@ -86,56 +104,53 @@ func TestShared_CheckOpts(t *testing.T) {
 	testPath := filepath.Join("a", "b", "b")
 
 	opts := new(GenOpts)
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	cwd, _ := os.Getwd()
 	opts.Spec = "../fixtures/codegen/simplesearch.yml"
 
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = filepath.Join(cwd, "a", "b", "c")
-	err := opts.CheckOpts()
+	err := validateOpts(opts)
 	require.Error(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join(cwd, "nowhere", "swagger.yaml")
-	err = opts.CheckOpts()
+	err = validateOpts(opts)
 	require.Error(t, err)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = "https://ab/c"
-	err = opts.CheckOpts()
-	require.NoError(t, err)
+	assertValidOpts(t, opts)
 
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = "http://ab/c"
-	err = opts.CheckOpts()
-	require.NoError(t, err)
+	assertValidOpts(t, opts)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join(cwd, "..", "fixtures", "codegen", "swagger-codegen-tests.json")
-	err = opts.CheckOpts()
-	require.NoError(t, err)
+	assertValidOpts(t, opts)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
 	opts.Spec = filepath.Join("..", "fixtures", "codegen", "swagger-codegen-tests.json")
-	err = opts.CheckOpts()
-	require.NoError(t, err)
+	assertValidOpts(t, opts)
 
 	opts = nil
-	err = opts.CheckOpts()
+	err = validateOpts(opts)
 	require.Error(t, err)
 }
 
 func TestShared_EnsureDefaults(t *testing.T) {
 	opts := &GenOpts{}
-	require.NoError(t, opts.EnsureDefaults())
-	assert.TrueT(t, opts.defaultsEnsured)
+	require.NoError(t, ensureMachinery(opts))
+	assert.TrueT(t, opts.machineryBuilt)
+	// machinery is built once: a second pass must not overwrite values
 	opts.DefaultConsumes = "https"
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	assert.EqualT(t, "https", opts.DefaultConsumes)
 }
 
@@ -150,7 +165,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// relative target
 	opts := new(GenOpts)
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y"
 	expected := filepath.Join("..", "..", "c")
@@ -159,7 +174,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// relative target, server path
 	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y/z"
 	expected = filepath.Join("..", "..", "..", "c")
@@ -168,7 +183,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// absolute target
 	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = "y"
 	expected = filepath.Join("..", "..", "c")
@@ -177,7 +192,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// absolute target, server path
 	opts = new(GenOpts)
-	_ = opts.EnsureDefaults()
+	_ = ensureMachinery(opts)
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = path.Join("y", "z")
 	expected = filepath.Join("..", "..", "..", "c")
@@ -195,7 +210,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with http URL spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = "http://a/b/c"
 		opts.ServerPackage = "y"
 		expected := opts.Spec
@@ -205,7 +220,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with https URL spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = "https://a/b/c"
 		opts.ServerPackage = "y"
 		expected := opts.Spec
@@ -215,7 +230,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = "d"
 		opts.ServerPackage = "y"
@@ -226,7 +241,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = filepath.Join("d", "e")
 		opts.ServerPackage = fullPackage
@@ -237,7 +252,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = filepath.Join(".", "a", "b")
 		opts.ServerPackage = fullPackage
@@ -248,7 +263,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with absolute spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = filepath.Join(cwd, "a", "b", "c")
 		opts.ServerPackage = "y"
 		expected := filepath.Join("..", "a", "b", "c")
@@ -258,7 +273,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with absolute spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = opts.EnsureDefaults()
+		_ = ensureMachinery(opts)
 		opts.Spec = filepath.Join("..", "a", "b", "c")
 		opts.Target = ""
 		opts.ServerPackage = path.Join("y", "z")
@@ -270,7 +285,7 @@ func TestShared_SpecPath(t *testing.T) {
 	if runtime.GOOS == winOS {
 		t.Run("with windows drive letter", func(t *testing.T) {
 			opts := new(GenOpts)
-			_ = opts.EnsureDefaults()
+			_ = ensureMachinery(opts)
 			opts.Spec = filepath.Join("a", "b", "c")
 			opts.Target = filepath.Join("Z:", "e", "f", "f")
 			opts.ServerPackage = fullPackage
@@ -295,7 +310,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 		SkipFormat: false,
 	}
 
-	buf, err := opts.render(&tplOpts, nil)
+	buf, err := newRenderer(opts).render(&tplOpts, nil)
 	require.Errorf(t, err, "Error should be handled here")
 	assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
@@ -320,7 +335,7 @@ func TestShared_GarbledTemplate(t *testing.T) {
 			SkipFormat: false,
 		}
 
-		buf, err := opts.render(&tplOpts, nil)
+		buf, err := newRenderer(opts).render(&tplOpts, nil)
 		require.Errorf(t, err, "Error should be handled here")
 		assert.Nilf(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 	})
@@ -351,7 +366,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 			SkipFormat: false,
 		}
 
-		buf1, err := opts.render(&tplOpts, nil)
+		buf1, err := newRenderer(opts).render(&tplOpts, nil)
 		require.NoError(t, err, "Template rendering should put <no value> instead of missing data, and report no error")
 		assert.EqualT(t, "func x <no value>", string(buf1))
 	})
@@ -371,7 +386,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 		}
 
 		data := new(myTemplateData)
-		buf2, err := opts.render(&tplOpts, data)
+		buf2, err := newRenderer(opts).render(&tplOpts, data)
 		require.Error(t, err, "error should be handled here: missing func in template yields an error")
 		assert.ErrorContains(t, err, "template execution failed")
 		assert.Nil(t, buf2, "Upon error, GenOpts.render() should return nil buffer")
@@ -408,7 +423,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 					mangler:   mangler,
 					mediaMime: mediaMime,
 				}
-				err := opts.write(&tplOpts, data)
+				err := newRenderer(opts).write(&tplOpts, data)
 				require.Errorf(t, err, "with formatting, write should error on bad formatting but got: %v", err)
 				t.Logf("got error: %v", err)
 
@@ -434,7 +449,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 					Name:    "badtest",
 					Package: "wrongpkg",
 				}
-				err := opts.write(&tplOpts, data)
+				err := newRenderer(opts).write(&tplOpts, data)
 				require.NoErrorf(t, err, "without formatting, write shouldn't care about bad formatting but got: %v", err)
 
 				require.FileExistsf(t, filepath.Join(tmp, tplOpts.FileName),
@@ -473,7 +488,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 		Package: "stubpkg",
 	}
 
-	err := opts.write(&tplOpts, data)
+	err := newRenderer(opts).write(&tplOpts, data)
 
 	// The badly formatted file has been dumped for debugging purposes
 	_, exists := os.Stat(filepath.Join(tplOpts.Target, tplOpts.FileName))
@@ -498,14 +513,14 @@ func TestShared_LoadTemplate(t *testing.T) {
 		SkipFormat: false,
 	}
 
-	buf, err := opts.render(&tplOpts, nil)
+	buf, err := newRenderer(opts).render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
 	assert.StringContainsT(t, err.Error(), "open File")
 	assert.StringContainsT(t, err.Error(), "error while opening")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
 	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
-	buf, err = opts.render(&tplOpts, nil)
+	buf, err = newRenderer(opts).render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
 	assert.StringContainsT(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
 	assert.StringContainsT(t, err.Error(), "error while opening")
@@ -521,12 +536,12 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	specDoc.Spec().Info.Title = "    "
 
 	opts := testGenOpts()
-	assert.EqualT(t, "Xyz", opts.appNameOrDefault(specDoc, "  ", "xyz"))
+	assert.EqualT(t, "Xyz", appNameOrDefault(opts.LanguageOpts, specDoc, "  ", "xyz"))
 	specDoc.Spec().Info.Title = "test"
-	assert.EqualT(t, "Xyz", opts.appNameOrDefault(specDoc, "  ", "xyz"))
+	assert.EqualT(t, "Xyz", appNameOrDefault(opts.LanguageOpts, specDoc, "  ", "xyz"))
 
 	opts.Spec = specPath
-	_, err = opts.validateAndFlattenSpec()
+	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
 
 	// more aggressive fixture on $refs, with validation errors, but flatten ok
@@ -632,10 +647,10 @@ func TestResolvePrincipal(t *testing.T) {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
-			opts := &GenOpts{GenOptsCommon: GenOptsCommon{Principal: fixture.Principal}}
-			err := opts.EnsureDefaults()
+			opts := &GenOpts{Principal: fixture.Principal}
+			err := ensureMachinery(opts)
 			require.NoError(t, err)
-			alias, principal, target := opts.resolvePrincipal()
+			alias, principal, target := resolvePrincipal(opts.Principal)
 			require.EqualT(t, fixture.Expected[0], alias)
 			require.EqualT(t, fixture.Expected[1], principal)
 			require.EqualT(t, fixture.Expected[2], target)
@@ -659,9 +674,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with base import",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal: "ext.Principal",
-				},
+				Principal: "ext.Principal",
 			},
 			Expected: map[string]string{
 				"ext":    "github.com/go-swagger/go-swagger/generator/ext",
@@ -671,9 +684,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with full import",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal: "github.com/myproject/identity.Principal",
-				},
+				Principal: "github.com/myproject/identity.Principal",
 			},
 			Expected: map[string]string{
 				"identity": "github.com/myproject/identity",
@@ -683,9 +694,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with name conflict",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal: "github.com/myproject/middleware.Principal",
-				},
+				Principal: "github.com/myproject/middleware.Principal",
 			},
 			Expected: map[string]string{
 				"auth":   "github.com/myproject/middleware",
@@ -695,9 +704,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with name conflict (2)",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal: "github.com/myproject/principal.Principal",
-				},
+				Principal: "github.com/myproject/principal.Principal",
 			},
 			Expected: map[string]string{
 				"auth":   "github.com/myproject/principal",
@@ -707,9 +714,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "alternate target for models",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					ModelPackage: "target/bespoke",
-				},
+				ModelPackage: "target/bespoke",
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -718,9 +723,7 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "with existing models",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					ExistingModels: "github.com/myproject/target/bespoke",
-				},
+				ExistingModels: "github.com/myproject/target/bespoke",
 			},
 			Expected: map[string]string{
 				"models": "github.com/myproject/target/bespoke",
@@ -730,10 +733,8 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal, in dedicated package under generated target",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal:    "auth.Principal",
-					ModelPackage: "target/bespoke",
-				},
+				Principal:    "auth.Principal",
+				ModelPackage: "target/bespoke",
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -743,10 +744,8 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal in models (1)",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal:    "bespoke.Principal",
-					ModelPackage: "target/bespoke",
-				},
+				Principal:    "bespoke.Principal",
+				ModelPackage: "target/bespoke",
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -755,10 +754,8 @@ func TestDefaultImports(t *testing.T) {
 		{
 			Title: "relative principal in models (2)",
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal:    "target/bespoke.Principal",
-					ModelPackage: "target/bespoke",
-				},
+				Principal:    "target/bespoke.Principal",
+				ModelPackage: "target/bespoke",
 			},
 			Expected: map[string]string{
 				"bespoke": "github.com/go-swagger/go-swagger/generator/target/bespoke",
@@ -768,10 +765,8 @@ func TestDefaultImports(t *testing.T) {
 			Title: "relative principal: not detected",
 			// NOTE: this case will probably not build: no way to determine the user intent
 			Opts: &GenOpts{
-				GenOptsCommon: GenOptsCommon{
-					Principal:    "target/auth.Principal",
-					ModelPackage: "target/models",
-				},
+				Principal:    "target/auth.Principal",
+				ModelPackage: "target/models",
 			},
 			Expected: map[string]string{
 				"models": "github.com/go-swagger/go-swagger/generator/target/models",
@@ -783,9 +778,9 @@ func TestDefaultImports(t *testing.T) {
 
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
-			err := fixture.Opts.EnsureDefaults()
+			err := ensureMachinery(fixture.Opts)
 			require.NoError(t, err)
-			imports := fixture.Opts.defaultImports()
+			imports := newImportsBuilder(fixture.Opts).defaultImports()
 			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}
@@ -802,7 +797,7 @@ func TestShared_Issue2113(t *testing.T) {
 	opts := testGenOpts()
 	opts.Spec = specPath
 	opts.ValidateSpec = true
-	_, err = opts.validateAndFlattenSpec()
+	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
 }
 
@@ -818,7 +813,7 @@ func TestShared_Issue2743(t *testing.T) {
 		opts := testGenOpts()
 		opts.Spec = specPath
 		opts.ValidateSpec = true
-		_, err = opts.validateAndFlattenSpec()
+		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 		require.Error(t, err)
 	})
 
@@ -830,7 +825,7 @@ func TestShared_Issue2743(t *testing.T) {
 		opts := testGenOpts()
 		opts.Spec = specPath
 		opts.ValidateSpec = true
-		_, err = opts.validateAndFlattenSpec()
+		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 		require.NoError(t, err)
 	})
 }

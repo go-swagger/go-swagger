@@ -23,7 +23,18 @@ import (
 	yamlv2 "gopkg.in/yaml.v2"
 )
 
-func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
+// specAnalyzer loads, validates and flattens the source spec into a document
+// ready for code generation. It embeds *GenOpts to reach Spec, FlattenOpts and
+// the related preprocessing flags.
+type specAnalyzer struct {
+	*GenOpts
+}
+
+func newSpecAnalyzer(g *GenOpts) *specAnalyzer {
+	return &specAnalyzer{GenOpts: g}
+}
+
+func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 	// Load spec document
 	specDoc, err := loads.Spec(g.Spec)
 	if err != nil {
@@ -112,7 +123,7 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 	return specDoc, nil
 }
 
-func (g *GenOpts) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
+func (g *specAnalyzer) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
 	// load, validate and flatten
 	specDoc, err := g.validateAndFlattenSpec()
 	if err != nil {
@@ -134,7 +145,7 @@ func (g *GenOpts) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
 	return specDoc, analyzed, nil
 }
 
-func (g *GenOpts) printFlattenOpts() {
+func (g *specAnalyzer) printFlattenOpts() {
 	var preprocessingOption string
 	switch {
 	case g.FlattenOpts.Expand:

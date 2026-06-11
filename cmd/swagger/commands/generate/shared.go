@@ -187,7 +187,9 @@ func createSwagger(s sharedCommand) error {
 		setDebug(cfg) // viper config Debug
 	}
 
-	opts := new(generator.GenOpts)
+	// the config layout (if any) is applied as overrides when the generator
+	// finalizes the options in Prepare.
+	opts := generator.NewGenOpts(generator.WithViper(cfg))
 	s.apply(opts)
 
 	opts.Copyright, err = setCopyright(opts.Copyright)
@@ -197,14 +199,6 @@ func createSwagger(s sharedCommand) error {
 
 	if opts.Template != "" {
 		contribOptionsOverride(opts)
-	}
-
-	if err = opts.EnsureDefaults(); err != nil {
-		return err
-	}
-
-	if err = configureOptsFromConfig(cfg, opts); err != nil {
-		return err
 	}
 
 	if err = s.generate(opts); err != nil {
@@ -242,18 +236,6 @@ func readConfig(filename string) (*viper.Viper, error) {
 	log.Println("reading config from", abspath)
 
 	return generator.ReadConfig(abspath)
-}
-
-func configureOptsFromConfig(cfg *viper.Viper, opts *generator.GenOpts) error {
-	if cfg == nil {
-		return nil
-	}
-
-	var def generator.LanguageDefinition
-	if err := cfg.Unmarshal(&def); err != nil {
-		return err
-	}
-	return def.ConfigureOpts(opts)
 }
 
 func setDebug(cfg *viper.Viper) {

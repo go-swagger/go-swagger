@@ -13,15 +13,11 @@ import (
 )
 
 // LanguageDefinition in the configuration file.
+//
+// Its Layout is applied as a set of overrides on top of the default render plan
+// during [GenOpts.Prepare] (see resolveSections).
 type LanguageDefinition struct {
 	Layout SectionOpts `mapstructure:"layout"`
-}
-
-// ConfigureOpts for generation.
-func (d *LanguageDefinition) ConfigureOpts(opts *GenOpts) error {
-	opts.Sections = d.Layout
-
-	return opts.EnsureDefaults()
 }
 
 // LanguageConfig structure that is obtained from parsing a config file.

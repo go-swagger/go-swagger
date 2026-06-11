@@ -449,7 +449,7 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 	mediaMime := mustGetMediaMime(tb)
 
 	return &appGenerator{
-		Name:            opts.appNameOrDefault(specDoc, name, "swagger"),
+		Name:            appNameOrDefault(opts.LanguageOpts, specDoc, name, "swagger"),
 		Receiver:        "o",
 		SpecDoc:         specDoc,
 		Analyzed:        analyzed,

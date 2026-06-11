@@ -13,15 +13,11 @@ import (
 
 // GenerateClient generates a client library for a swagger spec document.
 func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpts) error {
-	if err := opts.CheckOpts(); err != nil {
+	if err := opts.Prepare(); err != nil {
 		return err
 	}
 
-	if err := opts.setTemplates(); err != nil {
-		return err
-	}
-
-	specDoc, analyzed, err := opts.analyzeSpec()
+	specDoc, analyzed, err := newSpecAnalyzer(opts).analyzeSpec()
 	if err != nil {
 		return err
 	}
@@ -44,7 +40,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 	}
 
 	generator := appGenerator{
-		Name:              opts.appNameOrDefault(specDoc, name, defaultClientName),
+		Name:              appNameOrDefault(opts.LanguageOpts, specDoc, name, defaultClientName),
 		SpecDoc:           specDoc,
 		Analyzed:          analyzed,
 		Models:            models,
@@ -57,7 +53,7 @@ func GenerateClient(name string, modelNames, operationIDs []string, opts *GenOpt
 		ServerPackage:     opts.LanguageOpts.ManglePackagePath(opts.ServerPackage, defaultServerTarget),
 		ClientPackage:     opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
 		OperationsPackage: opts.LanguageOpts.ManglePackagePath(opts.ClientPackage, defaultClientTarget),
-		Principal:         opts.PrincipalAlias(),
+		Principal:         principalAlias(opts.Principal),
 		DefaultScheme:     opts.DefaultScheme,
 		DefaultProduces:   opts.DefaultProduces,
 		DefaultConsumes:   opts.DefaultConsumes,
@@ -119,7 +115,7 @@ func (c *clientGenerator) Generate() error {
 				continue
 			}
 			mod := m
-			if err := c.GenOpts.renderDefinition(&mod); err != nil {
+			if err := newRenderer(c.GenOpts).renderDefinition(&mod); err != nil {
 				return err
 			}
 		}
@@ -130,18 +126,18 @@ func (c *clientGenerator) Generate() error {
 			opg := g
 			for _, o := range opg.Operations {
 				op := o
-				if err := c.GenOpts.renderOperation(&op); err != nil {
+				if err := newRenderer(c.GenOpts).renderOperation(&op); err != nil {
 					return err
 				}
 			}
-			if err := c.GenOpts.renderOperationGroup(&opg); err != nil {
+			if err := newRenderer(c.GenOpts).renderOperationGroup(&opg); err != nil {
 				return err
 			}
 		}
 	}
 
 	if c.GenOpts.IncludeSupport {
-		if err := c.GenOpts.renderApplication(&app); err != nil {
+		if err := newRenderer(c.GenOpts).renderApplication(&app); err != nil {
 			return err
 		}
 	}
