@@ -12,9 +12,40 @@ import (
 	"testing"
 
 	"github.com/go-swagger/go-swagger/generator/internal/gentest"
+	"github.com/go-swagger/go-swagger/generator/internal/language"
 
 	"github.com/go-openapi/testify/v2/require"
 )
+
+// optionsBuilder builds a complete set of generation options for a harness
+// fixture, given the resolved spec and the prepared target directory.
+//
+// It returns options ready to hand to a Generate* function (which performs the
+// single Prepare). A builder may run its own setup sub-steps and assertions
+// (hence the *testing.T) — e.g. relocating a test program into the target or
+// generating an external models module.
+//
+// This single, one-shot construction replaces the former two-step dance
+// (prepareTarget mutating the target, then a prepare hook mutating the opts):
+// each fixture either relies on the harness default builder or provides its own.
+type optionsBuilder func(t *testing.T, spec, target string) *GenOpts
+
+// defaultServerOpts builds the standard server generation options for the harness.
+func defaultServerOpts(t *testing.T, spec, target string) *GenOpts {
+	t.Helper()
+
+	g := NewGenOpts(ForServer(), WithSpec(spec), WithTarget(target))
+	g.ExcludeSpec = true
+
+	return g
+}
+
+// defaultClientOpts builds the standard client generation options for the harness.
+func defaultClientOpts(t *testing.T, spec, target string) *GenOpts {
+	t.Helper()
+
+	return NewGenOpts(ForClient(), WithSpec(spec), WithTarget(target))
+}
 
 // testHarnessBuildServers iterates over a map of [generateFixture] s to prepare the code generation layout,
 // generate a server from spec and run a verify method provided by fixture entry.
@@ -33,16 +64,14 @@ func testHarnessBuildServers(root string, fixtures map[string]generateFixture, f
 					thisCas.warnFailed(t)
 				}()
 
-				opts := testGenOpts() // default opts
+				spec := filepath.FromSlash(thisCas.spec)
+				target := harnessTarget(t, thisName, "server_test", root)
 
-				t.Run("should prepare directory layout",
-					thisCas.prepareTarget(thisName, "server_test", root, opts),
-				)
-
-				// preparation before generation, e.g. some test cases need to rework their input depending on the target location
-				if thisCas.prepare != nil {
-					t.Run("should prepare testcase", thisCas.prepare(opts))
+				build := thisCas.prepare
+				if build == nil {
+					build = defaultServerOpts
 				}
+				opts := build(t, spec, target)
 
 				t.Run("generating test server from "+opts.Spec, func(t *testing.T) {
 					err := GenerateServer("", nil, nil, opts)
@@ -71,16 +100,15 @@ func testHarnessBuildClients(root string, fixtures map[string]generateFixture, f
 				t.Parallel()
 
 				defer thisCas.warnFailed(t)
-				opts := testClientGenOpts() // default opts for client codegen
 
-				t.Run("should prepare directory layout",
-					thisCas.prepareTarget(thisName, "client_test", root, opts),
-				)
+				spec := filepath.FromSlash(thisCas.spec)
+				target := harnessTarget(t, thisName, "client_test", root)
 
-				// preparation before generation
-				if thisCas.prepare != nil {
-					t.Run("should prepare testcase", thisCas.prepare(opts))
+				build := thisCas.prepare
+				if build == nil {
+					build = defaultClientOpts
 				}
+				opts := build(t, spec, target)
 
 				t.Run("generating test client from "+opts.Spec, func(t *testing.T) {
 					err := GenerateClient(thisName, nil, nil, opts)
@@ -101,40 +129,31 @@ func testHarnessBuildClients(root string, fixtures map[string]generateFixture, f
 
 // generateFixture defines a test case for a code generation target.
 //
-// It takes a swagger specification, optionally expects an error to occur
-// when generating, an optional additional preparation step and an
-// optional verify method to run extra assertions.
+// It takes a swagger specification, optionally expects an error to occur when
+// generating, an optional builder to construct the options (defaulting to the
+// harness default builder) and an optional verify method to run extra assertions.
 type generateFixture struct {
-	name string
-	spec string
-	// target    string
+	spec      string
 	wantError bool
-	prepare   func(opts *GenOpts) func(*testing.T)
+	prepare   optionsBuilder
 	verify    func(target string) func(*testing.T)
 }
 
-func (f generateFixture) base(root string) string {
-	return filepath.Join(root, randWithPattern("generated"))
-}
-
-// prepareTarget prepares the directory layout necessary to generate code.
+// harnessTarget computes and prepares (mkdir + go.mod init) a unique target
+// directory for a fixture.
 //
-// It initializes a go.mod in the target directory.
-func (f generateFixture) prepareTarget(name, base, root string, opts *GenOpts) func(*testing.T) {
-	return func(t *testing.T) {
-		if name == "" {
-			name = f.name
-		}
+// It mangles the directory name with a standalone language mangler, so no
+// generation options need to exist yet.
+func harnessTarget(t *testing.T, name, base, root string) string {
+	t.Helper()
 
-		spec := filepath.FromSlash(f.spec)
-		opts.Spec = spec
+	generated := filepath.Join(root, randWithPattern("generated"))
+	target := filepath.Join(generated, language.GolangOpts().ManglePackageName(name, base))
 
-		generated := f.base(root)
-		opts.Target = filepath.Join(generated, opts.LanguageOpts.ManglePackageName(name, base))
+	require.NoErrorf(t, os.MkdirAll(target, 0o700), "error in test creating target dir")
+	t.Run("init module", gentest.GoModInit(target))
 
-		require.NoErrorf(t, os.MkdirAll(opts.Target, 0o700), "error in test creating target dir")
-		t.Run("init module", gentest.GoModInit(opts.Target))
-	}
+	return target
 }
 
 func (f generateFixture) warnFailed(t *testing.T) {

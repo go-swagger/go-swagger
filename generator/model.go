@@ -59,15 +59,11 @@ func GenerateModels(modelNames []string, opts *GenOpts) error {
 
 // GenerateDefinition generates a single model file for some schema definitions.
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
-	if err := opts.CheckOpts(); err != nil {
+	if err := opts.Prepare(); err != nil {
 		return err
 	}
 
-	if err := opts.setTemplates(); err != nil {
-		return err
-	}
-
-	specDoc, _, err := opts.analyzeSpec()
+	specDoc, _, err := newSpecAnalyzer(opts).analyzeSpec()
 	if err != nil {
 		return err
 	}
@@ -141,7 +137,7 @@ func (m *definitionGenerator) Generate() error {
 
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	debugLogf("rendering definitions for %+v", *g)
-	return m.opts.renderDefinition(g)
+	return newRenderer(m.opts).renderDefinition(g)
 }
 
 func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {

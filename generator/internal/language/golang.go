@@ -32,7 +32,7 @@ func GolangOpts(extraInitialisms ...string) *Options {
 		"continue", "for", "import", "return", "var",
 	}
 	opts.ExtraInitialisms = extraInitialisms
-	opts.formatFunc = defaultGoFormatFunc() // this default may be overridden by [GenOptsCommon]
+	opts.formatFunc = defaultGoFormatFunc() // this default may be overridden by [GenOpts]
 	opts.fileNameFunc = opts.defaultGoFilenameFunc(goOtherReservedSuffixes())
 	opts.dirNameFunc = defaultGoDirnameFunc()
 	opts.ImportsFunc = defaultGoImportsFunc()

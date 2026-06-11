@@ -34,18 +34,16 @@ func TestSanitizeGenHarness(t *testing.T) {
 	root := t.TempDir()
 
 	t.Run("x-go-custom-tag is contained (model)", func(t *testing.T) {
-		opts := testGenOpts()
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/x-go-custom-tag.yaml"}
-		t.Run("prepare", f.prepareTarget("custom_tag", "model_test", root, opts))
+		target := harnessTarget(t, "custom_tag", "model_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-custom-tag.yaml", target)
 
 		require.NoError(t, GenerateModels([]string{"", ""}, opts))
 		assertNoInjectedDecl(t, filepath.Join(opts.Target, defaultModelsTarget))
 	})
 
 	t.Run("x-go-type is contained (model)", func(t *testing.T) {
-		opts := testGenOpts()
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/x-go-type.yaml"}
-		t.Run("prepare", f.prepareTarget("x_go_type", "model_test", root, opts))
+		target := harnessTarget(t, "x_go_type", "model_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-type.yaml", target)
 
 		// The hostile extension is skipped (warning logged); generation succeeds
 		// with the field falling back to a plain string.
@@ -54,9 +52,8 @@ func TestSanitizeGenHarness(t *testing.T) {
 	})
 
 	t.Run("x-go-name on discriminator is contained (model)", func(t *testing.T) {
-		opts := testGenOpts()
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/x-go-name-discriminator.yaml"}
-		t.Run("prepare", f.prepareTarget("go_name_disc", "model_test", root, opts))
+		target := harnessTarget(t, "go_name_disc", "model_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-name-discriminator.yaml", target)
 
 		// The hostile overrides are skipped (warning logged); the types fall back
 		// to their mangled schema names.
@@ -65,18 +62,16 @@ func TestSanitizeGenHarness(t *testing.T) {
 	})
 
 	t.Run("x-go-name on parameter is rejected (server)", func(t *testing.T) {
-		opts := testGenOpts()
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/x-go-name-param.yaml"}
-		t.Run("prepare", f.prepareTarget("go_name_param", "server_test", root, opts))
+		target := harnessTarget(t, "go_name_param", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-name-param.yaml", target)
 
 		require.Error(t, GenerateServer("", nil, nil, opts),
 			"generation must reject a hostile x-go-name parameter override")
 	})
 
 	t.Run("comment injection is contained (server)", func(t *testing.T) {
-		opts := testGenOpts()
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/comments.yaml"}
-		t.Run("prepare", f.prepareTarget("comments", "server_test", root, opts))
+		target := harnessTarget(t, "comments", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/comments.yaml", target)
 
 		// info.description and the operation summary carry Go breakout payloads
 		// (block "*/", newline, //go: directive). Generation succeeds: the free
@@ -87,10 +82,9 @@ func TestSanitizeGenHarness(t *testing.T) {
 	})
 
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
-		opts := testClientGenOpts()
-		opts.IncludeCLi = true
-		f := generateFixture{spec: "../fixtures/codegen/sanitize/cli-injection.yaml"}
-		t.Run("prepare", f.prepareTarget("cli_injection", "cli_test", root, opts))
+		target := harnessTarget(t, "cli_injection", "cli_test", root)
+		opts := NewGenOpts(ForCli(),
+			WithSpec("../fixtures/codegen/sanitize/cli-injection.yaml"), WithTarget(target))
 
 		// A security-definition name/description and an operation summary carry
 		// payloads that try to break out of the Go string literals emitted by the

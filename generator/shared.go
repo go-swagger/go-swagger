@@ -4,30 +4,22 @@
 package generator
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
-	"regexp"
 	"slices"
 	"sort"
 	"strings"
-	"text/template"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/spec"
 
 	"github.com/go-swagger/go-swagger/generator/internal/language"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
 const (
@@ -35,6 +27,7 @@ const (
 	defaultModelsTarget         = "models"
 	defaultServerTarget         = "restapi"
 	defaultClientTarget         = "client"
+	defaultCliTarget            = "cli"
 	defaultOperationsTarget     = "operations"
 	defaultClientName           = "rest"
 	defaultServerName           = "swagger"
@@ -304,122 +297,36 @@ type SectionOpts struct {
 	PostModels      []TemplateOpts `mapstructure:"post_models"`
 }
 
-// GenOptsCommon the options for the generator.
-type GenOptsCommon struct {
-	IncludeModel               bool
-	IncludeValidator           bool
-	IncludeHandler             bool
-	IncludeParameters          bool
-	IncludeResponses           bool
-	IncludeURLBuilder          bool
-	IncludeMain                bool
-	IncludeSupport             bool
-	IncludeCLi                 bool
-	ExcludeSpec                bool
-	DumpData                   bool
-	ValidateSpec               bool
-	FlattenOpts                *analysis.FlattenOpts
-	IsClient                   bool
-	defaultsEnsured            bool
-	PropertiesSpecOrder        bool
-	StrictAdditionalProperties bool
-	AllowTemplateOverride      bool
-
-	Spec                   string
-	APIPackage             string
-	ModelPackage           string
-	ServerPackage          string
-	ClientPackage          string
-	CliPackage             string
-	CliAppName             string // name of cli app. For example "dockerctl"
-	ImplementationPackage  string
-	Principal              string
-	PrincipalCustomIface   bool   // user-provided interface for Principal (non-nullable)
-	Target                 string // dir location where generated code is written to
-	Sections               SectionOpts
-	LanguageOpts           *language.Options
-	TypeMapping            map[string]string
-	Imports                map[string]string
-	DefaultScheme          string
-	DefaultProduces        string
-	DefaultConsumes        string
-	WithXML                bool
-	TemplateDir            string
-	Template               string
-	RegenerateConfigureAPI bool
-	Operations             []string
-	Models                 []string
-	Tags                   []string
-	StructTags             []string
-	Name                   string
-	FlagStrategy           string
-	CompatibilityMode      string
-	ExistingModels         string
-	Copyright              string
-	SkipTagPackages        bool
-	MainPackage            string
-	IgnoreOperations       bool
-	AllowEnumCI            bool
-	StrictResponders       bool
-	AcceptDefinitionsOnly  bool
-	WantsRootedErrorPath   bool
-	ReturnErrors           bool
-	WithCustomFormatter    bool
-	WithExtraInitialisms   []string
-
-	templates *templatesrepo.Repository
-	funcMap   template.FuncMap
-}
-
-// CheckOpts carries out some global consistency checks on options.
-func (g *GenOpts) CheckOpts() error {
-	if g == nil {
-		return errors.New("gen opts are required")
+// overrideWith returns the receiver with each section replaced by the
+// corresponding non-empty section from o.
+//
+// It layers a config-file `layout:` on top of the default render plan: the user
+// only specifies the sections they want to change, and the rest keep their
+// defaults.
+func (s SectionOpts) overrideWith(o SectionOpts) SectionOpts {
+	if len(o.Application) > 0 {
+		s.Application = o.Application
+	}
+	if len(o.Operations) > 0 {
+		s.Operations = o.Operations
+	}
+	if len(o.OperationGroups) > 0 {
+		s.OperationGroups = o.OperationGroups
+	}
+	if len(o.Models) > 0 {
+		s.Models = o.Models
+	}
+	if len(o.PostModels) > 0 {
+		s.PostModels = o.PostModels
 	}
 
-	if !filepath.IsAbs(g.Target) {
-		if _, err := filepath.Abs(g.Target); err != nil {
-			return fmt.Errorf("could not locate target %s: %w", g.Target, err)
-		}
-	}
-
-	if filepath.IsAbs(g.ServerPackage) {
-		return fmt.Errorf("you shouldn't specify an absolute path in --server-package: %s", g.ServerPackage)
-	}
-
-	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
-		return nil
-	}
-
-	pth, err := findSwaggerSpec(g.Spec)
-	if err != nil {
-		return err
-	}
-
-	// ensure spec path is absolute
-	g.Spec, err = filepath.Abs(pth)
-	if err != nil {
-		return fmt.Errorf("could not locate spec: %s", g.Spec)
-	}
-
-	if g.WithCustomFormatter {
-		// whenever opting for the custom formatter, we leave the basic formatting to the standard
-		// imports.Process and focus on a custom handling of imports.
-		g.LanguageOpts.FormatOnly = true
-		g.LanguageOpts.SetFormatFunc(language.FormatLite)
-	}
-
-	if len(g.WithExtraInitialisms) > 0 {
-		g.LanguageOpts.ExtraInitialisms = g.WithExtraInitialisms
-	}
-
-	return nil
+	return s
 }
 
 // TargetPath returns the target generation path relative to the server package.
 // This method is used by templates, e.g. with {{ .TargetPath }}
 //
-// Errors cases are prevented by calling CheckOpts beforehand.
+// Error cases are prevented by calling Prepare beforehand.
 //
 // Example:
 // Target: ${PWD}/tmp
@@ -450,7 +357,7 @@ func (g *GenOpts) TargetPath() string {
 //
 // This method is used by templates, e.g. with {{ .SpecPath }}
 //
-// Errors cases are prevented by calling CheckOpts beforehand.
+// Error cases are prevented by calling Prepare beforehand.
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
@@ -473,450 +380,8 @@ func (g *GenOpts) SpecPath() string {
 	return specRel
 }
 
-// PrincipalIsNullable indicates whether the principal type used for authentication
-// may be used as a pointer.
-func (g *GenOpts) PrincipalIsNullable() bool {
-	debugLogf("Principal: %s, %t, isnullable: %t", g.Principal, g.PrincipalCustomIface, g.Principal != iface && !g.PrincipalCustomIface)
-	return g.Principal != iface && !g.PrincipalCustomIface
-}
-
-// EnsureDefaults for these gen opts.
-func (g *GenOpts) EnsureDefaults() error {
-	if g.defaultsEnsured {
-		return nil
-	}
-
-	if g.LanguageOpts == nil {
-		g.LanguageOpts = language.GolangOpts(g.WithExtraInitialisms...)
-	}
-
-	DefaultSectionOpts(g)
-
-	assets := defaultAssets()
-	protectedTemplates := defaultProtectedTemplates()
-
-	g.funcMap = DefaultFuncMap(g.LanguageOpts)
-	g.templates = templatesrepo.NewRepository(g.funcMap)
-	if err := g.templates.LoadDefaults(assets); err != nil {
-		fatal(err)
-	}
-	g.templates.SetProtectedTemplates(protectedTemplates)
-
-	// set defaults for flattening options
-	if g.FlattenOpts == nil {
-		g.FlattenOpts = &analysis.FlattenOpts{
-			Minimal:      true,
-			Verbose:      true,
-			RemoveUnused: false,
-			Expand:       false,
-		}
-	}
-
-	if g.DefaultScheme == "" {
-		g.DefaultScheme = defaultScheme
-	}
-
-	if g.DefaultConsumes == "" {
-		g.DefaultConsumes = runtime.JSONMime
-	}
-
-	if g.DefaultProduces == "" {
-		g.DefaultProduces = runtime.JSONMime
-	}
-
-	// always include validator with models
-	g.IncludeValidator = true
-
-	if g.Principal == "" {
-		g.Principal = iface
-		g.PrincipalCustomIface = false
-	}
-
-	g.defaultsEnsured = true
-	return nil
-}
-
-func (g *GenOpts) location(t *TemplateOpts, data any) (string, string, error) {
-	v := reflect.Indirect(reflect.ValueOf(data))
-	fld := v.FieldByName("Name")
-	var name string
-	if fld.IsValid() {
-		log.Println("name field", fld.String())
-		name = fld.String()
-	}
-
-	fldpack := v.FieldByName("Package")
-	pkg := g.APIPackage
-	if fldpack.IsValid() {
-		log.Println("package field", fldpack.String())
-		pkg = fldpack.String()
-	}
-
-	var tags []string
-	tagsF := v.FieldByName("Tags")
-	if tagsF.IsValid() {
-		if tt, ok := tagsF.Interface().([]string); ok {
-			tags = tt
-		}
-	}
-
-	var useTags bool
-	useTagsF := v.FieldByName("UseTags")
-	if useTagsF.IsValid() {
-		var ok bool
-		useTags, ok = useTagsF.Interface().(bool)
-		if !ok {
-			return "", "", fmt.Errorf("expected UseTags to be bool, but got %T", useTagsF.Interface())
-		}
-	}
-
-	pthTpl, err := template.New(t.Name + "-target").Funcs(g.funcMap).Parse(t.Target)
-	if err != nil {
-		return "", "", err
-	}
-
-	fNameTpl, err := template.New(t.Name + "-filename").Funcs(g.funcMap).Parse(t.FileName)
-	if err != nil {
-		return "", "", err
-	}
-
-	d := struct {
-		Name, CliAppName,
-		Package, APIPackage, ServerPackage, ClientPackage, CliPackage, ModelPackage, MainPackage,
-		Target string
-		Tags    []string
-		UseTags bool
-		Context any
-	}{
-		Name:          name,
-		CliAppName:    g.CliAppName,
-		Package:       pkg,
-		APIPackage:    g.APIPackage,
-		ServerPackage: g.ServerPackage,
-		ClientPackage: g.ClientPackage,
-		CliPackage:    g.CliPackage,
-		ModelPackage:  g.ModelPackage,
-		MainPackage:   g.MainPackage,
-		Target:        g.Target,
-		Tags:          tags,
-		UseTags:       useTags,
-		Context:       data,
-	}
-
-	var pthBuf bytes.Buffer
-	if e := pthTpl.Execute(&pthBuf, d); e != nil {
-		return "", "", e
-	}
-
-	var fNameBuf bytes.Buffer
-	if e := fNameTpl.Execute(&fNameBuf, d); e != nil {
-		return "", "", e
-	}
-	return pthBuf.String(), g.fileName(fNameBuf.String()), nil
-}
-
-func (g *GenOpts) render(t *TemplateOpts, data any) ([]byte, error) {
-	var templ *template.Template
-
-	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
-		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
-		if err != nil {
-			return nil, err
-		}
-		templ = tt
-	}
-
-	if templ == nil {
-		// try to load from repository (and enable dependencies)
-		name := g.LanguageOpts.Mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err := g.templates.Get(name)
-		if err == nil {
-			templ = tt
-		}
-	}
-
-	if templ == nil {
-		// try to load template from disk, in TemplateDir if specified
-		// (dependencies resolution is limited to preloaded assets)
-		var templateFile string
-		if g.TemplateDir != "" {
-			templateFile = filepath.Join(g.TemplateDir, t.Source)
-		} else {
-			templateFile = t.Source
-		}
-		content, err := os.ReadFile(templateFile)
-		if err != nil {
-			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
-		}
-		tt, err := template.New(t.Source).Funcs(g.funcMap).Parse(string(content))
-		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %s: %w", t.Name, err)
-		}
-		templ = tt
-	}
-
-	if templ == nil {
-		return nil, fmt.Errorf("template %q not found", t.Source)
-	}
-
-	var tBuf bytes.Buffer
-	if err := templ.Execute(&tBuf, data); err != nil {
-		return nil, fmt.Errorf("template execution failed for template %s: %w", t.Name, err)
-	}
-	log.Printf("executed template %s", t.Source)
-
-	return tBuf.Bytes(), nil
-}
-
-// Render template and write generated source code
-// generated code is reformatted ("linted"), which gives an
-// additional level of checking. If this step fails, the generated
-// code is still dumped, for template debugging purposes.
-func (g *GenOpts) write(t *TemplateOpts, data any) error {
-	dir, fname, err := g.location(t, data)
-	if err != nil {
-		return fmt.Errorf("failed to resolve template location for template %s: %w", t.Name, err)
-	}
-
-	if t.SkipExists && fileExists(dir, fname) {
-		debugLogf("skipping generation of %s because it already exists and skip_exist directive is set for %s",
-			filepath.Join(dir, fname), t.Name)
-		return nil
-	}
-
-	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
-	content, err := g.render(t, data)
-	if err != nil {
-		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
-	}
-
-	if dir != "" {
-		_, exists := os.Stat(dir)
-		if os.IsNotExist(exists) {
-			debugLogf("creating directory %q for \"%s\"", dir, t.Name)
-			// Directory settings consistent with file privileges.
-			// Environment's umask may alter this setup
-			if e := os.MkdirAll(dir, readAllDir); e != nil {
-				return e
-			}
-		}
-	}
-
-	// Conditionally format the code, unless the user wants to skip
-	formatted := content
-	var writeerr error
-
-	if !t.SkipFormat {
-		baseImport := g.LanguageOpts.BaseImport(g.Target)
-
-		formatted, err = g.LanguageOpts.FormatContent(
-			filepath.Join(dir, fname), content,
-			language.WithFormatOnly(g.LanguageOpts.FormatOnly),
-			language.WithFormatLocalPrefixes(baseImport),
-		)
-		if err != nil {
-			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
-			writeerr = os.WriteFile(filepath.Join(dir, fname), content, readAllFile) // #nosec
-			if writeerr != nil {
-				return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
-			}
-			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
-			return fmt.Errorf("source formatting on generated source %q failed: %w", t.Name, err)
-		}
-	}
-
-	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, readAllFile) // #nosec
-	if writeerr != nil {
-		return fmt.Errorf("failed to write file %q in %q: %w", fname, dir, writeerr)
-	}
-	return err
-}
-
-func (g *GenOpts) fileName(in string) string {
-	ext := filepath.Ext(in)
-	return g.LanguageOpts.Mangler.ToFileName(strings.TrimSuffix(in, ext)) + ext
-}
-
-func (g *GenOpts) shouldRenderApp(t *TemplateOpts, _ *GenApp) bool {
-	switch g.LanguageOpts.Mangler.ToFileName(g.LanguageOpts.Mangler.ToGoName(t.Name)) {
-	case "main":
-		return g.IncludeMain
-	case "embedded_spec":
-		return !g.ExcludeSpec
-	default:
-		return true
-	}
-}
-
-func (g *GenOpts) shouldRenderOperations() bool {
-	return g.IncludeHandler || g.IncludeParameters || g.IncludeResponses
-}
-
-func (g *GenOpts) renderApplication(app *GenApp) error {
-	log.Printf("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
-	for _, tp := range g.Sections.Application {
-		templ := tp
-		if !g.shouldRenderApp(&templ, app) {
-			continue
-		}
-		if err := g.write(&templ, app); err != nil {
-			return err
-		}
-	}
-
-	if len(g.Sections.PostModels) > 0 {
-		log.Printf("post-rendering from %d models", len(app.Models))
-		for _, templateToPin := range g.Sections.PostModels {
-			templateConfig := templateToPin
-			for _, modelToPin := range app.Models {
-				modelData := modelToPin
-				if err := g.write(&templateConfig, modelData); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
-	log.Printf("rendering %d templates for operation group %s", len(g.Sections.OperationGroups), g.Name)
-	for _, tp := range g.Sections.OperationGroups {
-		templ := tp
-		if !g.shouldRenderOperations() {
-			continue
-		}
-
-		if err := g.write(&templ, gg); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (g *GenOpts) renderOperation(gg *GenOperation) error {
-	log.Printf("rendering %d templates for operation %s", len(g.Sections.Operations), g.Name)
-	for _, tp := range g.Sections.Operations {
-		templ := tp
-		if !g.shouldRenderOperations() {
-			continue
-		}
-
-		if err := g.write(&templ, gg); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
-	log.Printf("rendering %d templates for model %s", len(g.Sections.Models), gg.Name)
-	for _, tp := range g.Sections.Models {
-		templ := tp
-		if !g.IncludeModel {
-			continue
-		}
-
-		if err := g.write(&templ, gg); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (g *GenOptsCommon) setTemplates() error {
-	if g.Template != "" {
-		// set contrib templates
-		if err := g.templates.LoadContrib(g.Template, embeddedAssets{}); err != nil {
-			return err
-		}
-	}
-
-	g.templates.SetAllowOverride(g.AllowTemplateOverride)
-
-	if g.TemplateDir != "" {
-		// set custom templates
-		if err := g.templates.LoadDir(g.TemplateDir); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// defaultImports produces a default map for imports with models.
-func (g *GenOpts) defaultImports() map[string]string {
-	baseImport := g.LanguageOpts.BaseImport(g.Target)
-	defaultImports := make(map[string]string, sensibleDefaultMapAlloc)
-
-	var modelsAlias, importPath string
-	if g.ExistingModels == "" {
-		// generated models
-		importPath = path.Join(
-			baseImport,
-			g.LanguageOpts.ManglePackagePath(g.ModelPackage, defaultModelsTarget))
-		modelsAlias = g.LanguageOpts.ManglePackageName(g.ModelPackage, defaultModelsTarget)
-	} else {
-		// external models
-		importPath = g.LanguageOpts.ManglePackagePath(g.ExistingModels, "")
-		modelsAlias = path.Base(defaultModelsTarget)
-	}
-	defaultImports[modelsAlias] = importPath
-
-	// resolve model representing an authenticated principal
-	alias, _, target := g.resolvePrincipal()
-	if alias == "" || target == g.ModelPackage || path.Base(target) == modelsAlias {
-		// if principal is specified with the models generation package, do not import any extra package
-		return defaultImports
-	}
-
-	if pth, _ := path.Split(target); pth != "" {
-		// if principal is specified with a path, assume this is a fully qualified package and generate this import
-		defaultImports[alias] = target
-	} else {
-		// if principal is specified with a relative path (no "/", e.g. internal.Principal), assume it is located in generated target
-		defaultImports[alias] = path.Join(baseImport, target)
-	}
-	return defaultImports
-}
-
-// initImports produces a default map for import with the specified root for operations.
-func (g *GenOpts) initImports(operationsPackage string) map[string]string {
-	baseImport := g.LanguageOpts.BaseImport(g.Target)
-
-	imports := make(map[string]string, sensibleDefaultMapAlloc)
-	imports[g.LanguageOpts.ManglePackageName(operationsPackage, defaultOperationsTarget)] = path.Join(
-		baseImport,
-		g.LanguageOpts.ManglePackagePath(operationsPackage, defaultOperationsTarget))
-	return imports
-}
-
-// PrincipalAlias returns an aliased type to the principal.
-func (g *GenOpts) PrincipalAlias() string {
-	_, principal, _ := g.resolvePrincipal()
-	return principal
-}
-
-var ifaceRex = regexp.MustCompile(`^interface\s\{\s*\}$`)
-
-func (g *GenOpts) resolvePrincipal() (string, string, string) {
-	if ifaceRex.MatchString(g.Principal) {
-		return "", "any", ""
-	}
-
-	dotLocation := strings.LastIndex(g.Principal, ".")
-	if dotLocation < 0 {
-		return "", g.Principal, ""
-	}
-
-	// handle possible conflicts with injected principal package
-	// NOTE(fred): we do not check here for conflicts with packages created from operation tags, only standard imports
-	alias := deconflictPrincipal(importAlias(g.Principal[:dotLocation]))
-	return alias, alias + g.Principal[dotLocation:], g.Principal[:dotLocation]
-}
-
 // titleOrDefault infers a name for the app from the title of the spec.
-func (g *GenOpts) titleOrDefault(specDoc *loads.Document, name, defaultName string) string {
+func titleOrDefault(lang *language.Options, specDoc *loads.Document, name, defaultName string) string {
 	if strings.TrimSpace(name) == "" {
 		if specDoc.Spec().Info != nil && strings.TrimSpace(specDoc.Spec().Info.Title) != "" {
 			name = specDoc.Spec().Info.Title
@@ -924,19 +389,19 @@ func (g *GenOpts) titleOrDefault(specDoc *loads.Document, name, defaultName stri
 			name = defaultName
 		}
 	}
-	return g.LanguageOpts.Mangler.ToGoName(name)
+	return lang.Mangler.ToGoName(name)
 }
 
-func (g *GenOpts) mainNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
+func mainNameOrDefault(lang *language.Options, specDoc *loads.Document, name, defaultName string) string {
 	// *_test won't do as main server name
-	return strings.TrimSuffix(g.titleOrDefault(specDoc, name, defaultName), "Test")
+	return strings.TrimSuffix(titleOrDefault(lang, specDoc, name, defaultName), "Test")
 }
 
-func (g *GenOpts) appNameOrDefault(specDoc *loads.Document, name, defaultName string) string {
+func appNameOrDefault(lang *language.Options, specDoc *loads.Document, name, defaultName string) string {
 	// *_test won't do as app names
-	name = strings.TrimSuffix(g.titleOrDefault(specDoc, name, defaultName), "Test")
+	name = strings.TrimSuffix(titleOrDefault(lang, specDoc, name, defaultName), "Test")
 	if name == "" {
-		name = g.LanguageOpts.Mangler.ToGoName(defaultName)
+		name = lang.Mangler.ToGoName(defaultName)
 	}
 
 	return name

@@ -132,7 +132,7 @@ func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts.IncludeModel = true
 	opts.ValidateSpec = false
 	opts.Spec = f.SpecFile
-	if err := opts.EnsureDefaults(); err != nil {
+	if err := ensureMachinery(opts); err != nil {
 		panic(err)
 	}
 
@@ -330,19 +330,30 @@ func TestModelGenerateDefinition(t *testing.T) {
 	require.NoError(t, os.MkdirAll(gendir, readableDir))
 	t.Run("go mod init", gentest.GoModInit(gendir))
 
-	opts := &GenOpts{}
-	opts.IncludeValidator = true
-	opts.IncludeModel = true
-	opts.ValidateSpec = false
-	opts.Spec = fixtureSpec
-	opts.ModelPackage = "models"
-	opts.Target = gendir
-	require.NoError(t, opts.EnsureDefaults())
+	// mkOpts builds a fresh, finalized set of options for each scenario.
+	//
+	// Each subtest that changes the options (template dir, spec...) builds its
+	// own instance rather than mutating a shared one: GenOpts is finalized once
+	// (Prepare is idempotent), so reusing a prepared instance across scenarios
+	// with different inputs would silently ignore the changes.
+	mkOpts := func() *GenOpts {
+		o := &GenOpts{}
+		o.IncludeValidator = true
+		o.IncludeModel = true
+		o.ValidateSpec = false
+		o.Spec = fixtureSpec
+		o.ModelPackage = "models"
+		o.Target = gendir
+		require.NoError(t, ensureMachinery(o))
 
-	// sets gen options (e.g. flatten vs expand) - minimal flatten is the default setting
-	opts.FlattenOpts.Minimal = false
+		// sets gen options (e.g. flatten vs expand) - minimal flatten is the default setting
+		o.FlattenOpts.Minimal = false
+
+		return o
+	}
 
 	t.Run("should generate definitions", func(t *testing.T) {
+		opts := mkOpts()
 		require.NoErrorf(t,
 			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
 			"expected GenerateDefinition() to run without error",
@@ -355,6 +366,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	})
 
 	t.Run("should generate definitions with templates dir", func(t *testing.T) {
+		opts := mkOpts()
 		opts.TemplateDir = gendir
 		require.NoErrorf(t,
 			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
@@ -370,6 +382,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	})
 
 	t.Run("should NOT generate definition when overwriting protected templates", func(t *testing.T) {
+		opts := mkOpts()
 		opts.TemplateDir = "templates"
 		require.Errorf(t,
 			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
@@ -378,7 +391,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	})
 
 	t.Run("should NOT generate definition when not in spec", func(t *testing.T) {
-		opts.TemplateDir = ""
+		opts := mkOpts()
 		require.Errorf(t,
 			GenerateDefinition([]string{"myAbsentDefinition"}, opts),
 			"expected GenerateDefinition() to return an error when the model is not in spec",
@@ -386,6 +399,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	})
 
 	t.Run("should NOT generate definition when the spec is available", func(t *testing.T) {
+		opts := mkOpts()
 		opts.Spec = "pathToNowhere"
 		require.Errorf(t,
 			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
@@ -415,7 +429,7 @@ func TestMoreModelValidations(t *testing.T) {
 				opts := fixtureRun.FixtureOpts
 				opts.Spec = fixtureSpec
 				// this is the expanded or flattened spec
-				newSpecDoc, err := opts.validateAndFlattenSpec()
+				newSpecDoc, err := newSpecAnalyzer(opts).validateAndFlattenSpec()
 				require.NoErrorf(t, err, "could not expand/flatten fixture %s: %v", fixtureSpec, err)
 
 				definitions := newSpecDoc.Spec().Definitions

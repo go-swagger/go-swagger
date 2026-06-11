@@ -1045,24 +1045,12 @@ func TestGenClient_2773(t *testing.T) {
 }
 
 func testClientGenOpts() *GenOpts {
-	g := &GenOpts{}
+	g := NewGenOpts(ForClient())
 	g.Target = "."
-	g.APIPackage = defaultAPIPackage
-	g.ModelPackage = defaultModelPackage
-	g.ServerPackage = defaultServerPackage
-	g.ClientPackage = defaultClientPackage
-	g.Principal = ""
-	g.IncludeModel = true
-	g.IncludeHandler = true
-	g.IncludeParameters = true
-	g.IncludeResponses = true
-	g.IncludeSupport = true
-	g.TemplateDir = ""
-	g.DumpData = false
-	g.IsClient = true
-	if err := g.EnsureDefaults(); err != nil {
+	if err := ensureMachinery(g); err != nil {
 		panic(err)
 	}
+
 	return g
 }
 

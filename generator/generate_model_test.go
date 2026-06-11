@@ -30,14 +30,14 @@ func TestGenerateModels(t *testing.T) {
 					thisCas.warnFailed(t)
 				}()
 
-				opts := testGenOpts()
-				t.Run("should prepare directory layout",
-					thisCas.prepareTarget(name, "model_test", root, opts),
-				)
+				spec := filepath.FromSlash(thisCas.spec)
+				target := harnessTarget(t, name, "model_test", root)
 
-				if thisCas.prepare != nil {
-					t.Run("should prepare testcase", thisCas.prepare(opts))
+				build := thisCas.prepare
+				if build == nil {
+					build = defaultServerOpts
 				}
+				opts := build(t, spec, target)
 
 				t.Run("generating test models from: "+opts.Spec, func(t *testing.T) {
 					err := GenerateModels([]string{"", ""}, opts) // NOTE: generate all models, ignore ""
@@ -73,10 +73,11 @@ func generateModelFixtures() map[string]generateFixture {
 		"acceptDefinitions": {
 			spec: "../fixtures/enhancements/2333/fixture-definitions.yaml",
 			// target: "../fixtures/enhancements/2333",
-			prepare: func(opts *GenOpts) func(*testing.T) {
-				return func(_ *testing.T) {
-					opts.AcceptDefinitionsOnly = true
-				}
+			prepare: func(t *testing.T, spec, target string) *GenOpts {
+				g := defaultServerOpts(t, spec, target)
+				g.AcceptDefinitionsOnly = true
+
+				return g
 			},
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
@@ -104,15 +105,15 @@ func generateModelFixtures() map[string]generateFixture {
 		},
 		"with-initialisms": {
 			spec: "../fixtures/bugs/3358/swagger.yaml",
-			prepare: func(opts *GenOpts) func(*testing.T) {
-				return func(t *testing.T) {
-					// reset language opts for this test
-					opts.WithExtraInitialisms = []string{"xy"}
-					opts.LanguageOpts = nil
-					opts.defaultsEnsured = false
-					require.NoError(t, opts.EnsureDefaults())
-					require.SliceContainsT(t, opts.LanguageOpts.Mangler.Initialisms(), "XY")
-				}
+			prepare: func(t *testing.T, spec, target string) *GenOpts {
+				// the extra initialisms are an input to the machinery: set them
+				// before finalizing, then assert they made it into the mangler.
+				g := defaultServerOpts(t, spec, target)
+				g.WithExtraInitialisms = []string{"xy"}
+				require.NoError(t, g.Prepare())
+				require.SliceContainsT(t, g.LanguageOpts.Mangler.Initialisms(), "XY")
+
+				return g
 			},
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
