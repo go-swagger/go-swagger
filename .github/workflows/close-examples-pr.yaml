@@ -23,7 +23,7 @@ jobs:
     steps:
       -
         name: Configure bot credentials
-        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@70c5bbea429a7d10a082ac9efb83036da0c5b7d0 # v1.4.14
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@b0542d87f701a2fdba9629421026a2bdd54e2859 # v1.4.15
         id: bot-credentials
         with:
           enable-github-app: "true"
