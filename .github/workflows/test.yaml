@@ -263,7 +263,7 @@ jobs:
           cache: true
 
       - name: Install gotestsum
-        uses: go-openapi/gh-actions/install/gotestsum@70c5bbea429a7d10a082ac9efb83036da0c5b7d0
+        uses: go-openapi/gh-actions/install/gotestsum@b0542d87f701a2fdba9629421026a2bdd54e2859
 
       - name: Ensure TMP is created on windows runners
         # On windows, tests require testing.TempDir to reside on the same drive as the code.
@@ -471,7 +471,7 @@ jobs:
           path: coverage/
 
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           name: Aggregated coverage
           # All *.coverage.*.out files uploaded should be detected by the codecov action.
@@ -507,7 +507,7 @@ jobs:
           path: reports/
       -
         name: Install go-junit-report
-        uses: go-openapi/gh-actions/install/go-junit-report@70c5bbea429a7d10a082ac9efb83036da0c5b7d0
+        uses: go-openapi/gh-actions/install/go-junit-report@b0542d87f701a2fdba9629421026a2bdd54e2859
 
       - name: Convert test reports to a merged JUnit XML
         # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
@@ -522,7 +522,7 @@ jobs:
 
       - name: Upload test results to Codecov
         # This allows for using the test results UI on codecov
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: '**/junit_report.xml'
           report_type: 'test_results'
@@ -531,7 +531,7 @@ jobs:
           verbose: true
       -
         name: Install go-ctrf-json-reporter
-        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@70c5bbea429a7d10a082ac9efb83036da0c5b7d0
+        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@b0542d87f701a2fdba9629421026a2bdd54e2859
 
       - name: Convert test reports to CTRF JSON
         # description: |
