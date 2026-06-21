@@ -76,4 +76,6 @@ schemes:
 securityDefinitions:
     basic:
         type: basic
+security:
+  - basic: []
 swagger: "2.0"
