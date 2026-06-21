@@ -47,10 +47,11 @@ func testEmbeddedDescriptionAndTagsFull(srcPath string, allowDescWithRef bool, e
 			Packages: []string{
 				"./...",
 			},
-			WorkDir:     srcPath,
-			ScanModels:  true,
-			DescWithRef: allowDescWithRef,
-			BuildTags:   "testintegration",
+			WorkDir:              srcPath,
+			ScanModels:           true,
+			EmitRefSiblings:      allowDescWithRef,
+			BuildTags:            "testintegration",
+			SkipAllOfCompounding: false,
 		}
 
 		swspec, err := codescan.Run(opts)

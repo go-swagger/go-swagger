@@ -74,6 +74,8 @@ responses:
             $ref: '#/definitions/FooBarResponse'
 schemes:
     - http
+security:
+  - basic: []
 securityDefinitions:
     basic:
         type: basic
