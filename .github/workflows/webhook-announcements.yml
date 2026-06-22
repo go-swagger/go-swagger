@@ -1,0 +1,62 @@
+name: Webhook Announcements
+
+# invoke the common webhook-announcements workflow, scanning README.
+#
+# Two modes:
+#
+#   * push (fixture changed): runs in dry-run mode (payloads printed, never
+#     posted) so editing the fixture's "## Announcements" section exercises the
+#     real before..after detection without spamming any channel.
+#
+#   * workflow_dispatch: a manual live test. Provide an arbitrary webhook URL and
+#     it POSTs for real. By default it diffs against the git empty tree, so every
+#     announcement currently in the fixture is posted — no need to craft a diff.
+#
+# NOTE: the webhook URL you type is a workflow_dispatch input and is therefore
+# visible in the run's UI/logs. Use a throwaway test webhook (and/or rotate it
+# afterwards), not the production go-openapi webhook.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'README.md'
+
+  workflow_dispatch:
+    inputs:
+      webhook-url:
+        description: |
+          Webhook URL to POST to (e.g. a test Discord channel webhook).
+          Visible in run logs — use a throwaway webhook.
+        type: string
+        required: true
+      compare-base:
+        description: |
+          Git ref to diff the fixture against. The default empty-tree SHA posts
+          every announcement currently in the fixture.
+        type: string
+        default: ""
+      dry-run:
+        description: |
+          Print payloads instead of posting.
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+        default: 'false'
+
+jobs:
+  announce:
+    uses: github.com/go-openapi/ci-workflows/.github/workflows/webhook-announcements.yml@af4c93f45481ea7d24ac2a9858272cc03daf424e # v0.4.0
+    with:
+      scanned-markdown: README.md
+      # On push: normal before..after diff (empty
+      # compare-base). On dispatch: honor the provided inputs.
+      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || 'false' }}
+      compare-base: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-base || '' }}
+    secrets:
+      webhook-url: ${{ inputs.webhook-url }}

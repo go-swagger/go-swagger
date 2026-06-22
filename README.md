@@ -21,6 +21,27 @@ It provide tools to work with swagger specifications.
 
 ## Announcements
 
+* **2026-06-22** : v0.35.0 will land soon! (E.T.A end of June)
+  * **code generation**: security fixes that prevent generated code to produce code injected from an erroneous
+    or malicious spec. swagger validate now warns about possibly harmful $ref (e.g. from multiple origins).
+  * **spec generation**: major bug-bashing action on go-openapi/codescan (which has eventually become fixable...).
+    v0.35.0 closes ~200+ "generate spec" issues: bug fixes and requested enhancements. Spec generation now
+    produces a detailed diagnostic of how your code annotations may be misinterpreted. A complete documentation site
+    is now published at <https://go-openapi.github.io/codescan/>.
+  * Please check it out from master (or dev docker image). Your feedback is super important!
+
+* **2026-06-22** : v0.36.0 will land in July
+  * planned contents:
+  * **documentation**: restyle doc site like go-openapi doc sites, dedicate doc for examples, cover a significant
+    part of doc-related issues
+  * **spec generation**: expect anoter small lots of feature for more control over your rendered specs.
+    Codescan will publish its own lightweight CLI at a faster pace, as well as a TUI tool to
+    instantly check how you annotated code looks like as a spec
+    (preview: <https://github.com/go-swagger/go-swagger/issues/3372#issuecomment-4733107554>). We hope we'll be able
+    to land a Web playground on a similar principle (WASI build on top of codescan). go-swagger will still receive updates.
+  * **code generation**: we'll try our best land a few requested enhancements among the 50-60 reachable ones.
+    (most issues in codegen now have hit an "architecture wall": work has started on a v2 to overcome these limitations).
+
 * **2026-05-28** : v0.34.0 ships!
   * **major refactoring actions**: the repo has been split in smaller chunks, easier to understand:
     * code examples have moved to `go-swagger/examples`, with a CI to automate code regeneration
