@@ -80,6 +80,7 @@ type GenOpts struct {
 	StrictResponders       bool
 	AcceptDefinitionsOnly  bool
 	WantsRootedErrorPath   bool
+	WantsStringer          bool
 	ReturnErrors           bool
 	WithCustomFormatter    bool
 	WithExtraInitialisms   []string

@@ -103,6 +103,7 @@ type GenSchema struct {
 	IncludeModel               bool
 	Default                    any
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
+	WantsStringer              bool // do we generate the fmt.Stringer String() method?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 	ExternalDocs               *spec.ExternalDocumentation

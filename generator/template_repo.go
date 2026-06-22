@@ -140,6 +140,7 @@ func defaultAssets() map[string][]byte {
 		"allofserializer.gotmpl":                MustAsset("templates/serializers/allofserializer.gotmpl"),
 		"basetypeserializer.gotmpl":             MustAsset("templates/serializers/basetypeserializer.gotmpl"),
 		"marshalbinaryserializer.gotmpl":        MustAsset("templates/serializers/marshalbinaryserializer.gotmpl"),
+		"stringerserializer.gotmpl":             MustAsset("templates/serializers/stringerserializer.gotmpl"),
 		"schemaserializer.gotmpl":               MustAsset("templates/serializers/schemaserializer.gotmpl"),
 		"subtypeserializer.gotmpl":              MustAsset("templates/serializers/subtypeserializer.gotmpl"),
 		"tupleserializer.gotmpl":                MustAsset("templates/serializers/tupleserializer.gotmpl"),

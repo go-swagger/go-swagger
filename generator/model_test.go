@@ -2842,3 +2842,55 @@ func TestIssue2597(t *testing.T) {
 		})
 	})
 }
+
+// TestIssue872 covers the opt-in fmt.Stringer String() method on generated models.
+//
+// The original issue reported that formatting a model with %+v prints pointer
+// addresses for pointer properties (e.g. a required *string) rather than their
+// values. The String() method renders the field values as JSON instead.
+func TestIssue872(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/872/872.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	const model = "ModelError"
+
+	render := func(t *testing.T, opts *GenOpts) string {
+		t.Helper()
+
+		genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+		require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+		return string(ct)
+	}
+
+	t.Run("with WantsStringer option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsStringer = true
+
+		res := render(t, opts)
+
+		// the model gains a fmt.Stringer implementation with a pointer receiver
+		assertInCode(t, "func (m *ModelError) String() string {", res)
+		// it renders field values via the JSON serializer (GlenDC's json.Marshal idea),
+		// reusing the same helper as MarshalBinary - so pointer fields print their value
+		assertInCode(t, "jsonutils.WriteJSON(m)", res)
+		// it must NOT format the model with the Go-syntax verbs that leak pointer addresses
+		assertRegexpNotInCode(t, `String\(\)[\s\S]*fmt\.Sprintf\(\s*"%\+?v"`, res)
+	})
+
+	t.Run("without WantsStringer option (default)", func(t *testing.T) {
+		opts := opts()
+
+		res := render(t, opts)
+
+		// opt-in: the default output is unchanged, no String() method is emitted
+		assertNotInCode(t, "func (m *ModelError) String() string {", res)
+	})
+}
