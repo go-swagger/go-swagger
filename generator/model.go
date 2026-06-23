@@ -262,6 +262,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		WithXML:                    opts.WithXML,
 		StructTags:                 opts.StructTags,
 		WantsRootedErrorPath:       opts.WantsRootedErrorPath,
+		WantsStringer:              opts.WantsStringer,
 		mangler:                    opts.LanguageOpts.Mangler,
 		pascalize:                  pascalize,
 		jsonify:                    jsonify,
@@ -453,6 +454,7 @@ type schemaGenContext struct {
 	IncludeModel               bool
 	StrictAdditionalProperties bool
 	WantsRootedErrorPath       bool
+	WantsStringer              bool
 	WithXML                    bool
 	Index                      int
 
@@ -1747,6 +1749,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.StructTags = sg.StructTags
 	sg.GenSchema.ExtraImports = make(map[string]string)
 	sg.GenSchema.WantsRootedErrorPath = sg.WantsRootedErrorPath
+	sg.GenSchema.WantsStringer = sg.WantsStringer
 	sg.GenSchema.IsElem = sg.IsElem
 	sg.GenSchema.IsProperty = sg.IsProperty
 	sg.GenSchema.GoName = schemaGoName(&sg.Schema, sg.Name, sg.mangler)
@@ -1901,6 +1904,14 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	gs := sg.GenSchema
 	sg.GenSchema.WantsMarshalBinary = !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
 		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties || (gs.IsPrimitive && gs.IsAliased && gs.IsCustomFormatter && !strings.Contains(gs.Zero(), `("`)))
+
+	// generate a fmt.Stringer String() method when the --with-stringer option is set.
+	// This opt-in renders the model field values (as JSON) rather than the Go syntax
+	// representation, so that pointer properties show their value, not their address.
+	// Restricted to the struct/tuple/map shapes that use a pointer receiver, mirroring
+	// MarshalBinary (see issue #872).
+	sg.GenSchema.WantsStringer = sg.WantsStringer && !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
+		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties)
 
 	debugLogf("finished gen schema for %q", sg.Name)
 

@@ -1,0 +1,29 @@
+swagger: "2.0"
+info:
+  description: 'repro issue #872 - render model field values as a string'
+  title: stringer
+  version: "0.0.0"
+paths:
+  /v1/error:
+    get:
+      produces:
+        - application/json
+      responses:
+        default:
+          description: error
+          schema:
+            $ref: '#/definitions/ModelError'
+
+definitions:
+  ModelError:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: the human readable error message (a required string is generated as a pointer)
+      code:
+        type: integer
+        format: int64
+        description: an optional error code (also generated as a pointer)

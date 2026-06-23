@@ -48,6 +48,7 @@ Help Options:
           --keep-spec-order                                                       keep schema properties order identical to spec file
           --struct-tags=                                                          the struct tags to generate, repeat for multiple (defaults to json)
           --rooted-error-path                                                     extends validation errors with the type name instead of an empty path, in the case of arrays and maps
+          --with-stringer                                                         generate a fmt.Stringer String() method on models, rendering field values as JSON (see issue #872)
 ```
 
 Schema generation rules are detailed [here](../reference/models/schemas.md).

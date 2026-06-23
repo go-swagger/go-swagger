@@ -112,6 +112,9 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 {{- if .WantsMarshalBinary }}
   {{ template "marshalBinarySerializer" . }}
 {{- end }}
+{{- if .WantsStringer }}
+  {{ template "stringerSerializer" . }}
+{{- end }}
 {{- define "mapOrSliceGetter" }}{{/* signature for AdditionalProperties and AdditionalItems getter funcs */}}
   {{- if not .IsBaseType }}
     {{- if .HasAdditionalProperties }}
