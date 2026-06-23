@@ -41,3 +41,30 @@ For code generation targets (`cli`, `client`, `model`, `operation`, `server`, `s
 For spec generation targets (`spec`), read more [there](../generate-spec/).
 
 For markdown generation target (`markdown`), read [this](markdown.md).
+
+## Troubleshooting generate and validate
+
+Use this checklist when `swagger validate` succeeds locally but generation fails, or when a spec path works in one shell and not another.
+
+| Symptom | What to check | Suggested command or fix |
+| --- | --- | --- |
+| `swagger validate` reports that the spec cannot be loaded | Confirm the spec path is relative to the directory where you run `swagger` | Run `pwd` and then use an explicit path, for example `swagger validate ./api/swagger.yml` |
+| `$ref` targets cannot be resolved | Check whether each local or remote `$ref` is a valid absolute reference, or is relative to the containing spec file | Validate the same file you pass to generation: `swagger validate ./api/swagger.yml` |
+| Generation writes files in an unexpected location | Check `--target`; generated packages are created under that directory, and the target directory must exist before generation | Create the target first: `mkdir -p gen`, then run `swagger generate server -f ./api/swagger.yml --target ./gen` |
+| Generated code does not compile after a successful run | Ensure the generated target is a Go module that can resolve the generated dependencies | In a new target, run `go mod init` and `go mod tidy` after generation |
+| `goimports` or formatting-related failures appear | Verify Go is installed and available on `PATH` in the same shell running `swagger` | Run `go version` before retrying generation |
+| Operations or models are missing | Check that the spec validates and that flags such as `--operation`, `--model`, `--include-tag`, or `--exclude-tag` match the spec exactly | Start without selection flags, then add them back one at a time |
+
+A minimal validation-first flow is:
+
+```sh
+swagger validate ./api/swagger.yml
+mkdir -p gen
+swagger generate server -f ./api/swagger.yml --target ./gen
+cd ./gen
+go mod init example.com/generated-api
+go mod tidy
+go test ./...
+```
+
+When reporting an issue, include the exact `swagger` command, the path to the spec as passed with `-f`, the current working directory, and the validation output. Those details usually determine whether the failure is a spec problem, a path problem, or a generated-code setup problem.
