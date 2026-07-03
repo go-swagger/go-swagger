@@ -74,3 +74,13 @@ paths:
       responses:
         default:
           description: Generic Out
+  /optional-sec:
+    get:
+      security:
+        - {}
+        - A: []
+      operationId: optionalSecOp
+      description: no description
+      responses:
+        default:
+          description: Generic Out

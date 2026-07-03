@@ -1167,6 +1167,22 @@ func TestGenSecurityRequirements(t *testing.T) {
 	genRequirements := b.makeSecurityRequirements("o")
 	assert.NotNil(t, genRequirements)
 	assert.Empty(t, genRequirements)
+	assert.False(t, requiresAuthentication(b.Security))
+
+	operation = "optionalSecOp"
+	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+	require.NoError(t, err)
+
+	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
+	genRequirements = b.makeSecurityRequirements("o")
+	assert.Len(t, genRequirements, 1)
+	assert.Equal(t, GenSecurityRequirements{
+		GenSecurityRequirement{
+			Name:   "A",
+			Scopes: []string{},
+		},
+	}, genRequirements[0])
+	assert.False(t, requiresAuthentication(b.Security))
 
 	operation = "nosecOp"
 	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
@@ -1175,6 +1191,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
 	genRequirements = b.makeSecurityRequirements("o")
 	assert.Nil(t, genRequirements)
+	assert.False(t, requiresAuthentication(b.Security))
 }
 
 func TestGenerateServerOperation(t *testing.T) {

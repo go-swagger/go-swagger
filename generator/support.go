@@ -350,7 +350,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			continue // operation filtered according to CLI params
 		}
 
-		bldr.Authed = len(a.Analyzed.SecurityRequirementsFor(o)) > 0
+		bldr.Authed = requiresAuthentication(a.Analyzed.SecurityRequirementsFor(o))
 		bldr.Security = a.Analyzed.SecurityRequirementsFor(o)
 		bldr.SecurityDefinitions = a.Analyzed.SecurityDefinitionsFor(o)
 		bldr.RootAPIPackage = a.GenOpts.LanguageOpts.ManglePackageName(a.ServerPackage, defaultServerTarget)

@@ -166,7 +166,7 @@ func (o *operationGenerator) Generate() error {
 		APIPackage:          o.APIPackage, // defaults to main operations package
 		DefaultProduces:     o.DefaultProduces,
 		DefaultConsumes:     o.DefaultConsumes,
-		Authed:              len(o.Analyzed.SecurityRequirementsFor(&o.Operation)) > 0,
+		Authed:              requiresAuthentication(o.Analyzed.SecurityRequirementsFor(&o.Operation)),
 		Security:            o.Analyzed.SecurityRequirementsFor(&o.Operation),
 		SecurityDefinitions: o.Analyzed.SecurityDefinitionsFor(&o.Operation),
 		RootAPIPackage:      o.GenOpts.LanguageOpts.ManglePackageName(o.ServerPackage, defaultServerTarget),
@@ -1072,6 +1072,9 @@ func (b *codeGenOpBuilder) makeSecurityRequirements(_ string) []GenSecurityRequi
 
 	securityRequirements := make([]GenSecurityRequirements, 0, len(b.Security))
 	for _, req := range b.Security {
+		if isAnonymousSecurityRequirement(req) {
+			continue
+		}
 		jointReq := make(GenSecurityRequirements, 0, len(req))
 		for _, j := range req {
 			scopes := j.Scopes
@@ -1086,6 +1089,20 @@ func (b *codeGenOpBuilder) makeSecurityRequirements(_ string) []GenSecurityRequi
 		securityRequirements = append(securityRequirements, jointReq)
 	}
 	return securityRequirements
+}
+
+func requiresAuthentication(securityRequirements [][]analysis.SecurityRequirement) bool {
+	if len(securityRequirements) == 0 {
+		return false
+	}
+	return !slices.ContainsFunc(securityRequirements, func(requirement []analysis.SecurityRequirement) bool {
+		return isAnonymousSecurityRequirement(requirement)
+	})
+}
+
+func isAnonymousSecurityRequirement(requirement []analysis.SecurityRequirement) bool {
+	return len(requirement) == 0 ||
+		len(requirement) == 1 && requirement[0].Name == "" && len(requirement[0].Scopes) == 0
 }
 
 // cloneSchema returns a deep copy of a schema.
