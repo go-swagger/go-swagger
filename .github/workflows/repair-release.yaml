@@ -48,7 +48,7 @@ jobs:
         run: upx --version
       -
         name: Install git-cliff
-        uses: taiki-e/install-action@682e7d9e49c5e653d371fc6adbda67653461378a # v2.82.4
+        uses: taiki-e/install-action@16b05812d776ae1dfaabc8277e421fb6d2506419 # v2.82.7
         with:
           tool: git-cliff
       -
@@ -114,7 +114,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Build release
-        uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
           version: "~> v2"
           args: release --clean --release-notes /tmp/release-notes.md --fail-fast
