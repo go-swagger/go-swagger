@@ -182,20 +182,17 @@ Use a default client, which has an HTTP transport:
 
 ```go
 import (
+  "fmt"
   "log"
 
-  "github.com/myproject/client/operations"
-  "github.com/go-openapi/strfmt"
-  "github.com/go-openapi/spec"
-
   apiclient "github.com/myproject/client"
-  httptransport "github.com/go-openapi/runtime/client"
+  "github.com/myproject/client/todos"
 )
 
 func main() {
 
   // make the request to get all items
-  resp, err := apiclient.Default.Operations.All(operations.AllParams{})
+  resp, err := apiclient.Default.Todos.Find(todos.NewFindParams(), nil)
   if err != nil {
     log.Fatal(err)
   }
@@ -209,14 +206,13 @@ To then use the client, and override the host, with a HTTP transport:
 
 ```go
 import (
-  "os"
+  "fmt"
   "log"
+  "os"
 
-  "github.com/myproject/client/operations"
   "github.com/go-openapi/strfmt"
-  "github.com/go-openapi/spec"
-
   apiclient "github.com/myproject/client"
+  "github.com/myproject/client/todos"
   httptransport "github.com/go-openapi/runtime/client"
 )
 
@@ -232,7 +228,7 @@ func main() {
   // apiclient.Default.SetTransport(transport)
 
   // make the request to get all items
-  resp, err := client.Operations.All(operations.AllParams{})
+  resp, err := client.Todos.Find(todos.NewFindParams(), nil)
   if err != nil {
     log.Fatal(err)
   }
@@ -250,14 +246,13 @@ The client supports 3 authentication schemes:
 
 ```go
 import (
-  "os"
+  "fmt"
   "log"
+  "os"
 
-  "github.com/myproject/client/operations"
   "github.com/go-openapi/strfmt"
-  "github.com/go-openapi/spec"
-
   apiclient "github.com/myproject/client"
+  "github.com/myproject/client/todos"
   httptransport "github.com/go-openapi/runtime/client"
 )
 
@@ -271,10 +266,10 @@ func main() {
   // basicAuth := httptransport.BasicAuth(os.Getenv("API_USER"), os.Getenv("API_PASSWORD"))
   // apiKeyQueryAuth := httptransport.APIKeyAuth("apiKey", "query", os.Getenv("API_KEY"))
   // apiKeyHeaderAuth := httptransport.APIKeyAuth("X-API-TOKEN", "header", os.Getenv("API_KEY"))
-  resp, err := client.Operations.All(operations.AllParams{}, bearerTokenAuth)
-  // resp, err := client.Operations.All(operations.AllParams{}, basicAuth)
-  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyQueryAuth)
-  // resp, err := client.Operations.All(operations.AllParams{}, apiKeyHeaderAuth)
+  resp, err := client.Todos.Find(todos.NewFindParams(), bearerTokenAuth)
+  // resp, err := client.Todos.Find(todos.NewFindParams(), basicAuth)
+  // resp, err := client.Todos.Find(todos.NewFindParams(), apiKeyQueryAuth)
+  // resp, err := client.Todos.Find(todos.NewFindParams(), apiKeyHeaderAuth)
   if err != nil {
     log.Fatal(err)
   }
