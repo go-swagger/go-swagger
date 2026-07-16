@@ -64,8 +64,6 @@ builds:
       - goos: windows
         goarch: arm
       - goos: windows
-        goarch: arm64
-      - goos: windows
         goarch: s390x
     mod_timestamp: '{{ .CommitTimestamp }}'
 
@@ -87,7 +85,7 @@ upx:
     lzma: false
     brute: false
     goos: [windows]
-    goarch: [amd64]
+    goarch: [amd64,arm64]
   - enabled: false
     compress: best
     lzma: false
