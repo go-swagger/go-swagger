@@ -121,7 +121,7 @@ archives:
     id: release-single-binary
     formats: [binary]
     # this keeps compatibility with older releases
-    name_template: swagger_{{ .Os }}_{{ .Arch }}{{ if eq .Os "windows" }}.exe{{ end }}
+    name_template: swagger_{{ .Os }}_{{ .Arch }}
 
     strip_binary_directory: true
     builds_info:
