@@ -1,0 +1,71 @@
+swagger: "2.0"
+
+info:
+  title: Internal
+  version: 0.0.0
+
+consumes:
+  - application/json
+
+produces:
+  - application/json
+  - application/protobuf+json
+
+schemes:
+  - http
+
+definitions:
+  request:
+    type: object
+    required:
+      - interface_name
+    properties:
+      interface_name:
+        type: string
+        default: eth0
+        x-nullable: false
+
+paths:
+  /protobuf/{device_type}/{serial}/TYPE_REQUEST/{id}:
+    post:
+      summary: request protobuf
+      operationId: reqProto
+      produces: # use protojson to encode a proto.Message instead of Go stdlib json
+          - application/protobuf+json
+      parameters:
+        - in: path
+          name: device_type
+          type: string
+          required: true
+          description: the device type
+        - in: path
+          name: serial
+          type: integer
+          format: uint32
+          required: true
+          description: the device serial number
+        - in: path
+          name: id
+          type: integer
+          format: uint32
+          required: true
+          description: The ID of the request. Only responses to this ID will be returned.
+        - in: body
+          name: request
+          schema:
+            $ref: "#/definitions/request"
+      responses:
+        200:
+          description: |-
+            Protobuf JSON representation of Response, 64 bit integers are strings.
+          schema:
+            type: object
+        404:
+          description: device not found
+        500:
+          description: internal API error
+        502:
+          description: error communicating with database
+        504:
+          description: error communicating with device
+
