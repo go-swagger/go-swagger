@@ -21,66 +21,46 @@ It provide tools to work with swagger specifications.
 
 ## Announcements
 
-* **2026-06-22** : v0.35.0 will land soon! (E.T.A end of June)
+You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
+
+* **2026-07-20** : v0.36.0 will land in July (soon!)
+  * **documentation**: restyle doc site like go-openapi doc sites, dedicated doc site for examples, cover a significant
+    part of doc-related issues.
+  * **spec generation**: codescan will publish its own lightweight CLI at a faster pace, as well as a TUI tool to
+    instantly check how you annotated code looks like as a spec.
+    (preview: <https://github.com/go-swagger/go-swagger/issues/3372#issuecomment-4733107554>). We hope we'll be able
+    to land a Web playground on a similar principle (WASI build on top of codescan). go-swagger will still receive updates.
+  * **code generation**: we'll try our best to land a few requested enhancements among the 50-60 reachable ones.
+    (most issues in codegen now have hit an "architecture wall": work has started on a v2 to overcome these limitations).
+  * our Slack channel is now closed and superseded by the [![Discord Channel][discord-badge]][discord-url].
+
+* **2026-07-20** : v0.35.1 landed!
+  * re-instated binary release for windows ARM64
+  * **spec generation**: another round of fixes. Another small lots of features for more control over your rendered specs.
+    Check out the [documentation site dedicated to spec generation][codescan-doc-url].
+
+* **2026-06-22** : v0.35.0 landed! (end of June)
   * **code generation**: security fixes that prevent generated code to produce code injected from an erroneous
     or malicious spec. swagger validate now warns about possibly harmful $ref (e.g. from multiple origins).
   * **spec generation**: major bug-bashing action on go-openapi/codescan (which has eventually become fixable...).
-    v0.35.0 closes ~200+ "generate spec" issues: bug fixes and requested enhancements. Spec generation now
-    produces a detailed diagnostic of how your code annotations may be misinterpreted. A complete documentation site
-    is now published at <https://go-openapi.github.io/codescan/>.
+    v0.35.0 closes ~200+ "generate spec" issues: bug fixes and requested enhancements.
+  * Spec generation now produces a detailed diagnostic of how your code annotations may be misinterpreted.
+    A complete [documentation site][codescan-doc-url] is now published.
   * Please check it out from master (or dev docker image). Your feedback is super important!
-
-* **2026-06-22** : v0.36.0 will land in July
-  * planned contents:
-  * **documentation**: restyle doc site like go-openapi doc sites, dedicate doc for examples, cover a significant
-    part of doc-related issues
-  * **spec generation**: expect anoter small lots of feature for more control over your rendered specs.
-    Codescan will publish its own lightweight CLI at a faster pace, as well as a TUI tool to
-    instantly check how you annotated code looks like as a spec
-    (preview: <https://github.com/go-swagger/go-swagger/issues/3372#issuecomment-4733107554>). We hope we'll be able
-    to land a Web playground on a similar principle (WASI build on top of codescan). go-swagger will still receive updates.
-  * **code generation**: we'll try our best land a few requested enhancements among the 50-60 reachable ones.
-    (most issues in codegen now have hit an "architecture wall": work has started on a v2 to overcome these limitations).
 
 * **2026-05-28** : v0.34.0 ships!
   * **major refactoring actions**: the repo has been split in smaller chunks, easier to understand:
     * code examples have moved to `go-swagger/examples`, with a CI to automate code regeneration
-    * `codescan`` (the part that underpins `swagger generate spec`) has moved as a standalone
+    * `codescan` (the part that underpins `swagger generate spec`) has moved as a standalone
       library `go-openapi/codescan`. This library has been heavily refactored to prepare more
       significant improvements. The current version gets a few quirks already fixed.
     * `diff` (the implement of `swagger diff`) has joined `go-openapi/analysis`
     * package `generator` has been refactored to expose internal utilities (template repo, funcmaps, etc)
       as packages.
-  * Generated code now requires `go-openapi/runtime` v0.32.x benefits from many bug fixes and here too a
+  * Generated code now requires `go-openapi/runtime` v0.32.x and benefits from many bug fixes and there too a
     rechunking of the code.
   * Generated code now requires `go-openapi/swag` v0.26+ and directly imports all sub-modules.
   * Many long-awaited improvements on the generated client.
-  * **Feel free to join on Discord** - Our Slack channel will be discontinued next month.
-
-* **2026-03-16** : v0.33.2 is out
-  * upgraded requirement to `go1.25`
-  * bug fix release
-  * changes in our release workflow:
-    * releases and tags are signed
-    * all released artifacts are now signed. Signatures may be checked against `.sig` artifacts.
-    * deb and rpm packages are available on a new package name `go-swagger` instead of `swagger`
-    * docker images now embarks a go installation (required to generate code)
-    * binary releases now ship as tarballs. See the [updated installation instructions](https://goswagger.io/go-swagger/install/install-binary)
-    * for convenience, plain binaries with the pre-existing OS/arch naming convention has been maintained for now
-  * removed dependencies:
-    * mongodb driver (**NOT BREAKING**: see also <https://github.com/go-openapi/strfmt#announcements> for support
-      of drivers updates)
-    * `mailru/easyjson`: not longer imported by default. See <https://github.com/go-openapi/swag?tab=readme-ov-file#dependencies>
-      to enact `mailru/easyjson` explicitly.
-
-* **2026-03-16** : new community chat on discord
-  * a new discord community channel is available to be notified of changes and support users
-  * our venerable Slack channel remains open, and will be eventually discontinued on **2026-06-30**
-  * (for go-openapi libraries we'll stop Slack on **2026-03-31**).
-
-You may join the discord community by clicking the invite link on the discord badge (also above). [![Discord Channel][discord-badge]][discord-url].
-
-Or join our Slack channel: [![Slack Channel][slack-logo]![slack-badge]][slack-url].
 
 ## Documentation
 
@@ -112,8 +92,8 @@ Most features and building blocks are now in a stable state, with a rich set of 
 
 The go-openapi community actively continues bringing fixes and enhancements to this code base.
 
-There is still much room for improvement: contributors and PR's are welcome. You may also get in touch with maintainers on [our slack channel](https://slackin.goswagger.io).
-
+There is still much room for improvement: contributors and PR's are welcome.
+You may also get in touch with maintainers on our [![Discord Channel][discord-badge]][discord-url].
 ## Installing
 
 ```sh
@@ -176,11 +156,9 @@ Just like swagger, this does not cover code generated by the toolkit. That code 
 [doc-url]: https://goswagger.io/go-swagger
 [godoc-badge]: https://godoc.org/github.com/go-swagger/go-swagger?status.svg
 [godoc-url]: http://godoc.org/github.com/go-swagger/go-swagger
-[slack-logo]: https://a.slack-edge.com/e6a93c1/img/icons/favicon-32.png
-[slack-badge]: https://img.shields.io/badge/slack-blue?link=https%3A%2F%2Fgoswagger.slack.com%2Farchives%2FC04R30YM
-[slack-url]: https://goswagger.slack.com/archives/C04R30YMU
 [discord-badge]: https://img.shields.io/discord/1446918742398341256?logo=discord&label=discord&color=blue
 [discord-url]: https://discord.gg/FfnFYaC3k5
+[codescan-doc-url]: https://go-openapi.github.io/codescan/
 <!-- Badges: license & compliance -->
 [license-badge]: http://img.shields.io/badge/license-Apache%20v2-orange.svg
 [license-url]: https://github.com/go-swagger/go-swagger/?tab=Apache-2.0-1-ov-file#readme
