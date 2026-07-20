@@ -359,7 +359,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []str
   {{- if .Consumes }}
   result := make(map[string]runtime.Consumer, len(mediaTypes))
   for _, mt := range mediaTypes {
+    if c, ok := {{.ReceiverName}}.customConsumers[mt]; ok {
+      result[mt] = c
+
+      continue
+    }
+
     {{- if gt .Consumes.NumSerializers 1 }}
+
     switch mt {
       {{- range .Consumes }}
         {{- range .AllSerializers }}
@@ -378,10 +385,6 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ConsumersFor(mediaTypes []str
       }
       {{- end }}
     {{- end }}
-
-    if c, ok := {{.ReceiverName}}.customConsumers[mt]; ok {
-      result[mt] = c
-    }
   }
 
   return result
@@ -397,7 +400,14 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []str
   {{- if .Produces }}
   result := make(map[string]runtime.Producer, len(mediaTypes))
   for _, mt := range mediaTypes {
+    if p, ok := {{.ReceiverName}}.customProducers[mt]; ok {
+      result[mt] = p
+
+      continue
+    }
+
     {{- if gt .Produces.NumSerializers 1 }}
+
     switch mt {
       {{- range .Produces }}
         {{- range .AllSerializers }}
@@ -416,10 +426,6 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}API) ProducersFor(mediaTypes []str
       }
       {{- end }}
     {{- end }}
-
-    if p, ok := {{.ReceiverName}}.customProducers[mt]; ok {
-      result[mt] = p
-    }
   }
 
   return result
