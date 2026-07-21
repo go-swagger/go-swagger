@@ -59,4 +59,4 @@ jobs:
       dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || 'false' }}
       compare-base: ${{ github.event_name == 'workflow_dispatch' && inputs.compare-base || '' }}
     secrets:
-      webhook-url: ${{ inputs.webhook-url }}
+      webhook-url: ${{ inputs.webhook-url || secrets.DISCORD_ANNOUNCEMENTS_WEBHOOK_URL }}

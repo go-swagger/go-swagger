@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: Copyright 2015-2026 go-swagger maintainers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Phase 1 of the examples PR cleanup pipeline.
+#
+# Triggered when a go-swagger PR is closed. When the PR was closed WITHOUT
+# merging, records the triggering PR number into the "close-examples"
+# artifact. No secrets, no bot token, no PR code checkout — it only reads
+# the event payload and writes a number.
+#
+# Phase 2 (close-examples-pr.yaml) picks up the artifact via workflow_run
+# and closes the corresponding child PR on go-swagger/examples using bot
+# credentials in the trusted default-branch context.
+#
+# Rationale: a pull_request_target job triggered by a fork PR cannot mint the
+# GitHub App token — the JWT is unusable in the fork context (observed as
+# "A JSON web token could not be decoded"). Since every maintained topic
+# branch lives on a fork, the credentialed close is deferred to a
+# workflow_run job, mirroring the regen-examples pipeline.
+
+name: Close examples
+
+permissions:
+  contents: read
+
+on:
+  pull_request_target:
+    types:
+      - closed
+
+jobs:
+  record-closed-pr:
+    # description: |
+    #   Record the number of a closed-without-merge PR into an artifact for
+    #   phase 2 to act on. No credentials are used here.
+    name: record closed PR
+    if: ${{ !github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Record triggering PR number
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p /tmp/close-metadata
+          echo "${PR_NUMBER}" > /tmp/close-metadata/pr_number.txt
+          echo "::notice title=close examples::Recorded closed-unmerged PR #${PR_NUMBER}"
+      -
+        name: Upload close metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: close-examples
+          path: /tmp/close-metadata/
+          retention-days: 1
