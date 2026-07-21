@@ -94,6 +94,40 @@ func TestSanitizeGenHarness(t *testing.T) {
 		assertNoInjectedDecl(t, opts.Target)
 	})
 
+	t.Run("enum injection is contained (model)", func(t *testing.T) {
+		target := harnessTarget(t, "enum", "model_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/enum-injection.yaml", target)
+
+		// A string enum value carries a Go breakout payload. Enum values are
+		// emitted into a raw-string JSON blob inside a generated func init()
+		// (json.Unmarshal([]byte(`[...]`))). escapeBackticks keeps every value
+		// inside the raw-string literal, so nothing runs at package init.
+		require.NoError(t, GenerateModels([]string{"", ""}, opts))
+		assertNoInjectedDecl(t, filepath.Join(opts.Target, defaultModelsTarget))
+	})
+
+	t.Run("default-value injection is contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "default", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/default-injection.yaml", target)
+
+		// An array-of-array parameter default is emitted into a raw-string JSON
+		// blob passed to json.Unmarshal in the parameter loader. escapeBackticks
+		// keeps the default inside the raw-string literal.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("path injection is contained (client)", func(t *testing.T) {
+		target := harnessTarget(t, "path", "client_test", root)
+		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/path-injection.yaml", target)
+
+		// The operation path is baked into diagnostic strings (NewAPIError and the
+		// response Error()/String() format strings). escapeDoubleQuoted keeps the
+		// path inside the double-quoted literal so a quote cannot break out.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "cli_injection", "cli_test", root)
 		opts := NewGenOpts(ForCli(),
