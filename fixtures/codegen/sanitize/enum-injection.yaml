@@ -1,0 +1,25 @@
+# Adversarial fixture: a string enum value carries a Go breakout payload. The
+# enum values are emitted into a raw-string JSON blob inside a generated
+# func init() (json.Unmarshal([]byte(`[...]`), &res)). A backtick in the value
+# would close the raw string and turn the rest into live Go executed at package
+# initialization. escapeBackticks on the blob keeps every value inside the
+# raw-string literal. The const form (Color = "...") was already safe via %q.
+swagger: "2.0"
+info:
+  title: enum injection
+  version: "1.0"
+definitions:
+  Color:
+    type: string
+    enum:
+      - "x`+println(\"PWNED_ENUM\")+`y"
+      - red
+paths:
+  /p:
+    get:
+      operationId: getP
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "#/definitions/Color"

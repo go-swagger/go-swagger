@@ -1,0 +1,34 @@
+# Adversarial fixture: spec-derived NAMES carry Go breakout payloads. These names
+# are emitted verbatim into Go string literals and comparisons that were not
+# escaped:
+#   - security scheme id / api-key name -> server auth stubs
+#     (errors.NotImplemented("api key auth (<id>) <name> ..."), if name == "<id>")
+#   - response header name -> client readResponse (response.GetHeader("<name>"))
+#   - parameter / flag name -> cli command (cmd.Flags().Changed("<name>"))
+# A double quote in any of them would close the literal and inject live Go.
+# printf %q / escapeDoubleQuoted keep each inside a single literal.
+swagger: "2.0"
+info:
+  title: names injection
+  version: "1.0"
+securityDefinitions:
+  'sec"+println("PWNED_SECNAME")+"x':
+    type: apiKey
+    name: 'key"+println("PWNED_APIKEY")+"y'
+    in: header
+security:
+  - 'sec"+println("PWNED_SECNAME")+"x': []
+paths:
+  /w:
+    get:
+      operationId: getW
+      parameters:
+        - name: 'flag"+println("PWNED_FLAG")+"z'
+          in: query
+          type: string
+      responses:
+        "200":
+          description: ok
+          headers:
+            'hdr"+println("PWNED_HEADER")+"h':
+              type: string

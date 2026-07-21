@@ -81,6 +81,85 @@ func TestSanitizeGenHarness(t *testing.T) {
 		assertNoInjectedDecl(t, opts.Target)
 	})
 
+	t.Run("content-type injection is contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "mediatype", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/mediatype-injection.yaml", target)
+
+		// consumes/produces carry content-type values that try to break out of the
+		// Go string literals emitted by the server builder (ConsumersFor/ProducersFor
+		// comparisons and map keys) and the *Consumer/*Producer doc comments.
+		// printf %q on the literals and linePadComment on the doc lines keep each
+		// payload inside a single literal / comment.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("enum injection is contained (model)", func(t *testing.T) {
+		target := harnessTarget(t, "enum", "model_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/enum-injection.yaml", target)
+
+		// A string enum value carries a Go breakout payload. Enum values are
+		// emitted into a raw-string JSON blob inside a generated func init()
+		// (json.Unmarshal([]byte(`[...]`))). escapeBackticks keeps every value
+		// inside the raw-string literal, so nothing runs at package init.
+		require.NoError(t, GenerateModels([]string{"", ""}, opts))
+		assertNoInjectedDecl(t, filepath.Join(opts.Target, defaultModelsTarget))
+	})
+
+	t.Run("default-value injection is contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "default", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/default-injection.yaml", target)
+
+		// An array-of-array parameter default is emitted into a raw-string JSON
+		// blob passed to json.Unmarshal in the parameter loader. escapeBackticks
+		// keeps the default inside the raw-string literal.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("path injection is contained (client)", func(t *testing.T) {
+		target := harnessTarget(t, "path", "client_test", root)
+		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/path-injection.yaml", target)
+
+		// The operation path is baked into diagnostic strings (NewAPIError and the
+		// response Error()/String() format strings). escapeDoubleQuoted keeps the
+		// path inside the double-quoted literal so a quote cannot break out.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("security and header names are contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "names-server", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+
+		// Security scheme id and api-key name are baked into the auth stubs
+		// (errors.NotImplemented("api key auth (<id>) <name> ..."), if name ==
+		// "<id>"). printf %q / escapeDoubleQuoted keep each inside a single literal.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("response header name is contained (client)", func(t *testing.T) {
+		target := harnessTarget(t, "names-client", "client_test", root)
+		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+
+		// The response header name is baked into response.GetHeader("<name>") in
+		// the client's readResponse; printf %q keeps it inside the literal.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("flag name is contained (cli)", func(t *testing.T) {
+		target := harnessTarget(t, "names-cli", "cli_test", root)
+		opts := NewGenOpts(ForCli(),
+			WithSpec("../fixtures/codegen/sanitize/names-injection.yaml"), WithTarget(target))
+
+		// The parameter/flag name is baked into cmd.Flags().Changed("<name>") and
+		// GetString("<name>"); printf %q keeps it inside the literal.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "cli_injection", "cli_test", root)
 		opts := NewGenOpts(ForCli(),

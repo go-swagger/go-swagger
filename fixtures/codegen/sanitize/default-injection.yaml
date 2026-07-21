@@ -1,0 +1,26 @@
+# Adversarial fixture: a parameter default value carries a Go breakout payload.
+# An array-of-array default is emitted into a raw-string JSON blob passed to
+# json.Unmarshal([]byte(`...`)) in the generated parameter loader. A backtick in
+# the default would close the raw string and inject live Go. escapeBackticks on
+# the blob keeps the default inside the raw-string literal.
+swagger: "2.0"
+info:
+  title: default injection
+  version: "1.0"
+paths:
+  /p:
+    get:
+      operationId: getP
+      parameters:
+        - name: grid
+          in: query
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+          default:
+            - - "a`+println(\"PWNED_DEFAULT\")+`b"
+      responses:
+        "200":
+          description: ok

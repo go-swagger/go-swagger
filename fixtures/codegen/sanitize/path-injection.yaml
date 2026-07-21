@@ -1,0 +1,18 @@
+# Adversarial fixture: the operation path carries a Go breakout payload. The
+# client generator bakes the path into human-readable diagnostic strings
+# (runtime.NewAPIError("[GET <path>] ...") and the response Error()/String()
+# fmt.Sprintf("[GET <path>][%d] ...")). A double quote in the path would close
+# the string literal and inject a live Go expression that runs when the client
+# handles a response. escapeDoubleQuoted keeps the path inside the literal.
+# PathPattern/DefaultHost/DefaultBasePath were already safe via %q.
+swagger: "2.0"
+info:
+  title: path injection
+  version: "1.0"
+paths:
+  "/u/\"+println(\"PWNED_PATH\")+\"/x":
+    get:
+      operationId: getU
+      responses:
+        "200":
+          description: ok
