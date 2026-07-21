@@ -23,6 +23,20 @@ It provide tools to work with swagger specifications.
 
 You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
 
+* **2026-07-21** : v0.35.2 is out
+  * security release: with this release, we have completed the hardening of go-openapi libraries and how go-swagger
+    consumes those.
+  * The class of threats that we've tried to mitigate is "adverserial specs", e.g. openapi documents that go-swagger
+     would happily parse, resolve and generate code from, but that are crafted maliciously.
+  * Attack vectors can be: `$ref` (to resolve against a malicious site, to expand local files and try to leak, or simply
+    crash), to induce the code generator into producing malicious code.
+  * For users of go-openapi libraries such as `loads` and `swag/loading`, the defaults remain unrestricted: secure options
+    are available to developer to guard spec load against possibly unsafe input documents.
+  * `go-openapi/validate` now warns about dubious `$ref`'s such as multiple remote hosts, or absolute local paths not
+    beneath the base path.
+  * `go-swagger` codegen commands may now be restricted to operate within a rooted workspace (no local $ref is resolved
+    outside) or using a restricted client.
+
 * **2026-07-20** : v0.36.0 will land in July (soon!)
   * **documentation**: restyle doc site like go-openapi doc sites, dedicated doc site for examples, cover a significant
     part of doc-related issues.
