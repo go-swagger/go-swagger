@@ -81,6 +81,19 @@ func TestSanitizeGenHarness(t *testing.T) {
 		assertNoInjectedDecl(t, opts.Target)
 	})
 
+	t.Run("content-type injection is contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "mediatype", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/mediatype-injection.yaml", target)
+
+		// consumes/produces carry content-type values that try to break out of the
+		// Go string literals emitted by the server builder (ConsumersFor/ProducersFor
+		// comparisons and map keys) and the *Consumer/*Producer doc comments.
+		// printf %q on the literals and linePadComment on the doc lines keep each
+		// payload inside a single literal / comment.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "cli_injection", "cli_test", root)
 		opts := NewGenOpts(ForCli(),
