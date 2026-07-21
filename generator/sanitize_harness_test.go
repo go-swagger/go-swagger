@@ -128,6 +128,38 @@ func TestSanitizeGenHarness(t *testing.T) {
 		assertNoInjectedDecl(t, opts.Target)
 	})
 
+	t.Run("security and header names are contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "names-server", "server_test", root)
+		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+
+		// Security scheme id and api-key name are baked into the auth stubs
+		// (errors.NotImplemented("api key auth (<id>) <name> ..."), if name ==
+		// "<id>"). printf %q / escapeDoubleQuoted keep each inside a single literal.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("response header name is contained (client)", func(t *testing.T) {
+		target := harnessTarget(t, "names-client", "client_test", root)
+		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+
+		// The response header name is baked into response.GetHeader("<name>") in
+		// the client's readResponse; printf %q keeps it inside the literal.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("flag name is contained (cli)", func(t *testing.T) {
+		target := harnessTarget(t, "names-cli", "cli_test", root)
+		opts := NewGenOpts(ForCli(),
+			WithSpec("../fixtures/codegen/sanitize/names-injection.yaml"), WithTarget(target))
+
+		// The parameter/flag name is baked into cmd.Flags().Changed("<name>") and
+		// GetString("<name>"); printf %q keeps it inside the literal.
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "cli_injection", "cli_test", root)
 		opts := NewGenOpts(ForCli(),

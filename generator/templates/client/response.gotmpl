@@ -140,7 +140,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}) readResponse(response runtime.
   {{- range .Headers }}
 
   // hydrates response header {{.Name}}
-  hdr{{ pascalize .Name }} := response.GetHeader("{{ .Name }}")
+  hdr{{ pascalize .Name }} := response.GetHeader({{ printf "%q" .Name }})
 
   if hdr{{ pascalize .Name }} != "" {
     {{- if .Converter }}
