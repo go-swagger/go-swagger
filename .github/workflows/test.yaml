@@ -42,7 +42,7 @@ jobs:
       other_changed_files: ${{ steps.changed-source-files.outputs.other_changed_files }}
     steps:
     - name: Originating repo checkout (e.g. public fork)
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # will be empty on push to master and default to head from master
         ref: ${{ github.event.pull_request.head.ref }}
@@ -160,7 +160,7 @@ jobs:
     if: ${{ needs.code-changed.outputs.proceed_with_tests == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -217,7 +217,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -251,7 +251,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -263,7 +263,7 @@ jobs:
           cache: true
 
       - name: Install gotestsum
-        uses: go-openapi/gh-actions/install/gotestsum@b0542d87f701a2fdba9629421026a2bdd54e2859
+        uses: go-openapi/gh-actions/install/gotestsum@8dac43b693193389fbdb110e0c39aa013ae089ef
 
       - name: Ensure TMP is created on windows runners
         # On windows, tests require testing.TempDir to reside on the same drive as the code.
@@ -331,7 +331,7 @@ jobs:
     env:
       GOCOVERDIR: /tmp/cov
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -457,7 +457,7 @@ jobs:
     if: ${{ !cancelled() && needs.test-complete.result == 'success' && needs.code-changed.outputs.proceed_with_tests == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -507,7 +507,7 @@ jobs:
           path: reports/
       -
         name: Install go-junit-report
-        uses: go-openapi/gh-actions/install/go-junit-report@b0542d87f701a2fdba9629421026a2bdd54e2859
+        uses: go-openapi/gh-actions/install/go-junit-report@8dac43b693193389fbdb110e0c39aa013ae089ef
 
       - name: Convert test reports to a merged JUnit XML
         # NOTE: codecov test reports only support JUnit format at this moment. See https://docs.codecov.com/docs/test-analytics.
@@ -531,7 +531,7 @@ jobs:
           verbose: true
       -
         name: Install go-ctrf-json-reporter
-        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@b0542d87f701a2fdba9629421026a2bdd54e2859
+        uses: go-openapi/gh-actions/install/go-ctrf-json-reporter@8dac43b693193389fbdb110e0c39aa013ae089ef
 
       - name: Convert test reports to CTRF JSON
         # description: |
