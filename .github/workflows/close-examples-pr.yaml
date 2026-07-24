@@ -73,7 +73,7 @@ jobs:
       -
         name: Configure bot credentials
         if: ${{ steps.check.outputs.has_artifacts == 'true' }}
-        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@b0542d87f701a2fdba9629421026a2bdd54e2859 # v1.4.15
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@8dac43b693193389fbdb110e0c39aa013ae089ef # v1.4.16
         id: bot-credentials
         with:
           enable-github-app: "true"

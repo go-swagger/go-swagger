@@ -119,14 +119,14 @@ jobs:
         # explicitly to `peter-evans/create-pull-request` below, which sets
         # up its own push authentication.
         if: ${{ steps.status.outputs.status == 'has-changes' }}
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: go-swagger/examples
           persist-credentials: false
       -
         name: Configure bot credentials
         if: ${{ steps.status.outputs.status == 'has-changes' }}
-        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@b0542d87f701a2fdba9629421026a2bdd54e2859 # v1.4.15
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@8dac43b693193389fbdb110e0c39aa013ae089ef # v1.4.16
         id: bot-credentials
         with:
           enable-github-app: "true"
