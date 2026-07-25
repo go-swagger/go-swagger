@@ -35,6 +35,8 @@ github.com/go-openapi/loads v0.25.0 h1:74Bc2snfaVlsHzwdQj/3gsA9XJz3daXTJVs+4ZaK7
 github.com/go-openapi/loads v0.25.0/go.mod h1:JFBw4SIB9+PTIFHDfcXuSSy5h6aWzjtUCrPYyx3qWU8=
 github.com/go-openapi/runtime v0.32.6 h1:hrcTTF8P7ZZr2Majzq11I65QtL/s85o7Q+zJf+AvFN4=
 github.com/go-openapi/runtime v0.32.6/go.mod h1:+rsupH3+TFKqmFysqkmgBOTxpVJV8eV+j9myvvea2Xw=
+github.com/go-openapi/runtime v0.32.7-0.20260724174133-f44e6731289f h1:NITRGLRjdL0p1Qcgj7wmPYjQrsrm1egITXS3C9a7ie8=
+github.com/go-openapi/runtime v0.32.7-0.20260724174133-f44e6731289f/go.mod h1:+rsupH3+TFKqmFysqkmgBOTxpVJV8eV+j9myvvea2Xw=
 github.com/go-openapi/runtime/server-middleware v0.32.6 h1:IGTYzybyFrUeSqQEwwO1y/9KnOk4QsabFNtAQtIHxDE=
 github.com/go-openapi/runtime/server-middleware v0.32.6/go.mod h1:OQHTBqMGquJShXhPYQ62yAqDMtC1rYpsEwldNWjYKhA=
 github.com/go-openapi/spec v0.22.9 h1:/vKIFDcGKp0ktZWGbym/tJEWbk6/XOEmAVU0kqKMH+w=

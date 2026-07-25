@@ -4232,3 +4232,130 @@ func TestGenParameter_Issue2448_Integers(t *testing.T) {
 	assertInCode(t, `if err := validate.MultipleOfUint("ui3", "query", uint64(*o.Ui3), 10); err != nil {`, res)
 	assertInCode(t, `if err := validate.MultipleOf("ui4", "query", float64(*o.Ui4), 10.5); err != nil {`, res)
 }
+
+func TestGenParameter_StreamingMultipartForm(t *testing.T) {
+	defer discardOutput()()
+
+	b, err := opBuilder("streamingUpload", "../fixtures/codegen/streaming-form.yml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	require.TrueT(t, op.HasStreamingForm)
+	assert.EqualT(t, "MultipartForm", op.MultipartFormName)
+	assert.Len(t, op.Params, 4)
+	assert.Len(t, op.ServerParams, 1)
+	assert.EqualT(t, "token", op.ServerParams[0].Name)
+
+	opts := opts()
+
+	t.Run("server binding hands the stream to the handler", func(t *testing.T) {
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+		formatted, err := opts.LanguageOpts.FormatContent("streaming_upload_parameters.go", buf.Bytes())
+		require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+		code := string(formatted)
+		assertInCode(t, "MultipartForm *runtime.MultipartFormStream", code)
+		assertInCode(t, "multipartForm, err := runtime.NewMultipartFormStream(", code)
+		assertInCode(t, "runtime.MultipartFormStreamMaxBody(StreamingUploadMaxBodySize)", code)
+		assertInCode(t, "o.MultipartForm = multipartForm", code)
+		assertInCode(t, "Token string", code)
+		assertInCode(t, `o.bindToken(qToken, qhkToken, route.Formats)`, code)
+
+		assertNotInCode(t, "runtime.BindForm(", code)
+		assertNotInCode(t, "MaxParseMemory", code)
+		assertNotInCode(t, "Description *string", code)
+		assertNotInCode(t, "File *runtime.File", code)
+		assertNotInCode(t, "Attachment *runtime.File", code)
+		assertNotInCode(t, "bindFile", code)
+		assertNotInCode(t, "bindAttachment", code)
+
+		validationIndex := strings.Index(code, "if len(res) > 0")
+		streamIndex := strings.Index(code, "runtime.NewMultipartFormStream(")
+		require.NotEqual(t, -1, validationIndex)
+		require.NotEqual(t, -1, streamIndex)
+		assert.TrueT(t, validationIndex < streamIndex)
+	})
+
+	t.Run("client binding remains unchanged", func(t *testing.T) {
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+		formatted, err := opts.LanguageOpts.FormatContent("streaming_upload_client_parameters.go", buf.Bytes())
+		require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+		code := string(formatted)
+		assertInCode(t, "Description string", code)
+		assertInCode(t, "File runtime.NamedReadCloser", code)
+		assertInCode(t, "Attachment runtime.NamedReadCloser", code)
+		assertNotInCode(t, "MultipartFormStream", code)
+	})
+}
+
+func TestGenParameter_BufferedMultipartFormUnaffected(t *testing.T) {
+	defer discardOutput()()
+
+	b, err := opBuilder("bufferedUpload", "../fixtures/codegen/streaming-form.yml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	require.FalseT(t, op.HasStreamingForm)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	formatted, err := opts.LanguageOpts.FormatContent("buffered_upload_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	code := string(formatted)
+	assertInCode(t, "runtime.BindForm(", code)
+	assertInCode(t, "BufferedUploadMaxParseMemory", code)
+	assertInCode(t, "File io.ReadCloser", code)
+	assertInCode(t, "o.File = &runtime.File{Data: file, Header: header}", code)
+	assertNotInCode(t, "MultipartFormStream", code)
+}
+
+func TestGenParameter_StreamingMultipartFormExtensionValidation(t *testing.T) {
+	defer discardOutput()()
+
+	tests := []struct {
+		name      string
+		operation string
+		contains  string
+	}{
+		{
+			name:      "extension must be boolean",
+			operation: "invalidStreamingType",
+			contains:  `"x-go-server-streaming" must be a boolean`,
+		},
+		{
+			name:      "extension must mark a form file",
+			operation: "invalidStreamingParameter",
+			contains:  `"x-go-server-streaming" may only be enabled on a formData file parameter`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			b, err := opBuilder(test.operation, "../fixtures/codegen/streaming-form-invalid.yml")
+			require.NoError(t, err)
+
+			_, err = b.MakeOperation()
+			require.Error(t, err)
+			assert.ErrorContains(t, err, test.contains)
+		})
+	}
+}
+
+func TestGenParameter_StreamingMultipartFormNameIsDeconflicted(t *testing.T) {
+	params := GenParameters{
+		{ID: "MultipartForm", Location: "query"},
+		{ID: "File", Location: formData},
+	}
+
+	assert.EqualT(t, "RequestMultipartForm", deconflictMultipartFormName(params))
+}

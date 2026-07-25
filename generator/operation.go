@@ -260,6 +260,11 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 
+	hasStreamingForm, err := streamingFormEnabled(paramsForOperation, b.Method, b.Path)
+	if err != nil {
+		return GenOperation{}, err
+	}
+
 	idMapping, timeoutName, ctxName, err := b.paramMappings(paramsForOperation)
 	if err != nil {
 		return GenOperation{}, err
@@ -302,6 +307,12 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	sort.Sort(pp)
 	sort.Sort(hp)
 	sort.Sort(fp)
+
+	serverParams := serverParameters(params, hasStreamingForm)
+	multipartFormName := ""
+	if hasStreamingForm {
+		multipartFormName = deconflictMultipartFormName(serverParams)
+	}
 
 	var srs responses
 	if operation.Responses != nil {
@@ -415,6 +426,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		DefaultImports:       b.DefaultImports,
 		Imports:              b.Imports,
 		Params:               params,
+		ServerParams:         serverParams,
 		Summary:              trimBOM(operation.Summary),
 		QueryParams:          qp,
 		PathParams:           pp,
@@ -427,7 +439,9 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		HasFormValueParams:   hasFormValueParams,
 		HasFileParams:        hasFileParams,
 		HasBodyParams:        hasBodyParams,
+		HasStreamingForm:     hasStreamingForm,
 		HasStreamingResponse: hasStreamingResponse,
+		MultipartFormName:    multipartFormName,
 		Authorized:           b.Authed,
 		Security:             b.makeSecurityRequirements(receiver), // resolved security requirements, for codegen
 		SecurityDefinitions:  b.makeSecuritySchemes(receiver),
@@ -874,6 +888,57 @@ func (b *codeGenOpBuilder) MakeBodyParameterItemsAndMaps(res *GenParameter, it *
 	return items
 }
 
+func streamingFormEnabled(params map[string]spec.Parameter, method, path string) (bool, error) {
+	enabled := false
+	for _, param := range params {
+		raw, found := param.Extensions[xGoServerStreaming]
+		if !found {
+			continue
+		}
+
+		streaming, ok := raw.(bool)
+		if !ok {
+			return false, fmt.Errorf(`%s %s, parameter %q: %q must be a boolean, not a %T`,
+				method, path, param.Name, xGoServerStreaming, raw)
+		}
+		if !streaming {
+			continue
+		}
+		if param.In != formData || param.Type != file {
+			return false, fmt.Errorf(`%s %s, parameter %q: %q may only be enabled on a formData file parameter`,
+				method, path, param.Name, xGoServerStreaming)
+		}
+		enabled = true
+	}
+
+	return enabled, nil
+}
+
+func serverParameters(params GenParameters, streamingForm bool) GenParameters {
+	if !streamingForm {
+		return params
+	}
+
+	serverParams := make(GenParameters, 0, len(params))
+	for _, param := range params {
+		if param.IsFormParam() {
+			continue
+		}
+		serverParams = append(serverParams, param)
+	}
+
+	return serverParams
+}
+
+func deconflictMultipartFormName(params GenParameters) string {
+	seenIDs := make(map[string]any, len(params))
+	for _, param := range params {
+		seenIDs[strings.ToLower(param.ID)] = struct{}{}
+	}
+
+	return rename(multipartFormNamePreferences)(seenIDs, multipartFormNamePreferences[0], 0)
+}
+
 // paramMappings yields a map of safe parameter names for an operation.
 func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string, string, error) {
 	idMapping := map[string]map[string]string{
@@ -963,6 +1028,15 @@ var (
 		"operationContext",
 		"opContext",
 		"operContext",
+	}
+
+	multipartFormNamePreferences = []string{
+		"MultipartForm",
+		"RequestMultipartForm",
+		"HTTPMultipartForm",
+		"SwaggerMultipartForm",
+		"OperationMultipartForm",
+		"OpMultipartForm",
 	}
 )
 

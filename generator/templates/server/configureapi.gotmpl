@@ -128,7 +128,10 @@ func configureAPI(api *{{.APIPackageAlias}}.{{ pascalize .Name }}API) http.Handl
   {{- $package := .Package }}
   {{- $apipackagealias := .APIPackageAlias }}
   {{- range .Operations }}
-    {{- if .HasFormParams }}
+    {{- if .HasStreamingForm }}
+  // You may change here the maximum body size for this streaming multipart form. Below is the default (32 MB).
+  // {{ if ne .Package $package }}{{ .PackageAlias }}{{ else }}{{ $apipackagealias }}{{ end }}.{{ pascalize .Name }}MaxBodySize = 32 << 20
+    {{- else if .HasFormParams }}
   // You may change here the memory limit for this multipart form parser. Below is the default (32 MB).
   // {{ if ne .Package $package }}{{ .PackageAlias }}{{ else }}{{ $apipackagealias }}{{ end }}.{{ pascalize .Name }}MaxParseMemory = 32 << 20
     {{- end }}

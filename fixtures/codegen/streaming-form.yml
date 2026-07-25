@@ -1,0 +1,46 @@
+swagger: "2.0"
+info:
+  title: Streaming multipart form fixture
+  version: "1.0.0"
+consumes:
+  - multipart/form-data
+produces:
+  - application/json
+paths:
+  /stream:
+    post:
+      operationId: streamingUpload
+      parameters:
+        - name: token
+          in: query
+          type: string
+          required: true
+        - name: description
+          in: formData
+          type: string
+          required: true
+        - name: file
+          in: formData
+          type: file
+          required: true
+          x-go-server-streaming: true
+        - name: attachment
+          in: formData
+          type: file
+      responses:
+        "204":
+          description: uploaded
+  /regular:
+    post:
+      operationId: bufferedUpload
+      parameters:
+        - name: description
+          in: formData
+          type: string
+        - name: file
+          in: formData
+          type: file
+          required: true
+      responses:
+        "204":
+          description: uploaded

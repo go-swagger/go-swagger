@@ -78,6 +78,27 @@ func TestServer_MultipartForm(t *testing.T) {
 	assertInCode(t, "api.MultipartformConsumer = runtime.ByteStreamConsumer()", string(formatted))
 }
 
+func TestServer_StreamingMultipartForm(t *testing.T) {
+	defer discardOutput()()
+
+	gen, err := testAppGenerator(t, "../fixtures/codegen/streaming-form.yml", "streaming multipart")
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, app.GenOpts.templates.MustGet("serverConfigureapi").Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("configure_streaming_multipart.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+
+	code := string(formatted)
+	assertInCode(t, "operations.StreamingUploadMaxBodySize = 32 << 20", code)
+	assertNotInCode(t, "operations.StreamingUploadMaxParseMemory", code)
+	assertInCode(t, "operations.BufferedUploadMaxParseMemory = 32 << 20", code)
+}
+
 func TestServer_InvalidSpec(t *testing.T) {
 	defer discardOutput()()
 
