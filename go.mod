@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v0.21.6
 	github.com/go-openapi/loads v0.25.0
-	github.com/go-openapi/runtime v0.32.6
+	github.com/go-openapi/runtime v0.33.0
 	github.com/go-openapi/runtime/server-middleware v0.32.6
 	github.com/go-openapi/spec v0.22.9
 	github.com/go-openapi/strfmt v0.27.0

@@ -1,0 +1,31 @@
+swagger: "2.0"
+info:
+  title: Invalid streaming multipart form fixture
+  version: "1.0.0"
+consumes:
+  - multipart/form-data
+produces:
+  - application/json
+paths:
+  /invalid-type:
+    post:
+      operationId: invalidStreamingType
+      parameters:
+        - name: file
+          in: formData
+          type: file
+          x-go-server-streaming: "yes"
+      responses:
+        "204":
+          description: uploaded
+  /invalid-parameter:
+    post:
+      operationId: invalidStreamingParameter
+      parameters:
+        - name: token
+          in: query
+          type: string
+          x-go-server-streaming: true
+      responses:
+        "204":
+          description: uploaded

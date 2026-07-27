@@ -639,6 +639,7 @@ type GenOperation struct {
 	DefaultResponse  *GenResponse
 
 	Params               GenParameters
+	ServerParams         GenParameters
 	QueryParams          GenParameters
 	PathParams           GenParameters
 	HeaderParams         GenParameters
@@ -650,7 +651,9 @@ type GenOperation struct {
 	HasFormValueParams   bool
 	HasFileParams        bool
 	HasBodyParams        bool
+	HasStreamingForm     bool
 	HasStreamingResponse bool
+	MultipartFormName    string
 
 	Schemes              []string
 	ExtraSchemes         []string

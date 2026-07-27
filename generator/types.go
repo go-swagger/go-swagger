@@ -36,17 +36,18 @@ const (
 
 // Extensions supported by go-swagger.
 const (
-	xClass        = "x-class"         // class name used by discriminator
-	xGoCustomTag  = "x-go-custom-tag" // additional tag for serializers on struct fields
-	xGoName       = "x-go-name"       // name of the generated go variable
-	xGoType       = "x-go-type"       // reuse existing type (do not generate)
-	xIsNullable   = "x-isnullable"
-	xNullable     = "x-nullable" // turns the schema into a pointer
-	xOmitEmpty    = "x-omitempty"
-	xSchemes      = "x-schemes" // additional schemes supported for operations (server generation)
-	xOrder        = "x-order"   // sort order for properties (or any schema)
-	xGoJSONString = "x-go-json-string"
-	xGoEnumCI     = "x-go-enum-ci" // make string enumeration case-insensitive
+	xClass             = "x-class"         // class name used by discriminator
+	xGoCustomTag       = "x-go-custom-tag" // additional tag for serializers on struct fields
+	xGoName            = "x-go-name"       // name of the generated go variable
+	xGoType            = "x-go-type"       // reuse existing type (do not generate)
+	xIsNullable        = "x-isnullable"
+	xNullable          = "x-nullable" // turns the schema into a pointer
+	xOmitEmpty         = "x-omitempty"
+	xSchemes           = "x-schemes" // additional schemes supported for operations (server generation)
+	xOrder             = "x-order"   // sort order for properties (or any schema)
+	xGoJSONString      = "x-go-json-string"
+	xGoEnumCI          = "x-go-enum-ci"          // make string enumeration case-insensitive
+	xGoServerStreaming = "x-go-server-streaming" // stream multipart form payloads directly to server handlers
 
 	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
 )

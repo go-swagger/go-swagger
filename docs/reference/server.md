@@ -119,3 +119,32 @@ case the PublicListTravelsError will be returned, otherwise the PublicListTravel
 
 The code generator has written the remaining code to render that response with the headers etc.
 
+## Streaming multipart forms
+
+A server operation may opt out of generated `formData` binding and hand the
+multipart request stream directly to its handler. Mark one of the operation's
+file parameters with `x-go-server-streaming: true`:
+
+```yaml
+consumes:
+  - multipart/form-data
+parameters:
+  - name: file
+    in: formData
+    type: file
+    x-go-server-streaming: true
+```
+
+For the generated server, this extension applies to the complete multipart
+form. Generated code does not pre-read the first file and does not bind or
+validate individual `formData` parameters. Instead, the operation params expose
+a `*runtime.MultipartFormStream`. The handler owns sequential traversal with
+`NextFile()`, application-specific validation, and the decision to call
+`Drain()` or `Close()`.
+
+Other parameter locations, such as path, query and header parameters, continue
+to be generated and validated normally. Client generation is unchanged.
+
+The stream records fields and file metadata discovered so far. Parts that occur
+later in the request are not visible until the handler consumes or closes the
+current file and advances the stream.
