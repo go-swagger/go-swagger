@@ -23,6 +23,14 @@ It provide tools to work with swagger specifications.
 
 You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
 
+* **2026-07-31** : v0.36.0 is released
+  * codegen: new option to serve multipart files as a stream
+  * spec gen:
+    * new TUI tool (see <https://github.com/go-openapi/codescan#work-with-the-tui>)
+    * auto discovery of polymorphic subtypes
+    * swagger:omit to use with embedded structs 
+  * a significant update of our documentation site is ongoing, but couldn't make it to this release.
+
 * **2026-07-21** : v0.35.2 is out
   * security release: with this release, we have completed the hardening of go-openapi libraries and how go-swagger
     consumes those.
