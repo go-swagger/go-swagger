@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/SladkyCitron/slogcolor v1.9.0
 	github.com/go-openapi/analysis v0.25.5
-	github.com/go-openapi/codescan v0.36.0
+	github.com/go-openapi/codescan v0.36.2
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v1.0.0
 	github.com/go-openapi/loads v0.25.0
