@@ -21,8 +21,8 @@ github.com/fsnotify/fsnotify v1.10.1 h1:b0/UzAf9yR5rhf3RPm9gf3ehBPpf0oZKIjtpKrx5
 github.com/fsnotify/fsnotify v1.10.1/go.mod h1:TLheqan6HD6GBK6PrDWyDPBaEV8LspOxvPSjC+bVfgo=
 github.com/go-openapi/analysis v0.25.5 h1:xPYEvTb90o1y0epuiOPAoG4QqahjP3cdp5xNlHeKJRI=
 github.com/go-openapi/analysis v0.25.5/go.mod h1:d3UGtQC5uq5Kqqqis2VH09Km/v3vwsWrYkbp4gdm+Rc=
-github.com/go-openapi/codescan v0.36.0 h1:sp2RVgGp5IUlYRU3kwlQK6cUiQ9a1GNbgKbaAjdeSoI=
-github.com/go-openapi/codescan v0.36.0/go.mod h1:n0z3IJDm3ysnon+bLfBbHoy0WrRzlBE0LfeuAxGEnuM=
+github.com/go-openapi/codescan v0.36.2 h1:cZ581ShkoGn6ixJU67E5yZtEiHLQ3ZHo2r494byWBiU=
+github.com/go-openapi/codescan v0.36.2/go.mod h1:n0z3IJDm3ysnon+bLfBbHoy0WrRzlBE0LfeuAxGEnuM=
 github.com/go-openapi/errors v0.22.8 h1:oP7sW7TWc3wFFjrzzj0nI83H2qMBkNjNfSd+XRejk/I=
 github.com/go-openapi/errors v0.22.8/go.mod h1:BuUoHcYrU6E7V9gfj1I5wLQqgtIHnup/alXZ8KdgQ0w=
 github.com/go-openapi/inflect v1.0.0 h1:IzG7K5YBu97odaCXhjODGGt25WaNtEYLJc9NfUcW4AI=
