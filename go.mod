@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/SladkyCitron/slogcolor v1.9.0
 	github.com/go-openapi/analysis v0.25.5
-	github.com/go-openapi/codescan v0.36.2
+	github.com/go-openapi/codescan v0.36.3
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v1.0.0
 	github.com/go-openapi/loads v0.25.0
@@ -63,7 +63,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
+	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
