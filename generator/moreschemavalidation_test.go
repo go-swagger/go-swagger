@@ -293,6 +293,9 @@ func initModelFixtures() {
 
 	// x-go-type novalidation hint must also be honored by ContextValidate
 	initFixture3141()
+
+	// no-op Validate/ContextValidate must not declare unused formats/ctx params
+	initFixture3112()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
