@@ -11750,3 +11750,21 @@ func initFixture2587() {
 		`return errors.TooManyProperties("data", "body", 20)`,
 	}, todo, noLines, noLines)
 }
+
+func initFixture3141() {
+	f := newModelFixture("../fixtures/bugs/3141/fixture-3141.yaml", "x-go-type novalidation hint must be honored by Validate and ContextValidate")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("container.go", []string{
+		`func (m *Container) Validate(formats strfmt.Registry) error {`,
+		`func (m *Container) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
+	},
+		// none of the properties (object, array-aliased, slice items, map values) referring
+		// to an external type with hints.novalidation:true must be validated, since the user
+		// explicitly opted out of go-swagger's Validate(strfmt.Registry) error / ContextValidate
+		// interface requirement for that type (see issue #3141)
+		[]string{
+			`.Validate(formats); err != nil {`,
+			`.ContextValidate(ctx, formats); err != nil {`,
+		}, noLines, noLines)
+}

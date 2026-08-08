@@ -144,7 +144,7 @@
       }
     {{- end }}
   {{- else }}
-    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName) (not .SkipExternalValidation)) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
+    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName)) (not .SkipExternalValidation) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
       {{- if and .IsNullable (not .IsMapNullOverride) }}
     if {{ .ValueExpression }} != nil {
       {{- end }}
