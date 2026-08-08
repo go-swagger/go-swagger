@@ -40,6 +40,7 @@ type GenOpts struct {
 	PropertiesSpecOrder        bool
 	StrictAdditionalProperties bool
 	AllowTemplateOverride      bool
+	WithGoRunGoGenerate        bool
 
 	Spec                   string
 	APIPackage             string

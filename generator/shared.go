@@ -380,6 +380,23 @@ func (g *GenOpts) SpecPath() string {
 	return specRel
 }
 
+// GoGenerateCommand returns the command invoked by the //go:generate directive
+// emitted in generated server files.
+//
+// By default this is the bare "swagger" binary, which assumes it is
+// pre-installed and available on $PATH. When WithGoRunGoGenerate is set, the
+// tool is instead invoked via "go run", following the tools.go pattern for
+// tracking build tool dependencies (see issue #3000), so `go generate` works
+// without requiring a separately installed swagger binary.
+//
+// This method is used by templates, e.g. with {{ .GoGenerateCommand }}
+func (g *GenOpts) GoGenerateCommand() string {
+	if g.WithGoRunGoGenerate {
+		return "go run github.com/go-swagger/go-swagger/cmd/swagger"
+	}
+	return "swagger"
+}
+
 // titleOrDefault infers a name for the app from the title of the spec.
 func titleOrDefault(lang *language.Options, specDoc *loads.Document, name, defaultName string) string {
 	if strings.TrimSpace(name) == "" {
