@@ -290,6 +290,9 @@ func initModelFixtures() {
 
 	// min / maxProperties, more cases
 	initFixture2587()
+
+	// x-go-type novalidation hint must also be honored by ContextValidate
+	initFixture3141()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
