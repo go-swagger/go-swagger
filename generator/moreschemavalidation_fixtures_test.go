@@ -11768,3 +11768,15 @@ func initFixture3141() {
 			`.ContextValidate(ctx, formats); err != nil {`,
 		}, noLines, noLines)
 }
+
+func initFixture1413() {
+	f := newModelFixture("../fixtures/bugs/1413/fixture-1413.yaml", "enum mixing string values and null must not crash const generation")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("add_label.go", []string{
+		`	// AddLabelMediaTypeTextSlashPlain captures enum value "text/plain"`,
+		`	AddLabelMediaTypeTextSlashPlain string = "text/plain"`,
+		`	// AddLabelMediaTypeApplicationSlashJSON captures enum value "application/json"`,
+		`	AddLabelMediaTypeApplicationSlashJSON string = "application/json"`,
+	}, todo, noLines, noLines)
+}
