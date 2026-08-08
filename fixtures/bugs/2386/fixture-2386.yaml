@@ -1,0 +1,28 @@
+swagger: "2.0"
+info:
+  title: "--no-default-omit-empty CLI flag"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/Plain'
+
+definitions:
+  Plain:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      count:
+        type: integer
+      forced:
+        type: string
+        x-omitempty: true

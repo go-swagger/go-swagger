@@ -11768,3 +11768,25 @@ func initFixture3141() {
 			`.ContextValidate(ctx, formats); err != nil {`,
 		}, noLines, noLines)
 }
+
+func initFixture2386() {
+	f := newModelFixture("../fixtures/bugs/2386/fixture-2386.yaml", "--no-default-omit-empty CLI flag")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("plain.go", []string{
+		"Count int64 `json:\"count,omitempty\"`",
+		"Name string `json:\"name,omitempty\"`",
+		"Forced string `json:\"forced,omitempty\"`",
+	}, todo, noLines, noLines)
+
+	noOmitEmptyRun := f.AddRun(false).WithMinimalFlatten(true)
+	noOmitEmptyRun.FixtureOpts.NoDefaultOmitEmpty = true
+	noOmitEmptyRun.AddExpectations("plain.go", []string{
+		"Count int64 `json:\"count\"`",
+		"Name string `json:\"name\"`",
+		"Forced string `json:\"forced,omitempty\"`",
+	}, []string{
+		"Count int64 `json:\"count,omitempty\"`",
+		"Name string `json:\"name,omitempty\"`",
+	}, noLines, noLines)
+}
