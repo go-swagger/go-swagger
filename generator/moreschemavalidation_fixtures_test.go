@@ -11796,3 +11796,199 @@ func initFixture3112() {
 		`func (m *Plain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
 	}, noLines, noLines)
 }
+
+func initFixture1632() {
+	f := newModelFixture("../testdata/bugs/1632/fixture-1632.yaml", "additionalProperties value must unmarshal into a non-nil target")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("hal_rsc_links.go", []string{
+		`var toadd *HalHref`,
+		`if err := json.Unmarshal(v, &toadd); err != nil {`,
+	},
+		// a nil *HalHref passed directly (without &) to json.Unmarshal is an
+		// invalid unmarshal target and always fails at runtime with
+		// "json: Unmarshal(nil *models.HalHref)" (see issue #1632)
+		[]string{
+			`if err := json.Unmarshal(v, toadd); err != nil {`,
+		}, noLines, noLines)
+}
+
+func initFixture1487BaseTypes() {
+	// testing ../testdata/bugs/1487/fixture-basetypes.yaml with flatten and expand (--skip-flatten)
+
+	/*
+		This fixture explores base types (discriminated types) used in every container position:
+		as a map element, as a tuple element, as additionalItems, as a plain property and as an alias.
+
+		A base type renders as a Go interface, so it must never be rendered as a pointer: `*Iface`
+		cannot carry the method set and the generated calls on the element do not compile.
+	*/
+	f := newModelFixture("../testdata/bugs/1487/fixture-basetypes.yaml", "fixture for base types in containers")
+	flattenRun := f.AddRun(false)
+	expandRun := f.AddRun(true)
+
+	// load expectations for model: trivial_in_add_props.go
+	flattenRun.AddExpectations("trivial_in_add_props.go", []string{
+		"	TrivialInAddProps map[string]TrivialBase `json:\"-\"`",
+		`		result := make(map[string]TrivialBase)`,
+		`			var toadd TrivialBase`,
+	},
+		// not expected: a base type is an interface and is never pointed to
+		[]string{
+			`map[string]*TrivialBase`,
+			`var toadd *TrivialBase`,
+		},
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_in_tuple.go
+	flattenRun.AddExpectations("trivial_in_tuple.go", []string{
+		`	p1Field TrivialBase`,
+		"	TrivialInTupleItems []TrivialBase `json:\"-\"`",
+		`func (m *TrivialInTuple) P1() TrivialBase {`,
+		`func (m *TrivialInTuple) SetP1(val TrivialBase) {`,
+		`		var dataP1 TrivialBase`,
+		`			var toadd TrivialBase`,
+	},
+		// not expected
+		[]string{
+			`[]*TrivialBase`,
+			`p1Field *TrivialBase`,
+			`var toadd *TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_in_props.go
+	flattenRun.AddExpectations("trivial_in_props.go", []string{
+		`	genericTrivialPropField TrivialBase`,
+		`func (m *TrivialInProps) GenericTrivialProp() TrivialBase {`,
+		`func (m *TrivialInProps) SetGenericTrivialProp(val TrivialBase) {`,
+	},
+		// not expected
+		[]string{
+			`genericTrivialPropField *TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_map_alias.go
+	flattenRun.AddExpectations("trivial_map_alias.go", []string{
+		`type TrivialMapAlias map[string]TrivialBase`,
+	},
+		// not expected
+		[]string{
+			`type TrivialMapAlias map[string]*TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// when the spec is expanded, the base type is inlined as an anonymous interface,
+	// and must not be pointed to either
+	expandRun.AddExpectations("trivial_in_add_props.go", []string{
+		"	TrivialInAddProps map[string]TrivialInAddPropsAnon `json:\"-\"`",
+		`		result := make(map[string]TrivialInAddPropsAnon)`,
+		`			var toadd TrivialInAddPropsAnon`,
+		`type TrivialInAddPropsAnon interface {`,
+	},
+		// not expected
+		[]string{
+			`map[string]*TrivialInAddPropsAnon`,
+			`var toadd *TrivialInAddPropsAnon`,
+		},
+		noLines,
+		noLines)
+}
+
+func initFixture1487Polymorphism() {
+	// testing ../testdata/bugs/1487/fixture-polymorphism.yaml with flatten and expand (--skip-flatten)
+
+	/*
+		Companion to fixture-basetypes.yaml, with richer base types (properties, additionalProperties,
+		nested anonymous schemas) composed into maps, tuples and additionalItems.
+
+		Same invariant: a base type renders as a Go interface and is never pointed to.
+	*/
+	f := newModelFixture("../testdata/bugs/1487/fixture-polymorphism.yaml", "fixture for polymorphic types in containers")
+	flattenRun := f.AddRun(false)
+	expandRun := f.AddRun(true)
+
+	// load expectations for model: map_of_base_types.go
+	flattenRun.AddExpectations("map_of_base_types.go", []string{
+		"	MapOfBaseTypes map[string]MyBaseType `json:\"-\"`",
+		`		result := make(map[string]MyBaseType)`,
+		`			var toadd MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`map[string]*MyBaseType`,
+			`var toadd *MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: map_of_nodes.go
+	flattenRun.AddExpectations("map_of_nodes.go", []string{
+		`type MapOfNodes map[string]Node`,
+	},
+		// not expected
+		[]string{
+			`type MapOfNodes map[string]*Node`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: tuple_with_additional_base_types.go
+	flattenRun.AddExpectations("tuple_with_additional_base_types.go", []string{
+		"	TupleWithAdditionalBaseTypesItems []MyBaseType `json:\"-\"`",
+		`			var toadd MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`[]*MyBaseType`,
+			`var toadd *MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: tuple_of_base_types.go
+	flattenRun.AddExpectations("tuple_of_base_types.go", []string{
+		`func (m *TupleOfBaseTypes) P2() MyBaseType {`,
+		`func (m *TupleOfBaseTypes) SetP2(val MyBaseType) {`,
+		`		var dataP2 MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`P2() *MyBaseType`,
+			`SetP2(val *MyBaseType)`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: my_sub_type2.go
+	// a subtype composing a base type, whose additionalProperties are the base type itself
+	flattenRun.AddExpectations("my_sub_type2.go", []string{
+		"		AO1 map[string]MyBaseType `json:\"-\"`",
+	},
+		// not expected
+		[]string{
+			`map[string]*MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// expanded: the base type is inlined as an anonymous interface
+	expandRun.AddExpectations("map_of_base_types.go", []string{
+		"	MapOfBaseTypes map[string]MapOfBaseTypesAnon `json:\"-\"`",
+		`		result := make(map[string]MapOfBaseTypesAnon)`,
+		`			var toadd MapOfBaseTypesAnon`,
+	},
+		// not expected
+		[]string{
+			`map[string]*MapOfBaseTypesAnon`,
+			`var toadd *MapOfBaseTypesAnon`,
+		},
+		noLines,
+		noLines)
+}

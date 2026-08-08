@@ -298,8 +298,15 @@ func initModelFixtures() {
 	// enum array items must generate a const block
 	initFixture1203()
 
+	// base types (interfaces) in containers must never be rendered as pointers
+	initFixture1487BaseTypes()
+	initFixture1487Polymorphism()
+
 	// no-op Validate/ContextValidate must not declare unused formats/ctx params
 	initFixture3112()
+
+	// additionalProperties value must unmarshal into a non-nil target
+	initFixture1632()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

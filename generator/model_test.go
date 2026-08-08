@@ -2295,7 +2295,7 @@ func TestGenModel_Issue1409(t *testing.T) {
 // allocates through arbitrary pointer depth, so the map value ends up as the
 // expected single-level *HalHref, never a double pointer.
 func TestGenModel_Issue1632(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1632/fixture-1632.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1632/fixture-1632.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
