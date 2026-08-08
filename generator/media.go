@@ -75,6 +75,22 @@ var knownConsumers = map[string]string{
 	multipartForm:  "runtime.ByteStreamConsumer()",
 }
 
+// registerSerializerImports adds explicit imports for well-known serializer
+// implementations that live outside the runtime package and are otherwise
+// never registered anywhere: they are referenced only as a raw code snippet
+// (e.g. "yamlpc.YAMLProducer()") in GenSerializer.Implementation, so nothing
+// ever adds their import - the generated file only compiled when goimports
+// happened to resolve it, which is not guaranteed (#1603).
+func registerSerializerImports(imports map[string]string, groups GenSerGroups) {
+	for _, group := range groups {
+		for _, ser := range group.AllSerializers {
+			if strings.HasPrefix(ser.Implementation, "yamlpc.") {
+				imports["yamlpc"] = "github.com/go-openapi/runtime/yamlpc"
+			}
+		}
+	}
+}
+
 func wellKnownMime(tn string) (string, bool) {
 	for matcher := range mediaTypeNames() {
 		if matcher.rex.MatchString(tn) {
