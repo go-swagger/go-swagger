@@ -11768,3 +11768,19 @@ func initFixture3141() {
 			`.ContextValidate(ctx, formats); err != nil {`,
 		}, noLines, noLines)
 }
+
+func initFixture1632() {
+	f := newModelFixture("../fixtures/bugs/1632/fixture-1632.yaml", "additionalProperties value must unmarshal into a non-nil target")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("hal_rsc_links.go", []string{
+		`var toadd *HalHref`,
+		`if err := json.Unmarshal(v, &toadd); err != nil {`,
+	},
+		// a nil *HalHref passed directly (without &) to json.Unmarshal is an
+		// invalid unmarshal target and always fails at runtime with
+		// "json: Unmarshal(nil *models.HalHref)" (see issue #1632)
+		[]string{
+			`if err := json.Unmarshal(v, toadd); err != nil {`,
+		}, noLines, noLines)
+}

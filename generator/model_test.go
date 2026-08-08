@@ -1359,7 +1359,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
 	assertInCode(t, "dec := json.NewDecoder(buf)", res)
-	assertInCode(t, "dec.Decode(toadd)", res)
+	assertInCode(t, "dec.Decode(&toadd)", res)
 	assertInCode(t, "json.Marshal(data)", res)
 	assertInCode(t, "for _, v := range m."+k+"Items", res)
 }
