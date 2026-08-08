@@ -82,6 +82,34 @@ func TestMakeResponseHeader(t *testing.T) {
 	assert.EqualT(t, "X-Rate-Limit", gh.Name)
 }
 
+func TestMakeResponse_StrfmtHeaderImport(t *testing.T) {
+	b, err := opBuilder("getTasks", "")
+	require.NoError(t, err)
+
+	hdr := spec.Header{}
+	hdr.Typed("string", "uri")
+
+	resp := spec.Response{
+		ResponseProps: spec.ResponseProps{
+			Description: "with a strfmt header",
+			Headers:     map[string]spec.Header{"Location": hdr},
+		},
+	}
+	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
+
+	res, er := b.MakeResponse("a", "success", true, resolver, 201, resp)
+	require.NoError(t, er)
+
+	// the responses template needs the strfmt import to render the header type
+	assert.MapContainsT(t, res.Imports, "strfmt")
+	assert.EqualT(t, "github.com/go-openapi/strfmt", res.Imports["strfmt"])
+
+	// the import must not leak into the shared builder imports: the parameters
+	// template declares strfmt on its own and a duplicate import would not compile
+	_, leaked := b.Imports["strfmt"]
+	assert.FalseT(t, leaked)
+}
+
 func TestMakeHeader_XGoNamePreserveExplicitCasing(t *testing.T) {
 	b, err := opBuilder("getTasks", "")
 	require.NoError(t, err)
