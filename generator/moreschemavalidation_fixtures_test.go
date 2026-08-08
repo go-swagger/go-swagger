@@ -11768,3 +11768,18 @@ func initFixture3141() {
 			`.ContextValidate(ctx, formats); err != nil {`,
 		}, noLines, noLines)
 }
+
+func initFixture1203() {
+	f := newModelFixture("../fixtures/bugs/1203/fixture-1203.yaml", "enum array items must generate a const block")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("foo.go", []string{
+		`const (`,
+		`	// FooRolesItemsAdmin captures enum value "Admin"`,
+		`	FooRolesItemsAdmin string = "Admin"`,
+		`	// FooRolesItemsUser captures enum value "User"`,
+		`	FooRolesItemsUser string = "User"`,
+		`	// FooRolesItemsSuperAdmin captures enum value "SuperAdmin"`,
+		`	FooRolesItemsSuperAdmin string = "SuperAdmin"`,
+	}, todo, noLines, noLines)
+}
