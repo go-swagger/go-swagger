@@ -294,8 +294,8 @@ func initModelFixtures() {
 	// x-go-type novalidation hint must also be honored by ContextValidate
 	initFixture3141()
 
-	// --no-default-omit-empty CLI flag
-	initFixture2386()
+	// enum array items must generate a const block
+	initFixture1203()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

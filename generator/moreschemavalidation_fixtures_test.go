@@ -11769,24 +11769,17 @@ func initFixture3141() {
 		}, noLines, noLines)
 }
 
-func initFixture2386() {
-	f := newModelFixture("../fixtures/bugs/2386/fixture-2386.yaml", "--no-default-omit-empty CLI flag")
+func initFixture1203() {
+	f := newModelFixture("../fixtures/bugs/1203/fixture-1203.yaml", "enum array items must generate a const block")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
-	flattenRun.AddExpectations("plain.go", []string{
-		"Count int64 `json:\"count,omitempty\"`",
-		"Name string `json:\"name,omitempty\"`",
-		"Forced string `json:\"forced,omitempty\"`",
+	flattenRun.AddExpectations("foo.go", []string{
+		`const (`,
+		`	// FooRolesItemsAdmin captures enum value "Admin"`,
+		`	FooRolesItemsAdmin string = "Admin"`,
+		`	// FooRolesItemsUser captures enum value "User"`,
+		`	FooRolesItemsUser string = "User"`,
+		`	// FooRolesItemsSuperAdmin captures enum value "SuperAdmin"`,
+		`	FooRolesItemsSuperAdmin string = "SuperAdmin"`,
 	}, todo, noLines, noLines)
-
-	noOmitEmptyRun := f.AddRun(false).WithMinimalFlatten(true)
-	noOmitEmptyRun.FixtureOpts.NoDefaultOmitEmpty = true
-	noOmitEmptyRun.AddExpectations("plain.go", []string{
-		"Count int64 `json:\"count\"`",
-		"Name string `json:\"name\"`",
-		"Forced string `json:\"forced,omitempty\"`",
-	}, []string{
-		"Count int64 `json:\"count,omitempty\"`",
-		"Name string `json:\"name,omitempty\"`",
-	}, noLines, noLines)
 }
