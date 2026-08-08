@@ -1,0 +1,25 @@
+swagger: "2.0"
+info:
+  title: "enum array items must generate a const block"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/Foo'
+
+definitions:
+  Foo:
+    type: object
+    properties:
+      roles:
+        type: array
+        items:
+          type: string
+          enum:
+            - Admin
+            - User
+            - SuperAdmin

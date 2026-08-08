@@ -294,8 +294,8 @@ func initModelFixtures() {
 	// x-go-type novalidation hint must also be honored by ContextValidate
 	initFixture3141()
 
-	// additionalProperties value must unmarshal into a non-nil target
-	initFixture1632()
+	// enum array items must generate a const block
+	initFixture1203()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
