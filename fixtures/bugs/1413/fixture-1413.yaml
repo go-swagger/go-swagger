@@ -1,0 +1,31 @@
+swagger: "2.0"
+info:
+  title: "enum mixing string values and null must not crash const generation"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/AddLabel'
+
+definitions:
+  AddLabel:
+    type: object
+    required:
+      - key
+      - value
+      - media_type
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+      media_type:
+        type: ["string", "null"]
+        enum:
+          - "text/plain"
+          - "application/json"
+          - null
