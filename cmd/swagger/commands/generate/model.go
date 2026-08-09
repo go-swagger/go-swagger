@@ -20,6 +20,7 @@ type modelOptions struct {
 	StructTags                 []string `description:"the struct tags to generate, repeat for multiple (defaults to json)"                                   long:"struct-tags"`
 	RootedErrorPath            bool     `description:"extends validation errors with the type name instead of an empty path, in the case of arrays and maps" long:"rooted-error-path"`
 	WithStringer               bool     `description:"generate a fmt.Stringer String() method on models, rendering field values as JSON (see issue #872)"    long:"with-stringer"`
+	NoDefaultOmitEmpty         bool     `description:"do not default to omitempty struct tags unless x-omitempty is explicitly set on a property (see issue #2386)" long:"no-default-omit-empty"`
 }
 
 func (mo modelOptions) apply(opts *generator.GenOpts) {
@@ -32,6 +33,7 @@ func (mo modelOptions) apply(opts *generator.GenOpts) {
 	opts.StructTags = mo.StructTags
 	opts.WantsRootedErrorPath = mo.RootedErrorPath
 	opts.WantsStringer = mo.WithStringer
+	opts.NoDefaultOmitEmpty = mo.NoDefaultOmitEmpty
 }
 
 // WithModels adds the model options group.

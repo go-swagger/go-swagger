@@ -65,15 +65,17 @@ type typeResolver struct {
 	definitionPkg      string // pkg alias to fill in GenSchema.Pkg
 	mangler            mangling.NameMangler
 	pkgMangler         func(string, string) string
+	noDefaultOmitEmpty bool
 }
 
 func newTypeResolver(pkg string, doc *loads.Document, opts *GenOpts) *typeResolver {
 	resolver := typeResolver{
-		ModelsPackage: pkg,
-		Doc:           doc,
-		KnownDefs:     make(map[string]struct{}, len(doc.Spec().Definitions)),
-		mangler:       opts.LanguageOpts.Mangler,
-		pkgMangler:    opts.LanguageOpts.ManglePackageName,
+		ModelsPackage:      pkg,
+		Doc:                doc,
+		KnownDefs:          make(map[string]struct{}, len(doc.Spec().Definitions)),
+		mangler:            opts.LanguageOpts.Mangler,
+		pkgMangler:         opts.LanguageOpts.ManglePackageName,
+		noDefaultOmitEmpty: opts.NoDefaultOmitEmpty,
 	}
 
 	resolver.setDefs()
@@ -98,6 +100,7 @@ func (t *typeResolver) NewWithModelName(name string) *typeResolver {
 	tt.keepDefinitionsPkg = t.keepDefinitionsPkg
 	tt.knownDefsKept = t.knownDefsKept
 	tt.definitionPkg = t.definitionPkg
+	tt.noDefaultOmitEmpty = t.noDefaultOmitEmpty
 
 	return tt
 }
@@ -204,7 +207,7 @@ func (t *typeResolver) ResolveSchema(schema *spec.Schema, isAnonymous, isRequire
 	}
 
 	defer func() {
-		result.setExtensions(schema, tpe)
+		result.setExtensions(schema, tpe, t.noDefaultOmitEmpty)
 	}()
 
 	// special case of swagger type "file", rendered as io.ReadCloser interface
@@ -834,7 +837,7 @@ func (t *typeResolver) shortCircuitResolveExternal(tpe, pkg, alias string, extTy
 		tpe = "array"
 	}
 
-	result.setExtensions(schema, tpe)
+	result.setExtensions(schema, tpe, t.noDefaultOmitEmpty)
 	return result
 }
 
@@ -1154,9 +1157,9 @@ func (rt resolvedType) ToString(value string) string {
 	return fmt.Sprintf("string(%s%s)", deref, value)
 }
 
-func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string) {
+func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string, noDefaultOmitEmpty bool) {
 	rt.IsEnumCI = hasEnumCI(schema.Extensions)
-	rt.setIsEmptyOmitted(schema, origType)
+	rt.setIsEmptyOmitted(schema, origType, noDefaultOmitEmpty)
 	rt.setIsJSONString(schema, origType)
 
 	if customTag, found := schema.Extensions[xGoCustomTag]; found {
@@ -1167,10 +1170,17 @@ func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string) {
 	}
 }
 
-func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string) {
+func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string, noDefaultOmitEmpty bool) {
 	if v, found := schema.Extensions[xOmitEmpty]; found {
 		omitted, cast := v.(bool)
 		rt.IsEmptyOmitted = omitted && cast
+		return
+	}
+	if noDefaultOmitEmpty {
+		// --no-default-omit-empty: do not add omitempty unless explicitly requested
+		// with x-omitempty (handled above) - required properties never get omitempty
+		// regardless, that is enforced separately where struct tags are rendered.
+		rt.IsEmptyOmitted = false
 		return
 	}
 	// array of primitives are by default not empty-omitted, but arrays of aliased type are
