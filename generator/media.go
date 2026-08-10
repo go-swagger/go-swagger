@@ -75,22 +75,23 @@ var knownConsumers = map[string]string{
 	multipartForm:  "runtime.ByteStreamConsumer()",
 }
 
-// registerSerializerImports adds explicit imports for well-known serializer
-// implementations that live outside the runtime package and are otherwise
-// never registered anywhere: they are referenced only as a raw code snippet
-// (e.g. "yamlpc.YAMLProducer()") in GenSerializer.Implementation, so nothing
-// ever adds their import - the generated file only compiled when goimports
-// happened to resolve it, which is not guaranteed (#1603).
+// registerSerializerImports adds explicit imports for well-known serializer implementations.
+//
+// It ensures that code snippets such as "yamlpc.YAMLProducer()" have explicit imports and do
+// not solely rely on goimports to resolve, which is not guaranteed on the host running the generation.
 func registerSerializerImports(imports map[string]string, groups GenSerGroups) {
 	for _, group := range groups {
 		for _, ser := range group.AllSerializers {
 			if strings.HasPrefix(ser.Implementation, "yamlpc.") {
 				imports["yamlpc"] = "github.com/go-openapi/runtime/yamlpc"
 			}
-			// follow-up(fredbi): we'd also like register runtime import explicitly here.
-			// It should be pruned if already registered with other defaults.
-			// Unfortunately, the way imports are currently resolved produces a duplicate import,
-			// and that issue should be fixed first.
+			// we also want to egister runtime import explicitly here, even though it is likely already
+			// part of the default imports (which may change).
+			//
+			// It should be eventually pruned if already registered with default imports.
+			if strings.HasPrefix(ser.Implementation, "runtime.") {
+				imports["runtime"] = "github.com/go-openapi/runtime"
+			}
 		}
 	}
 }
