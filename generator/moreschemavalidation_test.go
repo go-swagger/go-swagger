@@ -296,6 +296,9 @@ func initModelFixtures() {
 
 	// enum array items must generate a const block
 	initFixture1203()
+
+	// no-op Validate/ContextValidate must not declare unused formats/ctx params
+	initFixture3112()
 }
 
 /* Template initTxxx() to prepare and load a fixture:

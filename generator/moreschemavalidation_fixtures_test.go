@@ -876,7 +876,7 @@ func initFixture1479Part() {
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
 		// empty validation
-		"func (m *RestartPolicy) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *RestartPolicy) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -893,7 +893,7 @@ func initFixture1479Part() {
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
 		// empty validation
-		"func (m *EndpointIPAMConfig) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *EndpointIPAMConfig) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -1162,7 +1162,7 @@ func initFixture1479Part() {
 		`type HostConfigAO0RestartPolicy struct {`,
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
-		`func (m *HostConfigAO0RestartPolicy) Validate(formats strfmt.Registry) error {`,
+		`func (m *HostConfigAO0RestartPolicy) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -1381,7 +1381,7 @@ func initFixture1479Part() {
 		"	IPv4Address string `json:\"IPv4Address,omitempty\"`",
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
-		`func (m *ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnonIPAMConfig) Validate(formats strfmt.Registry) error {`,
+		`func (m *ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnonIPAMConfig) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ContainerCreateConfigHostConfigAO0LogConfig struct {`,
 		"	Config map[string]string `json:\"Config,omitempty\"`",
@@ -1411,7 +1411,7 @@ func initFixture1479Part() {
 		`type ContainerCreateConfigHostConfigAO0RestartPolicy struct {`,
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
-		`func (m *ContainerCreateConfigHostConfigAO0RestartPolicy) Validate(formats strfmt.Registry) error {`,
+		`func (m *ContainerCreateConfigHostConfigAO0RestartPolicy) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	}, []string{
 		// not expected
@@ -1527,7 +1527,7 @@ func initFixture1479Part() {
 		"	IPv4Address string `json:\"IPv4Address,omitempty\"`",
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
-		`func (m *EndpointSettingsIPAMConfig) Validate(formats strfmt.Registry) error {`,
+		`func (m *EndpointSettingsIPAMConfig) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -2640,7 +2640,7 @@ func initFixtureComplexAllOf() {
 		`	if err := validate.FormatOf("prop0", "body", "uuid", m.Prop0.String(), formats); err != nil {`,
 		`type SliceOfAllOfItems0AllOf1 []any`,
 		// empty validation
-		"func (m SliceOfAllOfItems0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceOfAllOfItems0AllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -2685,7 +2685,7 @@ func initFixtureComplexAllOf() {
 	flattenRun.AddExpectations("slice_of_interfaces.go", []string{
 		`type SliceOfInterfaces []any`,
 		// empty validation
-		"func (m SliceOfInterfaces) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceOfInterfaces) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -2776,7 +2776,7 @@ func initFixtureComplexAllOf() {
 		`type SliceMixAllOf0Items0AllOf1 []any`,
 		`type SliceMixAllOf1 []any`,
 		// empty validation
-		"func (m SliceMixAllOf0Items0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceMixAllOf0Items0AllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -3333,7 +3333,7 @@ func initFixtureItching() {
 		"	DirName string `json:\"dirName,omitempty\"`",
 		"	AdditionalFile map[string]io.ReadCloser `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalFile) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalFile) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3362,7 +3362,7 @@ func initFixtureItching() {
 		"	MyAlternateFile TopLevelFormatIssueMyAlternateFile `json:\"myAlternateFile,omitempty\"`",
 		"	MyFile io.ReadCloser `json:\"myFile,omitempty\"`",
 		// empty validation
-		"func (m *TopLevelFormatIssue) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TopLevelFormatIssue) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3375,7 +3375,7 @@ func initFixtureItching() {
 		"	MyAlternateFile io.ReadCloser `json:\"myAlternateFile,omitempty\"`",
 		"	MyFile io.ReadCloser `json:\"myFile,omitempty\"`",
 		// empty validation
-		"func (m *TopLevelFormatIssue) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TopLevelFormatIssue) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -3498,7 +3498,7 @@ func initFixtureItching() {
 		"	Prop2 string `json:\"prop2,omitempty\"`",
 		"	NotValidatedAtAll map[string][]map[string]map[string]string `json:\"-\"`",
 		// empty validation
-		"func (m *NotValidatedAtAll) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NotValidatedAtAll) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3778,7 +3778,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalSliceOfObjectsAdditionalPropertiesItems struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
-		"func (m *AdditionalSliceOfObjectsAdditionalPropertiesItems) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalSliceOfObjectsAdditionalPropertiesItems) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4153,7 +4153,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4331,7 +4331,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalSliceOfObjectsItems0 struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
-		"func (m *AdditionalSliceOfObjectsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalSliceOfObjectsItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4451,7 +4451,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	NoValidationThingAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *NoValidationThing) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NoValidationThing) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4572,7 +4572,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4682,7 +4682,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TransitiveRefedThingAnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TransitiveRefedThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TransitiveRefedThingAnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4696,7 +4696,7 @@ func initFixtureAdditionalProps() {
 		"	PropA any `json:\"propA,omitempty\"`",
 		"	AdditionalEmptyObject map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalEmptyObject) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalEmptyObject) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4969,7 +4969,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1"+"."+"narrative", "body", m.Narrative); err != nil {`,
 		`type ClassicsClassicsItemsTuple0P3Tuple0P2 struct {`,
 		"	MarketingBS *string `json:\"marketingBS,omitempty\"`",
-		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P2) Validate(formats strfmt.Registry) error {`,
+		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P2) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ClassicsClassicsItemsTuple0P3Tuple0P3 struct {`,
 		"	Author *string `json:\"author,omitempty\"`",
@@ -5034,7 +5034,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1"+"."+"narrative", "body", m.Narrative); err != nil {`,
 		`type ClassicsTuple0P2 struct {`,
 		"	MarketingBS *string `json:\"marketingBS,omitempty\"`",
-		`func (m *ClassicsTuple0P2) Validate(formats strfmt.Registry) error {`,
+		`func (m *ClassicsTuple0P2) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ClassicsTuple0P3 struct {`,
 		"	Author *string `json:\"author,omitempty\"`",
@@ -5061,7 +5061,7 @@ func initFixtureTuple() {
 		`type ComicsItems2 struct {`,
 		"	MarketingBS string `json:\"marketingBS,omitempty\"`",
 		// empty validation
-		"func (m *ComicsItems2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ComicsItems2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5401,7 +5401,7 @@ func initFixture1042() {
 		"	F1 string `json:\"f1,omitempty\"`",
 		"	F2 string `json:\"f2,omitempty\"`",
 		// empty validation
-		"func (m *A) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *A) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5545,7 +5545,7 @@ func initFixture979() {
 		`type NewCluster struct {`,
 		"	DummyProp1 int64 `json:\"dummyProp1,omitempty\"`",
 		// empty validation
-		"func (m *NewCluster) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NewCluster) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5559,7 +5559,7 @@ func initFixture979() {
 		"	Result string `json:\"result,omitempty\"`",
 		"	Status string `json:\"status,omitempty\"`",
 		// empty validation
-		"func (m *ClusterAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ClusterAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5667,7 +5667,7 @@ func initFixture842() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid ValueType value: %q", getType.ValueType`,
 		// empty validation
-		"func (m *value) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *value) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5759,7 +5759,7 @@ func initFixture607() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid type value: %q", getType.Type`,
 		// empty validation
-		"func (m *filter) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *filter) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5932,7 +5932,7 @@ func initFixture607() {
 		"	Lt float64 `json:\"lt,omitempty\"`",
 		"	Lte float64 `json:\"lte,omitempty\"`",
 		// empty validation
-		"func (m *RangeFilterAllOf1Config) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *RangeFilterAllOf1Config) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6004,7 +6004,7 @@ func initFixture1336() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid NodeType value: %q", getType.NodeType`,
 		// empty validation
-		"func (m *node) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *node) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6017,7 +6017,7 @@ func initFixture1336() {
 		`type CodeBlockNodeAllOf1 struct {`,
 		"	Code string `json:\"Code,omitempty\"`",
 		// empty validation
-		"func (m *CodeBlockNodeAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *CodeBlockNodeAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6074,7 +6074,7 @@ func initFixture1336() {
 		`type DocBlockNodeAllOf1 struct {`,
 		"	Doc string `json:\"Doc,omitempty\"`",
 		// empty validation
-		"func (m *DocBlockNodeAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *DocBlockNodeAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6204,7 +6204,7 @@ func initFixtureErrors() {
 	flattenRun.AddExpectations("array_without_items.go", []string{
 		`type ArrayWithoutItems []any`,
 		// empty validation
-		"func (m ArrayWithoutItems) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ArrayWithoutItems) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6607,7 +6607,7 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *Tag) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Tag) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -7338,12 +7338,12 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *PetCategory) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *PetCategory) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		`type PetTagsItems0 struct {`,
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *PetTagsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *PetTagsItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -7646,7 +7646,7 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *Category) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Category) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8358,7 +8358,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedAliasedInterface struct {`,
 		"	Meta map[string]map[string]map[string]AliasInterface `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedAliasedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedAliasedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8370,7 +8370,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedAliasedInterface struct {`,
 		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedAliasedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedAliasedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8464,7 +8464,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedInterface struct {`,
 		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8516,7 +8516,7 @@ func initFixtureNestedMaps() {
 		"	Age int64 `json:\"age,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *NestedMapNoValidationsAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NestedMapNoValidationsAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8635,7 +8635,7 @@ func initFixture844Variations() {
 		`type Variation2 struct {`,
 		"	Prop1 EmptyEnum `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *Variation2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8647,7 +8647,7 @@ func initFixture844Variations() {
 		`type Variation2 struct {`,
 		"	Prop1 any `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *Variation2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8861,7 +8861,7 @@ func initFixture844Variations() {
 		`	Foo`,
 		`	Bar`,
 		// empty validation
-		"func (m *Variation0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8876,7 +8876,7 @@ func initFixture844Variations() {
 		`type Variation0AllOf0 any`,
 		`type Variation0AllOf1 any`,
 		// empty validation
-		"func (m *Variation0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8933,7 +8933,7 @@ func initFixture844Variations() {
 		`	Foo`,
 		`	Bar`,
 		// empty validation
-		"func (m *GetOKBody) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *GetOKBody) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8985,7 +8985,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TrialAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9077,7 +9077,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9114,7 +9114,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9217,7 +9217,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TrialAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9284,7 +9284,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9355,7 +9355,7 @@ func initFixtureMoreAddProps() {
 		`	if typeutils.IsZero(m.B1) {`,
 		`	if err := validate.FormatOf("b1", "body", "date", m.B1.String(), formats); err != nil {`,
 		// empty validation
-		"func (m *AdditionalTransitiveRefedObjectThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedObjectThingAnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9446,7 +9446,7 @@ func initFixture1537() {
 		"	Value1 int32 `json:\"value1,omitempty\"`",
 		"	Value2 int32 `json:\"value2,omitempty\"`",
 		// empty validation
-		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ProfileCfg) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9551,7 +9551,7 @@ func initFixture1537v2() {
 		"	Value1 int32 `json:\"value1,omitempty\"`",
 		"	Value2 int32 `json:\"value2,omitempty\"`",
 		// empty validation
-		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ProfileCfg) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9636,7 +9636,7 @@ func initFixture15365() {
 		`type ModelArrayOfXNullable []*int64`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		"func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfXNullable) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
 	},
 		// not expected
@@ -9716,7 +9716,7 @@ func initFixture15365() {
 	thisRun.AddExpectations("model_array_of_ref_no_validations.go", []string{
 		`type ModelArrayOfRefNoValidations []ModelInterface`,
 		// empty validation
-		"func (m ModelArrayOfRefNoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfRefNoValidations) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9744,7 +9744,7 @@ func initFixture15365() {
 		// do we need Required when item is nullable?
 		// nullable not required:
 		// empty validation
-		"func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfNullableString) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
 	},
 		// not expected
@@ -9773,7 +9773,7 @@ func initFixture15365() {
 	thisRun.AddExpectations("model_array_of_not_nullable_string.go", []string{
 		`type ModelArrayOfNotNullableString []string`,
 		// empty validation
-		"func (m ModelArrayOfNotNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfNotNullableString) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9839,7 +9839,7 @@ func initFixture1548() {
 		`	return ((*strfmt.Base64)(m)).UnmarshalJSON(b`,
 		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
 		`	return (strfmt.Base64(m)).MarshalJSON(`,
-		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
+		`func (m Base64Alias) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -9868,7 +9868,7 @@ func initFixture1548() {
 	// load expectations for model: base64_array.go
 	thisRun.AddExpectations("base64_array.go", []string{
 		`type Base64Array []strfmt.Base64`,
-		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
+		`func (m Base64Array) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -9885,7 +9885,7 @@ func initFixture1548() {
 	thisRun.AddExpectations("base64_model.go", []string{
 		`type Base64Model struct {`,
 		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
-		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
+		`func (m *Base64Model) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -10845,7 +10845,7 @@ func initFixtureRealiasedTypes() {
 		`type G1 struct {`,
 		"	Prop1 int64 `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *G1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *G1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -10994,7 +10994,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("a1.go", []string{
 		`type A1 []int64`,
 		// empty validation
-		"func (m A1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m A1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11047,7 +11047,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("b1.go", []string{
 		`type B1 map[string]int64`,
 		// empty validation
-		"func (m B1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m B1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11215,7 +11215,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("d1.go", []string{
 		`type D1 int64`,
 		// empty validation
-		"func (m D1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m D1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11576,7 +11576,7 @@ func initFixture2604() {
 	thisRun.AddExpectations("no_validations.go", []string{
 		`type NoValidations struct {`,
 		// empty validation
-		"func (m *NoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NoValidations) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11757,7 +11757,7 @@ func initFixture3141() {
 
 	flattenRun.AddExpectations("container.go", []string{
 		`func (m *Container) Validate(formats strfmt.Registry) error {`,
-		`func (m *Container) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
+		`func (m *Container) ContextValidate(_ context.Context, _ strfmt.Registry) error {`,
 	},
 		// none of the properties (object, array-aliased, slice items, map values) referring
 		// to an external type with hints.novalidation:true must be validated, since the user
@@ -11782,4 +11782,17 @@ func initFixture1203() {
 		`	// FooRolesItemsSuperAdmin captures enum value "SuperAdmin"`,
 		`	FooRolesItemsSuperAdmin string = "SuperAdmin"`,
 	}, todo, noLines, noLines)
+}
+
+func initFixture3112() {
+	f := newModelFixture("../fixtures/bugs/3112/fixture-3112.yaml", "no-op Validate/ContextValidate must not declare unused formats/ctx params")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("plain.go", []string{
+		`func (m *Plain) Validate(_ strfmt.Registry) error {`,
+		`func (m *Plain) ContextValidate(_ context.Context, _ strfmt.Registry) error {`,
+	}, []string{
+		`func (m *Plain) Validate(formats strfmt.Registry) error {`,
+		`func (m *Plain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
+	}, noLines, noLines)
 }
