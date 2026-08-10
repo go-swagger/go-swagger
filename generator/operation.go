@@ -144,7 +144,12 @@ func (o *operationGenerator) Generate() error {
 
 	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
 	imports := newImportsBuilder(o.GenOpts).initImports(
-		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage))
+		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage),
+	)
+	if err := ensureDedupedImports(defaultImports, imports); err != nil {
+		// guard against internal dev errors
+		return err
+	}
 
 	bldr := codeGenOpBuilder{
 		ModelsPackage:       o.ModelsPackage,

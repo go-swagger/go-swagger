@@ -312,6 +312,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			}
 		}
 	}
+	if err := ensureDedupedImports(defaultImports, imports); err != nil {
+		// guard against internal dev errors
+		return GenApp{}, err
+	}
+
 	sort.Sort(genModels)
 
 	log.Printf("planning operations (found: %d)", len(a.Operations))

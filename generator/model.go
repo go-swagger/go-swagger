@@ -377,6 +377,12 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		"validate":    "github.com/go-openapi/validate",
 	}
 
+	imports := findImports(&pg.GenSchema)
+	if err := ensureDedupedImports(defaultImports, imports); err != nil {
+		// guard against internal dev errors
+		return nil, err
+	}
+
 	return &GenDefinition{
 		GenCommon: GenCommon{
 			Copyright:        opts.Copyright,
@@ -388,7 +394,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		DependsOn:      pg.Dependencies,
 		DefaultImports: defaultImports,
 		ExtraSchemas:   gatherExtraSchemas(pg.ExtraSchemas),
-		Imports:        findImports(&pg.GenSchema),
+		Imports:        imports,
 		External:       isExternal(schema),
 	}, nil
 }

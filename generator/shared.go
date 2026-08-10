@@ -656,3 +656,48 @@ func concatUnique(collections ...[]string) []string {
 	}
 	return result
 }
+
+// ensureDedupedImports ensures that extra imports are not already in default imports.
+//
+// Besides it also check that:
+//
+//   - the same package is not imported twice with a different alias
+//   - the same alias found in default imports point to the same package
+//
+// It prunes redundant keys from extraImports, or errors if checks don't pass.
+func ensureDedupedImports(defaultImports, extraImports map[string]string) error {
+	pkgIndex := make(map[string]string, len(extraImports))
+	for alias, pkg := range defaultImports {
+		pkgIndex[pkg] = alias
+	}
+
+	for alias, pkg := range extraImports {
+		seenAlias, foundAlias := defaultImports[alias]
+		seenPackage, alreadyImported := pkgIndex[pkg]
+
+		if !foundAlias && !alreadyImported {
+			continue
+		}
+
+		if foundAlias && alias != seenAlias {
+			return fmt.Errorf(
+				"dev error: the same package %q imported with different aliases: %q and %q",
+				pkg, alias, seenAlias,
+			)
+		}
+
+		if alreadyImported && pkg != seenPackage {
+			return fmt.Errorf(
+				"dev error: package aliased as %q points to different packages: %q and %q",
+				alias, pkg, seenPackage,
+			)
+		}
+
+		// true duplicate, consistent with defaultImports: may be safely pruned
+		pkgIndex[pkg] = alias
+
+		delete(extraImports, alias)
+	}
+
+	return nil
+}
