@@ -4,6 +4,8 @@
 package generator
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -16,14 +18,22 @@ import (
 )
 
 const (
-	basicFixture   = "../fixtures/petstores/petstore.json"
-	remoteYAMLSpec = "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
-	remoteJSONSpec = "https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.json"
+	basicFixture        = "../fixtures/petstores/petstore.json"
+	fakeRemoteYAMLSpec  = "../fixtures/petstores/petstore.yaml"
+	fakeRemoteJSONSpec  = basicFixture
+	routeRemoteYAMLSpec = "/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
+	routeRemoteJSONSpec = "/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.json"
+	routeRemoteHTMLSpec = "/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.html"
 )
 
 func TestGenClient(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
+
+	ts := httptest.NewServer(serveTestRemotes(t))
+	t.Cleanup(func() {
+		ts.Close()
+	})
 
 	const clientName = "test"
 
@@ -69,7 +79,7 @@ func TestGenClient(t *testing.T) {
 
 			t.Run("should fail on bad content in spec (HTML, not json)", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = remoteJSONSpec
+				opts.Spec = ts.URL + routeRemoteHTMLSpec
 				require.Error(t,
 					GenerateClient(clientName, []string{}, []string{}, opts),
 				)
@@ -77,7 +87,7 @@ func TestGenClient(t *testing.T) {
 
 			t.Run("should fail when no valid operation is selected", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = remoteYAMLSpec
+				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				require.Error(t,
 					GenerateClient(clientName, []string{}, []string{"wrongOperationID"}, opts),
 				)
@@ -100,7 +110,7 @@ func TestGenClient(t *testing.T) {
 		t.Run("should generate client", func(t *testing.T) {
 			t.Run("from remote spec", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = remoteYAMLSpec
+				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				opts.Target = prepareClientTarget(t, root)
 				opts.IsClient = true
 				DefaultSectionOpts(opts)
@@ -124,7 +134,7 @@ func TestGenClient(t *testing.T) {
 
 			t.Run("should dump template data", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = remoteYAMLSpec
+				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				opts.Target = prepareClientTarget(t, root)
 				opts.DumpData = true
 
@@ -1117,4 +1127,39 @@ func assertImports(t *testing.T, baseImport, code string) {
 	assertRegexpInCode(t, `"`+baseImport+`/override`, code)
 	assertRegexpInCode(t, `"`+baseImport+`/gtl`, code)
 	assertRegexpInCode(t, `"`+baseImport+`/operationsops`, code)
+}
+
+// serveTestRemotes is a http handler to serve the yaml and json petStore specs.
+func serveTestRemotes(t *testing.T) http.Handler {
+	t.Helper()
+
+	jsonPetStore, err := os.ReadFile(fakeRemoteJSONSpec)
+	require.NoError(t, err)
+	yamlPetStore, err := os.ReadFile(fakeRemoteYAMLSpec)
+	require.NoError(t, err)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc(routeRemoteJSONSpec, func(rw http.ResponseWriter, _ *http.Request) {
+		rw.Header().Set("Content-Type", "application/json; charset=utf-8")
+		rw.WriteHeader(http.StatusOK)
+		_, _ = rw.Write(jsonPetStore)
+	})
+
+	mux.HandleFunc(routeRemoteYAMLSpec, func(rw http.ResponseWriter, _ *http.Request) {
+		rw.Header().Set("Content-Type", "application/json; charset=utf-8")
+		rw.WriteHeader(http.StatusOK)
+		_, _ = rw.Write(yamlPetStore)
+	})
+
+	mux.HandleFunc(routeRemoteHTMLSpec, func(rw http.ResponseWriter, _ *http.Request) {
+		rw.Header().Set("Content-Type", "text/html; charset=utf-8")
+		rw.WriteHeader(http.StatusOK)
+		content := make([]byte, 0, len(yamlPetStore)+100)
+		content = append(content, []byte("<!DOCTYPE html><HTML><p>")...)
+		content = append(content, yamlPetStore...)
+		content = append(content, []byte("</p>></HTML>")...)
+		_, _ = rw.Write(content)
+	})
+
+	return mux
 }
