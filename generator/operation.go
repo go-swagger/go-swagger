@@ -520,6 +520,18 @@ func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, r
 		}
 		res.Schema = &schema
 	}
+
+	if headersNeedStrfmt(res.Headers) {
+		// Register the strfmt import on a response-scoped copy of the imports
+		// map. Mutating the shared b.Imports would leak the import into the
+		// parameters template, which already declares strfmt on its own (#1769).
+		imports := maps.Clone(b.Imports)
+		if imports == nil {
+			imports = make(map[string]string)
+		}
+		imports["strfmt"] = "github.com/go-openapi/strfmt"
+		res.Imports = imports
+	}
 	return res, nil
 }
 
@@ -937,6 +949,25 @@ func deconflictMultipartFormName(params GenParameters) string {
 	}
 
 	return rename(multipartFormNamePreferences)(seenIDs, multipartFormNamePreferences[0], 0)
+}
+
+// headersNeedStrfmt reports whether any response header resolves to a strfmt
+// type (e.g. format: uri, uuid, date-time), including types nested in array
+// items (e.g. []strfmt.DateTime). Headers are resolved via simpleResolvedType
+// and never go through the schema import collection used for body/parameter
+// types, so the responses template needs the import registered explicitly.
+func headersNeedStrfmt(headers GenHeaders) bool {
+	for _, h := range headers {
+		if strings.HasPrefix(h.GoType, "strfmt.") {
+			return true
+		}
+		for child := h.Child; child != nil; child = child.Child {
+			if strings.HasPrefix(child.GoType, "strfmt.") {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // paramMappings yields a map of safe parameter names for an operation.

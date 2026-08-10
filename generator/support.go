@@ -270,6 +270,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	defaultImports := newImportsBuilder(a.GenOpts).defaultImports()
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)
+	registerSerializerImports(imports, consumes)
+	registerSerializerImports(imports, produces)
 	alias := deconflictPkg(a.GenOpts.LanguageOpts.ManglePackageName(a.OperationsPackage, defaultOperationsTarget), renameAPIPackage)
 	if !a.GenOpts.IsClient { // we don't want to inject this import for clients
 		imports[alias] = path.Join(

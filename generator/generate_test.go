@@ -41,6 +41,7 @@ func generateServerFixtures() map[string]generateFixture {
 	return map[string]generateFixture{
 		"go_run_generate_3000":             fixtureServerGoRunGenerate3000(),
 		"go_run_generate_default_3000":     fixtureServerGoRunGenerateDefault3000(),
+		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
@@ -595,6 +596,23 @@ func fixtureServerGoRunGenerateDefault3000() generateFixture {
 				require.NoError(t, err)
 				require.Contains(t, string(content), "//go:generate swagger generate server")
 				require.NotContains(t, string(content), "go run github.com/go-swagger/go-swagger/cmd/swagger")
+			}
+		},
+	}
+}
+
+func fixtureServerYamlpcImport1603() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/1603/fixture-1603.yaml",
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				configureContent, err := os.ReadFile(filepath.Join(target, "restapi", "configure_yamlpc_import_must_be_registered_explicitly.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(configureContent), `"github.com/go-openapi/runtime/yamlpc"`)
+
+				apiContent, err := os.ReadFile(filepath.Join(target, "restapi", "operations", "yamlpc_import_must_be_registered_explicitly_api.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(apiContent), `"github.com/go-openapi/runtime/yamlpc"`)
 			}
 		},
 	}
