@@ -1044,6 +1044,40 @@ func TestGenClient_2773(t *testing.T) {
 	})
 }
 
+func TestGenClient_3432(t *testing.T) {
+	t.Parallel()
+	defer discardOutput()()
+
+	root := t.TempDir()
+	opts := testClientGenOpts()
+	// the context guard is emitted for every operation, so any client fixture exercises it
+	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2945", "fixture-2945.yaml")
+	opts.Target = prepareClientTarget(t, root)
+	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
+
+	t.Run("the non-context operation method should not dereference nil params", func(t *testing.T) {
+		fixtureConfig := map[string][]string{
+			"client/operations/operations_client.go": { // generated file
+				// expected code lines
+				`if params != nil && params.inner.ctx != nil {`,
+				`ctx = params.inner.ctx`,
+				`ctx = context.Background()`,
+			},
+		}
+
+		for fileToInspect, expectedCode := range fixtureConfig {
+			code, err := os.ReadFile(filepath.Join(opts.Target, filepath.FromSlash(fileToInspect)))
+			require.NoError(t, err)
+
+			for line, codeLine := range expectedCode {
+				if !assertInCode(t, strings.TrimSpace(codeLine), string(code)) {
+					t.Logf("Code expected did not match in codegenfile %s for expected line %d: %q", fileToInspect, line, expectedCode[line])
+				}
+			}
+		}
+	})
+}
+
 func testClientGenOpts() *GenOpts {
 	g := NewGenOpts(ForClient())
 	g.Target = "."
