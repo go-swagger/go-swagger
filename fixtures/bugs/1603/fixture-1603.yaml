@@ -1,0 +1,19 @@
+swagger: "2.0"
+info:
+  title: "yamlpc import must be registered explicitly"
+  version: "0.0.1"
+consumes:
+  - application/x-yaml
+produces:
+  - application/json
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
