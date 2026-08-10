@@ -38,6 +38,7 @@ type Server struct {
 	FlagStrategy           string `choice:"go-flags"                                                               choice:"pflag"                 choice:"flag"    default:"go-flags"                                      description:"the strategy to provide flags for the server" long:"flag-strategy"`
 	CompatibilityMode      string `choice:"modern"                                                                 choice:"intermediate"          default:"modern" description:"the compatibility mode for the tls server" long:"compatibility-mode"`
 	RegenerateConfigureAPI bool   `description:"Force regeneration of configureapi.go"                             long:"regenerate-configureapi"`
+	WithGoRunGoGenerate    bool   `description:"emit //go:generate directives that invoke swagger via 'go run' instead of assuming a pre-installed binary (see issue #3000)" long:"with-go-run"`
 
 	Name string `description:"the name of the application, defaults to a mangled value of info.title" long:"name" short:"A"`
 	// TODO(fredbi): CmdName string `long:"cmd-name" short:"A" description:"the name of the server command, when main is generated (defaults to {name}-server)"`
@@ -77,6 +78,7 @@ func (s *Server) apply(opts *generator.GenOpts) {
 	opts.FlagStrategy = s.FlagStrategy
 	opts.CompatibilityMode = s.CompatibilityMode
 	opts.RegenerateConfigureAPI = s.RegenerateConfigureAPI
+	opts.WithGoRunGoGenerate = s.WithGoRunGoGenerate
 
 	opts.Name = s.Name
 	opts.MainPackage = s.MainTarget
