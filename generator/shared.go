@@ -389,7 +389,7 @@ func (g *GenOpts) SpecPath() string {
 // tracking build tool dependencies (see issue #3000), so `go generate` works
 // without requiring a separately installed swagger binary.
 //
-// This method is used by templates, e.g. with {{ .GoGenerateCommand }}
+// This method is used by templates, e.g. with {{ .GoGenerateCommand }}.
 func (g *GenOpts) GoGenerateCommand() string {
 	if g.WithGoRunGoGenerate {
 		return "go run github.com/go-swagger/go-swagger/cmd/swagger"
