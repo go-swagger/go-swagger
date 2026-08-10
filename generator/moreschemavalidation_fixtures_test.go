@@ -11757,7 +11757,7 @@ func initFixture3141() {
 
 	flattenRun.AddExpectations("container.go", []string{
 		`func (m *Container) Validate(formats strfmt.Registry) error {`,
-		`func (m *Container) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
+		`func (m *Container) ContextValidate(_ context.Context, _ strfmt.Registry) error {`,
 	},
 		// none of the properties (object, array-aliased, slice items, map values) referring
 		// to an external type with hints.novalidation:true must be validated, since the user
