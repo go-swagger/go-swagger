@@ -39,6 +39,7 @@ func TestGenerateAndTest(t *testing.T) {
 
 func generateServerFixtures() map[string]generateFixture {
 	return map[string]generateFixture{
+		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
@@ -560,6 +561,23 @@ func fixtureServerTagPackageName3143() generateFixture {
 				require.DirExists(t, filepath.Join(target, "restapi", "operations", "trailingv2"))
 				t.Run("should tidy go mod", gentest.GoModTidy(target))
 				t.Run("building generated server", gentest.GoBuild(location))
+			}
+		},
+	}
+}
+
+func fixtureServerYamlpcImport1603() generateFixture {
+	return generateFixture{
+		spec: "../fixtures/bugs/1603/fixture-1603.yaml",
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				configureContent, err := os.ReadFile(filepath.Join(target, "restapi", "configure_yamlpc_import_must_be_registered_explicitly.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(configureContent), `"github.com/go-openapi/runtime/yamlpc"`)
+
+				apiContent, err := os.ReadFile(filepath.Join(target, "restapi", "operations", "yamlpc_import_must_be_registered_explicitly_api.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(apiContent), `"github.com/go-openapi/runtime/yamlpc"`)
 			}
 		},
 	}
