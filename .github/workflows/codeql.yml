@@ -1,0 +1,23 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+    paths-ignore: # remove this clause if CodeQL is a required check
+      - '**/*.md'
+  schedule:
+    - cron: '31 21 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    permissions:
+      contents: read
+      security-events: write
+    uses: go-openapi/ci-workflows/.github/workflows/codeql.yml@ef14d94bfba7bf45458ce6a6afd4a1c75e04ac2a # v0.4.4
+    secrets: inherit

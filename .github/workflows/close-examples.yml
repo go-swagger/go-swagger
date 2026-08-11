@@ -8,7 +8,7 @@
 # artifact. No secrets, no bot token, no PR code checkout — it only reads
 # the event payload and writes a number.
 #
-# Phase 2 (close-examples-pr.yaml) picks up the artifact via workflow_run
+# Phase 2 (close-examples-pr.yml) picks up the artifact via workflow_run
 # and closes the corresponding child PR on go-swagger/examples using bot
 # credentials in the trusted default-branch context.
 #

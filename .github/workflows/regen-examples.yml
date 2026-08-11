@@ -57,6 +57,7 @@ jobs:
               - 'hack/*.yaml'
               - 'fixtures/**/*.{yaml,yml,json}'
               - '!fixtures/goparsing/**'
+              - '!*.md'
               - '!**/*.md'
       -
         name: Seed regen metadata artifact

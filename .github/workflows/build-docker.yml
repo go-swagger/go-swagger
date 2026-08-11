@@ -90,6 +90,10 @@ jobs:
 
       - name: Meta usage
         id: meta-usage
+        env:
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          ENABLE_MAJOR_TAG: ${{ !startsWith(github.ref, 'refs/tags/v0.') }}
         run: |
           # Determine the docker tagging rules that will be used by docker/metadata-action.
           #
@@ -104,8 +108,8 @@ jobs:
             echo "type=semver,pattern={{version}}" >> "$GITHUB_OUTPUT"
             echo "type=semver,pattern={{major}}.{{minor}}" >> "$GITHUB_OUTPUT"
             # disabled if major zero
-            echo "type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}" >> "$GITHUB_OUTPUT"
-            BUILD_TAG="${{ github.ref_name }}"
+            echo "type=semver,pattern={{major}},enable=${ENABLE_MAJOR_TAG}" >> "$GITHUB_OUTPUT"
+            BUILD_TAG="${GITHUB_REF_NAME}"
           else
             # tagging rules for git branch
             echo "type=ref,event=branch" >> "$GITHUB_OUTPUT"

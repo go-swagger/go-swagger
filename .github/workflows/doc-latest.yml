@@ -10,13 +10,13 @@ on:
     paths:
     - docs/**
     - hack/doc-site/**
-    - .github/workflows/update-doc.yaml
+    - .github/workflows/update-doc.yml
 
   pull_request:
     paths:
     - docs/**
     - hack/doc-site/**
-    - .github/workflows/update-doc.yaml
+    - .github/workflows/update-doc.yml
 
 jobs:
   update-doc:
@@ -25,4 +25,4 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: ./.github/workflows/update-doc.yaml
+    uses: ./.github/workflows/update-doc.yml

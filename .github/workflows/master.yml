@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_run:
     workflows:
-      - test
+      - 'go test'
     types:
       - completed
     branches:
@@ -15,8 +15,8 @@ on:
     paths-ignore:
       - 'docs/*'
       - 'hack/hugo/*'
-      - .github/workflows/update-doc.yaml
-      - '**/*.md'
+      - .github/workflows/update-doc.yml
+      - '**.md'
 
 jobs:
   on-success:
@@ -53,7 +53,7 @@ jobs:
       security-events: write
     name: Docker latest master (dev)
     needs: [on-success]
-    uses: ./.github/workflows/build-docker.yaml
+    uses: ./.github/workflows/build-docker.yml
     with:
       push: true
       record_retention: 7

@@ -4,10 +4,10 @@
 # checkout has no PR head context). The SARIF is treated as data and handed
 # straight to code scanning — no PR code is checked out or executed here.
 #
-# docker-dev is itself gated (see master.yaml) to trusted same-repo triggers, so
+# docker-dev is itself gated (see master.yml) to trusted same-repo triggers, so
 # the artifact consumed below cannot be produced from a fork PR.
 
-name: report-docker-vuln
+name: Report Docker vuln scan
 
 permissions:
   contents: read
