@@ -22,6 +22,7 @@ jobs:
 
   clean-docker-dev:
     # Remove older master builds
+    needs: [ clean-docker-untagged ]
     runs-on: ubuntu-latest
     permissions:
       packages: write
