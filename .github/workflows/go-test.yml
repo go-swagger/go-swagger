@@ -7,9 +7,21 @@ permissions:
 on:
   push:
     branches:
+    paths-ignore:
       - master
+      - 'hack/hugo/*'
+      - .github/workflows/update-doc.yml
+      - '*.md'
+      - '**/*.md'
+
 
   pull_request:
+    paths-ignore:
+      - 'hack/hugo/*'
+      - .github/workflows/update-doc.yml
+      - '*.md'
+      - '**/*.md'
+
 
 jobs:
   test:
