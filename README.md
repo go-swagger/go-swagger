@@ -5,7 +5,7 @@
 <!-- Badges: release & docker images  -->
 [![Release][release-badge]][release-url] [![Container Registry on Quay.io][quay-badge]][quay-url] [![Container Registry on Github][ghcr-badge]][ghcr-url]
 <!-- Badges: code quality  -->
-[![Go Report Card][gocard-badge]][gocard-url] [![CodeFactor Grade][codefactor-badge]][codefactor-url]
+[![CodeFactor Grade][codefactor-badge]][codefactor-url]
 <!-- Badges: license & compliance -->
 [![License][license-badge]][license-url] [![Open SSF Scorecard][ossf-badge]][ossf-url] [![OpenSSF Best Practices][ossf-cci-badge]][ossf-cci-url] [![OpenSSF Baseline][ossf-baseline]][ossf-cci-url] [![OSS licences status][fossa-badge]][fossa-url]
 <!-- Badges: documentation & support -->
@@ -23,6 +23,12 @@ It provide tools to work with swagger specifications.
 
 You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
 
+* **2026-08-11** : v0.36.3 lands soon (ETA 08/14)
+  * codegen fixes
+  * spec gen updates deferred to v0.36.4 (~ 08/21: faster scanner, enhanced TUI tool)
+    * see preview of the playground tool (online spec gen): <https://go-openapi.github.io/codescan/playground>
+  * doc site revamp deferred to v0.36.5 (~ end of August)
+
 * **2026-07-31** : v0.36.0 is released
   * codegen: new option to serve multipart files as a stream
   * spec gen:
@@ -30,59 +36,6 @@ You may join the discord community by clicking the invite link on the discord ba
     * auto discovery of polymorphic subtypes
     * swagger:omit to use with embedded structs 
   * a significant update of our documentation site is ongoing, but couldn't make it to this release.
-
-* **2026-07-21** : v0.35.2 is out
-  * security release: with this release, we have completed the hardening of go-openapi libraries and how go-swagger
-    consumes those.
-  * The class of threats that we've tried to mitigate is "adverserial specs", e.g. openapi documents that go-swagger
-     would happily parse, resolve and generate code from, but that are crafted maliciously.
-  * Attack vectors can be: `$ref` (to resolve against a malicious site, to expand local files and try to leak, or simply
-    crash), to induce the code generator into producing malicious code.
-  * For users of go-openapi libraries such as `loads` and `swag/loading`, the defaults remain unrestricted: secure options
-    are available to developer to guard spec load against possibly unsafe input documents.
-  * `go-openapi/validate` now warns about dubious `$ref`'s such as multiple remote hosts, or absolute local paths not
-    beneath the base path.
-  * `go-swagger` codegen commands may now be restricted to operate within a rooted workspace (no local $ref is resolved
-    outside) or using a restricted client.
-
-* **2026-07-20** : v0.36.0 will land in July (soon!)
-  * **documentation**: restyle doc site like go-openapi doc sites, dedicated doc site for examples, cover a significant
-    part of doc-related issues.
-  * **spec generation**: codescan will publish its own lightweight CLI at a faster pace, as well as a TUI tool to
-    instantly check how you annotated code looks like as a spec.
-    (preview: <https://github.com/go-swagger/go-swagger/issues/3372#issuecomment-4733107554>). We hope we'll be able
-    to land a Web playground on a similar principle (WASI build on top of codescan). go-swagger will still receive updates.
-  * **code generation**: we'll try our best to land a few requested enhancements among the 50-60 reachable ones.
-    (most issues in codegen now have hit an "architecture wall": work has started on a v2 to overcome these limitations).
-  * our Slack channel is now closed and superseded by the [![Discord Channel][discord-badge]][discord-url].
-
-* **2026-07-20** : v0.35.1 landed!
-  * re-instated binary release for windows ARM64
-  * **spec generation**: another round of fixes. Another small lots of features for more control over your rendered specs.
-    Check out the [documentation site dedicated to spec generation][codescan-doc-url].
-
-* **2026-06-22** : v0.35.0 landed! (end of June)
-  * **code generation**: security fixes that prevent generated code to produce code injected from an erroneous
-    or malicious spec. swagger validate now warns about possibly harmful $ref (e.g. from multiple origins).
-  * **spec generation**: major bug-bashing action on go-openapi/codescan (which has eventually become fixable...).
-    v0.35.0 closes ~200+ "generate spec" issues: bug fixes and requested enhancements.
-  * Spec generation now produces a detailed diagnostic of how your code annotations may be misinterpreted.
-    A complete [documentation site][codescan-doc-url] is now published.
-  * Please check it out from master (or dev docker image). Your feedback is super important!
-
-* **2026-05-28** : v0.34.0 ships!
-  * **major refactoring actions**: the repo has been split in smaller chunks, easier to understand:
-    * code examples have moved to `go-swagger/examples`, with a CI to automate code regeneration
-    * `codescan` (the part that underpins `swagger generate spec`) has moved as a standalone
-      library `go-openapi/codescan`. This library has been heavily refactored to prepare more
-      significant improvements. The current version gets a few quirks already fixed.
-    * `diff` (the implement of `swagger diff`) has joined `go-openapi/analysis`
-    * package `generator` has been refactored to expose internal utilities (template repo, funcmaps, etc)
-      as packages.
-  * Generated code now requires `go-openapi/runtime` v0.32.x and benefits from many bug fixes and there too a
-    rechunking of the code.
-  * Generated code now requires `go-openapi/swag` v0.26+ and directly imports all sub-modules.
-  * Many long-awaited improvements on the generated client.
 
 ## Documentation
 
@@ -169,8 +122,6 @@ Just like swagger, this does not cover code generated by the toolkit. That code 
 [ghcr-badge]: https://ghcr-badge-ipv2.onrender.com/go-swagger/go-swagger/latest_tag?ignore=sha-*,edge,master&label=Container%20Registry%20on%20Github
 [ghcr-url]: https://github.com/orgs/go-swagger/packages/container/go-swagger/versions?filters[version_type]=tagged
 <!-- Badges: code quality  -->
-[gocard-badge]: https://goreportcard.com/badge/github.com/go-swagger/go-swagger
-[gocard-url]: https://goreportcard.com/report/github.com/go-swagger/go-swagger
 [codefactor-badge]: https://img.shields.io/codefactor/grade/github/go-swagger/go-swagger
 [codefactor-url]: https://www.codefactor.io/repository/github/go-swagger/go-swagger
 <!-- Badges: documentation & support -->
