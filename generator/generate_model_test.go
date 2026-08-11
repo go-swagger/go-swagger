@@ -59,8 +59,8 @@ func TestGenerateModels(t *testing.T) {
 func generateModelFixtures() map[string]generateFixture {
 	return map[string]generateFixture{
 		"allDefinitions": {
-			spec: "../fixtures/bugs/1042/fixture-1042.yaml",
-			// target: "../fixtures/bugs/1042",
+			spec: "../testdata/bugs/1042/fixture-1042.yaml",
+			// target: "../testdata/bugs/1042",
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
 					target = filepath.Join(target, defaultModelsTarget)
@@ -71,8 +71,8 @@ func generateModelFixtures() map[string]generateFixture {
 			},
 		},
 		"acceptDefinitions": {
-			spec: "../fixtures/enhancements/2333/fixture-definitions.yaml",
-			// target: "../fixtures/enhancements/2333",
+			spec: "../testdata/enhancements/2333/fixture-definitions.yaml",
+			// target: "../testdata/enhancements/2333",
 			prepare: func(t *testing.T, spec, target string) *GenOpts {
 				g := defaultServerOpts(t, spec, target)
 				g.AcceptDefinitionsOnly = true
@@ -91,8 +91,8 @@ func generateModelFixtures() map[string]generateFixture {
 			},
 		},
 		"mangleNames": {
-			spec: "../fixtures/bugs/2821/ServiceManagementBody.json",
-			// target: "../fixtures/bugs/2821",
+			spec: "../testdata/bugs/2821/ServiceManagementBody.json",
+			// target: "../testdata/bugs/2821",
 			verify: func(target string) func(*testing.T) {
 				return func(t *testing.T) {
 					target = filepath.Join(target, defaultModelsTarget)
@@ -104,7 +104,7 @@ func generateModelFixtures() map[string]generateFixture {
 			},
 		},
 		"with-initialisms": {
-			spec: "../fixtures/bugs/3358/swagger.yaml",
+			spec: "../testdata/bugs/3358/swagger.yaml",
 			prepare: func(t *testing.T, spec, target string) *GenOpts {
 				// the extra initialisms are an input to the machinery: set them
 				// before finalizing, then assert they made it into the mangler.

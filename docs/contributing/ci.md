@@ -28,11 +28,11 @@ We run unit tests on the two most recent go versions of the 3 platforms above.
 Tests run with race detection: `go test -race`.
 
 Integration tests run a real swagger CLI command to generate servers, clients and models.
-The CI pipeline uses this test tool to iterate over the swagger spec fixtures: `hack/codegen_nonreg_test.go`.
+The CI pipeline uses this test tool to iterate over the swagger spec testdata: `hack/codegen_nonreg_test.go`.
 
 Integration tests are divided in 2 groups:
 * "canary" specs: a bunch of rather larger real life specs (e.g. kubernetes, docker, quay.io...)
-* fixtures: many trickier specs intended to exercise the code generation
+* testdata: many trickier specs intended to exercise the code generation
 
 The go test program `codegen_nonreg_test.go` runs on CI with various generation options.
 You may alos run it manually on your local environment to explore more generation options (expand spec, flatten, etc...).

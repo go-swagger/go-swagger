@@ -18,7 +18,7 @@ package generator
 // goconst disabled: defining constants for every bit of repeated generated code will just make the assertions even harder to read.
 
 func initFixture2494() {
-	f := newModelFixture("../fixtures/bugs/2494/fixture-2494.yaml", "map of nullable array")
+	f := newModelFixture("../testdata/bugs/2494/fixture-2494.yaml", "map of nullable array")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("port_map.go", []string{
@@ -31,7 +31,7 @@ func initFixture2494() {
 }
 
 func initFixture2444() {
-	f := newModelFixture("../fixtures/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
+	f := newModelFixture("../testdata/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("all_of_with_min_max_properties.go", []string{
@@ -218,7 +218,7 @@ func initFixture2444() {
 }
 
 func initFixtureGuardFormats() {
-	f := newModelFixture("../fixtures/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
+	f := newModelFixture("../testdata/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("aliased_date.go", []string{
@@ -352,7 +352,7 @@ func initFixtureGuardFormats() {
 }
 
 func initFixture2448() {
-	f := newModelFixture("../fixtures/bugs/2448/fixture-2448.yaml", "numerical validations")
+	f := newModelFixture("../testdata/bugs/2448/fixture-2448.yaml", "numerical validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("integers.go", []string{
@@ -395,7 +395,7 @@ func initFixture2448() {
 }
 
 func initFixture2400() {
-	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
+	f := newModelFixture("../testdata/bugs/2400/fixture-2400.yaml", "required aliased primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("signup_request.go", []string{
@@ -409,7 +409,7 @@ func initFixture2400() {
 }
 
 func initFixture2381() {
-	f := newModelFixture("../fixtures/bugs/2381/fixture-2381.yaml", "required $ref primitive")
+	f := newModelFixture("../testdata/bugs/2381/fixture-2381.yaml", "required $ref primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	expandRun := f.AddRun(true)
 
@@ -450,7 +450,7 @@ func initFixture2381() {
 }
 
 func initFixture2300() {
-	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required any is validated with against nil")
+	f := newModelFixture("../testdata/bugs/2300/fixture-2300.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// test behaviour with all structs made anonymous (inlined)
@@ -500,7 +500,7 @@ func initFixture2300() {
 }
 
 func initFixture2081() {
-	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required any is validated with against nil")
+	f := newModelFixture("../testdata/bugs/2081/fixture-2081.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// any
@@ -518,7 +518,7 @@ func initFixture2081() {
 }
 
 func initFixture936ReadOnly() {
-	f := newModelFixture("../fixtures/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
+	f := newModelFixture("../testdata/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// object simple has 2 read only feilds
@@ -608,7 +608,7 @@ func initFixture2220() {
 	// properly runs against the case of base type with additionalProperties.
 	//
 	// TODO(fred): should actually fix the problem in base type model rendering
-	f := newModelFixture("../fixtures/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
+	f := newModelFixture("../testdata/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("object.go", []string{
@@ -624,7 +624,7 @@ func initFixture2220() {
 }
 
 func initFixture2116() {
-	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
+	f := newModelFixture("../testdata/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("case1_fail_omitempty_false_not_hoisted_by_ref.go", []string{
@@ -694,7 +694,7 @@ func initFixture2116() {
 }
 
 func initFixture2071() {
-	f := newModelFixture("../fixtures/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
+	f := newModelFixture("../testdata/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	flattenRun.AddExpectations("cat.go", []string{
 		"var dataAO1 struct {\n\t\tSomeAbility *string `json:\"ability,omitempty\"`",
@@ -707,14 +707,14 @@ func initFixture2071() {
 }
 
 func initFixture1479Part() {
-	// testing ../fixtures/bugs/1479/fixture-1479-part.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1479/fixture-1479-part.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		The breakage with allOf occurs when a schema with an allOf has itself a
 		property which is an allOf construct
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1479/fixture-1479-part.yaml", "check nested AllOf validations (from Pouch Engine API)")
+	f := newModelFixture("../testdata/bugs/1479/fixture-1479-part.yaml", "check nested AllOf validations (from Pouch Engine API)")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -1541,11 +1541,11 @@ func initFixture1479Part() {
 }
 
 func initFixtureSimpleAllOf() {
-	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
 
 	/* we test various composition combinations, including nested, and nested isolated with a properties (e.g. issue #1479) */
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-simple-allOf.yaml", "fixture for nested allOf with ref")
+	f := newModelFixture("../testdata/bugs/1487/fixture-simple-allOf.yaml", "fixture for nested allOf with ref")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2361,11 +2361,11 @@ func initFixtureSimpleAllOf() {
 }
 
 func initFixtureComplexAllOf() {
-	// testing ../fixtures/bugs/1487/fixture-complex-allOf.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-complex-allOf.yaml with flatten and expand (--skip-flatten)
 
 	/*
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-complex-allOf.yaml", "fixture for nested allOf with ref")
+	f := newModelFixture("../testdata/bugs/1487/fixture-complex-allOf.yaml", "fixture for nested allOf with ref")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2845,11 +2845,11 @@ func initFixtureComplexAllOf() {
 }
 
 func initFixtureIsNullable() {
-	// testing ../fixtures/bugs/1487/fixture-is-nullable.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-is-nullable.yaml with flatten and expand (--skip-flatten)
 
 	/* just an elementary check with the x-nullable tag
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-is-nullable.yaml", "fixture for x-nullable flag")
+	f := newModelFixture("../testdata/bugs/1487/fixture-is-nullable.yaml", "fixture for x-nullable flag")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2879,7 +2879,7 @@ func initFixtureIsNullable() {
 }
 
 func initFixtureItching() {
-	// testing ../fixtures/bugs/1487/fixture-itching.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-itching.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		This one regroups a number of itching cases, essentially around additionalProperties.
@@ -2887,7 +2887,7 @@ func initFixtureItching() {
 		We also added here some funny models using the special types Files, string format: binary and any
 		These special cases do not correspond to actual API specs: we use them to verify the internal behavior of the general.
 	*/
-	f := newModelFixture("../fixtures/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -3510,12 +3510,12 @@ func initFixtureItching() {
 }
 
 func initFixtureAdditionalProps() {
-	// testing ../fixtures/bugs/1487/fixture-additionalProps.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-additionalProps.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		various patterns of additionalProperties
 	*/
-	f := newModelFixture("../fixtures/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -4764,11 +4764,11 @@ func initFixtureAdditionalProps() {
 }
 
 func initFixtureTuple() {
-	// testing ../fixtures/bugs/1487/fixture-tuple.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-tuple.yaml with expand (--skip-flatten)
 
 	/* check different patterns of additionalItems validations or absence thereof
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-tuple.yaml", "fixture for tuples and additionalItems")
+	f := newModelFixture("../testdata/bugs/1487/fixture-tuple.yaml", "fixture for tuples and additionalItems")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -5307,9 +5307,9 @@ func initFixtureTuple() {
 }
 
 func initFixture1198() {
-	// testing ../fixtures/bugs/1487/fixture-1198.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1198.yaml with expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1198/fixture-1198.yaml", "string-body-api")
+	f := newModelFixture("../testdata/bugs/1198/fixture-1198.yaml", "string-body-api")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: pet.go
@@ -5329,7 +5329,7 @@ func initFixture1198() {
 }
 
 func initFixture1042() {
-	// testing ../fixtures/bugs/1487/fixture-1042.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1042.yaml with expand (--skip-flatten)
 
 	/* when the specification incorrectly defines the allOf,
 	generated unmarshalling is wrong.
@@ -5337,7 +5337,7 @@ func initFixture1042() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1042/fixture-1042.yaml", "allOf marshalling")
+	f := newModelFixture("../testdata/bugs/1042/fixture-1042.yaml", "allOf marshalling")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: b.go
@@ -5411,7 +5411,7 @@ func initFixture1042() {
 }
 
 func initFixture1042V2() {
-	// testing ../fixtures/bugs/1487/fixture-1042-2.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1042-2.yaml with expand (--skip-flatten)
 
 	/* when the specification incorrectly defines the allOf,
 	generated unmarshalling is wrong.
@@ -5419,7 +5419,7 @@ func initFixture1042V2() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1042/fixture-1042-2.yaml", "allOf marshalling")
+	f := newModelFixture("../testdata/bugs/1042/fixture-1042-2.yaml", "allOf marshalling")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: error_model.go
@@ -5497,12 +5497,12 @@ func initFixture1042V2() {
 }
 
 func initFixture979() {
-	// testing ../fixtures/bugs/1487/fixture-979.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-979.yaml with expand (--skip-flatten)
 
 	/* checking that properties is enough to figure out an object schema
 	 */
 
-	f := newModelFixture("../fixtures/bugs/979/fixture-979.yaml", "allOf without the explicit type object")
+	f := newModelFixture("../testdata/bugs/979/fixture-979.yaml", "allOf without the explicit type object")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: cluster.go
@@ -5569,12 +5569,12 @@ func initFixture979() {
 }
 
 func initFixture842() {
-	// testing ../fixtures/bugs/1487/fixture-842.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-842.yaml with expand (--skip-flatten)
 
 	/* codegen fails to produce code that builds
 	 */
 
-	f := newModelFixture("../fixtures/bugs/842/fixture-842.yaml", "polymorphic type containing an array of the base type")
+	f := newModelFixture("../testdata/bugs/842/fixture-842.yaml", "polymorphic type containing an array of the base type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: value_array_all_of1.go
@@ -5677,12 +5677,12 @@ func initFixture842() {
 }
 
 func initFixture607() {
-	// testing ../fixtures/bugs/1487/fixture-607.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-607.yaml with expand (--skip-flatten)
 
 	/* broken code produced on polymorphic type
 	 */
 
-	f := newModelFixture("../fixtures/bugs/607/fixture-607.yaml", "broken code when using array of polymorphic type")
+	f := newModelFixture("../testdata/bugs/607/fixture-607.yaml", "broken code when using array of polymorphic type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: range_filter_all_of1.go
@@ -5942,12 +5942,12 @@ func initFixture607() {
 }
 
 func initFixture1336() {
-	// testing ../fixtures/bugs/1487/fixture-1336.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1336.yaml with expand (--skip-flatten)
 
 	/* broken code produced on polymorphic type
 	 */
 
-	f := newModelFixture("../fixtures/bugs/1336/fixture-1336.yaml", "broken code when using array of polymorphic type")
+	f := newModelFixture("../testdata/bugs/1336/fixture-1336.yaml", "broken code when using array of polymorphic type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: node.go
@@ -6190,13 +6190,13 @@ func initFixture1336() {
 }
 
 func initFixtureErrors() {
-	// testing ../fixtures/bugs/1487/fixture-errors.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-errors.yaml with expand (--skip-flatten)
 
 	/*
 		invalid specs supported by go-swagger
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-errors.yaml", "broken spec to exercise error handling")
+	f := newModelFixture("../testdata/bugs/1487/fixture-errors.yaml", "broken spec to exercise error handling")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -6237,7 +6237,7 @@ func initTodolistSchemavalidation() {
 
 	*/
 
-	f := newModelFixture("../fixtures/codegen/todolist.schemavalidation.yml", "Private to-do list")
+	f := newModelFixture("../testdata/codegen/todolist.schemavalidation.yml", "Private to-do list")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8337,7 +8337,7 @@ func initFixtureNestedMaps() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-nested-maps.yaml", "Nested maps")
+	f := newModelFixture("../testdata/bugs/1487/fixture-nested-maps.yaml", "Nested maps")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8614,7 +8614,7 @@ func initFixture844Variations() {
 	   repro
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-844-variations.yaml", "allOf bugs with empty objects")
+	f := newModelFixture("../testdata/bugs/1487/fixture-844-variations.yaml", "allOf bugs with empty objects")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8949,7 +8949,7 @@ func initFixtureMoreAddProps() {
 	   various patterns of additionalProperties
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-moreAddProps.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-moreAddProps.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -9372,7 +9372,7 @@ func initFixture1537() {
 	   repro issue 1537
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1537/fixture-1537.yaml", "param body required with array of objects")
+	f := newModelFixture("../testdata/bugs/1537/fixture-1537.yaml", "param body required with array of objects")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: profile_array.go
@@ -9482,7 +9482,7 @@ func initFixture1537v2() {
 	   repro issue 1537, with aliased items
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1537/fixture-1537-2.yaml", "param body required with array of aliased items")
+	f := newModelFixture("../testdata/bugs/1537/fixture-1537-2.yaml", "param body required with array of aliased items")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: profiles.go
@@ -9579,7 +9579,7 @@ func initFixture1537v2() {
 func initFixture15365() {
 	// testing fixture-1536-5.yaml with flatten but NOT expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1536/fixture-1536-5.yaml", "param body with maps")
+	f := newModelFixture("../testdata/bugs/1536/fixture-1536-5.yaml", "param body with maps")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: model_array_of_nullable.go
@@ -9829,7 +9829,7 @@ func initFixture1548() {
 		My App API: check that there is no format validation on Base64 types
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1548/fixture-1548.yaml", "My App API")
+	f := newModelFixture("../testdata/bugs/1548/fixture-1548.yaml", "My App API")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: base64_alias.go
@@ -9906,7 +9906,7 @@ func initFixtureSimpleTuple() {
 	   A basic test of for serialization generation for tuples and additionalItems.
 
 	*/
-	f := newModelFixture("../fixtures/bugs/1571/fixture-simple-tuple.yaml", "fixture for serializing tuples")
+	f := newModelFixture("../testdata/bugs/1571/fixture-simple-tuple.yaml", "fixture for serializing tuples")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	expandRun := f.AddRun(true)
 
@@ -10670,7 +10670,7 @@ func initFixtureSimpleTuple() {
 func initFixtureDeepMaps() {
 	// testing fixture-deepMaps.yaml with minimal flatten
 
-	f := newModelFixture("../fixtures/enhancements/1572/fixture-deepMaps.yaml", "issue 1572 - deep maps")
+	f := newModelFixture("../testdata/enhancements/1572/fixture-deepMaps.yaml", "issue 1572 - deep maps")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: model_object_vanilla.go
@@ -10757,7 +10757,7 @@ func initFixtureDeepMaps() {
 func initFixture1617() {
 	// testing fixture-1617.yaml with flatten and expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1617/fixture-1617.yaml", "aaa")
+	f := newModelFixture("../testdata/bugs/1617/fixture-1617.yaml", "aaa")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: artifact_info.go
@@ -10837,7 +10837,7 @@ func initFixtureRealiasedTypes() {
 	   realiased types
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1260/fixture-realiased-types.yaml", "test type realiasing")
+	f := newModelFixture("../testdata/bugs/1260/fixture-realiased-types.yaml", "test type realiasing")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: g1.go
@@ -11515,7 +11515,7 @@ func initFixture1993() {
 	   required / non required base type
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1993/fixture-1993.yaml", "test required/non required base type")
+	f := newModelFixture("../testdata/bugs/1993/fixture-1993.yaml", "test required/non required base type")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: house.go
@@ -11540,7 +11540,7 @@ func initFixture1993() {
 }
 
 func initFixture2604() {
-	f := newModelFixture("../fixtures/bugs/2604/2604.yaml", "additional cases for embedded structs")
+	f := newModelFixture("../testdata/bugs/2604/2604.yaml", "additional cases for embedded structs")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	thisRun.AddExpectations("composed.go", []string{
@@ -11610,7 +11610,7 @@ func initFixture2604() {
 }
 
 func initFixture2364() {
-	f := newModelFixture("../fixtures/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
+	f := newModelFixture("../testdata/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	thisRun.AddExpectations("bundle_attributes_response.go", []string{
@@ -11629,7 +11629,7 @@ func initFixture2364() {
 }
 
 func initFixture2163() {
-	f := newModelFixture("../fixtures/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
+	f := newModelFixture("../testdata/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("obj.go", []string{
@@ -11689,7 +11689,7 @@ func initFixture2163() {
 }
 
 func initFixture2587() {
-	f := newModelFixture("../fixtures/bugs/2587/2587.yaml", "min/max properties")
+	f := newModelFixture("../testdata/bugs/2587/2587.yaml", "min/max properties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("basic_thing.go", []string{
@@ -11752,7 +11752,7 @@ func initFixture2587() {
 }
 
 func initFixture3141() {
-	f := newModelFixture("../fixtures/bugs/3141/fixture-3141.yaml", "x-go-type novalidation hint must be honored by Validate and ContextValidate")
+	f := newModelFixture("../testdata/bugs/3141/fixture-3141.yaml", "x-go-type novalidation hint must be honored by Validate and ContextValidate")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("container.go", []string{
@@ -11770,7 +11770,7 @@ func initFixture3141() {
 }
 
 func initFixture1203() {
-	f := newModelFixture("../fixtures/bugs/1203/fixture-1203.yaml", "enum array items must generate a const block")
+	f := newModelFixture("../testdata/bugs/1203/fixture-1203.yaml", "enum array items must generate a const block")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("foo.go", []string{
@@ -11785,7 +11785,7 @@ func initFixture1203() {
 }
 
 func initFixture3112() {
-	f := newModelFixture("../fixtures/bugs/3112/fixture-3112.yaml", "no-op Validate/ContextValidate must not declare unused formats/ctx params")
+	f := newModelFixture("../testdata/bugs/3112/fixture-3112.yaml", "no-op Validate/ContextValidate must not declare unused formats/ctx params")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("plain.go", []string{

@@ -35,7 +35,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("x-go-custom-tag is contained (model)", func(t *testing.T) {
 		target := harnessTarget(t, "custom_tag", "model_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-custom-tag.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/x-go-custom-tag.yaml", target)
 
 		require.NoError(t, GenerateModels([]string{"", ""}, opts))
 		assertNoInjectedDecl(t, filepath.Join(opts.Target, defaultModelsTarget))
@@ -43,7 +43,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("x-go-type is contained (model)", func(t *testing.T) {
 		target := harnessTarget(t, "x_go_type", "model_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-type.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/x-go-type.yaml", target)
 
 		// The hostile extension is skipped (warning logged); generation succeeds
 		// with the field falling back to a plain string.
@@ -53,7 +53,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("x-go-name on discriminator is contained (model)", func(t *testing.T) {
 		target := harnessTarget(t, "go_name_disc", "model_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-name-discriminator.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/x-go-name-discriminator.yaml", target)
 
 		// The hostile overrides are skipped (warning logged); the types fall back
 		// to their mangled schema names.
@@ -63,7 +63,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("x-go-name on parameter is rejected (server)", func(t *testing.T) {
 		target := harnessTarget(t, "go_name_param", "server_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/x-go-name-param.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/x-go-name-param.yaml", target)
 
 		require.Error(t, GenerateServer("", nil, nil, opts),
 			"generation must reject a hostile x-go-name parameter override")
@@ -71,7 +71,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("comment injection is contained (server)", func(t *testing.T) {
 		target := harnessTarget(t, "comments", "server_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/comments.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/comments.yaml", target)
 
 		// info.description and the operation summary carry Go breakout payloads
 		// (block "*/", newline, //go: directive). Generation succeeds: the free
@@ -83,7 +83,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("content-type injection is contained (server)", func(t *testing.T) {
 		target := harnessTarget(t, "mediatype", "server_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/mediatype-injection.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/mediatype-injection.yaml", target)
 
 		// consumes/produces carry content-type values that try to break out of the
 		// Go string literals emitted by the server builder (ConsumersFor/ProducersFor
@@ -96,7 +96,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("enum injection is contained (model)", func(t *testing.T) {
 		target := harnessTarget(t, "enum", "model_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/enum-injection.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/enum-injection.yaml", target)
 
 		// A string enum value carries a Go breakout payload. Enum values are
 		// emitted into a raw-string JSON blob inside a generated func init()
@@ -108,7 +108,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("default-value injection is contained (server)", func(t *testing.T) {
 		target := harnessTarget(t, "default", "server_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/default-injection.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/default-injection.yaml", target)
 
 		// An array-of-array parameter default is emitted into a raw-string JSON
 		// blob passed to json.Unmarshal in the parameter loader. escapeBackticks
@@ -119,7 +119,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("path injection is contained (client)", func(t *testing.T) {
 		target := harnessTarget(t, "path", "client_test", root)
-		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/path-injection.yaml", target)
+		opts := defaultClientOpts(t, "../testdata/codegen/sanitize/path-injection.yaml", target)
 
 		// The operation path is baked into diagnostic strings (NewAPIError and the
 		// response Error()/String() format strings). escapeDoubleQuoted keeps the
@@ -130,7 +130,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("security and header names are contained (server)", func(t *testing.T) {
 		target := harnessTarget(t, "names-server", "server_test", root)
-		opts := defaultServerOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/names-injection.yaml", target)
 
 		// Security scheme id and api-key name are baked into the auth stubs
 		// (errors.NotImplemented("api key auth (<id>) <name> ..."), if name ==
@@ -141,7 +141,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 
 	t.Run("response header name is contained (client)", func(t *testing.T) {
 		target := harnessTarget(t, "names-client", "client_test", root)
-		opts := defaultClientOpts(t, "../fixtures/codegen/sanitize/names-injection.yaml", target)
+		opts := defaultClientOpts(t, "../testdata/codegen/sanitize/names-injection.yaml", target)
 
 		// The response header name is baked into response.GetHeader("<name>") in
 		// the client's readResponse; printf %q keeps it inside the literal.
@@ -152,7 +152,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 	t.Run("flag name is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "names-cli", "cli_test", root)
 		opts := NewGenOpts(ForCli(),
-			WithSpec("../fixtures/codegen/sanitize/names-injection.yaml"), WithTarget(target))
+			WithSpec("../testdata/codegen/sanitize/names-injection.yaml"), WithTarget(target))
 
 		// The parameter/flag name is baked into cmd.Flags().Changed("<name>") and
 		// GetString("<name>"); printf %q keeps it inside the literal.
@@ -163,7 +163,7 @@ func TestSanitizeGenHarness(t *testing.T) {
 	t.Run("cli string-literal injection is contained (cli)", func(t *testing.T) {
 		target := harnessTarget(t, "cli_injection", "cli_test", root)
 		opts := NewGenOpts(ForCli(),
-			WithSpec("../fixtures/codegen/sanitize/cli-injection.yaml"), WithTarget(target))
+			WithSpec("../testdata/codegen/sanitize/cli-injection.yaml"), WithTarget(target))
 
 		// A security-definition name/description and an operation summary carry
 		// payloads that try to break out of the Go string literals emitted by the

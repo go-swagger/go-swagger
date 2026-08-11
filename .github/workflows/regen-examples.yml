@@ -55,8 +55,8 @@ jobs:
               - 'generator/**'
               - 'hack/codegen*.go'
               - 'hack/*.yaml'
-              - 'fixtures/**/*.{yaml,yml,json}'
-              - '!fixtures/goparsing/**'
+              - 'testdata/**/*.{yaml,yml,json}'
+              - '!testdata/goparsing/**'
               - '!*.md'
               - '!**/*.md'
       -

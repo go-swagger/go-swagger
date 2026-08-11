@@ -20,7 +20,7 @@ import (
 func TestPrepare_EquivalentToLegacySequence(t *testing.T) {
 	defer discardOutput()()
 
-	spec := filepath.Join("..", "fixtures", "codegen", "simplesearch.yml")
+	spec := filepath.Join("..", "testdata", "codegen", "simplesearch.yml")
 
 	mk := func() *GenOpts {
 		g := &GenOpts{}
@@ -97,7 +97,7 @@ layout:
 	require.NoError(t, cfg.ReadConfig(strings.NewReader(partialLayout)))
 
 	g := &GenOpts{}
-	g.Spec = filepath.Join("..", "fixtures", "codegen", "simplesearch.yml")
+	g.Spec = filepath.Join("..", "testdata", "codegen", "simplesearch.yml")
 	g.Target = "."
 	g.ServerPackage = defaultServerPackage
 	g.IncludeHandler = true

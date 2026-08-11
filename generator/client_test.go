@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	basicFixture        = "../fixtures/petstores/petstore.json"
-	fakeRemoteYAMLSpec  = "../fixtures/petstores/petstore.yaml"
+	basicFixture        = "../testdata/petstores/petstore.json"
+	fakeRemoteYAMLSpec  = "../testdata/petstores/petstore.yaml"
 	fakeRemoteJSONSpec  = basicFixture
 	routeRemoteYAMLSpec = "/OAI/OpenAPI-Specification/old-v3.2.0-dev/examples/v2.0/yaml/petstore.yaml"
 	routeRemoteJSONSpec = "/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.json"
@@ -95,7 +95,7 @@ func TestGenClient(t *testing.T) {
 
 			t.Run("should refuse to generate from garbled parameters", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = filepath.Join("..", "fixtures", "bugs", "2527", "swagger.yml")
+				opts.Spec = filepath.Join("..", "testdata", "bugs", "2527", "swagger.yml")
 				opts.ValidateSpec = false
 				err := GenerateClient(clientName, []string{}, []string{"GetDeposits"}, opts)
 				require.Error(t, err)
@@ -122,7 +122,7 @@ func TestGenClient(t *testing.T) {
 
 			t.Run("from fixed spec (issue #2527)", func(t *testing.T) {
 				opts := testClientGenOpts()
-				opts.Spec = filepath.Join("..", "fixtures", "bugs", "2527", "swagger-fixed.yml")
+				opts.Spec = filepath.Join("..", "testdata", "bugs", "2527", "swagger-fixed.yml")
 				opts.Target = prepareClientTarget(t, root)
 				opts.IsClient = true
 				DefaultSectionOpts(opts)
@@ -222,7 +222,7 @@ func TestGenClient_1518(t *testing.T) {
 	// test client response handling when unexpected success response kicks in
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "1518", "fixture-1518.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "1518", "fixture-1518.yaml")
 	opts.Target = prepareClientTarget(t, root)
 
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -278,7 +278,7 @@ func TestGenClient_2945(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2945", "fixture-2945.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2945", "fixture-2945.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -307,7 +307,7 @@ func TestGenClient_2471(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2471", "fixture-2471.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2471", "fixture-2471.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -368,7 +368,7 @@ func TestGenClient_2096(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2096", "fixture-2096.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2096", "fixture-2096.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -408,7 +408,7 @@ func TestGenClient_909_3(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-3.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-3.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -510,7 +510,7 @@ func TestGenClient_909_5(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-5.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-5.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -678,7 +678,7 @@ func TestGenClient_909_6(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "909", "fixture-909-6.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-6.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -959,7 +959,7 @@ func TestGenClient_2590(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2590", "2590.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2590", "2590.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -990,7 +990,7 @@ func TestGenClient_2773(t *testing.T) {
 
 	root := t.TempDir()
 	opts := testClientGenOpts()
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2773", "2773.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2773", "2773.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
@@ -1061,7 +1061,7 @@ func TestGenClient_3432(t *testing.T) {
 	root := t.TempDir()
 	opts := testClientGenOpts()
 	// the context guard is emitted for every operation, so any client fixture exercises it
-	opts.Spec = filepath.Join("..", "fixtures", "bugs", "2945", "fixture-2945.yaml")
+	opts.Spec = filepath.Join("..", "testdata", "bugs", "2945", "fixture-2945.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
 
