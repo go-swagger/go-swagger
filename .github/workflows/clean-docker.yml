@@ -1,0 +1,30 @@
+name: Clean docker images
+
+on:
+  # weekly cleanup schedule
+  schedule:
+    - cron: '14 4 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-docker-untagged:
+    # Remove older untagged images (deprecated builds from master)
+    permissions:
+      packages: write
+    uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+    with:
+      delete-untagged: 'true'
+    secrets: inherit
+
+  clean-docker-dev:
+    # Remove older master builds
+    permissions:
+      packages: write
+    uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f # v1.2.2
+    with:
+      delete-tags: 'sha-*'
+      older-than: '1 year'
+    secrets: inherit

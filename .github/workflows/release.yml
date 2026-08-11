@@ -18,7 +18,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    uses: ./.github/workflows/update-doc.yaml
+    uses: ./.github/workflows/update-doc.yml
 
   docker-release:
     name: Docker with release tag
@@ -26,7 +26,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: ./.github/workflows/build-docker.yaml
+    uses: ./.github/workflows/build-docker.yml
     with:
       push: true
       tagged: true

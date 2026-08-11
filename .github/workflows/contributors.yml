@@ -1,0 +1,23 @@
+name: Contributors
+
+on:
+  schedule:
+    - cron: '18 4 4 * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contributors:
+    permissions:
+      pull-requests: write
+      contents: write
+    uses: go-openapi/ci-workflows/.github/workflows/contributors.yml@ef14d94bfba7bf45458ce6a6afd4a1c75e04ac2a # v0.4.4
+    secrets:
+      github-app-id: ${{ secrets.CI_BOT_APP_ID }}
+      github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
+      gpg-private-key: ${{ secrets.CI_BOT_GPG_PRIVATE_KEY }}
+      gpg-passphrase: ${{ secrets.CI_BOT_GPG_PASSPHRASE }}
+      gpg-fingerprint: ${{ secrets.CI_BOT_SIGNING_KEY }}

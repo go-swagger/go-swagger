@@ -1,4 +1,4 @@
-name: update-doc
+name: Update documentation site
 
 permissions:
   contents: read
