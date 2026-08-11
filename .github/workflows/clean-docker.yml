@@ -12,6 +12,7 @@ permissions:
 jobs:
   clean-docker-untagged:
     # Remove older untagged images (deprecated builds from master)
+    runs-on: ubuntu-latest
     permissions:
       packages: write
     steps:
@@ -21,6 +22,7 @@ jobs:
 
   clean-docker-dev:
     # Remove older master builds
+    runs-on: ubuntu-latest
     permissions:
       packages: write
     steps:
