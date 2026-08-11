@@ -15,11 +15,13 @@ import (
 	goruntime "runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	"golang.org/x/tools/imports"
 )
 
 var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
+var importsMx sync.Mutex
 
 // GolangOpts returns [Options] for rendering items as golang code.
 func GolangOpts(extraInitialisms ...string) *Options {
@@ -47,6 +49,12 @@ func GolangOpts(extraInitialisms ...string) *Options {
 func defaultGoFormatFunc() FormatterFunc {
 	return func(ffn string, content []byte, fmtOpts ...FormatOption) ([]byte, error) {
 		o := FormatOptsWithDefault(fmtOpts)
+
+		// package imports is governed by a global variables. During race tests this
+		// may arouse the race detector. Not significant during an execution from CLI.
+		importsMx.Lock()
+		defer importsMx.Unlock()
+
 		imports.LocalPrefix = strings.Join(o.LocalPrefixes, ",") // regroup these packages
 		return imports.Process(ffn, content, &o.Options)
 	}
