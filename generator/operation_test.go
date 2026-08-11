@@ -21,7 +21,7 @@ import (
 
 func TestUniqueOperationNameMangling(t *testing.T) {
 	opts := opts()
-	doc, err := loads.Spec("../fixtures/bugs/2213/fixture-2213.yaml")
+	doc, err := loads.Spec("../testdata/bugs/2213/fixture-2213.yaml")
 	require.NoError(t, err)
 	analyzed := analysis.New(doc.Spec())
 	ops := gatherOperations(opts, analyzed, nil)
@@ -189,7 +189,7 @@ func TestMakeResponse(t *testing.T) {
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
@@ -233,7 +233,7 @@ func TestMakeOperationParam(t *testing.T) {
 }
 
 func TestMakeOperationParamItem(t *testing.T) {
-	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+	b, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
@@ -259,7 +259,7 @@ func TestMakeOperation(t *testing.T) {
 func TestRenderOperation_InstagramSearch(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	gO, err := b.MakeOperation()
@@ -293,7 +293,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertInCode(t, "type GetMediaSearchOK struct {", res)
 	assertInCode(t, "GetMediaSearchOKBody", res)
 
-	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../fixtures/codegen/instagram.yml")
+	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	gO, err = b.MakeOperation()
@@ -320,7 +320,7 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertInCode(t, "Payload *models.GetMediaSearchOKBody", res)
 }
 
-const fixtureTodoList = "../fixtures/codegen/todolist.simple.yml"
+const fixtureTodoList = "../testdata/codegen/todolist.simple.yml"
 
 func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 	defer discardOutput()()
@@ -469,7 +469,7 @@ func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
 // opBuilder prepares the making of an operation with spec minimal flattening (default for CLI).
 func opBuilder(name, fname string) (codeGenOpBuilder, error) {
 	o := opBuildGetOpts(fname, true, true) // flatten:true, minimal: true
-	// some fixtures do not fully validate - skip this
+	// some testdata do not fully validate - skip this
 	o.ValidateSpec = false
 	return opBuilderWithOpts(name, fname, o)
 }
@@ -496,7 +496,7 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 }
 
 func TestDateFormat_Spec1(t *testing.T) {
-	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec1.json")
+	b, err := opBuilder("putTesting", "../testdata/bugs/193/spec1.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -516,7 +516,7 @@ func TestDateFormat_Spec1(t *testing.T) {
 }
 
 func TestDateFormat_Spec2(t *testing.T) {
-	b, err := opBuilder("putTesting", "../fixtures/bugs/193/spec2.json")
+	b, err := opBuilder("putTesting", "../testdata/bugs/193/spec2.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -552,7 +552,7 @@ func TestBuilder_Issue1703(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/codegen/existing-model.yml"),
+		Spec:              filepath.FromSlash("../testdata/codegen/existing-model.yml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -589,7 +589,7 @@ func TestBuilder_Issue287(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/287/swagger.yml"),
+		Spec:              filepath.FromSlash("../testdata/bugs/287/swagger.yml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -624,7 +624,7 @@ func TestBuilder_Issue465(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/465/swagger.yml"),
+		Spec:              filepath.FromSlash("../testdata/bugs/465/swagger.yml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -660,7 +660,7 @@ func TestBuilder_Issue500(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/500/swagger.yml"),
+		Spec:              filepath.FromSlash("../testdata/bugs/500/swagger.yml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -692,7 +692,7 @@ func TestBuilder_Issue500(t *testing.T) {
 }
 
 func TestGenClient_IllegalBOM(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../fixtures/bugs/727/swagger.json")
+	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../testdata/bugs/727/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -707,7 +707,7 @@ func TestGenClient_IllegalBOM(t *testing.T) {
 }
 
 func TestGenClient_CustomFormatPath(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../fixtures/bugs/789/swagger.yml")
+	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../testdata/bugs/789/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -724,7 +724,7 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 }
 
 func TestGenClient_Issue733(t *testing.T) {
-	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../fixtures/bugs/733/swagger.json")
+	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../testdata/bugs/733/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -783,7 +783,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	assertInCode(t, "GetHealthCheck", res)
 }
 
-const fixture890 = "../fixtures/bugs/890/swagger.yaml"
+const fixture890 = "../testdata/bugs/890/swagger.yaml"
 
 func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	defer discardOutput()()
@@ -1044,7 +1044,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 	const matchAny = `(.|\n)+`
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/1214/fixture-1214.yaml"),
+		Spec:              filepath.FromSlash("../testdata/bugs/1214/fixture-1214.yaml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -1119,7 +1119,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 func TestGenSecurityRequirements(t *testing.T) {
 	for range 5 {
 		operation := "asecOp"
-		b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+		b, err := opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
 		require.NoError(t, err)
 
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1157,7 +1157,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 		}, genRequirements)
 
 		operation = "bsecOp"
-		b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+		b, err = opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
 		require.NoError(t, err)
 
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1188,7 +1188,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	}
 
 	operation := "csecOp"
-	b, err := opBuilder(operation, "../fixtures/bugs/1214/fixture-1214.yaml")
+	b, err := opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
 	require.NoError(t, err)
 
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1197,7 +1197,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	assert.Empty(t, genRequirements)
 
 	operation = "nosecOp"
-	b, err = opBuilder(operation, "../fixtures/bugs/1214/fixture-1214-2.yaml")
+	b, err = opBuilder(operation, "../testdata/bugs/1214/fixture-1214-2.yaml")
 	require.NoError(t, err)
 
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1298,7 +1298,7 @@ func TestBuilder_Issue1646(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/bugs/1646/fixture-1646.yaml"),
+		Spec:              filepath.FromSlash("../testdata/bugs/1646/fixture-1646.yaml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -1338,7 +1338,7 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	dr := testCwd(t)
 
 	opts := &GenOpts{
-		Spec:              filepath.FromSlash("../fixtures/codegen/strict-additional-properties.yml"),
+		Spec:              filepath.FromSlash("../testdata/codegen/strict-additional-properties.yml"),
 		IncludeModel:      true,
 		IncludeHandler:    true,
 		IncludeParameters: true,
@@ -1506,7 +1506,7 @@ func TestGenServer_2161_panic(t *testing.T) {
 	t.Run("shoud init go.mod", gentest.GoModInit(generated, gentest.WithGoModuleName("fixture-2161")))
 
 	opts := &GenOpts{
-		Spec:                       filepath.FromSlash("../fixtures/bugs/2161/fixture-2161-panic.json"),
+		Spec:                       filepath.FromSlash("../testdata/bugs/2161/fixture-2161-panic.json"),
 		IncludeModel:               true,
 		IncludeHandler:             true,
 		IncludeParameters:          true,
@@ -1569,7 +1569,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "default",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				Spec:              filepath.FromSlash("../testdata/enhancements/1659/fixture-1659.yaml"),
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -1621,7 +1621,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "principal is struct",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				Spec:              filepath.FromSlash("../testdata/enhancements/1659/fixture-1659.yaml"),
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -1675,7 +1675,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "principal is interface",
 			Opts: &GenOpts{
-				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				Spec:                 filepath.FromSlash("../testdata/enhancements/1659/fixture-1659.yaml"),
 				IncludeHandler:       true,
 				IncludeParameters:    true,
 				IncludeResponses:     true,
@@ -1730,7 +1730,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "stratoscale: principal is struct",
 			Opts: &GenOpts{
-				Spec:              filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				Spec:              filepath.FromSlash("../testdata/enhancements/1659/fixture-1659.yaml"),
 				IncludeHandler:    true,
 				IncludeParameters: true,
 				IncludeResponses:  true,
@@ -1777,7 +1777,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 		{
 			Title: "stratoscale: principal is interface",
 			Opts: &GenOpts{
-				Spec:                 filepath.FromSlash("../fixtures/enhancements/1659/fixture-1659.yaml"),
+				Spec:                 filepath.FromSlash("../testdata/enhancements/1659/fixture-1659.yaml"),
 				IncludeHandler:       true,
 				IncludeParameters:    true,
 				IncludeResponses:     true,

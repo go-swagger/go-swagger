@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	defaultFixtureFile = "codegen-fixtures.yaml"
+	defaultFixtureFile = "codegen-testdata.yaml"
 	genDir             = "./tmp-gen"
 	serverName         = "nrcodegen"
 
@@ -72,10 +72,10 @@ type fixtureT struct {
 	Skipped skipT  `yaml:"skipped,omitempty"`
 }
 
-type fixturesT map[string]skipT
+type testdataT map[string]skipT
 
 // Update a fixture with a file key
-func (f fixturesT) Update(key string, in skipT) {
+func (f testdataT) Update(key string, in skipT) {
 	out, ok := f[key]
 	if !ok {
 		f[key] = in
@@ -256,9 +256,9 @@ func good(t *testing.T, msg string, args ...interface{}) {
 	t.Log(fmt.Sprintf("SUCCESS: "+msg, args...))
 }
 
-func buildFixtures(t *testing.T, fixtures []fixtureT) fixturesT {
-	specMap := make(fixturesT, 200)
-	for _, fixture := range fixtures {
+func buildFixtures(t *testing.T, testdata []fixtureT) testdataT {
+	specMap := make(testdataT, 200)
+	for _, fixture := range testdata {
 		switch {
 		case fixture.Dir != "" && fixture.Spec == "": // get a directory of specs
 			for _, pattern := range []string{"*.yaml", "*.json", "*.yml"} {
@@ -280,8 +280,8 @@ func buildFixtures(t *testing.T, fixtures []fixtureT) fixturesT {
 				break
 			}
 			for _, pattern := range []string{"*", "*/*"} {
-				specs, err := filepath.Glob(filepath.Join("fixtures", pattern, fixture.Spec))
-				require.NoErrorf(t, err, "could not match spec %s in fixtures", fixture.Spec)
+				specs, err := filepath.Glob(filepath.Join("testdata", pattern, fixture.Spec))
+				require.NoErrorf(t, err, "could not match spec %s in testdata", fixture.Spec)
 				for _, spec := range specs {
 					specMap.Update(spec, fixture.Skipped)
 				}
@@ -417,10 +417,10 @@ func TestMain(m *testing.M) {
 func loadFixtures(t *testing.T, in string) []fixtureT {
 	doc, err := os.ReadFile(in)
 	require.NoError(t, err)
-	fixtures := make([]fixtureT, 0, 200)
-	err = yaml.Unmarshal(doc, &fixtures)
+	testdata := make([]fixtureT, 0, 200)
+	err = yaml.Unmarshal(doc, &testdata)
 	require.NoError(t, err)
-	return fixtures
+	return testdata
 }
 
 // TestCodegen runs codegen plan based for configured specifications
@@ -431,7 +431,7 @@ func TestCodegen(t *testing.T) {
 		args.fixtureFile = defaultFixtureFile
 	}
 
-	fixtures := loadFixtures(t, args.fixtureFile)
+	testdata := loadFixtures(t, args.fixtureFile)
 
 	err := os.Chdir(repoPath)
 	require.NoError(t, err)
@@ -454,7 +454,7 @@ func TestCodegen(t *testing.T) {
 		CustomFormatter: args.customFormatter,
 	}
 
-	specMap := buildFixtures(t, fixtures)
+	specMap := buildFixtures(t, testdata)
 	cmdOpts := []icmd.CmdOp{icmd.Dir(repoPath)}
 
 	info(t, "running codegen for %d specs", len(specMap))

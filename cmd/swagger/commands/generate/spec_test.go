@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	basePath       = "../../../../fixtures/goparsing/spec"
+	basePath       = "../../../../testdata/goparsing/spec"
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
 
@@ -69,7 +69,7 @@ func TestSpecFileExecute(t *testing.T) {
 func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 	outputFileName := "spec.json"
 	spec := &SpecFile{
-		WorkDir:                 "../../../../fixtures/enhancements/pointers-nullable-by-default",
+		WorkDir:                 "../../../../testdata/enhancements/pointers-nullable-by-default",
 		Output:                  flags.Filename(outputFileName),
 		ScanModels:              true,
 		SetXNullableForPointers: true,

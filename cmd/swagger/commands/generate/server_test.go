@@ -42,7 +42,7 @@ func TestRegressionIssue2601(t *testing.T) {
 
 	for i, spec := range specs {
 		t.Run("should generate server from spec "+spec, func(t *testing.T) {
-			pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+			pth := filepath.Join(testBase(), "testdata/codegen", spec)
 			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
 			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
@@ -56,7 +56,7 @@ func TestRegressionIssue2601(t *testing.T) {
 
 			// Error was coming from these two being set together
 			m.Shared.StrictResponders = true
-			m.ImplementationPackage = "github.com/go-swagger/go-swagger/fixtures/codegen/impl"
+			m.ImplementationPackage = "github.com/go-swagger/go-swagger/testdata/codegen/impl"
 
 			// Load new copy of template
 			m.Shared.AllowTemplateOverride = true
@@ -79,7 +79,7 @@ func testGenerateServer(strict bool) func(*testing.T) {
 
 		for i, spec := range specs {
 			t.Run("should generate server from spec "+spec, func(t *testing.T) {
-				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				pth := filepath.Join(testBase(), "testdata/codegen", spec)
 				generated := t.TempDir()
 
 				m := &generate.Server{}

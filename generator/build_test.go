@@ -39,25 +39,25 @@ func TestGenerateAndBuild(t *testing.T) {
 		spec string
 	}{
 		"issue 844": {
-			"../fixtures/bugs/844/swagger.json",
+			"../testdata/bugs/844/swagger.json",
 		},
 		"issue 844 (with params)": {
-			"../fixtures/bugs/844/swagger-bis.json",
+			"../testdata/bugs/844/swagger-bis.json",
 		},
 		"issue 1216": {
-			"../fixtures/bugs/1216/swagger.yml",
+			"../testdata/bugs/1216/swagger.yml",
 		},
 		"issue 2111": {
-			"../fixtures/bugs/2111/fixture-2111.yaml",
+			"../testdata/bugs/2111/fixture-2111.yaml",
 		},
 		"issue 2278": {
-			"../fixtures/bugs/2278/fixture-2278.yaml",
+			"../testdata/bugs/2278/fixture-2278.yaml",
 		},
 		"issue 2163": {
-			"../fixtures/enhancements/2163/fixture-2163.yaml",
+			"../testdata/enhancements/2163/fixture-2163.yaml",
 		},
 		"issue 1771": {
-			"../fixtures/enhancements/1771/fixture-1771.yaml",
+			"../testdata/enhancements/1771/fixture-1771.yaml",
 		},
 	}
 

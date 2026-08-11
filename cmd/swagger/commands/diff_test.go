@@ -34,7 +34,7 @@ func TestDiffForVariousCombinations(t *testing.T) {
 	pattern := fixtureDiffPath("*.diff.txt")
 
 	// To filter cases for debugging poke an individual case here eg "path", "enum" etc
-	// see the test cases in fixtures/diff
+	// see the test cases in testdata/diff
 	// Don't forget to remove it once you're done.
 	// (There's a test at the end to check all cases were run)
 	allTests, err := filepath.Glob(pattern)
@@ -227,7 +227,7 @@ func fixturePart(file string) string {
 }
 
 func hasFixtureBreaking(part string) bool {
-	// these fixtures expect some breaking changes
+	// these testdata expect some breaking changes
 	switch part {
 	case "enum", "kitchensink", "param", "path", "response", "refprop", "reqparam":
 		return true

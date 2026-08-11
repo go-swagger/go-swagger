@@ -63,11 +63,11 @@ jobs:
       -
         name: Run validation tests
         run: |
-          swagger validate fixtures/bugs/2493/fixture-2492.json
-          swagger validate fixtures/bugs/2493/fixture-2493.json
-          swagger validate fixtures/bugs/2493/fixture-2492.yaml
-          swagger validate fixtures/bugs/2493/fixture-2493.yaml
-          swagger validate fixtures/bugs/2866/2866.yaml
+          swagger validate testdata/bugs/2493/fixture-2492.json
+          swagger validate testdata/bugs/2493/fixture-2493.json
+          swagger validate testdata/bugs/2493/fixture-2492.yaml
+          swagger validate testdata/bugs/2493/fixture-2493.yaml
+          swagger validate testdata/bugs/2866/2866.yaml
 
   codegen-test:
     # description: |
@@ -81,9 +81,9 @@ jobs:
         go: ["oldstable", "stable"]
         os: [ubuntu-latest]
         include:
-          - fixture: codegen-fixtures # <- complex API specs to torture the code generator
+          - fixture: codegen-testdata # <- complex API specs to torture the code generator
             args: "-skip-models -skip-full-flatten -custom-formatter"
-          - fixture: canary-fixtures # <- popular real-life API specs
+          - fixture: canary-testdata # <- popular real-life API specs
             args: "-skip-models -skip-full-flatten -skip-expand -custom-formatter"
     runs-on: ${{ matrix.os }}
     env:

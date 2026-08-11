@@ -1,0 +1,50 @@
+- dir: testdata/canary/bitbucket.org
+  #skipped:
+  #  knownFailure: true
+# Known bug in doc.go with */* media types (garbled generated comment)
+- dir: testdata/canary/kubernetes
+  spec: swagger.json
+- dir: testdata/canary/docker
+  skipped:
+    knownValidationFailure: true
+- dir: testdata/canary/docker-fixed
+- dir: testdata/canary/ms-cog-sci
+  skipped:
+    knownValidationFailure: true
+- dir: testdata/canary/ms-cog-sci-fixed
+- dir: testdata/canary/petstore
+- dir: testdata/canary/quay.io
+# failure to properly generate enum when value is empty
+# plus some spec validation errors...
+- dir: testdata/canary/docker-v1.41
+  spec: swagger.yaml
+  skipped:
+    knownFailure: true
+# fixing : the x-nullable on array
+# is enough to proceed
+- dir: testdata/canary/docker-v1.41
+  spec: swagger-fixed.yaml
+- dir: testdata/canary/docker-v19.03.13/swagger.yaml
+- dir: testdata/codegen
+  spec: bitbucket.json
+  skipped:
+    knownExpandFailure: true
+- dir: testdata/bugs/2306
+  skipped:
+    skipModel: true
+- dir: testdata/codegen
+  spec: swagger-gsma.json
+  skipped:
+    knownValidationFailure: true
+# - azure-text-analyis.json: works with --skip-validation.
+#   Invalid specification with duplicate property in allOf construct (provided fixed version for testing)
+- dir: testdata/codegen
+  spec: azure-text-analyis.json
+  skipped:
+    knownValidationFailure: true
+- dir: testdata/codegen
+  spec: azure-text-analyis-fixed.json
+- dir: testdata/bugs/1062
+  spec: eve-online-esi.json
+- dir: testdata/codegen
+  spec: instagram.yml

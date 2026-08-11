@@ -77,7 +77,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	opts.Copyright = expected
 
 	// executes template against model definitions
-	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	genModel, err := getModelEnvironment("../testdata/codegen/todolist.models.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genModel)
 	rendered := bytes.NewBuffer(nil)
@@ -85,7 +85,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
-	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
+	genOperation, err := getOperationEnvironment("get", "/media/search", "../testdata/codegen/instagram.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genOperation)
 	rendered.Reset()
@@ -106,11 +106,11 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 
 	// Non existing target would panic: to be tested too, but in another module
 	opts := opts()
-	opts.Target = "../fixtures"
-	expected := "github.com/go-swagger/go-swagger/fixtures"
+	opts.Target = "../testdata"
+	expected := "github.com/go-swagger/go-swagger/testdata"
 
 	// executes template against model definitions
-	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	genModel, err := getModelEnvironment("../testdata/codegen/todolist.models.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genModel)
 
@@ -119,7 +119,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
-	genOperation, err := getOperationEnvironment("get", "/media/search", "../fixtures/codegen/instagram.yml", opts)
+	genOperation, err := getOperationEnvironment("get", "/media/search", "../testdata/codegen/instagram.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genOperation)
 
@@ -132,7 +132,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	if err != nil {
 		return nil, err
 	}

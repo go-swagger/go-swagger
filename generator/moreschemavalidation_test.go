@@ -332,7 +332,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	// exercise the top level model generation func
 	defer discardOutput()()
 
-	const fixtureSpec = "../fixtures/bugs/1487/fixture-is-nullable.yaml"
+	const fixtureSpec = "../testdata/bugs/1487/fixture-is-nullable.yaml"
 
 	root := t.TempDir()
 	gendir := filepath.Join(root, "model-test")
@@ -461,7 +461,7 @@ func findTestDefinition(k string, definitions spec.Definitions, opts *GenOpts) (
 	)
 
 	for def, s := range definitions {
-		// please do not inject fixtures with case conflicts on defs...
+		// please do not inject testdata with case conflicts on defs...
 		// this one is just easier to retrieve model back from file names when capturing
 		// the generated code.
 		mangled := opts.LanguageOpts.Mangler.ToJSONName(def)

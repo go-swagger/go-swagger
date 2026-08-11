@@ -185,7 +185,7 @@ func TestGenerateMarkdown(t *testing.T) {
 
 	t.Run("should generate doc for demo fixture", func(t *testing.T) {
 		opts := testGenOpts()
-		opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
+		opts.Spec = "../testdata/enhancements/184/fixture-184.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 
 		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
@@ -205,7 +205,7 @@ func TestGenerateMarkdown(t *testing.T) {
 
 	t.Run("should handle new lines in descriptions", func(t *testing.T) {
 		opts := testGenOpts()
-		opts.Spec = "../fixtures/bugs/2700/2700.yaml"
+		opts.Spec = "../testdata/bugs/2700/2700.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 
 		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))

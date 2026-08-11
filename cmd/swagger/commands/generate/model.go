@@ -11,15 +11,15 @@ import (
 )
 
 type modelOptions struct {
-	ModelPackage               string   `default:"models"                                                                                                    description:"the package to save the models" long:"model-package"   short:"m"`
-	Models                     []string `description:"specify a model to include in generation, repeat for multiple (defaults to all)"                       long:"model"                                 short:"M"`
-	ExistingModels             string   `description:"use pre-generated models e.g. github.com/foobar/model"                                                 long:"existing-models"`
-	StrictAdditionalProperties bool     `description:"disallow extra properties when additionalProperties is set to false"                                   long:"strict-additional-properties"`
-	KeepSpecOrder              bool     `description:"keep schema properties order identical to spec file"                                                   long:"keep-spec-order"`
-	AllDefinitions             bool     `description:"generate all model definitions regardless of usage in operations"                                      hidden:"deprecated"                          long:"all-definitions"`
-	StructTags                 []string `description:"the struct tags to generate, repeat for multiple (defaults to json)"                                   long:"struct-tags"`
-	RootedErrorPath            bool     `description:"extends validation errors with the type name instead of an empty path, in the case of arrays and maps" long:"rooted-error-path"`
-	WithStringer               bool     `description:"generate a fmt.Stringer String() method on models, rendering field values as JSON (see issue #872)"    long:"with-stringer"`
+	ModelPackage               string   `default:"models"                                                                                                           description:"the package to save the models" long:"model-package"   short:"m"`
+	Models                     []string `description:"specify a model to include in generation, repeat for multiple (defaults to all)"                              long:"model"                                 short:"M"`
+	ExistingModels             string   `description:"use pre-generated models e.g. github.com/foobar/model"                                                        long:"existing-models"`
+	StrictAdditionalProperties bool     `description:"disallow extra properties when additionalProperties is set to false"                                          long:"strict-additional-properties"`
+	KeepSpecOrder              bool     `description:"keep schema properties order identical to spec file"                                                          long:"keep-spec-order"`
+	AllDefinitions             bool     `description:"generate all model definitions regardless of usage in operations"                                             hidden:"deprecated"                          long:"all-definitions"`
+	StructTags                 []string `description:"the struct tags to generate, repeat for multiple (defaults to json)"                                          long:"struct-tags"`
+	RootedErrorPath            bool     `description:"extends validation errors with the type name instead of an empty path, in the case of arrays and maps"        long:"rooted-error-path"`
+	WithStringer               bool     `description:"generate a fmt.Stringer String() method on models, rendering field values as JSON (see issue #872)"           long:"with-stringer"`
 	NoDefaultOmitEmpty         bool     `description:"do not default to omitempty struct tags unless x-omitempty is explicitly set on a property (see issue #2386)" long:"no-default-omit-empty"`
 }
 

@@ -59,7 +59,7 @@ These are just a few common sense rules to be followed.
 3. Squash your commits (use `git rebase -i master`). Please make sure the resulting commit remains readable and
    meaningful.
 4. Provide sufficient test coverage with changes
-5. Do not bring in uncontrolled dependencies, including from fixtures or examples. If your idea really requires it, engage a conversation with
+5. Do not bring in uncontrolled dependencies, including from testdata or examples. If your idea really requires it, engage a conversation with
    the other maintainers to collect feedback.
 6. Sign-off commits with `git commit -s`. PGP-signed commits with verified signatures are not mandatory (but much appreciated)
 

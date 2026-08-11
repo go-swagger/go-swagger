@@ -20,8 +20,10 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-var moduleRe = regexp.MustCompile(`module[ \t]+([^\s]+)`)
-var importsMx sync.Mutex
+var (
+	moduleRe  = regexp.MustCompile(`module[ \t]+([^\s]+)`)
+	importsMx sync.Mutex
+)
 
 // GolangOpts returns [Options] for rendering items as golang code.
 func GolangOpts(extraInitialisms ...string) *Options {

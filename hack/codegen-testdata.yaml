@@ -1,0 +1,246 @@
+#
+# codegen CI configuration file
+#
+#- dir: {directory where to fetch specs (*.yaml, *.yml, *.json)}
+#  spec: {a specific spec file to fetch}
+#  skipped:
+#    knownFailure: true // won't generate anything
+#    knownValidationFailure: true // adds --skip-validation option
+#    knownClientFailure: true // won't generate a client
+#    knownExpandFailure: true // won't generate with expanded spec
+#    knownFlattenMinimalFailure: true // won't generate with --flatten=minimal but only with --flatten=full
+#
+#    Entries which resolve with same spec will be merged.
+#
+- dir: testdata/bugs/1621
+  spec: fixture-1621.yaml
+- dir: testdata/bugs/1774
+  spec: def_api.yaml
+- dir: testdata/bugs/1767
+  spec: fixture-1767.yaml
+- dir: testdata/bugs/1260
+  spec: fixture-realiased-types.yaml
+- dir: testdata/bugs/1260
+  spec: test3-bis-swagger.yaml
+- dir: testdata/bugs/1260
+  spec: test3-swagger.yaml
+- dir: testdata/bugs/1260
+  spec: test3-ter-swagger-flat.json
+- dir: testdata/bugs/1260
+  spec: test3-ter-swagger.yaml
+- dir: testdata/bugs/1851
+  spec: fixture-1851.yaml
+- dir: testdata/bugs/2092
+  spec: fixture-2092.yaml
+# List all specs in testdata/codegen explicitly, because some (the longest running)
+# are picked by the "canary" CI job.
+- dir: testdata/codegen
+  spec: billforward.discriminators.yml
+- dir: testdata/codegen
+  spec: issue-1066.yaml
+- dir: testdata/codegen
+  spec: issue-1388.yaml
+- dir: testdata/codegen
+  spec: keep-spec-order.yml
+- dir: testdata/codegen
+  spec: shipyard.yml
+- dir: testdata/codegen
+  spec: simplesearch.yml
+- dir: testdata/codegen
+  spec: swagger-codegen-tests.json
+- dir: testdata/codegen
+  spec: tasklist.basic.yml
+- dir: testdata/codegen
+  spec: todolist.allparams.yml
+- dir: testdata/codegen
+  spec: todolist.discriminators.yml
+- dir: testdata/codegen
+  spec: todolist.enums.yml
+- dir: testdata/codegen
+  spec: todolist.responses.yml
+- dir: testdata/codegen
+  spec: todolist.simple-fixed.yml
+- dir: testdata/codegen
+  spec: todolist.simpleform.yml
+- dir: testdata/codegen
+  spec: todolist.simpleheader.yml
+- dir: testdata/codegen
+  spec: todolist.simplepath.yml
+- dir: testdata/bugs/909
+- dir: testdata/bugs/1437
+- dir: testdata/bugs/1314
+- dir: testdata/bugs/1392
+- dir: testdata/bugs/1277
+- dir: testdata/bugs/1536
+- dir: testdata/bugs/1487
+- dir: testdata/bugs/1571
+- dir: testdata/bugs/957
+- dir: testdata/bugs/1614
+- dir: testdata/bugs/931
+- dir: testdata/bugs/1683
+- dir: testdata/bugs/1796
+- dir: testdata/bugs/1839
+- dir: testdata/bugs/1719
+- dir: testdata/bugs/1859
+- dir: testdata/bugs/1490
+- dir: testdata/bugs/973
+  skipped:
+    skipModel: true  # no models to generate here
+- dir: testdata/bugs/1020
+- dir: testdata/bugs/1339
+- dir: testdata/bugs/1893
+- dir: testdata/bugs/1518
+- dir: testdata/bugs/1993
+- dir: testdata/bugs/1937
+- dir: testdata/bugs/2050
+- dir: testdata/bugs/1557
+- dir: testdata/bugs/1663
+- dir: testdata/bugs/2136
+- dir: testdata/bugs/2111
+- dir: testdata/bugs/2223
+- dir: testdata/bugs/2113
+#
+# The following specs fail to generate:
+# - existing-model.yml requires pregeneration (not supported yet by this script)
+# - issue72: model works with --skip-validation. Invalid spec (duplicate operationID)
+# - todolist.simple.yml: invalid default values put on purpose for UT (provided fixed version for testing)
+# - fixture-basetypes.yaml: exhibits some known edge case failures with discriminator (e.g. using a base type in tuple...)
+# - fixture-polymorphism.yaml: idem
+- dir: testdata/codegen
+  spec: existing-model.yml
+  skipped:
+    knownFailure: true
+- dir: testdata/codegen
+  spec: issue72.json
+  skipped:
+    knownFailure: true
+- dir: testdata/codegen
+  spec: todolist.simple.yml
+  skipped:
+    knownFailure: true
+- dir: testdata/bugs/1487
+  spec: fixture-basetypes.yaml
+  skipped:
+    knownFailure: true
+- dir: testdata/bugs/1487
+  spec: fixture-polymorphism.yaml
+  skipped:
+    knownFailure: true
+# The following ones requires some checks to be skipped:
+- spec: todolist.enums.yml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.enums.flattened.json
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.models.yml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.schemavalidation.yml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-844-variations.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-allOf.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-errors.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-itching.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-tuple.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: fixture-simple-tuple.yaml
+  skipped:
+    knownValidationFailure: true
+- spec: todolist.arrayform.yml
+- spec: todolist.arrayquery.yml
+- spec: todolist.url.basepath.yml
+  skipped:
+    knownClientFailure: true
+- spec: todolist.url.simple.yml
+  skipped:
+    knownClientFailure: true
+- spec: swagger-codegen-tests.json
+- spec: fixture-1414.json
+- spec: fixture-909-3.yaml
+- spec: fixture-909-4.yaml
+- spec: fixture-909-5.yaml
+- spec: fixture-909-6.yaml
+- spec: gentest2.yaml
+- spec: gentest3.yaml
+- spec: gentest.yaml
+- spec: fixture-1437-4.yaml
+- spec: fixture-1392-2.yaml
+- spec: fixture-1392-3.yaml
+# known testdata not supporting expand mode (not including the discriminator case).
+# Normally, this is because of duplicate names constructed during codegen of anonymous structures.
+# This should be solved with proper analysis of names before codegen.
+- spec: todolist.enums.flattened.json
+  dir: testdata/codegen
+  skipped:
+    knownExpandFailure: true
+- spec: fixture-1479.yaml
+  dir: testdata/bugs/1479
+  skipped:
+    knownExpandFailure: true
+- spec: fixture-1767.yaml
+  dir: testdata/bugs/1767
+  skipped:
+    knownExpandFailure: true
+    knownFlattenMinimalFailure: true
+- dir: testdata/bugs/2342
+  skipped:
+    skipModel: true
+- dir: testdata/enhancements/2163
+  skipped:
+    skipServer: true
+    skipClient: true
+    skipExpand: true
+- dir: testdata/enhancements/1771
+  skipped:
+    skipModel: true
+    skiClient: true
+    skipExpand: true
+- dir: testdata/bugs/2330
+  skipped:
+    skipModel: true
+- spec: fixture-2258.yaml
+  dir: testdata/bugs/2258
+- spec: fixture-2137.yaml
+  dir: testdata/bugs/2137
+  skipped:
+    skipModel: true
+- spec: swagger.json
+  dir: testdata/bugs/1898
+- spec: 2969.json
+  dir: testdata/bugs/2969
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
+- spec: 2650.yaml
+  dir: testdata/bugs/2650
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
+- spec: https://raw.githubusercontent.com/docker/engine/master/api/swagger.yaml
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true
+- spec: swagger.yml
+  dir: testdata/cli
+  skipped:
+    skipExpand: true
+    skipModel: true
+    skipFullFlatten: true
+    includeCLI: true

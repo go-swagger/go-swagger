@@ -18,7 +18,7 @@ Generates server, client, CLI, and model code from specs — or specs from annot
 | `hack/` | Build scripts, fixture configs, helper tools |
 | `docs/` | Hugo documentation site (published to goswagger.io via GitHub Pages) |
 | `examples/` | ~20 example projects with specs and generated code |
-| `fixtures/` | Test specs and expected outputs for regression testing |
+| `testdata/` | Test specs and expected outputs for regression testing |
 
 ### Key dependencies
 

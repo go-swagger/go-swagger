@@ -379,7 +379,7 @@ func TestTypeResolver_AdditionalProperties(t *testing.T) {
 }
 
 func TestTypeResolver_Notables(t *testing.T) {
-	doc, resolver, err := specResolver(t, "../fixtures/codegen/todolist.models.yml")
+	doc, resolver, err := specResolver(t, "../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	def := doc.Spec().Definitions["Notables"]
@@ -409,7 +409,7 @@ func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, er
 
 func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error) {
 	opts := opts()
-	tlb, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
+	tlb, err := loads.Spec("../testdata/codegen/tasklist.basic.yml")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -596,7 +596,7 @@ func assertPrimitiveResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
 	opts := opts()
-	doc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
+	doc, err := loads.Spec("../testdata/codegen/existing-model.yml")
 	require.NoError(t, err)
 	resolver := newTypeResolver("model", doc, opts)
 

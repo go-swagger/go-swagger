@@ -16,7 +16,7 @@ import (
 )
 
 func TestEnum_StringThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -39,7 +39,7 @@ func TestEnum_StringThing(t *testing.T) {
 }
 
 func TestEnum_ComposedThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -63,7 +63,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 }
 
 func TestEnum_IntThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -86,7 +86,7 @@ func TestEnum_IntThing(t *testing.T) {
 }
 
 func TestEnum_FloatThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -109,7 +109,7 @@ func TestEnum_FloatThing(t *testing.T) {
 }
 
 func TestEnum_SliceThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -132,7 +132,7 @@ func TestEnum_SliceThing(t *testing.T) {
 }
 
 func TestEnum_SliceAndItemsThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -158,7 +158,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 }
 
 func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -186,7 +186,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 }
 
 func TestEnum_MapThing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -218,8 +218,8 @@ func TestEnum_ObjectThing(t *testing.T) {
 	// known issue: there are some slight differences in generated code and variables for enum,
 	// depending on how the spec has been preprocessed
 	specs := []string{
-		"../fixtures/codegen/todolist.enums.yml",
-		"../fixtures/codegen/todolist.enums.flattened.json", // this one is the first one, after "swagger flatten"
+		"../testdata/codegen/todolist.enums.yml",
+		"../testdata/codegen/todolist.enums.flattened.json", // this one is the first one, after "swagger flatten"
 	}
 	k := "ObjectThing"
 	for _, toPin := range specs {
@@ -307,7 +307,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -334,7 +334,7 @@ func TestEnum_Cluster(t *testing.T) {
 
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -363,7 +363,7 @@ func TestEnum_Cluster(t *testing.T) {
 func TestEnum_NewPrototype(t *testing.T) {
 	// ensure that the enum validation for the anonymous object under the delegate property
 	// is rendered.
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -393,7 +393,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 }
 
 func TestEnum_Issue265(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/sodabooth.json")
+	specDoc, err := loads.Spec("../testdata/codegen/sodabooth.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -414,7 +414,7 @@ func TestEnum_Issue265(t *testing.T) {
 }
 
 func TestGenerateModel_Issue303(t *testing.T) {
-	specDoc, e := loads.Spec("../fixtures/enhancements/303/swagger.yml")
+	specDoc, e := loads.Spec("../testdata/enhancements/303/swagger.yml")
 	require.NoError(t, e)
 
 	opts := opts()
@@ -449,7 +449,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 func TestEnum_Issue325(t *testing.T) {
 	t.Parallel()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/sodabooths.json")
+	specDoc, err := loads.Spec("../testdata/codegen/sodabooths.json")
 	require.NoError(t, err)
 	definitions := specDoc.Spec().Definitions
 
@@ -505,7 +505,7 @@ func TestEnum_Issue325(t *testing.T) {
 func TestEnum_Issue352(t *testing.T) {
 	t.Parallel()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.enums.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.enums.yml")
 	require.NoError(t, err)
 	definitions := specDoc.Spec().Definitions
 
