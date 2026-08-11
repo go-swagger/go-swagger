@@ -126,7 +126,7 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 		}
 	})
 
-	t.Run("dict should render values as a map", func(t *testing.T) {
+	t.Run("dict (from sprig) should render values as a map", func(t *testing.T) {
 		t.Parallel()
 
 		dict, ok := fm["dict"].(func(...any) (map[string]any, error))
@@ -350,6 +350,17 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 
 		assert.EqualT(t, "no ticks", escapeBackticks("no ticks"))
 		assert.EqualT(t, "has`+\"`\"+`tick", escapeBackticks("has`tick"))
+	})
+
+	t.Run("funcmap should not override builtins", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("slice should be the builtin form", func(t *testing.T) {
+			_, ok := fm["slice"]
+			require.FalseT(t, ok)
+			// builtin signature: func(reflect.Value, ...reflect.Value) (reflect.Value, error)
+			// the signature of the sprig version is: func (interface{}, ...interface{}) interface{}
+		})
 	})
 }
 
