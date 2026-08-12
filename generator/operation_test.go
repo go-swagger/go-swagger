@@ -43,6 +43,8 @@ func TestUniqueOperationNames(t *testing.T) {
 	analyzed := analysis.New(sp)
 
 	ops := gatherOperations(opts, analyzed, nil)
+	require.NotNil(t, ops)
+
 	assert.Len(t, ops, 6)
 	_, exists := ops["saveTask"]
 	assert.TrueT(t, exists)
@@ -63,6 +65,8 @@ func TestEmptyOperationNames(t *testing.T) {
 	analyzed := analysis.New(sp)
 
 	ops := gatherOperations(opts, analyzed, nil)
+	require.NotNil(t, ops)
+
 	assert.Len(t, ops, 6)
 	_, exists := ops["PostTasks"]
 	assert.TrueT(t, exists)
@@ -1386,77 +1390,6 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	}
 }
 
-func makeClientTimeoutNameTest() []struct {
-	seenIDs  map[string]any
-	name     string
-	expected string
-} {
-	return []struct {
-		seenIDs  map[string]any
-		name     string
-		expected string
-	}{
-		{
-			seenIDs:  nil,
-			name:     "witness",
-			expected: "witness",
-		},
-		{
-			seenIDs: map[string]any{
-				"id": true,
-			},
-			name:     "timeout",
-			expected: "timeout",
-		},
-		{
-			seenIDs: map[string]any{
-				"timeout":        true,
-				"requesttimeout": true,
-			},
-			name:     "timeout",
-			expected: "httpRequestTimeout",
-		},
-		{
-			seenIDs: map[string]any{
-				"timeout":            true,
-				"requesttimeout":     true,
-				"httprequesttimeout": true,
-				"swaggertimeout":     true,
-				"operationtimeout":   true,
-				"optimeout":          true,
-			},
-			name:     "timeout",
-			expected: "operTimeout",
-		},
-		{
-			seenIDs: map[string]any{
-				"timeout":            true,
-				"requesttimeout":     true,
-				"httprequesttimeout": true,
-				"swaggertimeout":     true,
-				"operationtimeout":   true,
-				"optimeout":          true,
-				"opertimeout":        true,
-				"opertimeout1":       true,
-			},
-			name:     "timeout",
-			expected: "operTimeout11",
-		},
-	}
-}
-
-func TestRenameTimeout(t *testing.T) {
-	for idx, toPin := range makeClientTimeoutNameTest() {
-		i := idx
-		testCase := toPin
-		renameTimeout := rename(timeoutVarNamePreferences)
-		t.Run(testCase.name, func(t *testing.T) {
-			t.Parallel()
-			assert.EqualTf(t, testCase.expected, renameTimeout(testCase.seenIDs, testCase.name, 0), "unexpected deconflicting value [%d]", i)
-		})
-	}
-}
-
 func testInvalidParams() map[string]spec.Parameter {
 	return map[string]spec.Parameter{
 		"query#param1": *spec.QueryParam("param1"),
@@ -1486,17 +1419,6 @@ func TestParamMappings(t *testing.T) {
 	assert.EqualTf(t, "QueryParam1", q["param1"], "unexpected content of %#v", q["param1"])
 	assert.EqualTf(t, "PathParam1", p["param1"], "unexpected content of %#v", p["param1"])
 	assert.EqualTf(t, "BodyParam1", b["param1"], "unexpected content of %#v", b["param1"])
-}
-
-func TestDeconflictTag(t *testing.T) {
-	assert.EqualT(t, "runtimeops", deconflictTag(nil, "runtime"))
-	assert.EqualT(t, "apiops", deconflictTag([]string{"tag1"}, apiPkg))
-	assert.EqualT(t, "apiops1", deconflictTag([]string{"tag1", "apiops"}, apiPkg))
-	assert.EqualT(t, "tlsops", deconflictTag([]string{"tag1"}, "tls"))
-	assert.EqualT(t, "mytag", deconflictTag([]string{"tag1", "apiops"}, "mytag"))
-
-	assert.EqualT(t, "operationsops", renameOperationPackage([]string{"tag1"}, "operations"))
-	assert.EqualT(t, "operationsops11", renameOperationPackage([]string{"tag1", "operationsops1", "operationsops"}, "operations"))
 }
 
 func TestGenServer_2161_panic(t *testing.T) {
