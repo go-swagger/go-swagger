@@ -5,6 +5,7 @@ package generator
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -74,7 +75,7 @@ func opts() *GenOpts {
 	g.IncludeValidator = true
 	g.IncludeModel = true
 	if err := ensureMachinery(g); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	return g
@@ -85,7 +86,7 @@ func testGenOpts() *GenOpts {
 	g.Target = "."
 	g.ExcludeSpec = true
 	if err := ensureMachinery(g); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	return g
@@ -780,7 +781,9 @@ func TestDefaultImports(t *testing.T) {
 			t.Parallel()
 			err := ensureMachinery(fixture.Opts)
 			require.NoError(t, err)
-			imports := newImportsBuilder(fixture.Opts).defaultImports()
+
+			imports, err := newImportsBuilder(fixture.Opts).defaultImports()
+			require.NoError(t, err)
 			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}

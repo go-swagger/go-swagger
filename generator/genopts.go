@@ -36,6 +36,8 @@ type GenOpts struct {
 	IsClient                   bool
 	machineryBuilt             bool // guards buildMachinery (language opts, func map, templates repo)
 	sectionsResolved           bool // guards resolveSections (default render plan)
+	specNormalized             bool // guards normalize (spec path resolution)
+	targetEnsured              bool // guards ensureTarget (target directory checks)
 	prepared                   bool // guards Prepare
 	PropertiesSpecOrder        bool
 	StrictAdditionalProperties bool
@@ -88,6 +90,7 @@ type GenOpts struct {
 	WithExtraInitialisms   []string
 	Restricted             bool
 	Rooted                 string
+	EnsureTarget           bool // create the target directory when it does not exist
 
 	// Viper carries an optional configuration (typically a `.swagger.{yml,json}`
 	// file). Its `layout:` sections are applied as overrides on top of the

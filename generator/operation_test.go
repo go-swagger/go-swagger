@@ -6,6 +6,7 @@ package generator
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -441,7 +442,7 @@ func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) 
 	}
 	opts.Spec = specName
 	if err := ensureMachinery(opts); err != nil {
-		panic("Cannot initialize GenOpts")
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 	return opts
 }

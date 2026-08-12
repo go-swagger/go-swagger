@@ -4,6 +4,7 @@
 package generator
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -1092,7 +1093,7 @@ func testClientGenOpts() *GenOpts {
 	g := NewGenOpts(ForClient())
 	g.Target = "."
 	if err := ensureMachinery(g); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	return g

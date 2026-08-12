@@ -4,7 +4,11 @@
 package generator
 
 import (
+	"errors"
+	"io/fs"
+	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -133,4 +137,130 @@ func TestPrepare_ValidationFailsBeforeMutation(t *testing.T) {
 	// nothing finalized: machinery not built, options not marked prepared
 	assert.FalseT(t, g.prepared)
 	assert.FalseT(t, g.machineryBuilt)
+}
+
+// TestEnsureTarget asserts the pre-flight check on the generation target: the target
+// must be a directory this process may write to, and is only created when asked for.
+func TestEnsureTarget(t *testing.T) {
+	defer discardOutput()()
+
+	t.Run("should accept an existing writable directory", func(t *testing.T) {
+		g := &GenOpts{Target: t.TempDir()}
+
+		require.NoError(t, g.ensureTarget())
+		assert.TrueT(t, g.targetEnsured)
+	})
+
+	t.Run("should leave no probe file behind", func(t *testing.T) {
+		target := t.TempDir()
+		g := &GenOpts{Target: target}
+
+		require.NoError(t, g.ensureTarget())
+
+		entries, err := os.ReadDir(target)
+		require.NoError(t, err)
+		assert.Empty(t, entries)
+	})
+
+	t.Run("should default an empty target to the current directory", func(t *testing.T) {
+		// dump-data mode, so the check stops at the normalization: no probe file is
+		// written in the package directory.
+		g := &GenOpts{Target: "", DumpData: true}
+
+		require.NoError(t, g.ensureTarget())
+		assert.EqualT(t, ".", g.Target)
+	})
+
+	t.Run("with a missing target", func(t *testing.T) {
+		t.Run("should fail and point at the flag", func(t *testing.T) {
+			target := filepath.Join(t.TempDir(), "missing")
+			g := &GenOpts{Target: target}
+
+			err := g.ensureTarget()
+			require.ErrorContains(t, err, "--ensure-target")
+			assertNoDir(t, target)
+			assert.FalseT(t, g.targetEnsured)
+		})
+
+		t.Run("should create it, with its parents, when EnsureTarget is set", func(t *testing.T) {
+			target := filepath.Join(t.TempDir(), "a", "b", "c")
+			g := &GenOpts{Target: target, EnsureTarget: true}
+
+			require.NoError(t, g.ensureTarget())
+			assert.DirExists(t, target)
+		})
+	})
+
+	t.Run("should fail when the target is not a directory", func(t *testing.T) {
+		target := filepath.Join(t.TempDir(), "afile")
+		require.NoError(t, os.WriteFile(target, []byte("x"), readAllFile))
+
+		// EnsureTarget doesn't help here: the path exists, it is just not a directory.
+		g := &GenOpts{Target: target, EnsureTarget: true}
+
+		require.ErrorContains(t, g.ensureTarget(), "is not a directory")
+	})
+
+	t.Run("should fail when the target is not writable", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("file modes don't govern write access on windows")
+		}
+		if os.Geteuid() == 0 {
+			t.Skip("root writes to a read-only directory")
+		}
+
+		target := filepath.Join(t.TempDir(), "readonly")
+		const readOnlyDir = 0o500
+		require.NoError(t, os.Mkdir(target, readOnlyDir))
+		t.Cleanup(func() {
+			_ = os.Chmod(target, readableDir) // so the temp dir may be cleaned up
+		})
+
+		g := &GenOpts{Target: target}
+
+		require.ErrorContains(t, g.ensureTarget(), "is not writeable")
+	})
+
+	t.Run("should skip the check when dumping data", func(t *testing.T) {
+		// nothing is written to the target in that mode
+		target := filepath.Join(t.TempDir(), "missing")
+		g := &GenOpts{Target: target, DumpData: true}
+
+		require.NoError(t, g.ensureTarget())
+		assertNoDir(t, target)
+	})
+
+	t.Run("should check the target only once", func(t *testing.T) {
+		target := t.TempDir()
+		g := &GenOpts{Target: target}
+		require.NoError(t, g.ensureTarget())
+
+		// the guard holds even though the target is now gone
+		require.NoError(t, os.RemoveAll(target))
+		require.NoError(t, g.ensureTarget())
+	})
+}
+
+// TestPrepare_TargetCheckedAfterSpec asserts that Prepare resolves the spec before it
+// touches the target, so a run that fails early leaves no target tree behind.
+func TestPrepare_TargetCheckedAfterSpec(t *testing.T) {
+	defer discardOutput()()
+
+	target := filepath.Join(t.TempDir(), "target")
+	g := &GenOpts{
+		Spec:         filepath.Join("..", "testdata", "codegen", "nosuchspec.yml"),
+		Target:       target,
+		EnsureTarget: true,
+	}
+
+	require.Error(t, g.Prepare())
+	assertNoDir(t, target)
+}
+
+// assertNoDir asserts that nothing exists at path.
+func assertNoDir(t *testing.T, path string) {
+	t.Helper()
+
+	_, err := os.Stat(path)
+	assert.TrueTf(t, errors.Is(err, fs.ErrNotExist), "expected %q not to exist", path)
 }

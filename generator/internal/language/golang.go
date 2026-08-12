@@ -41,7 +41,7 @@ func GolangOpts(extraInitialisms ...string) *Options {
 	opts.dirNameFunc = defaultGoDirnameFunc()
 	opts.ImportsFunc = defaultGoImportsFunc()
 	opts.ArrayInitializerFunc = defaultGoArrayInitializerFunc()
-	opts.BaseImportFunc = defaultGoBaseImportFunc()
+	opts.BaseImportFunc = defaultGoBaseImportErr
 
 	opts.Init()
 
@@ -108,19 +108,6 @@ func defaultGoArrayInitializerFunc() func(any) (string, error) {
 			return "", err
 		}
 		return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(string(b), "}", ",}"), "[", "{"), "]", ",}"), "{,}", "{}"), nil
-	}
-}
-
-func defaultGoBaseImportFunc() MangleFunc {
-	return func(target string) string {
-		base, err := defaultGoBaseImportErr(target)
-		if err != nil {
-			// NOTE: historically this called log.Fatalln. We now panic to avoid
-			// pulling in generator-specific logging, while preserving the "fail hard" semantics.
-			panic(fmt.Sprintf("base import resolution failed: %v", err))
-		}
-
-		return base
 	}
 }
 

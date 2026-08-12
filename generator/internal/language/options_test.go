@@ -12,7 +12,10 @@ import (
 
 func TestOptions_Init(t *testing.T) {
 	opts := &Options{}
-	assert.Empty(t, opts.BaseImport("x"))
+	baseImport, err := opts.BaseImport("x")
+	require.NoError(t, err)
+	assert.Empty(t, baseImport)
+
 	res, err := opts.FormatContent("x", []byte("y"))
 	require.NoError(t, err)
 	assert.Equal(t, []byte("y"), res)
@@ -71,11 +74,15 @@ func TestOptions_BaseImport(t *testing.T) {
 	// nil func: returns ""
 	o := &Options{}
 	o.Init()
-	assert.Empty(t, o.BaseImport("anything"))
+	baseImport, err := o.BaseImport("anything")
+	require.NoError(t, err)
+	assert.Empty(t, baseImport)
 
 	// with custom func: delegates
-	o.BaseImportFunc = func(s string) string { return "custom/" + s }
-	assert.EqualT(t, "custom/target", o.BaseImport("target"))
+	o.BaseImportFunc = func(s string) (string, error) { return "custom/" + s, nil }
+	custom, err := o.BaseImport("target")
+	require.NoError(t, err)
+	assert.EqualT(t, "custom/target", custom)
 }
 
 func TestFormatOptions(t *testing.T) {
