@@ -139,6 +139,32 @@ func TestSanitizeGenHarness(t *testing.T) {
 		assertNoInjectedDecl(t, opts.Target)
 	})
 
+	t.Run("response header name is contained in struct tag (server)", func(t *testing.T) {
+		target := harnessTarget(t, "hdr-tag-server", "server_test", root)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/response-header-tag-injection.yaml", target)
+
+		// The response header name is emitted into a backtick `json:"..."` struct
+		// tag of a top-level response type (server/responses.gotmpl). A backtick
+		// closes the raw string early and injects a top-level func init() that runs
+		// before main(). jsonFieldTag renders the whole tag with PrintTags
+		// semantics, forcing it to a double-quoted literal so nothing breaks out.
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("property name is contained in serializer struct tag (model)", func(t *testing.T) {
+		target := harnessTarget(t, "prop-tag-model", "model_test", root)
+		opts := defaultServerOpts(t, "../testdata/codegen/sanitize/property-name-tag-injection.yaml", target)
+
+		// allOf inheritance and a discriminator route property names through the
+		// serializer struct tags (schemabody.gotmpl / allofserializer.gotmpl),
+		// which hand-write a backtick `json:"..."` tag and bypass PrintTags. A
+		// backtick breaks out of the anonymous struct, yielding invalid Go written
+		// to disk. jsonFieldTag keeps the whole tag in a double-quoted literal.
+		require.NoError(t, GenerateModels([]string{"", ""}, opts))
+		assertNoInjectedDecl(t, filepath.Join(opts.Target, defaultModelsTarget))
+	})
+
 	t.Run("response header name is contained (client)", func(t *testing.T) {
 		target := harnessTarget(t, "names-client", "client_test", root)
 		opts := defaultClientOpts(t, "../testdata/codegen/sanitize/names-injection.yaml", target)
