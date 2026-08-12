@@ -10,6 +10,13 @@ coverage:
     patch:
       default:
         target: 80%
+
 ignore:
  - "examples"
  - "fixtures"
+ - "testdata"
+ - "docs"
+ - ".claude"
+ - "hack"
+ - "**/*.md"
+ - "**/*.gotmpl"
