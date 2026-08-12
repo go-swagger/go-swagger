@@ -1,0 +1,21 @@
+name: weekly go test
+
+permissions:
+  pull-requests: read
+  contents: read
+
+on:
+  # weekly test on schedule, with race
+  schedule:
+    - cron: '14 5 * * 3'
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    with:
+      # Neither a schedule nor a dispatch carries a list of changed files, so detection
+      # would fall back on running everything anyway. Saying it explicitly documents the
+      # intent and keeps this run independent of how detection evolves.
+      force-run: 'true'
+    secrets: inherit

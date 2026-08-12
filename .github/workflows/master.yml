@@ -3,56 +3,51 @@ name: docker-dev
 permissions:
   contents: read
 
+# description: |
+#   Builds and publishes the "latest master" development image.
+#
+#   Triggered by the push itself, NOT chained behind the test workflow. The commits
+#   landing here have already been tested as pull requests, and the workflow_run bridge
+#   cost far more than it bought:
+#
+#     * it needed a trust gate, because workflow_run matches head_branch and a fork can
+#       spoof it (a fork branch literally named "master"). A push trigger cannot be
+#       reached from a fork at all, so that whole guard is gone.
+#     * it could not filter on paths: "paths-ignore" is not a supported workflow_run
+#       filter, and a workflow_run event carries no range of changed files, so
+#       changed-paths.yml would have had to fail open and build every time. Triggering on
+#       the push gives us github.event.before, and with it real detection.
+#
+#   Trade-off accepted: a red master still publishes a dev image. These are short-lived
+#   tags (7 days) rebuilt on the next push.
 on:
-  workflow_run:
-    workflows:
-      - 'go test'
-    types:
-      - completed
+  push:
     branches:
       - master
       - 'prepare-release/*'
-    paths-ignore:
-      - 'docs/*'
-      - 'hack/hugo/*'
-      - .github/workflows/update-doc.yml
-      - '**.md'
 
 jobs:
-  on-success:
-    name: Ensure triggering workflow was successful
-    # Trust gate: docker-dev builds and PUSHES signed images using registry
-    # secrets, so it must only run for trusted same-repo triggers. The
-    # workflow_run "branches" filter above matches head_branch, which a fork can
-    # spoof (e.g. a fork branch literally named "master"). Requiring
-    # head_repository to be this repo closes that bypass: a fork PR's
-    # head_repository is the fork, while same-repo pushes and same-repo
-    # prepare-release PRs still pass.
-    if: >-
-      ${{
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_repository.full_name == github.repository
-      }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow was successful"
-
-  on-failure:
-    name: Triggering workflow was unsuccessful
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow failed. Stopping here"
-          exit 1
+  changes:
+    # description: |
+    #   Is there anything worth rebuilding an image for? The image ships the compiled
+    #   binary, so any go change counts, plus the docker build inputs themselves.
+    #
+    #   Fails open: anything unclear builds.
+    name: Changes
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    with:
+      preset: go
+      extra-paths: |
+        Dockerfile
+        .hadolint.yml
 
   docker-dev:
     permissions:
       contents: read
       security-events: write
     name: Docker latest master (dev)
-    needs: [on-success]
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     uses: ./.github/workflows/build-docker.yml
     with:
       push: true

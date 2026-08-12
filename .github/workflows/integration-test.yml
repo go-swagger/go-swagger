@@ -7,27 +7,36 @@ permissions:
 # description: |
 #   Test suite that runs on every commit (on pull requests, on merges to master).
 
+# NOTE: no "paths-ignore" here on purpose -- see the note in go-test.yml.
+# Filtering happens in the "changes" job below, so "Integration tests completed"
+# reports on every run and stays usable as a required status check.
 on:
   pull_request:
-    paths-ignore:
-      - 'docs/*'
-      - 'hack/hugo/*'
-      - .github/workflows/update-doc.yml
-      - '*.md'
-      - '**/*.md'
   push:
     branches:
       - master
-    paths-ignore:
-      - 'docs/*'
-      - 'hack/hugo/*'
-      - .github/workflows/update-doc.yml
-      - '*.md'
-      - '**/*.md'
 
 jobs:
+  changes:
+    # description: |
+    #   Decide whether this run has anything to exercise. Fails open: anything unclear
+    #   runs the whole suite.
+    name: Changes
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    with:
+      preset: go
+      # The docker image ships the built binary, so any go change is already relevant.
+      # These add what the preset cannot know about: the codegen fixture configuration
+      # and the docker build inputs exercised by docker-test.
+      extra-paths: |
+        hack/*.yaml
+        Dockerfile
+        .hadolint.yml
+
   docker-test:
     name: test docker build
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     uses: ./.github/workflows/build-docker.yml
     with:
       tag_sha: true
@@ -38,6 +47,8 @@ jobs:
     #   Make sure we build and run elementary operations.
     #   The full test suite warrants support for the 2 latest go minor releases.
     name: build test
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -76,6 +87,8 @@ jobs:
     #
     #   The test matrix applies to linux only. OS-specific quirks should
     #   be covered by unit tests.
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -135,11 +148,41 @@ jobs:
           retention-days: 1
 
   integration-test-complete:
+    # description: |
+    #   This is the gate pinned in the branch protection rules, so it MUST report on every
+    #   run, including the runs where everything else was skipped.
+    #
+    #   Hence "always()" -- with the default condition the job would inherit the skip of its
+    #   dependencies and never report -- and an assertion on the negative: fail on 'failure'
+    #   and 'cancelled', pass on 'skipped'. A job correctly skipped is then indistinguishable
+    #   from a job that had nothing to do.
+    #
+    #   Every job belongs in "needs", "changes" included: a job skipped because ITS dependency
+    #   failed reports 'skipped', so leaving the failing one out would turn the gate green over
+    #   an untested pull request.
+    #
+    #   NOTE: this used to be "if: !cancelled()" with no assertion at all, which reported
+    #   success even when build-test failed.
     name: Integration tests completed
-    needs: [build-test, codegen-test, docker-test]
-    if: ${{ !cancelled() }}
+    needs: [changes, build-test, codegen-test, docker-test]
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Tests completed
+      -
+        name: Report upstream job results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
         run: |
-          echo "::notice title=Success:All tests skipped (nothing to do)"
+          echo "::group::upstream job results"
+          printenv RESULTS
+          echo "::endgroup::"
+      -
+        name: Fail on any unsuccessful upstream job
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "::error title=integration-tests::at least one job failed or was cancelled"
+          exit 1
+      -
+        name: Tests completed
+        run: |
+          echo "::notice title=Success::All integration tests passed"

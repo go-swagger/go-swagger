@@ -76,16 +76,9 @@ jobs:
         with:
           version: v0.123.8  # <- pin the HUGO version, as they often break things
           extended: true
-          args: >
-            --config hugo.yaml,goswagger.yaml
-            --buildDrafts
-            --cleanDestinationDir
-            --minify
-            --printPathWarnings
-            --ignoreCache
-            --noBuildLock
-            --logLevel info
-            --source ${{ github.workspace }}/hack/doc-site/hugo"
+          # Single line on purpose: the runner does not reliably fold ">" scalars for action
+          # inputs, and hugo would receive the flags with embedded newlines.
+          args: --config hugo.yaml,goswagger.yaml --buildDrafts --cleanDestinationDir --minify --printPathWarnings --ignoreCache --noBuildLock --logLevel info --source ${{ github.workspace }}/hack/doc-site/hugo
       -
         name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
