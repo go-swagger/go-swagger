@@ -3,26 +3,65 @@ name: "Update latest documentation"
 permissions:
   contents: read
 
+# NOTE: no "paths" filter here on purpose -- see the note in go-test.yml.
+# Filtering happens in the "changes" job below, so "doc completed" reports on every run
+# and stays usable as a required status check.
 on:
   push:
     branches:
-      -  master
-    paths:
-    - docs/**
-    - hack/doc-site/**
-    - .github/workflows/update-doc.yml
+      - master
 
   pull_request:
-    paths:
-    - docs/**
-    - hack/doc-site/**
-    - .github/workflows/update-doc.yml
 
 jobs:
+  changes:
+    # description: |
+    #   Decide whether this run has any documentation to rebuild. Fails open.
+    name: Changes
+    uses: go-openapi/ci-workflows/.github/workflows/doc-changed.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    with:
+      # The 'doc' preset follows the go-openapi layout (content under docs/doc-site,
+      # hugo under hack/doc-site). go-swagger keeps its content one level up, directly
+      # under docs/, so it has to be declared here.
+      extra-paths: |
+        docs/**
+        .github/workflows/update-doc.yml
+
   update-doc:
     name: Update latest documentation
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     permissions:
       contents: read
       pages: write
       id-token: write
     uses: ./.github/workflows/update-doc.yml
+
+  doc-complete:
+    # description: |
+    #   The gate pinned in the branch protection rules: reports on every run, including
+    #   the code-only pull requests where the doc build was skipped. See the equivalent
+    #   note in integration-test.yml.
+    name: doc completed
+    needs: [changes, update-doc]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Report upstream job results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "::group::upstream job results"
+          printenv RESULTS
+          echo "::endgroup::"
+      -
+        name: Fail on any unsuccessful upstream job
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "::error title=doc::the documentation build failed or was cancelled"
+          exit 1
+      -
+        name: Doc completed
+        run: |
+          echo "::notice title=Success::Documentation is up to date"
