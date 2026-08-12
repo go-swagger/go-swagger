@@ -43,6 +43,15 @@ on:
         type: number
         required: false
         default: 1
+      platforms:
+        description: |
+          Comma-separated target platforms. Defaults to the full published set.
+
+          Callers producing throwaway dev images may narrow it: ppc64le and s390x roughly
+          double the build for images that are rebuilt on the next push anyway.
+        type: string
+        required: false
+        default: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
     secrets:
       CR_PAT:
         description: token to push to ghcr.io registry
@@ -60,7 +69,7 @@ jobs:
     name: Docker latest master (dev)
     runs-on: ubuntu-latest
     env:
-      SUPPORTED_PLATFORMS: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
+      SUPPORTED_PLATFORMS: ${{ inputs.platforms }}
       DOCKER_CACHE: '../.docker-cache' # <- out of docker build context
       DOCKER_DEST: '../.docker-dst/go-swagger-${{ github.sha}}'
     steps:
@@ -150,6 +159,9 @@ jobs:
 
       - name: Build to scan
         id: scan-build
+        # Deliberately single-platform (no "platforms:" here): what trivy reports comes
+        # from the alpine packages, which are the same across arches, so scanning the
+        # native build covers the others. The push build below reuses these layers.
         env:
           DOCKER_BUILD_SUMMARY: false
           DOCKER_BUILD_RECORD_UPLOAD: false
