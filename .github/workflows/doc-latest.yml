@@ -24,7 +24,7 @@ jobs:
       # workflow cannot hold more than its caller grants, and an omitted scope is 'none',
       # so without this the run is REJECTED before it starts -- it does not degrade.
       pull-requests: read
-    uses: go-openapi/ci-workflows/.github/workflows/doc-changed.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    uses: go-openapi/ci-workflows/.github/workflows/doc-changed.yml@a673fdc66cb2e751f009c47f78e3ac4cc13f815b # v0.5.2
     with:
       # The 'doc' preset follows the go-openapi layout (content under docs/doc-site,
       # hugo under hack/doc-site). go-swagger keeps its content one level up, directly

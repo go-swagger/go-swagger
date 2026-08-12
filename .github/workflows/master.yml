@@ -40,7 +40,7 @@ jobs:
       # 'none': without this the run is REJECTED before it starts. changed-paths.yml needs
       # the scope even here, where the push path only ever uses git.
       pull-requests: read
-    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@a673fdc66cb2e751f009c47f78e3ac4cc13f815b # v0.5.2
     with:
       preset: go
       extra-paths: |

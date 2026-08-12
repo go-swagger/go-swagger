@@ -26,7 +26,7 @@ defaults:
 
 jobs:
   test:
-    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@a673fdc66cb2e751f009c47f78e3ac4cc13f815b # v0.5.2
     with:
       # Disable -race on push & PR runs: go-swagger is a CLI with no impact from race conditions.
       # We disable it to reduce the surge in CI credits consumption.
