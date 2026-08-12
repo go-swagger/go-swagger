@@ -4,7 +4,13 @@ ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 FROM golang:alpine@sha256:0178a641fbb4858c5f1b48e34bdaabe0350a330a1b1149aabd498d0699ff5fb2 AS base
 RUN apk update && \
     apk upgrade && \
-    apk --no-cache add ca-certificates shared-mime-info mailcap git build-base binutils-gold
+    apk --no-cache add \
+      ca-certificates=20260611-r0 \
+      shared-mime-info=2.4-r7 \
+      mailcap=2.1.54-r0 \
+      git=2.54.0-r0 \
+      build-base=0.5-r4 \
+      binutils-gold=2.45.1-r1
 
 FROM base AS build
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
