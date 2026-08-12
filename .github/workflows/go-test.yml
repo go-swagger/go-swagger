@@ -33,6 +33,21 @@ jobs:
       #
       # A weekly test run with -race is carried out to identify possible bugs spotted by the race detector.
       no-race: 'true'
-      # 'go' preset (go sources, go.mod/sum, **/testdata/**, linter config).
+      # On top of the 'go' preset (go sources, go.mod/sum, **/testdata/**, linter config).
       # Templates are *.gotmpl and are already covered by the preset.
+      #
+      # ⚠️ KEEP IDENTICAL to the extra-paths of integration-test.yml's "changes" job.
+      #
+      # Not cosmetic: .codecov.yml sets "after_n_builds: 2", and the two coverage uploads
+      # come from these two workflows -- unit coverage here, codegen coverage there. They
+      # are separate runs, so each collects its own. If one bucket triggers and the other
+      # does not, codecov gets a single upload, waits forever for the second and reports
+      # 0%. Identical buckets keep the count at 0 or 2, never 1.
+      #
+      # That is why Dockerfile and .hadolint.yml are listed here even though they cannot
+      # change a unit test result: integration-test.yml needs them for docker-test.
+      extra-paths: |
+        hack/*.yaml
+        Dockerfile
+        .hadolint.yml
     secrets: inherit
