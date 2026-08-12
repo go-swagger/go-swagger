@@ -7,7 +7,7 @@ toolchain go1.26.1
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/SladkyCitron/slogcolor v1.9.0
-	github.com/go-openapi/analysis v0.25.5
+	github.com/go-openapi/analysis v0.26.0
 	github.com/go-openapi/codescan v0.36.3
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v1.0.0
@@ -16,7 +16,6 @@ require (
 	github.com/go-openapi/runtime/server-middleware v0.33.0
 	github.com/go-openapi/spec v0.22.9
 	github.com/go-openapi/strfmt v0.27.0
-	github.com/go-openapi/swag v0.28.0
 	github.com/go-openapi/swag/conv v0.28.0
 	github.com/go-openapi/swag/jsonutils v0.28.0
 	github.com/go-openapi/swag/loading v0.28.0
@@ -26,8 +25,7 @@ require (
 	github.com/go-openapi/swag/typeutils v0.28.0
 	github.com/go-openapi/swag/yamlutils v0.28.0
 	github.com/go-openapi/testify/v2 v2.6.0
-	github.com/go-openapi/validate v0.26.1
-	github.com/go-swagger/scan-repo-boundary v0.0.0-20180623220736-973b3573c013
+	github.com/go-openapi/validate v0.26.3
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.6.1
@@ -49,7 +47,6 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-openapi/jsonpointer v1.0.0 // indirect
 	github.com/go-openapi/jsonreference v1.0.0 // indirect
-	github.com/go-openapi/swag/cmdutils v0.28.0 // indirect
 	github.com/go-openapi/swag/fileutils v0.28.0 // indirect
 	github.com/go-openapi/swag/pools v0.28.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -70,11 +67,11 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
