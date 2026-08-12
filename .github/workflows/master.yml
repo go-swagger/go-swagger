@@ -58,6 +58,10 @@ jobs:
     with:
       push: true
       record_retention: 7
+      # Dev images only: ppc64le and s390x roughly double the build for a tag that is
+      # replaced on the next push. Tagged releases still publish the full set.
+      # Drop this line to go back to all five platforms here too.
+      platforms: 'linux/amd64,linux/arm64'
     secrets:
       CR_PAT: ${{ secrets.CR_PAT }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
