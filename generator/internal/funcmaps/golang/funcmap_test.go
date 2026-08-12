@@ -34,7 +34,7 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 			"dict", "isInteger", "hasPrefix", "stringContains",
 			"trimSpace", "mdBlock", "httpStatus",
 			"cleanupEnumVariant", "gt0",
-			"escapeBackticks",
+			"escapeBackticks", "escapeDoubleQuoted", "jsonFieldTag",
 			"flagNameVar", "flagValueVar", "flagDefaultVar", "flagModelVar", "flagDescriptionVar",
 			"printGoLiteral",
 		} {
@@ -350,6 +350,27 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 
 		assert.EqualT(t, "no ticks", escapeBackticks("no ticks"))
 		assert.EqualT(t, "has`+\"`\"+`tick", escapeBackticks("has`tick"))
+	})
+
+	t.Run("jsonFieldTag should render a safe struct tag", func(t *testing.T) {
+		t.Parallel()
+
+		jsonFieldTag, ok := fm["jsonFieldTag"].(func(string, bool, bool) string)
+		require.TrueT(t, ok)
+		require.NotNil(t, jsonFieldTag)
+
+		// clean names render as a raw backtick literal, byte-identical to the
+		// previous hand-written template output.
+		assert.EqualT(t, "`json:\"name\"`", jsonFieldTag("name", false, false))
+		assert.EqualT(t, "`json:\"name,omitempty\"`", jsonFieldTag("name", true, false))
+		assert.EqualT(t, "`json:\"name,omitempty,string\"`", jsonFieldTag("name", true, true))
+		assert.EqualT(t, "`json:\"name,string\"`", jsonFieldTag("name", false, true))
+
+		// a backtick in the name cannot be represented in a raw literal, so the
+		// whole tag falls back to a double-quoted literal: the injected payload
+		// can no longer close the tag and inject top-level Go.
+		got := jsonFieldTag("evil` }; func init(){ println(\"pwned\") }; var _ = `", false, false)
+		assert.EqualT(t, `"json:\"evil`+"`"+` }; func init(){ println(\\\"pwned\\\") }; var _ = `+"`"+`\""`, got)
 	})
 
 	t.Run("funcmap should not override builtins", func(t *testing.T) {
