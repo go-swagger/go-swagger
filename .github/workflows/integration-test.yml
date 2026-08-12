@@ -28,6 +28,10 @@ jobs:
       # The docker image ships the built binary, so any go change is already relevant.
       # These add what the preset cannot know about: the codegen fixture configuration
       # and the docker build inputs exercised by docker-test.
+      #
+      # ⚠️ KEEP IDENTICAL to the extra-paths of go-test.yml -- see the rationale there.
+      # Diverging buckets leave codecov with a single upload while .codecov.yml waits for
+      # two, and it reports 0%.
       extra-paths: |
         hack/*.yaml
         Dockerfile
@@ -146,6 +150,28 @@ jobs:
           path: '**/codegen.coverage.*.out'
           name: 'codegen.coverage.${{ matrix.os }}-${{ matrix.go }}'
           retention-days: 1
+
+  collect-coverage:
+    # description: |
+    #   codegen-test produces coverage too (GOCOVERDIR + covdata textfmt), and that
+    #   artifact lives in THIS workflow run.
+    #
+    #   collect-coverage.yml downloads artifacts with "run-id: github.run_id", so the
+    #   "go test" run cannot see them: back when everything sat in one test.yaml a single
+    #   collect job caught both, but unit and integration tests are now separate workflows
+    #   and therefore separate runs. Integration coverage has to be collected here, or it
+    #   is uploaded as an artifact and silently never reaches codecov.
+    #
+    #   This is also the second of the two coverage uploads .codecov.yml waits for
+    #   ("after_n_builds: 2"). collect-reports does NOT count: it posts to the test
+    #   analytics endpoint (report_type: test_results), not as a coverage build.
+    #
+    #   Deliberately absent from integration-test-complete's "needs": codecov uploads are
+    #   flaky and must not gate a merge.
+    needs: [codegen-test]
+    if: ${{ !cancelled() && needs.codegen-test.result == 'success' }}
+    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
+    secrets: inherit
 
   integration-test-complete:
     # description: |
