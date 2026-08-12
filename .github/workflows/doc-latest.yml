@@ -18,6 +18,12 @@ jobs:
     # description: |
     #   Decide whether this run has any documentation to rebuild. Fails open.
     name: Changes
+    permissions:
+      contents: read
+      # Detection reads the changed files of a pull request through the API. A called
+      # workflow cannot hold more than its caller grants, and an omitted scope is 'none',
+      # so without this the run is REJECTED before it starts -- it does not degrade.
+      pull-requests: read
     uses: go-openapi/ci-workflows/.github/workflows/doc-changed.yml@adf38bd293f1ec3c4785fd09837e23c464e3eaf8 # v0.5.1
     with:
       # The 'doc' preset follows the go-openapi layout (content under docs/doc-site,
