@@ -294,12 +294,12 @@ func WithAutoXOrder(specPath string) string {
 
 	data, err := loading.LoadFromFileOrHTTP(specPath)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not load YAML doc for %q: %w", specPath, err))
 	}
 
 	yamlDoc, err := BytesToYAMLv2Doc(data)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not convert YAML doc: %w", err))
 	}
 
 	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
@@ -312,18 +312,19 @@ func WithAutoXOrder(specPath string) string {
 
 	out, err := yamlv2.Marshal(yamlDoc)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not marshal yaml doc: %w", err))
 	}
 
 	tmpDir, err := os.MkdirTemp("", "go-swagger-")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not create temporary directory: %w", err))
 	}
 
 	tmpFile := filepath.Join(tmpDir, filepath.Base(specPath))
 	if err := os.WriteFile(tmpFile, out, readableFile); err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not write temporary file %q: %w", tmpFile, err))
 	}
+
 	return tmpFile
 }
 
@@ -338,6 +339,7 @@ func BytesToYAMLv2Doc(data []byte) (any, error) {
 	if err := yamlv2.Unmarshal(data, &document); err != nil {
 		return nil, err
 	}
+
 	return document, nil
 }
 

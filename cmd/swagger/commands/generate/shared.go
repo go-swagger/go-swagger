@@ -143,6 +143,7 @@ type sharedOptionsCommon struct {
 	ReturnErrors          bool           `description:"handlers explicitly return an error as the second value"                            group:"shared"                                            long:"return-errors"           short:"e"`
 	Restricted            bool           `description:"Use restricted http client for remote $ref"                                         group:"shared"                                            long:"restricted"`
 	Rooted                string         `description:"Local $ref resolution contained relative to root FS"                                group:"shared"                                            long:"rooted"`
+	EnsureTarget          bool           `description:"Create the target directory if it does not already exist"                           group:"shared"                                            long:"ensure-target"`
 }
 
 func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
@@ -161,6 +162,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.WithExtraInitialisms = s.AdditionalInitialisms
 	opts.Restricted = s.Restricted
 	opts.Rooted = s.Rooted
+	opts.EnsureTarget = s.EnsureTarget
 }
 
 func setCopyright(copyrightFile string) (string, error) {

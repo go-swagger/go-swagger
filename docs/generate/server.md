@@ -73,6 +73,7 @@ Help Options:
       -e, --return-errors                                                                    handlers explicitly return an error as the second value
           --restricted                                                                       Use restricted http client for remote $ref
           --rooted=                                                                          Local $ref resolution contained relative to root FS
+          --ensure-target                                                                    Create the target directory if it does not already exist
       -p, --template-plugin=                                                                 the template plugin to use
 
     Options for model generation:
