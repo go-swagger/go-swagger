@@ -121,6 +121,7 @@ jobs:
         name: Install Tools
         run: |
           go mod download
+          # important, as the runner is tagged //go:build ignore, so its dependencies are not in the main go.mod
           go get gotest.tools/v3/icmd@v3.5.2
           mkdir /tmp/cov
       -
@@ -132,14 +133,17 @@ jobs:
              ./cmd/swagger
       -
         name: Run codegen tests
-        run: >
+        # limit test parallelism, as github runner may quickly get starved of memory
+        # when many builds are carried out in parallel. So GOMAXPROC should not be our
+        # ceiling here: the job is memory-bound.
+        run: >-
           /usr/bin/time
-          go test -v -timeout 30m
+          go test -v -timeout 30m -p 1 -parallel 2
           hack/codegen_nonreg_test.go
           -args -fixture-file "${{ matrix.fixture }}.yaml" ${{ matrix.args }}
       -
         name: Construct coverage reports from integration tests
-        run: >
+        run: >-
           go tool covdata textfmt
           -i "${GOCOVERDIR}"
           -o "codegen.coverage.${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.out"
