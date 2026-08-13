@@ -239,7 +239,6 @@ type codeGenOpBuilder struct {
 }
 
 func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
-	debugLogf("[%s %s] parsing operation (id: %q)", b.Method, b.Path, b.Operation.ID)
 	// NOTE: we assume flatten is enabled by default (i.e. complex constructs are resolved from the models package),
 	// but do not assume the spec is necessarily fully flattened (i.e. all schemas moved to definitions).
 	//
@@ -356,8 +355,6 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 }
 
 func (b *codeGenOpBuilder) MakeResponse(receiver, name string, isSuccess bool, resolver *typeResolver, code int, resp spec.Response) (GenResponse, error) {
-	debugLogf("[%s %s] making id %q", b.Method, b.Path, b.Operation.ID)
-
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 	examples := make(GenResponseExamples, 0, len(resp.Examples))
 	for k, v := range resp.Examples {
@@ -513,7 +510,6 @@ func (b *codeGenOpBuilder) HasValidations(sh spec.CommonValidations, rt resolved
 }
 
 func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path, valueExpression, location string, resolver *typeResolver, items, _ *spec.Items) (GenItems, error) {
-	debugLogf("making parameter item recv=%s param=%s index=%s valueExpr=%s path=%s location=%s", receiver, paramName, indexVar, valueExpression, path, location)
 	var res GenItems
 	mangler := b.GenOpts.LanguageOpts.Mangler
 	res.resolvedType = simpleResolvedType(items.Type, items.Format, items.Items, &items.CommonValidations)
@@ -557,8 +553,6 @@ func (b *codeGenOpBuilder) MakeParameterItem(receiver, paramName, indexVar, path
 }
 
 func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver, param spec.Parameter, idMapping map[string]map[string]string) (GenParameter, error) {
-	debugLogf("[%s %s] making parameter %q", b.Method, b.Path, param.Name)
-
 	var child *GenItems
 	// id, err:= b.inferParameterID(param, idMapping)
 	// if err != nil {
@@ -836,7 +830,6 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 		"header":   make(map[string]string, len(params)),
 		"body":     make(map[string]string, len(params)),
 	}
-	debugLogf("paramMappings: map=%v", params)
 
 	// In order to avoid unstable generation, adopt same naming convention
 	// for all parameters with same name across locations.
@@ -844,7 +837,6 @@ func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[
 
 	seenIDs := make(map[string]any, len(params))
 	for id, p := range params {
-		debugLogf("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
 		if _, found := idMapping[p.In]; !found {
 			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In)
