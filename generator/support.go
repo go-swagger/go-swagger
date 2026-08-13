@@ -309,16 +309,17 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	genModels := make(GenDefinitions, 0, len(a.Models))
 	for mn, m := range a.Models {
-		model, err := makeGenDefinition(
+		model, errDef := makeGenDefinition(
 			mn,
 			a.ModelsPackage,
 			m,
 			a.SpecDoc,
 			a.GenOpts,
 		)
-		if err != nil {
-			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %w", mn, err)
+		if errDef != nil {
+			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %w", mn, errDef)
 		}
+
 		if model != nil {
 			if !model.External {
 				genModels = append(genModels, *model)
@@ -332,7 +333,8 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			}
 		}
 	}
-	if err := ensureDedupedImports(defaultImports, imports); err != nil {
+
+	if err = ensureDedupedImports(defaultImports, imports); err != nil {
 		// guard against internal dev errors
 		return GenApp{}, err
 	}
@@ -391,9 +393,9 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			continue
 		}
 
-		op, err := bldr.MakeOperation()
-		if err != nil {
-			return GenApp{}, err
+		op, errOpe := bldr.MakeOperation()
+		if errOpe != nil {
+			return GenApp{}, errOpe
 		}
 
 		op.ReceiverName = receiver

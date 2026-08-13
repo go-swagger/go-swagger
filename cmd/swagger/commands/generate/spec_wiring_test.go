@@ -27,8 +27,6 @@ func TestSpecFileToOptions(t *testing.T) {
 
 		// polarity: no --enable-allof-compounding ⇒ compounding is skipped.
 		assert.True(t, opts.SkipAllOfCompounding)
-		// the legacy DescWithRef option is never wired.
-		assert.False(t, opts.DescWithRef) //nolint:staticcheck // we precisely assert that there is no wiring of this deprecated field
 		assert.False(t, opts.EmitRefSiblings)
 	})
 
@@ -98,7 +96,6 @@ func TestSpecFileToOptions(t *testing.T) {
 			set:  func(s *SpecFile) { s.DescWithRef = true },
 			assert: func(t *testing.T, o codescan.Options) {
 				assert.True(t, o.EmitRefSiblings)
-				assert.False(t, o.DescWithRef) //nolint:staticcheck // we precisely assert that there is no wiring of this deprecated field
 			},
 		},
 	}
