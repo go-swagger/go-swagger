@@ -1,0 +1,53 @@
+name: go test
+
+permissions:
+  pull-requests: read
+  contents: read
+
+# NOTE: no "paths-ignore" here on purpose.
+#
+# A workflow filtered at the trigger level does not start at all on a doc-only pull
+# request, so its status check never reports and branch protection waits forever on
+# "Expected -- waiting for status to be reported".
+#
+# The shared workflow now filters at the JOB level instead: it skips its matrix when
+# nothing relevant changed, which costs the same (a skipped job burns no runner minute)
+# but keeps publishing "tests completed" on every single run.
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@d2d2b54984441dbea93c5672174cd949c60b4fc5 # v0.5.3
+    with:
+      # Disable -race on push & PR runs: go-swagger is a CLI with no impact from race conditions.
+      # We disable it to reduce the surge in CI credits consumption.
+      #
+      # A weekly test run with -race is carried out to identify possible bugs spotted by the race detector.
+      no-race: 'true'
+      # On top of the 'go' preset (go sources, go.mod/sum, **/testdata/**, linter config).
+      # Templates are *.gotmpl and are already covered by the preset.
+      #
+      # ⚠️ KEEP IDENTICAL to the extra-paths of integration-test.yml's "changes" job.
+      #
+      # Not cosmetic: .codecov.yml sets "after_n_builds: 2", and the two coverage uploads
+      # come from these two workflows -- unit coverage here, codegen coverage there. They
+      # are separate runs, so each collects its own. If one bucket triggers and the other
+      # does not, codecov gets a single upload, waits forever for the second and reports
+      # 0%. Identical buckets keep the count at 0 or 2, never 1.
+      #
+      # That is why Dockerfile and .hadolint.yml are listed here even though they cannot
+      # change a unit test result: integration-test.yml needs them for docker-test.
+      extra-paths: |
+        hack/*.yaml
+        Dockerfile
+        .hadolint.yml
+    secrets: inherit

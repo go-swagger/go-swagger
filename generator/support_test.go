@@ -173,7 +173,8 @@ func TestBaseImport(t *testing.T) {
 				t.Setenv("GOPATH", item.gopath)
 
 				// Test (baseImport always with /)
-				actualpath := opts.LanguageOpts.BaseImport(item.targetpath)
+				actualpath, err := opts.LanguageOpts.BaseImport(item.targetpath)
+				require.NoError(t, err)
 				require.EqualTf(t, item.expectedpath, actualpath, "baseImport(%s): expected %s, actual %s", item.targetpath, item.expectedpath, actualpath)
 			})
 		})
@@ -185,7 +186,7 @@ func TestGenerateMarkdown(t *testing.T) {
 
 	t.Run("should generate doc for demo fixture", func(t *testing.T) {
 		opts := testGenOpts()
-		opts.Spec = "../fixtures/enhancements/184/fixture-184.yaml"
+		opts.Spec = "../testdata/enhancements/184/fixture-184.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 
 		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))
@@ -203,9 +204,32 @@ func TestGenerateMarkdown(t *testing.T) {
 		}
 	})
 
+	// the markdown output path is resolved against the target before Prepare runs,
+	// so GenerateMarkdown carries out the target checks itself.
+	t.Run("with an unusable target", func(t *testing.T) {
+		t.Run("should fail on a missing target", func(t *testing.T) {
+			opts := testGenOpts()
+			opts.Spec = "../testdata/enhancements/184/fixture-184.yaml"
+			opts.Target = filepath.Join(t.TempDir(), "missing")
+
+			err := GenerateMarkdown("markdown.md", nil, nil, opts)
+			require.ErrorContains(t, err, "--ensure-target")
+		})
+
+		t.Run("should not create the target when the spec cannot be found", func(t *testing.T) {
+			opts := testGenOpts()
+			opts.Spec = "../testdata/enhancements/184/nosuchfixture.yaml"
+			opts.Target = filepath.Join(t.TempDir(), "missing")
+			opts.EnsureTarget = true
+
+			require.Error(t, GenerateMarkdown("markdown.md", nil, nil, opts))
+			assertNoDir(t, opts.Target)
+		})
+	})
+
 	t.Run("should handle new lines in descriptions", func(t *testing.T) {
 		opts := testGenOpts()
-		opts.Spec = "../fixtures/bugs/2700/2700.yaml"
+		opts.Spec = "../testdata/bugs/2700/2700.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 
 		require.NoError(t, GenerateMarkdown(output, nil, nil, opts))

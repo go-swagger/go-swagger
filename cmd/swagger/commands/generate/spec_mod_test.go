@@ -29,7 +29,7 @@ func TestSpecEmbeddedDescriptionAndTags_Issue3125(t *testing.T) {
 func prepare3125(t *testing.T) string {
 	t.Helper()
 
-	workDir := filepath.Join("..", "..", "..", "..", "fixtures", "bugs", "3125", "full")
+	workDir := filepath.Join("..", "..", "..", "..", "testdata", "bugs", "3125", "full")
 	source := os.DirFS(workDir)
 	target := filepath.Join(t.TempDir(), "swagger")
 

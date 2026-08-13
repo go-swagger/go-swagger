@@ -201,7 +201,12 @@ func (g *renderer) write(t *TemplateOpts, data any) error {
 	var writeerr error
 
 	if !t.SkipFormat {
-		baseImport := g.LanguageOpts.BaseImport(g.Target)
+		var baseImport string
+
+		baseImport, err = g.LanguageOpts.BaseImport(g.Target)
+		if err != nil {
+			return errTarget(g.Target, err)
+		}
 
 		formatted, err = g.LanguageOpts.FormatContent(
 			filepath.Join(dir, fname), content,

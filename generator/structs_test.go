@@ -22,7 +22,7 @@ func TestPrintTags(t *testing.T) {
 		return b
 	}
 
-	fixtures := []tagFixture{
+	testdata := []tagFixture{
 		{
 			Title: "no extra: default json",
 			Schema: GenSchema{
@@ -173,7 +173,7 @@ func TestPrintTags(t *testing.T) {
 		},
 	}
 
-	for _, toPin := range fixtures {
+	for _, toPin := range testdata {
 		fixture := toPin
 		t.Run(fixture.Title, func(t *testing.T) {
 			require.EqualT(t, fixture.ExpectedTags, fixture.Schema.PrintTags())

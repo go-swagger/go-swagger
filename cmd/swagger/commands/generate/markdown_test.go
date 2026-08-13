@@ -19,7 +19,7 @@ func TestMarkdown(t *testing.T) {
 
 	m := &generate.Markdown{}
 	_, _ = flags.ParseArgs(m, []string{"--skip-validation"})
-	m.Shared.Spec = flags.Filename(filepath.Join(testBase(), "fixtures", "enhancements", "184", "fixture-184.yaml"))
+	m.Shared.Spec = flags.Filename(filepath.Join(testBase(), "testdata", "enhancements", "184", "fixture-184.yaml"))
 	m.Shared.Target = flags.Filename(generated)
 	m.Output = flags.Filename("markdown.md")
 	require.NoError(t, m.Execute([]string{}))

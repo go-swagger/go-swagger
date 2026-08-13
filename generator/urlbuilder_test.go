@@ -15,7 +15,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		gen, err := opBuilder("simplePathParams", "../fixtures/codegen/todolist.url.simple.yml")
+		gen, err := opBuilder("simplePathParams", "../testdata/codegen/todolist.url.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		gen, err := opBuilder("simpleQueryParams", "../fixtures/codegen/todolist.url.simple.yml")
+		gen, err := opBuilder("simpleQueryParams", "../testdata/codegen/todolist.url.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -147,13 +147,13 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 func TestURLBuilder_ArrayQueryParams(t *testing.T) {
 	t.Parallel()
 
-	testArrayQueryParams(t, "../fixtures/codegen/todolist.url.simple.yml", "")
+	testArrayQueryParams(t, "../testdata/codegen/todolist.url.simple.yml", "")
 }
 
 func TestURLBuilder_ArrayQueryParams_BasePath(t *testing.T) {
 	t.Parallel()
 
-	testArrayQueryParams(t, "../fixtures/codegen/todolist.url.basepath.yml", "/v1/api")
+	testArrayQueryParams(t, "../testdata/codegen/todolist.url.basepath.yml", "/v1/api")
 }
 
 func testArrayQueryParams(t *testing.T, filePath, basePath string) {
@@ -308,7 +308,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 
 	t.Run("with happy path", func(t *testing.T) {
 		t.Run("should construct an operation builder", func(t *testing.T) {
-			gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
+			gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
 			require.NoError(t, err)
 
 			t.Run("should make an operation", func(t *testing.T) {
@@ -338,7 +338,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 
 		t.Run("with error path", func(t *testing.T) {
 			t.Run("should construct an operation builder", func(t *testing.T) {
-				gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger-error.yml")
+				gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger-error.yml")
 				require.NoError(t, err)
 
 				t.Run("should NOT make an operation", func(t *testing.T) {

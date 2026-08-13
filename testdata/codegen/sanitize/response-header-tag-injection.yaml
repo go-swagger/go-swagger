@@ -1,0 +1,21 @@
+# Adversarial fixture: a response header NAME carries a Go breakout payload aimed
+# at the server response struct tag (server/responses.gotmpl). The header name is
+# emitted into a backtick-quoted `json:"..."` struct tag of a top-level response
+# type; a backtick closes the raw string early and the `;`-separated declarations
+# become live top-level Go (func init runs at package load — RCE before main).
+# jsonFieldTag renders the whole tag with PrintTags semantics: a backtick in the
+# value forces the tag to a double-quoted literal, so nothing can break out.
+swagger: "2.0"
+info:
+  title: response header tag injection
+  version: "1.0"
+paths:
+  /foo:
+    get:
+      operationId: getFoo
+      responses:
+        "200":
+          description: ok
+          headers:
+            'X-Evil` }; func init(){ println("PWNED_HEADER_TAG") }; func _(){ _ = `':
+              type: string

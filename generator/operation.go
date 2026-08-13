@@ -140,11 +140,23 @@ type operationGenerator struct {
 
 // Generate a single operation.
 func (o *operationGenerator) Generate() error {
-	defaultImports := newImportsBuilder(o.GenOpts).defaultImports()
+	defaultImports, err := newImportsBuilder(o.GenOpts).defaultImports()
+	if err != nil {
+		return err
+	}
 
 	apiPackage := o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.APIPackage, defaultOperationsTarget)
-	imports := newImportsBuilder(o.GenOpts).initImports(
-		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage))
+	imports, err := newImportsBuilder(o.GenOpts).initImports(
+		filepath.Join(o.GenOpts.LanguageOpts.ManglePackagePath(o.GenOpts.ServerPackage, defaultServerTarget), apiPackage),
+	)
+	if err != nil {
+		return err
+	}
+
+	if err = ensureDedupedImports(defaultImports, imports); err != nil {
+		// guard against internal dev errors
+		return err
+	}
 
 	bldr := codeGenOpBuilder{
 		ModelsPackage:       o.ModelsPackage,
@@ -406,11 +418,15 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 			}
 		}
 	}
+	importTarget, err := b.GenOpts.LanguageOpts.BaseImport(b.GenOpts.Target)
+	if err != nil {
+		return GenOperation{}, errTarget(b.GenOpts.Target, err)
+	}
 
 	return GenOperation{
 		GenCommon: GenCommon{
 			Copyright:        b.GenOpts.Copyright,
-			TargetImportPath: b.GenOpts.LanguageOpts.BaseImport(b.GenOpts.Target),
+			TargetImportPath: importTarget,
 		},
 		Package:              b.GenOpts.LanguageOpts.ManglePackageName(b.APIPackage, defaultOperationsTarget),
 		PackageAlias:         b.APIPackageAlias,
@@ -1198,12 +1214,12 @@ func (b *codeGenOpBuilder) cloneSchema(schema *spec.Schema) *spec.Schema {
 	savedSchema := &spec.Schema{}
 	schemaRep, err := json.Marshal(schema)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: cannot json marshal a schema: %w", err))
 	}
 
 	err = json.Unmarshal(schemaRep, savedSchema)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: cannot json unmarshal a schema: %w", err))
 	}
 
 	return savedSchema

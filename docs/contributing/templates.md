@@ -19,6 +19,6 @@ Most templates can be overriden at run time with a config setup.
 > **NOTE**: we are carrying out unit tests on codegen mostly by asserting lines in generated code.
 > There is a bunch of test utility functions for this. See `generator/*_test.go`.
 >
-> If you want to bring in more advanced testing go programs with your fixtures, please tag
+> If you want to bring in more advanced testing go programs with your testdata, please tag
 > those so they don't affect the `go ./...` command (e.g. with `// +build +integration`).
 

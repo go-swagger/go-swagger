@@ -52,7 +52,17 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 	if err := opts.resolveSections(); err != nil {
 		return err
 	}
-	if opts.Target != "" && opts.Target != "." {
+
+	// the output path is resolved against the target, so the spec and the target are
+	// resolved here rather than left to Prepare. Both steps run exactly once.
+	if err := opts.normalize(); err != nil {
+		return err
+	}
+	if err := opts.ensureTarget(); err != nil {
+		return err
+	}
+
+	if opts.Target != "." {
 		output = filepath.Join(opts.Target, output)
 	}
 	MarkdownSectionOpts(opts, output)
@@ -215,7 +225,11 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 		app = &ca
 	}
 
-	baseImport := a.GenOpts.LanguageOpts.BaseImport(a.Target)
+	baseImport, err := a.GenOpts.LanguageOpts.BaseImport(a.Target)
+	if err != nil {
+		return errTarget(a.Target, err)
+	}
+
 	serverPath := path.Join(baseImport,
 		a.GenOpts.LanguageOpts.ManglePackagePath(a.ServerPackage, defaultServerTarget))
 
@@ -266,10 +280,18 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	log.Println("generation target", a.Target)
 
-	baseImport := a.GenOpts.LanguageOpts.BaseImport(a.Target)
-	defaultImports := newImportsBuilder(a.GenOpts).defaultImports()
+	baseImport, err := a.GenOpts.LanguageOpts.BaseImport(a.Target)
+	if err != nil {
+		return GenApp{}, errTarget(a.Target, err)
+	}
+	defaultImports, err := newImportsBuilder(a.GenOpts).defaultImports()
+	if err != nil {
+		return GenApp{}, err
+	}
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)
+	registerSerializerImports(imports, consumes)
+	registerSerializerImports(imports, produces)
 	alias := deconflictPkg(a.GenOpts.LanguageOpts.ManglePackageName(a.OperationsPackage, defaultOperationsTarget), renameAPIPackage)
 	if !a.GenOpts.IsClient { // we don't want to inject this import for clients
 		imports[alias] = path.Join(
@@ -310,6 +332,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			}
 		}
 	}
+	if err := ensureDedupedImports(defaultImports, imports); err != nil {
+		// guard against internal dev errors
+		return GenApp{}, err
+	}
+
 	sort.Sort(genModels)
 
 	log.Printf("planning operations (found: %d)", len(a.Operations))

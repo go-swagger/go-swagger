@@ -1,0 +1,218 @@
+name: Integration Test
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# description: |
+#   Test suite that runs on every commit (on pull requests, on merges to master).
+
+# NOTE: no "paths-ignore" here on purpose -- see the note in go-test.yml.
+# Filtering happens in the "changes" job below, so "Integration tests completed"
+# reports on every run and stays usable as a required status check.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  changes:
+    # description: |
+    #   Decide whether this run has anything to exercise. Fails open: anything unclear
+    #   runs the whole suite.
+    name: Changes
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@d2d2b54984441dbea93c5672174cd949c60b4fc5 # v0.5.3
+    with:
+      preset: go
+      # The docker image ships the built binary, so any go change is already relevant.
+      # These add what the preset cannot know about: the codegen fixture configuration
+      # and the docker build inputs exercised by docker-test.
+      #
+      # ⚠️ KEEP IDENTICAL to the extra-paths of go-test.yml -- see the rationale there.
+      # Diverging buckets leave codecov with a single upload while .codecov.yml waits for
+      # two, and it reports 0%.
+      extra-paths: |
+        hack/*.yaml
+        Dockerfile
+        .hadolint.yml
+
+  docker-test:
+    name: test docker build
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      tag_sha: true
+      pr: true
+
+  build-test:
+    # description: |
+    #   Make sure we build and run elementary operations.
+    #   The full test suite warrants support for the 2 latest go minor releases.
+    name: build test
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
+    strategy:
+      matrix:
+        go: ["oldstable", "stable"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      -
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      -
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: true
+      -
+        name: Build binary
+        run: |
+          go install ./cmd/swagger
+
+      -
+        name: Run validation tests
+        run: |
+          swagger validate testdata/bugs/2493/fixture-2492.json
+          swagger validate testdata/bugs/2493/fixture-2493.json
+          swagger validate testdata/bugs/2493/fixture-2492.yaml
+          swagger validate testdata/bugs/2493/fixture-2493.yaml
+          swagger validate testdata/bugs/2866/2866.yaml
+
+  codegen-test:
+    # description: |
+    #   Exercise go-swagger from the command line, with a bunch of specs
+    #   and several options (flatten/expand spec).
+    #
+    #   The test matrix applies to linux only. OS-specific quirks should
+    #   be covered by unit tests.
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
+    strategy:
+      matrix:
+        go: ["oldstable", "stable"]
+        os: [ubuntu-latest]
+        include:
+          - fixture: codegen-testdata # <- complex API specs to torture the code generator
+            args: "-skip-models -skip-full-flatten -custom-formatter"
+          - fixture: canary-testdata # <- popular real-life API specs
+            args: "-skip-models -skip-full-flatten -skip-expand -custom-formatter"
+    runs-on: ${{ matrix.os }}
+    env:
+      GOCOVERDIR: /tmp/cov
+    steps:
+      -
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      -
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: true
+      -
+        name: Install Tools
+        run: |
+          go mod download
+          # important, as the runner is tagged //go:build ignore, so its dependencies are not in the main go.mod
+          go get gotest.tools/v3/icmd@v3.5.2
+          mkdir /tmp/cov
+      -
+        name: Build binary with test coverage instrumentation
+        run: |
+          go install -a \
+             --ldflags "-s -w" \
+             -cover -covermode=atomic -coverpkg=$(go list)/... \
+             ./cmd/swagger
+      -
+        name: Run codegen tests
+        # limit test parallelism, as github runner may quickly get starved of memory
+        # when many builds are carried out in parallel. So GOMAXPROC should not be our
+        # ceiling here: the job is memory-bound.
+        run: >-
+          /usr/bin/time
+          go test -v -timeout 30m -p 1 -parallel 2
+          hack/codegen_nonreg_test.go
+          -args -fixture-file "${{ matrix.fixture }}.yaml" ${{ matrix.args }}
+      -
+        name: Construct coverage reports from integration tests
+        run: >-
+          go tool covdata textfmt
+          -i "${GOCOVERDIR}"
+          -o "codegen.coverage.${{ matrix.os }}-${{ matrix.go }}-${{ matrix.fixture }}.out"
+      -
+        name: Upload coverage artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          path: '**/codegen.coverage.*.out'
+          name: 'codegen.coverage.${{ matrix.os }}-${{ matrix.go }}'
+          retention-days: 1
+
+  collect-coverage:
+    # description: |
+    #   codegen-test produces coverage too (GOCOVERDIR + covdata textfmt), and that
+    #   artifact lives in THIS workflow run.
+    #
+    #   collect-coverage.yml downloads artifacts with "run-id: github.run_id", so the
+    #   "go test" run cannot see them: back when everything sat in one test.yaml a single
+    #   collect job caught both, but unit and integration tests are now separate workflows
+    #   and therefore separate runs. Integration coverage has to be collected here, or it
+    #   is uploaded as an artifact and silently never reaches codecov.
+    #
+    #   This is also the second of the two coverage uploads .codecov.yml waits for
+    #   ("after_n_builds: 2"). collect-reports does NOT count: it posts to the test
+    #   analytics endpoint (report_type: test_results), not as a coverage build.
+    #
+    #   Deliberately absent from integration-test-complete's "needs": codecov uploads are
+    #   flaky and must not gate a merge.
+    needs: [codegen-test]
+    if: ${{ !cancelled() && needs.codegen-test.result == 'success' }}
+    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@d2d2b54984441dbea93c5672174cd949c60b4fc5 # v0.5.3
+    secrets: inherit
+
+  integration-test-complete:
+    # description: |
+    #   This is the gate pinned in the branch protection rules, so it MUST report on every
+    #   run, including the runs where everything else was skipped.
+    #
+    #   Hence "always()" -- with the default condition the job would inherit the skip of its
+    #   dependencies and never report -- and an assertion on the negative: fail on 'failure'
+    #   and 'cancelled', pass on 'skipped'. A job correctly skipped is then indistinguishable
+    #   from a job that had nothing to do.
+    #
+    #   Every job belongs in "needs", "changes" included: a job skipped because ITS dependency
+    #   failed reports 'skipped', so leaving the failing one out would turn the gate green over
+    #   an untested pull request.
+    #
+    #   NOTE: this used to be "if: !cancelled()" with no assertion at all, which reported
+    #   success even when build-test failed.
+    name: Integration tests completed
+    needs: [changes, build-test, codegen-test, docker-test]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Report upstream job results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "::group::upstream job results"
+          printenv RESULTS
+          echo "::endgroup::"
+      -
+        name: Fail on any unsuccessful upstream job
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo "::error title=integration-tests::at least one job failed or was cancelled"
+          exit 1
+      -
+        name: Tests completed
+        run: |
+          echo "::notice title=Success::All integration tests passed"

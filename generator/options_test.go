@@ -16,7 +16,7 @@ func TestNewGenOpts_Presets(t *testing.T) {
 
 	t.Run("ForServer applies the standard server bundle", func(t *testing.T) {
 		g := NewGenOpts(ForServer(),
-			WithSpec(filepath.Join("..", "fixtures", "codegen", "simplesearch.yml")),
+			WithSpec(filepath.Join("..", "testdata", "codegen", "simplesearch.yml")),
 			WithTarget("."),
 		)
 

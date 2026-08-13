@@ -15,7 +15,7 @@ import (
 )
 
 func TestSimpleResponseRender(t *testing.T) {
-	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
+	b, err := opBuilder("updateTask", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -33,7 +33,7 @@ func TestSimpleResponseRender(t *testing.T) {
 }
 
 func TestDefaultResponseRender(t *testing.T) {
-	b, err := opBuilder("getAllParameters", "../fixtures/codegen/todolist.responses.yml")
+	b, err := opBuilder("getAllParameters", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -54,7 +54,7 @@ func TestDefaultResponseRender(t *testing.T) {
 }
 
 func TestSimpleResponses(t *testing.T) {
-	b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.responses.yml")
+	b, err := opBuilder("updateTask", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
@@ -90,7 +90,7 @@ func TestSimpleResponses(t *testing.T) {
 }
 
 func TestInlinedSchemaResponses(t *testing.T) {
-	b, err := opBuilder("getTasks", "../fixtures/codegen/todolist.responses.yml")
+	b, err := opBuilder("getTasks", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("getTasks")
@@ -127,7 +127,7 @@ func TestInlinedSchemaResponses(t *testing.T) {
 }
 
 func TestGenResponses_Issue540(t *testing.T) {
-	b, err := opBuilder("postPet", "../fixtures/bugs/540/swagger.yml")
+	b, err := opBuilder("postPet", "../testdata/bugs/540/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -145,7 +145,7 @@ func TestGenResponses_Issue540(t *testing.T) {
 }
 
 func TestGenResponses_Issue718_NotRequired(t *testing.T) {
-	b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
+	b, err := opBuilder("doEmpty", "../testdata/codegen/todolist.simple.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -164,7 +164,7 @@ func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 
 func TestGenResponses_Issue718_Required(t *testing.T) {
 	t.Run("should prepare operation builder", func(t *testing.T) {
-		b, err := opBuilder("doEmpty", "../fixtures/codegen/todolist.simple.yml")
+		b, err := opBuilder("doEmpty", "../testdata/codegen/todolist.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should build operation", func(t *testing.T) {
@@ -200,7 +200,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 func TestGenResponses_Issue776_Spec(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/spec.yaml")
+	b, err := opBuilderWithFlatten("GetItem", "../testdata/bugs/776/spec.yaml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -220,7 +220,7 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("getHealthy", "../fixtures/bugs/776/swagger-template.yml")
+	b, err := opBuilderWithFlatten("getHealthy", "../testdata/bugs/776/swagger-template.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -238,7 +238,7 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 func TestIssue846(t *testing.T) {
 	// do it 8 times, to ensure it's always in the same order
 	for range 8 {
-		b, err := opBuilder("getFoo", "../fixtures/bugs/846/swagger.yml")
+		b, err := opBuilder("getFoo", "../testdata/bugs/846/swagger.yml")
 		require.NoError(t, err)
 		op, err := b.MakeOperation()
 		require.NoError(t, err)
@@ -264,7 +264,7 @@ func TestIssue846(t *testing.T) {
 }
 
 func TestIssue881(t *testing.T) {
-	b, err := opBuilder("getFoo", "../fixtures/bugs/881/swagger.yml")
+	b, err := opBuilder("getFoo", "../testdata/bugs/881/swagger.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -273,7 +273,7 @@ func TestIssue881(t *testing.T) {
 }
 
 func TestIssue881Deep(t *testing.T) {
-	b, err := opBuilder("getFoo", "../fixtures/bugs/881/deep.yml")
+	b, err := opBuilder("getFoo", "../testdata/bugs/881/deep.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -282,7 +282,7 @@ func TestIssue881Deep(t *testing.T) {
 }
 
 func TestGenResponses_XGoName(t *testing.T) {
-	b, err := opBuilder("putTesting", "../fixtures/specs/response_name.json")
+	b, err := opBuilder("putTesting", "../testdata/specs/response_name.json")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -301,7 +301,7 @@ func TestGenResponses_XGoName(t *testing.T) {
 }
 
 func TestGenResponses_Issue892(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/media/search", "../fixtures/bugs/982/swagger.yaml")
+	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/bugs/982/swagger.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -318,7 +318,7 @@ func TestGenResponses_Issue892(t *testing.T) {
 }
 
 func TestGenResponses_Issue1013(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/test", "../fixtures/bugs/1013/fixture-1013.yaml")
+	b, err := methodPathOpBuilder("get", "/test", "../testdata/bugs/1013/fixture-1013.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -333,7 +333,7 @@ func TestGenResponses_Issue1013(t *testing.T) {
 	assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
 
 	buf.Reset()
-	b, err = methodPathOpBuilder("get", "/test2", "../fixtures/bugs/1013/fixture-1013.yaml")
+	b, err = methodPathOpBuilder("get", "/test2", "../testdata/bugs/1013/fixture-1013.yaml")
 	require.NoError(t, err)
 
 	op, err = b.MakeOperation()
@@ -377,7 +377,7 @@ func TestGenResponse_15362_WithExpand(t *testing.T) {
 	}
 
 	// assertParams also works for responses
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2-responses.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-2-responses.yaml"), true, false)
 }
 
 func TestGenResponse_1572(t *testing.T) {
@@ -495,7 +495,7 @@ func TestGenResponse_1572(t *testing.T) {
 	}
 
 	// assertParams also works for responses
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "1572", "fixture-1572.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "enhancements", "1572", "fixture-1572.yaml"), true, false)
 }
 
 func TestGenResponse_1893(t *testing.T) {
@@ -517,5 +517,5 @@ func TestGenResponse_1893(t *testing.T) {
 		},
 	}
 	// assertParams also works for responses
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1893", "fixture-1893.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1893", "fixture-1893.yaml"), true, false)
 }

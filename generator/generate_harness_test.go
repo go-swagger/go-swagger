@@ -51,9 +51,9 @@ func defaultClientOpts(t *testing.T, spec, target string) *GenOpts {
 // generate a server from spec and run a verify method provided by fixture entry.
 //
 // Optionally, a filter may be added to execute only the filtered keys in the map (e.g. debug mode).
-func testHarnessBuildServers(root string, fixtures map[string]generateFixture, filtered ...string) func(*testing.T) {
+func testHarnessBuildServers(root string, testdata map[string]generateFixture, filtered ...string) func(*testing.T) {
 	return func(t *testing.T) {
-		for name, cas := range filterMap(fixtures, filtered...) {
+		for name, cas := range filterMap(testdata, filtered...) {
 			thisCas := cas
 			thisName := name
 
@@ -90,9 +90,9 @@ func testHarnessBuildServers(root string, fixtures map[string]generateFixture, f
 	}
 }
 
-func testHarnessBuildClients(root string, fixtures map[string]generateFixture, filtered ...string) func(*testing.T) {
+func testHarnessBuildClients(root string, testdata map[string]generateFixture, filtered ...string) func(*testing.T) {
 	return func(t *testing.T) {
-		for name, cas := range filterMap(fixtures, filtered...) {
+		for name, cas := range filterMap(testdata, filtered...) {
 			thisCas := cas
 			thisName := name
 

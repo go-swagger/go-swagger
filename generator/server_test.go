@@ -21,14 +21,14 @@ import (
 )
 
 const (
-	invalidSpecExample = "../fixtures/bugs/825/swagger.yml"
+	invalidSpecExample = "../testdata/bugs/825/swagger.yml"
 	apiPkg             = "api"
 )
 
 func TestServer_UrlEncoded(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
+	gen, err := testAppGenerator(t, "../testdata/codegen/simplesearch.yml", "search")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -55,7 +55,7 @@ func TestServer_UrlEncoded(t *testing.T) {
 func TestServer_MultipartForm(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/codegen/shipyard.yml", "shipyard")
+	gen, err := testAppGenerator(t, "../testdata/codegen/shipyard.yml", "shipyard")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -81,7 +81,7 @@ func TestServer_MultipartForm(t *testing.T) {
 func TestServer_StreamingMultipartForm(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/codegen/streaming-form.yml", "streaming multipart")
+	gen, err := testAppGenerator(t, "../testdata/codegen/streaming-form.yml", "streaming multipart")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -112,7 +112,7 @@ func TestServer_InvalidSpec(t *testing.T) {
 func TestServer_TrailingSlash(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../testdata/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -130,7 +130,7 @@ func TestServer_TrailingSlash(t *testing.T) {
 func TestServer_Issue987(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/bugs/987/swagger.yml", "deeper consumes produces")
+	gen, err := testAppGenerator(t, "../testdata/bugs/987/swagger.yml", "deeper consumes produces")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -152,7 +152,7 @@ func TestServer_Issue987(t *testing.T) {
 func TestServer_FilterByTag(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
+	gen, err := testAppGenerator(t, "../testdata/codegen/simplesearch.yml", "search")
 	require.NoError(t, err)
 
 	gen.GenOpts.Tags = []string{"search"}
@@ -175,7 +175,7 @@ func TestServer_BadTemplate(t *testing.T) {
 
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../testdata/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -197,7 +197,7 @@ func TestServer_ErrorParsingTemplate(t *testing.T) {
 
 	badParse := `{{{ define "T1" }}T1{{end}}{{ define "T2" }}T2{{end}}`
 
-	gen, err := testAppGenerator(t, "../fixtures/bugs/899/swagger.yml", "trailing slash")
+	gen, err := testAppGenerator(t, "../testdata/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
 	require.Error(t, gen.GenOpts.templates.AddFile("badparse", badParse)) // template is not loaded
@@ -217,7 +217,7 @@ func TestServer_OperationGroups(t *testing.T) {
 		_ = os.RemoveAll(filepath.Join(".", "tasks"))
 	}()
 
-	gen, err := testAppGenerator(t, "../fixtures/codegen/simplesearch.yml", "search")
+	gen, err := testAppGenerator(t, "../testdata/codegen/simplesearch.yml", "search")
 	require.NoError(t, err)
 
 	gen.GenOpts.Tags = []string{"search", "tasks"}
@@ -267,7 +267,7 @@ func TestServer_OperationGroups(t *testing.T) {
 func TestServer_Issue1301(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/enhancements/1301/swagger.yml", "custom producers")
+	gen, err := testAppGenerator(t, "../testdata/enhancements/1301/swagger.yml", "custom producers")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -297,7 +297,7 @@ func TestServer_Issue1301(t *testing.T) {
 func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/enhancements/2108/swagger.yml", "pre server shutdown")
+	gen, err := testAppGenerator(t, "../testdata/enhancements/2108/swagger.yml", "pre server shutdown")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -328,7 +328,7 @@ func TestServer_PreServerShutdown_Issue2108(t *testing.T) {
 func TestServer_Issue1557(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/enhancements/1557/swagger.yml", "generate consumer/producer handlers that are not whitelisted")
+	gen, err := testAppGenerator(t, "../testdata/enhancements/1557/swagger.yml", "generate consumer/producer handlers that are not whitelisted")
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
@@ -356,7 +356,7 @@ func TestServer_Issue1557(t *testing.T) {
 func TestServer_Issue1648(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := testAppGenerator(t, "../fixtures/bugs/1648/fixture-1648.yaml", "generate format with missing type in model")
+	gen, err := testAppGenerator(t, "../testdata/bugs/1648/fixture-1648.yaml", "generate format with missing type in model")
 	require.NoError(t, err)
 
 	_, err = gen.makeCodegenApp()
@@ -366,7 +366,7 @@ func TestServer_Issue1648(t *testing.T) {
 func TestServer_Issue1746(t *testing.T) {
 	defer discardOutput()()
 
-	specPath, err := filepath.Abs(filepath.Join("..", "fixtures"))
+	specPath, err := filepath.Abs(filepath.Join("..", "testdata"))
 	require.NoError(t, err)
 
 	targetdir := t.TempDir()
@@ -402,13 +402,13 @@ func TestServer_Issue1816(t *testing.T) {
 
 	t.Run("should resolve $ref from embedded spec correctly", func(t *testing.T) {
 		// fixed regression: gob encoding in $ref
-		res := doGenAppTemplate(t, "../fixtures/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
+		res := doGenAppTemplate(t, "../testdata/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
 		assertNotInCode(t, `"$ref": "#"`, res)
 	})
 
 	t.Run("should resolve security requirements from embedded spec correctly", func(t *testing.T) {
 		// fixed regression: gob encoding in operation security requirements
-		res := doGenAppTemplate(t, "../fixtures/bugs/1824/swagger.json", "swaggerJsonEmbed")
+		res := doGenAppTemplate(t, "../testdata/bugs/1824/swagger.json", "swaggerJsonEmbed")
 		assertInCode(t, `"api_key": []`, res)
 		assertNotInCode(t, `"api_key": null`, res)
 	})
@@ -416,7 +416,7 @@ func TestServer_Issue1816(t *testing.T) {
 
 func TestServer_Issue2346(t *testing.T) {
 	defer discardOutput()()
-	specPath, err := filepath.Abs(filepath.Join("..", "fixtures"))
+	specPath, err := filepath.Abs(filepath.Join("..", "testdata"))
 	require.NoError(t, err)
 
 	targetdir := t.TempDir()

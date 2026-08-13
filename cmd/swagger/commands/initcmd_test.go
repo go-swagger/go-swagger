@@ -18,5 +18,5 @@ func TestMain(m *testing.M) {
 }
 
 func fixtureBase() string {
-	return filepath.FromSlash("../../../fixtures")
+	return filepath.FromSlash("../../../testdata")
 }

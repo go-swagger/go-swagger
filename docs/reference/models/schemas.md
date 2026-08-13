@@ -1062,7 +1062,7 @@ definitions:
     x-go-type:
       type: Hotspot
       import:
-        package: github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external
+        package: github.com/go-swagger/go-swagger/testdata/enhancements/2224/external
       hints:
         kind: object
     x-nullable: true

@@ -137,7 +137,7 @@ func generateDefinitions(t *testing.T, s *SpecFile) map[string]any {
 // actually reach codescan and drop the unreferenced model. Asserting on-vs-off guards against a
 // vacuous pass (the fixture must genuinely carry an orphan to prune).
 func TestSpecFileExecuteRespectsPruneUnusedModels(t *testing.T) {
-	const workDir = "../../../../fixtures/enhancements/prune-unused"
+	const workDir = "../../../../testdata/enhancements/prune-unused"
 
 	off := generateDefinitions(t, &SpecFile{WorkDir: workDir, ScanModels: true})
 	require.Contains(t, off, "Used")
@@ -152,7 +152,7 @@ func TestSpecFileExecuteRespectsPruneUnusedModels(t *testing.T) {
 // --default-allof-embeds flag must flip a plain embed from inlined properties to an allOf
 // composition. Asserting on-vs-off guards against a vacuous pass.
 func TestSpecFileExecuteRespectsDefaultAllOfForEmbeds(t *testing.T) {
-	const workDir = "../../../../fixtures/enhancements/default-allof-embeds"
+	const workDir = "../../../../testdata/enhancements/default-allof-embeds"
 
 	off := generateDefinitions(t, &SpecFile{WorkDir: workDir, ScanModels: true})
 	derivedOff, ok := off["Derived"].(map[string]any)
