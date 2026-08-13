@@ -136,7 +136,6 @@ func (m *definitionGenerator) Generate() error {
 }
 
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
-	debugLogf("rendering definitions for %+v", *g)
 	return newRenderer(m.opts).renderDefinition(g)
 }
 
@@ -501,7 +500,6 @@ type schemaGenContext struct {
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
-	debugLogf("new slice branch %s (model: %s)", sg.Name, sg.TypeResolver.ModelName)
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	if pg.Path == "" {
@@ -535,8 +533,6 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 }
 
 func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenContext {
-	debugLogf("new additional items\n")
-
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
 	pg.Name = sg.Name + " items"
@@ -564,8 +560,6 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 }
 
 func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *schemaGenContext {
-	debugLogf("New tuple element\n")
-
 	pg := sg.shallowClone()
 	if pg.Path == "" {
 		pg.Path = "\"" + strconv.Itoa(index) + "\""
@@ -582,7 +576,6 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 }
 
 func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *schemaGenContext {
-	debugLogf("new struct branch %s (parent %s)", sg.Name, sg.Container)
 	pg := sg.shallowClone()
 	if sg.Path == "" {
 		pg.Path = fmt.Sprintf("%q", name)
@@ -596,12 +589,10 @@ func (sg *schemaGenContext) NewStructBranch(name string, schema spec.Schema) *sc
 	if slices.Contains(sg.Schema.Required, name) {
 		pg.Required = true
 	}
-	debugLogf("made new struct branch %s (parent %s)", pg.Name, pg.Container)
 	return pg
 }
 
 func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) *schemaGenContext {
-	debugLogf("new composition branch %s (parent: %s, index: %d)", sg.Name, sg.Container, index)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	pg.Name = "AO" + strconv.Itoa(index)
@@ -609,12 +600,10 @@ func (sg *schemaGenContext) NewCompositionBranch(schema spec.Schema, index int) 
 		pg.Name = sg.Name + pg.Name
 	}
 	pg.Index = index
-	debugLogf("made new composition branch %s (parent: %s)", pg.Name, pg.Container)
 	return pg
 }
 
 func (sg *schemaGenContext) NewAdditionalProperty(schema spec.Schema) *schemaGenContext {
-	debugLogf("new additional property %s (expr: %s)", sg.Name, sg.ValueExpr)
 	pg := sg.shallowClone()
 	pg.Schema = schema
 	if pg.KeyVar == "" {
@@ -669,7 +658,6 @@ func (sg *schemaGenContext) GoName() string {
 }
 
 func (sg *schemaGenContext) shallowClone() *schemaGenContext {
-	debugLogf("cloning context %s\n", sg.Name)
 	pg := new(schemaGenContext)
 	*pg = *sg
 	if pg.Container == "" {
@@ -709,12 +697,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 
 //nolint:gocognit,gocyclo,cyclop,maintidx // TODO(fredbi): refactor
 func (sg *schemaGenContext) buildProperties() error {
-	debugLogf("building properties %s (parent: %s)", sg.Name, sg.Container)
-
 	for k, v := range sg.Schema.Properties {
-		debugLogAsJSONf("building property %s[%q] (IsTuple: %t) (IsBaseType: %t) (HasValidations: %t)",
-			sg.Name, k, sg.IsTuple, sg.GenSchema.IsBaseType, sg.GenSchema.HasValidations, v)
-
 		vv := v
 
 		// check if this requires de-anonymizing, if so lift this as a new struct and extra schema
@@ -899,7 +882,6 @@ func (sg *schemaGenContext) buildAllOf() error {
 	if sg.Container == "" {
 		sg.Container = sg.Name
 	}
-	debugLogAsJSONf("building all of for %d entries", len(sg.Schema.AllOf), sg.Schema)
 	for i, schema := range sg.Schema.AllOf {
 		sch := schema
 		tpe, ert := sg.TypeResolver.ResolveSchema(&sch, sch.Ref.String() == "", false)
@@ -916,14 +898,12 @@ func (sg *schemaGenContext) buildAllOf() error {
 		} else {
 			hasNonArray++
 		}
-		debugLogAsJSONf("trying", sch)
 		if (tpe.IsAnonymous && len(sch.AllOf) > 0) || (sch.Ref.String() == "" && !tpe.IsComplexObject && (tpe.IsArray || tpe.IsInterface || tpe.IsPrimitive)) {
 			// cases where anonymous structures cause the creation of a new type:
 			// - nested allOf: this one is itself a AllOf: build a new type for it
 			// - anonymous simple types for edge cases: array, primitive, any
 			// NOTE: when branches are aliased or anonymous, the nullable property in the branch type is lost.
 			name := sg.mangler.ToVarName(goName(&sch, sg.makeRefName()+"AllOf"+strconv.Itoa(i)))
-			debugLogf("building anonymous nested allOf in %s: %s", sg.Name, name)
 			ng := sg.makeNewStruct(name, sch)
 			if err := ng.makeGenSchema(); err != nil {
 				return err
@@ -1043,7 +1023,6 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			}
 			sg.MergeResult(cp, false)
 			sg.GenSchema.AdditionalProperties = &cp.GenSchema
-			debugLogf("added any schema for additionalProperties[allows == true], IsInterface=%t", cp.GenSchema.IsInterface)
 		}
 		return nil
 	}
@@ -1175,7 +1154,6 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 }
 
 func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *schemaGenContext {
-	debugLogf("making new struct: name: %s, container: %s", name, sg.Container)
 	sp := sg.TypeResolver.Doc.Spec()
 	name = sg.mangler.ToGoName(name)
 	if sg.TypeResolver.ModelName != sg.Name {
@@ -1459,7 +1437,6 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 	if !sg.Named || sg.Schema.Ref.String() == "" {
 		return false, nil
 	}
-	debugLogAsJSONf("short circuit named ref: %q", sg.Schema.Ref.String(), sg.Schema)
 
 	// Simple aliased types (arrays, maps and primitives)
 	//
@@ -1602,7 +1579,6 @@ func (sg *schemaGenContext) liftSpecialAllOf() error {
 
 	if seenSchema == 1 {
 		// when there only a single schema to lift in allOf, replace the schema by its allOf definition
-		debugLogf("lifted schema in allOf for %s", sg.Name)
 		sg.Schema = schemaToLift
 		sg.GenSchema.IsNullable = seenNullable
 	}
@@ -1726,9 +1702,6 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 
 //nolint:gocognit,gocyclo,cyclop,maintidx // TODO(fredbi): refactor
 func (sg *schemaGenContext) makeGenSchema() error {
-	debugLogAsJSONf("making gen schema (anon: %t, req: %t, tuple: %t) %s\n",
-		!sg.Named, sg.Required, sg.IsTuple, sg.Name, sg.Schema)
-
 	sg.GenSchema.Example = ""
 	if sg.Schema.Example != nil {
 		data, err := sg.jsonify(sg.Schema.Example)
@@ -1774,13 +1747,11 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		// short circuited on a resolved $ref
 		return nil
 	}
-	debugLogAsJSONf("after short circuit named ref", sg.Schema)
 
 	if e := sg.liftSpecialAllOf(); e != nil {
 		return e
 	}
 	nullableOverride := sg.GenSchema.IsNullable
-	debugLogAsJSONf("after lifting special all of", sg.Schema)
 
 	if sg.Container == "" {
 		sg.Container = sg.GenSchema.Name
@@ -1799,7 +1770,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return err
 	}
 
-	debugLogf("gschema rrequired: %t, nullable: %t", sg.GenSchema.Required, sg.GenSchema.IsNullable)
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsBaseType = tpe.IsBaseType
@@ -1841,7 +1811,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 		return errors.New("ERROR: inline definitions embedded types are not supported")
 	}
 
-	debugLogf("gschema nullable: %t", sg.GenSchema.IsNullable)
 	if e := sg.buildAdditionalProperties(); e != nil {
 		return e
 	}
@@ -1855,18 +1824,13 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	prev := sg.GenSchema
 	if sg.Untyped {
-		debugLogAsJSONf("untyped resolve:%t", sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.Schema)
 		tpe, err = sg.TypeResolver.ResolveSchema(nil, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	} else {
-		debugLogAsJSONf("typed resolve, isAnonymous(%t), n: %t, t: %t, sgr: %t, sr: %t, isRequired(%t), BaseType(%t)",
-			!sg.Named, sg.Named, sg.IsTuple, sg.Required, sg.GenSchema.Required,
-			sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required, sg.GenSchema.IsBaseType, sg.Schema)
 		tpe, err = sg.TypeResolver.ResolveSchema(&sg.Schema, !sg.Named, sg.Named || sg.IsTuple || sg.Required || sg.GenSchema.Required)
 	}
 	if err != nil {
 		return err
 	}
-	otn := tpe.IsNullable // for debug only
 	tpe.IsNullable = tpe.IsNullable || nullableOverride
 	sg.GenSchema.resolvedType = tpe
 	sg.GenSchema.IsComplexObject = prev.IsComplexObject
@@ -1876,8 +1840,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.IsElem = prev.IsElem
 	sg.GenSchema.IsProperty = prev.IsProperty
 
-	debugLogAsJSONf("gschema nnullable:IsNullable:%t,resolver.IsNullable:%t,nullableOverride:%t",
-		sg.GenSchema.IsNullable, otn, nullableOverride, sg.Schema)
 	if err := sg.buildProperties(); err != nil {
 		return err
 	}
@@ -1922,8 +1884,6 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	// MarshalBinary (see issue #872).
 	sg.GenSchema.WantsStringer = sg.WantsStringer && !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
 		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties)
-
-	debugLogf("finished gen schema for %q", sg.Name)
 
 	return nil
 }

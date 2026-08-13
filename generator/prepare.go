@@ -98,7 +98,7 @@ func (g *GenOpts) validate() error {
 // times it is reached (the second call is a no-op).
 //
 // Failure to load the embedded default assets is a build-time impossibility and
-// is treated as fatal, hence the absence of an error return.
+// is treated as a panic, hence the absence of an error return.
 func (g *GenOpts) buildMachinery() {
 	if g.machineryBuilt {
 		return
@@ -111,7 +111,9 @@ func (g *GenOpts) buildMachinery() {
 	g.funcMap = DefaultFuncMap(g.LanguageOpts)
 	g.templates = templatesrepo.NewRepository(g.funcMap)
 	if err := g.templates.LoadDefaults(defaultAssets()); err != nil {
-		fatal(fmt.Errorf("cannot load default assets: %w", err))
+		panic(
+			fmt.Errorf("cannot load default assets: %w", err),
+		)
 	}
 	g.templates.SetProtectedTemplates(defaultProtectedTemplates())
 
