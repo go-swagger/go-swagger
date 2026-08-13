@@ -1359,7 +1359,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
 	assertInCode(t, "dec := json.NewDecoder(buf)", res)
-	assertInCode(t, "dec.Decode(toadd)", res)
+	assertInCode(t, "dec.Decode(&toadd)", res)
 	assertInCode(t, "json.Marshal(data)", res)
 	assertInCode(t, "for _, v := range m."+k+"Items", res)
 }
@@ -2286,6 +2286,41 @@ func TestGenModel_Issue1409(t *testing.T) {
 	assertInCode(t, `if err := json.Unmarshal(raw, &rawProps); err != nil {`, res)
 	assertInCode(t, `m.GraphAdditionalProperties[k] = toadd`, res)
 	assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
+}
+
+// This tests that additionalProperties whose schema resolves as a pointer type
+// (a $ref to an object, rendered as *HalHref by the "schemaType" template)
+// unmarshals into a non-nil target. Passing the address of the local pointer
+// variable (&toadd, i.e. **HalHref) is the correct, safe pattern: encoding/json
+// allocates through arbitrary pointer depth, so the map value ends up as the
+// expected single-level *HalHref, never a double pointer.
+func TestGenModel_Issue1632(t *testing.T) {
+	specDoc, err := loads.Spec("../fixtures/bugs/1632/fixture-1632.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "HalRscLinks"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// The additionalProperties element type is nullable (a $ref), so the local
+	// variable is already declared as a pointer ...
+	assertInCode(t, "var toadd *HalHref", res)
+	// ... and the address is always taken unconditionally, never passing the
+	// nil pointer itself to json.Unmarshal.
+	assertInCode(t, "if err := json.Unmarshal(v, &toadd); err != nil {", res)
+	assertInCode(t, "result[k] = toadd", res)
+	// The field itself stays a single-level pointer map, not a double pointer.
+	assertInCode(t, "HalRscLinks map[string]*HalHref", res)
 }
 
 // This tests that a model with a discriminator doesn't validation if the field is zero.
