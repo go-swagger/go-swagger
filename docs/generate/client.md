@@ -141,8 +141,8 @@ Help Options:
           --allow-template-override                                               allows overriding protected templates
           --skip-validation                                                       skips validation of spec prior to generation
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
-          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
+          --with-expand                                                           expands all $ref's in the spec (shorthand to --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in the spec (default: minimal, verbose)
           --with-custom-formatter                                                 use faster custom contributed go import processing instead of the standard one
 
 

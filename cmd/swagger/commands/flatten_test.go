@@ -78,6 +78,36 @@ func TestCmd_FlattenKeepNames_Issue2334(t *testing.T) {
 	require.StringContainsT(t, spec, "Baz:")
 }
 
+// TestCmd_FlattenFlags asserts that the flatten command does not offer --with-custom-formatter:
+// it selects a go import processor, and this command writes a spec.
+func TestCmd_FlattenFlags(t *testing.T) {
+	_, err := flags.ParseArgs(&FlattenSpec{}, []string{"--with-flatten=full"})
+	require.NoError(t, err)
+
+	_, err = flags.ParseArgs(&FlattenSpec{}, []string{"--with-custom-formatter"})
+	require.Error(t, err)
+}
+
+// TestCmd_SpecArgumentUsage asserts that the commands taking their spec as an argument say so in
+// their usage line, instead of leaving the bare "[<command>-OPTIONS]" placeholder.
+func TestCmd_SpecArgumentUsage(t *testing.T) {
+	for _, toPin := range []struct {
+		name     string
+		usager   interface{ Usage() string }
+		expected string
+	}{
+		{name: "flatten", usager: FlattenSpec{}, expected: "[flatten-OPTIONS] {spec}"},
+		{name: "expand", usager: ExpandSpec{}, expected: "[expand-OPTIONS] {spec}"},
+		{name: "validate", usager: ValidateSpec{}, expected: "[validate-OPTIONS] {spec}"},
+		{name: "mixin", usager: MixinSpec{}, expected: "[mixin-OPTIONS] {primary spec} {mixin spec}..."},
+	} {
+		tc := toPin
+		t.Run(tc.name, func(t *testing.T) {
+			assert.EqualT(t, tc.expected, tc.usager.Usage())
+		})
+	}
+}
+
 func testValidRefs(t *testing.T, v executable) {
 	t.Helper()
 

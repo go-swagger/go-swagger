@@ -15,7 +15,7 @@ To validate a specification:
 
 ```
 Usage:
-  swagger [OPTIONS] validate [validate-OPTIONS]
+  swagger [OPTIONS] validate [validate-OPTIONS] {spec}
 
 validate the provided swagger document against a swagger spec
 

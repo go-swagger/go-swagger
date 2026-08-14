@@ -254,6 +254,10 @@ func (a *appGenerator) GenerateMarkdown() error {
 		return err
 	}
 
+	if a.DumpData {
+		return dumpData(os.Stdout, app)
+	}
+
 	return newRenderer(a.GenOpts).renderApplication(&app)
 }
 

@@ -25,10 +25,10 @@ Help Options:
           --accept-definitions-only                                               accepts a partial swagger spec wih only the definitions key
 
     Options common to all code generation commands:
-          --with-expand                                                                      expands all $ref's in spec prior to generation (shorthand
-                                                                                             to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused|keep-names]    flattens all $ref's in spec prior to generation (default:
-                                                                                             minimal, verbose)
+          --with-expand                                                                      expands all $ref's in the spec (shorthand to
+                                                                                             --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused|keep-names]    flattens all $ref's in the spec (default: minimal,
+                                                                                             verbose)
           --with-custom-formatter                                                            use faster custom contributed go import processing
                                                                                              instead of the standard one
       -f, --spec=                                                                            the spec file to use (default swagger.{json,yml,yaml})
