@@ -126,6 +126,14 @@ func (w WithShared) getConfigFile() string {
 	return string(w.Shared.ConfigFile)
 }
 
+// usageWithSpec builds the usage line of a code generation command, which takes the spec
+// either with --spec or as its single argument.
+//
+// It replaces the "[<command>-OPTIONS]" placeholder the flags parser renders by default.
+func usageWithSpec(command string) string {
+	return fmt.Sprintf("[%s-OPTIONS] [spec]", command)
+}
+
 type sharedOptionsCommon struct {
 	FlattenCmdOptions
 
@@ -177,7 +185,35 @@ func setCopyright(copyrightFile string) (string, error) {
 	return string(bytebuffer), nil
 }
 
-func createSwagger(s sharedCommand) error {
+// specFromArgs resolves the spec passed as a command line argument.
+//
+// Code generation commands accept the spec either with --spec (-f) or as a single
+// argument, like the validate, expand, flatten, mixin and diff commands do.
+func specFromArgs(opts *generator.GenOpts, args []string) error {
+	switch {
+	case len(args) == 0:
+		return nil
+
+	case len(args) > 1:
+		return fmt.Errorf(
+			"too many arguments: this command takes at most one swagger spec, but got %d: %v",
+			len(args), args,
+		)
+
+	case opts.Spec != "":
+		return fmt.Errorf(
+			"the swagger spec is specified twice: as --spec %q and as the argument %q. Use one or the other",
+			opts.Spec, args[0],
+		)
+
+	default:
+		opts.Spec = args[0]
+
+		return nil
+	}
+}
+
+func createSwagger(s sharedCommand, args []string) error {
 	var (
 		cfg *viper.Viper
 		err error
@@ -197,6 +233,10 @@ func createSwagger(s sharedCommand) error {
 	// finalizes the options in Prepare.
 	opts := generator.NewGenOpts(generator.WithViper(cfg))
 	s.apply(opts)
+
+	if err = specFromArgs(opts, args); err != nil {
+		return err
+	}
 
 	opts.Copyright, err = setCopyright(opts.Copyright)
 	if err != nil {

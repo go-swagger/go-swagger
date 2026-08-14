@@ -47,9 +47,14 @@ type Server struct {
 	WithContext bool `description:"handlers get a context as first arg (deprecated)" long:"with-context"`
 }
 
+// Usage documents the spec argument in the help message.
+func (s Server) Usage() string {
+	return usageWithSpec("server")
+}
+
 // Execute runs this command.
-func (s *Server) Execute(_ []string) error {
-	return createSwagger(s)
+func (s *Server) Execute(args []string) error {
+	return createSwagger(s, args)
 }
 
 // apply options.
