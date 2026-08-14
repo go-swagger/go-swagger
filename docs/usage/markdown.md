@@ -24,7 +24,7 @@ Known limitations:
 
 ```
 Usage:
-  swagger [OPTIONS] generate markdown [markdown-OPTIONS]
+  swagger [OPTIONS] generate markdown [markdown-OPTIONS] [spec]
 
 generate a markdown representation from the swagger spec
 

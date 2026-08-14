@@ -55,8 +55,13 @@ type Model struct {
 	AcceptDefinitionsOnly bool     `description:"accepts a partial swagger spec with only the definitions key"                   long:"accept-definitions-only"`
 }
 
+// Usage documents the spec argument in the help message.
+func (m Model) Usage() string {
+	return usageWithSpec("model")
+}
+
 // Execute generates a model file.
-func (m *Model) Execute(_ []string) error {
+func (m *Model) Execute(args []string) error {
 	if m.Shared.DumpData && len(append(m.Name, m.Models.Models...)) > 1 {
 		return errors.New("only 1 model at a time is supported for dumping data")
 	}
@@ -64,7 +69,7 @@ func (m *Model) Execute(_ []string) error {
 	if m.Models.ExistingModels != "" {
 		log.Println("warning: Ignoring existing-models flag when generating models.")
 	}
-	return createSwagger(m)
+	return createSwagger(m, args)
 }
 
 // apply options.

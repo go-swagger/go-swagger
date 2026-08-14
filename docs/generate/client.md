@@ -109,7 +109,7 @@ func main() {
 
 ```
 Usage:
-  swagger [OPTIONS] generate client [client-OPTIONS]
+  swagger [OPTIONS] generate client [client-OPTIONS] [spec]
 
 generate all the files for a client library
 
