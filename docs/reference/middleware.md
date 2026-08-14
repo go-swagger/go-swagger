@@ -78,23 +78,24 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 }
 ```
 
-There are tons of middlewares out there, some are framework specific and some frameworks don't really use the plain
-vanilla golang net/http as base abstraction. For those you can use a project like [interpose](https://github.com/carbocation/interpose) that serves as an adapter
-layer so you can still reuse middlewares. Of course nobody is stopping you to just implement your own middlewares.
-
-For example using interpose to integrate with [logrus](https://github.com/carbocation/interpose/blob/master/middleware/negronilogrus.go).
+Middleware that follows the `net/http` pattern can be used directly. You can also write a small adapter for
+framework-specific behavior. For example, this request logger uses only the standard library:
 
 ```go
-import (
-  interpose "github.com/carbocation/interpose/middleware"
-)
+func logRequest(handler http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    started := time.Now()
+    handler.ServeHTTP(w, r)
+    log.Printf("%s %s completed in %s", r.Method, r.URL.Path, time.Since(started))
+  })
+}
+
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-  logViaLogrus := interpose.NegroniLogrus()
-  return logViaLogrus(handler)
+  return logRequest(handler)
 }
 ```
 
-And you can compose these middlewares into a stack using functions.
+You can compose these middlewares into a stack using functions.
 
 ```go
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
@@ -102,13 +103,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
     Log: log.Print,
   })
 
-  logViaLogrus := interpose.NegroniLogrus()
-
-  return handlePanic(
-    logViaLogrus(
-      handler
-    )
-  )
+  return handlePanic(logRequest(handler))
 }
 ```
 
