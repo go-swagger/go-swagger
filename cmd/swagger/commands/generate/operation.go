@@ -52,13 +52,18 @@ type Operation struct {
 	Name []string `description:"the operations to generate, repeat for multiple (defaults to all). Same as --operations" long:"name" short:"n"`
 }
 
+// Usage documents the spec argument in the help message.
+func (o Operation) Usage() string {
+	return usageWithSpec("operation")
+}
+
 // Execute generates a model file.
-func (o *Operation) Execute(_ []string) error {
+func (o *Operation) Execute(args []string) error {
 	if o.Shared.DumpData && len(append(o.Name, o.Operations.Operations...)) > 1 {
 		return errors.New("only 1 operation at a time is supported for dumping data")
 	}
 
-	return createSwagger(o)
+	return createSwagger(o, args)
 }
 
 // apply options.

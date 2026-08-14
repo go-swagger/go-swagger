@@ -36,6 +36,21 @@ Available commands:
   support    generate supporting files like the main function and the api builder
 ```
 
+### Specifying the spec
+
+Every generation command but `spec` takes the swagger document either with the `--spec` (`-f`) flag or as its
+single argument, like `validate`, `expand`, `flatten`, `mixin` and `diff` do:
+
+```sh
+swagger generate markdown ./api/swagger.yml
+swagger generate markdown --spec ./api/swagger.yml
+```
+
+Specifying it both ways at once, or passing more than one argument, is an error.
+When neither is given, `swagger.json`, `swagger.yml` and `swagger.yaml` are looked up in the current directory.
+
+The `spec` command is the exception: it generates a spec _from_ Go source, so its arguments are the packages to scan.
+
 For code generation targets (`cli`, `client`, `model`, `operation`, `server`, `support`), read more [here](../generate/).
 
 For spec generation targets (`spec`), read more [there](../generate-spec/).

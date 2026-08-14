@@ -21,7 +21,7 @@ You can provide your own router implementation should you so desire it's abstrac
 
 ```
 Usage:
-  swagger [OPTIONS] generate server [server-OPTIONS]
+  swagger [OPTIONS] generate server [server-OPTIONS] [spec]
 
 generate all the files for a server application
 

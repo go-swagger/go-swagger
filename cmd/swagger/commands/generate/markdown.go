@@ -18,9 +18,14 @@ type Markdown struct {
 	Output flags.Filename `default:"markdown.md" description:"the file to write the generated markdown." long:"output" short:""`
 }
 
+// Usage documents the spec argument in the help message.
+func (m Markdown) Usage() string {
+	return usageWithSpec("markdown")
+}
+
 // Execute runs this command.
-func (m *Markdown) Execute(_ []string) error {
-	return createSwagger(m)
+func (m *Markdown) Execute(args []string) error {
+	return createSwagger(m, args)
 }
 
 // apply options.

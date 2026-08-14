@@ -15,7 +15,7 @@ This toolkit can generate a CLI to interact with your server
 ### CLI usage
 ```
 Usage:
-  swagger [OPTIONS] generate cli [cli-OPTIONS]
+  swagger [OPTIONS] generate cli [cli-OPTIONS] [spec]
 
 generate a command line client tool from the swagger spec
 

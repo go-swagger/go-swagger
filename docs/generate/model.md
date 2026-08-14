@@ -9,7 +9,7 @@ weight: 40
 
 ```
 Usage:
-  swagger [OPTIONS] generate model [model-OPTIONS]
+  swagger [OPTIONS] generate model [model-OPTIONS] [spec]
 
 generate one or more models from the swagger spec
 

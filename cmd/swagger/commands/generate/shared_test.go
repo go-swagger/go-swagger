@@ -13,6 +13,8 @@ import (
 	"github.com/go-openapi/testify/v2/require"
 
 	"github.com/go-openapi/analysis"
+
+	"github.com/go-swagger/go-swagger/generator"
 )
 
 func TestMain(m *testing.M) {
@@ -167,6 +169,37 @@ other: abc
 			}
 		})
 	}
+}
+
+func Test_Shared_SpecFromArgs(t *testing.T) {
+	t.Run("without argument, the spec should be left untouched", func(t *testing.T) {
+		opts := &generator.GenOpts{Spec: "swagger.yaml"}
+		require.NoError(t, specFromArgs(opts, nil))
+		assert.Equal(t, "swagger.yaml", opts.Spec)
+	})
+
+	t.Run("a single argument should be taken as the spec", func(t *testing.T) {
+		opts := &generator.GenOpts{}
+		require.NoError(t, specFromArgs(opts, []string{"swagger.yaml"}))
+		assert.Equal(t, "swagger.yaml", opts.Spec)
+	})
+
+	t.Run("the spec should not be specified twice", func(t *testing.T) {
+		opts := &generator.GenOpts{Spec: "flagged.yaml"}
+		err := specFromArgs(opts, []string{"argued.yaml"})
+		require.Error(t, err)
+		assert.StringContainsT(t, err.Error(), "flagged.yaml")
+		assert.StringContainsT(t, err.Error(), "argued.yaml")
+		assert.Equal(t, "flagged.yaml", opts.Spec)
+	})
+
+	t.Run("extra arguments should be rejected", func(t *testing.T) {
+		opts := &generator.GenOpts{}
+		err := specFromArgs(opts, []string{"swagger.yaml", "extra.yaml"})
+		require.Error(t, err)
+		assert.StringContainsT(t, err.Error(), "too many arguments")
+		assert.Empty(t, opts.Spec)
+	})
 }
 
 func resetDefaultOpts() *analysis.FlattenOpts {
