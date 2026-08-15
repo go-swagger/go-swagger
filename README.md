@@ -23,6 +23,7 @@ It provide tools to work with swagger specifications.
 
 You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
 
+* **2026-08-15** : Docker image users - shipping **v0.36.4 to address critical vulnerability in golang**
 * **2026-08-11** : v0.36.3 lands soon (ETA 08/14)
   * codegen fixes
   * spec gen updates deferred to v0.36.4 (~ 08/21: faster scanner, enhanced TUI tool)
