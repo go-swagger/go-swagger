@@ -2929,3 +2929,98 @@ func TestIssue872(t *testing.T) {
 		assertNotInCode(t, "func (m *ModelError) String() string {", res)
 	})
 }
+
+// TestGenerateGetters covers the opt-in Get<Field> methods on generated models.
+//
+// The --generate-getters flag emits a getter for each property of a model struct,
+// returning the field value by its declared type. This test exercises the variety
+// of return types (scalar, pointer, slice, date-time, nested struct) and asserts
+// that the default output is unchanged when the option is not set.
+func TestGenerateGetters(t *testing.T) {
+	specDoc, err := loads.Spec("../testdata/enhancements/generate-getters/fixture.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	const model = "GetterModel"
+
+	render := func(t *testing.T, opts *GenOpts) string {
+		t.Helper()
+
+		genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+		require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+		return string(ct)
+	}
+
+	t.Run("with WantsGetters option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsGetters = true
+
+		res := render(t, opts)
+
+		// each non-base-type property gets a Get<Field> getter with a pointer receiver
+		// and the field's declared type. The Go formatter expands the one-liner body
+		// to multi-line, so we assert on the signature + return statement separately.
+
+		// scalar types: int64, bool, float32
+		assertInCode(t, "func (m *GetterModel) GetID() int64 {", res)
+		assertInCode(t, "return m.ID", res)
+		assertInCode(t, "func (m *GetterModel) GetActive() bool {", res)
+		assertInCode(t, "return m.Active", res)
+		assertInCode(t, "func (m *GetterModel) GetRatio() float32 {", res)
+		assertInCode(t, "return m.Ratio", res)
+
+		// required string -> pointer
+		assertInCode(t, "func (m *GetterModel) GetName() *string {", res)
+		assertInCode(t, "return m.Name", res)
+
+		// slice
+		assertInCode(t, "func (m *GetterModel) GetTags() []string {", res)
+		assertInCode(t, "return m.Tags", res)
+
+		// date-time format -> strfmt.DateTime
+		assertInCode(t, "func (m *GetterModel) GetWhen() strfmt.DateTime {", res)
+		assertInCode(t, "return m.When", res)
+
+		// nested struct -> pointer
+		assertInCode(t, "func (m *GetterModel) GetChild() *Child {", res)
+		assertInCode(t, "return m.Child", res)
+
+		// map (additionalProperties) -> map[string]string
+		assertInCode(t, "func (m *GetterModel) GetMetadata() map[string]string {", res)
+		assertInCode(t, "return m.Metadata", res)
+
+		// polymorphic base-type property: the existing polymorphic path generates
+		// a getter WITHOUT the "Get" prefix (and a setter). Our --generate-getters
+		// block must NOT emit a duplicate "GetPet" getter for this property.
+		assertInCode(t, "func (m *GetterModel) Pet() Pet {", res)
+		assertInCode(t, "func (m *GetterModel) SetPet(val Pet) {", res)
+		assertNotInCode(t, "func (m *GetterModel) GetPet(", res)
+	})
+
+	t.Run("without WantsGetters option (default)", func(t *testing.T) {
+		opts := opts()
+
+		res := render(t, opts)
+
+		// opt-in: the default output is unchanged, no Get<Field> methods are emitted.
+		// The polymorphic getter for the base-type property still exists (it is
+		// generated unconditionally by the existing polymorphic path).
+		assertNotInCode(t, "func (m *GetterModel) GetID(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetName(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetTags(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetWhen(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetChild(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetActive(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetRatio(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetMetadata(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetPet(", res)
+		assertInCode(t, "func (m *GetterModel) Pet() Pet {", res)
+	})
+}

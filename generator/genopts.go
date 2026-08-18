@@ -85,6 +85,7 @@ type GenOpts struct {
 	AcceptDefinitionsOnly  bool
 	WantsRootedErrorPath   bool
 	WantsStringer          bool
+	WantsGetters           bool // generate a Get<Field> method for each field on models (--generate-getters)
 	ReturnErrors           bool
 	WithCustomFormatter    bool
 	WithExtraInitialisms   []string

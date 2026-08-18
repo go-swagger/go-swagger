@@ -115,6 +115,17 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 {{- if .WantsStringer }}
   {{ template "stringerSerializer" . }}
 {{- end }}
+{{- if .WantsGetters }}
+  {{- range .Properties }}
+    {{- if not .IsBaseType }}
+
+// Get{{ .GoName }} gets the {{ humanize .Name }} of this {{ $.GoName }}
+func ({{ $.ReceiverName }} *{{ $.GoName }}) Get{{ .GoName }}() {{ template "schemaType" . }} {
+  return {{ $.ReceiverName }}.{{ .GoName }}
+}
+    {{- end }}
+  {{- end }}
+{{- end }}
 {{- define "mapOrSliceGetter" }}{{/* signature for AdditionalProperties and AdditionalItems getter funcs */}}
   {{- if not .IsBaseType }}
     {{- if .HasAdditionalProperties }}

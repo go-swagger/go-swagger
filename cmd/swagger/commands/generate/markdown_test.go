@@ -83,7 +83,7 @@ func TestMarkdownFlags(t *testing.T) {
 			"--return-errors", "--with-custom-formatter",
 			"--model-package=models", "--existing-models=github.com/foo/bar",
 			"--strict-additional-properties", "--struct-tags=yaml", "--rooted-error-path",
-			"--with-stringer", "--no-default-omit-empty",
+			"--with-stringer", "--generate-getters", "--no-default-omit-empty",
 			"--api-package=operations", "--with-enum-ci",
 		} {
 			_, err := flags.ParseArgs(&generate.Markdown{}, []string{arg})
@@ -94,7 +94,7 @@ func TestMarkdownFlags(t *testing.T) {
 	t.Run("should keep the full flag set on the code generation commands", func(t *testing.T) {
 		for _, arg := range []string{
 			"--copyright-file=LICENSE", "--strict-responders", "--return-errors",
-			"--with-custom-formatter", "--struct-tags=yaml", "--with-stringer", "--with-enum-ci",
+			"--with-custom-formatter", "--struct-tags=yaml", "--with-stringer", "--generate-getters", "--with-enum-ci",
 			"--model-package=models", "-m=models", "--api-package=operations", "-a=operations",
 		} {
 			_, err := flags.ParseArgs(&generate.Server{}, []string{arg})
