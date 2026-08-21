@@ -262,6 +262,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		StructTags:                 opts.StructTags,
 		WantsRootedErrorPath:       opts.WantsRootedErrorPath,
 		WantsStringer:              opts.WantsStringer,
+		WantsGetters:               opts.WantsGetters,
 		mangler:                    opts.LanguageOpts.Mangler,
 		pascalize:                  pascalize,
 		jsonify:                    jsonify,
@@ -464,6 +465,7 @@ type schemaGenContext struct {
 	StrictAdditionalProperties bool
 	WantsRootedErrorPath       bool
 	WantsStringer              bool
+	WantsGetters               bool
 	WithXML                    bool
 	Index                      int
 
@@ -1733,6 +1735,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	sg.GenSchema.ExtraImports = make(map[string]string)
 	sg.GenSchema.WantsRootedErrorPath = sg.WantsRootedErrorPath
 	sg.GenSchema.WantsStringer = sg.WantsStringer
+	sg.GenSchema.WantsGetters = sg.WantsGetters
 	sg.GenSchema.IsElem = sg.IsElem
 	sg.GenSchema.IsProperty = sg.IsProperty
 	sg.GenSchema.GoName = schemaGoName(&sg.Schema, sg.Name, sg.mangler)
@@ -1883,6 +1886,13 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	// Restricted to the struct/tuple/map shapes that use a pointer receiver, mirroring
 	// MarshalBinary (see issue #872).
 	sg.GenSchema.WantsStringer = sg.WantsStringer && !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
+		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties)
+
+	// generate a Get<Field> method for each property when the --generate-getters option is set.
+	// Restricted to the struct/tuple/map shapes that use a pointer receiver, mirroring
+	// WantsStringer/WantsMarshalBinary (see issue #872). Base types are skipped because
+	// they already expose getters via the polymorphic path.
+	sg.GenSchema.WantsGetters = sg.WantsGetters && !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
 		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties)
 
 	return nil

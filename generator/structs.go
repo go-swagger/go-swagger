@@ -104,6 +104,7 @@ type GenSchema struct {
 	Default                    any
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
 	WantsStringer              bool // do we generate the fmt.Stringer String() method?
+	WantsGetters               bool // do we generate a Get<Field> method for each field?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 	ExternalDocs               *spec.ExternalDocumentation
