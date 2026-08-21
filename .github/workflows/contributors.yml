@@ -14,7 +14,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
-    uses: go-openapi/ci-workflows/.github/workflows/contributors.yml@d2d2b54984441dbea93c5672174cd949c60b4fc5 # v0.5.3
+    uses: go-openapi/ci-workflows/.github/workflows/contributors.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
     secrets:
       github-app-id: ${{ secrets.CI_BOT_APP_ID }}
       github-app-private-key: ${{ secrets.CI_BOT_APP_PRIVATE_KEY }}
