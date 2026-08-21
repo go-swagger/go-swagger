@@ -11,6 +11,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: go-openapi/ci-workflows/.github/workflows/auto-merge.yml@d2d2b54984441dbea93c5672174cd949c60b4fc5 # v0.5.3
+    uses: go-openapi/ci-workflows/.github/workflows/auto-merge.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
     secrets:
       gh_token: ${{ secrets.GITHUB_TOKEN }}
