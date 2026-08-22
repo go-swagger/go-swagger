@@ -1,0 +1,30 @@
+swagger: '2.0'
+
+info:
+  version: '1.0.0'
+  title: discriminator allOf regression
+
+paths: {}
+
+definitions:
+  PermissionExpression:
+    type: object
+    discriminator: __type
+
+  PermissionBooleanExpression:
+    allOf:
+      - $ref: '#/definitions/PermissionExpression'
+      - type: object
+    x-discriminator-value: boolean
+
+  PermissionExpressionEqual:
+    allOf:
+      - $ref: '#/definitions/PermissionBooleanExpression'
+      - type: object
+        properties:
+          left:
+            $ref: '#/definitions/PermissionExpression'
+            x-order: 1
+          right:
+            $ref: '#/definitions/PermissionExpression'
+            x-order: 2
