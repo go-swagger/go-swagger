@@ -20194,6 +20194,9 @@
     "basic": {
       "type": "basic"
     },
+    "token": {
+      "type": "basic"
+    },
     "csrf_token": {
       "in": "header",
       "name": "X-CSRFToken",

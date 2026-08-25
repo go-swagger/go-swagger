@@ -23,6 +23,15 @@ tags:
         description: Find out more about our store
         url: http://swagger.io
       name: user
+securityDefinitions:
+  petstore_auth:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    tokenUrl: 'https://www.googleapis.com/oauth2/v4/token'
+    scopes:
+      write:pets: Can write pets
+      read:pets: Can read pets
 paths:
     /pet:
         post:

@@ -60,6 +60,8 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 	}
 
 	// Validate if needed
+	//
+	// NOTE: since v0.26.4, [validate.Spec] no longer mutates silently the spec.
 	if g.ValidateSpec {
 		log.Printf("validating spec %v", g.Spec)
 		validationErrors := validate.Spec(specDoc, strfmt.Default, validate.WithPathLoader(g.loader))
@@ -80,10 +82,6 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 
 			return nil, errors.New(b.String())
 		}
-
-		// TODO(fredbi): due to uncontrolled $ref state in spec, we need to reload the spec atm, or flatten won't
-		// work properly (validate expansion alters the $ref cache in go-openapi/spec)
-		specDoc, _ = loads.Spec(g.Spec, loads.WithDocLoader(g.loader))
 	}
 
 	// Flatten spec
