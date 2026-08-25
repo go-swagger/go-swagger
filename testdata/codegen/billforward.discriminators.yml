@@ -43,7 +43,9 @@ definitions:
   PricingComponent:
     type: object
     discriminator: chargeModel
+    required: [chargeModel]
     properties:
+      chargeModel: {type: string}
       priceExplanation: {type: array, items: {type: string}}
       priceExplanationString: {type: string}
     xml:
