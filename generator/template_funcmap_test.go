@@ -54,7 +54,7 @@ func TestTemplates_FuncMap_Model(t *testing.T) {
 	templ, err := opts.templates.Get("modeltpl")
 	require.NoError(t, err)
 
-	genModel, err := getModelEnvironment("../fixtures/codegen/todolist.models.yml", opts)
+	genModel, err := getModelEnvironment("../testdata/codegen/todolist.models.yml", opts)
 	require.NoError(t, err)
 
 	genModel.DependsOn = []string{"x", "z"}

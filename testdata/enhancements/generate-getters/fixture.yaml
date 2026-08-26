@@ -1,0 +1,86 @@
+swagger: "2.0"
+info:
+  description: 'fixture for --generate-getters: exercise getter return types across field kinds'
+  title: generate-getters
+  version: "0.0.0"
+paths:
+  /v1/model:
+    get:
+      produces:
+        - application/json
+      responses:
+        default:
+          description: model
+          schema:
+            $ref: '#/definitions/GetterModel'
+
+definitions:
+  GetterModel:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: an optional scalar (int64)
+      name:
+        type: string
+        description: a required string (generated as a pointer)
+      tags:
+        type: array
+        items:
+          type: string
+        description: a slice of strings
+      when:
+        type: string
+        format: date-time
+        description: a date-time field (strfmt.DateTime)
+      child:
+        $ref: '#/definitions/Child'
+        description: a nested object (pointer to struct)
+      active:
+        type: boolean
+        description: a boolean field
+      ratio:
+        type: number
+        format: float
+        description: a float field
+      metadata:
+        type: object
+        additionalProperties:
+          type: string
+        description: a map of string to string (additionalProperties)
+      pet:
+        $ref: '#/definitions/Pet'
+        description: a polymorphic base type property (exercises the IsBaseType guard)
+
+  Child:
+    type: object
+    properties:
+      label:
+        type: string
+        description: a label for the child
+
+  Pet:
+    type: object
+    discriminator: kind
+    required:
+      - kind
+    properties:
+      kind:
+        type: string
+        description: the discriminator field
+      name:
+        type: string
+        description: the pet name
+
+  Dog:
+    type: object
+    allOf:
+      - $ref: '#/definitions/Pet'
+      - type: object
+        properties:
+          breed:
+            type: string
+            description: the dog breed

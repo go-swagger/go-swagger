@@ -1,0 +1,27 @@
+# Adversarial fixture: hostile content-type values in consumes/produces try to
+# break out of the Go string literals and comments emitted by the server builder
+# (ConsumersFor/ProducersFor comparisons and map keys, and the *Consumer/*Producer
+# doc comments). printf %q on the media-type literals and linePadComment on the
+# doc lines keep each payload inert. Two entries per list force the switch/case
+# form (NumSerializers > 1) as well as the map-key sink.
+#
+# Media-type values must not contain ";" — the generator strips MIME parameters
+# at the first ";", so the payloads exercise the quote-breakout path only.
+swagger: "2.0"
+info:
+  title: mediatype injection
+  version: "1.0"
+consumes:
+  - application/x"+println("PWNED_CONSUMES")+"json
+  - application/other"+InjectedConsumer+"type
+produces:
+  - application/y"+println("PWNED_PRODUCES")+"json
+  - application/z"+InjectedProducer+"type
+paths:
+  /ping:
+    get:
+      operationId: ping
+      tags: [ping]
+      responses:
+        "200":
+          description: ok

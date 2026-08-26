@@ -18,7 +18,7 @@ package generator
 // goconst disabled: defining constants for every bit of repeated generated code will just make the assertions even harder to read.
 
 func initFixture2494() {
-	f := newModelFixture("../fixtures/bugs/2494/fixture-2494.yaml", "map of nullable array")
+	f := newModelFixture("../testdata/bugs/2494/fixture-2494.yaml", "map of nullable array")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("port_map.go", []string{
@@ -31,7 +31,7 @@ func initFixture2494() {
 }
 
 func initFixture2444() {
-	f := newModelFixture("../fixtures/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
+	f := newModelFixture("../testdata/enhancements/2444/fixture-2244.yaml", "min/maxProperties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("all_of_with_min_max_properties.go", []string{
@@ -218,7 +218,7 @@ func initFixture2444() {
 }
 
 func initFixtureGuardFormats() {
-	f := newModelFixture("../fixtures/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
+	f := newModelFixture("../testdata/enhancements/guard-formats/fixture-guard-formats.yaml", "guard format validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("aliased_date.go", []string{
@@ -352,7 +352,7 @@ func initFixtureGuardFormats() {
 }
 
 func initFixture2448() {
-	f := newModelFixture("../fixtures/bugs/2448/fixture-2448.yaml", "numerical validations")
+	f := newModelFixture("../testdata/bugs/2448/fixture-2448.yaml", "numerical validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("integers.go", []string{
@@ -395,7 +395,7 @@ func initFixture2448() {
 }
 
 func initFixture2400() {
-	f := newModelFixture("../fixtures/bugs/2400/fixture-2400.yaml", "required aliased primitive")
+	f := newModelFixture("../testdata/bugs/2400/fixture-2400.yaml", "required aliased primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("signup_request.go", []string{
@@ -409,7 +409,7 @@ func initFixture2400() {
 }
 
 func initFixture2381() {
-	f := newModelFixture("../fixtures/bugs/2381/fixture-2381.yaml", "required $ref primitive")
+	f := newModelFixture("../testdata/bugs/2381/fixture-2381.yaml", "required $ref primitive")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	expandRun := f.AddRun(true)
 
@@ -450,7 +450,7 @@ func initFixture2381() {
 }
 
 func initFixture2300() {
-	f := newModelFixture("../fixtures/bugs/2300/fixture-2300.yaml", "required any is validated with against nil")
+	f := newModelFixture("../testdata/bugs/2300/fixture-2300.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// test behaviour with all structs made anonymous (inlined)
@@ -500,7 +500,7 @@ func initFixture2300() {
 }
 
 func initFixture2081() {
-	f := newModelFixture("../fixtures/bugs/2081/fixture-2081.yaml", "required any is validated with against nil")
+	f := newModelFixture("../testdata/bugs/2081/fixture-2081.yaml", "required any is validated with against nil")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// any
@@ -518,7 +518,7 @@ func initFixture2081() {
 }
 
 func initFixture936ReadOnly() {
-	f := newModelFixture("../fixtures/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
+	f := newModelFixture("../testdata/enhancements/936/fixture-936.yml", "check ReadOnly ContextValidate is generated properly")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// object simple has 2 read only feilds
@@ -608,7 +608,7 @@ func initFixture2220() {
 	// properly runs against the case of base type with additionalProperties.
 	//
 	// TODO(fred): should actually fix the problem in base type model rendering
-	f := newModelFixture("../fixtures/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
+	f := newModelFixture("../testdata/bugs/2220/fixture-2220.yaml", "check base type with additional properties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("object.go", []string{
@@ -624,7 +624,7 @@ func initFixture2220() {
 }
 
 func initFixture2116() {
-	f := newModelFixture("../fixtures/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
+	f := newModelFixture("../testdata/bugs/2116/fixture-2116.yaml", "check x-omitempty and x-nullable with $ref")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("case1_fail_omitempty_false_not_hoisted_by_ref.go", []string{
@@ -694,7 +694,7 @@ func initFixture2116() {
 }
 
 func initFixture2071() {
-	f := newModelFixture("../fixtures/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
+	f := newModelFixture("../testdata/bugs/2071/fixture-2071.yaml", "check allOf serializer when x-go-name is present")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	flattenRun.AddExpectations("cat.go", []string{
 		"var dataAO1 struct {\n\t\tSomeAbility *string `json:\"ability,omitempty\"`",
@@ -707,14 +707,14 @@ func initFixture2071() {
 }
 
 func initFixture1479Part() {
-	// testing ../fixtures/bugs/1479/fixture-1479-part.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1479/fixture-1479-part.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		The breakage with allOf occurs when a schema with an allOf has itself a
 		property which is an allOf construct
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1479/fixture-1479-part.yaml", "check nested AllOf validations (from Pouch Engine API)")
+	f := newModelFixture("../testdata/bugs/1479/fixture-1479-part.yaml", "check nested AllOf validations (from Pouch Engine API)")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -876,7 +876,7 @@ func initFixture1479Part() {
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
 		// empty validation
-		"func (m *RestartPolicy) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *RestartPolicy) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -893,7 +893,7 @@ func initFixture1479Part() {
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
 		// empty validation
-		"func (m *EndpointIPAMConfig) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *EndpointIPAMConfig) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -1162,7 +1162,7 @@ func initFixture1479Part() {
 		`type HostConfigAO0RestartPolicy struct {`,
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
-		`func (m *HostConfigAO0RestartPolicy) Validate(formats strfmt.Registry) error {`,
+		`func (m *HostConfigAO0RestartPolicy) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -1381,7 +1381,7 @@ func initFixture1479Part() {
 		"	IPv4Address string `json:\"IPv4Address,omitempty\"`",
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
-		`func (m *ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnonIPAMConfig) Validate(formats strfmt.Registry) error {`,
+		`func (m *ContainerCreateConfigAO1NetworkingConfigEndpointsConfigAnonIPAMConfig) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ContainerCreateConfigHostConfigAO0LogConfig struct {`,
 		"	Config map[string]string `json:\"Config,omitempty\"`",
@@ -1411,7 +1411,7 @@ func initFixture1479Part() {
 		`type ContainerCreateConfigHostConfigAO0RestartPolicy struct {`,
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
-		`func (m *ContainerCreateConfigHostConfigAO0RestartPolicy) Validate(formats strfmt.Registry) error {`,
+		`func (m *ContainerCreateConfigHostConfigAO0RestartPolicy) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	}, []string{
 		// not expected
@@ -1527,7 +1527,7 @@ func initFixture1479Part() {
 		"	IPv4Address string `json:\"IPv4Address,omitempty\"`",
 		"	IPv6Address string `json:\"IPv6Address,omitempty\"`",
 		"	LinkLocalIPs []string `json:\"LinkLocalIPs\"`",
-		`func (m *EndpointSettingsIPAMConfig) Validate(formats strfmt.Registry) error {`,
+		`func (m *EndpointSettingsIPAMConfig) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -1541,11 +1541,11 @@ func initFixture1479Part() {
 }
 
 func initFixtureSimpleAllOf() {
-	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-simple-allOf.yaml with flatten and expand (--skip-flatten)
 
 	/* we test various composition combinations, including nested, and nested isolated with a properties (e.g. issue #1479) */
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-simple-allOf.yaml", "fixture for nested allOf with ref")
+	f := newModelFixture("../testdata/bugs/1487/fixture-simple-allOf.yaml", "fixture for nested allOf with ref")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2361,11 +2361,11 @@ func initFixtureSimpleAllOf() {
 }
 
 func initFixtureComplexAllOf() {
-	// testing ../fixtures/bugs/1487/fixture-complex-allOf.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-complex-allOf.yaml with flatten and expand (--skip-flatten)
 
 	/*
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-complex-allOf.yaml", "fixture for nested allOf with ref")
+	f := newModelFixture("../testdata/bugs/1487/fixture-complex-allOf.yaml", "fixture for nested allOf with ref")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2640,7 +2640,7 @@ func initFixtureComplexAllOf() {
 		`	if err := validate.FormatOf("prop0", "body", "uuid", m.Prop0.String(), formats); err != nil {`,
 		`type SliceOfAllOfItems0AllOf1 []any`,
 		// empty validation
-		"func (m SliceOfAllOfItems0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceOfAllOfItems0AllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -2685,7 +2685,7 @@ func initFixtureComplexAllOf() {
 	flattenRun.AddExpectations("slice_of_interfaces.go", []string{
 		`type SliceOfInterfaces []any`,
 		// empty validation
-		"func (m SliceOfInterfaces) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceOfInterfaces) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -2776,7 +2776,7 @@ func initFixtureComplexAllOf() {
 		`type SliceMixAllOf0Items0AllOf1 []any`,
 		`type SliceMixAllOf1 []any`,
 		// empty validation
-		"func (m SliceMixAllOf0Items0AllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m SliceMixAllOf0Items0AllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -2845,11 +2845,11 @@ func initFixtureComplexAllOf() {
 }
 
 func initFixtureIsNullable() {
-	// testing ../fixtures/bugs/1487/fixture-is-nullable.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-is-nullable.yaml with flatten and expand (--skip-flatten)
 
 	/* just an elementary check with the x-nullable tag
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-is-nullable.yaml", "fixture for x-nullable flag")
+	f := newModelFixture("../testdata/bugs/1487/fixture-is-nullable.yaml", "fixture for x-nullable flag")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -2879,7 +2879,7 @@ func initFixtureIsNullable() {
 }
 
 func initFixtureItching() {
-	// testing ../fixtures/bugs/1487/fixture-itching.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-itching.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		This one regroups a number of itching cases, essentially around additionalProperties.
@@ -2887,7 +2887,7 @@ func initFixtureItching() {
 		We also added here some funny models using the special types Files, string format: binary and any
 		These special cases do not correspond to actual API specs: we use them to verify the internal behavior of the general.
 	*/
-	f := newModelFixture("../fixtures/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -3333,7 +3333,7 @@ func initFixtureItching() {
 		"	DirName string `json:\"dirName,omitempty\"`",
 		"	AdditionalFile map[string]io.ReadCloser `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalFile) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalFile) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3362,7 +3362,7 @@ func initFixtureItching() {
 		"	MyAlternateFile TopLevelFormatIssueMyAlternateFile `json:\"myAlternateFile,omitempty\"`",
 		"	MyFile io.ReadCloser `json:\"myFile,omitempty\"`",
 		// empty validation
-		"func (m *TopLevelFormatIssue) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TopLevelFormatIssue) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3375,7 +3375,7 @@ func initFixtureItching() {
 		"	MyAlternateFile io.ReadCloser `json:\"myAlternateFile,omitempty\"`",
 		"	MyFile io.ReadCloser `json:\"myFile,omitempty\"`",
 		// empty validation
-		"func (m *TopLevelFormatIssue) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TopLevelFormatIssue) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		noLines,
@@ -3498,7 +3498,7 @@ func initFixtureItching() {
 		"	Prop2 string `json:\"prop2,omitempty\"`",
 		"	NotValidatedAtAll map[string][]map[string]map[string]string `json:\"-\"`",
 		// empty validation
-		"func (m *NotValidatedAtAll) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NotValidatedAtAll) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -3510,12 +3510,12 @@ func initFixtureItching() {
 }
 
 func initFixtureAdditionalProps() {
-	// testing ../fixtures/bugs/1487/fixture-additionalProps.yaml with flatten and expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-additionalProps.yaml with flatten and expand (--skip-flatten)
 
 	/*
 		various patterns of additionalProperties
 	*/
-	f := newModelFixture("../fixtures/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -3778,7 +3778,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalSliceOfObjectsAdditionalPropertiesItems struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
-		"func (m *AdditionalSliceOfObjectsAdditionalPropertiesItems) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalSliceOfObjectsAdditionalPropertiesItems) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4153,7 +4153,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4331,7 +4331,7 @@ func initFixtureAdditionalProps() {
 		`type AdditionalSliceOfObjectsItems0 struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
-		"func (m *AdditionalSliceOfObjectsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalSliceOfObjectsItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4451,7 +4451,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	NoValidationThingAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *NoValidationThing) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NoValidationThing) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4572,7 +4572,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4682,7 +4682,7 @@ func initFixtureAdditionalProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TransitiveRefedThingAnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TransitiveRefedThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TransitiveRefedThingAnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4696,7 +4696,7 @@ func initFixtureAdditionalProps() {
 		"	PropA any `json:\"propA,omitempty\"`",
 		"	AdditionalEmptyObject map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalEmptyObject) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalEmptyObject) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -4764,11 +4764,11 @@ func initFixtureAdditionalProps() {
 }
 
 func initFixtureTuple() {
-	// testing ../fixtures/bugs/1487/fixture-tuple.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-tuple.yaml with expand (--skip-flatten)
 
 	/* check different patterns of additionalItems validations or absence thereof
 	 */
-	f := newModelFixture("../fixtures/bugs/1487/fixture-tuple.yaml", "fixture for tuples and additionalItems")
+	f := newModelFixture("../testdata/bugs/1487/fixture-tuple.yaml", "fixture for tuples and additionalItems")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -4969,7 +4969,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1"+"."+"narrative", "body", m.Narrative); err != nil {`,
 		`type ClassicsClassicsItemsTuple0P3Tuple0P2 struct {`,
 		"	MarketingBS *string `json:\"marketingBS,omitempty\"`",
-		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P2) Validate(formats strfmt.Registry) error {`,
+		`func (m *ClassicsClassicsItemsTuple0P3Tuple0P2) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ClassicsClassicsItemsTuple0P3Tuple0P3 struct {`,
 		"	Author *string `json:\"author,omitempty\"`",
@@ -5034,7 +5034,7 @@ func initFixtureTuple() {
 		`	if err := validate.Required("P1"+"."+"narrative", "body", m.Narrative); err != nil {`,
 		`type ClassicsTuple0P2 struct {`,
 		"	MarketingBS *string `json:\"marketingBS,omitempty\"`",
-		`func (m *ClassicsTuple0P2) Validate(formats strfmt.Registry) error {`,
+		`func (m *ClassicsTuple0P2) Validate(_ strfmt.Registry) error {`,
 		`		return errors.CompositeValidationError(res...`,
 		`type ClassicsTuple0P3 struct {`,
 		"	Author *string `json:\"author,omitempty\"`",
@@ -5061,7 +5061,7 @@ func initFixtureTuple() {
 		`type ComicsItems2 struct {`,
 		"	MarketingBS string `json:\"marketingBS,omitempty\"`",
 		// empty validation
-		"func (m *ComicsItems2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ComicsItems2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5307,9 +5307,9 @@ func initFixtureTuple() {
 }
 
 func initFixture1198() {
-	// testing ../fixtures/bugs/1487/fixture-1198.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1198.yaml with expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1198/fixture-1198.yaml", "string-body-api")
+	f := newModelFixture("../testdata/bugs/1198/fixture-1198.yaml", "string-body-api")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: pet.go
@@ -5329,7 +5329,7 @@ func initFixture1198() {
 }
 
 func initFixture1042() {
-	// testing ../fixtures/bugs/1487/fixture-1042.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1042.yaml with expand (--skip-flatten)
 
 	/* when the specification incorrectly defines the allOf,
 	generated unmarshalling is wrong.
@@ -5337,7 +5337,7 @@ func initFixture1042() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1042/fixture-1042.yaml", "allOf marshalling")
+	f := newModelFixture("../testdata/bugs/1042/fixture-1042.yaml", "allOf marshalling")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: b.go
@@ -5401,7 +5401,7 @@ func initFixture1042() {
 		"	F1 string `json:\"f1,omitempty\"`",
 		"	F2 string `json:\"f2,omitempty\"`",
 		// empty validation
-		"func (m *A) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *A) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5411,7 +5411,7 @@ func initFixture1042() {
 }
 
 func initFixture1042V2() {
-	// testing ../fixtures/bugs/1487/fixture-1042-2.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1042-2.yaml with expand (--skip-flatten)
 
 	/* when the specification incorrectly defines the allOf,
 	generated unmarshalling is wrong.
@@ -5419,7 +5419,7 @@ func initFixture1042V2() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1042/fixture-1042-2.yaml", "allOf marshalling")
+	f := newModelFixture("../testdata/bugs/1042/fixture-1042-2.yaml", "allOf marshalling")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: error_model.go
@@ -5497,12 +5497,12 @@ func initFixture1042V2() {
 }
 
 func initFixture979() {
-	// testing ../fixtures/bugs/1487/fixture-979.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-979.yaml with expand (--skip-flatten)
 
 	/* checking that properties is enough to figure out an object schema
 	 */
 
-	f := newModelFixture("../fixtures/bugs/979/fixture-979.yaml", "allOf without the explicit type object")
+	f := newModelFixture("../testdata/bugs/979/fixture-979.yaml", "allOf without the explicit type object")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: cluster.go
@@ -5545,7 +5545,7 @@ func initFixture979() {
 		`type NewCluster struct {`,
 		"	DummyProp1 int64 `json:\"dummyProp1,omitempty\"`",
 		// empty validation
-		"func (m *NewCluster) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NewCluster) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5559,7 +5559,7 @@ func initFixture979() {
 		"	Result string `json:\"result,omitempty\"`",
 		"	Status string `json:\"status,omitempty\"`",
 		// empty validation
-		"func (m *ClusterAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ClusterAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5569,12 +5569,12 @@ func initFixture979() {
 }
 
 func initFixture842() {
-	// testing ../fixtures/bugs/1487/fixture-842.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-842.yaml with expand (--skip-flatten)
 
 	/* codegen fails to produce code that builds
 	 */
 
-	f := newModelFixture("../fixtures/bugs/842/fixture-842.yaml", "polymorphic type containing an array of the base type")
+	f := newModelFixture("../testdata/bugs/842/fixture-842.yaml", "polymorphic type containing an array of the base type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: value_array_all_of1.go
@@ -5667,7 +5667,7 @@ func initFixture842() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid ValueType value: %q", getType.ValueType`,
 		// empty validation
-		"func (m *value) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *value) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5677,12 +5677,12 @@ func initFixture842() {
 }
 
 func initFixture607() {
-	// testing ../fixtures/bugs/1487/fixture-607.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-607.yaml with expand (--skip-flatten)
 
 	/* broken code produced on polymorphic type
 	 */
 
-	f := newModelFixture("../fixtures/bugs/607/fixture-607.yaml", "broken code when using array of polymorphic type")
+	f := newModelFixture("../testdata/bugs/607/fixture-607.yaml", "broken code when using array of polymorphic type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: range_filter_all_of1.go
@@ -5759,7 +5759,7 @@ func initFixture607() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid type value: %q", getType.Type`,
 		// empty validation
-		"func (m *filter) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *filter) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5932,7 +5932,7 @@ func initFixture607() {
 		"	Lt float64 `json:\"lt,omitempty\"`",
 		"	Lte float64 `json:\"lte,omitempty\"`",
 		// empty validation
-		"func (m *RangeFilterAllOf1Config) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *RangeFilterAllOf1Config) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -5942,12 +5942,12 @@ func initFixture607() {
 }
 
 func initFixture1336() {
-	// testing ../fixtures/bugs/1487/fixture-1336.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-1336.yaml with expand (--skip-flatten)
 
 	/* broken code produced on polymorphic type
 	 */
 
-	f := newModelFixture("../fixtures/bugs/1336/fixture-1336.yaml", "broken code when using array of polymorphic type")
+	f := newModelFixture("../testdata/bugs/1336/fixture-1336.yaml", "broken code when using array of polymorphic type")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: node.go
@@ -6004,7 +6004,7 @@ func initFixture1336() {
 		`		return &result, nil`,
 		`	return nil, errors.New(422, "invalid NodeType value: %q", getType.NodeType`,
 		// empty validation
-		"func (m *node) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *node) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6017,7 +6017,7 @@ func initFixture1336() {
 		`type CodeBlockNodeAllOf1 struct {`,
 		"	Code string `json:\"Code,omitempty\"`",
 		// empty validation
-		"func (m *CodeBlockNodeAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *CodeBlockNodeAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6074,7 +6074,7 @@ func initFixture1336() {
 		`type DocBlockNodeAllOf1 struct {`,
 		"	Doc string `json:\"Doc,omitempty\"`",
 		// empty validation
-		"func (m *DocBlockNodeAllOf1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *DocBlockNodeAllOf1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6190,13 +6190,13 @@ func initFixture1336() {
 }
 
 func initFixtureErrors() {
-	// testing ../fixtures/bugs/1487/fixture-errors.yaml with expand (--skip-flatten)
+	// testing ../testdata/bugs/1487/fixture-errors.yaml with expand (--skip-flatten)
 
 	/*
 		invalid specs supported by go-swagger
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-errors.yaml", "broken spec to exercise error handling")
+	f := newModelFixture("../testdata/bugs/1487/fixture-errors.yaml", "broken spec to exercise error handling")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -6204,7 +6204,7 @@ func initFixtureErrors() {
 	flattenRun.AddExpectations("array_without_items.go", []string{
 		`type ArrayWithoutItems []any`,
 		// empty validation
-		"func (m ArrayWithoutItems) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ArrayWithoutItems) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -6237,7 +6237,7 @@ func initTodolistSchemavalidation() {
 
 	*/
 
-	f := newModelFixture("../fixtures/codegen/todolist.schemavalidation.yml", "Private to-do list")
+	f := newModelFixture("../testdata/codegen/todolist.schemavalidation.yml", "Private to-do list")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -6607,7 +6607,7 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *Tag) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Tag) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -7338,12 +7338,12 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *PetCategory) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *PetCategory) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		`type PetTagsItems0 struct {`,
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *PetTagsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *PetTagsItems0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -7646,7 +7646,7 @@ func initTodolistSchemavalidation() {
 		"	ID int64 `json:\"id,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *Category) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Category) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8337,7 +8337,7 @@ func initFixtureNestedMaps() {
 
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-nested-maps.yaml", "Nested maps")
+	f := newModelFixture("../testdata/bugs/1487/fixture-nested-maps.yaml", "Nested maps")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8358,7 +8358,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedAliasedInterface struct {`,
 		"	Meta map[string]map[string]map[string]AliasInterface `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedAliasedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedAliasedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8370,7 +8370,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedAliasedInterface struct {`,
 		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedAliasedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedAliasedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8464,7 +8464,7 @@ func initFixtureNestedMaps() {
 		`type TestNestedInterface struct {`,
 		"	Meta map[string]map[string]map[string]any `json:\"meta,omitempty\"`",
 		// empty validation
-		"func (m *TestNestedInterface) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TestNestedInterface) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8516,7 +8516,7 @@ func initFixtureNestedMaps() {
 		"	Age int64 `json:\"age,omitempty\"`",
 		"	Name string `json:\"name,omitempty\"`",
 		// empty validation
-		"func (m *NestedMapNoValidationsAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NestedMapNoValidationsAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8614,7 +8614,7 @@ func initFixture844Variations() {
 	   repro
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-844-variations.yaml", "allOf bugs with empty objects")
+	f := newModelFixture("../testdata/bugs/1487/fixture-844-variations.yaml", "allOf bugs with empty objects")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8635,7 +8635,7 @@ func initFixture844Variations() {
 		`type Variation2 struct {`,
 		"	Prop1 EmptyEnum `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *Variation2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8647,7 +8647,7 @@ func initFixture844Variations() {
 		`type Variation2 struct {`,
 		"	Prop1 any `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *Variation2) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation2) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8861,7 +8861,7 @@ func initFixture844Variations() {
 		`	Foo`,
 		`	Bar`,
 		// empty validation
-		"func (m *Variation0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8876,7 +8876,7 @@ func initFixture844Variations() {
 		`type Variation0AllOf0 any`,
 		`type Variation0AllOf1 any`,
 		// empty validation
-		"func (m *Variation0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *Variation0) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8933,7 +8933,7 @@ func initFixture844Variations() {
 		`	Foo`,
 		`	Bar`,
 		// empty validation
-		"func (m *GetOKBody) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *GetOKBody) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -8949,7 +8949,7 @@ func initFixtureMoreAddProps() {
 	   various patterns of additionalProperties
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1487/fixture-moreAddProps.yaml", "fixture for additionalProperties")
+	f := newModelFixture("../testdata/bugs/1487/fixture-moreAddProps.yaml", "fixture for additionalProperties")
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
@@ -8985,7 +8985,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TrialAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9077,7 +9077,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingAdditionalPropertiesItemsAdditionalPropertiesAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9114,7 +9114,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedObjectThingAdditionalPropertiesAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9217,7 +9217,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	TrialAdditionalPropertiesAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *TrialAdditionalProperties) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *TrialAdditionalProperties) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9284,7 +9284,7 @@ func initFixtureMoreAddProps() {
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]any `json:\"-\"`",
 		// empty validation
-		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9355,7 +9355,7 @@ func initFixtureMoreAddProps() {
 		`	if typeutils.IsZero(m.B1) {`,
 		`	if err := validate.FormatOf("b1", "body", "date", m.B1.String(), formats); err != nil {`,
 		// empty validation
-		"func (m *AdditionalTransitiveRefedObjectThingAnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *AdditionalTransitiveRefedObjectThingAnonAnon) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9372,7 +9372,7 @@ func initFixture1537() {
 	   repro issue 1537
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1537/fixture-1537.yaml", "param body required with array of objects")
+	f := newModelFixture("../testdata/bugs/1537/fixture-1537.yaml", "param body required with array of objects")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: profile_array.go
@@ -9446,7 +9446,7 @@ func initFixture1537() {
 		"	Value1 int32 `json:\"value1,omitempty\"`",
 		"	Value2 int32 `json:\"value2,omitempty\"`",
 		// empty validation
-		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ProfileCfg) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9482,7 +9482,7 @@ func initFixture1537v2() {
 	   repro issue 1537, with aliased items
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1537/fixture-1537-2.yaml", "param body required with array of aliased items")
+	f := newModelFixture("../testdata/bugs/1537/fixture-1537-2.yaml", "param body required with array of aliased items")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: profiles.go
@@ -9551,7 +9551,7 @@ func initFixture1537v2() {
 		"	Value1 int32 `json:\"value1,omitempty\"`",
 		"	Value2 int32 `json:\"value2,omitempty\"`",
 		// empty validation
-		"func (m *ProfileCfg) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *ProfileCfg) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9579,7 +9579,7 @@ func initFixture1537v2() {
 func initFixture15365() {
 	// testing fixture-1536-5.yaml with flatten but NOT expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1536/fixture-1536-5.yaml", "param body with maps")
+	f := newModelFixture("../testdata/bugs/1536/fixture-1536-5.yaml", "param body with maps")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: model_array_of_nullable.go
@@ -9636,7 +9636,7 @@ func initFixture15365() {
 		`type ModelArrayOfXNullable []*int64`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		"func (m ModelArrayOfXNullable) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfXNullable) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
 	},
 		// not expected
@@ -9716,7 +9716,7 @@ func initFixture15365() {
 	thisRun.AddExpectations("model_array_of_ref_no_validations.go", []string{
 		`type ModelArrayOfRefNoValidations []ModelInterface`,
 		// empty validation
-		"func (m ModelArrayOfRefNoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfRefNoValidations) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9744,7 +9744,7 @@ func initFixture15365() {
 		// do we need Required when item is nullable?
 		// nullable not required:
 		// empty validation
-		"func (m ModelArrayOfNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfNullableString) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 		// nullable required:
 	},
 		// not expected
@@ -9773,7 +9773,7 @@ func initFixture15365() {
 	thisRun.AddExpectations("model_array_of_not_nullable_string.go", []string{
 		`type ModelArrayOfNotNullableString []string`,
 		// empty validation
-		"func (m ModelArrayOfNotNullableString) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m ModelArrayOfNotNullableString) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -9829,7 +9829,7 @@ func initFixture1548() {
 		My App API: check that there is no format validation on Base64 types
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1548/fixture-1548.yaml", "My App API")
+	f := newModelFixture("../testdata/bugs/1548/fixture-1548.yaml", "My App API")
 	thisRun := f.AddRun(false)
 
 	// load expectations for model: base64_alias.go
@@ -9839,7 +9839,7 @@ func initFixture1548() {
 		`	return ((*strfmt.Base64)(m)).UnmarshalJSON(b`,
 		`func (m Base64Alias) MarshalJSON() ([]byte, error) {`,
 		`	return (strfmt.Base64(m)).MarshalJSON(`,
-		`func (m Base64Alias) Validate(formats strfmt.Registry) error {`,
+		`func (m Base64Alias) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -9868,7 +9868,7 @@ func initFixture1548() {
 	// load expectations for model: base64_array.go
 	thisRun.AddExpectations("base64_array.go", []string{
 		`type Base64Array []strfmt.Base64`,
-		`func (m Base64Array) Validate(formats strfmt.Registry) error {`,
+		`func (m Base64Array) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -9885,7 +9885,7 @@ func initFixture1548() {
 	thisRun.AddExpectations("base64_model.go", []string{
 		`type Base64Model struct {`,
 		"	Prop1 strfmt.Base64 `json:\"prop1,omitempty\"`",
-		`func (m *Base64Model) Validate(formats strfmt.Registry) error {`,
+		`func (m *Base64Model) Validate(_ strfmt.Registry) error {`,
 	},
 		// not expected
 		[]string{
@@ -9906,7 +9906,7 @@ func initFixtureSimpleTuple() {
 	   A basic test of for serialization generation for tuples and additionalItems.
 
 	*/
-	f := newModelFixture("../fixtures/bugs/1571/fixture-simple-tuple.yaml", "fixture for serializing tuples")
+	f := newModelFixture("../testdata/bugs/1571/fixture-simple-tuple.yaml", "fixture for serializing tuples")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 	expandRun := f.AddRun(true)
 
@@ -10670,7 +10670,7 @@ func initFixtureSimpleTuple() {
 func initFixtureDeepMaps() {
 	// testing fixture-deepMaps.yaml with minimal flatten
 
-	f := newModelFixture("../fixtures/enhancements/1572/fixture-deepMaps.yaml", "issue 1572 - deep maps")
+	f := newModelFixture("../testdata/enhancements/1572/fixture-deepMaps.yaml", "issue 1572 - deep maps")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: model_object_vanilla.go
@@ -10757,7 +10757,7 @@ func initFixtureDeepMaps() {
 func initFixture1617() {
 	// testing fixture-1617.yaml with flatten and expand (--skip-flatten)
 
-	f := newModelFixture("../fixtures/bugs/1617/fixture-1617.yaml", "aaa")
+	f := newModelFixture("../testdata/bugs/1617/fixture-1617.yaml", "aaa")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: artifact_info.go
@@ -10837,7 +10837,7 @@ func initFixtureRealiasedTypes() {
 	   realiased types
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1260/fixture-realiased-types.yaml", "test type realiasing")
+	f := newModelFixture("../testdata/bugs/1260/fixture-realiased-types.yaml", "test type realiasing")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: g1.go
@@ -10845,7 +10845,7 @@ func initFixtureRealiasedTypes() {
 		`type G1 struct {`,
 		"	Prop1 int64 `json:\"prop1,omitempty\"`",
 		// empty validation
-		"func (m *G1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *G1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -10994,7 +10994,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("a1.go", []string{
 		`type A1 []int64`,
 		// empty validation
-		"func (m A1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m A1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11047,7 +11047,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("b1.go", []string{
 		`type B1 map[string]int64`,
 		// empty validation
-		"func (m B1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m B1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11215,7 +11215,7 @@ func initFixtureRealiasedTypes() {
 	thisRun.AddExpectations("d1.go", []string{
 		`type D1 int64`,
 		// empty validation
-		"func (m D1) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m D1) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11515,7 +11515,7 @@ func initFixture1993() {
 	   required / non required base type
 	*/
 
-	f := newModelFixture("../fixtures/bugs/1993/fixture-1993.yaml", "test required/non required base type")
+	f := newModelFixture("../testdata/bugs/1993/fixture-1993.yaml", "test required/non required base type")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	// load expectations for model: house.go
@@ -11540,7 +11540,7 @@ func initFixture1993() {
 }
 
 func initFixture2604() {
-	f := newModelFixture("../fixtures/bugs/2604/2604.yaml", "additional cases for embedded structs")
+	f := newModelFixture("../testdata/bugs/2604/2604.yaml", "additional cases for embedded structs")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	thisRun.AddExpectations("composed.go", []string{
@@ -11576,7 +11576,7 @@ func initFixture2604() {
 	thisRun.AddExpectations("no_validations.go", []string{
 		`type NoValidations struct {`,
 		// empty validation
-		"func (m *NoValidations) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+		"func (m *NoValidations) Validate(_ strfmt.Registry) error {\n	return nil\n}",
 	},
 		// not expected
 		todo,
@@ -11610,7 +11610,7 @@ func initFixture2604() {
 }
 
 func initFixture2364() {
-	f := newModelFixture("../fixtures/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
+	f := newModelFixture("../testdata/bugs/2364/fixture-2364.yaml", "test non-nullable allOf")
 	thisRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	thisRun.AddExpectations("bundle_attributes_response.go", []string{
@@ -11629,7 +11629,7 @@ func initFixture2364() {
 }
 
 func initFixture2163() {
-	f := newModelFixture("../fixtures/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
+	f := newModelFixture("../testdata/enhancements/2163/fixture-2163.yaml", "ambiguous validations")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("obj.go", []string{
@@ -11689,7 +11689,7 @@ func initFixture2163() {
 }
 
 func initFixture2587() {
-	f := newModelFixture("../fixtures/bugs/2587/2587.yaml", "min/max properties")
+	f := newModelFixture("../testdata/bugs/2587/2587.yaml", "min/max properties")
 	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
 
 	flattenRun.AddExpectations("basic_thing.go", []string{
@@ -11749,4 +11749,246 @@ func initFixture2587() {
 		`if nprops > 20 {`,
 		`return errors.TooManyProperties("data", "body", 20)`,
 	}, todo, noLines, noLines)
+}
+
+func initFixture3141() {
+	f := newModelFixture("../testdata/bugs/3141/fixture-3141.yaml", "x-go-type novalidation hint must be honored by Validate and ContextValidate")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("container.go", []string{
+		`func (m *Container) Validate(formats strfmt.Registry) error {`,
+		`func (m *Container) ContextValidate(_ context.Context, _ strfmt.Registry) error {`,
+	},
+		// none of the properties (object, array-aliased, slice items, map values) referring
+		// to an external type with hints.novalidation:true must be validated, since the user
+		// explicitly opted out of go-swagger's Validate(strfmt.Registry) error / ContextValidate
+		// interface requirement for that type (see issue #3141)
+		[]string{
+			`.Validate(formats); err != nil {`,
+			`.ContextValidate(ctx, formats); err != nil {`,
+		}, noLines, noLines)
+}
+
+func initFixture1203() {
+	f := newModelFixture("../testdata/bugs/1203/fixture-1203.yaml", "enum array items must generate a const block")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("foo.go", []string{
+		`const (`,
+		`	// FooRolesItemsAdmin captures enum value "Admin"`,
+		`	FooRolesItemsAdmin string = "Admin"`,
+		`	// FooRolesItemsUser captures enum value "User"`,
+		`	FooRolesItemsUser string = "User"`,
+		`	// FooRolesItemsSuperAdmin captures enum value "SuperAdmin"`,
+		`	FooRolesItemsSuperAdmin string = "SuperAdmin"`,
+	}, todo, noLines, noLines)
+}
+
+func initFixture3112() {
+	f := newModelFixture("../testdata/bugs/3112/fixture-3112.yaml", "no-op Validate/ContextValidate must not declare unused formats/ctx params")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("plain.go", []string{
+		`func (m *Plain) Validate(_ strfmt.Registry) error {`,
+		`func (m *Plain) ContextValidate(_ context.Context, _ strfmt.Registry) error {`,
+	}, []string{
+		`func (m *Plain) Validate(formats strfmt.Registry) error {`,
+		`func (m *Plain) ContextValidate(ctx context.Context, formats strfmt.Registry) error {`,
+	}, noLines, noLines)
+}
+
+func initFixture1632() {
+	f := newModelFixture("../testdata/bugs/1632/fixture-1632.yaml", "additionalProperties value must unmarshal into a non-nil target")
+	flattenRun := f.AddRun(false).WithMinimalFlatten(true)
+
+	flattenRun.AddExpectations("hal_rsc_links.go", []string{
+		`var toadd *HalHref`,
+		`if err := json.Unmarshal(v, &toadd); err != nil {`,
+	},
+		// a nil *HalHref passed directly (without &) to json.Unmarshal is an
+		// invalid unmarshal target and always fails at runtime with
+		// "json: Unmarshal(nil *models.HalHref)" (see issue #1632)
+		[]string{
+			`if err := json.Unmarshal(v, toadd); err != nil {`,
+		}, noLines, noLines)
+}
+
+func initFixture1487BaseTypes() {
+	// testing ../testdata/bugs/1487/fixture-basetypes.yaml with flatten and expand (--skip-flatten)
+
+	/*
+		This fixture explores base types (discriminated types) used in every container position:
+		as a map element, as a tuple element, as additionalItems, as a plain property and as an alias.
+
+		A base type renders as a Go interface, so it must never be rendered as a pointer: `*Iface`
+		cannot carry the method set and the generated calls on the element do not compile.
+	*/
+	f := newModelFixture("../testdata/bugs/1487/fixture-basetypes.yaml", "fixture for base types in containers")
+	flattenRun := f.AddRun(false)
+	expandRun := f.AddRun(true)
+
+	// load expectations for model: trivial_in_add_props.go
+	flattenRun.AddExpectations("trivial_in_add_props.go", []string{
+		"	TrivialInAddProps map[string]TrivialBase `json:\"-\"`",
+		`		result := make(map[string]TrivialBase)`,
+		`			var toadd TrivialBase`,
+	},
+		// not expected: a base type is an interface and is never pointed to
+		[]string{
+			`map[string]*TrivialBase`,
+			`var toadd *TrivialBase`,
+		},
+		// output in log
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_in_tuple.go
+	flattenRun.AddExpectations("trivial_in_tuple.go", []string{
+		`	p1Field TrivialBase`,
+		"	TrivialInTupleItems []TrivialBase `json:\"-\"`",
+		`func (m *TrivialInTuple) P1() TrivialBase {`,
+		`func (m *TrivialInTuple) SetP1(val TrivialBase) {`,
+		`		var dataP1 TrivialBase`,
+		`			var toadd TrivialBase`,
+	},
+		// not expected
+		[]string{
+			`[]*TrivialBase`,
+			`p1Field *TrivialBase`,
+			`var toadd *TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_in_props.go
+	flattenRun.AddExpectations("trivial_in_props.go", []string{
+		`	genericTrivialPropField TrivialBase`,
+		`func (m *TrivialInProps) GenericTrivialProp() TrivialBase {`,
+		`func (m *TrivialInProps) SetGenericTrivialProp(val TrivialBase) {`,
+	},
+		// not expected
+		[]string{
+			`genericTrivialPropField *TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: trivial_map_alias.go
+	flattenRun.AddExpectations("trivial_map_alias.go", []string{
+		`type TrivialMapAlias map[string]TrivialBase`,
+	},
+		// not expected
+		[]string{
+			`type TrivialMapAlias map[string]*TrivialBase`,
+		},
+		noLines,
+		noLines)
+
+	// when the spec is expanded, the base type is inlined as an anonymous interface,
+	// and must not be pointed to either
+	expandRun.AddExpectations("trivial_in_add_props.go", []string{
+		"	TrivialInAddProps map[string]TrivialInAddPropsAnon `json:\"-\"`",
+		`		result := make(map[string]TrivialInAddPropsAnon)`,
+		`			var toadd TrivialInAddPropsAnon`,
+		`type TrivialInAddPropsAnon interface {`,
+	},
+		// not expected
+		[]string{
+			`map[string]*TrivialInAddPropsAnon`,
+			`var toadd *TrivialInAddPropsAnon`,
+		},
+		noLines,
+		noLines)
+}
+
+func initFixture1487Polymorphism() {
+	// testing ../testdata/bugs/1487/fixture-polymorphism.yaml with flatten and expand (--skip-flatten)
+
+	/*
+		Companion to fixture-basetypes.yaml, with richer base types (properties, additionalProperties,
+		nested anonymous schemas) composed into maps, tuples and additionalItems.
+
+		Same invariant: a base type renders as a Go interface and is never pointed to.
+	*/
+	f := newModelFixture("../testdata/bugs/1487/fixture-polymorphism.yaml", "fixture for polymorphic types in containers")
+	flattenRun := f.AddRun(false)
+	expandRun := f.AddRun(true)
+
+	// load expectations for model: map_of_base_types.go
+	flattenRun.AddExpectations("map_of_base_types.go", []string{
+		"	MapOfBaseTypes map[string]MyBaseType `json:\"-\"`",
+		`		result := make(map[string]MyBaseType)`,
+		`			var toadd MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`map[string]*MyBaseType`,
+			`var toadd *MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: map_of_nodes.go
+	flattenRun.AddExpectations("map_of_nodes.go", []string{
+		`type MapOfNodes map[string]Node`,
+	},
+		// not expected
+		[]string{
+			`type MapOfNodes map[string]*Node`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: tuple_with_additional_base_types.go
+	flattenRun.AddExpectations("tuple_with_additional_base_types.go", []string{
+		"	TupleWithAdditionalBaseTypesItems []MyBaseType `json:\"-\"`",
+		`			var toadd MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`[]*MyBaseType`,
+			`var toadd *MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: tuple_of_base_types.go
+	flattenRun.AddExpectations("tuple_of_base_types.go", []string{
+		`func (m *TupleOfBaseTypes) P2() MyBaseType {`,
+		`func (m *TupleOfBaseTypes) SetP2(val MyBaseType) {`,
+		`		var dataP2 MyBaseType`,
+	},
+		// not expected
+		[]string{
+			`P2() *MyBaseType`,
+			`SetP2(val *MyBaseType)`,
+		},
+		noLines,
+		noLines)
+
+	// load expectations for model: my_sub_type2.go
+	// a subtype composing a base type, whose additionalProperties are the base type itself
+	flattenRun.AddExpectations("my_sub_type2.go", []string{
+		"		AO1 map[string]MyBaseType `json:\"-\"`",
+	},
+		// not expected
+		[]string{
+			`map[string]*MyBaseType`,
+		},
+		noLines,
+		noLines)
+
+	// expanded: the base type is inlined as an anonymous interface
+	expandRun.AddExpectations("map_of_base_types.go", []string{
+		"	MapOfBaseTypes map[string]MapOfBaseTypesAnon `json:\"-\"`",
+		`		result := make(map[string]MapOfBaseTypesAnon)`,
+		`			var toadd MapOfBaseTypesAnon`,
+	},
+		// not expected
+		[]string{
+			`map[string]*MapOfBaseTypesAnon`,
+			`var toadd *MapOfBaseTypesAnon`,
+		},
+		noLines,
+		noLines)
 }

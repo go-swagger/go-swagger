@@ -41,7 +41,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 	t.Parallel()
 
 	// just checks if it can render and format these things
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -55,7 +55,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 			rendered := bytes.NewBuffer(nil)
 
 			require.NoErrorf(t, opts.templates.MustGet("model").Execute(rendered, genModel),
-				"Unexpected error while rendering models for fixtures/codegen/todolist.models.yml: %v", err)
+				"Unexpected error while rendering models for testdata/codegen/todolist.models.yml: %v", err)
 
 			_, err = opts.LanguageOpts.FormatContent(strings.ToLower(k)+".go", rendered.Bytes())
 			require.NoError(t, err)
@@ -274,7 +274,7 @@ func TestGenerateModel_Primitives(t *testing.T) {
 			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
 			continue
 		}
-		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(formats strfmt.Registry) error {\n  return nil\n}\n// ContextValidate validates this the type based on context it is used \nfunc (o theType) ContextValidate(ctx context.Context, formats strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(_ strfmt.Registry) error {\n  return nil\n}\n// ContextValidate validates this the type based on context it is used \nfunc (o theType) ContextValidate(_ context.Context, _ strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
@@ -345,7 +345,7 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 }
 
 func TestGenerateModel_Nota(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -363,7 +363,7 @@ func TestGenerateModel_Nota(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithRef(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -384,7 +384,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithMeta(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -408,7 +408,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 }
 
 func TestGenerateModel_XGoNamePreserveExplicitCasing(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/3319/3319.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/3319/3319.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -440,7 +440,7 @@ func TestGenerateModel_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestGenParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
-	b, err := methodPathOpBuilder("post", "/test", "../fixtures/bugs/3319/3319.yaml")
+	b, err := methodPathOpBuilder("post", "/test", "../testdata/bugs/3319/3319.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -461,7 +461,7 @@ func TestGenParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestGenClientParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
-	b, err := methodPathOpBuilder("post", "/test", "../fixtures/bugs/3319/3319.yaml")
+	b, err := methodPathOpBuilder("post", "/test", "../testdata/bugs/3319/3319.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -482,7 +482,7 @@ func TestGenClientParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestGenerateModel_RunParameters(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -507,7 +507,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithName(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -544,7 +544,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -564,7 +564,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithCustomTag(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -581,7 +581,7 @@ func TestGenerateModel_WithCustomTag(t *testing.T) {
 }
 
 func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -605,7 +605,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithMap(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -628,7 +628,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapInterface(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -655,7 +655,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRef(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -679,7 +679,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapComplex(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -703,7 +703,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRegistry(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -726,7 +726,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -750,7 +750,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -774,7 +774,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 }
 
 func TestGenerateModel_WithAdditional(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -831,7 +831,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 func TestGenerateModel_JustRef(t *testing.T) {
 	opts := opts()
 	tpl := opts.templates.MustGet("model").Lookup("schema")
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -854,7 +854,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 func TestGenerateModel_WithRef(t *testing.T) {
 	opts := opts()
 	tpl := opts.templates.MustGet("model").Lookup("schema")
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -876,7 +876,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 func TestGenerateModel_WithNullableRef(t *testing.T) {
 	opts := opts()
 	tpl := opts.templates.MustGet("model").Lookup("schema")
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -899,7 +899,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 }
 
 func TestGenerateModel_Scores(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -919,7 +919,7 @@ func TestGenerateModel_Scores(t *testing.T) {
 }
 
 func TestGenerateModel_JaggedScores(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -939,7 +939,7 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 }
 
 func TestGenerateModel_Notables(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -962,7 +962,7 @@ func TestGenerateModel_Notables(t *testing.T) {
 }
 
 func TestGenerateModel_Notablix(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -983,7 +983,7 @@ func TestGenerateModel_Notablix(t *testing.T) {
 }
 
 func TestGenerateModel_Stats(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1006,7 +1006,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 }
 
 func TestGenerateModel_Statix(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1029,7 +1029,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 }
 
 func TestGenerateModel_WithItems(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1057,7 +1057,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 }
 
 func TestGenerateModel_WithComplexItems(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1087,7 +1087,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 }
 
 func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1117,7 +1117,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1147,7 +1147,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 }
 
 func TestGenerateModel_WithComplexAdditional(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1176,7 +1176,7 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_SimpleTuple(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1236,7 +1236,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 }
 
 func TestGenerateModel_TupleWithExtra(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1301,7 +1301,7 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 }
 
 func TestGenerateModel_TupleWithComplex(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1359,13 +1359,13 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	assertInCode(t, "for _, val := range stage1[lastIndex+1:]", res)
 	assertInCode(t, "buf = bytes.NewBuffer(val)", res)
 	assertInCode(t, "dec := json.NewDecoder(buf)", res)
-	assertInCode(t, "dec.Decode(toadd)", res)
+	assertInCode(t, "dec.Decode(&toadd)", res)
 	assertInCode(t, "json.Marshal(data)", res)
 	assertInCode(t, "for _, v := range m."+k+"Items", res)
 }
 
 func TestGenerateModel_WithTuple(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1432,7 +1432,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 }
 
 func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1510,7 +1510,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 }
 
 func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1536,7 +1536,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 }
 
 func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1561,7 +1561,7 @@ func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.
 }
 
 func TestGenerateModel_WithAllOf(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1616,7 +1616,7 @@ func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
 }
 
 func TestNumericKeys(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/162/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/162/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1636,7 +1636,7 @@ func TestNumericKeys(t *testing.T) {
 }
 
 func TestGenModel_Issue196(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/196/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/196/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1652,11 +1652,11 @@ func TestGenModel_Issue196(t *testing.T) {
 	require.NoError(t, err)
 
 	res := string(ct)
-	assertInCode(t, "Event) Validate(formats strfmt.Registry) error", res)
+	assertInCode(t, "Event) Validate(_ strfmt.Registry) error", res)
 }
 
 func TestGenModel_Issue222(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/tasklist.basic.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/tasklist.basic.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1679,7 +1679,7 @@ func TestGenModel_Issue222(t *testing.T) {
 }
 
 func TestGenModel_Issue243(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1699,7 +1699,7 @@ func TestGenModel_Issue243(t *testing.T) {
 }
 
 func TestGenModel_Issue252(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/252/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1722,7 +1722,7 @@ func TestGenModel_Issue252(t *testing.T) {
 }
 
 func TestGenModel_Issue251(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/251/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/251/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1749,7 +1749,7 @@ func TestGenModel_Issue251(t *testing.T) {
 }
 
 func TestGenModel_Issue257(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1773,7 +1773,7 @@ func TestGenModel_Issue257(t *testing.T) {
 }
 
 func TestGenModel_Issue340(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1796,7 +1796,7 @@ func TestGenModel_Issue340(t *testing.T) {
 }
 
 func TestGenModel_Issue381(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1816,7 +1816,7 @@ func TestGenModel_Issue381(t *testing.T) {
 }
 
 func TestGenModel_Issue300(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1836,7 +1836,7 @@ func TestGenModel_Issue300(t *testing.T) {
 }
 
 func TestGenModel_Issue398(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1859,7 +1859,7 @@ func TestGenModel_Issue398(t *testing.T) {
 }
 
 func TestGenModel_Issue454(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/454/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/454/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1882,7 +1882,7 @@ func TestGenModel_Issue454(t *testing.T) {
 }
 
 func TestGenModel_Issue423(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/423/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/423/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1903,7 +1903,7 @@ func TestGenModel_Issue423(t *testing.T) {
 }
 
 func TestGenModel_Issue453(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/453/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/453/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1923,7 +1923,7 @@ func TestGenModel_Issue453(t *testing.T) {
 }
 
 func TestGenModel_Issue455(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/455/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/455/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1943,7 +1943,7 @@ func TestGenModel_Issue455(t *testing.T) {
 }
 
 func TestGenModel_Issue763(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/763/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/763/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1965,7 +1965,7 @@ func TestGenModel_Issue763(t *testing.T) {
 }
 
 func TestGenModel_Issue811_NullType(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/811/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -1985,7 +1985,7 @@ func TestGenModel_Issue811_NullType(t *testing.T) {
 }
 
 func TestGenModel_Issue811_Emojis(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/811/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/811/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2006,7 +2006,7 @@ func TestGenModel_Issue811_Emojis(t *testing.T) {
 }
 
 func TestGenModel_Issue752_EOFErr(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/azure-text-analyis.json")
+	specDoc, err := loads.Spec("../testdata/codegen/azure-text-analyis.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2026,7 +2026,7 @@ func TestGenModel_Issue752_EOFErr(t *testing.T) {
 }
 
 func TestImports_ExistingModel(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/existing-model.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/existing-model.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2050,7 +2050,7 @@ func TestImports_ExistingModel(t *testing.T) {
 }
 
 func TestGenModel_Issue786(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/786/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/786/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2072,7 +2072,7 @@ func TestGenModel_Issue786(t *testing.T) {
 }
 
 func TestGenModel_Issue822(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/822/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/822/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2099,7 +2099,7 @@ func TestGenModel_Issue822(t *testing.T) {
 }
 
 func TestGenModel_Issue981(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/981/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/981/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2123,7 +2123,7 @@ func TestGenModel_Issue981(t *testing.T) {
 }
 
 func TestGenModel_Issue1341(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1341/swagger.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1341/swagger.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2150,7 +2150,7 @@ func TestGenModel_Issue1341(t *testing.T) {
 func TestGenModel_Issue1347(t *testing.T) {
 	const k = "ContainerConfig"
 
-	specDoc, err := loads.Spec("../fixtures/bugs/1347/fixture-1347.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1347/fixture-1347.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2172,7 +2172,7 @@ func TestGenModel_Issue1347(t *testing.T) {
 
 // This tests to check that format validation is performed on MAC format.
 func TestGenModel_Issue1348(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1348/fixture-1348.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1348/fixture-1348.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2195,7 +2195,7 @@ func TestGenModel_Issue1348(t *testing.T) {
 
 // This tests that additionalProperties with validation is generated properly.
 func TestGenModel_Issue1198(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1198/fixture-1198.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1198/fixture-1198.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2218,7 +2218,7 @@ func TestGenModel_Issue1198(t *testing.T) {
 
 // This tests that additionalProperties with validation is generated properly.
 func TestGenModel_Issue1397a(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397a.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1397/fixture-1397a.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2241,7 +2241,7 @@ func TestGenModel_Issue1397a(t *testing.T) {
 
 // This tests that an enum of object values validates properly.
 func TestGenModel_Issue1397b(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397b.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1397/fixture-1397b.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2264,7 +2264,7 @@ func TestGenModel_Issue1397b(t *testing.T) {
 
 // This tests that additionalProperties with an array of polymorphic objects is generated properly.
 func TestGenModel_Issue1409(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/1409/fixture-1409.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/1409/fixture-1409.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2288,9 +2288,44 @@ func TestGenModel_Issue1409(t *testing.T) {
 	assertInCode(t, `b3, err = json.Marshal(m.GraphAdditionalProperties)`, res)
 }
 
+// This tests that additionalProperties whose schema resolves as a pointer type
+// (a $ref to an object, rendered as *HalHref by the "schemaType" template)
+// unmarshals into a non-nil target. Passing the address of the local pointer
+// variable (&toadd, i.e. **HalHref) is the correct, safe pattern: encoding/json
+// allocates through arbitrary pointer depth, so the map value ends up as the
+// expected single-level *HalHref, never a double pointer.
+func TestGenModel_Issue1632(t *testing.T) {
+	specDoc, err := loads.Spec("../testdata/bugs/1632/fixture-1632.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	k := "HalRscLinks"
+	schema := definitions[k]
+	opts := opts()
+	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+	ct, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	res := string(ct)
+	// The additionalProperties element type is nullable (a $ref), so the local
+	// variable is already declared as a pointer ...
+	assertInCode(t, "var toadd *HalHref", res)
+	// ... and the address is always taken unconditionally, never passing the
+	// nil pointer itself to json.Unmarshal.
+	assertInCode(t, "if err := json.Unmarshal(v, &toadd); err != nil {", res)
+	assertInCode(t, "result[k] = toadd", res)
+	// The field itself stays a single-level pointer map, not a double pointer.
+	assertInCode(t, "HalRscLinks map[string]*HalHref", res)
+}
+
 // This tests that a model with a discriminator doesn't validation if the field is zero.
 func TestGenModel_Issue2911(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/2911/fixture-2911.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/2911/fixture-2911.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2320,7 +2355,7 @@ func TestGenModel_Issue2911(t *testing.T) {
 func TestGenModel_Issue866(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/866/fixture-866.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/866/fixture-866.yaml")
 	require.NoError(t, err)
 
 	p, ok := specDoc.Spec().Paths.Paths["/"]
@@ -2352,7 +2387,7 @@ func TestGenModel_Issue866(t *testing.T) {
 
 // This tests makes sure marshalling and validation is generated in aliased formatted definitions.
 func TestGenModel_Issue946(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/946/fixture-946.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/946/fixture-946.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2379,7 +2414,7 @@ func TestGenModel_Issue946(t *testing.T) {
 
 // This tests makes sure that docstring in inline schema in response properly reflect the Required property.
 func TestGenModel_Issue910(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/910/fixture-910.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/910/fixture-910.yaml")
 	require.NoError(t, err)
 
 	p, ok := specDoc.Spec().Paths.Paths["/mytest"]
@@ -2415,7 +2450,7 @@ func TestGenModel_Issue910(t *testing.T) {
 }
 
 func TestGenerateModel_Xorder(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/x-order.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/x-order.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2455,7 +2490,7 @@ func TestGenerateModel_Xorder(t *testing.T) {
 }
 
 func TestGenModel_Issue1623(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/enhancements/1623/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/enhancements/1623/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2487,7 +2522,7 @@ func TestGenModel_Issue1623(t *testing.T) {
 }
 
 func TestGenerateModel_Issue2457(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/2457/fixture-2457.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/2457/fixture-2457.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2504,7 +2539,7 @@ func TestGenerateModel_Issue2457(t *testing.T) {
 }
 
 func TestGenModel_Pr2464(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/enhancements/2464/fixture-2464.yaml")
+	specDoc, err := loads.Spec("../testdata/enhancements/2464/fixture-2464.yaml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2556,7 +2591,7 @@ func TestGenModel_Pr2464(t *testing.T) {
 }
 
 func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
-	ymlFile := "../fixtures/codegen/keep-spec-order.yml"
+	ymlFile := "../testdata/codegen/keep-spec-order.yml"
 	opts := opts()
 	abcType := "abctype"
 
@@ -2618,7 +2653,7 @@ func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 }
 
 func TestGenModel_StrictAdditionalProperties(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/strict-additional-properties.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/strict-additional-properties.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2655,7 +2690,7 @@ func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 }
 
 func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/xml-model.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/xml-model.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2682,7 +2717,7 @@ func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
 }
 
 func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/xml-model.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/xml-model.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2709,7 +2744,7 @@ func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
 
 func Test_PointerConversions(t *testing.T) {
 	// generation of a pointer converter for enum vars
-	specDoc, err := loads.Spec("../fixtures/bugs/252/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/252/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -2745,7 +2780,7 @@ func Test_PointerConversions(t *testing.T) {
 }
 
 func TestIssue2597(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/bugs/2597/2597.yaml")
+	specDoc, err := loads.Spec("../testdata/bugs/2597/2597.yaml")
 	require.NoError(t, err)
 
 	const antipattern = `(validate\.\w+\("",\s+"body",.+?\))|(errors\.\w+\("",\s+"body",.+?\))`
@@ -2840,5 +2875,152 @@ func TestIssue2597(t *testing.T) {
 			assertRegexpNotInCode(t, pattern, res)
 			assertRegexpNotInCode(t, antipattern, res) // we have a path, that is the property name
 		})
+	})
+}
+
+// TestIssue872 covers the opt-in fmt.Stringer String() method on generated models.
+//
+// The original issue reported that formatting a model with %+v prints pointer
+// addresses for pointer properties (e.g. a required *string) rather than their
+// values. The String() method renders the field values as JSON instead.
+func TestIssue872(t *testing.T) {
+	specDoc, err := loads.Spec("../testdata/bugs/872/872.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	const model = "ModelError"
+
+	render := func(t *testing.T, opts *GenOpts) string {
+		t.Helper()
+
+		genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+		require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+		return string(ct)
+	}
+
+	t.Run("with WantsStringer option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsStringer = true
+
+		res := render(t, opts)
+
+		// the model gains a fmt.Stringer implementation with a pointer receiver
+		assertInCode(t, "func (m *ModelError) String() string {", res)
+		// it renders field values via the JSON serializer (GlenDC's json.Marshal idea),
+		// reusing the same helper as MarshalBinary - so pointer fields print their value
+		assertInCode(t, "jsonutils.WriteJSON(m)", res)
+		// it must NOT format the model with the Go-syntax verbs that leak pointer addresses
+		assertRegexpNotInCode(t, `String\(\)[\s\S]*fmt\.Sprintf\(\s*"%\+?v"`, res)
+	})
+
+	t.Run("without WantsStringer option (default)", func(t *testing.T) {
+		opts := opts()
+
+		res := render(t, opts)
+
+		// opt-in: the default output is unchanged, no String() method is emitted
+		assertNotInCode(t, "func (m *ModelError) String() string {", res)
+	})
+}
+
+// TestGenerateGetters covers the opt-in Get<Field> methods on generated models.
+//
+// The --generate-getters flag emits a getter for each property of a model struct,
+// returning the field value by its declared type. This test exercises the variety
+// of return types (scalar, pointer, slice, date-time, nested struct) and asserts
+// that the default output is unchanged when the option is not set.
+func TestGenerateGetters(t *testing.T) {
+	specDoc, err := loads.Spec("../testdata/enhancements/generate-getters/fixture.yaml")
+	require.NoError(t, err)
+
+	definitions := specDoc.Spec().Definitions
+	const model = "GetterModel"
+
+	render := func(t *testing.T, opts *GenOpts) string {
+		t.Helper()
+
+		genModel, err := makeGenDefinition(model, "models", definitions[model], specDoc, opts)
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+		ct, err := opts.LanguageOpts.FormatContent("model.go", buf.Bytes())
+		require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+		return string(ct)
+	}
+
+	t.Run("with WantsGetters option", func(t *testing.T) {
+		opts := opts()
+		opts.WantsGetters = true
+
+		res := render(t, opts)
+
+		// each non-base-type property gets a Get<Field> getter with a pointer receiver
+		// and the field's declared type. The Go formatter expands the one-liner body
+		// to multi-line, so we assert on the signature + return statement separately.
+
+		// scalar types: int64, bool, float32
+		assertInCode(t, "func (m *GetterModel) GetID() int64 {", res)
+		assertInCode(t, "return m.ID", res)
+		assertInCode(t, "func (m *GetterModel) GetActive() bool {", res)
+		assertInCode(t, "return m.Active", res)
+		assertInCode(t, "func (m *GetterModel) GetRatio() float32 {", res)
+		assertInCode(t, "return m.Ratio", res)
+
+		// required string -> pointer
+		assertInCode(t, "func (m *GetterModel) GetName() *string {", res)
+		assertInCode(t, "return m.Name", res)
+
+		// slice
+		assertInCode(t, "func (m *GetterModel) GetTags() []string {", res)
+		assertInCode(t, "return m.Tags", res)
+
+		// date-time format -> strfmt.DateTime
+		assertInCode(t, "func (m *GetterModel) GetWhen() strfmt.DateTime {", res)
+		assertInCode(t, "return m.When", res)
+
+		// nested struct -> pointer
+		assertInCode(t, "func (m *GetterModel) GetChild() *Child {", res)
+		assertInCode(t, "return m.Child", res)
+
+		// map (additionalProperties) -> map[string]string
+		assertInCode(t, "func (m *GetterModel) GetMetadata() map[string]string {", res)
+		assertInCode(t, "return m.Metadata", res)
+
+		// polymorphic base-type property: the existing polymorphic path generates
+		// a getter WITHOUT the "Get" prefix (and a setter). Our --generate-getters
+		// block must NOT emit a duplicate "GetPet" getter for this property.
+		assertInCode(t, "func (m *GetterModel) Pet() Pet {", res)
+		assertInCode(t, "func (m *GetterModel) SetPet(val Pet) {", res)
+		assertNotInCode(t, "func (m *GetterModel) GetPet(", res)
+	})
+
+	t.Run("without WantsGetters option (default)", func(t *testing.T) {
+		opts := opts()
+
+		res := render(t, opts)
+
+		// opt-in: the default output is unchanged, no Get<Field> methods are emitted.
+		// The polymorphic getter for the base-type property still exists (it is
+		// generated unconditionally by the existing polymorphic path).
+		assertNotInCode(t, "func (m *GetterModel) GetID(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetName(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetTags(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetWhen(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetChild(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetActive(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetRatio(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetMetadata(", res)
+		assertNotInCode(t, "func (m *GetterModel) GetPet(", res)
+		assertInCode(t, "func (m *GetterModel) Pet() Pet {", res)
 	})
 }

@@ -5,7 +5,7 @@
 <!-- Badges: release & docker images  -->
 [![Release][release-badge]][release-url] [![Container Registry on Quay.io][quay-badge]][quay-url] [![Container Registry on Github][ghcr-badge]][ghcr-url]
 <!-- Badges: code quality  -->
-[![Go Report Card][gocard-badge]][gocard-url] [![CodeFactor Grade][codefactor-badge]][codefactor-url]
+[![CodeFactor Grade][codefactor-badge]][codefactor-url]
 <!-- Badges: license & compliance -->
 [![License][license-badge]][license-url] [![Open SSF Scorecard][ossf-badge]][ossf-url] [![OpenSSF Best Practices][ossf-cci-badge]][ossf-cci-url] [![OpenSSF Baseline][ossf-baseline]][ossf-cci-url] [![OSS licences status][fossa-badge]][fossa-url]
 <!-- Badges: documentation & support -->
@@ -21,45 +21,22 @@ It provide tools to work with swagger specifications.
 
 ## Announcements
 
-* **2026-05-28** : v0.34.0 ships!
-  * **major refactoring actions**: the repo has been split in smaller chunks, easier to understand:
-    * code examples have moved to `go-swagger/examples`, with a CI to automate code regeneration
-    * `codescan`` (the part that underpins `swagger generate spec`) has moved as a standalone
-      library `go-openapi/codescan`. This library has been heavily refactored to prepare more
-      significant improvements. The current version gets a few quirks already fixed.
-    * `diff` (the implement of `swagger diff`) has joined `go-openapi/analysis`
-    * package `generator` has been refactored to expose internal utilities (template repo, funcmaps, etc)
-      as packages.
-  * Generated code now requires `go-openapi/runtime` v0.32.x benefits from many bug fixes and here too a
-    rechunking of the code.
-  * Generated code now requires `go-openapi/swag` v0.26+ and directly imports all sub-modules.
-  * Many long-awaited improvements on the generated client.
-  * **Feel free to join on Discord** - Our Slack channel will be discontinued next month.
+You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
 
-* **2026-03-16** : v0.33.2 is out
-  * upgraded requirement to `go1.25`
-  * bug fix release
-  * changes in our release workflow:
-    * releases and tags are signed
-    * all released artifacts are now signed. Signatures may be checked against `.sig` artifacts.
-    * deb and rpm packages are available on a new package name `go-swagger` instead of `swagger`
-    * docker images now embarks a go installation (required to generate code)
-    * binary releases now ship as tarballs. See the [updated installation instructions](https://goswagger.io/go-swagger/install/install-binary)
-    * for convenience, plain binaries with the pre-existing OS/arch naming convention has been maintained for now
-  * removed dependencies:
-    * mongodb driver (**NOT BREAKING**: see also <https://github.com/go-openapi/strfmt#announcements> for support
-      of drivers updates)
-    * `mailru/easyjson`: not longer imported by default. See <https://github.com/go-openapi/swag?tab=readme-ov-file#dependencies>
-      to enact `mailru/easyjson` explicitly.
+* **2026-08-15** : Docker image users - shipping **v0.36.4 to address critical vulnerability in golang**
+* **2026-08-11** : v0.36.3 lands soon (ETA 08/14)
+  * codegen fixes
+  * spec gen updates deferred to v0.36.4 (~ 08/21: faster scanner, enhanced TUI tool)
+    * see preview of the playground tool (online spec gen): <https://go-openapi.github.io/codescan/playground>
+  * doc site revamp deferred to v0.36.5 (~ end of August)
 
-* **2026-03-16** : new community chat on discord
-  * a new discord community channel is available to be notified of changes and support users
-  * our venerable Slack channel remains open, and will be eventually discontinued on **2026-06-30**
-  * (for go-openapi libraries we'll stop Slack on **2026-03-31**).
-
-You may join the discord community by clicking the invite link on the discord badge (also above). [![Discord Channel][discord-badge]][discord-url].
-
-Or join our Slack channel: [![Slack Channel][slack-logo]![slack-badge]][slack-url].
+* **2026-07-31** : v0.36.0 is released
+  * codegen: new option to serve multipart files as a stream
+  * spec gen:
+    * new TUI tool (see <https://github.com/go-openapi/codescan#work-with-the-tui>)
+    * auto discovery of polymorphic subtypes
+    * swagger:omit to use with embedded structs 
+  * a significant update of our documentation site is ongoing, but couldn't make it to this release.
 
 ## Documentation
 
@@ -91,8 +68,8 @@ Most features and building blocks are now in a stable state, with a rich set of 
 
 The go-openapi community actively continues bringing fixes and enhancements to this code base.
 
-There is still much room for improvement: contributors and PR's are welcome. You may also get in touch with maintainers on [our slack channel](https://slackin.goswagger.io).
-
+There is still much room for improvement: contributors and PR's are welcome.
+You may also get in touch with maintainers on our [![Discord Channel][discord-badge]][discord-url].
 ## Installing
 
 ```sh
@@ -130,14 +107,14 @@ Just like swagger, this does not cover code generated by the toolkit. That code 
 [![FOSSA Status][fossa-badge-large]][fossa-url-large]
 
 <!-- Badges: status  -->
-[test-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/test.yaml/badge.svg
-[test-url]: https://github.com/go-swagger/go-swagger/actions/workflows/test.yaml
+[test-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/go-test.yml/badge.svg
+[test-url]: https://github.com/go-swagger/go-swagger/actions/workflows/go-test.yml
 [cov-badge]: https://codecov.io/gh/go-swagger/go-swagger/branch/master/graph/badge.svg
 [cov-url]: https://codecov.io/gh/go-swagger/go-swagger
-[vuln-scan-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/scanner.yaml/badge.svg
-[vuln-scan-url]: https://github.com/go-swagger/go-swagger/actions/workflows/scanner.yaml
-[codeql-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/codeql.yaml/badge.svg
-[codeql-url]: https://github.com/go-swagger/go-swagger/actions/workflows/codeql.yaml
+[vuln-scan-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/scanner.yml/badge.svg
+[vuln-scan-url]: https://github.com/go-swagger/go-swagger/actions/workflows/scanner.yml
+[codeql-badge]: https://github.com/go-swagger/go-swagger/actions/workflows/codeql.yml/badge.svg
+[codeql-url]: https://github.com/go-swagger/go-swagger/actions/workflows/codeql.yml
 <!-- Badges: release & docker images  -->
 [release-badge]: https://badge.fury.io/gh/go-swagger%2Fgo-swagger.svg
 [release-url]: https://badge.fury.io/gh/go-swagger%2Fgo-swagger
@@ -146,8 +123,6 @@ Just like swagger, this does not cover code generated by the toolkit. That code 
 [ghcr-badge]: https://ghcr-badge-ipv2.onrender.com/go-swagger/go-swagger/latest_tag?ignore=sha-*,edge,master&label=Container%20Registry%20on%20Github
 [ghcr-url]: https://github.com/orgs/go-swagger/packages/container/go-swagger/versions?filters[version_type]=tagged
 <!-- Badges: code quality  -->
-[gocard-badge]: https://goreportcard.com/badge/github.com/go-swagger/go-swagger
-[gocard-url]: https://goreportcard.com/report/github.com/go-swagger/go-swagger
 [codefactor-badge]: https://img.shields.io/codefactor/grade/github/go-swagger/go-swagger
 [codefactor-url]: https://www.codefactor.io/repository/github/go-swagger/go-swagger
 <!-- Badges: documentation & support -->
@@ -155,11 +130,9 @@ Just like swagger, this does not cover code generated by the toolkit. That code 
 [doc-url]: https://goswagger.io/go-swagger
 [godoc-badge]: https://godoc.org/github.com/go-swagger/go-swagger?status.svg
 [godoc-url]: http://godoc.org/github.com/go-swagger/go-swagger
-[slack-logo]: https://a.slack-edge.com/e6a93c1/img/icons/favicon-32.png
-[slack-badge]: https://img.shields.io/badge/slack-blue?link=https%3A%2F%2Fgoswagger.slack.com%2Farchives%2FC04R30YM
-[slack-url]: https://goswagger.slack.com/archives/C04R30YMU
 [discord-badge]: https://img.shields.io/discord/1446918742398341256?logo=discord&label=discord&color=blue
 [discord-url]: https://discord.gg/FfnFYaC3k5
+[codescan-doc-url]: https://go-openapi.github.io/codescan/
 <!-- Badges: license & compliance -->
 [license-badge]: http://img.shields.io/badge/license-Apache%20v2-orange.svg
 [license-url]: https://github.com/go-swagger/go-swagger/?tab=Apache-2.0-1-ov-file#readme

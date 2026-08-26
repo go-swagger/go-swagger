@@ -11,7 +11,7 @@ _Use-Case_: I have read the swagger.json generation and feel confused. Could you
 
 **Answer**: this folder uses most of the annotations
 
-<https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/petstore>
+<https://github.com/go-swagger/go-swagger/tree/master/testdata/goparsing/petstore>
 
 >This begs for 3 questions :
 > - Q1: Does a struct for Parameter model have to be declared in the SAME .go file where the swagger:route is declared for a router function?
@@ -62,7 +62,7 @@ https://goswagger.io/generate/spec/params.html
 Originally from issue [#213](https://github.com/go-swagger/go-swagger/issues/213).
 
 ### Extra function in example?
-In file: `go-swagger/fixtures/goparsing/classification/operations/todo_operation.go`,
+In file: `go-swagger/testdata/goparsing/classification/operations/todo_operation.go`,
 `Func: mountItem` looks like extra function. Could you explain?
 
 **Answer**: swagger tool generates a correct specification for proposed routes without calling fake func mountItem.
@@ -138,7 +138,7 @@ _Use-Case_: I defined a route with!
 **Answer**: `swagger:params` is used to indicate which operations the properties of the operation are included in the struct.
 
 So you'd use something like these:
-https://github.com/go-swagger/go-swagger/blob/master/fixtures/goparsing/petstore/rest/handlers/orders.go#L24-L46
+https://github.com/go-swagger/go-swagger/blob/master/testdata/goparsing/petstore/rest/handlers/orders.go#L24-L46
 
 or:
 
@@ -237,7 +237,7 @@ All generated code also uses all the annotations that are applicable for it.
 
 <https://github.com/go-swagger/examples/tree/master/todo-list>
 
-And also: https://github.com/go-swagger/go-swagger/tree/master/fixtures/goparsing/classification
+And also: https://github.com/go-swagger/go-swagger/tree/master/testdata/goparsing/classification
 (this is the code used to test parsing the annotations).
 
 Please bear in mind that this is a project (not a product) to which a number of volunteers have

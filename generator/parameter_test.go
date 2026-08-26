@@ -17,7 +17,7 @@ import (
 
 func TestBodyParams(t *testing.T) {
 	t.Run("with updateTask", func(t *testing.T) {
-		b, err := opBuilder("updateTask", "../fixtures/codegen/todolist.bodyparams.yml")
+		b, err := opBuilder("updateTask", "../testdata/codegen/todolist.bodyparams.yml")
 		require.NoError(t, err)
 
 		_, _, op, ok := b.Analyzed.OperationForName("updateTask")
@@ -44,7 +44,7 @@ func TestBodyParams(t *testing.T) {
 	})
 
 	t.Run("with createTask", func(t *testing.T) {
-		b, err := opBuilder("createTask", "../fixtures/codegen/todolist.bodyparams.yml")
+		b, err := opBuilder("createTask", "../testdata/codegen/todolist.bodyparams.yml")
 		require.NoError(t, err)
 
 		_, _, op, ok := b.Analyzed.OperationForName("createTask")
@@ -93,7 +93,7 @@ var arrayFormParams = []paramTestContext{
 }
 
 func TestFormArrayParams(t *testing.T) {
-	b, err := opBuilder("arrayFormParams", "../fixtures/codegen/todolist.arrayform.yml")
+	b, err := opBuilder("arrayFormParams", "../testdata/codegen/todolist.arrayform.yml")
 	require.NoError(t, err)
 
 	for _, v := range arrayFormParams {
@@ -115,7 +115,7 @@ var arrayQueryParams = []paramTestContext{
 }
 
 func TestQueryArrayParams(t *testing.T) {
-	b, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+	b, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 
 	for _, v := range arrayQueryParams {
@@ -136,7 +136,7 @@ var simplePathParams = []paramTestContext{
 }
 
 func TestSimplePathParams(t *testing.T) {
-	b, err := opBuilder("simplePathParams", "../fixtures/codegen/todolist.simplepath.yml")
+	b, err := opBuilder("simplePathParams", "../testdata/codegen/todolist.simplepath.yml")
 	require.NoError(t, err)
 
 	for _, v := range simplePathParams {
@@ -158,7 +158,7 @@ var simpleHeaderParams = []paramTestContext{
 }
 
 func TestSimpleHeaderParams(t *testing.T) {
-	b, err := opBuilder("simpleHeaderParams", "../fixtures/codegen/todolist.simpleheader.yml")
+	b, err := opBuilder("simpleHeaderParams", "../testdata/codegen/todolist.simpleheader.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleHeaderParams {
@@ -180,7 +180,7 @@ var simpleFormParams = []paramTestContext{
 }
 
 func TestSimpleFormParams(t *testing.T) {
-	b, err := opBuilder("simpleFormParams", "../fixtures/codegen/todolist.simpleform.yml")
+	b, err := opBuilder("simpleFormParams", "../testdata/codegen/todolist.simpleform.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleFormParams {
@@ -202,7 +202,7 @@ var simpleQueryParams = []paramTestContext{
 }
 
 func TestSimpleQueryParamsAST(t *testing.T) {
-	b, err := opBuilder("simpleQueryParams", "../fixtures/codegen/todolist.simplequery.yml")
+	b, err := opBuilder("simpleQueryParams", "../testdata/codegen/todolist.simplequery.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleQueryParams {
@@ -221,7 +221,7 @@ var bug163Properties = []paramTestContext{
 func TestGenParameters_Simple(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
+	b, err := opBuilder("getSearch", "../testdata/bugs/163/swagger.yml")
 	require.NoError(t, err)
 
 	for _, v := range bug163Properties {
@@ -233,7 +233,7 @@ func TestGenParameters_Simple(t *testing.T) {
 func TestGenParameter_Enhancement936(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("find", "../fixtures/enhancements/936/fixture-936.yml")
+	b, err := opBuilder("find", "../testdata/enhancements/936/fixture-936.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -254,7 +254,7 @@ func TestGenParameter_Enhancement936(t *testing.T) {
 func TestGenParameter_Issue163(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getSearch", "../fixtures/bugs/163/swagger.yml")
+	b, err := opBuilder("getSearch", "../testdata/bugs/163/swagger.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -275,7 +275,7 @@ func TestGenParameter_Issue163(t *testing.T) {
 func TestGenParameter_Issue195(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getTesting", "../fixtures/bugs/195/swagger.json")
+	b, err := opBuilder("getTesting", "../testdata/bugs/195/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -297,7 +297,7 @@ func TestGenParameter_Issue196(t *testing.T) {
 	defer discardOutput()()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		b, err := opBuilder("postEvents", "../fixtures/bugs/196/swagger.yml")
+		b, err := opBuilder("postEvents", "../testdata/bugs/196/swagger.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -326,10 +326,10 @@ func TestGenParameter_Issue217(t *testing.T) {
 	t.Parallel()
 
 	// Check for string
-	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/string.yml")
-	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/interface.yml")
-	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/map.yml")
-	assertNoValidator(t, "postEcho", "../fixtures/bugs/217/array.yml")
+	assertNoValidator(t, "postEcho", "../testdata/bugs/217/string.yml")
+	assertNoValidator(t, "postEcho", "../testdata/bugs/217/interface.yml")
+	assertNoValidator(t, "postEcho", "../testdata/bugs/217/map.yml")
+	assertNoValidator(t, "postEcho", "../testdata/bugs/217/array.yml")
 }
 
 func assertNoValidator(t *testing.T, opName, path string) {
@@ -361,7 +361,7 @@ func assertNoValidator(t *testing.T, opName, path string) {
 
 func TestGenParameter_Issue249(t *testing.T) {
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		b, err := opBuilder("putTesting", "../fixtures/bugs/249/swagger.json")
+		b, err := opBuilder("putTesting", "../testdata/bugs/249/swagger.json")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -387,7 +387,7 @@ func TestGenParameter_Issue249(t *testing.T) {
 }
 
 func TestGenParameter_Issue248(t *testing.T) {
-	b, err := opBuilder("CreateThing", "../fixtures/bugs/248/swagger.json")
+	b, err := opBuilder("CreateThing", "../testdata/bugs/248/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -422,7 +422,7 @@ func TestGenParameter_Issue303(t *testing.T) {
 		t.Run(fmt.Sprintf("%s-%s", t.Name(), service), func(t *testing.T) {
 			t.Parallel()
 
-			gen, err := opBuilder(service, "../fixtures/enhancements/303/swagger.yml")
+			gen, err := opBuilder(service, "../testdata/enhancements/303/swagger.yml")
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
@@ -455,7 +455,7 @@ func TestGenParameter_Issue303(t *testing.T) {
 }
 
 func TestGenParameter_Issue350(t *testing.T) {
-	b, err := opBuilder("withBoolDefault", "../fixtures/codegen/todolist.allparams.yml")
+	b, err := opBuilder("withBoolDefault", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -473,7 +473,7 @@ func TestGenParameter_Issue350(t *testing.T) {
 }
 
 func TestGenParameter_Issue351(t *testing.T) {
-	b, err := opBuilder("withArray", "../fixtures/codegen/todolist.allparams.yml")
+	b, err := opBuilder("withArray", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -491,7 +491,7 @@ func TestGenParameter_Issue351(t *testing.T) {
 }
 
 func TestGenParameter_Issue511(t *testing.T) {
-	gen, err := opBuilder("postModels", "../fixtures/bugs/511/swagger.yml")
+	gen, err := opBuilder("postModels", "../testdata/bugs/511/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -509,7 +509,7 @@ func TestGenParameter_Issue511(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Collection(t *testing.T) {
-	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("collection", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -529,7 +529,7 @@ func TestGenParameter_Issue628_Collection(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Single(t *testing.T) {
-	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("single", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -548,7 +548,7 @@ func TestGenParameter_Issue628_Single(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Details(t *testing.T) {
-	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("details", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -567,7 +567,7 @@ func TestGenParameter_Issue628_Details(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Collection(t *testing.T) {
-	gen, err := opBuilder("collection", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("collection", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -594,7 +594,7 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Single(t *testing.T) {
-	gen, err := opBuilder("single", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("single", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -613,7 +613,7 @@ func TestGenParameter_Issue731_Single(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Details(t *testing.T) {
-	gen, err := opBuilder("details", "../fixtures/bugs/628/swagger.yml")
+	gen, err := opBuilder("details", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -630,7 +630,7 @@ func TestGenParameter_Issue731_Details(t *testing.T) {
 }
 
 func TestGenParameter_Issue809_Client(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
+	gen, err := methodPathOpBuilder("get", "/foo", "../testdata/bugs/809/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -654,7 +654,7 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 }
 
 func TestGenParameter_Issue809_Server(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/foo", "../fixtures/bugs/809/swagger.yml")
+	gen, err := methodPathOpBuilder("get", "/foo", "../testdata/bugs/809/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -671,7 +671,7 @@ func TestGenParameter_Issue809_Server(t *testing.T) {
 }
 
 func TestGenParameter_Issue1010_Server(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/widgets/", "../fixtures/bugs/1010/swagger.yml")
+	gen, err := methodPathOpBuilder("get", "/widgets/", "../testdata/bugs/1010/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -690,7 +690,7 @@ func TestGenParameter_Issue1010_Server(t *testing.T) {
 func TestGenParameter_Issue710(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := opBuilder("createTask", "../fixtures/codegen/todolist.allparams.yml")
+	gen, err := opBuilder("createTask", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -709,7 +709,7 @@ func TestGenParameter_Issue710(t *testing.T) {
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("GetItem", "../fixtures/bugs/776/param.yaml")
+	b, err := opBuilderWithFlatten("GetItem", "../testdata/bugs/776/param.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -727,7 +727,7 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 }
 
 func TestGenParameter_Issue1111(t *testing.T) {
-	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1111/arrayParam.json")
+	gen, err := opBuilder("start-es-cluster-instances", "../testdata/bugs/1111/arrayParam.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -744,7 +744,7 @@ func TestGenParameter_Issue1111(t *testing.T) {
 }
 
 func TestGenParameter_Issue1462(t *testing.T) {
-	gen, err := opBuilder("start-es-cluster-instances", "../fixtures/bugs/1462/arrayParam.json")
+	gen, err := opBuilder("start-es-cluster-instances", "../testdata/bugs/1462/arrayParam.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -767,7 +767,7 @@ func TestGenParameter_Issue1199(t *testing.T) {
 		}
 	}`
 
-	gen, err := opBuilder("move-clusters", "../fixtures/bugs/1199/nonEmptyBody.json")
+	gen, err := opBuilder("move-clusters", "../testdata/bugs/1199/nonEmptyBody.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -786,7 +786,7 @@ func TestGenParameter_Issue1199(t *testing.T) {
 func TestGenParameter_Issue1325(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := opBuilder("uploadFile", "../fixtures/bugs/1325/swagger.yaml")
+	gen, err := opBuilder("uploadFile", "../testdata/bugs/1325/swagger.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -804,7 +804,7 @@ func TestGenParameter_Issue1325(t *testing.T) {
 
 //nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
-	gen, err := opBuilder("arrayQueryParams", "../fixtures/codegen/todolist.arrayquery.yml")
+	gen, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -1251,7 +1251,7 @@ func TestGenParameter_Issue909(t *testing.T) {
 			t.Parallel()
 
 			fixtureSpec := strings.Join([]string{"fixture-909-", fixtureIndex, ".yaml"}, "")
-			gen, err := opBuilder("getOptional", filepath.Join("..", "fixtures", "bugs", "909", fixtureSpec))
+			gen, err := opBuilder("getOptional", filepath.Join("..", "testdata", "bugs", "909", fixtureSpec))
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
@@ -1298,7 +1298,7 @@ func TestGenParameter_Issue1237(t *testing.T) {
 	}
 	for _, fixtureContents := range fixtureConfig {
 		fixtureSpec := strings.Join([]string{"fixture-1237", ".json"}, "")
-		gen, err := opBuilder("add sg", filepath.Join("..", "fixtures", "bugs", "1237", fixtureSpec))
+		gen, err := opBuilder("add sg", filepath.Join("..", "testdata", "bugs", "1237", fixtureSpec))
 		require.NoError(t, err)
 
 		op, err := gen.MakeOperation()
@@ -1492,7 +1492,7 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				operationToTest = "Bodybuilder23"
 			}
 
-			gen, err := opBuilder(operationToTest, filepath.Join("..", "fixtures", "bugs", "1392", fixtureSpec))
+			gen, err := opBuilder(operationToTest, filepath.Join("..", "testdata", "bugs", "1392", fixtureSpec))
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
@@ -1523,7 +1523,7 @@ func TestGenParameter_Issue1513(t *testing.T) {
 
 	assertion := `r.SetBodyParam(o.Something)`
 
-	gen, err := opBuilderWithFlatten("put-enum", "../fixtures/bugs/1513/enums.yaml")
+	gen, err := opBuilderWithFlatten("put-enum", "../testdata/bugs/1513/enums.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -1857,7 +1857,7 @@ func TestGenParameter_Issue1536(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536.yaml"), false, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536.yaml"), false, false)
 }
 
 //nolint:dupword // OK: false positives on code assertions
@@ -2087,7 +2087,7 @@ func TestGenParameter_Issue15362(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), false, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-2.yaml"), false, false)
 }
 
 //nolint:dupword,maintidx // OK: false positives on code assertions // the maintenance index is correct, but there is not much we can do at this moment
@@ -2715,7 +2715,7 @@ func TestGenParameter_Issue1536_Maps(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), false, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-3.yaml"), false, false)
 }
 
 //nolint:dupword // OK: false positives on code assertions
@@ -2961,7 +2961,7 @@ func TestGenParameter_Issue1536_MapsWithExpand(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-3.yaml"), true, true)
 }
 
 //nolint:dupword,maintidx // OK: false positives on code assertions
@@ -3699,7 +3699,7 @@ func TestGenParameter_Issue1536_MoreMaps(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-4.yaml"), false, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-4.yaml"), false, false)
 }
 
 //nolint:dupword // OK: false positives on code assertions
@@ -3767,7 +3767,7 @@ func TestGenParameter_Issue15362_WithExpand(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1536", "fixture-1536-2.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1536", "fixture-1536-2.yaml"), true, false)
 }
 
 func TestGenParameter_Issue1548_base64(t *testing.T) {
@@ -3841,7 +3841,7 @@ func TestGenParameter_Issue1548_base64(t *testing.T) {
 		},
 	}
 
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1548", "fixture-1548.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1548", "fixture-1548.yaml"), true, false)
 }
 
 func TestGenParameter_1572(t *testing.T) {
@@ -3973,7 +3973,7 @@ func TestGenParameter_1572(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "enhancements", "1572", "fixture-1572.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "enhancements", "1572", "fixture-1572.yaml"), true, false)
 }
 
 func TestGenParameter_1637(t *testing.T) {
@@ -3991,7 +3991,7 @@ func TestGenParameter_1637(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1637", "fixture-1637.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1637", "fixture-1637.yaml"), true, false)
 }
 
 func TestGenParameter_1755(t *testing.T) {
@@ -4010,7 +4010,7 @@ func TestGenParameter_1755(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1755", "fixture-1755.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1755", "fixture-1755.yaml"), true, false)
 }
 
 func TestGenClientParameter_1490(t *testing.T) {
@@ -4038,7 +4038,7 @@ func TestGenClientParameter_1490(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1490", "fixture-1490.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1490", "fixture-1490.yaml"), true, false)
 }
 
 func TestGenClientParameter_973(t *testing.T) {
@@ -4057,7 +4057,7 @@ func TestGenClientParameter_973(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "973", "fixture-973.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "973", "fixture-973.yaml"), true, false)
 }
 
 func TestGenClientParameter_1020(t *testing.T) {
@@ -4075,7 +4075,7 @@ func TestGenClientParameter_1020(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1020", "fixture-1020.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1020", "fixture-1020.yaml"), true, false)
 }
 
 func TestGenClientParameter_1339(t *testing.T) {
@@ -4093,7 +4093,7 @@ func TestGenClientParameter_1339(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1339", "fixture-1339.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1339", "fixture-1339.yaml"), true, false)
 }
 
 func TestGenClientParameter_1937(t *testing.T) {
@@ -4114,14 +4114,14 @@ func TestGenClientParameter_1937(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1937", "fixture-1937.yaml"), true, false)
+	assertParams(t, fixtureConfig, filepath.Join("..", "testdata", "bugs", "1937", "fixture-1937.yaml"), true, false)
 }
 
 func TestGenParameter_Issue2167(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("xGoNameInParams", "../fixtures/enhancements/2167/swagger.yml")
+	gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -4145,7 +4145,7 @@ func TestGenParameter_Issue2273(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("postSnapshot", "../fixtures/bugs/2273/swagger.json")
+	gen, err := opBuilder("postSnapshot", "../testdata/bugs/2273/swagger.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -4165,7 +4165,7 @@ func TestGenParameter_Issue2448_Numbers(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("getNumbers", "../fixtures/bugs/2448/fixture-2448.yaml")
+	gen, err := opBuilder("getNumbers", "../testdata/bugs/2448/fixture-2448.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -4194,7 +4194,7 @@ func TestGenParameter_Issue2448_Integers(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("getIntegers", "../fixtures/bugs/2448/fixture-2448.yaml")
+	gen, err := opBuilder("getIntegers", "../testdata/bugs/2448/fixture-2448.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
@@ -4231,4 +4231,131 @@ func TestGenParameter_Issue2448_Integers(t *testing.T) {
 	assertInCode(t, `if err := validate.MaximumUint("ui3", "query", uint64(*o.Ui3), 100, true); err != nil {`, res)
 	assertInCode(t, `if err := validate.MultipleOfUint("ui3", "query", uint64(*o.Ui3), 10); err != nil {`, res)
 	assertInCode(t, `if err := validate.MultipleOf("ui4", "query", float64(*o.Ui4), 10.5); err != nil {`, res)
+}
+
+func TestGenParameter_StreamingMultipartForm(t *testing.T) {
+	defer discardOutput()()
+
+	b, err := opBuilder("streamingUpload", "../testdata/codegen/streaming-form.yml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	require.TrueT(t, op.HasStreamingForm)
+	assert.EqualT(t, "MultipartForm", op.MultipartFormName)
+	assert.Len(t, op.Params, 4)
+	assert.Len(t, op.ServerParams, 1)
+	assert.EqualT(t, "token", op.ServerParams[0].Name)
+
+	opts := opts()
+
+	t.Run("server binding hands the stream to the handler", func(t *testing.T) {
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+		formatted, err := opts.LanguageOpts.FormatContent("streaming_upload_parameters.go", buf.Bytes())
+		require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+		code := string(formatted)
+		assertInCode(t, "MultipartForm *runtime.MultipartFormStream", code)
+		assertInCode(t, "multipartForm, err := runtime.NewMultipartFormStream(", code)
+		assertInCode(t, "runtime.MultipartFormStreamMaxBody(StreamingUploadMaxBodySize)", code)
+		assertInCode(t, "o.MultipartForm = multipartForm", code)
+		assertInCode(t, "Token string", code)
+		assertInCode(t, `o.bindToken(qToken, qhkToken, route.Formats)`, code)
+
+		assertNotInCode(t, "runtime.BindForm(", code)
+		assertNotInCode(t, "MaxParseMemory", code)
+		assertNotInCode(t, "Description *string", code)
+		assertNotInCode(t, "File *runtime.File", code)
+		assertNotInCode(t, "Attachment *runtime.File", code)
+		assertNotInCode(t, "bindFile", code)
+		assertNotInCode(t, "bindAttachment", code)
+
+		validationIndex := strings.Index(code, "if len(res) > 0")
+		streamIndex := strings.Index(code, "runtime.NewMultipartFormStream(")
+		require.NotEqual(t, -1, validationIndex)
+		require.NotEqual(t, -1, streamIndex)
+		assert.TrueT(t, validationIndex < streamIndex)
+	})
+
+	t.Run("client binding remains unchanged", func(t *testing.T) {
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
+
+		formatted, err := opts.LanguageOpts.FormatContent("streaming_upload_client_parameters.go", buf.Bytes())
+		require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+		code := string(formatted)
+		assertInCode(t, "Description string", code)
+		assertInCode(t, "File runtime.NamedReadCloser", code)
+		assertInCode(t, "Attachment runtime.NamedReadCloser", code)
+		assertNotInCode(t, "MultipartFormStream", code)
+	})
+}
+
+func TestGenParameter_BufferedMultipartFormUnaffected(t *testing.T) {
+	defer discardOutput()()
+
+	b, err := opBuilder("bufferedUpload", "../testdata/codegen/streaming-form.yml")
+	require.NoError(t, err)
+
+	op, err := b.MakeOperation()
+	require.NoError(t, err)
+	require.FalseT(t, op.HasStreamingForm)
+
+	buf := bytes.NewBuffer(nil)
+	opts := opts()
+	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
+
+	formatted, err := opts.LanguageOpts.FormatContent("buffered_upload_parameters.go", buf.Bytes())
+	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
+
+	code := string(formatted)
+	assertInCode(t, "runtime.BindForm(", code)
+	assertInCode(t, "BufferedUploadMaxParseMemory", code)
+	assertInCode(t, "File io.ReadCloser", code)
+	assertInCode(t, "o.File = &runtime.File{Data: file, Header: header}", code)
+	assertNotInCode(t, "MultipartFormStream", code)
+}
+
+func TestGenParameter_StreamingMultipartFormExtensionValidation(t *testing.T) {
+	defer discardOutput()()
+
+	tests := []struct {
+		name      string
+		operation string
+		contains  string
+	}{
+		{
+			name:      "extension must be boolean",
+			operation: "invalidStreamingType",
+			contains:  `"x-go-server-streaming" must be a boolean`,
+		},
+		{
+			name:      "extension must mark a form file",
+			operation: "invalidStreamingParameter",
+			contains:  `"x-go-server-streaming" may only be enabled on a formData file parameter`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			b, err := opBuilder(test.operation, "../testdata/codegen/streaming-form-invalid.yml")
+			require.NoError(t, err)
+
+			_, err = b.MakeOperation()
+			require.Error(t, err)
+			assert.ErrorContains(t, err, test.contains)
+		})
+	}
+}
+
+func TestGenParameter_StreamingMultipartFormNameIsDeconflicted(t *testing.T) {
+	params := GenParameters{
+		{ID: "MultipartForm", Location: "query"},
+		{ID: "File", Location: formData},
+	}
+
+	assert.EqualT(t, "RequestMultipartForm", deconflictMultipartFormName(params))
 }

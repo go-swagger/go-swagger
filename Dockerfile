@@ -1,25 +1,36 @@
 # syntax=docker/dockerfile:1
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
-FROM golang:alpine@sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648 AS base
-RUN apk update && \
-    apk upgrade && \
-    apk --no-cache add ca-certificates shared-mime-info mailcap git build-base binutils-gold
+FROM golang:alpine@sha256:70b46548e42db77e0966aaf3619fd068734dc6c77584d526b91126504fd95816 AS base
 
-FROM base AS build
+# --platform=$BUILDPLATFORM pins this stage to the machine running the build: the go build
+# below cross-compiles through GOOS/GOARCH with CGO off, so running it under QEMU for
+# arm/ppc64le/s390x would only make the compiler slow, not the output different.
+FROM --platform=$BUILDPLATFORM base AS build
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG TARGETOS TARGETARCH
 ARG commit_hash="dev"
 ARG tag_name="dev"
 
-COPY . /work
 WORKDIR /work
 
+# Dependencies first: this layer does not depend on TARGETARCH, so it is resolved once for
+# all target platforms instead of once per platform.
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# No -a: it forces a rebuild of every package including the standard library. Not needed
+# for a static binary once CGO_ENABLED=0.
 RUN mkdir -p bin &&\
   LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Commit=${commit_hash}" &&\
   LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=${tag_name}" &&\
-  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags osusergo,netgo -o bin/swagger -ldflags "$LDFLAGS" -a ./cmd/swagger
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags osusergo,netgo -o bin/swagger -ldflags "$LDFLAGS" ./cmd/swagger
 
+# NOTE: the shipped image keeps the go toolchain on purpose -- swagger shells out to it
+# (go list, import resolution) at runtime. Slimming this down to a plain alpine breaks
+# codegen and codescan.
 FROM base
 LABEL maintainer="Frédéric BIDON <fredbi@yahoo.com> (@fredbi)"
 COPY --from=build /work/bin/swagger /usr/bin/swagger

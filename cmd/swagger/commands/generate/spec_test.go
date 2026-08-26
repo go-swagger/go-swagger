@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	basePath       = "../../../../fixtures/goparsing/spec"
+	basePath       = "../../../../testdata/goparsing/spec"
 	jsonResultFile = basePath + "/api_spec_go111.json"
 	yamlResultFile = basePath + "/api_spec_go111.yml"
 
@@ -69,7 +69,7 @@ func TestSpecFileExecute(t *testing.T) {
 func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 	outputFileName := "spec.json"
 	spec := &SpecFile{
-		WorkDir:                 "../../../../fixtures/enhancements/pointers-nullable-by-default",
+		WorkDir:                 "../../../../testdata/enhancements/pointers-nullable-by-default",
 		Output:                  flags.Filename(outputFileName),
 		ScanModels:              true,
 		SetXNullableForPointers: true,
@@ -100,8 +100,9 @@ func TestSpecFileExecuteRespectsSetXNullableForPointersOption(t *testing.T) {
 
 func TestGenerateJSONSpec(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:  basePath,
-		Packages: []string{allFromCurrent},
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)
@@ -118,8 +119,9 @@ func TestGenerateJSONSpec(t *testing.T) {
 
 func TestGenerateYAMLSpec(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:  basePath,
-		Packages: []string{allFromCurrent},
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)
@@ -153,9 +155,10 @@ func TestGenerateYAMLSpec(t *testing.T) {
 
 func TestGenerateJSONSpecWithSpec(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:    basePath,
-		Packages:   []string{allFromCurrent},
-		RefAliases: true,
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		RefAliases:           true,
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)
@@ -172,9 +175,10 @@ func TestGenerateJSONSpecWithSpec(t *testing.T) {
 
 func TestGenerateYAMLSpecWithRefAliases(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:    basePath,
-		Packages:   []string{allFromCurrent},
-		RefAliases: true,
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		RefAliases:           true,
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)
@@ -208,9 +212,10 @@ func TestGenerateYAMLSpecWithRefAliases(t *testing.T) {
 
 func TestGenerateJSONSpecWithTransparentAliases(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:            basePath,
-		Packages:           []string{allFromCurrent},
-		TransparentAliases: true,
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		TransparentAliases:   true,
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)
@@ -227,9 +232,10 @@ func TestGenerateJSONSpecWithTransparentAliases(t *testing.T) {
 
 func TestGenerateYAMLSpecWithTransparentAliases(t *testing.T) {
 	opts := codescan.Options{
-		WorkDir:            basePath,
-		Packages:           []string{allFromCurrent},
-		TransparentAliases: true,
+		WorkDir:              basePath,
+		Packages:             []string{allFromCurrent},
+		TransparentAliases:   true,
+		SkipAllOfCompounding: true,
 	}
 
 	swspec, err := codescan.Run(&opts)

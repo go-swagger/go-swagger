@@ -103,6 +103,8 @@ type GenSchema struct {
 	IncludeModel               bool
 	Default                    any
 	WantsMarshalBinary         bool // do we generate MarshalBinary interface?
+	WantsStringer              bool // do we generate the fmt.Stringer String() method?
+	WantsGetters               bool // do we generate a Get<Field> method for each field?
 	StructTags                 []string
 	ExtraImports               map[string]string // non-standard imports detected when using external types
 	ExternalDocs               *spec.ExternalDocumentation
@@ -638,6 +640,7 @@ type GenOperation struct {
 	DefaultResponse  *GenResponse
 
 	Params               GenParameters
+	ServerParams         GenParameters
 	QueryParams          GenParameters
 	PathParams           GenParameters
 	HeaderParams         GenParameters
@@ -649,7 +652,9 @@ type GenOperation struct {
 	HasFormValueParams   bool
 	HasFileParams        bool
 	HasBodyParams        bool
+	HasStreamingForm     bool
 	HasStreamingResponse bool
+	MultipartFormName    string
 
 	Schemes              []string
 	ExtraSchemes         []string
@@ -752,9 +757,15 @@ func (g *GenApp) UseModernMode() bool {
 // GenSerGroups sorted representation of serializer groups.
 type GenSerGroups []GenSerGroup
 
-func (g GenSerGroups) Len() int           { return len(g) }
-func (g GenSerGroups) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
-func (g GenSerGroups) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g GenSerGroups) Len() int      { return len(g) }
+func (g GenSerGroups) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
+func (g GenSerGroups) Less(i, j int) bool {
+	if g[i].Name == g[j].Name {
+		return g[i].MediaType < g[j].MediaType
+	}
+
+	return g[i].Name < g[j].Name
+}
 
 // NumSerializers yields the total number of serializer entries in this group.
 func (g GenSerGroups) NumSerializers() int {

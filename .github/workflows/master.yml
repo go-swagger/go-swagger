@@ -1,0 +1,68 @@
+name: docker-dev
+
+permissions:
+  contents: read
+
+# description: |
+#   Builds and publishes the "latest master" development image.
+#
+#   Triggered by the push itself, NOT chained behind the test workflow. The commits
+#   landing here have already been tested as pull requests, and the workflow_run bridge
+#   cost far more than it bought:
+#
+#     * it needed a trust gate, because workflow_run matches head_branch and a fork can
+#       spoof it (a fork branch literally named "master"). A push trigger cannot be
+#       reached from a fork at all, so that whole guard is gone.
+#     * it could not filter on paths: "paths-ignore" is not a supported workflow_run
+#       filter, and a workflow_run event carries no range of changed files, so
+#       changed-paths.yml would have had to fail open and build every time. Triggering on
+#       the push gives us github.event.before, and with it real detection.
+#
+#   Trade-off accepted: a red master still publishes a dev image. These are short-lived
+#   tags (7 days) rebuilt on the next push.
+on:
+  push:
+    branches:
+      - master
+      - 'prepare-release/*'
+
+jobs:
+  changes:
+    # description: |
+    #   Is there anything worth rebuilding an image for? The image ships the compiled
+    #   binary, so any go change counts, plus the docker build inputs themselves.
+    #
+    #   Fails open: anything unclear builds.
+    name: Changes
+    permissions:
+      contents: read
+      # A called workflow cannot hold more than its caller grants, and an omitted scope is
+      # 'none': without this the run is REJECTED before it starts. changed-paths.yml needs
+      # the scope even here, where the push path only ever uses git.
+      pull-requests: read
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
+    with:
+      preset: go
+      extra-paths: |
+        Dockerfile
+        .hadolint.yml
+
+  docker-dev:
+    permissions:
+      contents: read
+      security-events: write
+    name: Docker latest master (dev)
+    needs: [changes]
+    if: ${{ needs.changes.outputs.changed == 'true' }}
+    uses: ./.github/workflows/build-docker.yml
+    with:
+      push: true
+      record_retention: 7
+      # Dev images only: ppc64le and s390x roughly double the build for a tag that is
+      # replaced on the next push. Tagged releases still publish the full set.
+      # Drop this line to go back to all five platforms here too.
+      platforms: 'linux/amd64,linux/arm64'
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASS: ${{ secrets.QUAY_PASS }}

@@ -1,0 +1,21 @@
+swagger: "2.0"
+info:
+  title: "no-op Validate/ContextValidate must not declare unused formats/ctx params"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/Plain'
+
+definitions:
+  Plain:
+    type: object
+    properties:
+      name:
+        type: string
+      count:
+        type: integer

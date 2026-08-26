@@ -1,0 +1,181 @@
+# SPDX-FileCopyrightText: Copyright 2015-2026 go-swagger maintainers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Phase 1 of the examples regeneration pipeline.
+#
+# Builds swagger from the PR, regenerates examples, and uploads
+# the resulting diff as an artifact. No secrets are used — untrusted
+# PR code runs in a sandboxed context.
+#
+# A single artifact "regen-examples" is always uploaded. It carries:
+#   - pr_number.txt  : the triggering PR number
+#   - status.txt     : one of "no-trigger", "no-changes", "has-changes"
+#   - regen.patch    : the diff (only when status is "has-changes")
+#   - diffstat.txt   : the diffstat (only when status is "has-changes")
+#
+# The "code-changed" job seeds the artifact with status="no-trigger" or
+# status="pending"; if the "regen" job runs, it overwrites the artifact
+# with the final status.
+#
+# Phase 2 (regen-examples-pr.yaml) picks up the artifact via workflow_run
+# and creates the examples PR with proper credentials.
+
+name: Regen examples
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  code-changed:
+    name: check codegen changes
+    runs-on: ubuntu-latest
+    outputs:
+      proceed_with_codegen: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      -
+        name: Get changed source files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        id: changed-source-files
+        with:
+          files_yaml: |
+            should_run_codegen:
+              - '**/go.{mod,sum}'
+              - 'cmd/**/*.go'
+              - '!cmd/swagger/commands/generate/spec*.go'
+              - '!cmd/swagger/commands/diff/*.go'
+              - 'generator/**'
+              - 'hack/codegen*.go'
+              - 'hack/*.yaml'
+              - 'testdata/**/*.{yaml,yml,json}'
+              - '!testdata/goparsing/**'
+              - '!*.md'
+              - '!**/*.md'
+      -
+        name: Seed regen metadata artifact
+        env:
+          PROCEED: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
+          MATCHED_FILES: ${{ steps.changed-source-files.outputs.should_run_codegen_all_changed_files }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p /tmp/regen-metadata
+          echo "${PR_NUMBER}" > /tmp/regen-metadata/pr_number.txt
+          if [[ "${PROCEED}" == 'true' ]]; then
+            echo "pending" > /tmp/regen-metadata/status.txt
+          else
+            echo "no-trigger" > /tmp/regen-metadata/status.txt
+          fi
+          {
+            echo "## Codegen change detection"
+            echo ""
+            echo "proceed_with_codegen=\`${PROCEED}\`"
+            echo ""
+            echo "Matched files:"
+            echo '```'
+            for f in ${MATCHED_FILES}; do
+              echo "${f}"
+            done
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+      -
+        name: Upload seed metadata
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: regen-examples
+          path: /tmp/regen-metadata/
+          retention-days: 1
+
+  regen:
+    # description: |
+    #   Build swagger from the PR, regenerate examples, and upload the diff
+    #   as an artifact. No secrets — safe for fork PRs.
+    name: regenerate
+    needs: [code-changed]
+    if: ${{ needs.code-changed.outputs.proceed_with_codegen == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout go-swagger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      -
+        name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          check-latest: true
+          cache: true
+      -
+        name: Build swagger binary
+        run: |
+          go build -o "${GITHUB_WORKSPACE}/bin/swagger" ./cmd/swagger
+          echo "${GITHUB_WORKSPACE}/bin" >> "${GITHUB_PATH}"
+      -
+        name: Checkout examples
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: go-swagger/examples
+          path: _examples
+      -
+        name: Regenerate examples
+        run: |
+          cd _examples
+          cd hack/tools
+          exec go run . regen
+      -
+        name: Build check
+        run: |
+          cd _examples
+          go build ./...
+      -
+        name: Produce diff artifacts
+        id: diff
+        run: |
+          cd _examples
+
+          # Stage everything so we catch new/deleted files
+          git add -A
+
+          mkdir -p /tmp/regen-metadata
+          echo "${{ github.event.pull_request.number }}" > /tmp/regen-metadata/pr_number.txt
+
+          {
+            echo "## Regen diff"
+            echo ""
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          if git diff --cached --quiet; then
+            echo "_no changes detected_" >> "${GITHUB_STEP_SUMMARY}"
+            echo "no-changes" > /tmp/regen-metadata/status.txt
+            echo "has_changes=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          echo "has-changes" > /tmp/regen-metadata/status.txt
+          echo "has_changes=true" >> "${GITHUB_OUTPUT}"
+
+          git diff --cached --stat > /tmp/regen-metadata/diffstat.txt
+          git diff --cached > /tmp/regen-metadata/regen.patch
+          {
+            echo '```'
+            cat /tmp/regen-metadata/diffstat.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+      -
+        name: Upload regen artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: regen-examples
+          path: /tmp/regen-metadata/
+          retention-days: 1
+          overwrite: true

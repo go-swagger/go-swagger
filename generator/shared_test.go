@@ -5,6 +5,7 @@ package generator
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -74,7 +75,7 @@ func opts() *GenOpts {
 	g.IncludeValidator = true
 	g.IncludeModel = true
 	if err := ensureMachinery(g); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	return g
@@ -85,7 +86,7 @@ func testGenOpts() *GenOpts {
 	g.Target = "."
 	g.ExcludeSpec = true
 	if err := ensureMachinery(g); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	return g
@@ -106,7 +107,7 @@ func TestShared_CheckOpts(t *testing.T) {
 	opts := new(GenOpts)
 	_ = ensureMachinery(opts)
 	cwd, _ := os.Getwd()
-	opts.Spec = "../fixtures/codegen/simplesearch.yml"
+	opts.Spec = "../testdata/codegen/simplesearch.yml"
 
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = filepath.Join(cwd, "a", "b", "c")
@@ -131,12 +132,12 @@ func TestShared_CheckOpts(t *testing.T) {
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
-	opts.Spec = filepath.Join(cwd, "..", "fixtures", "codegen", "swagger-codegen-tests.json")
+	opts.Spec = filepath.Join(cwd, "..", "testdata", "codegen", "swagger-codegen-tests.json")
 	assertValidOpts(t, opts)
 
 	opts.Target = filepath.Join("a", "b", "c")
 	opts.ServerPackage = testPath
-	opts.Spec = filepath.Join("..", "fixtures", "codegen", "swagger-codegen-tests.json")
+	opts.Spec = filepath.Join("..", "testdata", "codegen", "swagger-codegen-tests.json")
 	assertValidOpts(t, opts)
 
 	opts = nil
@@ -528,7 +529,7 @@ func TestShared_LoadTemplate(t *testing.T) {
 }
 
 func TestShared_AppNameOrDefault(t *testing.T) {
-	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
+	specPath := filepath.Join("..", "testdata", "codegen", "shipyard.yml")
 	specDoc, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
@@ -545,7 +546,7 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	require.NoError(t, err)
 
 	// more aggressive fixture on $refs, with validation errors, but flatten ok
-	specPath = filepath.Join("..", "fixtures", "bugs", "1429", "swagger.yaml")
+	specPath = filepath.Join("..", "testdata", "bugs", "1429", "swagger.yaml")
 	specDoc, err = loads.Spec(specPath)
 	require.NoError(t, err)
 
@@ -564,7 +565,7 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 }
 
 func TestShared_GatherModel(t *testing.T) {
-	specPath := filepath.Join("..", "fixtures", "codegen", "shipyard.yml")
+	specPath := filepath.Join("..", "testdata", "codegen", "shipyard.yml")
 
 	specDoc, err := loads.Spec(specPath)
 	require.NoError(t, err)
@@ -780,7 +781,9 @@ func TestDefaultImports(t *testing.T) {
 			t.Parallel()
 			err := ensureMachinery(fixture.Opts)
 			require.NoError(t, err)
-			imports := newImportsBuilder(fixture.Opts).defaultImports()
+
+			imports, err := newImportsBuilder(fixture.Opts).defaultImports()
+			require.NoError(t, err)
 			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
 		})
 	}
@@ -790,7 +793,7 @@ func TestShared_Issue2113(t *testing.T) {
 	defer discardOutput()()
 
 	// acknowledge fix in go-openapi/spec
-	specPath := filepath.Join("..", "fixtures", "bugs", "2113", "base.yaml")
+	specPath := filepath.Join("..", "testdata", "bugs", "2113", "base.yaml")
 	_, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
@@ -806,7 +809,7 @@ func TestShared_Issue2743(t *testing.T) {
 
 	// acknowledge fix in go-openapi/spec
 	t.Run("should NOT flatten invalid spec that used to work", func(t *testing.T) {
-		specPath := filepath.Join("..", "fixtures", "bugs", "2743", "working", "spec.yaml")
+		specPath := filepath.Join("..", "testdata", "bugs", "2743", "working", "spec.yaml")
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 
@@ -818,7 +821,7 @@ func TestShared_Issue2743(t *testing.T) {
 	})
 
 	t.Run("should flatten valid spec that used NOT to work", func(t *testing.T) {
-		specPath := filepath.Join("..", "fixtures", "bugs", "2743", "not-working", "spec.yaml")
+		specPath := filepath.Join("..", "testdata", "bugs", "2743", "not-working", "spec.yaml")
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 

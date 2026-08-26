@@ -33,7 +33,7 @@ func testGenerateOperation(strict bool) func(*testing.T) {
 
 		for i, spec := range specs {
 			t.Run(spec, func(t *testing.T) {
-				pth := filepath.Join(testBase(), "fixtures/codegen", spec)
+				pth := filepath.Join(testBase(), "testdata/codegen", spec)
 				generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
 				require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 

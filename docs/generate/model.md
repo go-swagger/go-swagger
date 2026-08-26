@@ -9,7 +9,7 @@ weight: 40
 
 ```
 Usage:
-  swagger [OPTIONS] generate model [model-OPTIONS]
+  swagger [OPTIONS] generate model [model-OPTIONS] [spec]
 
 generate one or more models from the swagger spec
 
@@ -25,20 +25,29 @@ Help Options:
           --accept-definitions-only                                               accepts a partial swagger spec wih only the definitions key
 
     Options common to all code generation commands:
-      -f, --spec=                                                                 the spec file to use (default swagger.{json,yml,yaml})
-      -t, --target=                                                               the base directory for generating the files (default: ./)
-          --template=[stratoscale]                                                load contributed templates
-      -T, --template-dir=                                                         alternative template override directory
-      -C, --config-file=                                                          configuration file to use for overriding template options
-      -r, --copyright-file=                                                       copyright file used to add copyright header
-          --additional-initialism=                                                consecutive capitals that should be considered intialisms
-          --allow-template-override                                               allows overriding protected templates
-          --skip-validation                                                       skips validation of spec prior to generation
-          --dump-data                                                             when present dumps the json for the template generator instead of generating files
-          --strict-responders                                                     Use strict type for the handler return value
-          --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
-          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
-          --with-custom-formatter                                                 use faster custom contributed go import processing instead of the standard one
+          --with-expand                                                                      expands all $ref's in the spec (shorthand to
+                                                                                             --with-flatten=expand)
+          --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused|keep-names]    flattens all $ref's in the spec (default: minimal,
+                                                                                             verbose)
+          --with-custom-formatter                                                            use faster custom contributed go import processing
+                                                                                             instead of the standard one
+      -f, --spec=                                                                            the spec file to use (default swagger.{json,yml,yaml})
+      -t, --target=                                                                          the base directory for generating the files (default: ./)
+          --template=[stratoscale]                                                           load contributed templates
+      -T, --template-dir=                                                                    alternative template override directory
+      -C, --config-file=                                                                     configuration file to use for overriding template options
+      -r, --copyright-file=                                                                  copyright file used to add copyright header
+          --additional-initialism=                                                           consecutive capitals that should be considered intialisms
+          --allow-template-override                                                          allows overriding protected templates
+          --skip-validation                                                                  skips validation of spec prior to generation
+          --dump-data                                                                        when present dumps the json for the template generator
+                                                                                             instead of generating files
+          --strict-responders                                                                Use strict type for the handler return value
+      -e, --return-errors                                                                    handlers explicitly return an error as the second value
+          --restricted                                                                       Use restricted http client for remote $ref
+          --rooted=                                                                          Local $ref resolution contained relative to root FS
+          --ensure-target                                                                    Create the target directory if it does not already exist
+      -p, --template-plugin=                                                                 the template plugin to use
 
     Options for model generation:
       -m, --model-package=                                                        the package to save the models (default: models)
@@ -48,6 +57,7 @@ Help Options:
           --keep-spec-order                                                       keep schema properties order identical to spec file
           --struct-tags=                                                          the struct tags to generate, repeat for multiple (defaults to json)
           --rooted-error-path                                                     extends validation errors with the type name instead of an empty path, in the case of arrays and maps
+          --with-stringer                                                         generate a fmt.Stringer String() method on models, rendering field values as JSON (see issue #872)
 ```
 
 Schema generation rules are detailed [here](../reference/models/schemas.md).

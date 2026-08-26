@@ -9,7 +9,7 @@
 // (codegen_nonreg_test.go) only generates and builds code, so this runtime
 // behavior is otherwise untested.
 //
-// It is the Go replacement for the historical fixtures/bugs/1558/exercise.sh
+// It is the Go replacement for the historical testdata/bugs/1558/exercise.sh
 // shell script (issue #1558 / #1473), together with the now-removed
 // hack/gen-self-signed-certs.sh it depended on. Certificates are minted
 // in-process with crypto/x509 instead of shelling out to openssl.
@@ -58,7 +58,7 @@ import (
 
 const (
 	// the #1558 fixture: a simple to-do list API declaring both http and https schemes.
-	todoSpec   = "fixtures/bugs/1558/fixture-1558.yaml"
+	todoSpec   = "testdata/bugs/1558/fixture-1558.yaml"
 	serverName = "todolist"
 )
 
@@ -102,7 +102,7 @@ func TestServerRuntimeTLS(t *testing.T) {
 	})
 
 	// 4. failure matrix: each broken TLS configuration must abort startup before
-	//    serving (mirrors the cases exercised by fixtures/bugs/1558/exercise.sh).
+	//    serving (mirrors the cases exercised by testdata/bugs/1558/exercise.sh).
 	failures := []struct {
 		name string
 		args []string

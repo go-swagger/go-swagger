@@ -94,7 +94,7 @@ func TestGenerateCLI(t *testing.T) {
 
 	for i, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			pth := filepath.Join(testBase(), "fixtures/codegen", tc.spec)
+			pth := filepath.Join(testBase(), "testdata/codegen", tc.spec)
 			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
 			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 
@@ -143,18 +143,18 @@ func TestVariousCli(t *testing.T) {
 		{
 			skip:         true, // do not run this in CI since it is known to have bug
 			name:         "crazy-alias",
-			spec:         "fixtures/bugs/1260/fixture-realiased-types.yaml",
+			spec:         "testdata/bugs/1260/fixture-realiased-types.yaml",
 			wantError:    false, // generate files should success
 			wantVetError: true,  // polymorphism is not supported. model import is not right. TODO: fix this.
 		},
 		{
 			name: "multi-auth",
-			spec: "fixtures/cli/composed-auth-example.yml",
+			spec: "testdata/cli/composed-auth-example.yml",
 		},
 		// not working because of model generation order.
 		// {
 		// 	name:          "enum",
-		// 	spec:          "fixtures/enhancements/1623/swagger.yml",
+		// 	spec:          "testdata/enhancements/1623/swagger.yml",
 		// },
 	}
 

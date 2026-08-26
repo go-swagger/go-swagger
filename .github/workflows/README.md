@@ -10,7 +10,7 @@
 
 ## Tests
 
-`test.yaml` — triggered on pull requests and push to master.
+`test.yml` — triggered on pull requests and push to master.
 
 * only if code changes or the way we test it
 * linting
@@ -38,7 +38,7 @@ A two-phase pipeline that regenerates `go-swagger/examples` from PR changes,
 plus a cleanup workflow for closed PRs. The two-phase design ensures untrusted
 PR code never runs in a context with access to secrets.
 
-### Phase 1 — `regen-examples.yaml`
+### Phase 1 — `regen-examples.yml`
 
 Triggered on `pull_request`. Runs only when codegen-relevant files change.
 
@@ -50,7 +50,7 @@ Triggered on `pull_request`. Runs only when codegen-relevant files change.
 
 **No secrets are used** — safe for fork PRs.
 
-### Phase 2 — `regen-examples-pr.yaml`
+### Phase 2 — `regen-examples-pr.yml`
 
 Triggered by `workflow_run` after phase 1 completes successfully.
 
@@ -62,7 +62,7 @@ Triggered by `workflow_run` after phase 1 completes successfully.
 **Security model:** this workflow never checks out or executes PR code.
 It only applies a patch file (data, not code) produced by phase 1.
 
-### Cleanup — `close-examples-pr.yaml`
+### Cleanup — `close-examples-pr.yml`
 
 Triggered by `pull_request_target` on `closed` events. When a go-swagger PR is
 closed **without merge**, closes the corresponding examples PR and deletes its branch.
@@ -71,14 +71,14 @@ Uses `pull_request_target` for secret access — no PR code is checked out.
 
 ## Release
 
-`release.yaml` — triggered by pushing a `v*` tag (e.g. `git tag -a v0.31.0 -m "release message" && git push origin v0.31.0`).
+`release.yml` — triggered by pushing a `v*` tag (e.g. `git tag -a v0.31.0 -m "release message" && git push origin v0.31.0`).
 
 ### Jobs (sequential)
 
 1. **update-doc** — builds and deploys the documentation site to GitHub Pages
-   (reuses `update-doc.yaml`)
+   (reuses `update-doc.yml`)
 2. **docker-release** — builds and pushes Docker images tagged with the release version and `latest`
-   (reuses `build-docker.yaml`, pushes to ghcr.io and Quay)
+   (reuses `build-docker.yml`, pushes to ghcr.io and Quay)
 3. **publish-release** — builds binaries, packages, and creates the GitHub release:
    * sets up Go, UPX (binary compression), git-cliff (release notes), and GPG (artifact signing)
    * extracts the annotated tag message and passes it to git-cliff via `--with-tag-message`
@@ -91,7 +91,7 @@ Uses `pull_request_target` for secret access — no PR code is checked out.
 
 | File | Purpose |
 |------|---------|
-| `.goreleaser.yaml` | goreleaser v2 config: builds, archives, nfpm packages, signing, release |
+| `.goreleaser.yml` | goreleaser v2 config: builds, archives, nfpm packages, signing, release |
 | `.cliff.toml` | git-cliff config: commit grouping, changelog template, GitHub remote |
 
 ### Required secrets
@@ -119,33 +119,33 @@ Uses `pull_request_target` for secret access — no PR code is checked out.
 
 ## Docker dev
 
-`master.yaml` — triggered by `workflow_run` after `test` completes on master or `prepare-release/*`.
+`master.yml` — triggered by `workflow_run` after `test` completes on master or `prepare-release/*`.
 
-Builds and pushes Docker dev images (`:latest` tag from master) using `build-docker.yaml`.
+Builds and pushes Docker dev images (`:latest` tag from master) using `build-docker.yml`.
 
-`report-docker-vuln.yaml` — triggered by `workflow_run` after `docker-dev` completes.
+`report-docker-vuln.yml` — triggered by `workflow_run` after `docker-dev` completes.
 Downloads the Trivy SARIF report produced during the Docker build and uploads it to
 GitHub Advanced Security (code scanning dashboard).
 
 ## Update documentation
 
-`doc-latest.yaml` — triggered on push to master or PR when `docs/`, `hack/doc-site/`,
-or `update-doc.yaml` change.
+`doc-latest.yml` — triggered on push to master or PR when `docs/`, `hack/doc-site/`,
+or `update-doc.yml` change.
 
-Reuses `update-doc.yaml` to build the Hugo documentation site and deploy to GitHub Pages.
+Reuses `update-doc.yml` to build the Hugo documentation site and deploy to GitHub Pages.
 On PRs, the build is verified but not deployed.
 
 ## Security & compliance
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `codeql.yaml` | Push to master, PR to master, weekly schedule | GitHub CodeQL semantic analysis |
-| `scorecard.yaml` | Push to master/tags, weekly schedule, branch protection rule changes | OpenSSF Scorecard supply-chain security |
-| `scanner.yaml` | Push to master, daily schedule, branch protection rule changes | Trivy vulnerability + secret scan (repo-level) |
+| `codeql.yml` | Push to master, PR to master, weekly schedule | GitHub CodeQL semantic analysis |
+| `scorecard.yml` | Push to master/tags, weekly schedule, branch protection rule changes | OpenSSF Scorecard supply-chain security |
+| `scanner.yml` | Push to master, daily schedule, branch protection rule changes | Trivy vulnerability + secret scan (repo-level) |
 
 ## Dependabot auto-merge
 
-`auto-merge.yaml` — triggered on `pull_request`.
+`auto-merge.yml` — triggered on `pull_request`.
 
 * Auto-approves all dependabot PRs
 * Auto-merges (rebase) dependabot PRs for:

@@ -15,7 +15,7 @@ import (
 )
 
 func TestBuildDiscriminatorMap(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
 	opts := opts()
 
@@ -36,7 +36,7 @@ func TestBuildDiscriminatorMap_UsesDiscriminatorValue(t *testing.T) {
 }
 
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -65,7 +65,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 func TestGenerateModel_Discriminators(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, e := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, e := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, e)
 
 	definitions := specDoc.Spec().Definitions
@@ -159,7 +159,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -188,7 +188,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
 
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
@@ -230,7 +230,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 func TestGenerateServer_Parameters(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/todolist.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
 
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
@@ -270,7 +270,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/billforward.discriminators.yml")
+	specDoc, err := loads.Spec("../testdata/codegen/billforward.discriminators.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -322,7 +322,7 @@ func TestGenerateModel_DiscriminatorAllOfBaseProperties(t *testing.T) {
 func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/bitbucket.json")
+	specDoc, err := loads.Spec("../testdata/codegen/bitbucket.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -356,7 +356,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/codegen/bitbucket.json")
+	specDoc, err := loads.Spec("../testdata/codegen/bitbucket.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -381,7 +381,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 func TestGenerateModel_Issue319(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/319/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/319/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -406,7 +406,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 func TestGenerateModel_Issue541(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/541/swagger.json")
+	specDoc, err := loads.Spec("../testdata/bugs/541/swagger.json")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -432,7 +432,7 @@ func TestGenerateModel_Issue541(t *testing.T) {
 func TestGenerateModel_Issue436(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/436/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/436/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -461,7 +461,7 @@ func TestGenerateModel_Issue436(t *testing.T) {
 func TestGenerateModel_Issue740(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/740/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/740/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
@@ -487,7 +487,7 @@ func TestGenerateModel_Issue740(t *testing.T) {
 func TestGenerateModel_Issue743(t *testing.T) {
 	defer discardOutput()()
 
-	specDoc, err := loads.Spec("../fixtures/bugs/743/swagger.yml")
+	specDoc, err := loads.Spec("../testdata/bugs/743/swagger.yml")
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions

@@ -18,7 +18,6 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/runtime/security"
-
   {{ imports .DefaultImports }}
   {{ imports .Imports }}
 )
@@ -65,7 +64,7 @@ type Config struct {
 	{{- end }}
 	{{- if .IsAPIKeyAuth }}
 
-	// Auth{{ pascalize .ID }} Applies when the "{{ .Name }}" {{ .Source }} is set
+	// Auth{{ pascalize .ID }} Applies when the "{{ escapeDoubleQuoted .Name }}" {{ escapeDoubleQuoted .Source }} is set
   Auth{{ pascalize .ID }} func(token string) ({{ if .PrincipalIsNullable }}*{{ end }}{{ .Principal }}, error)
 	{{- end }}
 	{{- if .IsOAuth2 }}

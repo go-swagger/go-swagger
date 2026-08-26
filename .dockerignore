@@ -1,6 +1,6 @@
 .git
 .github
-fixtures
+testdata
 examples
 hack
 notes

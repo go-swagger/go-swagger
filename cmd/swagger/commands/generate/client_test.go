@@ -58,7 +58,7 @@ func TestGenerateClient(t *testing.T) {
 
 	for i, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			pth := filepath.Join(testBase(), "fixtures/codegen", tt.spec)
+			pth := filepath.Join(testBase(), "testdata/codegen", tt.spec)
 			generated := filepath.Join(base, "codegen-"+strconv.Itoa(i))
 			require.NoError(t, os.MkdirAll(generated, fs.ModePerm))
 			m := &generate.Client{}

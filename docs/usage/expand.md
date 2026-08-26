@@ -17,7 +17,7 @@ To expand a specification:
 
 ```
 Usage:
-  swagger [OPTIONS] expand [expand-OPTIONS]
+  swagger [OPTIONS] expand [expand-OPTIONS] {spec}
 
 expands the $refs in a swagger document to inline schemas
 

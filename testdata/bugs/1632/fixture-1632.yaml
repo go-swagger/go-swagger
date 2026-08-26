@@ -1,0 +1,27 @@
+swagger: "2.0"
+info:
+  title: "additionalProperties value must unmarshal into a non-nil target"
+  version: "0.0.1"
+paths:
+  "/":
+    get:
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/HalRscLinks'
+
+definitions:
+  HalRscLinks:
+    type: object
+    properties:
+      name:
+        type: string
+    additionalProperties:
+      $ref: "#/definitions/HalHref"
+
+  HalHref:
+    type: object
+    properties:
+      href:
+        type: string

@@ -1,0 +1,41 @@
+# Adversarial fixture: schema property NAMES carry Go breakout payloads aimed at
+# the serializer struct tags. allOf inheritance and a discriminator route the
+# fields through schemabody.gotmpl / serializers/allofserializer.gotmpl, which
+# hand-write a backtick-quoted `json:"..."` tag from the property name and bypass
+# GenSchema.PrintTags. A backtick in the name closes the raw string early; the
+# `;`-separated declarations break out of the (function-scope) anonymous struct.
+# Unlike the top-level response type, this yields invalid Go that is still written
+# to disk rather than a clean init-time RCE, but it is the same missing-escape
+# defect. jsonFieldTag forces the whole tag to a double-quoted literal so the
+# generated source stays valid and inert.
+swagger: "2.0"
+info:
+  title: property name tag injection
+  version: "1.0"
+paths:
+  /foo:
+    get:
+      operationId: getFoo
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "#/definitions/Base"
+definitions:
+  Base:
+    type: object
+    discriminator: petType
+    required:
+      - petType
+    properties:
+      petType:
+        type: string
+      'evilbase` }; func init(){ println("PWNED_PROP_BASE") }; type _ struct{ z string `':
+        type: string
+  Cat:
+    allOf:
+      - $ref: "#/definitions/Base"
+      - type: object
+        properties:
+          'evilcat` }; func init(){ println("PWNED_PROP_CHILD") }; type _ struct{ w string `':
+            type: string

@@ -28,15 +28,25 @@ import (
 // the related preprocessing flags.
 type specAnalyzer struct {
 	*GenOpts
+
+	loader loads.DocLoader
 }
 
 func newSpecAnalyzer(g *GenOpts) *specAnalyzer {
-	return &specAnalyzer{GenOpts: g}
+	return &specAnalyzer{
+		GenOpts: g,
+	}
 }
 
 func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
+	// Set options for the spec loader.
+	//
+	// This allows to confine the global loader chain so that validation, flattening and expansion resolve every
+	// transitive $ref under the same Restricted/Rooted restrictions, not just the initial load.
+	g.setLoaderOptions()
+
 	// Load spec document
-	specDoc, err := loads.Spec(g.Spec)
+	specDoc, err := loads.Spec(g.Spec, loads.WithDocLoader(g.loader))
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +60,11 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 	}
 
 	// Validate if needed
+	//
+	// NOTE: since v0.26.4, [validate.Spec] no longer mutates silently the spec.
 	if g.ValidateSpec {
 		log.Printf("validating spec %v", g.Spec)
-		validationErrors := validate.Spec(specDoc, strfmt.Default)
+		validationErrors := validate.Spec(specDoc, strfmt.Default, validate.WithPathLoader(g.loader))
 		if validationErrors != nil {
 			var b strings.Builder
 
@@ -70,10 +82,6 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 
 			return nil, errors.New(b.String())
 		}
-
-		// TODO(fredbi): due to uncontrolled $ref state in spec, we need to reload the spec atm, or flatten won't
-		// work properly (validate expansion alters the $ref cache in go-openapi/spec)
-		specDoc, _ = loads.Spec(g.Spec)
 	}
 
 	// Flatten spec
@@ -102,6 +110,7 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 
 	g.FlattenOpts.BasePath = specDoc.SpecFilePath()
 	g.FlattenOpts.Spec = analysis.New(specDoc.Spec())
+	g.FlattenOpts.PathLoaderWithOptions = g.loader
 
 	g.printFlattenOpts()
 
@@ -133,7 +142,7 @@ func (g *specAnalyzer) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
 	// spec preprocessing option
 	if g.PropertiesSpecOrder {
 		g.Spec = WithAutoXOrder(g.Spec)
-		specDoc, err = loads.Spec(g.Spec)
+		specDoc, err = loads.Spec(g.Spec, loads.WithDocLoader(g.loader))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -158,9 +167,56 @@ func (g *specAnalyzer) printFlattenOpts() {
 	log.Printf("preprocessing spec with option:  %s", preprocessingOption)
 }
 
+// setLoaderOptions builds the document loader used for spec loading, validation and flattening.
+// The default (no Restricted/Rooted flags) is an unrestricted YAML/JSON loader.
+//
+// With the Restricted/Rooted flags, the loader confines every load — the initial root document and
+// every transitive $ref resolved afterwards — to the same restrictions. The confined loader is
+// threaded explicitly into each stage that resolves references:
+//
+//   - loads.Spec via [loads.WithDocLoader];
+//   - go-openapi/validate via validate.WithPathLoader;
+//   - go-openapi/analysis (flatten/expand) via FlattenOpts.PathLoaderWithOptions.
+//
+// This replaces the earlier approach of mutating the package-global spec loader chain
+// (loads.SetLoaders): threading the loader per call is explicit, has no global side effects and is
+// safe for concurrent code generation. The security options are baked into the loader (appended
+// last so they win over any call-time options), so confinement holds even when a downstream stage
+// invokes the loader with no options of its own.
+func (g *specAnalyzer) setLoaderOptions() {
+	loadOptions := g.securityOptions()
+
+	// wrap a base loader so the security options are always applied, appended after any call-time
+	// options so they take precedence (loading options are last-wins).
+	yamlLoader := loads.NewDocLoaderWithMatch(loads.LoaderWithOptions(loading.YAMLDoc, loadOptions...), loading.YAMLMatcher)
+	jsonLoader := loads.NewDocLoaderWithMatch(loads.LoaderWithOptions(loading.JSONDoc, loadOptions...), nil) // JSON catch-all fallback
+
+	g.loader = loads.LoaderChain(yamlLoader, jsonLoader)
+}
+
+// inject secure options for spec loading.
+func (g *specAnalyzer) securityOptions() []loading.Option {
+	const securityOptions = 2
+	loadingOptions := make([]loading.Option, 0, securityOptions)
+	if g.Rooted != "" {
+		// local $ref contained within "Rooted"
+		loadingOptions = append(loadingOptions, loading.WithRoot(g.Rooted))
+	}
+
+	if g.Restricted {
+		// remote $ref pass the default restricted client in swag/loadin
+		loadingOptions = append(loadingOptions, loading.WithHTTPClient(loads.RestrictedHTTPClient()))
+	}
+
+	return loadingOptions
+}
+
+// defaultSpecNames are the spec files looked up in the current directory when none is specified.
+var defaultSpecNames = []string{"swagger.json", "swagger.yml", "swagger.yaml"}
+
 // findSwaggerSpec fetches a default swagger spec if none is provided.
 func findSwaggerSpec(nm string) (string, error) {
-	specs := []string{"swagger.json", "swagger.yml", "swagger.yaml"}
+	specs := defaultSpecNames
 	if nm != "" {
 		specs = []string{nm}
 	}
@@ -180,9 +236,27 @@ func findSwaggerSpec(nm string) (string, error) {
 		break
 	}
 	if name == "" {
-		return "", errors.New("couldn't find a swagger spec")
+		return "", errSpecNotFound(nm)
 	}
 	return name, nil
+}
+
+// errSpecNotFound tells the user which spec could not be found: the one they named,
+// or the ones looked up by default in the current directory.
+func errSpecNotFound(nm string) error {
+	if nm != "" {
+		return fmt.Errorf("could not find the swagger spec %q", nm)
+	}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		cwd = "the current directory"
+	}
+
+	return fmt.Errorf(
+		"could not find a swagger spec: none of %s in %s. Specify the spec with --spec (-f) or as an argument",
+		strings.Join(defaultSpecNames, ", "), cwd,
+	)
 }
 
 // WithAutoXOrder amends the spec to specify property order as they appear
@@ -239,12 +313,12 @@ func WithAutoXOrder(specPath string) string {
 
 	data, err := loading.LoadFromFileOrHTTP(specPath)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not load YAML doc for %q: %w", specPath, err))
 	}
 
 	yamlDoc, err := BytesToYAMLv2Doc(data)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not convert YAML doc: %w", err))
 	}
 
 	if defs, ok := lookFor(yamlDoc, "definitions"); ok {
@@ -257,18 +331,19 @@ func WithAutoXOrder(specPath string) string {
 
 	out, err := yamlv2.Marshal(yamlDoc)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not marshal yaml doc: %w", err))
 	}
 
 	tmpDir, err := os.MkdirTemp("", "go-swagger-")
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not create temporary directory: %w", err))
 	}
 
 	tmpFile := filepath.Join(tmpDir, filepath.Base(specPath))
 	if err := os.WriteFile(tmpFile, out, readableFile); err != nil {
-		panic(err)
+		panic(fmt.Errorf("could not write temporary file %q: %w", tmpFile, err))
 	}
+
 	return tmpFile
 }
 
@@ -283,6 +358,7 @@ func BytesToYAMLv2Doc(data []byte) (any, error) {
 	if err := yamlv2.Unmarshal(data, &document); err != nil {
 		return nil, err
 	}
+
 	return document, nil
 }
 
@@ -306,5 +382,6 @@ func applyDefaultSwagger(doc *loads.Document) (*loads.Document, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return loads.Analyzed(jazon, swspec.Swagger)
 }

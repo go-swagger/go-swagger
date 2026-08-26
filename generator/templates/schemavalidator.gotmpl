@@ -144,7 +144,7 @@
       }
     {{- end }}
   {{- else }}
-    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName) (not .SkipExternalValidation)) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
+    {{- if and (or .IsAliased (ne .ValueExpression .ReceiverName)) (not .SkipExternalValidation) }}{{/* prevents generated code to call itself: this is reserved for aliased types */}}
       {{- if and .IsNullable (not .IsMapNullOverride) }}
     if {{ .ValueExpression }} != nil {
       {{- end }}
@@ -828,9 +828,11 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
       {{ $gotype := .GoType }}
 const (
       {{ range .Enum }}
+      {{- if ne . nil }}
       {{- $variant := print $gotype (pascalize (cleanupEnumVariant .)) }}
   // {{ $variant }} captures enum value {{ printf "%q" . }}
 	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
+      {{- end }}
       {{ end }}
 )
     {{ end }}
@@ -839,7 +841,7 @@ const (
 var {{ camelize .Name }}Enum []any
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -855,11 +857,22 @@ func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }
 }
   {{ end }}
   {{ if .ItemsEnum }}
+    {{ if (eq .Items.SwaggerType "string") }}
+      {{ $gotype := .Items.GoType }}
+      {{ $modelname := .GoName }}
+const (
+      {{ range .ItemsEnum }}
+      {{- $variant := print $modelname "Items" (pascalize (cleanupEnumVariant .)) }}
+  // {{ $variant }} captures enum value {{ printf "%q" . }}
+	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
+      {{ end }}
+)
+    {{ end }}
 var {{ camelize .Name }}ItemsEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .ItemsEnum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -881,7 +894,7 @@ var {{ camelize .Name }}ValueEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -965,7 +978,7 @@ var {{ camelize $.Name }}Type{{ .GoName }}PropEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -978,9 +991,11 @@ func init() {
           {{ $propname := .Name }}
 const (
           {{ range .Enum }}
+          {{- if ne . nil }}
           {{- $variant := print ($.GoName) (pascalize $propname) (pascalize (cleanupEnumVariant .)) }}
   // {{ $variant }} captures enum value {{ printf "%q" . }}
 	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
+          {{- end }}
           {{ end }}
 )
         {{ end }}
@@ -994,10 +1009,21 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
 }
       {{ end }}
       {{ if .ItemsEnum }}
+        {{ if (eq .Items.SwaggerType "string") }}
+          {{ $gotype := .Items.GoType }}
+          {{ $propname := .GoName }}
+const (
+          {{ range .ItemsEnum }}
+          {{- $variant := print ($.GoName) $propname "Items" (pascalize (cleanupEnumVariant .)) }}
+  // {{ $variant }} captures enum value {{ printf "%q" . }}
+	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
+          {{ end }}
+)
+        {{ end }}
 var {{ camelize $.Name }}{{ .GoName }}ItemsEnum []any
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .ItemsEnum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1018,7 +1044,7 @@ var {{ camelize $.Name }}Type{{ .GoName }}PropEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .AdditionalItems.Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1041,7 +1067,7 @@ var {{ camelize $.Name }}{{ .GoName }}ValueEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1099,7 +1125,7 @@ var {{ camelize $.Name }}Type{{ .GoName }}PropEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1116,11 +1142,22 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
 }
         {{ end }}
         {{ if .ItemsEnum }}
+          {{ if (eq .Items.SwaggerType "string") }}
+            {{ $gotype := .Items.GoType }}
+            {{ $propname := .GoName }}
+const (
+            {{ range .ItemsEnum }}
+            {{- $variant := print ($.GoName) $propname "Items" (pascalize (cleanupEnumVariant .)) }}
+  // {{ $variant }} captures enum value {{ printf "%q" . }}
+	{{ $variant }} {{ $gotype }} = {{ printf "%q" . }}
+            {{ end }}
+)
+          {{ end }}
 var {{ camelize $.Name }}{{ .GoName }}ItemsEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .ItemsEnum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1141,7 +1178,7 @@ var {{ camelize $.Name }}Type{{ .GoName }}PropEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .AdditionalItems.Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1162,7 +1199,7 @@ func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else 
 var {{ camelize $.Name }}{{ .GoName }}ValueEnum []any
 func init() {
   var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {
@@ -1205,7 +1242,7 @@ var {{ camelize .Name }}ItemsEnum []any
 
 func init() {
   var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
+  if err := json.Unmarshal([]byte(`{{ escapeBackticks (json .AdditionalItems.Enum) }}`), &res); err != nil {
     panic(err)
   }
   for _, v := range res {

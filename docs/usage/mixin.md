@@ -17,7 +17,7 @@ To mixin several specifications:
 
 ```
 Usage:
-  swagger [OPTIONS] mixin [mixin-OPTIONS]
+  swagger [OPTIONS] mixin [mixin-OPTIONS] {primary spec} {mixin spec}...
 
 merge additional specs into first/primary spec by copying their paths and definitions
 

@@ -53,7 +53,7 @@ func clientFixtures() []clientGenerateFixture {
 		{
 			name:      "packages mangling",
 			wantError: false,
-			spec:      filepath.Join("..", "fixtures", "bugs", "2111", "fixture-2111.yaml"),
+			spec:      filepath.Join("..", "testdata", "bugs", "2111", "fixture-2111.yaml"),
 			verify: func(t *testing.T, target string) {
 				require.TrueT(t, fileExists(target, "client"))
 
@@ -92,7 +92,7 @@ func clientFixtures() []clientGenerateFixture {
 		{
 			name:      "packages flattening",
 			wantError: false,
-			spec:      filepath.Join("..", "fixtures", "bugs", "2111", "fixture-2111.yaml"),
+			spec:      filepath.Join("..", "testdata", "bugs", "2111", "fixture-2111.yaml"),
 			prepare: func(opts *GenOpts) {
 				opts.SkipTagPackages = true
 			},
@@ -121,7 +121,7 @@ func clientFixtures() []clientGenerateFixture {
 		},
 		{
 			name:      "name with trailing API",
-			spec:      filepath.Join("..", "fixtures", "bugs", "2278", "fixture-2278.yaml"),
+			spec:      filepath.Join("..", "testdata", "bugs", "2278", "fixture-2278.yaml"),
 			wantError: false,
 		},
 	}

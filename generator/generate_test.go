@@ -34,11 +34,14 @@ func TestGenerateAndTest(t *testing.T) {
 
 	root := t.TempDir()
 	t.Run("server build", testHarnessBuildServers(root, generateServerFixtures())) // debugging mode: add selected fixture keys to limit the scope
-	t.Run("client build", testHarnessBuildClients(root, generateClientFixtures())) // debugging mode: add selected fixtures keys to limit the scope
+	t.Run("client build", testHarnessBuildClients(root, generateClientFixtures())) // debugging mode: add selected testdata keys to limit the scope
 }
 
 func generateServerFixtures() map[string]generateFixture {
 	return map[string]generateFixture{
+		"go_run_generate_3000":             fixtureServerGoRunGenerate3000(),
+		"go_run_generate_default_3000":     fixtureServerGoRunGenerateDefault3000(),
+		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
@@ -66,18 +69,18 @@ func generateClientFixtures() map[string]generateFixture {
 
 func fixtureServer1943() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/1943/fixture-1943.yaml",
+		spec: "../testdata/bugs/1943/fixture-1943.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.ExcludeSpec = false
 
-			input, err := os.ReadFile("../fixtures/bugs/1943/datarace_test.go")
+			input, err := os.ReadFile("../testdata/bugs/1943/datarace_test.go")
 			require.NoError(t, err)
 
 			// rewrite imports for the relocated test program
 			rebasedContent := bytes.ReplaceAll(
 				input,
-				[]byte("github.com/go-swagger/go-swagger/fixtures/bugs/1943"),
+				[]byte("github.com/go-swagger/go-swagger/testdata/bugs/1943"),
 				[]byte(gentest.SanitizeGoModPath(target)),
 			)
 
@@ -108,7 +111,7 @@ func fixtureServer1943() generateFixture {
 
 func fixtureServerPackageMangling() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		spec: "../testdata/bugs/2111/fixture-2111.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.IncludeMain = true
@@ -193,7 +196,7 @@ func fixtureServerPackageMangling() generateFixture {
 
 func fixtureServerPackageFlattening() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		spec: "../testdata/bugs/2111/fixture-2111.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.SkipTagPackages = true
@@ -269,7 +272,7 @@ func fixtureServerPackageFlattening() generateFixture {
 
 func fixtureServerMainPackage() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2111/fixture-2111.yaml",
+		spec: "../testdata/bugs/2111/fixture-2111.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.IncludeMain = true
@@ -288,14 +291,14 @@ func fixtureServerMainPackage() generateFixture {
 
 func fixtureServerExternalModel() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/1897/fixture-1897.yaml",
+		spec: "../testdata/bugs/1897/fixture-1897.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			// generate a module for external models in {test dir}/external
 			t.Run("should generate external model", generateExternalModel(
 				g,
-				filepath.Join("..", "fixtures", "bugs", "1897", "model.yaml"),  // the spec for the external model
-				"github.com/go-swagger/go-swagger/fixtures/bugs/1897/external", // the external package in imports
+				filepath.Join("..", "testdata", "bugs", "1897", "model.yaml"),  // the spec for the external model
+				"github.com/go-swagger/go-swagger/testdata/bugs/1897/external", // the external package in imports
 			))
 
 			g.IncludeMain = true
@@ -317,15 +320,15 @@ func fixtureServerExternalModel() generateFixture {
 
 func fixtureServerExternalModelsHints() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/enhancements/2224/fixture-2224.yaml",
+		spec: "../testdata/enhancements/2224/fixture-2224.yaml",
 		// in this test case, we have a mix of generated models and external models
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			// generate a module for external models in {test dir}/external
 			t.Run("should generate external model", generateExternalModel(
 				g,
-				filepath.Join("..", "fixtures", "enhancements", "2224", "fixture-2224-models.yaml"), // the spec for the external model
-				"github.com/go-swagger/go-swagger/fixtures/enhancements/2224/external",              // the external package in imports
+				filepath.Join("..", "testdata", "enhancements", "2224", "fixture-2224-models.yaml"), // the spec for the external model
+				"github.com/go-swagger/go-swagger/testdata/enhancements/2224/external",              // the external package in imports
 			))
 
 			t.Run("external models should be available", func(t *testing.T) {
@@ -368,7 +371,7 @@ func fixtureServerExternalModelsHints() generateFixture {
 
 func fixtureServerNameConflict2405_1() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/codegen/todolist.example.yml",
+		spec: "../testdata/codegen/todolist.example.yml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.ServerPackage = apiPkg
@@ -389,7 +392,7 @@ func fixtureServerNameConflict2405_1() generateFixture {
 
 func fixtureServerNameConflict2405_2() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/codegen/todolist.example.yml",
+		spec: "../testdata/codegen/todolist.example.yml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.ServerPackage = "loads"
@@ -410,7 +413,7 @@ func fixtureServerNameConflict2405_2() generateFixture {
 
 func fixtureServerNameConflict2405_3() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2405/fixture-2405.yaml",
+		spec: "../testdata/bugs/2405/fixture-2405.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.ServerPackage = "server"
@@ -432,7 +435,7 @@ func fixtureServerNameConflict2405_3() generateFixture {
 
 func fixtureServerExternalTypes2385() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2385/fixture-2385.yaml",
+		spec: "../testdata/bugs/2385/fixture-2385.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.MainPackage = testServerPkg
@@ -461,7 +464,7 @@ func fixtureServerExternalTypes2385() generateFixture {
 
 func fixtureServerExternalTypesFull() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/codegen/external-types/example-external-types.yaml",
+		spec: "../testdata/codegen/external-types/example-external-types.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.MainPackage = testServerPkg
@@ -492,7 +495,7 @@ func fixtureServerExternalTypesFull() generateFixture {
 
 func fixtureServerNameConflictServer2730() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2730/2730.yaml",
+		spec: "../testdata/bugs/2730/2730.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.MainPackage = testServerPkg
@@ -514,7 +517,7 @@ func fixtureServerNameConflictServer2730() generateFixture {
 
 func fixtureServerTagPackageName2866() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/2866/2866.yaml",
+		spec: "../testdata/bugs/2866/2866.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.MainPackage = testServerPkg
@@ -543,7 +546,7 @@ func fixtureServerTagPackageName2866() generateFixture {
 
 func fixtureServerTagPackageName3143() generateFixture {
 	return generateFixture{
-		spec: "../fixtures/bugs/3143/3143.yaml",
+		spec: "../testdata/bugs/3143/3143.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultServerOpts(t, spec, target)
 			g.MainPackage = testServerPkg
@@ -565,16 +568,66 @@ func fixtureServerTagPackageName3143() generateFixture {
 	}
 }
 
+func fixtureServerGoRunGenerate3000() generateFixture {
+	return generateFixture{
+		spec: "../testdata/bugs/2111/fixture-2111.yaml",
+		prepare: func(t *testing.T, spec, target string) *GenOpts {
+			g := defaultServerOpts(t, spec, target)
+			g.WithGoRunGoGenerate = true
+
+			return g
+		},
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				content, err := os.ReadFile(filepath.Join(target, "restapi", "configure_unsafe_tag_names.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(content), "//go:generate go run github.com/go-swagger/go-swagger/cmd/swagger generate server")
+			}
+		},
+	}
+}
+
+func fixtureServerGoRunGenerateDefault3000() generateFixture {
+	return generateFixture{
+		spec: "../testdata/bugs/2111/fixture-2111.yaml",
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				content, err := os.ReadFile(filepath.Join(target, "restapi", "configure_unsafe_tag_names.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(content), "//go:generate swagger generate server")
+				require.NotContains(t, string(content), "go run github.com/go-swagger/go-swagger/cmd/swagger")
+			}
+		},
+	}
+}
+
+func fixtureServerYamlpcImport1603() generateFixture {
+	return generateFixture{
+		spec: "../testdata/bugs/1603/fixture-1603.yaml",
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				configureContent, err := os.ReadFile(filepath.Join(target, "restapi", "configure_yamlpc_import_must_be_registered_explicitly.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(configureContent), `"github.com/go-openapi/runtime/yamlpc"`)
+
+				apiContent, err := os.ReadFile(filepath.Join(target, "restapi", "operations", "yamlpc_import_must_be_registered_explicitly_api.go"))
+				require.NoError(t, err)
+				require.Contains(t, string(apiContent), `"github.com/go-openapi/runtime/yamlpc"`)
+			}
+		},
+	}
+}
+
 func fixtureClientRoundTrip1083() generateFixture {
 	return generateFixture{
 		// exercise generated client + untyped server
-		spec: "../fixtures/bugs/1083/petstore.yaml",
+		spec: "../testdata/bugs/1083/petstore.yaml",
 		prepare: func(t *testing.T, spec, target string) *GenOpts {
 			g := defaultClientOpts(t, spec, target)
 			targetImport := gentest.SanitizeGoModPath(target) // the generated module
 
 			t.Run("should relocate test program", func(t *testing.T) {
-				input, err := os.ReadFile(filepath.Join("..", "fixtures", "bugs", "1083", "pathparam_test.go"))
+				input, err := os.ReadFile(filepath.Join("..", "testdata", "bugs", "1083", "pathparam_test.go"))
 				require.NoError(t, err)
 
 				// rewrite imports and relocates test program to the codegen target directory.
@@ -582,7 +635,7 @@ func fixtureClientRoundTrip1083() generateFixture {
 				// Imports are rewritten such that there is no need for a replace directive in the generated go.mod
 				rebasedContent := bytes.ReplaceAll(
 					input,
-					[]byte("github.com/go-swagger/go-swagger/fixtures/bugs/1083/codegen"),
+					[]byte("github.com/go-swagger/go-swagger/testdata/bugs/1083/codegen"),
 					[]byte(targetImport),
 				)
 				rebasedContent = removeBuildTags(rebasedContent)
@@ -592,7 +645,7 @@ func fixtureClientRoundTrip1083() generateFixture {
 			g.ExcludeSpec = false
 
 			t.Run("should copy spec for untyped usage", func(t *testing.T) {
-				f, err := os.Open(filepath.Join("..", "fixtures", "bugs", "1083", "petstore.yaml"))
+				f, err := os.Open(filepath.Join("..", "testdata", "bugs", "1083", "petstore.yaml"))
 				require.NoError(t, err)
 				defer func() {
 					_ = f.Close()
@@ -628,7 +681,7 @@ func fixtureClientRoundTrip1083() generateFixture {
 
 func fixtureClientNameConflict2730() generateFixture {
 	return generateFixture{
-		spec:    "../fixtures/bugs/2730/2730.yaml",
+		spec:    "../testdata/bugs/2730/2730.yaml",
 		prepare: nil,
 		verify: func(target string) func(*testing.T) {
 			return func(t *testing.T) {
@@ -643,7 +696,7 @@ func fixtureClientNameConflict2730() generateFixture {
 
 func fixtureClientTypeConversions() generateFixture {
 	return generateFixture{
-		spec:    "../fixtures/codegen/conversions.yaml",
+		spec:    "../testdata/codegen/conversions.yaml",
 		prepare: nil,
 		verify: func(target string) func(*testing.T) {
 			return func(t *testing.T) {

@@ -5,6 +5,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -133,7 +134,7 @@ func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts.ValidateSpec = false
 	opts.Spec = f.SpecFile
 	if err := ensureMachinery(opts); err != nil {
-		panic(err)
+		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
 	}
 
 	// sets gen options (e.g. flatten vs expand) - full flatten is the default setting for this test (NOT the default CLI option!)
@@ -290,6 +291,22 @@ func initModelFixtures() {
 
 	// min / maxProperties, more cases
 	initFixture2587()
+
+	// x-go-type novalidation hint must also be honored by ContextValidate
+	initFixture3141()
+
+	// enum array items must generate a const block
+	initFixture1203()
+
+	// base types (interfaces) in containers must never be rendered as pointers
+	initFixture1487BaseTypes()
+	initFixture1487Polymorphism()
+
+	// no-op Validate/ContextValidate must not declare unused formats/ctx params
+	initFixture3112()
+
+	// additionalProperties value must unmarshal into a non-nil target
+	initFixture1632()
 }
 
 /* Template initTxxx() to prepare and load a fixture:
@@ -323,7 +340,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 	// exercise the top level model generation func
 	defer discardOutput()()
 
-	const fixtureSpec = "../fixtures/bugs/1487/fixture-is-nullable.yaml"
+	const fixtureSpec = "../testdata/bugs/1487/fixture-is-nullable.yaml"
 
 	root := t.TempDir()
 	gendir := filepath.Join(root, "model-test")
@@ -452,7 +469,7 @@ func findTestDefinition(k string, definitions spec.Definitions, opts *GenOpts) (
 	)
 
 	for def, s := range definitions {
-		// please do not inject fixtures with case conflicts on defs...
+		// please do not inject testdata with case conflicts on defs...
 		// this one is just easier to retrieve model back from file names when capturing
 		// the generated code.
 		mangled := opts.LanguageOpts.Mangler.ToJSONName(def)
