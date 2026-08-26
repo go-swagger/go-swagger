@@ -49,7 +49,7 @@
   {{- if (and .IsPrimitive .IsAliased .IsCustomFormatter (not (stringContains .Zero "(\""))) }}
     {{ template "aliasedSerializer" . }}
   {{- end }}
-  {{- if .IsSubType }}
+  {{- if or .IsSubType (and .HasBaseType (gt (len .AllOf) 0)) }}
     {{ range .AllOf }}
       {{ range .Properties }}
         {{- if .IsBaseType }}
@@ -72,6 +72,8 @@
         {{- end }}
       {{- end }}{{/* TODO(fred): handle AdditionalProperties in base type */}}
     {{- end }}
+  {{- end }}
+  {{- if .IsSubType }}
     {{ template "mapOrSliceGetter" . }}
   {{- end }}
   {{ template "schemaSerializer" . }}

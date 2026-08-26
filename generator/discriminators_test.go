@@ -25,6 +25,16 @@ func TestBuildDiscriminatorMap(t *testing.T) {
 	assert.Len(t, di.Discriminated, 2)
 }
 
+func TestBuildDiscriminatorMap_UsesDiscriminatorValue(t *testing.T) {
+	t.Parallel()
+
+	specDoc, err := loads.Spec("../fixtures/bugs/3133/fixture-3133.yaml")
+	require.NoError(t, err)
+
+	di := discriminatorInfo(analysis.New(specDoc.Spec()), opts())
+	assert.EqualT(t, "boolean", di.Discriminated["#/definitions/PermissionBooleanExpression"].FieldValue)
+}
+
 func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
@@ -280,6 +290,33 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 
 	res := string(b)
 	assertNotInCode(t, "for i := 0; i < len(m.PriceExplanation()); i++", res)
+}
+
+func TestGenerateModel_DiscriminatorAllOfBaseProperties(t *testing.T) {
+	t.Parallel()
+
+	specDoc, err := loads.Spec("../fixtures/bugs/3133/fixture-3133.yaml")
+	require.NoError(t, err)
+
+	genOpts := opts()
+	genModel, err := makeGenDefinition("PermissionExpressionEqual", "models", specDoc.Spec().Definitions["PermissionExpressionEqual"], specDoc, genOpts)
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, genOpts.templates.MustGet("model").Execute(buf, genModel))
+
+	formatted, err := genOpts.LanguageOpts.FormatContent("permission_expression_equal.go", buf.Bytes())
+	require.NoErrorf(t, err, buf.String())
+	res := string(formatted)
+
+	assertInCode(t, "leftField PermissionExpression", res)
+	assertInCode(t, "rightField PermissionExpression", res)
+	assertInCode(t, "result.leftField = allOfLeft", res)
+	assertInCode(t, "result.rightField = allOfRight", res)
+	assertInCode(t, "func (m *PermissionExpressionEqual) Left() PermissionExpression", res)
+	assertInCode(t, "func (m *PermissionExpressionEqual) Right() PermissionExpression", res)
+	assertInCode(t, "Left: m.Left()", res)
+	assertInCode(t, "Right: m.Right()", res)
 }
 
 func TestGenerateModel_Bitbucket_Repository(t *testing.T) {

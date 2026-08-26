@@ -3,7 +3,7 @@
     {{ if or (and $.IsSubType .IsBaseType .IsExported) .IsAnonymous }}
       {{ range .Properties }}
         {{ if ne $.DiscriminatorField .Name }}
-          {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) }}
+          {{ if or (not $.IsExported) (and $.IsSubType .IsBaseType) .IsBaseType }}
             {{ if $.IsTuple }}
               {{ template "privtuplefield" . }}
             {{ else }}
