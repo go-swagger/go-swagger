@@ -46,9 +46,9 @@ const (
 	xSchemes            = "x-schemes" // additional schemes supported for operations (server generation)
 	xOrder              = "x-order"   // sort order for properties (or any schema)
 	xGoJSONString       = "x-go-json-string"
-	xGoEnumCI           = "x-go-enum-ci" // make string enumeration case-insensitive
-  xGoServerStreaming = "x-go-server-streaming" // stream multipart form payloads directly to server handlers
-	xGoOperationTag = "x-go-operation-tag" // additional tag to override generation in operation groups
+	xGoEnumCI           = "x-go-enum-ci"          // make string enumeration case-insensitive
+	xGoServerStreaming  = "x-go-server-streaming" // stream multipart form payloads directly to server handlers
+	xGoOperationTag     = "x-go-operation-tag"    // additional tag to override generation in operation groups
 )
 
 type typeResolver struct {
