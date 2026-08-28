@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
+    uses: go-openapi/ci-workflows/.github/workflows/go-test.yml@38ed6bf083115440d79b475442d6cf99ee450180 # v0.6.1
     with:
       # Neither a schedule nor a dispatch carries a list of changed files, so detection
       # would fall back on running everything anyway. Saying it explicitly documents the

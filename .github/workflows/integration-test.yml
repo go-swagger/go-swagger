@@ -22,7 +22,7 @@ jobs:
     #   Decide whether this run has anything to exercise. Fails open: anything unclear
     #   runs the whole suite.
     name: Changes
-    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@38ed6bf083115440d79b475442d6cf99ee450180 # v0.6.1
     with:
       preset: go
       # The docker image ships the built binary, so any go change is already relevant.
@@ -174,7 +174,7 @@ jobs:
     #   flaky and must not gate a merge.
     needs: [codegen-test]
     if: ${{ !cancelled() && needs.codegen-test.result == 'success' }}
-    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@81c95ab8bb6a3e0aeccc90a7c9e5fc5b398b1244 # v0.6.0
+    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@38ed6bf083115440d79b475442d6cf99ee450180 # v0.6.1
     secrets: inherit
 
   integration-test-complete:
