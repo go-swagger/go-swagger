@@ -19,6 +19,7 @@ linters:
     - dupl  # temporary => should be disabled sparingly
     - err113 # temporary
     - exhaustruct # temporary
+    - exhaustruct_v5 # temporary
     - funlen # temporary
     - gochecknoglobals  # agree, but breaking
     - gochecknoinits # agree, but breaking
