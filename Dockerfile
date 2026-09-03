@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
-FROM golang:alpine@sha256:4c9fe60190a2a3350ddc51de80d0224b8a6698d12bdfc999fee45ea9d6c46dbc AS base
+FROM golang:alpine@sha256:cf6fca6641884b8433441b2b0652976f975e1d0fdd26d177eaaf8596087f3125 AS base
 
 # --platform=$BUILDPLATFORM pins this stage to the machine running the build: the go build
 # below cross-compiles through GOOS/GOARCH with CGO off, so running it under QEMU for
