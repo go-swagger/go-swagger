@@ -669,6 +669,7 @@ type GenOperation struct {
 
 	StrictResponders bool
 	ReturnErrors     bool
+	WantsGetters     bool // generate a Get<Field> method for each parameter on the Params struct (--generate-getters)
 	ExternalDocs     *spec.ExternalDocumentation
 	Produces         []string // original produces for operation (for doc)
 	Consumes         []string // original consumes for operation (for doc)
