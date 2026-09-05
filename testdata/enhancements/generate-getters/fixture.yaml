@@ -4,15 +4,46 @@ info:
   title: generate-getters
   version: "0.0.0"
 paths:
-  /v1/model:
+  /v1/models:
     get:
+      operationId: listModels
       produces:
         - application/json
+      parameters:
+        - name: "$top"
+          in: query
+          type: integer
+          format: int64
+          description: OData $top — an optional scalar query param (int64)
+        - name: "$skip"
+          in: query
+          type: integer
+          format: int64
+          required: true
+          description: OData $skip — a required query param (int64, non-pointer)
+        - name: name
+          in: query
+          type: string
+          description: an optional string query param (pointer)
+        - name: tags
+          in: query
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+          description: a slice query param
+        - name: when
+          in: query
+          type: string
+          format: date-time
+          description: a date-time query param (strfmt.DateTime)
       responses:
         default:
-          description: model
+          description: model list
           schema:
-            $ref: '#/definitions/GetterModel'
+            type: array
+            items:
+              $ref: '#/definitions/GetterModel'
 
 definitions:
   GetterModel:

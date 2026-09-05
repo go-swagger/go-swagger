@@ -419,6 +419,17 @@ type {{ pascalize .Name }}Params struct {
   {{ if not .Schema }}{{ .ID }} {{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ .ID }} {{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }}
   {{- end}}
 }
+{{- if .WantsGetters }}
+  {{- range .ServerParams }}
+    {{- if not .IsFileParam }}
+
+// Get{{ .GoName }} gets the {{ humanize .Name }} parameter of this {{ pascalize $.Name }}Params
+func ({{ $.ReceiverName }} *{{ pascalize $.Name }}Params) Get{{ .GoName }}() {{ if not .Schema }}{{ if and (not .IsArray) (not .HasDiscriminator) (not .IsInterface) (not .IsStream) .IsNullable }}*{{ end }}{{.GoType}}{{ else }}{{ if and (not .Schema.IsBaseType) .IsNullable (not .Schema.IsStream) }}*{{ end }}{{.GoType}}{{ end }} {
+  return {{ $.ReceiverName }}.{{ .ID }}
+}
+    {{- end }}
+  {{- end }}
+{{- end }}
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.

@@ -4359,3 +4359,67 @@ func TestGenParameter_StreamingMultipartFormNameIsDeconflicted(t *testing.T) {
 
 	assert.EqualT(t, "RequestMultipartForm", deconflictMultipartFormName(params))
 }
+
+// TestGenerateParameterGetters covers the opt-in Get<Field> methods on generated operation parameters.
+//
+// The --generate-getters flag emits a getter for each parameter of the <Operation>Params struct,
+// returning the field value by its declared type.
+// This test exercises the variety of return types (scalar, pointer, slice, date-time)
+// and asserts that the default output is unchanged when the option is not set.
+func TestGenerateParameterGetters(t *testing.T) {
+	defer discardOutput()()
+
+	render := func(t *testing.T, wantsGetters bool) string {
+		t.Helper()
+
+		b, err := opBuilder("listModels", "../testdata/enhancements/generate-getters/fixture.yaml")
+		require.NoError(t, err)
+		b.GenOpts.WantsGetters = wantsGetters
+
+		op, err := b.MakeOperation()
+		require.NoError(t, err)
+
+		buf := bytes.NewBuffer(nil)
+		require.NoError(t, b.GenOpts.templates.MustGet("serverParameter").Execute(buf, op))
+
+		ff, err := b.GenOpts.LanguageOpts.FormatContent("list_models_parameters.go", buf.Bytes())
+		require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+		return string(ff)
+	}
+
+	t.Run("with WantsGetters option", func(t *testing.T) {
+		res := render(t, true)
+
+		// optional scalar query param (int64) -> pointer
+		assertInCode(t, "func (o *ListModelsParams) GetDollarTop() *int64 {", res)
+		assertInCode(t, "return o.DollarTop", res)
+
+		// required scalar query param (int64) -> non-pointer
+		assertInCode(t, "func (o *ListModelsParams) GetDollarSkip() int64 {", res)
+		assertInCode(t, "return o.DollarSkip", res)
+
+		// optional string query param -> pointer
+		assertInCode(t, "func (o *ListModelsParams) GetName() *string {", res)
+		assertInCode(t, "return o.Name", res)
+
+		// slice query param
+		assertInCode(t, "func (o *ListModelsParams) GetTags() []string {", res)
+		assertInCode(t, "return o.Tags", res)
+
+		// date-time query param -> *strfmt.DateTime (optional, so pointer)
+		assertInCode(t, "func (o *ListModelsParams) GetWhen() *strfmt.DateTime {", res)
+		assertInCode(t, "return o.When", res)
+	})
+
+	t.Run("without WantsGetters option (default)", func(t *testing.T) {
+		res := render(t, false)
+
+		// opt-in: the default output is unchanged, no Get<Field> methods are emitted.
+		assertNotInCode(t, "func (o *ListModelsParams) GetDollarTop(", res)
+		assertNotInCode(t, "func (o *ListModelsParams) GetDollarSkip(", res)
+		assertNotInCode(t, "func (o *ListModelsParams) GetName(", res)
+		assertNotInCode(t, "func (o *ListModelsParams) GetTags(", res)
+		assertNotInCode(t, "func (o *ListModelsParams) GetWhen(", res)
+	})
+}
