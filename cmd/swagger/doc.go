@@ -5,6 +5,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"iter"
 	"os"
@@ -17,6 +18,7 @@ import (
 
 type docCommand struct {
 	Destination string `default:"./docs" description:"Output destination folder" long:"dest" short:"d"`
+	Width       uint16 `default:"132" description:"Desired width in columns of the formatted output" short:"w"`
 	parser      *flags.Parser
 }
 
@@ -36,52 +38,63 @@ func (d *docCommand) gendoc() (err error) {
 	}
 
 	for documented := range documentCLI(d.parser) {
-		file, err := os.Create(filepath.Join(d.Destination, documented.Target))
-		if err != nil {
-			return err
-		}
-
-		// front matter
-		fmt.Fprintln(file, "---")
-		fmt.Fprintf(file, "title: %q\n", documented.Title)
-		fmt.Fprintf(file, "description: %q\n", documented.Description)
-		fmt.Fprintf(file, "weight: %d\n", documented.Index)
-		fmt.Fprintln(file, "---")
-		fmt.Fprintln(file, "")
-
-		// markdown formatting
-		fmt.Fprintf(file, "## %s\n", documented.Title)
-		fmt.Fprintln(file, "")
-		fmt.Fprintln(file, "```cmd")
-
-		// go-flags formats a help message by polling the width of the stdin terminal: we give it a pseudo-tty, sized at 132 cols.
-		const desiredTermWidth = 132
-		restore, err := setTermsize(desiredTermWidth)
-		if err != nil {
-			return err
-		}
-		defer restore()
-
-		// go-flags writes help messages to stdout: redirecting here
-		stdout := os.Stdout
-		stderr := os.Stderr
-		defer func() {
-			os.Stdout = stdout
-			os.Stderr = stderr
-		}()
-
-		os.Stdout = file
-		os.Stderr = file
-
-		// run the command with --help flag; swallow the error systematically returned by go-flag on --help
-		_ = run(d.parser, documented.Args)
-
-		fmt.Fprintln(file, "```")
-		err = file.Close()
-		if err != nil {
+		if err = d.documentCommand(documented); err != nil {
 			return err
 		}
 	}
+
+	return nil
+}
+
+func (d *docCommand) documentCommand(documented doc) (err error) {
+	file, err := os.Create(filepath.Join(d.Destination, documented.Target))
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+
+	stdout := os.Stdout
+	stderr := os.Stderr
+
+	// front matter
+	fmt.Fprintln(file, "---")
+	fmt.Fprintf(file, "title: %q\n", documented.Title)
+	fmt.Fprintf(file, "description: %q\n", documented.Description)
+	fmt.Fprintf(file, "weight: %d\n", documented.Index)
+	fmt.Fprintln(file, "---")
+	fmt.Fprintln(file, "")
+
+	// markdown formatting
+	fmt.Fprintf(file, "## %s\n", documented.Title)
+	fmt.Fprintln(file, "")
+	fmt.Fprintln(file, "```cmd")
+
+	// go-flags formats a help message by polling the width of the stdin terminal: we give it a pseudo-tty, sized at 132 cols.
+	const defaultTermWidth = 132
+	if d.Width < 80 {
+		d.Width = defaultTermWidth
+	}
+	restore, err := setTermsize(d.Width)
+	if err != nil {
+		return err
+	}
+	defer restore()
+
+	// go-flags writes help messages to stdout: redirecting here
+	defer func() {
+		os.Stdout = stdout
+		os.Stderr = stderr
+	}()
+
+	os.Stdout = file
+	os.Stderr = file
+
+	// run the command with --help flag; swallow the error systematically returned by go-flag on --help
+	_ = run(d.parser, documented.Args)
+
+	fmt.Fprintln(file, "```")
 
 	return nil
 }
@@ -97,9 +110,9 @@ type doc struct {
 // documentCLI yields an iterator over the tree of commands and their subcommands.
 func documentCLI(parser *flags.Parser) iter.Seq[doc] {
 	return func(yield func(doc) bool) {
-		i := 0
+		i := 1
 		rootDoc := doc{
-			Title:       "Commands",
+			Title:       "All commands",
 			Description: "All swagger commands",
 			Index:       i,
 			Target:      "commands.md",
@@ -114,7 +127,6 @@ func documentCLI(parser *flags.Parser) iter.Seq[doc] {
 			if !yield(cmdDoc) {
 				return
 			}
-			i++
 		}
 	}
 }
@@ -125,6 +137,9 @@ func documentCommands(parents []string, index *int, commands []*flags.Command) i
 		prefix = strings.Join(parents, "_") + "_"
 		parent = strings.Join(parents, " ") + " "
 	}
+	slices.SortStableFunc(commands, func(a, b *flags.Command) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
 
 	return func(yield func(doc) bool) {
 		for _, cmd := range commands {

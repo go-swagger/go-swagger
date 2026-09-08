@@ -21,17 +21,24 @@ var opts struct {
 }
 
 func main() {
-	parser, err := register()
+	var doc docCommand
+	parser, err := register(&doc)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	clone, err := register(&doc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	doc.parser = clone
 
 	if err = run(parser, os.Args[1:]); err != nil {
 		os.Exit(1)
 	}
 }
 
-func register() (*flags.Parser, error) {
+func register(doc *docCommand) (*flags.Parser, error) {
 	parser := flags.NewNamedParser("swagger", flags.Default)
 	_, err := parser.AddGroup("Application Options", "", &opts)
 	if err != nil {
@@ -54,7 +61,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 		return nil, err
 	}
 
-	_, err = parser.AddCommand("version", "print the version", "print the version of the swagger command", &commands.PrintVersion{})
+	_, err = parser.AddCommand("version", "print the version of go-swagger", "print the version of the swagger command you're running", &commands.PrintVersion{})
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +124,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 		}
 	}
 
-	_, err = parser.AddCommand("doc", "generate CLI usage documentation as markdown", "", &docCommand{parser: parser})
+	_, err = parser.AddCommand("doc", "generate CLI usage documentation as markdown", "", doc)
 	if err != nil {
 		return nil, err
 	}
