@@ -1,0 +1,36 @@
+swagger: "2.0"
+info:
+  title: Orders API
+  version: "1.0"
+paths:
+  /orders:
+    post:
+      operationId: createOrders
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/BatchOrderRequest"
+      responses:
+        201:
+          description: Created
+
+definitions:
+  BatchOrderRequest:
+    type: object
+    required:
+      - orders
+    properties:
+      orders:
+        type: array
+        items:
+          $ref: "#/definitions/Order"
+
+  Order:
+    type: object
+    x-nullable: false
+    properties:
+      id:
+        type: string
+        readOnly: true

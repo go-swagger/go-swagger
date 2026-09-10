@@ -43,6 +43,7 @@ func generateServerFixtures() map[string]generateFixture {
 		"go_run_generate_default_3000":     fixtureServerGoRunGenerateDefault3000(),
 		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
+		"issue 3278":                       fixtureServerContextValidationArrayItem3278(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
 		"main_package":                     fixtureServerMainPackage(),
@@ -64,6 +65,30 @@ func generateClientFixtures() map[string]generateFixture {
 		"issue1083":                       fixtureClientRoundTrip1083(),
 		"conflict_name_client_issue_2730": fixtureClientNameConflict2730(),
 		"type conversions":                fixtureClientTypeConversions(),
+	}
+}
+
+func fixtureServerContextValidationArrayItem3278() generateFixture {
+	return generateFixture{
+		spec:    "../testdata/bugs/3278/fixture-3278.yaml",
+		prepare: defaultServerOpts,
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				input, err := os.ReadFile("../testdata/bugs/3278/context_validation_test.go")
+				require.NoError(t, err)
+				modelsTarget := filepath.Join(target, defaultModelsTarget)
+				require.NoError(t, os.WriteFile( //nolint:gosec // G703 false positive: target is a test temp directory
+					filepath.Join(modelsTarget, "context_validation_test.go"),
+					removeBuildTags(input),
+					0o600,
+				))
+
+				t.Run("should tidy go mod", gentest.GoModTidy(target))
+				t.Run("should validate items after an optional zero array item",
+					gentest.GoExecInDir(filepath.Join(target, defaultModelsTarget), "test", "."),
+				)
+			}
+		},
 	}
 }
 
