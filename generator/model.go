@@ -263,6 +263,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		WantsRootedErrorPath:       opts.WantsRootedErrorPath,
 		WantsStringer:              opts.WantsStringer,
 		WantsGetters:               opts.WantsGetters,
+		WantsEnumCI:                opts.AllowEnumCI,
 		mangler:                    opts.LanguageOpts.Mangler,
 		pascalize:                  pascalize,
 		jsonify:                    jsonify,
@@ -334,7 +335,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 					gs.IsBaseType = true
 					gs.IsExported = true
 					pg.GenSchema.AllOf[i] = gs.GenSchema
-					schPtr := &(pg.GenSchema.AllOf[i])
+					schPtr := &pg.GenSchema.AllOf[i]
 					if schPtr.AdditionalItems != nil {
 						schPtr.AdditionalItems.IsBaseType = true
 					}
@@ -467,6 +468,7 @@ type schemaGenContext struct {
 	WantsStringer              bool
 	WantsGetters               bool
 	WithXML                    bool
+	WantsEnumCI                bool
 	Index                      int
 
 	Path         string
@@ -1894,6 +1896,8 @@ func (sg *schemaGenContext) makeGenSchema() error {
 	// they already expose getters via the polymorphic path.
 	sg.GenSchema.WantsGetters = sg.WantsGetters && !gs.IsInterface && !gs.IsStream && !gs.IsBaseType &&
 		(gs.IsTuple || gs.IsComplexObject || gs.IsAdditionalProperties)
+
+	sg.GenSchema.IsEnumCI = (sg.WantsEnumCI && sg.Schema.Validations().HasEnum()) || tpe.IsEnumCI
 
 	return nil
 }
