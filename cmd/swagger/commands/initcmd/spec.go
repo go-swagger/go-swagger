@@ -123,7 +123,7 @@ func (s *Spec) Execute(args []string) error {
 func resolveDest(pth string, args []string, format, defaultPth string) (string, error) {
 	if pth == "" && (len(args) == 0 || args[0] == "") {
 		pth = defaultPth
-	} else if args[0] != "" {
+	} else if len(args) > 0 && args[0] != "" {
 		pth = args[0]
 	}
 
