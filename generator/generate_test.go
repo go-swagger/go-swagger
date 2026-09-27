@@ -43,6 +43,7 @@ func generateServerFixtures() map[string]generateFixture {
 		"go_run_generate_default_3000":     fixtureServerGoRunGenerateDefault3000(),
 		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
+		"issue 3139":                       fixtureServerPolymorphicResponse3139(),
 		"issue 3278":                       fixtureServerContextValidationArrayItem3278(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
@@ -87,6 +88,18 @@ func fixtureServerContextValidationArrayItem3278() generateFixture {
 				t.Run("should validate items after an optional zero array item",
 					gentest.GoExecInDir(filepath.Join(target, defaultModelsTarget), "test", "."),
 				)
+			}
+		},
+	}
+}
+
+func fixtureServerPolymorphicResponse3139() generateFixture {
+	return generateFixture{
+		spec: "../testdata/bugs/3139/fixture-3139.yaml",
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				t.Run("should tidy go.mod", gentest.GoModTidy(target))
+				t.Run("building generated server", gentest.GoBuild(filepath.Join(target, defaultServerTarget)))
 			}
 		},
 	}
