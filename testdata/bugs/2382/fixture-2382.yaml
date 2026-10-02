@@ -1,0 +1,58 @@
+consumes:
+  - application/json
+info:
+  title: Foo
+  version: 1.0.0
+paths:
+  /foo:
+    put:
+      operationId: updateFoo
+      parameters:
+        - in: body
+          name: foo
+          required: true
+          schema:
+            items:
+              properties:
+                foo:
+                  type: boolean
+              type: object
+            type: array
+      responses:
+        200:
+          description: OK
+  /nullable-foo:
+    put:
+      operationId: updateNullableFoo
+      parameters:
+        - in: body
+          name: foo
+          required: true
+          schema:
+            items:
+              x-nullable: true
+              properties:
+                foo:
+                  type: boolean
+              type: object
+            type: array
+      responses:
+        200:
+          description: OK
+swagger: "2.0"
+definitions:
+  FooArray:
+    type: array
+    items:
+      properties:
+        foo:
+          type: boolean
+      type: object
+  NullableFooArray:
+    type: array
+    items:
+      x-nullable: true
+      properties:
+        foo:
+          type: boolean
+      type: object
