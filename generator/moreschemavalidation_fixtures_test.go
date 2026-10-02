@@ -959,7 +959,8 @@ func initFixture1479Part() {
 		`	if err := validate.MaxItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...?
-		`		if typeutils.IsZero(m.ConsoleSize[i]) {`,
+		`		if m.ConsoleSize[i] == nil {`,
+		`			return validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i])`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigAllOf0TypeIsolationPropEnum []any`,
 		`	var res []string`,
@@ -1089,7 +1090,8 @@ func initFixture1479Part() {
 		`	if err := validate.MaxItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
 		// do we need...
-		`		if typeutils.IsZero(m.ConsoleSize[i]) {`,
+		`		if m.ConsoleSize[i] == nil {`,
+		`			return validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i])`,
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", *m.ConsoleSize[i], 0, false); err != nil {`,
 		`var hostConfigTypeIsolationPropEnum []any`,
 		`	var res []string`,
@@ -1317,7 +1319,8 @@ func initFixture1479Part() {
 		`	if err := validate.MaxItems("HostConfig"+"."+"ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.HostConfig.ConsoleSize); i++ {`,
 		// do we need... ?
-		`		if typeutils.IsZero(m.HostConfig.ConsoleSize[i]) {`,
+		`		if m.HostConfig.ConsoleSize[i] == nil {`,
+		`			return validate.Required("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", m.HostConfig.ConsoleSize[i])`,
 		`		if err := validate.MinimumInt("HostConfig"+"."+"ConsoleSize"+"."+strconv.Itoa(i), "body", *m.HostConfig.ConsoleSize[i], 0, false); err != nil {`,
 		// TODO: enum if anonymous allOf is not honored (missing func)
 		// => will do that with Enum refactoring
@@ -2601,7 +2604,8 @@ func initFixtureComplexAllOf() {
 		`	for i := 0; i < len(m); i++ {`,
 		// do we need Required when item is nullable?
 		// nullable not required:
-		`		if typeutils.IsZero(m[i]) {`,
+		`		if m[i] == nil {`,
+		`			return validate.Required(strconv.Itoa(i), "body", m[i])`,
 		// nullable required:
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
@@ -9587,10 +9591,8 @@ func initFixture15365() {
 		`type ModelArrayOfNullable []*int64`,
 		`func (m ModelArrayOfNullable) Validate(formats strfmt.Registry) error {`,
 		`	for i := 0; i < len(m); i++ {`,
-		// do we need Required when item is nullable?
-		// nullable not required:
-		`		if typeutils.IsZero(m[i]) {`,
-		// nullable required:
+		`		if m[i] == nil {`,
+		`			return validate.Required(strconv.Itoa(i), "body", m[i])`,
 		`		if err := validate.MinimumInt(strconv.Itoa(i), "body", *m[i], 0, false); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
