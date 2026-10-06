@@ -1131,13 +1131,7 @@ func (rt *resolvedType) setExtensions(schema *spec.Schema, origType string, noDe
 	rt.IsEnumCI = hasEnumCI(schema.Extensions)
 	rt.setIsEmptyOmitted(schema, origType, noDefaultOmitEmpty)
 	rt.setIsJSONString(schema, origType)
-
-	if customTag, found := schema.Extensions[xGoCustomTag]; found {
-		if rt.Extensions == nil {
-			rt.Extensions = make(spec.Extensions)
-		}
-		rt.Extensions[xGoCustomTag] = customTag
-	}
+	rt.Extensions = schema.Extensions
 }
 
 func (rt *resolvedType) setIsEmptyOmitted(schema *spec.Schema, tpe string, noDefaultOmitEmpty bool) {
