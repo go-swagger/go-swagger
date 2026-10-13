@@ -1247,6 +1247,11 @@ func (sg *schemaGenContext) buildArray() error {
 	schemaCopy := elProp.GenSchema
 
 	schemaCopy.Required = false
+	if tpe.IsBaseType && strings.HasSuffix(sg.GenSchema.ValueExpression, asMethod) && schemaCopy.ValueExpression == sg.ValueExpr+"["+sg.IndexVar+"]" {
+		// Polymorphic arrays expose their backing field through a getter. Keep
+		// the getter when validating an individual element as well.
+		schemaCopy.ValueExpression = sg.GenSchema.ValueExpression + "[" + sg.IndexVar + "]"
+	}
 
 	// validations of items
 	// include format validation, excluding binary and base64 format validation
