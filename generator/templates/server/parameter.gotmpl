@@ -31,7 +31,7 @@
   for {{ .IndexVar }} := range body {
       {{- if .Schema.Items.IsNullable }}
     if body[{{ .IndexVar }}] == nil {
-        {{- if .Schema.Items.Required }}
+        {{- if or .Schema.Items.Required (not .Schema.Items.IsNullableSet) }}
         res = append(res, errors.Required({{ .Child.Path }}, {{ printf "%q" .Child.Location }}, body[{{ .IndexVar }}]))
         break
         {{- else }}
