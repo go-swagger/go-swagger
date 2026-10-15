@@ -8,7 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/SladkyCitron/slogcolor v1.9.0
 	github.com/creack/pty v1.1.24
-	github.com/go-openapi/analysis v1.0.0
+	github.com/go-openapi/analysis v1.0.1
 	github.com/go-openapi/codescan v0.36.4
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v1.0.0
@@ -47,7 +47,7 @@ require (
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
-	github.com/go-openapi/jsonpointer v1.0.1 // indirect
+	github.com/go-openapi/jsonpointer v1.0.2 // indirect
 	github.com/go-openapi/jsonreference v1.0.2 // indirect
 	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
 	github.com/go-openapi/swag/pools v0.29.2 // indirect
