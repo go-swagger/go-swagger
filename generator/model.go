@@ -63,10 +63,12 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 		return err
 	}
 
-	specDoc, _, err := newSpecAnalyzer(opts).analyzeSpec()
+	specDoc, analyzed, err := newSpecAnalyzer(opts).analyzeSpec()
 	if err != nil {
 		return err
 	}
+
+	sharedAnalysis := newModelAnalysis(specDoc, analyzed, opts)
 
 	modelNames = pruneEmpty(modelNames)
 	if len(modelNames) == 0 {
@@ -84,9 +86,10 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 
 		// generate files
 		generator := definitionGenerator{
-			Name:    modelName,
-			Model:   model,
-			SpecDoc: specDoc,
+			Name:          modelName,
+			Model:         model,
+			SpecDoc:       specDoc,
+			ModelAnalysis: sharedAnalysis,
 			Target: filepath.Join(
 				opts.Target,
 				filepath.FromSlash(opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, ""))),
@@ -102,15 +105,16 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 }
 
 type definitionGenerator struct {
-	Name    string
-	Model   spec.Schema
-	SpecDoc *loads.Document
-	Target  string
-	opts    *GenOpts
+	Name          string
+	Model         spec.Schema
+	SpecDoc       *loads.Document
+	ModelAnalysis *modelAnalysis
+	Target        string
+	opts          *GenOpts
 }
 
 func (m *definitionGenerator) Generate() error {
-	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
+	mod, err := makeGenDefinitionWithAnalysis(m.Name, m.Target, m.Model, m.SpecDoc, m.opts, m.ModelAnalysis)
 	if err != nil {
 		return fmt.Errorf("could not generate definitions for model %s on target %s: %w", m.Name, m.Target, err)
 	}
@@ -139,8 +143,27 @@ func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	return newRenderer(m.opts).renderDefinition(g)
 }
 
-func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
-	gd, err := makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
+// modelAnalysis holds the spec data shared by all models of a generation run.
+//
+// Generation mutates the spec, so an [analysis.Spec] cannot be cached: only the derived
+// discriminator info is kept. Analyzing the spec for every model made code generation
+// quadratic in the size of the spec (go-swagger/go-swagger#3151).
+type modelAnalysis struct {
+	discriminators *discInfo
+}
+
+func newModelAnalysis(specDoc *loads.Document, analyzed *analysis.Spec, opts *GenOpts) *modelAnalysis {
+	if analyzed == nil {
+		analyzed = analysis.New(specDoc.Spec())
+	}
+
+	return &modelAnalysis{
+		discriminators: discriminatorInfo(analyzed, opts),
+	}
+}
+
+func makeGenDefinitionWithAnalysis(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts, sharedAnalysis *modelAnalysis) (*GenDefinition, error) {
+	gd, err := makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts, sharedAnalysis)
 
 	if err == nil && gd != nil {
 		// before yielding the schema to the renderer, we check if the top-level Validate method gets some content
@@ -221,16 +244,18 @@ func isExternal(schema spec.Schema) bool {
 }
 
 //nolint:gocognit // TODO(fredbi): refactor
-func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
+func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts, sharedAnalysis *modelAnalysis) (*GenDefinition, error) {
 	// Check if model is imported from external package using x-go-type
 	receiver := "m"
 	// models are resolved in the current package
 	modelPkg := opts.LanguageOpts.ManglePackageName(path.Base(filepath.ToSlash(pkg)), "definitions")
 	resolver := newTypeResolver("", specDoc, opts).withDefinitionPackage(modelPkg)
 	resolver.ModelName = name
-	analyzed := analysis.New(specDoc.Spec())
 
-	di := discriminatorInfo(analyzed, opts)
+	if sharedAnalysis == nil {
+		sharedAnalysis = newModelAnalysis(specDoc, nil, opts)
+	}
+	di := sharedAnalysis.discriminators
 
 	pascalize, ok := opts.funcMap["pascalize"].(func(string) string)
 	if !ok {
@@ -328,7 +353,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 				}
 				ref = spec.Ref{}
 				if rsch != nil && rsch.Discriminator != "" {
-					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts)
+					gs, err := makeGenDefinitionHierarchy(strings.TrimPrefix(ss.Ref.String(), "#/definitions/"), pkg, pg.GenSchema.Name, *rsch, specDoc, opts, sharedAnalysis)
 					if err != nil {
 						return nil, err
 					}
