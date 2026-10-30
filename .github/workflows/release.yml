@@ -67,7 +67,7 @@ jobs:
         run: upx --version
       -
         name: Install git-cliff
-        uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2.87.29
+        uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
         with:
           tool: git-cliff
       -
@@ -147,7 +147,7 @@ jobs:
       -
         name: Install CloudSmith CLI
         if: ${{ env.CLOUDSMITH_API_KEY != '' }}
-        uses: cloudsmith-io/cloudsmith-cli-action@69e169e2ad9bc9a1599c2dff464061a00fe9f8ba # v3.1.1
+        uses: cloudsmith-io/cloudsmith-cli-action@595d225cfc4db1903155991d3279439dd0bcc99c # v3.2.0
         env:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         with:
