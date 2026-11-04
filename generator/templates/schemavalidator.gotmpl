@@ -133,10 +133,14 @@
         {{- if and .IsNullable (not .Required) (not .IsMapNullOverride) }}
           {{- if .IsInterface }}
           if {{ .ValueExpression }} == nil { // not required
-          {{- else }}
-          if typeutils.IsZero({{ .ValueExpression }}) { // not required
-          {{- end }}
             continue
+          {{- else if .IsNullableSet }}
+          if typeutils.IsZero({{ .ValueExpression }}) { // not required
+            continue
+          {{- else }}
+          if {{ .ValueExpression }} == nil {
+            return validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
+          {{- end }}
           }
         {{- end }}
         {{ template "propertyvalidator" . }}
