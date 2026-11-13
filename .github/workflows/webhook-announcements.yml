@@ -51,7 +51,7 @@ on:
 
 jobs:
   announce:
-    uses: go-openapi/ci-workflows/.github/workflows/webhook-announcements.yml@69a76bc5d13145693ca13d24a418942b59fce727 # v0.6.3
+    uses: go-openapi/ci-workflows/.github/workflows/webhook-announcements.yml@1c2020082c9b8a77fde4090b0b7fe46315b31d2e # v0.6.4
     with:
       scanned-markdown: README.md
       # On push: normal before..after diff (empty
