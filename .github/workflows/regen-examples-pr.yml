@@ -126,7 +126,7 @@ jobs:
       -
         name: Configure bot credentials
         if: ${{ steps.status.outputs.status == 'has-changes' }}
-        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@2a20802fd4ec9b9fd4732b832c91fec9c4aae777 # v1.4.20
+        uses: go-openapi/gh-actions/ci-jobs/bot-credentials@285d940659e17cd0e2946a1ecd3b90c4d326def7 # v1.4.22
         id: bot-credentials
         with:
           enable-github-app: "true"
@@ -149,7 +149,7 @@ jobs:
         name: Create or update examples PR
         if: ${{ steps.status.outputs.status == 'has-changes' }}
         id: examples-pr
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           token: ${{ steps.bot-credentials.outputs.app-token }}
           commit-message: |
