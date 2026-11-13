@@ -1261,6 +1261,7 @@ func (sg *schemaGenContext) buildArray() error {
 	elProp.GenSchema.Suffix = "Items"
 
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
+	elProp.GenSchema.IsNullableSet = tpe.IsNullableSet
 	if elProp.GenSchema.IsNullable {
 		sg.GenSchema.GoType = "[]*" + elProp.GenSchema.GoType
 	} else {
@@ -1505,6 +1506,7 @@ func (sg *schemaGenContext) shortCircuitNamedRef() (bool, error) {
 		tpe.Pkg = sg.TypeResolver.definitionPkg
 
 		tpe.IsNullable = tpx.IsNullable // TODO
+		tpe.IsNullableSet = tpx.IsNullableSet
 		tpe.IsInterface = tpx.IsInterface
 		tpe.IsStream = tpx.IsStream
 		tpe.IsEmbedded = tpx.IsEmbedded

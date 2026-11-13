@@ -43,6 +43,7 @@ func generateServerFixtures() map[string]generateFixture {
 		"go_run_generate_default_3000":     fixtureServerGoRunGenerateDefault3000(),
 		"yamlpc_import_1603":               fixtureServerYamlpcImport1603(),
 		"issue 1943":                       fixtureServer1943(),
+		"issue 2382":                       fixtureServerNullArrayItems2382(),
 		"issue 3278":                       fixtureServerContextValidationArrayItem3278(),
 		"packages_mangling":                fixtureServerPackageMangling(),
 		"packages_flattening":              fixtureServerPackageFlattening(),
@@ -65,6 +66,41 @@ func generateClientFixtures() map[string]generateFixture {
 		"issue1083":                       fixtureClientRoundTrip1083(),
 		"conflict_name_client_issue_2730": fixtureClientNameConflict2730(),
 		"type conversions":                fixtureClientTypeConversions(),
+	}
+}
+
+func fixtureServerNullArrayItems2382() generateFixture {
+	return generateFixture{
+		spec:    "../testdata/bugs/2382/fixture-2382.yaml",
+		prepare: defaultServerOpts,
+		verify: func(target string) func(*testing.T) {
+			return func(t *testing.T) {
+				input, err := os.ReadFile("../testdata/bugs/2382/validation_test.go")
+				require.NoError(t, err)
+				modelInput, err := os.ReadFile("../testdata/bugs/2382/models_validation_test.go")
+				require.NoError(t, err)
+				operationsTarget := filepath.Join(target, defaultServerTarget, defaultOperationsTarget)
+				modelsTarget := filepath.Join(target, defaultModelsTarget)
+				require.NoError(t, os.WriteFile( //nolint:gosec // G703 false positive: target is a test temp directory
+					filepath.Join(operationsTarget, "validation_test.go"),
+					removeBuildTags(input),
+					0o600,
+				))
+				require.NoError(t, os.WriteFile( //nolint:gosec // G703 false positive: target is a test temp directory
+					filepath.Join(modelsTarget, "models_validation_test.go"),
+					removeBuildTags(modelInput),
+					0o600,
+				))
+
+				t.Run("should tidy go.mod", gentest.GoModTidy(target))
+				t.Run("should reject null array items unless explicitly nullable",
+					gentest.GoExecInDir(operationsTarget, "test", "."),
+				)
+				t.Run("should validate generated models",
+					gentest.GoExecInDir(modelsTarget, "test", "."),
+				)
+			}
+		},
 	}
 }
 
