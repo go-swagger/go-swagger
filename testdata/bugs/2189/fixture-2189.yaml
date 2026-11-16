@@ -1,0 +1,26 @@
+swagger: '2.0'
+info:
+  title: object with default values and strict additional properties
+  version: v1
+produces:
+  - application/json
+paths:
+  /obj:
+    get:
+      operationId: getObject
+      responses:
+        200:
+          description: The object
+          schema:
+            $ref: '#/definitions/MyObject'
+definitions:
+  MyObject:
+    type: object
+    properties:
+      string1:
+        type: string
+      bool1:
+        type: boolean
+    default:
+      string1: first
+      bool1: false
