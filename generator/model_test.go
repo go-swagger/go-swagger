@@ -2689,6 +2689,41 @@ func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 	}
 }
 
+func TestGenModel_Issue2189(t *testing.T) {
+	// an object with a default value must get a single UnmarshalJSON method
+	// when generated with the StrictAdditionalProperties option.
+	specDoc, err := loads.Spec("../testdata/bugs/2189/fixture-2189.yaml")
+	require.NoError(t, err)
+
+	const k = "MyObject"
+	definitions := specDoc.Spec().Definitions
+
+	for _, strict := range []bool{false, true} {
+		t.Run(fmt.Sprintf("with StrictAdditionalProperties=%t", strict), func(t *testing.T) {
+			opts := opts()
+			opts.StrictAdditionalProperties = strict
+
+			genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
+			require.NoError(t, err)
+
+			buf := bytes.NewBuffer(nil)
+			require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
+
+			ff, err := opts.LanguageOpts.FormatContent("my_object.go", buf.Bytes())
+			require.NoErrorf(t, err, "format error: %v\n%s", err, buf.String())
+
+			res := string(ff)
+			require.Equalf(t, 1, strings.Count(res, "func (m *"+k+") UnmarshalJSON("),
+				"expected exactly one UnmarshalJSON method for %s:\n%s", k, res)
+			assertInCode(t, `json.Unmarshal([]byte("{\"bool1\":false,\"string1\":\"first\"}"), &`, res)
+
+			if strict {
+				assertInCode(t, "dec.DisallowUnknownFields()", res)
+			}
+		})
+	}
+}
+
 func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
 	specDoc, err := loads.Spec("../testdata/codegen/xml-model.yml")
 	require.NoError(t, err)
