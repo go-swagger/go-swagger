@@ -7,11 +7,9 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/go-openapi/swag/mangling"
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-
-	"github.com/go-openapi/swag/conv"
-	"github.com/go-openapi/swag/mangling"
 )
 
 func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
@@ -165,18 +163,18 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 			int32(4),
 			int64(4),
 			int(4),
-			conv.Pointer(int(4)),
-			conv.Pointer(int32(4)),
-			conv.Pointer(int64(4)),
-			conv.Pointer(uint(4)),
-			conv.Pointer(uint32(4)),
-			conv.Pointer(uint64(4)),
+			new(int(4)),
+			new(int32(4)),
+			new(int64(4)),
+			new(uint(4)),
+			new(uint32(4)),
+			new(uint64(4)),
 			float32(12),
 			float64(12),
-			conv.Pointer(float32(12)),
-			conv.Pointer(float64(12)),
+			new(float32(12)),
+			new(float64(12)),
 			"12",
-			conv.Pointer("12"),
+			new("12"),
 		} {
 			val := anInteger
 			require.Truef(t, isInteger(val), "expected %#v to be detected an integer value", val)
@@ -185,15 +183,15 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 		for _, notAnInteger := range []any{
 			float32(12.5),
 			float64(12.5),
-			conv.Pointer(float32(12.5)),
-			conv.Pointer(float64(12.5)),
+			new(float32(12.5)),
+			new(float64(12.5)),
 			[]string{"a"},
 			struct{}{},
 			nil,
 			map[string]int{"a": 1},
 			"abc",
 			"2.34",
-			conv.Pointer("2.34"),
+			new("2.34"),
 			nilString,
 			nilInt,
 			nilFloat,
@@ -210,8 +208,8 @@ func TestFuncMap(t *testing.T) { //nolint:maintidx // false positive
 		require.TrueT(t, ok)
 		require.NotNil(t, gt0)
 
-		require.TrueT(t, gt0(conv.Pointer(int64(1))))
-		require.FalseT(t, gt0(conv.Pointer(int64(0))))
+		require.TrueT(t, gt0(new(int64(1))))
+		require.FalseT(t, gt0(new(int64(0))))
 		require.FalseT(t, gt0(nil))
 	})
 

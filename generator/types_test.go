@@ -149,7 +149,7 @@ func makeResolveExternalTypes() []externalTypeFixture {
 					NoValidation *bool
 				}{
 					Kind:     "array",
-					Nullable: conv.Pointer(true),
+					Nullable: new(true),
 				},
 				Embedded: false,
 			},
@@ -391,7 +391,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "array",
 			Type: spec.NewItems().
 				Typed("number", "int64").
-				WithValidations(spec.CommonValidations{MinLength: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
+				WithValidations(spec.CommonValidations{MinLength: conv.Pointer[int64](15), Maximum: new(12.00)}).
 				UniqueValues(),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -404,7 +404,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "string",
 			Type: spec.QueryParam("p1").
 				Typed("string", "uuid").
-				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: new(12.00)}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -416,7 +416,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			Title:        "simple schema: guard file (1/3)",
 			ResolvedType: "file",
 			Type: spec.FileParam("p1").
-				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: conv.Pointer(12.00)}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), Maximum: new(12.00)}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasNumberValidations(), "expected no number validations, got: %#v", val)
@@ -430,7 +430,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			Type: spec.FileParam("p1").
 				WithValidations(spec.CommonValidations{
 					MinItems: conv.Pointer[int64](15),
-					Maximum:  conv.Pointer(12.00),
+					Maximum:  new(12.00),
 					Pattern:  "xyz",
 					Enum:     []any{"x", 34},
 				}),
@@ -448,7 +448,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 				WithValidations(spec.SchemaValidations{
 					CommonValidations: spec.CommonValidations{
 						MinItems: conv.Pointer[int64](15),
-						Maximum:  conv.Pointer(12.00),
+						Maximum:  new(12.00),
 					},
 					MinProperties: conv.Pointer[int64](10),
 				}).
@@ -465,7 +465,7 @@ func makeGuardValidationFixtures() []guardValidationsFixture {
 			ResolvedType: "number",
 			Type: spec.QueryParam("p1").
 				Typed("number", "double").
-				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), MultipleOf: conv.Pointer(12.00), Pattern: "xyz"}).
+				WithValidations(spec.CommonValidations{MinItems: conv.Pointer[int64](15), MultipleOf: new(12.00), Pattern: "xyz"}).
 				WithMinLength(12),
 			Asserter: func(t *testing.T, val spec.SchemaValidations) {
 				require.FalseT(t, val.HasArrayValidations(), "expected no array validations, got: %#v", val)

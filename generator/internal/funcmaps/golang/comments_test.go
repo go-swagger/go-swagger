@@ -9,8 +9,6 @@ import (
 	"github.com/go-openapi/testify/v2/assert"
 )
 
-func ptrTo[T any](v T) *T { return &v }
-
 func TestLineComment(t *testing.T) {
 	cases := []struct {
 		name string
@@ -56,7 +54,7 @@ func TestLineCommentVariadic(t *testing.T) {
 		{"all nil yields nothing", []any{nil, nil}, ""},
 		// pointer args are dereferenced (as text/template does for {{ .X }}), so
 		// they print by value, not as an address.
-		{"pointer deref to value", []any{"MinProperties: ", ptrTo(int64(20))}, "// MinProperties: 20"},
+		{"pointer deref to value", []any{"MinProperties: ", new(int64(20))}, "// MinProperties: 20"},
 		{"nil pointer skipped", []any{"v: ", (*int64)(nil)}, "// v:"},
 		{"empty strings yield nothing", []any{"", ""}, ""},
 		// composed value carrying a newline stays fully commented.
