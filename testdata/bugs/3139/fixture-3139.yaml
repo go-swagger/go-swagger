@@ -1,0 +1,60 @@
+swagger: "2.0"
+info:
+  description: Test
+  title: Test
+  version: 1.0.0
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /pet:
+    get:
+      description: Get single pet
+      operationId: getPet
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/pet'
+  /pets:
+    get:
+      description: Get all pet
+      operationId: getPets
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/pet'
+
+definitions:
+  pet:
+    type: object
+    discriminator: type
+    properties:
+      type:
+        type: string
+    required:
+      - type
+  cat:
+    allOf:
+      - $ref: '#/definitions/pet'
+      - properties:
+          size:
+            type: string
+  dog:
+    allOf:
+      - $ref: '#/definitions/pet'
+      - properties:
+          barks:
+            type: boolean
