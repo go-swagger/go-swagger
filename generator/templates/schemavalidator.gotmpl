@@ -469,7 +469,7 @@
 
 {{define "objectcontextvalidator" }}
   {{/* Debug
-  // .Name: {{ .Name }}
+  // .Name: {{ escapeDoubleQuoted .Name }}
   // .IsAliased: {{ .IsAliased }}
   // .IsAnonymous: {{ .IsAnonymous }}
   // .IsNullable: {{ .IsNullable }}
@@ -567,7 +567,7 @@
   {{- end }}
 {{- end }}
 {{define "objectvalidator" }}{{/* // DEBUG
-  // .Name: {{ .Name }}
+  // .Name: {{ escapeDoubleQuoted .Name }}
   // .IsAliased: {{ .IsAliased }}
   // .IsAnonymous: {{ .IsAnonymous }}
   // .IsNullable: {{ .IsNullable }}

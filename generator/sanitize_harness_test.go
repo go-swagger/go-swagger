@@ -198,6 +198,35 @@ func TestSanitizeGenHarness(t *testing.T) {
 		require.NoError(t, GenerateClient("", nil, nil, opts))
 		assertNoInjectedDecl(t, opts.Target)
 	})
+
+	const newlineSpec = "../testdata/codegen/sanitize/newline-name-injection.json"
+
+	// A newline in a parameter, header, property or discriminator name, or in
+	// a format, collectionFormat or enum value, ends the // comment that
+	// prints it. escapeDoubleQuoted keeps each one on the comment line.
+	t.Run("newline in names is contained (client)", func(t *testing.T) {
+		target := harnessTarget(t, "newline-client", "client_test", root)
+		opts := defaultClientOpts(t, newlineSpec, target)
+
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("newline in names is contained (server)", func(t *testing.T) {
+		target := harnessTarget(t, "newline-server", "server_test", root)
+		opts := defaultServerOpts(t, newlineSpec, target)
+
+		require.NoError(t, GenerateServer("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
+
+	t.Run("newline in names is contained (cli)", func(t *testing.T) {
+		target := harnessTarget(t, "newline-cli", "cli_test", root)
+		opts := NewGenOpts(ForCli(), WithSpec(newlineSpec), WithTarget(target))
+
+		require.NoError(t, GenerateClient("", nil, nil, opts))
+		assertNoInjectedDecl(t, opts.Target)
+	})
 }
 
 // assertNoInjectedDecl walks generated .go files under dir and asserts each is
