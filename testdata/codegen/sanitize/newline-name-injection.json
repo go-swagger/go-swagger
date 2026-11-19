@@ -1,0 +1,200 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "newline injection",
+    "version": "1.0",
+    "description": "Adversarial fixture: a newline in a spec name ends a // comment that prints the name, and the rest of the name becomes Go code. The payload is a var declaration, legal both at package level and inside a function body. Comment sites must print names through escapeDoubleQuoted. JSON is used because YAML cannot carry a newline in a map key."
+  },
+  "consumes": [
+    "application/json",
+    "application/x-www-form-urlencoded"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/items": {
+      "get": {
+        "operationId": "listItems",
+        "parameters": [
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_QUERY\"); return 0 }()\n//",
+            "in": "query",
+            "type": "string",
+            "format": "f\nvar _ = func() int { println(\"PWNED_FORMAT\"); return 0 }()\n//",
+            "enum": [
+              "e\nvar _ = func() int { println(\"PWNED_ENUM\"); return 0 }()\n//"
+            ]
+          },
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_QUERY_ARRAY\"); return 0 }()\n//",
+            "in": "query",
+            "type": "array",
+            "collectionFormat": "csv\nvar _ = func() int { println(\"PWNED_COLLFMT\"); return 0 }()\n//",
+            "items": {
+              "type": "array",
+              "collectionFormat": "csv\nvar _ = func() int { println(\"PWNED_CHILD_COLLFMT\"); return 0 }()\n//",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_HEADER\"); return 0 }()\n//",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_HEADER_ARRAY\"); return 0 }()\n//",
+            "in": "header",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok",
+            "headers": {
+              "x\nvar _ = func() int { println(\"PWNED_RESP_HEADER\"); return 0 }()\n//": {
+                "type": "string"
+              },
+              "x\nvar _ = func() int { println(\"PWNED_RESP_HEADER_ARRAY\"); return 0 }()\n//": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/Item"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createItem",
+        "parameters": [
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_BODY\"); return 0 }()\n//",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "x\nvar _ = func() int { println(\"PWNED_INLINE_PROP\"); return 0 }()\n//": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "z": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "inner": {
+                  "type": "object",
+                  "properties": {
+                    "x\nvar _ = func() int { println(\"PWNED_INNER_PROP\"); return 0 }()\n//": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "x\nvar _ = func() int { println(\"PWNED_REF_PROP\"); return 0 }()\n//": {
+                  "$ref": "#/definitions/Item"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "created"
+          }
+        }
+      },
+      "put": {
+        "operationId": "formItem",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "parameters": [
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_FORM\"); return 0 }()\n//",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "x\nvar _ = func() int { println(\"PWNED_FORM_ARRAY\"); return 0 }()\n//",
+            "in": "formData",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Item": {
+      "type": "object",
+      "properties": {
+        "x\nvar _ = func() int { println(\"PWNED_MODEL_MAP\"); return 0 }()\n//": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "x\nvar _ = func() int { println(\"PWNED_MODEL_ARRAY\"); return 0 }()\n//": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "Pet": {
+      "type": "object",
+      "discriminator": "kind\nvar _ = func() int { println(\"PWNED_DISCRIMINATOR\"); return 0 }()\n//",
+      "required": [
+        "kind\nvar _ = func() int { println(\"PWNED_DISCRIMINATOR\"); return 0 }()\n//"
+      ],
+      "properties": {
+        "kind\nvar _ = func() int { println(\"PWNED_DISCRIMINATOR\"); return 0 }()\n//": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Dog": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pet"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "bark": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -77,7 +77,7 @@ func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
           {{- else }}
   if base.{{ $val.GoName }} != result.{{ $val.GoName }}() {
     /* Not the type we're looking for. */
-    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ $val.GoName }})
+    return errors.New(422, "invalid {{ escapeDoubleQuoted $val.Name }} value: %q", base.{{ $val.GoName }})
   }
           {{- end }}
         {{- end }}
@@ -102,7 +102,7 @@ func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
           {{- else }}
   if base.{{ $val.GoName }} != result.{{ $val.GoName }}() {
     /* Not the type we're looking for. */
-    return errors.New(422, "invalid {{$val.Name}} value: %q", base.{{ $val.GoName }})
+    return errors.New(422, "invalid {{ escapeDoubleQuoted $val.Name }} value: %q", base.{{ $val.GoName }})
   }
           {{- end }}
         {{- end }}
@@ -112,7 +112,7 @@ func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
     {{- end }}
   {{- end }}
   {{ range .Properties }}
-  // {{ .Name }}
+  // {{ escapeDoubleQuoted .Name }}
   result.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ .GoName }}{{ end }} = {{ if .IsBaseType }}prop{{ .GoName }}{{ else }}data.{{ .GoName}}{{ end }}
   {{ end }}
   *{{ .ReceiverName }} = result

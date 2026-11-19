@@ -5,6 +5,8 @@
 #     (errors.NotImplemented("api key auth (<id>) <name> ..."), if name == "<id>")
 #   - response header name -> client readResponse (response.GetHeader("<name>"))
 #   - parameter / flag name -> cli command (cmd.Flags().Changed("<name>"))
+#   - operationId -> client response Error()/String() and API error messages
+#     (fmt.Sprintf("[GET /v][%d] <operationId> ..."))
 # A double quote in any of them would close the literal and inject live Go.
 # printf %q / escapeDoubleQuoted keep each inside a single literal.
 swagger: "2.0"
@@ -32,3 +34,19 @@ paths:
           headers:
             'hdr"+println("PWNED_HEADER")+"h':
               type: string
+  /v:
+    get:
+      operationId: 'op"+println("PWNED_OPID")+"v'
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+        default:
+          description: error
+          schema:
+            type: string
