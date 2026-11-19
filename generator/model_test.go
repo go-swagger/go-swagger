@@ -615,7 +615,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -638,7 +638,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "extraInfo")
+	prop := getDefinitionProperty(t, genModel, "extraInfo")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -666,7 +666,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -690,7 +690,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -713,7 +713,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -737,7 +737,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -761,7 +761,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.FalseT(t, genModel.HasAdditionalProperties)
-	prop := getDefinitionProperty(genModel, "data")
+	prop := getDefinitionProperty(t, genModel, "data")
 	assert.TrueT(t, prop.HasAdditionalProperties)
 	assert.TrueT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -798,7 +798,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 
 	require.NotNil(t, sch.AdditionalProperties)
 
-	prop := findProperty(genModel.Properties, "data")
+	prop := findProperty(t, genModel.Properties, "data")
 	assert.FalseT(t, prop.HasAdditionalProperties)
 	assert.FalseT(t, prop.IsMap)
 	assert.FalseT(t, prop.IsAdditionalProperties)
@@ -887,7 +887,7 @@ func TestGenerateModel_WithNullableRef(t *testing.T) {
 	assert.TrueT(t, genModel.IsComplexObject)
 	assert.EqualT(t, "WithNullableRef", genModel.Name)
 	assert.EqualT(t, "WithNullableRef", genModel.GoType)
-	prop := getDefinitionProperty(genModel, "notes")
+	prop := getDefinitionProperty(t, genModel, "notes")
 	assert.TrueT(t, prop.IsNullable)
 	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
@@ -1042,7 +1042,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 
 	assert.Nil(t, genModel.Items)
 	assert.TrueT(t, genModel.IsComplexObject)
-	prop := getDefinitionProperty(genModel, "tags")
+	prop := getDefinitionProperty(t, genModel, "tags")
 
 	assert.NotNil(t, prop.Items)
 	assert.TrueT(t, prop.IsArray)
@@ -1069,7 +1069,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 
 	assert.Nil(t, genModel.Items)
 	assert.TrueT(t, genModel.IsComplexObject)
-	prop := getDefinitionProperty(genModel, "tags")
+	prop := getDefinitionProperty(t, genModel, "tags")
 	assert.NotNil(t, prop.Items)
 	assert.TrueT(t, prop.IsArray)
 	assert.FalseT(t, prop.IsComplexObject)
@@ -1099,7 +1099,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 
 	assert.Nil(t, genModel.Items)
 	assert.TrueT(t, genModel.IsComplexObject)
-	prop := getDefinitionProperty(genModel, "tags")
+	prop := getDefinitionProperty(t, genModel, "tags")
 	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1129,7 +1129,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 
 	assert.Nil(t, genModel.Items)
 	assert.TrueT(t, genModel.IsComplexObject)
-	prop := getDefinitionProperty(genModel, "tags")
+	prop := getDefinitionProperty(t, genModel, "tags")
 	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1159,7 +1159,7 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 
 	assert.Nil(t, genModel.Items)
 	assert.TrueT(t, genModel.IsComplexObject)
-	prop := getDefinitionProperty(genModel, "tags")
+	prop := getDefinitionProperty(t, genModel, "tags")
 	assert.TrueT(t, prop.IsComplexObject)
 	buf := bytes.NewBuffer(nil)
 	require.NoError(t, opts.templates.MustGet("model").Execute(buf, genModel))
@@ -1570,7 +1570,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
-	assert.Len(t, genModel.AllOf, 7)
+	require.Len(t, genModel.AllOf, 7)
 	assert.TrueT(t, genModel.AllOf[1].HasAdditionalProperties)
 	assert.TrueT(t, genModel.IsComplexObject)
 	assert.EqualT(t, "WithAllOf", genModel.Name)
@@ -1602,17 +1602,25 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 	assertInCode(t, "WithAllOfAO2P2 map[string]int64 `json:\"-\"`", res)
 }
 
-func findProperty(properties []GenSchema, name string) *GenSchema {
+// findProperty returns the property called name, and stops the test if there is none.
+func findProperty(t *testing.T, properties []GenSchema, name string) *GenSchema {
+	t.Helper()
+
 	for _, p := range properties {
 		if p.Name == name {
 			return &p
 		}
 	}
+	require.Failf(t, "property not found", "no property %q", name)
+
 	return nil
 }
 
-func getDefinitionProperty(genModel *GenDefinition, name string) *GenSchema {
-	return findProperty(genModel.Properties, name)
+// getDefinitionProperty returns the property called name of genModel, and stops the test if there is none.
+func getDefinitionProperty(t *testing.T, genModel *GenDefinition, name string) *GenSchema {
+	t.Helper()
+
+	return findProperty(t, genModel.Properties, name)
 }
 
 func TestNumericKeys(t *testing.T) {
@@ -2059,6 +2067,7 @@ func TestGenModel_Issue786(t *testing.T) {
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, genModel.Properties)
 	require.FalseT(t, genModel.Properties[0].AdditionalProperties.IsNullable)
 
 	buf := bytes.NewBuffer(nil)

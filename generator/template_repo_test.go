@@ -31,7 +31,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 
 	headerTempl, err = opts.templates.Get("bindprimitiveparam")
 	require.NoError(t, err)
-	assert.NotNil(t, headerTempl)
+	require.NotNil(t, headerTempl)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
 	assert.EqualT(t, "custom header", buf.String())
 }

@@ -80,6 +80,7 @@ func TestSchemaValidation_StringProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"name\"", "m.Name", prop)
 
@@ -135,6 +136,7 @@ func TestSchemaValidation_NumberProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"age\"", "m.Age", prop)
 
@@ -193,6 +195,7 @@ func TestSchemaValidation_ArrayProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"tags\"", "m.Tags", prop)
 
@@ -260,6 +263,7 @@ func TestSchemaValidation_NestedArrayProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"tags\"", "m.Tags", prop)
 
@@ -347,6 +351,7 @@ func TestSchemaValidation_NestedObjectProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"args\"", "m.Args", prop)
 
@@ -431,6 +436,7 @@ func TestSchemaValidation_ArrayMultiProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"args\"", "m.Args", prop)
 
@@ -500,6 +506,7 @@ func TestSchemaValidation_ArrayAdditionalProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"args\"", "m.Args", prop)
 	buf := bytes.NewBuffer(nil)
@@ -562,6 +569,7 @@ func TestSchemaValidation_MapProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
@@ -623,6 +631,7 @@ func TestSchemaValidation_MapComplexProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
@@ -686,6 +695,7 @@ func TestSchemaValidation_NestedMapProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
@@ -737,11 +747,11 @@ func TestAdditionalProperties_Simple(t *testing.T) {
 	fsm, lsm, err := newMapStack(&sg)
 	require.NoError(t, err)
 
-	assert.NotNil(t, fsm.Type)
+	require.NotNil(t, fsm.Type)
 	assert.Equal(t, &schema, fsm.Type)
 	assert.Equal(t, fsm, lsm)
-	assert.NotNil(t, fsm.Type.AdditionalProperties)
-	assert.NotNil(t, fsm.Type.AdditionalProperties.Schema)
+	require.NotNil(t, fsm.Type.AdditionalProperties)
+	require.NotNil(t, fsm.Type.AdditionalProperties.Schema)
 	assert.NotNil(t, fsm.NewObj)
 	assert.Nil(t, fsm.Next)
 	assert.EqualT(t, "#/definitions/NamedMapComplexAnon", fsm.Type.AdditionalProperties.Schema.Ref.GetURL().String())
@@ -790,12 +800,12 @@ func TestAdditionalProperties_Nested(t *testing.T) {
 	assert.NotNil(t, fsm.Type)
 	assert.Equal(t, &schema, fsm.Type)
 	assert.NotEqual(t, fsm, lsm)
-	assert.NotNil(t, fsm.Type.AdditionalProperties)
-	assert.NotNil(t, fsm.Type.AdditionalProperties.Schema)
+	require.NotNil(t, fsm.Type.AdditionalProperties)
+	require.NotNil(t, fsm.Type.AdditionalProperties.Schema)
 	assert.Nil(t, fsm.NewObj)
 	assert.Nil(t, fsm.Next.NewObj)
 	assert.NotNil(t, fsm.Next.Previous)
-	assert.NotNil(t, fsm.Next.Next)
+	require.NotNil(t, fsm.Next.Next)
 	assert.NotNil(t, fsm.Next.Next.NewObj)
 	assert.NotNil(t, fsm.Next.Next.ValueRef)
 	assert.Nil(t, fsm.Next.Next.Next)
@@ -850,6 +860,7 @@ func TestSchemaValidation_NestedMapPropsComplex(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 
@@ -927,6 +938,7 @@ func TestSchemaValidation_AllOfProps(t *testing.T) {
 	gm, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
+	require.NotEmpty(t, gm.Properties)
 	prop := gm.Properties[0]
 	requireValidation(t, "\"meta\"", "m.Meta", prop)
 	buf := bytes.NewBuffer(nil)

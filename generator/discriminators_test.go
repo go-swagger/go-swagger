@@ -216,6 +216,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	genOp, err := bldr.MakeOperation()
 	require.NoError(t, err)
 
+	require.NotEmpty(t, genOp.Responses)
 	assert.TrueT(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
 	err = opts.templates.MustGet("clientResponse").Execute(&buf, genOp)
@@ -256,6 +257,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 	genOp, err := bldr.MakeOperation()
 	require.NoError(t, err)
 
+	require.NotEmpty(t, genOp.Responses)
 	assert.TrueT(t, genOp.Responses[0].Schema.IsBaseType)
 	var buf bytes.Buffer
 	err = opts.templates.MustGet("serverParameter").Execute(&buf, genOp)
@@ -390,6 +392,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 	opts := opts()
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
+	require.NotEmpty(t, genModel.Properties)
 	require.EqualT(t, "map[string]Base", genModel.Properties[0].GoType)
 
 	buf := bytes.NewBuffer(nil)

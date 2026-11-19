@@ -428,6 +428,7 @@ func TestGenParameter_Issue303(t *testing.T) {
 			op, err := gen.MakeOperation()
 			require.NoError(t, err)
 
+			require.NotEmpty(t, op.Params)
 			param := op.Params[0]
 			assert.EqualT(t, "fruit", param.Name)
 			assert.TrueT(t, param.IsEnumCI)
@@ -4244,7 +4245,7 @@ func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 	require.TrueT(t, op.HasStreamingForm)
 	assert.EqualT(t, "MultipartForm", op.MultipartFormName)
 	assert.Len(t, op.Params, 4)
-	assert.Len(t, op.ServerParams, 1)
+	require.Len(t, op.ServerParams, 1)
 	assert.EqualT(t, "token", op.ServerParams[0].Name)
 
 	opts := opts()

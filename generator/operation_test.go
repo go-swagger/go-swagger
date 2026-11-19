@@ -186,7 +186,7 @@ func TestMakeResponse(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Len(t, gO.Headers, 6)
-	assert.NotNil(t, gO.Schema)
+	require.NotNil(t, gO.Schema)
 	assert.TrueT(t, gO.Schema.IsArray)
 	assert.NotNil(t, gO.Schema.Items)
 	assert.FalseT(t, gO.Schema.IsAnonymous)
@@ -779,6 +779,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
+	require.NotEmpty(t, op.Operations)
 	require.NoError(t, opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0]))
 
 	filecontent, err := appGen.GenOpts.LanguageOpts.FormatContent("operation.go", buf.Bytes())
@@ -840,6 +841,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
+	require.NotEmpty(t, op.Operations)
 	err = opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0])
 	require.NoError(t, err)
 
@@ -1367,6 +1369,7 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
+	require.NotEmpty(t, op.Operations)
 	require.NoError(t,
 		opts.templates.MustGet("serverOperation").Execute(buf, op.Operations[0]),
 	)
