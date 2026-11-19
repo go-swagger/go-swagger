@@ -84,7 +84,7 @@ if err := cmd.RegisterFlagCompletionFunc({{ flagNameVar .Name }},
 {{/* each body parameter gets a string flag to input json raw string */}}
 {{ define "modelparamstringregistrator" }}
     {{ template "flagnamevar" . }}
-    _ = cmd.PersistentFlags().String({{ flagNameVar .Name }}, "", `Optional json string for [{{ .Name }}]. {{ escapeBackticks .Description }}`)
+    _ = cmd.PersistentFlags().String({{ flagNameVar .Name }}, "", `Optional json string for [{{ escapeBackticks .Name }}]. {{ escapeBackticks .Description }}`)
 {{ end }}
 
 {{ define "modelparamregistrator" }} {{/* register a param that has a schema */}}
