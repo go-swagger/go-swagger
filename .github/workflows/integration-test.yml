@@ -22,7 +22,7 @@ jobs:
     #   Decide whether this run has anything to exercise. Fails open: anything unclear
     #   runs the whole suite.
     name: Changes
-    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@1c2020082c9b8a77fde4090b0b7fe46315b31d2e # v0.6.4
+    uses: go-openapi/ci-workflows/.github/workflows/changed-paths.yml@692da2dae8f16666dea2392b18ad73130fbf738e # v0.6.5
     with:
       preset: go
       # The docker image ships the built binary, so any go change is already relevant.
@@ -65,7 +65,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       -
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -112,7 +112,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       -
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version: ${{ matrix.go }}
           check-latest: true
@@ -174,7 +174,7 @@ jobs:
     #   flaky and must not gate a merge.
     needs: [codegen-test]
     if: ${{ !cancelled() && needs.codegen-test.result == 'success' }}
-    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@1c2020082c9b8a77fde4090b0b7fe46315b31d2e # v0.6.4
+    uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@692da2dae8f16666dea2392b18ad73130fbf738e # v0.6.5
     secrets: inherit
 
   integration-test-complete:
