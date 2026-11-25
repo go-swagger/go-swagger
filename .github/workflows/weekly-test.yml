@@ -18,4 +18,3 @@ jobs:
       # would fall back on running everything anyway. Saying it explicitly documents the
       # intent and keeps this run independent of how detection evolves.
       force-run: 'true'
-    secrets: inherit

@@ -64,6 +64,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
       -
         uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
@@ -111,6 +112,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
       -
         uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
@@ -175,7 +177,6 @@ jobs:
     needs: [codegen-test]
     if: ${{ !cancelled() && needs.codegen-test.result == 'success' }}
     uses: go-openapi/ci-workflows/.github/workflows/collect-coverage.yml@692da2dae8f16666dea2392b18ad73130fbf738e # v0.6.5
-    secrets: inherit
 
   integration-test-complete:
     # description: |
