@@ -71,14 +71,26 @@ jobs:
           "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n    versionMessage: '%s'\n" \
           "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
       -
+        name: Install Hugo
+        env:
+          HUGO_VERSION: '0.123.8'  # <- pin the HUGO version, as they often break things
+          # sha256 of the archive below, from hugo_0.123.8_checksums.txt in the same release
+          HUGO_SHA256: 0a449715f29a240c6f461d040516dd2360b0b80964986cedde1f35f2c330ab7c
+        run: |
+          # Extended build for linux x64: the archive crazy-max/ghaction-hugo used to download.
+          # That action is archived, so the download is done here and checked before use.
+          archive="hugo_extended_${HUGO_VERSION}_Linux-64bit.tar.gz"
+          curl -fsSL -o "${RUNNER_TEMP}/${archive}" \
+            "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${archive}"
+          echo "${HUGO_SHA256}  ${RUNNER_TEMP}/${archive}" | sha256sum --check
+          mkdir -p "${RUNNER_TEMP}/hugo"
+          tar -xzf "${RUNNER_TEMP}/${archive}" -C "${RUNNER_TEMP}/hugo"
+          echo "${RUNNER_TEMP}/hugo" >> "${GITHUB_PATH}"
+          "${RUNNER_TEMP}/hugo/hugo" version
+      -
         name: Build site with Hugo
-        uses: crazy-max/ghaction-hugo@d629f74d3e4a9da53050610da35a59863ab9b26c # v3.3.0
-        with:
-          version: v0.123.8  # <- pin the HUGO version, as they often break things
-          extended: true
-          # Single line on purpose: the runner does not reliably fold ">" scalars for action
-          # inputs, and hugo would receive the flags with embedded newlines.
-          args: --config hugo.yaml,goswagger.yaml --buildDrafts --cleanDestinationDir --minify --printPathWarnings --ignoreCache --noBuildLock --logLevel info --source ${{ github.workspace }}/hack/doc-site/hugo
+        run: |
+          hugo --config hugo.yaml,goswagger.yaml --buildDrafts --cleanDestinationDir --minify --printPathWarnings --ignoreCache --noBuildLock --logLevel info --source "${GITHUB_WORKSPACE}/hack/doc-site/hugo"
       -
         name: Upload artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
