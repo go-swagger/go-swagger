@@ -79,6 +79,7 @@ jobs:
           # will be empty on push to master and default to head from master
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
 
       - name: Lint Dockerfiles
         # NOTE: linting does not account for diff in Dockerfiles. The full Dockerfile is linted and reported.

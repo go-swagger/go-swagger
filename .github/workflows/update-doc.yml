@@ -26,6 +26,7 @@ jobs:
         with:
           fetch-depth: '1'
           submodules: recursive
+          persist-credentials: false
           sparse-checkout: |
             hack/
             docs/
