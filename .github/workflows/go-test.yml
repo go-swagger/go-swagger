@@ -50,4 +50,3 @@ jobs:
         hack/*.yaml
         Dockerfile
         .hadolint.yml
-    secrets: inherit
