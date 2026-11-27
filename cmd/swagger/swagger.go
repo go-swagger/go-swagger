@@ -11,6 +11,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 
 	"github.com/go-swagger/go-swagger/cmd/swagger/commands"
+	"github.com/go-swagger/go-swagger/cmd/swagger/commands/generate"
 )
 
 var opts struct {
@@ -55,6 +56,17 @@ It aims to represent the contract of your API with a language agnostic descripti
 	if err != nil {
 		return nil, err
 	}
+
+	verifyCommand, err := parser.AddCommand(
+		"verify",
+		"check generated server files",
+		"Check for missing or out-of-date generated server files. Supply the swagger document as a positional argument or with --spec.",
+		&generate.Verify{},
+	)
+	if err != nil {
+		return nil, err
+	}
+	verifyCommand.FindOptionByLongName("spec").Description = "the spec file to verify against, as an alternative to the positional argument"
 
 	_, err = parser.AddCommand("init", "initialize a spec document", "initialize a swagger spec document", &commands.InitCmd{})
 	if err != nil {

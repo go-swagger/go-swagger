@@ -238,8 +238,8 @@ func (g *GenOpts) normalize() error {
 // An empty target means the current directory. A target that does not exist is an error,
 // unless [GenOpts.EnsureTarget] is set: the directory is then created, with its parents.
 //
-// The check is skipped when dumping the template data ([GenOpts.DumpData]),
-// since nothing is written to the target then.
+// The check is skipped when dumping template data ([GenOpts.DumpData]),
+// or verifying generated files ([GenOpts.VerifyFile]), since neither writes to the target.
 //
 // It is guarded so the target is checked exactly once.
 func (g *GenOpts) ensureTarget() error {
@@ -255,7 +255,7 @@ func (g *GenOpts) ensureTarget() error {
 		return nil
 	}
 
-	if g.DumpData {
+	if g.DumpData || g.VerifyFile != nil {
 		return nil
 	}
 

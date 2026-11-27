@@ -57,6 +57,23 @@ For spec generation targets (`spec`), read more [there](../generate-spec/).
 
 For markdown generation target (`markdown`), read [this](markdown.md).
 
+## Verifying generated server files
+
+`swagger verify` compares the files `swagger generate server` would produce with their current contents on disk.
+It reports missing or out-of-date files and exits with a nonzero status without writing generated files.
+
+Supply exactly one spec, either as a positional argument or with `--spec` (`-f`).
+
+```sh
+swagger verify ./api/swagger.yaml
+swagger verify --spec ./api/swagger.yaml
+```
+
+Run verification from the same directory and use the same generation options you used to create the files,
+including `--target` if you generated into a different directory. Verification skips an existing `configure_*.go`
+file by default, following server generation's rule for preserving it. Use `--regenerate-configureapi` to include
+it in the comparison.
+
 ## Troubleshooting generate and validate
 
 Use this checklist when `swagger validate` succeeds locally but generation fails, or when a spec path works in one shell and not another.
