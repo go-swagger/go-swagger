@@ -93,6 +93,9 @@ type GenOpts struct {
 	Rooted                 string
 	EnsureTarget           bool // create the target directory when it does not exist
 
+	// VerifyFile receives each generated file in place of writing it to disk.
+	VerifyFile func(path string, content []byte) `json:"-" yaml:"-"`
+
 	// Viper carries an optional configuration (typically a `.swagger.{yml,json}`
 	// file). Its `layout:` sections are applied as overrides on top of the
 	// default render plan during Prepare.

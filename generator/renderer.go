@@ -176,13 +176,13 @@ func (g *renderer) write(t *TemplateOpts, data any) error {
 		return nil
 	}
 
-	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
+	log.Printf("rendering generated file %q in %q as %s", fname, dir, t.Name)
 	content, err := g.render(t, data)
 	if err != nil {
 		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
 	}
 
-	if dir != "" {
+	if g.VerifyFile == nil && dir != "" {
 		_, exists := os.Stat(dir)
 		if os.IsNotExist(exists) {
 			// Directory settings consistent with file privileges.
@@ -212,13 +212,20 @@ func (g *renderer) write(t *TemplateOpts, data any) error {
 		)
 		if err != nil {
 			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
-			writeerr = os.WriteFile(filepath.Join(dir, fname), content, readAllFile) // #nosec
-			if writeerr != nil {
-				return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
+			if g.VerifyFile == nil {
+				writeerr = os.WriteFile(filepath.Join(dir, fname), content, readAllFile) // #nosec
+				if writeerr != nil {
+					return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
+				}
+				log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
 			}
-			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
 			return fmt.Errorf("source formatting on generated source %q failed: %w", t.Name, err)
 		}
+	}
+
+	if g.VerifyFile != nil {
+		g.VerifyFile(filepath.Join(dir, fname), formatted)
+		return nil
 	}
 
 	writeerr = os.WriteFile(filepath.Join(dir, fname), formatted, readAllFile) // #nosec

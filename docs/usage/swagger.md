@@ -28,5 +28,6 @@ Available commands:
   mixin     merge swagger documents
   serve     serve spec and docs
   validate  validate the swagger document
+  verify    check generated server files
   version   print the version
 ```
