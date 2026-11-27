@@ -15,7 +15,7 @@ workflows:
         - 'docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1'
         - 'jbergstroem/hadolint-gh-action@d2f58da7f4f242dc0b6c5ef882ad4f8e871ba96b'
     '.github/workflows/clean-docker.yml':
-        - 'dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f'
+        - 'dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b'
     '.github/workflows/close-examples-pr.yml':
         - 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333'
         - 'go-openapi/gh-actions@285d940659e17cd0e2946a1ecd3b90c4d326def7'
@@ -43,20 +43,20 @@ workflows:
     '.github/workflows/release.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5'
-        - 'cloudsmith-io/cloudsmith-cli-action@16c782c5f3eeea2259957aa17218093d85fdcecd'
+        - 'cloudsmith-io/cloudsmith-cli-action@1a90fd798ea98f8f44466dd66cb051ee44ef49ad'
         - 'crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd'
         - 'crazy-max/ghaction-upx@c83f378efc804f828e988debb88ed6116feb2368'
         - 'goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de'
-        - 'taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519'
+        - 'taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c'
     '.github/workflows/report-docker-vuln.yml':
         - 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333'
-        - 'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066'
+        - 'github/codeql-action@915412ff23e8b7659517e607487dbeae018f2934'
     '.github/workflows/scanner.yml': []
     '.github/workflows/scorecard.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
-        - 'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066'
-        - 'ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e'
+        - 'github/codeql-action@915412ff23e8b7659517e607487dbeae018f2934'
+        - 'ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5'
     '.github/workflows/update-doc.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346'
@@ -137,9 +137,9 @@ dependencies:
         uses:
             - 'actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae'
             - 'aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514'
-    'cloudsmith-io/cloudsmith-cli-action@16c782c5f3eeea2259957aa17218093d85fdcecd':
-        ref: 'v3.2.4'
-        commit: 'sha1-16c782c5f3eeea2259957aa17218093d85fdcecd'
+    'cloudsmith-io/cloudsmith-cli-action@1a90fd798ea98f8f44466dd66cb051ee44ef49ad':
+        ref: 'v3.3.0'
+        commit: 'sha1-1a90fd798ea98f8f44466dd66cb051ee44ef49ad'
         owner_id: 7657912
         repo_id: 848282034
     'crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd':
@@ -152,9 +152,9 @@ dependencies:
         commit: 'sha1-c83f378efc804f828e988debb88ed6116feb2368'
         owner_id: 1951866
         repo_id: 232635825
-    'dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f':
-        ref: 'v1.2.2'
-        commit: 'sha1-d52806a0dc70b430571a37da1fde39733ffd640f'
+    'dataaxiom/ghcr-cleanup-action@ac45a8c04b1eb4b27974ca79a0a74f344c93664b':
+        ref: 'v1.3.0'
+        commit: 'sha1-ac45a8c04b1eb4b27974ca79a0a74f344c93664b'
         owner_id: 131044173
         repo_id: 799711900
     'docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc':
@@ -182,9 +182,9 @@ dependencies:
         commit: 'sha1-99012661954931238ded8c8b007157a8430204e1'
         owner_id: 5429470
         repo_id: 288487894
-    'github/codeql-action@33d7b85da1a04171e211befe2c739303b9a4c066':
-        ref: 'v4.39.3'
-        commit: 'sha1-33d7b85da1a04171e211befe2c739303b9a4c066'
+    'github/codeql-action@915412ff23e8b7659517e607487dbeae018f2934':
+        ref: 'v4.39.5'
+        commit: 'sha1-915412ff23e8b7659517e607487dbeae018f2934'
         owner_id: 9919
         repo_id: 259445878
     'github/codeql-action@cdefb33c0f6224e58673d9004f47f7cb3e328b89':
@@ -212,9 +212,9 @@ dependencies:
         repo_id: 347645338
         uses:
             - 'github/codeql-action@cdefb33c0f6224e58673d9004f47f7cb3e328b89'
-    'ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e':
-        ref: 'v2.5.0'
-        commit: 'sha1-fa7117db83c52d787ae5a89f350999701505d78e'
+    'ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5':
+        ref: 'v2.6.0'
+        commit: 'sha1-23f22cd43608bae7a1f1fa2603d7314dee9538a5'
         owner_id: 67707773
         repo_id: 421101922
     'peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1':
@@ -222,9 +222,9 @@ dependencies:
         commit: 'sha1-3ffccacd46053766916f087ce41d627c0b8cf2d1'
         owner_id: 18365890
         repo_id: 197176365
-    'taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519':
-        ref: 'v2.90.5'
-        commit: 'sha1-ab49d3c64680143e184118bed66a46419fc15519'
+    'taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c':
+        ref: 'v2.90.8'
+        commit: 'sha1-fe3acb53a98b62c772db35de75ce0e4595e7ca8c'
         owner_id: 43724913
         repo_id: 442947557
     'tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96':
